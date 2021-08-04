@@ -11,7 +11,7 @@ def main():
     config.read('../exp_test.ini')
 
     # create a new experiment
-    expr = exp.Experiment('my cool experiment')
+    expr = exp.Experiment('my_cool_experiment', config)
     print(expr.name)
 
     # create a dataset
@@ -29,7 +29,7 @@ def main():
 
     # extract features
     expr.extract_feats()
-    print(f'train feats shape : {expr.feats_train.shape}, test feats shape:{expr.feats_test.shape}')
+    print(f'train feats shape : {expr.feats_train.df.shape}, test feats shape:{expr.feats_test.df.shape}')
 
 
 
