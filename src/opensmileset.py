@@ -6,11 +6,11 @@ import pandas as pd
 
 class Opensmileset(Featureset):
 
-    def __init__(self, config, data_df):
-        Featureset.__init__(self, config, data_df) 
+    def __init__(self, name, config, data_df):
+        Featureset.__init__(self, name, config, data_df) 
 
     def extract(self):
-        storage = f'store/{self.name}.pkl'
+        storage = f'../store/{self.name}.pkl'
         if not os.path.isfile(storage):
             smile = opensmile.Smile(
             feature_set=opensmile.FeatureSet.GeMAPSv01b,
