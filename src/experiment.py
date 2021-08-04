@@ -1,4 +1,7 @@
+from opensmile.core.define import FeatureSet
 from dataset import Dataset
+from opensmileset import Opensmileset
+
 import pandas as pd
 
 class Experiment:
@@ -6,6 +9,8 @@ class Experiment:
     datasets = []
     df_train = None
     df_test = None 
+    feats_train = None
+    feats_test = None 
 
     def __init__(self, name):
         self.name = name
@@ -20,3 +25,9 @@ class Experiment:
             d.split_percent_speakers(50)
             self.df_train = self.df_train.append(d.df_train)
             self.df_test = self.df_test.append(d.df_test)
+    def extract_feats(self):
+        df_train, df_test = self.df_train, self.df_test
+        self.feats_train = Opensmileset(self.name+'_feats_train', self.config, df_train)
+        self.feats_train.extract()
+        self.feats_test = Opensmileset(self.name+'_feats_test', self.config, df_test)
+        self.feats_test.extract()

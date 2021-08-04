@@ -22,8 +22,15 @@ def main():
         print(d.config['data'][d.name])
         d.load()
         print(d.df.shape)
+
+    # split into train and test
     expr.fill_train_and_tests()
     print(f'train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}')
+
+    # extract features
+    expr.extract_feats()
+    print(f'train feats shape : {expr.feats_train.shape}, test feats shape:{expr.feats_test.shape}')
+
 
 
 if __name__ == "__main__":
