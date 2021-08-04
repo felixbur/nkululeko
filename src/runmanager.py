@@ -2,6 +2,10 @@
 
 from svmmodel import SVM_model
 from sklearn.metrics import recall_score
+from sklearn.metrics import ConfusionMatrixDisplay
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
+import ast
 
 class Runmanager:
     config = None
@@ -20,9 +24,15 @@ class Runmanager:
             for e in range(int(self.config['RUN_MGR']['epochs'])):
                 self.model.train()
                 results = self.model.predict()
-                uar = self.evaluate(self.df_test['emotion'], results)
+                uar = self.evaluate(self.df_test['emotion'], results)#, True)
                 print(f'run: {r} epoch: {e}: result: {uar}')
 
 
-    def evaluate(self, truth, pred):
+    def evaluate(self, truth, pred, plot=False):
+        if plot:
+            cm = confusion_matrix(truth, pred,  normalize = 'true')
+            labels = ast.literal_eval(self.config['DATA']['labels'])
+            disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels).plot(cmap='gray')
+            plt.savefig('filename.png')
+
         return recall_score(truth, pred, average='macro')

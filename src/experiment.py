@@ -1,8 +1,9 @@
 from opensmile.core.define import FeatureSet
 from dataset import Dataset
+from emodb import Emodb
 from opensmileset import Opensmileset
 from runmanager import Runmanager
-
+import ast
 import pandas as pd
 
 class Experiment:
@@ -14,14 +15,20 @@ class Experiment:
     feats_test = None 
     config = None
     runmgr = None 
+    labels = None # set of string values for the categories
+    values = None # set of numerical values encoding the classes 
 
     def __init__(self, name, config):
         self.name = name
         self.config = config
         self.datasets = []
 
-    def add_dataset(self, ds):
-        self.datasets.append(ds)
+    def load_datasets(self):
+        ds = ast.literal_eval(self.config['DATA']['databases'])
+        for d in ds:
+            if d == 'emodb':
+                data = Emodb(self.config)
+            self.datasets.append(data)
 
     def fill_train_and_tests(self):
         self.df_train, self.df_test = pd.DataFrame(), pd.DataFrame()
@@ -29,6 +36,7 @@ class Experiment:
             d.split_percent_speakers(50)
             self.df_train = self.df_train.append(d.df_train)
             self.df_test = self.df_test.append(d.df_test)
+        
 
     def extract_feats(self):
         df_train, df_test = self.df_train, self.df_test

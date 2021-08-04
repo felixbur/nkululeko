@@ -1,6 +1,7 @@
 # dataset.py
 import audformat
-import pandas
+import pandas as pd
+import ast
 
 class Dataset:
     name = ''
@@ -12,6 +13,8 @@ class Dataset:
     def __init__(self, name, config):
         self.name = name
         self.config = config
+        self.load()
+        self.prepare_labels()
 
 
 
@@ -26,3 +29,12 @@ class Dataset:
         test_spkrs = df.speaker.unique()[:test_num]
         self.df_train = df[df.speaker.isin(train_spkrs)]
         self.df_test = df[df.speaker.isin(test_spkrs)]
+
+    def prepare_labels(self):
+        mapping = ast.literal_eval(self.config['DATA'][f'{self.name}.mapping'])
+        target = self.config['DATA']['target']
+        labels = ast.literal_eval(self.config['DATA']['labels'])
+        df = self.df
+        df[target] = df[target].map(mapping)
+        self.df = df[df[target].isin(labels)]
+        print(f'for dataset {self.name} mapped {mapping}')

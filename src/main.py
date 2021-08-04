@@ -14,14 +14,15 @@ def main():
     expr = exp.Experiment('my_cool_experiment', config)
     print(expr.name)
 
-    # create a dataset
-    data = Emodb(config)
-    expr.add_dataset(data)
+
+    # load the data
+    expr.load_datasets()
+
     for d in expr.datasets:
         print(d.name)
         print(d.config['DATA'][d.name])
         d.load()
-        print(d.df.shape)
+        print(d.df['emotion'].unique())
 
     # split into train and test
     expr.fill_train_and_tests()
