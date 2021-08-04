@@ -21,14 +21,17 @@ class Experiment:
     def __init__(self, name, config):
         self.name = name
         self.config = config
-        self.datasets = []
 
     def load_datasets(self):
         ds = ast.literal_eval(self.config['DATA']['databases'])
         for d in ds:
             if d == 'emodb':
                 data = Emodb(self.config)
+            data.load()
+            data.prepare_labels()
+            print(f'check experiment: {data.df.emotion.unique()}')
             self.datasets.append(data)
+        print(f'check 2 {self.datasets[0].df.emotion.unique()}')
 
     def fill_train_and_tests(self):
         self.df_train, self.df_test = pd.DataFrame(), pd.DataFrame()

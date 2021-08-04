@@ -13,10 +13,6 @@ class Dataset:
     def __init__(self, name, config):
         self.name = name
         self.config = config
-        self.load()
-        self.prepare_labels()
-
-
 
     def load(self):
         pass

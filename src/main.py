@@ -20,7 +20,6 @@ def main():
 
     for d in expr.datasets:
         print(d.name)
-        print(d.config['DATA'][d.name])
         d.load()
         print(d.df['emotion'].unique())
 
