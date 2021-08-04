@@ -19,7 +19,7 @@ def main():
     expr.add_dataset(data)
     for d in expr.datasets:
         print(d.name)
-        print(d.config['data'][d.name])
+        print(d.config['DATA'][d.name])
         d.load()
         print(d.df.shape)
 
@@ -31,6 +31,11 @@ def main():
     expr.extract_feats()
     print(f'train feats shape : {expr.feats_train.df.shape}, test feats shape:{expr.feats_test.df.shape}')
 
+    # initialize a run manager
+    expr.init_runmanager()
+
+    # run the experiment
+    expr.run()
 
 
 if __name__ == "__main__":
