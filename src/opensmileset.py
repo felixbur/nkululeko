@@ -6,9 +6,6 @@ import pandas as pd
 
 class Opensmileset(Featureset):
 
-    def __init__(self, name, config, data_df):
-        Featureset.__init__(self, name, config, data_df) 
-
     def extract(self):
         storage = f'../store/{self.name}.pkl'
         if not os.path.isfile(storage):
