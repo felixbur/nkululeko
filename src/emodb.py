@@ -10,7 +10,7 @@ class Emodb(Dataset):
         Dataset.__init__(self, self.name, config) 
 
     def load(self):
-        root = self.config['data'][self.name]
+        root = self.config['DATA'][self.name]
         db = audformat.Database.load(root)
         db.map_files(lambda x: os.path.join(root, x))    
         df_emotion = db.tables['emotion'].df
