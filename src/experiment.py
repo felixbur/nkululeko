@@ -1,6 +1,7 @@
 from opensmile.core.define import FeatureSet
 from dataset import Dataset
 from opensmileset import Opensmileset
+from runmanager import Runmanager
 
 import pandas as pd
 
@@ -12,6 +13,7 @@ class Experiment:
     feats_train = None
     feats_test = None 
     config = None
+    runmgr = None 
 
     def __init__(self, name, config):
         self.name = name
@@ -34,3 +36,9 @@ class Experiment:
         self.feats_train.extract()
         self.feats_test = Opensmileset(f'{self.name}_feats_test', self.config, df_test)
         self.feats_test.extract()
+
+    def init_runmanager(self):
+        self.runmgr = Runmanager(self.config, self.df_train, self.df_test, self.feats_train, self.feats_test)
+
+    def run(self):
+        self.runmgr.do_runs()
