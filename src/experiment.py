@@ -11,9 +11,11 @@ class Experiment:
     df_test = None 
     feats_train = None
     feats_test = None 
+    config = None
 
-    def __init__(self, name):
+    def __init__(self, name, config):
         self.name = name
+        self.config = config
         self.datasets = []
 
     def add_dataset(self, ds):
@@ -25,9 +27,10 @@ class Experiment:
             d.split_percent_speakers(50)
             self.df_train = self.df_train.append(d.df_train)
             self.df_test = self.df_test.append(d.df_test)
+
     def extract_feats(self):
         df_train, df_test = self.df_train, self.df_test
-        self.feats_train = Opensmileset(self.name+'_feats_train', self.config, df_train)
+        self.feats_train = Opensmileset(f'{self.name}_feats_train', self.config, df_train)
         self.feats_train.extract()
-        self.feats_test = Opensmileset(self.name+'_feats_test', self.config, df_test)
+        self.feats_test = Opensmileset(f'{self.name}_feats_test', self.config, df_test)
         self.feats_test.extract()
