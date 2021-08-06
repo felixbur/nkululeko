@@ -3,37 +3,40 @@ from dataset import Dataset
 from emodb import Emodb
 from opensmileset import Opensmileset
 from runmanager import Runmanager
-import ast
+import ast # To convert strings to objects
 import pandas as pd
 
 class Experiment:
-    name = ''
-    datasets = []
-    df_train = None
-    df_test = None 
-    feats_train = None
-    feats_test = None 
-    config = None
-    runmgr = None 
+    """Main class specifying an experiment"""
+    
+    name = '' # A name for the experiment. Will be used to label result and temporary files.
+    datasets = [] # List to store the datasets that are loaded
+    df_train = None # The training dataframe
+    df_test = None # The evaluation dataframe
+    feats_train = None # The training features
+    feats_test = None # The test features
+    config = None # The configuration object
+    runmgr = None  # The manager object for the runs
     labels = None # set of string values for the categories
     values = None # set of numerical values encoding the classes 
 
     def __init__(self, name, config):
+        """Constructor: takes a name and the config object"""
         self.name = name
         self.config = config
-
+    
     def load_datasets(self):
+        """Load all databases specified in the configuration and map the labels"""
         ds = ast.literal_eval(self.config['DATA']['databases'])
         for d in ds:
             if d == 'emodb':
                 data = Emodb(self.config)
             data.load()
             data.prepare_labels()
-            print(f'check experiment: {data.df.emotion.unique()}')
             self.datasets.append(data)
-        print(f'check 2 {self.datasets[0].df.emotion.unique()}')
 
     def fill_train_and_tests(self):
+        """Set up train and development sets. The method should be specified in the config."""
         self.df_train, self.df_test = pd.DataFrame(), pd.DataFrame()
         for d in self.datasets:
             d.split_percent_speakers(50)
@@ -42,6 +45,7 @@ class Experiment:
         
 
     def extract_feats(self):
+        """Extract the features for train and dev sets. They will be stpred on disk and need to be removed manually."""
         df_train, df_test = self.df_train, self.df_test
         self.feats_train = Opensmileset(f'{self.name}_feats_train', self.config, df_train)
         self.feats_train.extract()
@@ -49,7 +53,9 @@ class Experiment:
         self.feats_test.extract()
 
     def init_runmanager(self):
+        """Initialize the manager object for the runs."""
         self.runmgr = Runmanager(self.config, self.df_train, self.df_test, self.feats_train, self.feats_test)
 
     def run(self):
+        """Start up the runs."""
         self.runmgr.do_runs()

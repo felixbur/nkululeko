@@ -5,11 +5,15 @@ import audformat
 import os
 
 class Emodb(Dataset):
-    name = 'emodb'
+    """Class to represent the Berlin EmoDB"""
+    name = 'emodb' # The name
+
     def __init__(self, config):
+        """Constructor setting the name"""
         Dataset.__init__(self, self.name, config) 
 
     def load(self):
+        """Load the dataframe with files, speakers and emotion labels"""
         root = self.config['DATA'][self.name]
         db = audformat.Database.load(root)
         db.map_files(lambda x: os.path.join(root, x))    

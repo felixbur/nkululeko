@@ -1,3 +1,7 @@
+# main.py
+# Demonstration code to use the ML-experiment framework
+
+
 import sys
 
 import experiment as exp
@@ -12,16 +16,10 @@ def main():
 
     # create a new experiment
     expr = exp.Experiment('my_cool_experiment', config)
-    print(expr.name)
-
+    print(f'running {expr.name}')
 
     # load the data
     expr.load_datasets()
-
-    for d in expr.datasets:
-        print(d.name)
-        d.load()
-        print(d.df['emotion'].unique())
 
     # split into train and test
     expr.fill_train_and_tests()
