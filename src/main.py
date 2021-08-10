@@ -2,6 +2,7 @@
 # Demonstration code to use the ML-experiment framework
 
 
+from os import lseek
 import sys
 
 import experiment as exp
@@ -15,7 +16,7 @@ def main():
     config.read('../exp_test.ini')
 
     # create a new experiment
-    expr = exp.Experiment('my_cool_experiment', config)
+    expr = exp.Experiment(config['EXP']['name'], config)
     print(f'running {expr.name}')
 
     # load the data
