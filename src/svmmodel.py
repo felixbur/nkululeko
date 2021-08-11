@@ -5,7 +5,10 @@ from model import Model
 
 class SVM_model(Model):
     """An SVM model"""
-    clf = svm.SVC(kernel='linear', C=.001) # set up the classifier
+    def __init__(self, config, df_train, df_test, feats_train, feats_test):
+        super().__init__(self, config, df_train, df_test, feats_train, feats_test)
+        c = self.config['SVM']['C']
+        self.clf = svm.SVC(kernel='linear', C=c) # set up the classifier
 
     def set_C(self, c):
         """Set the C parameter"""

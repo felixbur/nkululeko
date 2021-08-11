@@ -2,13 +2,9 @@
 
 from svmmodel import SVM_model
 from xgbmodel import XGB_model
-from sklearn.metrics import recall_score
-# from sklearn.metrics import ConfusionMatrixDisplay
-from sklearn.metrics import confusion_matrix
-import audplot
-import matplotlib.pyplot as plt
-import seaborn as sns
+from reporter import Reporter
 import ast
+from util import Util  
 
 class Runmanager:
     """Class to manage the runs of the experiment (e.g. when differs caused by random initialization)"""
@@ -22,6 +18,7 @@ class Runmanager:
         """Constructor setting up the dataframes"""
         self.config = config
         self.df_train, self.df_test, self.feats_train, self.feats_test = df_train, df_test, feats_train, feats_test
+        self.util = Util(config)
 
     def do_runs(self):
         """Start the runs"""
@@ -39,28 +36,13 @@ class Runmanager:
                 results = self.model.predict()
                 exp_name = self.config['EXP']['name']
                 plot_name = f'{exp_name}_{str(r)}_{str(e)}_cnf.png'
-                uar = self.evaluate(self.df_test['emotion'], results, plot_name)
-                print(f'run: {r} epoch: {e}: result: {uar:.3f}')
-
-
-    def evaluate(self, truth, pred, plot_name = ''):
-        # Report evaluation data
-        if plot_name:
-            fig_dir = self.config['EXP']['fig_dir']
-            sns.set()  # get prettier plots
-            fig = plt.figure()
-            cm = confusion_matrix(truth, pred,  normalize = 'true')
-            labels = ast.literal_eval(self.config['DATA']['labels'])
-            plt.figure(figsize=[2.8, 2.5])
-            plt.title('Confusion Matrix')
-            audplot.confusion_matrix(truth, pred)
-
-            # replace labels
-            locs, _ = plt.xticks()
-            plt.xticks(locs, labels)
-            plt.yticks(locs, labels)
-
-            plt.tight_layout()
-            plt.savefig(fig_dir+plot_name)
-
-        return recall_score(truth, pred, average='macro')
+                rpt = Reporter(self.config, self.df_test['emotion'], results)
+                if self.util.exp_is_classification:
+                    uar = rpt.uar()
+                    self.result = uar
+                else:
+                    pcc = rpt.pcc()
+                    self.result = pcc 
+                    
+                print(f'run: {r} epoch: {e}: result: {self.result:.3f}')
+            rpt.plot_confmatrix(plot_name)

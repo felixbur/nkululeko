@@ -3,12 +3,15 @@ from featureset import Featureset
 import opensmile
 import os
 import pandas as pd
+from util import Util 
 
 class Opensmileset(Featureset):
 
     def extract(self):
-        storage = f'../store/{self.name}.pkl'
+        store = self.util.get_path('store')
+        storage = f'{store}{self.name}.pkl'
         if not os.path.isfile(storage):
+            print('extracting openSmile features, this might take a while...')
             smile = opensmile.Smile(
             feature_set=opensmile.FeatureSet.GeMAPSv01b,
             feature_level=opensmile.FeatureLevel.Functionals,)

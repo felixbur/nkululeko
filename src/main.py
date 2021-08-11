@@ -10,10 +10,10 @@ import dataset as ds
 import configparser
 from emodb import Emodb
 
-def main():
+def main(config_file):
     # load one configuration per experiment
     config = configparser.ConfigParser()
-    config.read('../exp_test.ini')
+    config.read(config_file)
 
     # create a new experiment
     expr = exp.Experiment(config['EXP']['name'], config)
@@ -38,4 +38,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1])

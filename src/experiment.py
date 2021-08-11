@@ -31,6 +31,8 @@ class Experiment:
         for d in ds:
             if d == 'emodb':
                 data = Emodb(self.config)
+            else:
+                data = Dataset(self.config, d)
             data.load()
             data.prepare_labels()
             self.datasets.append(data)
@@ -39,7 +41,7 @@ class Experiment:
         """Set up train and development sets. The method should be specified in the config."""
         self.df_train, self.df_test = pd.DataFrame(), pd.DataFrame()
         for d in self.datasets:
-            d.split_percent_speakers(50)
+            d.split()
             self.df_train = self.df_train.append(d.df_train)
             self.df_test = self.df_test.append(d.df_test)
         
@@ -47,9 +49,10 @@ class Experiment:
     def extract_feats(self):
         """Extract the features for train and dev sets. They will be stpred on disk and need to be removed manually."""
         df_train, df_test = self.df_train, self.df_test
-        self.feats_train = Opensmileset(f'{self.name}_feats_train', self.config, df_train)
+        feats_name = "_".join(ast.literal_eval(self.config['DATA']['databases']))
+        self.feats_train = Opensmileset(f'{feats_name}_os_feats_train', self.config, df_train)
         self.feats_train.extract()
-        self.feats_test = Opensmileset(f'{self.name}_feats_test', self.config, df_test)
+        self.feats_test = Opensmileset(f'{feats_name}_os_feats_test', self.config, df_test)
         self.feats_test.extract()
 
     def init_runmanager(self):

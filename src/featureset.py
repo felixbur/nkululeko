@@ -1,5 +1,6 @@
 # featureset.py
 import pandas as pd
+from util import Util 
 
 class Featureset:
     name = '' # designation
@@ -12,6 +13,7 @@ class Featureset:
         self.name = name
         self.config = config
         self.data_df = data_df
+        self.util = Util(config)
 
     def extract(self):
         pass
