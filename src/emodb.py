@@ -10,7 +10,7 @@ class Emodb(Dataset):
 
     def __init__(self, config):
         """Constructor setting the name"""
-        Dataset.__init__(self, self.name, config) 
+        Dataset.__init__(self, config, self.name) 
 
     def load(self):
         """Load the dataframe with files, speakers and emotion labels"""

@@ -3,6 +3,7 @@ import audformat
 import pandas as pd
 import ast
 import os
+from sklearn.preprocessing import LabelEncoder
 
 class Dataset:
     """ Class to represent datasets"""
