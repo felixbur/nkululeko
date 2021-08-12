@@ -84,3 +84,6 @@ class Experiment:
     def run(self):
         """Start up the runs."""
         self.runmgr.do_runs()
+        # access the results per run
+        self.results = self.runmgr.results
+        return self.results[-1]
