@@ -16,8 +16,6 @@ def main(config_file):
     config.read(config_file)
 
     # create a new experiment
-    expr = exp.Experiment(config['EXP']['name'], config)
-    print(f'running {expr.name}')
     datasets = ['polish', 'emodb']
     dim = len(datasets)
     results = np.zeros(dim*dim).reshape([dim, dim])
@@ -30,11 +28,12 @@ def main(config_file):
                 train = datasets[i]
                 test = datasets[j]
                 print(f'running: {train} against {test} {i} {j}')
-
-                config['DATA']['databases'] = f'{train}, {test}'
-                config['DATA']['tests'] = f'[{test}]'
-                config['DATA']['trains'] = f'[{train}]'
-
+                config['DATA']['databases'] = f'[\'{train}\', \'{test}\']'
+                config['DATA']['tests'] = f'[\'{test}\']'
+                config['DATA']['trains'] = f'[\'{train}\']'
+                config['EXP']['name'] = f'{train}_vs_{test}'
+                expr = exp.Experiment(config['EXP']['name'], config)
+                print(f'running {expr.name}')
                 # load the data
                 expr.load_datasets()
 
@@ -50,7 +49,7 @@ def main(config_file):
                 expr.init_runmanager()
 
                 # run the experiment
-                expr.run()
+                result = expr.run()
 
 
 if __name__ == "__main__":
