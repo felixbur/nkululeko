@@ -44,5 +44,5 @@ class Runmanager:
                     pcc = rpt.pcc()
                     self.results.append(pcc) 
                     
-                print(f'run: {r} epoch: {e}: result: {self.result:.3f}')
+                print(f'run: {r} epoch: {e}: result: {self.results[-1]:.3f}')
             rpt.plot_confmatrix(plot_name)
