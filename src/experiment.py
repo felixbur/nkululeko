@@ -3,6 +3,7 @@ from dataset import Dataset
 from emodb import Emodb
 from opensmileset import Opensmileset
 from runmanager import Runmanager
+from util import Util
 import ast # To convert strings to objects
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
@@ -25,7 +26,8 @@ class Experiment:
         """Constructor: takes a name and the config object"""
         self.name = name
         self.config = config
-    
+        self.util = Util(config)
+
     def load_datasets(self):
         """Load all databases specified in the configuration and map the labels"""
         ds = ast.literal_eval(self.config['DATA']['databases'])
@@ -43,28 +45,32 @@ class Experiment:
         """Set up train and development sets. The method should be specified in the config."""
         self.df_train, self.df_test = pd.DataFrame(), pd.DataFrame()
         strategy = self.config['DATA']['strategy']
-        # train vs. test combined from all datasets
-        if strategy == 'train_vs_test':
-            for d in self.datasets.values():
-                d.split()
-                self.df_train = self.df_train.append(d.df_train)
-                self.df_test = self.df_test.append(d.df_test)
         # some datasets against others in their entirety
-        elif strategy == 'cross_data':
+        if strategy == 'cross_data':
             train_dbs = ast.literal_eval(self.config['DATA']['trains'])
             test_dbs = ast.literal_eval(self.config['DATA']['tests'])
             for d in train_dbs:
                 self.df_train = self.df_train.append(self.datasets[d].df)
             for d in test_dbs:
                 self.df_test = self.df_test.append(self.datasets[d].df)
+        elif strategy == 'train_test':
+            # default: train vs. test combined from all datasets
+            for d in self.datasets.values():
+                d.split()
+                self.df_train = self.df_train.append(d.df_train)
+                self.df_test = self.df_test.append(d.df_test)
         else:
             print(f'unkown strategy: {strategy}')
             quit()
-        # encode the labels as numbers
-        target = self.config['DATA']['target']
-        self.label_encoder = LabelEncoder()
-        self.df_train[target] = self.label_encoder.fit_transform(self.df_train[target])
-        self.df_test[target] = self.label_encoder.transform(self.df_test[target])
+        # encode the labels
+        if self.util.exp_is_classification():
+            # encode the labels as numbers
+            target = self.config['DATA']['target']
+            self.label_encoder = LabelEncoder()
+            self.df_train[target] = self.label_encoder.fit_transform(self.df_train[target])
+            self.df_test[target] = self.label_encoder.transform(self.df_test[target])
+        else:
+            pass
 
     def extract_feats(self):
         """Extract the features for train and dev sets. They will be stpred on disk and need to be removed manually."""

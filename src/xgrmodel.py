@@ -3,13 +3,14 @@
 from xgboost.sklearn import XGBRegressor
 from model import Model
 
-class XGB_model(Model):
+class XGR_model(Model):
     """An XGBoost model"""
     clf = XGBRegressor() # set up the regressor
 
     def train(self):
         """Train the model"""
-        self.clf.fit(self.feats_train.df, self.df_train['emotion'])
+        target = self.config['DATA']['target']
+        self.clf.fit(self.feats_train.df, self.df_train[target])
 
     def predict(self):
         """Predict the whole eval feature set"""

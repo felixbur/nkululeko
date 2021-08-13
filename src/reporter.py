@@ -32,6 +32,7 @@ class Reporter:
         plt.xticks(locs, labels)
         plt.yticks(locs, labels)
         plt.tight_layout()
+        print(f'plotting conf matrix to {fig_dir+plot_name}')
         plt.savefig(fig_dir+plot_name)
 
 

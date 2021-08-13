@@ -26,30 +26,39 @@ class Dataset:
         db = audformat.Database.load(root)
         # map the audio file paths 
         db.map_files(lambda x: os.path.join(root, x))
-        # the dataframe with the targets, e.g. emotion or age    
-        df_target = db.tables[self.target].df
         # the dataframe with all other information 
         df = db.tables['files'].df
-        # copy the targets to the main dataframe
-        df[self.target] = df_target[self.target]
+        try :
+           # There might be a seperate table with the targets, e.g. emotion or age    
+            df_target = db.tables[self.target].df
+            df[self.target] = df_target[self.target]
+        except KeyError:
+            pass
         self.df = df
         self.db = db
 
     def split(self):
         """Split the datbase into train and devel set"""
-        test_table = self.config['DATA'][self.name+'.tests']
-        train_table = self.config['DATA'][self.name+'.trains']
-        testdf = self.db.tables[test_table].df
-        traindf = self.db.tables[train_table].df
+        try :
+            testdf = self.db.tables[self.target+'.test'].df
+            traindf = self.db.tables[self.target+'.train'].df
+        except KeyError:
+            test_table = self.config['DATA'][self.name+'.test_table']
+            train_table = self.config['DATA'][self.name+'.train_table']
+            testdf = self.db.tables[test_table].df
+            traindf = self.db.tables[train_table].df
         self.df_test = self.df.loc[self.df.index.intersection(testdf.index)]
         self.df_train = self.df.loc[self.df.index.intersection(traindf.index)]
 
     def prepare_labels(self):
         """Rename the labels and remove the ones that are not needed."""
-        mapping = ast.literal_eval(self.config['DATA'][f'{self.name}.mapping'])
-        target = self.config['DATA']['target']
-        labels = ast.literal_eval(self.config['DATA']['labels'])
-        df = self.df
-        df[target] = df[target].map(mapping)
-        self.df = df[df[target].isin(labels)]
-        print(f'for dataset {self.name} mapped {mapping}')
+        try :
+            mapping = ast.literal_eval(self.config['DATA'][f'{self.name}.mapping'])
+            target = self.config['DATA']['target']
+            labels = ast.literal_eval(self.config['DATA']['labels'])
+            df = self.df
+            df[target] = df[target].map(mapping)
+            self.df = df[df[target].isin(labels)]
+            print(f'for dataset {self.name} mapped {mapping}')
+        except KeyError:
+            pass

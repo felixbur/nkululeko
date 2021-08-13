@@ -2,6 +2,7 @@
 
 from svmmodel import SVM_model
 from xgbmodel import XGB_model
+from xgrmodel import XGR_model
 from reporter import Reporter
 import ast
 from util import Util  
@@ -19,6 +20,8 @@ class Runmanager:
         self.df_train, self.df_test, self.feats_train, self.feats_test = df_train, df_test, feats_train, feats_test
         self.util = Util(config)
         self.results = []
+        self.target =  self.config['DATA']['target']
+
 
     def do_runs(self):
         """Start the runs"""
@@ -30,14 +33,16 @@ class Runmanager:
                 self.model = SVM_model(self.config, self.df_train, self.df_test, self.feats_train, self.feats_test)
             elif model_type=='xgb':
                 self.model = XGB_model(self.config, self.df_train, self.df_test, self.feats_train, self.feats_test)
+            elif model_type=='xgr':
+                self.model = XGR_model(self.config, self.df_train, self.df_test, self.feats_train, self.feats_test)
             # for all epochs
             for e in range(int(self.config['RUN_MGR']['epochs'])):
                 self.model.train()
                 results = self.model.predict()
                 exp_name = self.config['EXP']['name']
                 plot_name = f'{exp_name}_{str(r)}_{str(e)}_cnf.png'
-                rpt = Reporter(self.config, self.df_test['emotion'], results)
-                if self.util.exp_is_classification:
+                rpt = Reporter(self.config, self.df_test[self.target], results)
+                if self.util.exp_is_classification():
                     uar = rpt.uar()
                     self.results.append(uar)
                 else: # regression

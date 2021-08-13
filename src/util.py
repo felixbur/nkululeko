@@ -14,7 +14,7 @@ class Util:
         audeer.mkdir(dir_name)
         return dir_name
 
-    def exp_is_classification(self, config):
+    def exp_is_classification(self):
         if self.config['EXP']['type']=='classification':
             return True
         return False
