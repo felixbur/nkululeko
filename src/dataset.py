@@ -37,8 +37,10 @@ class Dataset:
 
     def split(self):
         """Split the datbase into train and devel set"""
-        testdf = self.db.tables[f'files.dev'].df
-        traindf = self.db.tables[f'files.train'].df
+        test_table = self.config['DATA'][self.name+'.tests']
+        train_table = self.config['DATA'][self.name+'.trains']
+        testdf = self.db.tables[test_table].df
+        traindf = self.db.tables[train_table].df
         self.df_test = self.df.loc[self.df.index.intersection(testdf.index)]
         self.df_train = self.df.loc[self.df.index.intersection(traindf.index)]
 

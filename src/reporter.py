@@ -5,6 +5,7 @@ from scipy.stats import pearsonr
 import audplot
 from util import Util 
 import ast
+import numpy as np
 
 class Reporter:
 
@@ -13,6 +14,11 @@ class Reporter:
         self.util = Util(config)
         self.truths = truths
         self.preds = preds
+
+    def continous_to_categorical(self):
+        bins = ast.literal_eval(self.config['DATA']['bins'])
+        self.truths = np.digitize(self.truths, bins)-1
+        self.preds = np.digitize(self.preds, bins)-1
 
     def plot_confmatrix(self, plot_name): 
         fig_dir = self.util.get_path('fig_dir')

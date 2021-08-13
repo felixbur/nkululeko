@@ -41,6 +41,7 @@ class Runmanager:
                     uar = rpt.uar()
                     self.results.append(uar)
                 else: # regression
+                    rpt.continous_to_categorical()
                     pcc = rpt.pcc()
                     self.results.append(pcc) 
                     
