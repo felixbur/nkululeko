@@ -19,3 +19,6 @@ class Opensmileset(Featureset):
             self.df.to_pickle(storage)
         else:
             self.df = pd.read_pickle(storage)
+        # drop the multiindex
+        self.df.index = self.df.index.droplevel(1)
+        self.df.index = self.df.index.droplevel(1)

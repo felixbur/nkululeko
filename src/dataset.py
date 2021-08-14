@@ -34,6 +34,14 @@ class Dataset:
             df[self.target] = df_target[self.target]
         except KeyError:
             pass
+        print(f'c1: {df.shape[0]}')
+        try: 
+            # for experiments that do separate sex models
+            s = self.config['DATA']['sex']
+            df = df[df.gender==s]
+            print(f'c2: {df.shape[0]}')
+        except KeyError:
+            pass 
         self.df = df
         self.db = db
 

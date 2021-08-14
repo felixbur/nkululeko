@@ -1,8 +1,6 @@
 # main.py
 # Demonstration code to use the ML-experiment framework
 
-
-from os import lseek
 import sys
 
 import experiment as exp
@@ -11,31 +9,38 @@ import configparser
 from emodb import Emodb
 
 def main(config_file):
-    # load one configuration per experiment
-    config = configparser.ConfigParser()
-    config.read(config_file)
+    # for two sexes
+    sexes = ['female', 'male']
 
-    # create a new experiment
-    expr = exp.Experiment(config['EXP']['name'], config)
-    print(f'running {expr.name}')
+    for s in sexes:
+        # load one configuration per experiment
+        config = configparser.ConfigParser()
+        config.read(config_file)
+        # set the sex
+        config['DATA']['sex'] = s 
+        config['EXP']['name'] = config['EXP']['name']+'_'+s
 
-    # load the data
-    expr.load_datasets()
+        # create a new experiment
+        expr = exp.Experiment(config)
+        print(f'running {expr.name}')
 
-    # split into train and test
-    expr.fill_train_and_tests()
-    print(f'train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}')
+        # load the data
+        expr.load_datasets()
 
-    # extract features
-    expr.extract_feats()
-    print(f'train feats shape : {expr.feats_train.df.shape}, test feats shape:{expr.feats_test.df.shape}')
+        # split into train and test
+        expr.fill_train_and_tests()
+        print(f'train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}')
 
-    # initialize a run manager
-    expr.init_runmanager()
+        # extract features
+        expr.extract_feats()
+        print(f'train feats shape : {expr.feats_train.df.shape}, test feats shape:{expr.feats_test.df.shape}')
 
-    # run the experiment
-    expr.run()
+        # initialize a run manager
+        expr.init_runmanager()
+
+        # run the experiment
+        expr.run()
 
 
 if __name__ == "__main__":
-    main('/home/fburkhardt/ResearchProjects/ml_experiment/exp_bundestag.ini')# sys.argv[1])
+    main('/home/felix/data/research/nkululeko/exp_bundestag.ini')# sys.argv[1])

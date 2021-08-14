@@ -22,9 +22,9 @@ class Experiment:
     labels = None # set of string values for the categories
     values = None # set of numerical values encoding the classes 
 
-    def __init__(self, name, config):
+    def __init__(self, config):
         """Constructor: takes a name and the config object"""
-        self.name = name
+        self.name = config['EXP']['name']
         self.config = config
         self.util = Util(config)
 
@@ -60,8 +60,9 @@ class Experiment:
                 self.df_train = self.df_train.append(d.df_train)
                 self.df_test = self.df_test.append(d.df_test)
         else:
-            print(f'unkown strategy: {strategy}')
+            print(f'unknown strategy: {strategy}')
             quit()
+
         # encode the labels
         if self.util.exp_is_classification():
             # encode the labels as numbers
@@ -73,15 +74,17 @@ class Experiment:
             pass
 
     def extract_feats(self):
-        """Extract the features for train and dev sets. They will be stpred on disk and need to be removed manually."""
+        """Extract the features for train and dev sets. They will be stored on disk and need to be removed manually."""
         df_train, df_test = self.df_train, self.df_test
         feats_name = "_".join(ast.literal_eval(self.config['DATA']['databases']))
         strategy = self.config['DATA']['strategy']
         feats_name = f'{feats_name}_{strategy}_os_feats'
         self.feats_train = Opensmileset(f'{feats_name}_train', self.config, df_train)
         self.feats_train.extract()
+        self.feats_train.filter()
         self.feats_test = Opensmileset(f'{feats_name}_test', self.config, df_test)
         self.feats_test.extract()
+        self.feats_test.filter()
 
     def init_runmanager(self):
         """Initialize the manager object for the runs."""
