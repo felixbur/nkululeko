@@ -18,6 +18,7 @@ def main(config_file):
         config.read(config_file)
         # set the sex
         config['DATA']['sex'] = s 
+        # add the sex to the experiment name
         config['EXP']['name'] = config['EXP']['name']+'_'+s
 
         # create a new experiment
@@ -43,4 +44,4 @@ def main(config_file):
 
 
 if __name__ == "__main__":
-    main('/home/felix/data/research/nkululeko/exp_bundestag.ini')# sys.argv[1])
+    main('/home/fburkhardt/ResearchProjects/nkululeko/exp_bundestag.ini')# sys.argv[1])
