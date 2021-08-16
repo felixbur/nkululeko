@@ -7,6 +7,7 @@ from util import Util
 import ast # To convert strings to objects
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
+from  spectraloader import Spectraloader
 
 class Experiment:
     """Main class specifying an experiment"""
@@ -79,8 +80,8 @@ class Experiment:
         feats_name = "_".join(ast.literal_eval(self.config['DATA']['databases']))
         strategy = self.config['DATA']['strategy']
         feats_type = self.config['FEATS']['type']
+        feats_name = f'{feats_name}_{strategy}_{feats_type}'   
         if feats_type=='os':
-            feats_name = f'{feats_name}_{strategy}_os_feats'
             self.feats_train = Opensmileset(f'{feats_name}_train', self.config, df_train)
             self.feats_train.extract()
             self.feats_train.filter()
@@ -88,7 +89,13 @@ class Experiment:
             self.feats_test.extract()
             self.feats_test.filter()
         elif feats_type=='spectra':
-            pass
+            # compute the spectrograms
+            test_specs = Spectraloader(f'{feats_name}_test', self.config, df_train)
+            test_specs.make_feats()
+            self.feats_test = test_specs.get_loader()
+            train_specs = Spectraloader(f'{feats_name}_train', self.config, df_train)
+            train_specs.make_feats()
+            self.feats_train = train_specs.get_loader()
         else:
             self.util.error(f'unknown feats_type: {feats_type}')
 

@@ -23,3 +23,6 @@ class Util:
     def error(self, message):
         print(f'ERROR: {message}')
         sys.exit()
+
+    def debug(self, message):
+        print(f'DEBUG: {message}')

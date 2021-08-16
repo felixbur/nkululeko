@@ -3,6 +3,7 @@
 from svmmodel import SVM_model
 from xgbmodel import XGB_model
 from xgrmodel import XGR_model
+from cnnmodel import CNN_model
 from reporter import Reporter
 import ast
 from util import Util  
@@ -27,6 +28,7 @@ class Runmanager:
         """Start the runs"""
         # for all runs
         for r in range(int(self.config['RUN_MGR']['runs'])):
+            self.util.debug(f'run {r}')
             # intialize a new model
             model_type = self.config['MODEL']['type']
             if model_type=='svm':
@@ -35,8 +37,11 @@ class Runmanager:
                 self.model = XGB_model(self.config, self.df_train, self.df_test, self.feats_train, self.feats_test)
             elif model_type=='xgr':
                 self.model = XGR_model(self.config, self.df_train, self.df_test, self.feats_train, self.feats_test)
+            elif model_type=='cnn':
+                self.model = CNN_model(self.config, self.df_train, self.df_test, self.feats_train, self.feats_test)
             # for all epochs
             for e in range(int(self.config['RUN_MGR']['epochs'])):
+                self.util.debug(f'epoch {e}')
                 self.model.train()
                 results = self.model.predict()
                 exp_name = self.config['EXP']['name']

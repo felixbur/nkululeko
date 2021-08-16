@@ -1,4 +1,5 @@
 # model.py
+from util import Util 
 
 class Model:
     """Generic model class"""
@@ -10,3 +11,4 @@ class Model:
         """Constructor taking the configuration and all dataframes"""
         self.config = config
         self.df_train, self.df_test, self.feats_train, self.feats_test = df_train, df_test, feats_train, feats_test
+        self.util = Util(config)
