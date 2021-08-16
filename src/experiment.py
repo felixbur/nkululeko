@@ -78,13 +78,19 @@ class Experiment:
         df_train, df_test = self.df_train, self.df_test
         feats_name = "_".join(ast.literal_eval(self.config['DATA']['databases']))
         strategy = self.config['DATA']['strategy']
-        feats_name = f'{feats_name}_{strategy}_os_feats'
-        self.feats_train = Opensmileset(f'{feats_name}_train', self.config, df_train)
-        self.feats_train.extract()
-        self.feats_train.filter()
-        self.feats_test = Opensmileset(f'{feats_name}_test', self.config, df_test)
-        self.feats_test.extract()
-        self.feats_test.filter()
+        feats_type = self.config['FEATS']['type']
+        if feats_type=='os':
+            feats_name = f'{feats_name}_{strategy}_os_feats'
+            self.feats_train = Opensmileset(f'{feats_name}_train', self.config, df_train)
+            self.feats_train.extract()
+            self.feats_train.filter()
+            self.feats_test = Opensmileset(f'{feats_name}_test', self.config, df_test)
+            self.feats_test.extract()
+            self.feats_test.filter()
+        elif feats_type=='spectra':
+            pass
+        else:
+            self.util.error(f'unknown feats_type: {feats_type}')
 
     def init_runmanager(self):
         """Initialize the manager object for the runs."""

@@ -1,6 +1,7 @@
 # util.py
 import audeer
 import ast 
+import sys
 
 class Util:
     def __init__(self, config):
@@ -18,3 +19,7 @@ class Util:
         if self.config['EXP']['type']=='classification':
             return True
         return False
+
+    def error(self, message):
+        print(f'ERROR: {message}')
+        sys.exit()
