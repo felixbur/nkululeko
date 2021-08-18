@@ -15,7 +15,7 @@ class Reporter:
         self.truths = truths
         self.preds = preds
 
-    def continous_to_categorical(self):
+    def continuous_to_categorical(self):
         bins = ast.literal_eval(self.config['DATA']['bins'])
         self.truths = np.digitize(self.truths, bins)-1
         self.preds = np.digitize(self.preds, bins)-1
@@ -34,7 +34,7 @@ class Reporter:
         plt.tight_layout()
         print(f'plotting conf matrix to {fig_dir+plot_name}')
         plt.savefig(fig_dir+plot_name)
-
+        plt.close()
 
     def uar(self):
         return recall_score(self.truths, self.preds, average='macro')

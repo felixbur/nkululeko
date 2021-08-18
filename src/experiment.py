@@ -2,12 +2,14 @@ from opensmile.core.define import FeatureSet
 from dataset import Dataset
 from emodb import Emodb
 from opensmileset import Opensmileset
+from mld_fset import MLD_set
 from runmanager import Runmanager
 from util import Util
 import ast # To convert strings to objects
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
-from  spectraloader import Spectraloader
+from spectraloader import Spectraloader
+from scaler import Scaler
 
 class Experiment:
     """Main class specifying an experiment"""
@@ -88,6 +90,16 @@ class Experiment:
             self.feats_test = Opensmileset(f'{feats_name}_test', self.config, df_test)
             self.feats_test.extract()
             self.feats_test.filter()
+        elif feats_type=='mld':
+            self.feats_train = MLD_set(f'{feats_name}_train', self.config, df_train)
+            self.feats_train.extract()
+            self.feats_train.filter()
+            self.feats_test = MLD_set(f'{feats_name}_test', self.config, df_test)
+            self.feats_test.extract()
+            self.feats_test.filter()
+            # remove samples that were not extracted by MLD
+            self.df_test = self.df_test.loc[self.df_test.index.intersection(self.feats_test.df.index)]
+            self.df_train = self.df_train.loc[self.df_train.index.intersection(self.feats_train.df.index)]
         elif feats_type=='spectra':
             # compute the spectrograms
             test_specs = Spectraloader(f'{feats_name}_test', self.config, df_train)
@@ -98,6 +110,15 @@ class Experiment:
             self.feats_train = train_specs.get_loader()
         else:
             self.util.error(f'unknown feats_type: {feats_type}')
+        self.scale()
+
+    def scale(self):
+        try:
+            dummy = self.config['FEATS']['scale'] 
+            self.scaler = Scaler(self.config, self.df_train, self.df_test, self.feats_train, self.feats_test)
+            self.feats_train.df, self.feats_test.df = self.scaler.scale()
+        except KeyError:
+            pass
 
     def init_runmanager(self):
         """Initialize the manager object for the runs."""

@@ -10,8 +10,8 @@ class XGB_model(Model):
     def train(self):
         """Train the model"""
         target = self.config['DATA']['target']
-        self.clf.fit(self.feats_train.df, self.df_train[target])
+        self.clf.fit(self.feats_train.df.to_numpy(), self.df_train[target])
 
     def predict(self):
         """Predict the whole eval feature set"""
-        return self.clf.predict(self.feats_test.df)
+        return self.clf.predict(self.feats_test.df.to_numpy())

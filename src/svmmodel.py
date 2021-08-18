@@ -1,5 +1,7 @@
 # svmmodel.py
 
+import numpy as np
+import pandas as pd
 from sklearn import svm
 from model import Model
 
@@ -17,8 +19,11 @@ class SVM_model(Model):
     def train(self):
         """Train the model"""
         target = self.config['DATA']['target']
-        self.clf.fit(self.feats_train.df, self.df_train[target])
+        if self.feats_train.df.isna().to_numpy().any():
+            self.util.error('NAN')
+        feats = self.feats_train.df.to_numpy()
+        self.clf.fit(feats, self.df_train[target])
 
     def predict(self):
         """Predict the whole eval feature set"""
-        return self.clf.predict(self.feats_test.df)
+        return self.clf.predict(self.feats_test.df.to_numpy())

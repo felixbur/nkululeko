@@ -16,7 +16,7 @@ def main(config_file):
     config.read(config_file)
 
     # create a new experiment
-    expr = exp.Experiment(config['EXP']['name'], config)
+    expr = exp.Experiment(config)
     print(f'running {expr.name}')
 
     # load the data

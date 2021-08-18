@@ -44,17 +44,39 @@ class Dataset:
         self.db = db
 
     def split(self):
-        """Split the datbase into train and devel set"""
+        """Split the datbase into train and development set"""
         try :
             testdf = self.db.tables[self.target+'.test'].df
             traindf = self.db.tables[self.target+'.train'].df
+            # use only the train and test samples that were not perhaps filtered out by an earlier processing step
+            self.df_test = self.df.loc[self.df.index.intersection(testdf.index)]
+            self.df_train = self.df.loc[self.df.index.intersection(traindf.index)]
         except KeyError:
-            test_table = self.config['DATA'][self.name+'.test_table']
-            train_table = self.config['DATA'][self.name+'.train_table']
-            testdf = self.db.tables[test_table].df
-            traindf = self.db.tables[train_table].df
-        self.df_test = self.df.loc[self.df.index.intersection(testdf.index)]
-        self.df_train = self.df.loc[self.df.index.intersection(traindf.index)]
+            try :
+                test_table = self.config['DATA'][self.name+'.test_table']
+                train_table = self.config['DATA'][self.name+'.train_table']
+                testdf = self.db.tables[test_table].df
+                traindf = self.db.tables[train_table].df
+                # use only the train and test samples that were not perhaps filtered out by an earlier processing step
+                self.df_test = self.df.loc[self.df.index.intersection(testdf.index)]
+                self.df_train = self.df.loc[self.df.index.intersection(traindf.index)]
+            except KeyError:
+                self.split_speakers()
+
+    def split_speakers(self):
+        """One way to split train and eval sets: Specify percentage of evaluation speakers"""
+        try:
+            test_percent = int(self.config['DATA'][self.name+'.testsplit'])
+        except KeyError:
+            # if no test split is stated, set to 50%
+            test_percent = 50
+        df = self.df
+        s_num = df.speaker.nunique()
+        test_num = int(s_num * (test_percent/100))
+        train_spkrs = df.speaker.unique()[test_num:]
+        test_spkrs = df.speaker.unique()[:test_num]
+        self.df_train = df[df.speaker.isin(train_spkrs)]
+        self.df_test = df[df.speaker.isin(test_spkrs)]
 
     def prepare_labels(self):
         """Rename the labels and remove the ones that are not needed."""
