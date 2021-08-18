@@ -29,7 +29,7 @@ class Dataset:
         # the dataframe with all other information 
         df = db.tables['files'].df
         try :
-           # There might be a seperate table with the targets, e.g. emotion or age    
+           # There might be a separate table with the targets, e.g. emotion or age    
             df_target = db.tables[self.target].df
             df[self.target] = df_target[self.target]
         except KeyError:
