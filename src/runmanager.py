@@ -4,6 +4,7 @@ from model_svm import SVM_model
 from model_xgb import XGB_model
 from model_xgr import XGR_model
 from model_cnn import CNN_model
+from model_mlp import MLP_model
 from reporter import Reporter
 import ast
 from util import Util  
@@ -20,6 +21,8 @@ class Runmanager:
         self.df_train, self.df_test, self.feats_train, self.feats_test = df_train, df_test, feats_train, feats_test
         self.util = Util()
         self.results = []
+        self.train_results = []
+        self.losses = []
         self.target =  glob_conf.config['DATA']['target']
 
 
@@ -28,6 +31,8 @@ class Runmanager:
         # for all runs
         for r in range(int(glob_conf.config['RUN_MGR']['runs'])):
             self.util.debug(f'run {r}')
+            # initialze results
+            self.losses, self.results, self.train_results = [], [], []       
             # intialize a new model
             model_type = glob_conf.config['MODEL']['type']
             if model_type=='svm':
@@ -38,14 +43,20 @@ class Runmanager:
                 self.model = XGR_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
             elif model_type=='cnn':
                 self.model = CNN_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
+            elif model_type=='mlp':
+                self.model = MLP_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
+            else:
+                Util.error('unknown model type: '+model_type)
             # for all epochs
             for e in range(int(glob_conf.config['RUN_MGR']['epochs'])):
                 self.util.debug(f'epoch {e}')
-                self.model.train()
-                results = self.model.predict()
+                loss = self.model.train()
+                self.losses.append(loss)
+                preds, train_result = self.model.predict()
+                self.train_results.append(train_result)
                 exp_name = glob_conf.config['EXP']['name']
                 plot_name = f'{exp_name}_{str(r)}_{str(e)}_cnf.png'
-                rpt = Reporter(self.df_test[self.target], results)
+                rpt = Reporter(self.df_test[self.target], preds)
                 if self.util.exp_is_classification():
                     uar = rpt.uar()
                     self.results.append(uar)

@@ -130,4 +130,6 @@ class Experiment:
         self.runmgr.do_runs()
         # access the results per run
         self.results = self.runmgr.results
-        return self.results[-1]
+        self.train_results = self.runmgr.train_results
+        self.losses = self.runmgr.losses
+        return self.results, self.train_results, self.losses

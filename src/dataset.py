@@ -48,11 +48,14 @@ class Dataset:
 
     def split(self):
         """Split the datbase into train and development set"""
+        store = self.util.get_path('store')
+        storage_test = f'{store}{self.name}_testdf.pkl'
+        storage_train = f'{store}{self.name}_traindf.pkl'
         try:
             split_strategy = glob_conf.config['DATA'][self.name+'.split_strategy']
         except KeyError:
             split_strategy = 'database'
-        # 'database' (default), 'speaker_split', 'specified'
+        # 'database' (default), 'speaker_split', 'specified', 'reuse'
         if split_strategy == 'database':
             #  use the splits from the database
             testdf = self.db.tables[self.target+'.test'].df
@@ -70,6 +73,13 @@ class Dataset:
             self.df_train = self.df.loc[self.df.index.intersection(traindf.index)]
         elif split_strategy == 'speaker_split':
             self.split_speakers()
+        elif split_strategy == 'reuse':
+            self.df_test = pd.read_pickle(storage_test)
+            self.df_train = pd.read_pickle(storage_train)
+        # remember the splits for future use
+        self.df_test.to_pickle(storage_test)
+        self.df_train.to_pickle(storage_train)
+        
 
     def split_speakers(self):
         """One way to split train and eval sets: Specify percentage of evaluation speakers"""

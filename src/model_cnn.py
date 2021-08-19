@@ -14,7 +14,7 @@ class CNN_model(Model):
         """Constructor taking the configuration and all dataframes"""
         Model.__init__(self, df_train, df_test, feats_train, feats_test)
         self.util.debug(f'initializing model')
-        self.device = config['MODEL']['device']
+        self.device = glob_conf.config['MODEL']['device']
         store = self.util.get_path('store')
         state = torch.load(store+'gender_state.pth.tar')
         state.pop('out.gender.weight')

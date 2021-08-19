@@ -4,8 +4,6 @@ import glob_conf
 
 class Model:
     """Generic model class"""
-    name = ''  # The model designation
-    df_train, df_test, feats_train, feats_test = None, None, None, None # The data to train and evaluate the model
 
     def __init__(self, df_train, df_test, feats_train, feats_test):
         """Constructor taking the configuration and all dataframes"""

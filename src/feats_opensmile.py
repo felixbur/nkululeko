@@ -19,7 +19,8 @@ class Opensmileset(Featureset):
             print('extracting openSmile features, this might take a while...')
             smile = opensmile.Smile(
             feature_set=opensmile.FeatureSet.GeMAPSv01b,
-            feature_level=opensmile.FeatureLevel.Functionals,)
+            feature_level=opensmile.FeatureLevel.Functionals,
+            num_workers=5,)
             self.df = smile.process_files(self.data_df.index)
             self.df.to_pickle(storage)
             try:
