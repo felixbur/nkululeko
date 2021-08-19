@@ -19,6 +19,4 @@ class Featureset:
 
     def filter(self):
         # use only the features that are indexed in the target dataframes
-        print(self.df.index[0])
-        print(self.data_df.index[0])
         self.df = self.df[self.df.index.isin(self.data_df.index)]
