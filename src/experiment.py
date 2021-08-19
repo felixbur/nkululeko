@@ -102,7 +102,7 @@ class Experiment:
             self.df_train = self.df_train.loc[self.df_train.index.intersection(self.feats_train.df.index)]
         elif feats_type=='spectra':
             # compute the spectrograms
-            test_specs = Spectraloader(f'{feats_name}_test', self.config, df_train)
+            test_specs = Spectraloader(f'{feats_name}_test', self.config, df_test)
             test_specs.make_feats()
             self.feats_test = test_specs.get_loader()
             train_specs = Spectraloader(f'{feats_name}_train', self.config, df_train)
