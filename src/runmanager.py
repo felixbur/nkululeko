@@ -51,9 +51,9 @@ class Runmanager:
                     uar = rpt.uar()
                     self.results.append(uar)
                 else: # regression
-                    rpt.continuous_to_categorical()
                     pcc = rpt.pcc()
                     self.results.append(pcc) 
+                    rpt.continuous_to_categorical()
                     
                 print(f'run: {r} epoch: {e}: result: {self.results[-1]:.3f}')
             # see if there is a special plotname
