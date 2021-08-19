@@ -4,6 +4,7 @@ import pandas as pd
 import ast
 import os
 from sklearn.preprocessing import LabelEncoder
+from random import sample
 
 class Dataset:
     """ Class to represent datasets"""
@@ -72,11 +73,10 @@ class Dataset:
             test_percent = 50
         df = self.df
         s_num = df.speaker.nunique()
-        test_num = int(s_num * (test_percent/100))
-        train_spkrs = df.speaker.unique()[test_num:]
-        test_spkrs = df.speaker.unique()[:test_num]
-        self.df_train = df[df.speaker.isin(train_spkrs)]
+        test_num = int(s_num * (test_percent/100))        
+        test_spkrs =  sample(list(df.speaker.unique()), test_num)
         self.df_test = df[df.speaker.isin(test_spkrs)]
+        self.df_train = df[~df.index.isin(self.df_test.index)]
 
     def prepare_labels(self):
         """Rename the labels and remove the ones that are not needed."""
