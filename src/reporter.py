@@ -22,11 +22,11 @@ class Reporter:
         self.truths = np.digitize(self.truths, bins)-1
         self.preds = np.digitize(self.preds, bins)-1
 
-    def plot_confmatrix_mew(self, plot_name): 
+    def plot_confmatrix(self, plot_name): 
         fig_dir = self.util.get_path('fig_dir')
         labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
         plt.figure()  # figsize=[5, 5]
-        cm = confusion_matrix(self.truths, self.preds,  normalize = 'true')
+        cm = confusion_matrix(self.truths, self.preds,  normalize = None) #normalize must be one of {'true', 'pred', 'all', None}
         disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels).plot(cmap='Blues')
         print(f'plotting conf matrix to {fig_dir+plot_name}')
         plt.title('Confusion Matrix')
@@ -34,7 +34,7 @@ class Reporter:
         plt.close()
 
 
-    def plot_confmatrix(self, plot_name): 
+    def plot_confmatrix_old(self, plot_name): 
         fig_dir = self.util.get_path('fig_dir')
         sns.set()  # get prettier plots
         labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
