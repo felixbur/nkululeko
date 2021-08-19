@@ -38,4 +38,4 @@ def main(config_file):
 
 
 if __name__ == "__main__":
-    main('/home/fburkhardt/ResearchProjects/nkululeko/exp_xgb.ini') #sys.argv[1])
+    main('/home/fburkhardt/ResearchProjects/nkululeko/exp_emodb.ini') #sys.argv[1])
