@@ -1,14 +1,14 @@
 from opensmile.core.define import FeatureSet
 from dataset import Dataset
 from emodb import Emodb
-from opensmileset import Opensmileset
+from feats_opensmile import Opensmileset
 from runmanager import Runmanager
 from util import Util
 import glob_conf
 import ast # To convert strings to objects
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
-from spectraloader import Spectraloader
+from feats_spectra import Spectraloader
 from scaler import Scaler
 
 
@@ -91,7 +91,7 @@ class Experiment:
             self.feats_test.extract()
             self.feats_test.filter()
         elif feats_type=='mld':
-            from mld_fset import MLD_set
+            from feats_mld import MLD_set
             self.feats_train = MLD_set(f'{feats_name}_train', df_train)
             self.feats_train.extract()
             self.feats_train.filter()

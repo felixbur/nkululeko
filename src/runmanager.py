@@ -1,9 +1,9 @@
 # runmanager.py
 
-from svmmodel import SVM_model
-from xgbmodel import XGB_model
-from xgrmodel import XGR_model
-from cnnmodel import CNN_model
+from model_svm import SVM_model
+from model_xgb import XGB_model
+from model_xgr import XGR_model
+from model_cnn import CNN_model
 from reporter import Reporter
 import ast
 from util import Util  
