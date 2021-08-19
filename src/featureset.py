@@ -1,19 +1,18 @@
 # featureset.py
 import pandas as pd
 from util import Util 
+import glob_conf
 
 class Featureset:
     name = '' # designation
-    config = None # Config file for statics
     df = None # pandas dataframe to store the features (and indexed with the data from the sets)
     data_df = None # dataframe to get audio paths
 
 
-    def __init__(self, name, config, data_df):
+    def __init__(self, name, data_df):
         self.name = name
-        self.config = config
         self.data_df = data_df
-        self.util = Util(config)
+        self.util = Util()
 
     def extract(self):
         pass

@@ -2,6 +2,7 @@
 
 from xgboost import XGBClassifier
 from model import Model
+import glob_conf
 
 class XGB_model(Model):
     """An XGBoost model"""
@@ -9,7 +10,7 @@ class XGB_model(Model):
 
     def train(self):
         """Train the model"""
-        target = self.config['DATA']['target']
+        target = glob_conf.config['DATA']['target']
         self.clf.fit(self.feats_train.df.to_numpy(), self.df_train[target])
 
     def predict(self):

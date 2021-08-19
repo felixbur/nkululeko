@@ -9,6 +9,7 @@ import numpy as np
 from util import Util 
 import midlevel_descriptors as mld
 import opensmile
+import glob_conf
 
 class MLD_set(Featureset):
 
@@ -29,13 +30,13 @@ class MLD_set(Featureset):
 
         try:
             # use only samples that have a minimum number of syllables
-            min_syls = int(self.config['FEATS']['min_syls'])
+            min_syls = int(glob_conf.config['FEATS']['min_syls'])
             self.df = self.df[self.df['hld_nSyl']>=min_syls]
         except KeyError:
             pass
         try:
             # add opensmile features
-            with_os = bool(self.config['FEATS']['with_os'])
+            with_os = bool(glob_conf.config['FEATS']['with_os'])
             if with_os:
                 df_os = self.extract_os()
                 df_os =  df_os.loc[ df_os.index.intersection(self.df.index)]
@@ -44,7 +45,7 @@ class MLD_set(Featureset):
             pass
         try: 
             # use only some features
-            selected_features = ast.literal_eval(self.config['FEATS']['features'])
+            selected_features = ast.literal_eval(glob_conf.config['FEATS']['features'])
             self.df = self.df[selected_features]
         except KeyError:
             pass

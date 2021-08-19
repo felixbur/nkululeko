@@ -6,24 +6,24 @@ import audplot
 from util import Util 
 import ast
 import numpy as np
+import glob_conf
 
 class Reporter:
 
-    def __init__(self, config, truths, preds):
-        self.config = config
-        self.util = Util(config)
+    def __init__(self, truths, preds):
+        self.util = Util()
         self.truths = truths
         self.preds = preds
 
     def continuous_to_categorical(self):
-        bins = ast.literal_eval(self.config['DATA']['bins'])
+        bins = ast.literal_eval(glob_conf.config['DATA']['bins'])
         self.truths = np.digitize(self.truths, bins)-1
         self.preds = np.digitize(self.preds, bins)-1
 
     def plot_confmatrix(self, plot_name): 
         fig_dir = self.util.get_path('fig_dir')
         sns.set()  # get prettier plots
-        labels = ast.literal_eval(self.config['DATA']['labels'])
+        labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
         plt.figure(figsize=[5, 5])
         plt.title('Confusion Matrix')
         audplot.confusion_matrix(self.truths, self.preds)

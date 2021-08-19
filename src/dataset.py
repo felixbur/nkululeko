@@ -6,6 +6,7 @@ import os
 from sklearn.preprocessing import LabelEncoder
 from random import sample
 from util import Util
+import glob_conf
 
 class Dataset:
     """ Class to represent datasets"""
@@ -16,16 +17,15 @@ class Dataset:
     df_train = None # The training split
     df_test = None # The evaluation split
 
-    def __init__(self, config, name):
+    def __init__(self, name):
         """Constructor setting up name and configuration"""
         self.name = name
-        self.config = config
-        self.target = config['DATA']['target']
-        self.util = Util(config)
+        self.target = glob_conf.config['DATA']['target']
+        self.util = Util()
 
     def load(self):
         """Load the dataframe with files, speakers and emotion labels"""
-        root = self.config['DATA'][self.name]
+        root = glob_conf.config['DATA'][self.name]
         db = audformat.Database.load(root)
         # map the audio file paths 
         db.map_files(lambda x: os.path.join(root, x))
@@ -39,7 +39,7 @@ class Dataset:
             pass
         try: 
             # for experiments that do separate sex models
-            s = self.config['DATA']['sex']
+            s = glob_conf.config['DATA']['sex']
             df = df[df.gender==s]
         except KeyError:
             pass 
@@ -49,7 +49,7 @@ class Dataset:
     def split(self):
         """Split the datbase into train and development set"""
         try:
-            split_strategy = self.config['DATA'][self.name+'.split_strategy']
+            split_strategy = glob_conf.config['DATA'][self.name+'.split_strategy']
         except KeyError:
             split_strategy = 'database'
         # 'database' (default), 'speaker_split', 'specified'
@@ -61,8 +61,8 @@ class Dataset:
             self.df_test = self.df.loc[self.df.index.intersection(testdf.index)]
             self.df_train = self.df.loc[self.df.index.intersection(traindf.index)]
         elif split_strategy == 'specified':
-            test_table = self.config['DATA'][self.name+'.test_table']
-            train_table = self.config['DATA'][self.name+'.train_table']
+            test_table = glob_conf.config['DATA'][self.name+'.test_table']
+            train_table = glob_conf.config['DATA'][self.name+'.train_table']
             testdf = self.db.tables[test_table].df
             traindf = self.db.tables[train_table].df
             # use only the train and test samples that were not perhaps filtered out by an earlier processing step
@@ -73,7 +73,7 @@ class Dataset:
 
     def split_speakers(self):
         """One way to split train and eval sets: Specify percentage of evaluation speakers"""
-        test_percent = self.util.config_val('DATA', self.name+'.testsplit', 50)
+        test_percent = int(self.util.config_val('DATA', self.name+'.testsplit', 50))
         df = self.df
         s_num = df.speaker.nunique()
         test_num = int(s_num * (test_percent/100))        
@@ -81,14 +81,14 @@ class Dataset:
         self.df_test = df[df.speaker.isin(test_spkrs)]
         self.df_train = df[~df.index.isin(self.df_test.index)]
         # because this generates new train/test sample quantaties, the feature extraction has to be done again
-
+        glob_conf.config['DATA']['needs_feature_extraction'] = 'true'
 
     def prepare_labels(self):
         """Rename the labels and remove the ones that are not needed."""
         try :
-            mapping = ast.literal_eval(self.config['DATA'][f'{self.name}.mapping'])
-            target = self.config['DATA']['target']
-            labels = ast.literal_eval(self.config['DATA']['labels'])
+            mapping = ast.literal_eval(glob_conf.config['DATA'][f'{self.name}.mapping'])
+            target = glob_conf.config['DATA']['target']
+            labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
             df = self.df
             df[target] = df[target].map(mapping)
             self.df = df[df[target].isin(labels)]

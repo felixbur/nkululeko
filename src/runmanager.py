@@ -7,46 +7,45 @@ from cnnmodel import CNN_model
 from reporter import Reporter
 import ast
 from util import Util  
+import glob_conf
 
 class Runmanager:
     """Class to manage the runs of the experiment (e.g. when differs caused by random initialization)"""
-    config = None # The configuration
     model = None  # The underlying model
     df_train, df_test, feats_train, feats_test = None, None, None, None # The dataframes
 
 
-    def __init__(self, config, df_train, df_test, feats_train, feats_test):
+    def __init__(self, df_train, df_test, feats_train, feats_test):
         """Constructor setting up the dataframes"""
-        self.config = config
         self.df_train, self.df_test, self.feats_train, self.feats_test = df_train, df_test, feats_train, feats_test
-        self.util = Util(config)
+        self.util = Util()
         self.results = []
-        self.target =  self.config['DATA']['target']
+        self.target =  glob_conf.config['DATA']['target']
 
 
     def do_runs(self):
         """Start the runs"""
         # for all runs
-        for r in range(int(self.config['RUN_MGR']['runs'])):
+        for r in range(int(glob_conf.config['RUN_MGR']['runs'])):
             self.util.debug(f'run {r}')
             # intialize a new model
-            model_type = self.config['MODEL']['type']
+            model_type = glob_conf.config['MODEL']['type']
             if model_type=='svm':
-                self.model = SVM_model(self.config, self.df_train, self.df_test, self.feats_train, self.feats_test)
+                self.model = SVM_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
             elif model_type=='xgb':
-                self.model = XGB_model(self.config, self.df_train, self.df_test, self.feats_train, self.feats_test)
+                self.model = XGB_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
             elif model_type=='xgr':
-                self.model = XGR_model(self.config, self.df_train, self.df_test, self.feats_train, self.feats_test)
+                self.model = XGR_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
             elif model_type=='cnn':
-                self.model = CNN_model(self.config, self.df_train, self.df_test, self.feats_train, self.feats_test)
+                self.model = CNN_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
             # for all epochs
-            for e in range(int(self.config['RUN_MGR']['epochs'])):
+            for e in range(int(glob_conf.config['RUN_MGR']['epochs'])):
                 self.util.debug(f'epoch {e}')
                 self.model.train()
                 results = self.model.predict()
-                exp_name = self.config['EXP']['name']
+                exp_name = glob_conf.config['EXP']['name']
                 plot_name = f'{exp_name}_{str(r)}_{str(e)}_cnf.png'
-                rpt = Reporter(self.config, self.df_test[self.target], results)
+                rpt = Reporter(self.df_test[self.target], results)
                 if self.util.exp_is_classification():
                     uar = rpt.uar()
                     self.results.append(uar)
@@ -58,7 +57,7 @@ class Runmanager:
                 print(f'run: {r} epoch: {e}: result: {self.results[-1]:.3f}')
             # see if there is a special plotname
             try:
-                plot_name = self.config['PLOT']['name']+'_cnf.png'
+                plot_name = glob_conf.config['PLOT']['name']+'_cnf.png'
             except KeyError:
                 pass
             rpt.plot_confmatrix(plot_name)

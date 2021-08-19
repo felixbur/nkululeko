@@ -3,6 +3,7 @@
 from dataset import Dataset
 import audformat
 import os
+import glob_conf
 
 class Agender(Dataset):
     """Class to represent the agender age and gender dataset"""

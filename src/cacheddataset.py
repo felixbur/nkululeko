@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import glob_conf
 
 class CachedDataset(torch.utils.data.Dataset):
     def __init__(self, df, features, target_column, transform = None, target_transform = None):

@@ -7,6 +7,7 @@ import experiment as exp
 import dataset as ds
 import configparser
 from emodb import Emodb
+import glob_conf
 
 def main(config_file):
     # for two sexes

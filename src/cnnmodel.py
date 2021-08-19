@@ -4,14 +4,15 @@ from model import Model
 import torch
 import audpann
 from sklearn.metrics import mean_squared_error
+import glob_conf
 
 class CNN_model(Model):
     """A CNN model"""
 
 
-    def __init__(self, config, df_train, df_test, feats_train, feats_test):
+    def __init__(self, df_train, df_test, feats_train, feats_test):
         """Constructor taking the configuration and all dataframes"""
-        Model.__init__(self, config, df_train, df_test, feats_train, feats_test)
+        Model.__init__(self, df_train, df_test, feats_train, feats_test)
         self.util.debug(f'initializing model')
         self.device = config['MODEL']['device']
         store = self.util.get_path('store')

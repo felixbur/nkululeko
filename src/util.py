@@ -2,15 +2,14 @@
 import audeer
 import ast 
 import sys
+import glob_conf
 
 class Util:
-    def __init__(self, config):
-        self.config = config
-
+        
     def get_path(self, entry):
-        root = self.config['EXP']['root']
-        name = self.config['EXP']['name']
-        entryn = self.config['EXP'][entry]
+        root = glob_conf.config['EXP']['root']
+        name = glob_conf.config['EXP']['name']
+        entryn = glob_conf.config['EXP'][entry]
         dir_name = f'{root}{name}/{entryn}'
         audeer.mkdir(dir_name)
         return dir_name
@@ -31,6 +30,6 @@ class Util:
     def config_val(self, category, key, default):
         try:
             # strategy is either train_test (default)  or cross_data
-            return self.config[category][key]
+            return glob_conf.config[category][key]
         except KeyError:
             return default

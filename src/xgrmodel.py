@@ -2,6 +2,7 @@
 
 from xgboost.sklearn import XGBRegressor
 from model import Model
+import glob_conf
 
 class XGR_model(Model):
     """An XGBoost model"""
@@ -9,7 +10,7 @@ class XGR_model(Model):
 
     def train(self):
         """Train the model"""
-        target = self.config['DATA']['target']
+        target = glob_conf.config['DATA']['target']
         self.clf.fit(self.feats_train.df, self.df_train[target])
 
     def predict(self):

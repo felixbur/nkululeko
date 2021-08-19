@@ -12,6 +12,7 @@ import dataset as ds
 import configparser
 from emodb import Emodb
 from util import Util
+import glob_conf
 
 def main(config_file):
     # load one configuration per experiment

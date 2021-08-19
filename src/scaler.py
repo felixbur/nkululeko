@@ -4,14 +4,14 @@
 from sklearn.preprocessing import StandardScaler, RobustScaler
 import pandas as pd
 from util import Util
+import glob_conf
 
 class Scaler:
     # class to normalize speech parameters
 
-    def __init__(self, config, train_data_df, test_data_df, train_feats, test_feats):
-        self.config = config
-        self.util = Util(config)
-        scaler_type = config['FEATS']['scale'] 
+    def __init__(self, train_data_df, test_data_df, train_feats, test_feats):
+        self.util = Util()
+        scaler_type = glob_conf.config['FEATS']['scale'] 
         if scaler_type == 'standard':
             self.scaler = StandardScaler()
         elif scaler_type == 'robust':
@@ -26,7 +26,7 @@ class Scaler:
 
     def scale(self):
         try:
-            scale_speakers = bool(self.config['FEATS']['scale_speakers'])
+            scale_speakers = bool(glob_conf.config['FEATS']['scale_speakers'])
         except KeyError:
             scale_speakers = False
         if not scale_speakers:

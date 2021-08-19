@@ -10,12 +10,13 @@ import audiofile
 import numpy as np
 import torch 
 import audtorch
+import glob_conf
 
 class Spectraloader(Featureset):
 
-    def __init__(self, name, config, data_df):
+    def __init__(self, name, data_df):
         """Constructor setting the name"""
-        Featureset.__init__(self, name, config, data_df)
+        Featureset.__init__(self, name, data_df)
         self.random_crop_length=500
         self.num_bands = 64
         self.freq_low = 50
@@ -52,7 +53,12 @@ class Spectraloader(Featureset):
     def make_feats(self):
         store = self.util.get_path('store')
         self.feats_dir = audeer.mkdir(store+self.name)
-        if not os.path.isfile(os.path.join(self.feats_dir, 'index.pkl')):
+        try:
+            extract = glob_conf.config['DATA']['needs_feature_extraction']
+        except KeyError:
+            extract = False
+
+        if extract or not os.path.isfile(os.path.join(self.feats_dir, 'index.pkl')):
             filenames = []
             for counter, file in audeer.progress_bar(
                 enumerate(self.data_df.index), 
@@ -72,11 +78,15 @@ class Spectraloader(Featureset):
             )
             data.to_pickle(os.path.join(self.feats_dir, 'index.pkl'))
             data.to_csv(os.path.join(self.feats_dir, 'index.csv'))
+            try:
+                glob_conf.config['DATA']['needs_feature_extraction'] = 'false'
+            except KeyError:
+                pass
         else: 
             self.util.debug('spectra already extracted')
 
     def get_loader(self):
-        target = self.config['DATA']['target']
+        target = glob_conf.config['DATA']['target']
         feats = pd.read_pickle(self.feats_dir+'/index.pkl')
         dataset = CachedDataset(
             features=feats,
