@@ -4,7 +4,7 @@
 
 from os import lseek
 import sys
-
+sys.path.append("/home/fburkhardt/ResearchProjects/nkululeko/src")
 import experiment as exp
 import dataset as ds
 import configparser
@@ -38,4 +38,4 @@ def main(config_file):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main('/home/fburkhardt/ResearchProjects/nkululeko/exp_xgb.ini') #sys.argv[1])

@@ -16,7 +16,8 @@ class Util:
         return dir_name
 
     def exp_is_classification(self):
-        if self.config['EXP']['type']=='classification':
+        type = self.config_val('EXP', 'type', 'classification')
+        if type=='classification':
             return True
         return False
 
@@ -26,3 +27,10 @@ class Util:
 
     def debug(self, message):
         print(f'DEBUG: {message}')
+
+    def config_val(self, category, key, default):
+        try:
+            # strategy is either train_test (default)  or cross_data
+            return self.config[category][key]
+        except KeyError:
+            return default

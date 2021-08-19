@@ -5,6 +5,7 @@ import ast
 import os
 from sklearn.preprocessing import LabelEncoder
 from random import sample
+from util import Util
 
 class Dataset:
     """ Class to represent datasets"""
@@ -20,6 +21,7 @@ class Dataset:
         self.name = name
         self.config = config
         self.target = config['DATA']['target']
+        self.util = Util(config)
 
     def load(self):
         """Load the dataframe with files, speakers and emotion labels"""
@@ -46,37 +48,40 @@ class Dataset:
 
     def split(self):
         """Split the datbase into train and development set"""
-        try :
+        try:
+            split_strategy = self.config['DATA'][self.name+'.split_strategy']
+        except KeyError:
+            split_strategy = 'database'
+        # 'database' (default), 'speaker_split', 'specified'
+        if split_strategy == 'database':
+            #  use the splits from the database
             testdf = self.db.tables[self.target+'.test'].df
             traindf = self.db.tables[self.target+'.train'].df
             # use only the train and test samples that were not perhaps filtered out by an earlier processing step
             self.df_test = self.df.loc[self.df.index.intersection(testdf.index)]
             self.df_train = self.df.loc[self.df.index.intersection(traindf.index)]
-        except KeyError:
-            try :
-                test_table = self.config['DATA'][self.name+'.test_table']
-                train_table = self.config['DATA'][self.name+'.train_table']
-                testdf = self.db.tables[test_table].df
-                traindf = self.db.tables[train_table].df
-                # use only the train and test samples that were not perhaps filtered out by an earlier processing step
-                self.df_test = self.df.loc[self.df.index.intersection(testdf.index)]
-                self.df_train = self.df.loc[self.df.index.intersection(traindf.index)]
-            except KeyError:
-                self.split_speakers()
+        elif split_strategy == 'specified':
+            test_table = self.config['DATA'][self.name+'.test_table']
+            train_table = self.config['DATA'][self.name+'.train_table']
+            testdf = self.db.tables[test_table].df
+            traindf = self.db.tables[train_table].df
+            # use only the train and test samples that were not perhaps filtered out by an earlier processing step
+            self.df_test = self.df.loc[self.df.index.intersection(testdf.index)]
+            self.df_train = self.df.loc[self.df.index.intersection(traindf.index)]
+        elif split_strategy == 'speaker_split':
+            self.split_speakers()
 
     def split_speakers(self):
         """One way to split train and eval sets: Specify percentage of evaluation speakers"""
-        try:
-            test_percent = int(self.config['DATA'][self.name+'.testsplit'])
-        except KeyError:
-            # if no test split is stated, set to 50%
-            test_percent = 50
+        test_percent = self.util.config_val('DATA', self.name+'.testsplit', 50)
         df = self.df
         s_num = df.speaker.nunique()
         test_num = int(s_num * (test_percent/100))        
         test_spkrs =  sample(list(df.speaker.unique()), test_num)
         self.df_test = df[df.speaker.isin(test_spkrs)]
         self.df_train = df[~df.index.isin(self.df_test.index)]
+        # because this generates new train/test sample quantaties, the feature extraction has to be done again
+
 
     def prepare_labels(self):
         """Rename the labels and remove the ones that are not needed."""

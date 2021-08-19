@@ -2,7 +2,6 @@ from opensmile.core.define import FeatureSet
 from dataset import Dataset
 from emodb import Emodb
 from opensmileset import Opensmileset
-from mld_fset import MLD_set
 from runmanager import Runmanager
 from util import Util
 import ast # To convert strings to objects
@@ -20,7 +19,7 @@ class Experiment:
     df_test = None # The evaluation dataframe
     feats_train = None # The training features
     feats_test = None # The test features
-    config = None # The configuration object
+    global config = None # The configuration object
     runmgr = None  # The manager object for the runs
     labels = None # set of string values for the categories
     values = None # set of numerical values encoding the classes 
@@ -47,7 +46,7 @@ class Experiment:
     def fill_train_and_tests(self):
         """Set up train and development sets. The method should be specified in the config."""
         self.df_train, self.df_test = pd.DataFrame(), pd.DataFrame()
-        strategy = self.config['DATA']['strategy']
+        strategy = self.util.config_val('DATA', 'strategy', 'train_test')
         # some datasets against others in their entirety
         if strategy == 'cross_data':
             train_dbs = ast.literal_eval(self.config['DATA']['trains'])
@@ -79,9 +78,9 @@ class Experiment:
     def extract_feats(self):
         """Extract the features for train and dev sets. They will be stored on disk and need to be removed manually."""
         df_train, df_test = self.df_train, self.df_test
+        strategy = self.util.config_val('DATA', 'strategy', 'train_test')
+        feats_type = self.util.config_val('FEATS', 'type', 'os')
         feats_name = "_".join(ast.literal_eval(self.config['DATA']['databases']))
-        strategy = self.config['DATA']['strategy']
-        feats_type = self.config['FEATS']['type']
         feats_name = f'{feats_name}_{strategy}_{feats_type}'   
         if feats_type=='os':
             self.feats_train = Opensmileset(f'{feats_name}_train', self.config, df_train)
@@ -91,6 +90,7 @@ class Experiment:
             self.feats_test.extract()
             self.feats_test.filter()
         elif feats_type=='mld':
+            from mld_fset import MLD_set
             self.feats_train = MLD_set(f'{feats_name}_train', self.config, df_train)
             self.feats_train.extract()
             self.feats_train.filter()
