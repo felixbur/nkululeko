@@ -15,3 +15,6 @@ There is a central "experiment" class that can be used by own experiments, two e
   
 In the end i expect some kind of framework like in the UML sketch (not really valid any more, but to give you an idea).
 ![sketch](images/ml-experiment.jpg)
+
+
+Here's [a movie that shows the progress of classification done with nkululeko](https://youtu.be/6Y0M382GjvM)
