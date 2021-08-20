@@ -2,6 +2,7 @@ from opensmile.core.define import FeatureSet
 from dataset import Dataset
 from emodb import Emodb
 from feats_opensmile import Opensmileset
+from feats_audid import AudIDset
 from runmanager import Runmanager
 from util import Util
 import glob_conf
@@ -88,6 +89,13 @@ class Experiment:
             self.feats_train.extract()
             self.feats_train.filter()
             self.feats_test = Opensmileset(f'{feats_name}_test', df_test)
+            self.feats_test.extract()
+            self.feats_test.filter()
+        elif feats_type=='audid':
+            self.feats_train = AudIDset(f'{feats_name}_train', df_train)
+            self.feats_train.extract()
+            self.feats_train.filter()
+            self.feats_test = AudIDset(f'{feats_name}_test', df_test)
             self.feats_test.extract()
             self.feats_test.filter()
         elif feats_type=='mld':
