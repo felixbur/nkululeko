@@ -37,6 +37,7 @@ class Reporter:
         print(f'plotting conf matrix to {fig_dir+plot_name}')
         plt.title('Confusion Matrix')
         plt.savefig(fig_dir+plot_name)
+        fig.clear()
         plt.close(fig)
 
 
