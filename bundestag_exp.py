@@ -2,16 +2,19 @@
 # Demonstration code to use the ML-experiment framework
 
 import sys
+sys.path.append("/home/fburkhardt/ResearchProjects/nkululeko/src")
 
 import experiment as exp
 import dataset as ds
 import configparser
 from emodb import Emodb
 import glob_conf
+from util import Util
 
 def main(config_file):
     # for two sexes
     sexes = ['female', 'male']
+    util = Util()
 
     for s in sexes:
         # load one configuration per experiment
@@ -24,18 +27,18 @@ def main(config_file):
 
         # create a new experiment
         expr = exp.Experiment(config)
-        print(f'running {expr.name}')
+        util.debug(f'running {expr.name}')
 
         # load the data
         expr.load_datasets()
 
         # split into train and test
         expr.fill_train_and_tests()
-        print(f'train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}')
+        util.debug(f'train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}')
 
         # extract features
         expr.extract_feats()
-        print(f'train feats shape : {expr.feats_train.df.shape}, test feats shape:{expr.feats_test.df.shape}')
+        util.debug(f'train feats shape : {expr.feats_train.df.shape}, test feats shape:{expr.feats_test.df.shape}')
 
         # initialize a run manager
         expr.init_runmanager()

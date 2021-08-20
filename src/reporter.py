@@ -26,18 +26,18 @@ class Reporter:
         self.preds = np.digitize(self.preds, bins)-1
 
     def plot_confmatrix(self, plot_name): 
-        if not self.util.exp_is_classification:
+        if not self.util.exp_is_classification():
             self.continuous_to_categorical()
 
         fig_dir = self.util.get_path('fig_dir')
         labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
-        plt.figure()  # figsize=[5, 5]
+        fig = plt.figure()  # figsize=[5, 5]
         cm = confusion_matrix(self.truths, self.preds,  normalize = None) #normalize must be one of {'true', 'pred', 'all', None}
         disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels).plot(cmap='Blues')
         print(f'plotting conf matrix to {fig_dir+plot_name}')
         plt.title('Confusion Matrix')
         plt.savefig(fig_dir+plot_name)
-        plt.close()
+        plt.close(fig)
 
 
     def plot_confmatrix_old(self, plot_name): 
@@ -64,7 +64,7 @@ class Reporter:
         print(labels)
 
     def result(self):
-        if self.util.exp_is_classification:
+        if self.util.exp_is_classification():
             uar = recall_score(self.truths, self.preds, average='macro')
             loss = 1 - accuracy_score(self.truths, self.preds)
             self.result = Result(uar, -1, loss)

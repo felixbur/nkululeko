@@ -51,10 +51,12 @@ class Runmanager:
                 self.model.train()
                 report = self.model.predict()
                 exp_name = glob_conf.config['EXP']['name']
-                plot_name = f'{exp_name}_{str(r)}_{str(e)}_cnf.png'
+                plot_name = f'{exp_name}_{r:02d}_{e:03d}_cnf.png'
                 self.reports.append(report)                
                 print(f'run: {r} epoch: {e}: result: {self.reports[-1].result.test:.3f}')
-            # see if there is a special plotname
+                plot = self.util.config_val('PLOT', 'plot_epochs', 0)
+                if plot:
+                    report.plot_confmatrix(plot_name)
             try:
                 plot_name = glob_conf.config['PLOT']['name']+'_cnf.png'
             except KeyError:
