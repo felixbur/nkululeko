@@ -129,7 +129,13 @@ class Experiment:
         """Start up the runs."""
         self.runmgr.do_runs()
         # access the results per run
-        self.results = self.runmgr.results
-        self.train_results = self.runmgr.train_results
-        self.losses = self.runmgr.losses
+        self.reports = self.runmgr.reports
+        self.collect_reports()
         return self.results, self.train_results, self.losses
+
+    def collect_reports(self):
+        self.results, self.losses, self.train_results = [], [], []
+        for r in self.reports:
+            self.results.append(r.result.test)
+            self.losses.append(r.result.loss)
+            self.train_results.append(r.result.train)

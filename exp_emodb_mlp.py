@@ -34,12 +34,12 @@ def main(config_file):
     expr.init_runmanager()
 
     # run the experiment
-    uars_train, uars_dev ,losses = expr.run()
+    uars_dev, uars_train, losses = expr.run()
 
     # plot the results
-    plot_results(uars_train, uars_dev ,losses, 'mlp_results.png')
+    plot_results(uars_dev,uars_train, losses, 'mlp_results.png')
 
-def plot_results(uars_train, uars_dev ,losses, name):
+def plot_results(uars_dev, uars_train, losses, name):
     # do a plot per run
     # scale the losses so they fit on the picture
     losses = np.asarray(losses)/2

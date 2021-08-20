@@ -1,7 +1,5 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import recall_score
-from scipy.stats import pearsonr
 import audplot
 from util import Util 
 import ast
@@ -9,6 +7,11 @@ import numpy as np
 import glob_conf
 from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import recall_score
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import mean_squared_error
+from scipy.stats import pearsonr
+from result import Result
 
 class Reporter:
 
@@ -23,6 +26,9 @@ class Reporter:
         self.preds = np.digitize(self.preds, bins)-1
 
     def plot_confmatrix(self, plot_name): 
+        if not self.util.exp_is_classification:
+            self.continuous_to_categorical()
+
         fig_dir = self.util.get_path('fig_dir')
         labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
         plt.figure()  # figsize=[5, 5]
@@ -57,8 +63,14 @@ class Reporter:
         print('labels')
         print(labels)
 
-    def uar(self):
-        return recall_score(self.truths, self.preds, average='macro')
-
-    def pcc(self):
-        return pearsonr(self.truths, self.preds)[0]
+    def result(self):
+        if self.util.exp_is_classification:
+            uar = recall_score(self.truths, self.preds, average='macro')
+            loss = 1 - accuracy_score(self.truths, self.preds)
+            self.result = Result(uar, -1, loss)
+        else:
+            # regression experiment
+            pcc = pearsonr(self.truths, self.preds)[0]
+            loss = mean_squared_error(self.truths, self.preds)
+            self.result = Result(pcc, -1, loss)
+        return self.result

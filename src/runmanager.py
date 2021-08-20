@@ -6,6 +6,7 @@ from model_xgr import XGR_model
 from model_cnn import CNN_model
 from model_mlp import MLP_model
 from reporter import Reporter
+from result import Result
 import ast
 from util import Util  
 import glob_conf
@@ -20,10 +21,7 @@ class Runmanager:
         """Constructor setting up the dataframes"""
         self.df_train, self.df_test, self.feats_train, self.feats_test = df_train, df_test, feats_train, feats_test
         self.util = Util()
-        self.results = []
-        self.train_results = []
-        self.losses = []
-        self.target =  glob_conf.config['DATA']['target']
+        self.target = glob_conf.config['DATA']['target']
 
 
     def do_runs(self):
@@ -32,7 +30,7 @@ class Runmanager:
         for r in range(int(glob_conf.config['RUN_MGR']['runs'])):
             self.util.debug(f'run {r}')
             # initialze results
-            self.losses, self.results, self.train_results = [], [], []       
+            self.reports = []
             # intialize a new model
             model_type = glob_conf.config['MODEL']['type']
             if model_type=='svm':
@@ -50,25 +48,15 @@ class Runmanager:
             # for all epochs
             for e in range(int(glob_conf.config['RUN_MGR']['epochs'])):
                 self.util.debug(f'epoch {e}')
-                loss = self.model.train()
-                self.losses.append(loss)
-                preds, train_result = self.model.predict()
-                self.train_results.append(train_result)
+                self.model.train()
+                report = self.model.predict()
                 exp_name = glob_conf.config['EXP']['name']
                 plot_name = f'{exp_name}_{str(r)}_{str(e)}_cnf.png'
-                rpt = Reporter(self.df_test[self.target], preds)
-                if self.util.exp_is_classification():
-                    uar = rpt.uar()
-                    self.results.append(uar)
-                else: # regression
-                    pcc = rpt.pcc()
-                    self.results.append(pcc) 
-                    rpt.continuous_to_categorical()
-                    
-                print(f'run: {r} epoch: {e}: result: {self.results[-1]:.3f}')
+                self.reports.append(report)                
+                print(f'run: {r} epoch: {e}: result: {self.reports[-1].result.test:.3f}')
             # see if there is a special plotname
             try:
                 plot_name = glob_conf.config['PLOT']['name']+'_cnf.png'
             except KeyError:
                 pass
-            rpt.plot_confmatrix(plot_name)
+            self.reports[-1].plot_confmatrix(plot_name)

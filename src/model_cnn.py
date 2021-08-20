@@ -5,10 +5,12 @@ import torch
 import audpann
 from sklearn.metrics import mean_squared_error
 import glob_conf
+from reporter import Reporter
+from result import Result
+import numpy as np
 
 class CNN_model(Model):
-    """A CNN model"""
-
+    """A CNN (convolutional neural net) model"""
 
     def __init__(self, df_train, df_test, feats_train, feats_test):
         """Constructor taking the configuration and all dataframes"""
@@ -27,6 +29,7 @@ class CNN_model(Model):
 
     def train(self):
         """Train the model one epoch"""
+        losses = []
         self.util.debug(f'training model')
         criterion = torch.nn.MSELoss()
         optimizer = torch.optim.SGD(self.model.parameters(), lr=0.001)
@@ -34,14 +37,23 @@ class CNN_model(Model):
         for features, labels in self.feats_train:
             logits = self.model(features.to(self.device).float()).squeeze(1)
             loss = criterion(logits, labels.float().to(self.device))
+            losses.append(loss.item())
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+        self.loss = (np.asarray(losses)).mean()
 
     def predict(self):
         """Predict the whole eval feature set"""
-        mse, truth, pred = self.evaluate_model(False)
-        return pred
+        # evaluate on dev set
+        _, truths, predictions = self.evaluate_model(False)
+        # evaluate on train set
+        mse, _, _ = self.evaluate_model(True)
+        report = Reporter(truths, predictions)
+        report.result()
+        report.result.loss = self.loss
+        report.result.train = mse
+        return report
 
     def predict_train(self):
         """Predict the whole eval feature set"""

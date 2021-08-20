@@ -3,6 +3,8 @@
 from xgboost.sklearn import XGBRegressor
 from model import Model
 import glob_conf
+from reporter import Reporter
+from result import Result
 
 class XGR_model(Model):
     """An XGBoost model"""
@@ -15,4 +17,7 @@ class XGR_model(Model):
 
     def predict(self):
         """Predict the whole eval feature set"""
-        return self.clf.predict(self.feats_test.df)
+        predictions =  self.clf.predict(self.feats_test.df.to_numpy())
+        report = Reporter(self.df_test[glob_conf.config['DATA']['target']], predictions)
+        report.result()
+        return report

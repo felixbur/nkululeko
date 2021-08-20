@@ -2,6 +2,8 @@
 from util import Util 
 import glob_conf
 from model import Model
+from reporter import Reporter
+from result import Result
 import torch
 import ast
 import numpy as np
@@ -35,10 +37,14 @@ class MLP_model(Model):
         loss = self.train_epoch(self.model, self.trainloader, self.device, self.optimizer, self.criterion)
         return loss
 
-    def predict(self):
-        _, _, predictions = self.evaluate_model(self.model, self.testloader, self.device)
+    def predict(self):        
+        _, truths, predictions = self.evaluate_model(self.model, self.testloader, self.device)
         uar, _, _ = self.evaluate_model(self.model, self.trainloader, self.device)
-        return predictions, uar
+        report = Reporter(truths, predictions)
+        report.result()
+        report.result.loss = self.loss
+        report.result.train = uar
+        return report
 
     def get_loader(self, df_x, df_y):
         data=[]
@@ -70,7 +76,7 @@ class MLP_model(Model):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-        return (np.asarray(losses)).mean()
+        self.loss = (np.asarray(losses)).mean()
 
     def evaluate_model(self, model, loader, device):
         logits = torch.zeros(len(loader.dataset), self.class_num)

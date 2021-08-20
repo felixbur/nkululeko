@@ -5,6 +5,8 @@ import pandas as pd
 from sklearn import svm
 from model import Model
 import glob_conf
+from reporter import Reporter
+from result import Result
 
 class SVM_model(Model):
     """An SVM model"""
@@ -27,4 +29,7 @@ class SVM_model(Model):
 
     def predict(self):
         """Predict the whole eval feature set"""
-        return self.clf.predict(self.feats_test.df.to_numpy())
+        predictions = self.clf.predict(self.feats_test.df.to_numpy())
+        report = Reporter(self.df_test[glob_conf.config['DATA']['target']], predictions)
+        report.result()
+        return report
