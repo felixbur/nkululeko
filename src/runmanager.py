@@ -1,6 +1,7 @@
 # runmanager.py
 
 from model_svm import SVM_model
+from model_svr import SVR_model
 from model_xgb import XGB_model
 from model_xgr import XGR_model
 from model_cnn import CNN_model
@@ -35,6 +36,8 @@ class Runmanager:
             model_type = glob_conf.config['MODEL']['type']
             if model_type=='svm':
                 self.model = SVM_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
+            if model_type=='svr':
+                self.model = SVR_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
             elif model_type=='xgb':
                 self.model = XGB_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
             elif model_type=='xgr':
