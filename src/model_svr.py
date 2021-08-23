@@ -37,6 +37,7 @@ class SVR_model(Model):
             self.util.debug(f'tuning on {tuned_params}')
             self.clf = GridSearchCV(self.clf, tuned_params, refit = True, verbose = 3, scoring=scoring)
             self.clf.fit(feats, self.df_train[target])
+            self.util.debug(f'winner parameters: {self.clf.best_params_}')
         except KeyError:
             c = float(self.util.config_val('MODEL', 'C', '0.001'))
             self.set_C(c)
