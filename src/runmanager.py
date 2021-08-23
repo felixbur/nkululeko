@@ -36,7 +36,7 @@ class Runmanager:
             model_type = glob_conf.config['MODEL']['type']
             if model_type=='svm':
                 self.model = SVM_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
-            if model_type=='svr':
+            elif model_type=='svr':
                 self.model = SVR_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
             elif model_type=='xgb':
                 self.model = XGB_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
@@ -47,7 +47,7 @@ class Runmanager:
             elif model_type=='mlp':
                 self.model = MLP_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
             else:
-                Util.error('unknown model type: '+model_type)
+                self.util.error(f'unknown model type: \'{model_type}\'')
             # for all epochs
             for e in range(int(glob_conf.config['RUN_MGR']['epochs'])):
                 self.util.debug(f'epoch {e}')
