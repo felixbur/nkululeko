@@ -26,10 +26,12 @@ class Scaler:
 
     def scale(self):
         try:
-            scale_speakers = bool(glob_conf.config['FEATS']['scale_speakers'])
+            scale_speakers = glob_conf.config['FEATS']['scale_speakers']
+            self.util.debug('scaling features for speakers')
         except KeyError:
             scale_speakers = False
         if not scale_speakers:
+            self.util.debug('scaling features based on training')
             return self.scale_all()
         else:
             return self.speaker_scale()

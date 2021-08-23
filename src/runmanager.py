@@ -6,6 +6,7 @@ from model_xgb import XGB_model
 from model_xgr import XGR_model
 from model_cnn import CNN_model
 from model_mlp import MLP_model
+from model_mlp_regression import MLP_Reg_model
 from reporter import Reporter
 from result import Result
 import ast
@@ -46,6 +47,8 @@ class Runmanager:
                 self.model = CNN_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
             elif model_type=='mlp':
                 self.model = MLP_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
+            elif model_type=='mlp_reg':
+                self.model = MLP_Reg_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
             else:
                 self.util.error(f'unknown model type: \'{model_type}\'')
             # for all epochs

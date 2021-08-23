@@ -1,25 +1,26 @@
 # main.py
 # Demonstration code to use the ML-experiment framework
 
-
-from os import lseek
 import sys
-sys.path.append("/home/fburkhardt/ResearchProjects/nkululeko/src")
+sys.path.append("/home/fburkhardt/ResearchProjects/nkululeko_aud/src")
+
 import experiment as exp
 import dataset as ds
 import configparser
 from emodb import Emodb
+import glob_conf
 from util import Util
 
 def main(config_file):
-    # load one configuration per experiment
+    util = Util()
+
+    # red the config file
     config = configparser.ConfigParser()
     config.read(config_file)
-    util = Util()
-    
+
     # create a new experiment
     expr = exp.Experiment(config)
-    print(f'running {expr.name}')
+    util.debug(f'running {expr.name}')
 
     # load the data
     expr.load_datasets()
@@ -38,8 +39,6 @@ def main(config_file):
     # run the experiment
     expr.run()
 
-    print('DONE')
-
 
 if __name__ == "__main__":
-    main('/home/fburkhardt/ResearchProjects/nkululeko/exp_emodb_param_opt_xgb.ini') #sys.argv[1])
+    main('/home/fburkhardt/ResearchProjects/nkululeko_aud/exp_bdtg_mlp.ini')# sys.argv[1])
