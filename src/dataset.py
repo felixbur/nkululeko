@@ -3,7 +3,6 @@ import audformat
 import pandas as pd
 import ast
 import os
-from sklearn.preprocessing import LabelEncoder
 from random import sample
 from util import Util
 import glob_conf

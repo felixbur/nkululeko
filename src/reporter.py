@@ -31,7 +31,8 @@ class Reporter:
             self.continuous_to_categorical()
 
         fig_dir = self.util.get_path('fig_dir')
-        labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
+        # labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
+        labels = glob_conf.label_encoder.classes_
         fig = plt.figure()  # figsize=[5, 5]
         uar = recall_score(self.truths, self.preds, average='macro')
         cm = confusion_matrix(self.truths, self.preds,  normalize = None) #normalize must be one of {'true', 'pred', 'all', None}

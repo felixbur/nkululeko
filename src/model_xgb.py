@@ -16,6 +16,7 @@ class XGB_model(Model):
         """Train the model"""
         target = glob_conf.config['DATA']['target']
         if self.feats_train.df.isna().to_numpy().any():
+            self.feats_train.df.to_pickle('feats_train.df')
             self.util.error('NANs exist')
         feats = self.feats_train.df.to_numpy()
         try:
@@ -28,10 +29,10 @@ class XGB_model(Model):
                 tuned_params[param] = values
             self.util.debug(f'tuning on {tuned_params}')
             self.clf = GridSearchCV(self.clf, tuned_params, refit = True, verbose = 3, scoring=scoring)
-            self.clf.fit(feats, self.df_train[target])
+            self.clf.fit(feats, self.df_train[target], sample_weight=self.classes_weights)
             self.util.debug(f'winner parameters: {self.clf.best_params_}')
         except KeyError:
-            self.clf.fit(feats, self.df_train[target])
+            self.clf.fit(feats, self.df_train[target], sample_weight=self.classes_weights)
 
     def predict(self):
         """Predict the whole eval feature set"""

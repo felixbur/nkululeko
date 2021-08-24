@@ -17,15 +17,15 @@ class MLD_set(Featureset):
         store = self.util.get_path('store')
         storage = f'{store}{self.name}.pkl'
         if not os.path.isfile(storage):
-            print('extracting midleveldescriptor features, this might take a while...')
+            self.util.debug('extracting midleveldescriptor features, this might take a while...')
         else:
-            pass
+            self.util.debug('reusing previously extracted midleveldescriptor features')
         fex_mld = mld.MLD()
         self.df = fex_mld.extract_from_index(index=self.data_df, cache_path=storage)
         # replace NANa with column means values
         for i, col in enumerate(self.df.columns):
-            if np.isnan(self.df[col]).any():
-                print('{} includes {} nan, inserting mean values'.format(col, self.df[col].isna().sum()))
+            if self.df[col].isnull().values.any():
+                self.util.debug(f'{col} includes {self.df[col].isnull().sum()} nan, inserting mean values')
                 self.df[col] = self.df[col].fillna(self.df[col].mean())
 
         try:
@@ -36,7 +36,7 @@ class MLD_set(Featureset):
             pass
         try:
             # add opensmile features
-            with_os = bool(glob_conf.config['FEATS']['with_os'])
+            with_os = int(glob_conf.config['FEATS']['with_os'])
             if with_os:
                 df_os = self.extract_os()
                 df_os =  df_os.loc[ df_os.index.intersection(self.df.index)]
@@ -53,13 +53,21 @@ class MLD_set(Featureset):
     def extract_os(self):
         store = self.util.get_path('store')
         storage = f'{store}{self.name}.pkl'.replace('mld', 'os')
-        if not os.path.isfile(storage):
-            print('extracting openSmile features, this might take a while...')
+        try:
+            extract = glob_conf.config['DATA']['needs_feature_extraction']
+        except KeyError:
+            extract = False
+        if extract or not os.path.isfile(storage):
+            self.util.debug('extracting openSmile features, this might take a while...')
             smile = opensmile.Smile(
             feature_set=opensmile.FeatureSet.GeMAPSv01b,
             feature_level=opensmile.FeatureLevel.Functionals,)
             df = smile.process_files(self.data_df.index)
             df.to_pickle(storage)
+            try:
+                glob_conf.config['DATA']['needs_feature_extraction'] = 'false'
+            except KeyError:
+                pass
         else:
             df = pd.read_pickle(storage)
         # drop the multiindex  if still there
@@ -68,4 +76,9 @@ class MLD_set(Featureset):
             df.index = self.df.index.droplevel(1)
         except IndexError:
             pass
+        # replace NANa with column means values
+        for i, col in enumerate(df.columns):
+            if np.isnan(df[col]).any():
+                self.util.debug(f'{col} includes {df[col].isna().sum()} nan, inserting mean values')
+                df[col] = df[col].fillna(df[col].mean())
         return df

@@ -2,7 +2,6 @@ from opensmile.core.define import FeatureSet
 from dataset import Dataset
 from emodb import Emodb
 from feats_opensmile import Opensmileset
-from feats_audid import AudIDset
 from runmanager import Runmanager
 from util import Util
 import glob_conf
@@ -74,6 +73,7 @@ class Experiment:
             self.label_encoder = LabelEncoder()
             self.df_train[target] = self.label_encoder.fit_transform(self.df_train[target])
             self.df_test[target] = self.label_encoder.transform(self.df_test[target])
+            glob_conf.set_label_encoder(self.label_encoder)
         else:
             pass
 
@@ -92,6 +92,7 @@ class Experiment:
             self.feats_test.extract()
             self.feats_test.filter()
         elif feats_type=='audid':
+            from feats_audid import AudIDset
             self.feats_train = AudIDset(f'{feats_name}_train', df_train)
             self.feats_train.extract()
             self.feats_train.filter()
