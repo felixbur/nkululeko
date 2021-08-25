@@ -7,7 +7,6 @@ sys.path.append("/home/felix/data/research/nkululeko/src")
 import experiment as exp
 import dataset as ds
 import configparser
-from emodb import Emodb
 import glob_conf
 from util import Util
 import matplotlib.pyplot as plt
@@ -42,7 +41,9 @@ def main(config_file):
     mses_dev, mses_train, losses = expr.run()
 
     # plot the results
-    plot_results(mses_dev, mses_train, losses, 'mlp_results.png')
+    fig_dir = util.get_path('fig_dir')
+    plot_name = glob_conf.config['FEATS']['type']+'_mlp_results.png'
+    plot_results(mses_dev, mses_train, losses, fig_dir+plot_name)
 
     print('DONE')
 
