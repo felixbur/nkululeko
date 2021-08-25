@@ -73,14 +73,6 @@ class MLP_Reg_model(Model):
             features = self.df_features.loc[index, :].values.astype('float32').squeeze()
             labels = np.array([self.df.loc[index, self.label]]).astype('float32').squeeze()
             return features, labels
-            
-
-    def get_loader_old(self, df_x, df_y):
-        data=[]
-        for i in range(len(df_x)):
-            data.append([df_x.values[i], df_y[self.target].astype(float32)[i]])
-        return torch.utils.data.DataLoader(data, shuffle=True, batch_size=8)
-
 
     class MLP(torch.nn.Module):
         def __init__(self, i, layers, o):
