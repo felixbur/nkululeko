@@ -29,7 +29,8 @@ class MLP_Reg_model(Model):
         self.testloader = self.get_loader(feats_test.df, df_test)
         # set up the model
         self.device = self.util.config_val('MODEL', 'device', 'cpu')
-        self.model = self.MLP(feats_train.df.shape[1], 16, 8, 1).to(self.device)
+        layers = ast.literal_eval(glob_conf.config['MODEL']['layers'])
+        self.model = self.MLP(feats_train.df.shape[1], layers, 1).to(self.device)
         # set up regularization
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.0001)
 
@@ -69,7 +70,7 @@ class MLP_Reg_model(Model):
 
         def __getitem__(self, item):
             index = self.df.index[item]
-            features = self.df_features.loc[index, :].values.squeeze()
+            features = self.df_features.loc[index, :].values.astype('float32').squeeze()
             labels = np.array([self.df.loc[index, self.label]]).astype('float32').squeeze()
             return features, labels
             
@@ -77,19 +78,19 @@ class MLP_Reg_model(Model):
     def get_loader_old(self, df_x, df_y):
         data=[]
         for i in range(len(df_x)):
-            data.append([df_x.values[i], df_y[self.target].astype(float)[i]])
+            data.append([df_x.values[i], df_y[self.target].astype(float32)[i]])
         return torch.utils.data.DataLoader(data, shuffle=True, batch_size=8)
 
 
     class MLP(torch.nn.Module):
-        def __init__(self, i, h1, h2, o):
+        def __init__(self, i, layers, o):
             super().__init__()
             self.linear = torch.nn.Sequential(
-                torch.nn.Linear(i, h1),
+                torch.nn.Linear(i, layers['l1']),
                 torch.nn.ReLU(),
-                torch.nn.Linear(h1, h2),
+                torch.nn.Linear(layers['l1'], layers['l2']),
                 torch.nn.ReLU(),
-                torch.nn.Linear(h2, o)
+                torch.nn.Linear(layers['l2'], o)
             )
         def forward(self, x):
             # x: (batch_size, channels, samples)
