@@ -145,6 +145,6 @@ class Experiment:
     def collect_reports(self):
         self.results, self.losses, self.train_results = [], [], []
         for r in self.reports:
-            self.results.append(r.result.test)
-            self.losses.append(r.result.loss)
-            self.train_results.append(r.result.train)
+            self.results.append(r.get_result().test)
+            self.losses.append(r.get_result().loss)
+            self.train_results.append(r.get_result().train)

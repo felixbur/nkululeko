@@ -20,6 +20,7 @@ class Reporter:
         self.util = Util()
         self.truths = truths
         self.preds = preds
+        self.result = Result(0, 0, 0)
 
     def continuous_to_categorical(self):
         bins = ast.literal_eval(glob_conf.config['DATA']['bins'])
@@ -31,12 +32,19 @@ class Reporter:
             self.continuous_to_categorical()
 
         fig_dir = self.util.get_path('fig_dir')
-        # labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
-        labels = glob_conf.label_encoder.classes_
+        try:
+            labels = glob_conf.label_encoder.classes_
+        except AttributeError:
+            labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
+
         fig = plt.figure()  # figsize=[5, 5]
         uar = recall_score(self.truths, self.preds, average='macro')
         cm = confusion_matrix(self.truths, self.preds,  normalize = None) #normalize must be one of {'true', 'pred', 'all', None}
-        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels).plot(cmap='Blues')
+        try:
+            disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels).plot(cmap='Blues')
+        except ValueError:
+            disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=list(labels).remove('neutral')).plot(cmap='Blues')
+
         print(f'plotting conf matrix to {fig_dir+plot_name}')
         plt.title(f'Confusion Matrix, UAR: {uar:.3f}')
         plt.savefig(fig_dir+plot_name)
@@ -67,15 +75,13 @@ class Reporter:
         print('labels')
         print(labels)
 
-    def result(self):
+    def get_result(self):
         if self.util.exp_is_classification():
-            uar = recall_score(self.truths, self.preds, average='macro')
-            loss = 1 - accuracy_score(self.truths, self.preds)
-            self.result = Result(uar, -1, loss)
+            self.result.test = recall_score(self.truths, self.preds, average='macro')
+            self.result.loss = 1 - accuracy_score(self.truths, self.preds)
             print(classification_report(self.truths, self.preds))
         else:
             # regression experiment
-            pcc = pearsonr(self.truths, self.preds)[0]
-            loss = mean_squared_error(self.truths, self.preds)
-            self.result = Result(pcc, -1, loss)
+            self.result.test = mean_squared_error(self.truths, self.preds)
+            # train and loss are being set by the model
         return self.result

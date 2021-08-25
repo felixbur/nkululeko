@@ -2,7 +2,7 @@
 # Demonstration code to use the ML-experiment framework
 
 import sys
-sys.path.append("/home/fburkhardt/ResearchProjects/nkululeko_aud/src")
+sys.path.append("/home/felix/data/research/nkululeko/src")
 
 import experiment as exp
 import dataset as ds
@@ -10,6 +10,8 @@ import configparser
 from emodb import Emodb
 import glob_conf
 from util import Util
+import matplotlib.pyplot as plt
+import numpy as np
 
 def main(config_file):
     util = Util()
@@ -37,8 +39,26 @@ def main(config_file):
     expr.init_runmanager()
 
     # run the experiment
-    expr.run()
+    mses_dev, mses_train, losses = expr.run()
 
+    # plot the results
+    plot_results(mses_dev, mses_train, losses, 'mlp_results.png')
+
+    print('DONE')
+
+def plot_results(mses_dev, mses_train, losses, name):
+    # do a plot per run
+    # scale the losses so they fit on the picture
+    losses = np.asarray(losses)/2
+    plt.figure(dpi=200)
+    plt.plot(mses_train, 'green', label='train set') 
+    plt.plot(mses_dev, 'red', label='dev set')
+    plt.plot(losses, 'grey', label='losses/2')
+    plt.xlabel('epochs')
+    plt.ylabel('MSE')
+    plt.legend()
+    plt.savefig(name)
+    plt.close()
 
 if __name__ == "__main__":
-    main('/home/fburkhardt/ResearchProjects/nkululeko_aud/exp_bdtg_mlp.ini')# sys.argv[1])
+    main('/home/felix/data/research/nkululeko/exp_bdtg_mlp.ini')# sys.argv[1])

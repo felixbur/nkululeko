@@ -5,10 +5,11 @@ from model import Model
 from reporter import Reporter
 from result import Result
 import torch
+from torch import nn
 import ast
 import numpy as np
 import pandas as pd
-from sklearn.metrics import recall_score
+from sklearn.metrics import mean_squared_error
 
 
 class MLP_Reg_model(Model):
@@ -24,11 +25,11 @@ class MLP_Reg_model(Model):
         # set up loss criterion
         self.criterion = torch.nn.MSELoss()
         # set up the data_loaders
-        self.trainloader = self.get_loader(feats_train.df.astype('long'), df_train)
-        self.testloader = self.get_loader(feats_test.df.astype('long'), df_test)
+        self.trainloader = self.get_loader(feats_train.df, df_train)
+        self.testloader = self.get_loader(feats_test.df, df_test)
         # set up the model
         self.device = self.util.config_val('MODEL', 'device', 'cpu')
-        self.model = self.MLP(1, 16, feats_train.df.shape[1]).to(self.device)
+        self.model = self.MLP(feats_train.df.shape[1], 16, 8, 1).to(self.device)
         # set up regularization
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.0001)
 
@@ -39,27 +40,56 @@ class MLP_Reg_model(Model):
 
     def predict(self):        
         _, truths, predictions = self.evaluate_model(self.model, self.testloader, self.device)
-        uar, _, _ = self.evaluate_model(self.model, self.trainloader, self.device)
-        report = Reporter(truths, predictions)
-        report.result()
+        mse, _, _ = self.evaluate_model(self.model, self.trainloader, self.device)
+        report = Reporter(truths.numpy(), predictions.numpy())
         report.result.loss = self.loss
-        report.result.train = uar
+        report.result.train = mse
         return report
 
     def get_loader(self, df_x, df_y):
+        data_set = self.Dataset(df_y, df_x, self.target)
+        loader = torch.utils.data.DataLoader(
+            dataset=data_set,
+            batch_size=8,
+            shuffle=True,
+            num_workers=3
+        )
+        return loader
+
+
+    class Dataset(torch.utils.data.Dataset):
+        def __init__(self, df, features,
+                    label: str):
+            super().__init__()
+            self.df = df
+            self.df_features = features
+            self.label = label
+        def __len__(self):
+            return len(self.df)
+
+        def __getitem__(self, item):
+            index = self.df.index[item]
+            features = self.df_features.loc[index, :].values.squeeze()
+            labels = np.array([self.df.loc[index, self.label]]).astype('float32').squeeze()
+            return features, labels
+            
+
+    def get_loader_old(self, df_x, df_y):
         data=[]
         for i in range(len(df_x)):
-            data.append([df_x.values[i], df_y[self.target][i]])
+            data.append([df_x.values[i], df_y[self.target].astype(float)[i]])
         return torch.utils.data.DataLoader(data, shuffle=True, batch_size=8)
 
 
     class MLP(torch.nn.Module):
-        def __init__(self, out_size, hidden_size, in_size):
+        def __init__(self, i, h1, h2, o):
             super().__init__()
             self.linear = torch.nn.Sequential(
-                torch.nn.Linear(in_size, hidden_size),
+                torch.nn.Linear(i, h1),
                 torch.nn.ReLU(),
-                torch.nn.Linear(hidden_size, out_size)
+                torch.nn.Linear(h1, h2),
+                torch.nn.ReLU(),
+                torch.nn.Linear(h2, o)
             )
         def forward(self, x):
             # x: (batch_size, channels, samples)
@@ -70,7 +100,7 @@ class MLP_Reg_model(Model):
         model.train()
         losses = []
         for features, labels in loader:
-            logits = model(features.float().to(device))
+            logits = model(features.to(device)).reshape(-1)
             loss = criterion(logits, labels.to(device))
             losses.append(loss.item())
             optimizer.zero_grad()
@@ -79,7 +109,7 @@ class MLP_Reg_model(Model):
         self.loss = (np.asarray(losses)).mean()
 
     def evaluate_model(self, model, loader, device):
-        logits = torch.zeros(len(loader.dataset), self.class_num)
+        logits = torch.zeros(len(loader.dataset))
         targets = torch.zeros(len(loader.dataset))
         model.eval()
         with torch.no_grad():
@@ -88,9 +118,9 @@ class MLP_Reg_model(Model):
                 end_index = (index + 1) * loader.batch_size
                 if end_index > len(loader.dataset):
                     end_index = len(loader.dataset)
-                logits[start_index:end_index, :] = model(features.to(device))
+                logits[start_index:end_index] = model(features.to(device)).reshape(-1)
                 targets[start_index:end_index] = labels
 
-        predictions = logits.argmax(dim=1)
-        uar = recall_score(targets.numpy(), predictions.numpy(), average='macro')
-        return uar, targets, predictions
+        predictions = logits
+        mse = mean_squared_error(targets.numpy(), predictions.numpy())
+        return mse, targets, predictions
