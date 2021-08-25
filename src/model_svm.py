@@ -47,5 +47,4 @@ class SVM_model(Model):
         """Predict the whole eval feature set"""
         predictions = self.clf.predict(self.feats_test.df.to_numpy())
         report = Reporter(self.df_test[glob_conf.config['DATA']['target']], predictions)
-        report.result()
         return report

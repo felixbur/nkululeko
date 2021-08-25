@@ -1,6 +1,7 @@
 from opensmile.core.define import FeatureSet
 from dataset import Dataset
-from emodb import Emodb
+from dataset_emodb import Emodb
+from dataset_ravdess import Ravdess
 from feats_opensmile import Opensmileset
 from runmanager import Runmanager
 from util import Util
@@ -38,6 +39,8 @@ class Experiment:
         for d in ds:
             if d == 'emodb':
                 data = Emodb()
+            elif d == 'ravdess':
+                data = Ravdess()
             else:
                 data = Dataset(d)
             data.load()

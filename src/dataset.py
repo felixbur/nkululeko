@@ -75,6 +75,7 @@ class Dataset:
         elif split_strategy == 'reuse':
             self.df_test = pd.read_pickle(storage_test)
             self.df_train = pd.read_pickle(storage_train)
+        self.util.debug(f'{self.df_test.speaker.nunique()} speakers in test and {self.df_train.speaker.nunique()} speakers in train')
         # remember the splits for future use
         self.df_test.to_pickle(storage_test)
         self.df_train.to_pickle(storage_train)

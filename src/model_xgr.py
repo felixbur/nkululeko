@@ -19,5 +19,4 @@ class XGR_model(Model):
         """Predict the whole eval feature set"""
         predictions =  self.clf.predict(self.feats_test.df)
         report = Reporter(self.df_test[glob_conf.config['DATA']['target']].to_numpy().astype(float), predictions)
-        report.result()
         return report
