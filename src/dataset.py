@@ -23,7 +23,7 @@ class Dataset:
         self.util = Util()
 
     def load(self):
-        """Load the dataframe with files, speakers and emotion labels"""
+        """Load the dataframe with files, speakers and task labels"""
         root = glob_conf.config['DATA'][self.name]
         db = audformat.Database.load(root)
         # map the audio file paths 
