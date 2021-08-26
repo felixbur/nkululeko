@@ -34,8 +34,16 @@ class MLP_model(Model):
 
 
     def train(self):
-        loss = self.train_epoch(self.model, self.trainloader, self.device, self.optimizer, self.criterion)
-        return loss
+        self.model.train()
+        losses = []
+        for features, labels in self.trainloader:
+            logits = self.model(features.to(self.device))
+            loss = self.criterion(logits, labels.to(self.device))
+            losses.append(loss.item())
+            self.optimizer.zero_grad()
+            loss.backward()
+            self.optimizer.step()
+        self.loss = (np.asarray(losses)).mean()
 
     def predict(self):        
         _, truths, predictions = self.evaluate_model(self.model, self.testloader, self.device)
@@ -66,17 +74,6 @@ class MLP_model(Model):
             x = x.squeeze(dim=1)
             return self.linear(x)
 
-    def train_epoch(self, model, loader, device, optimizer, criterion):
-        model.train()
-        losses = []
-        for features, labels in loader:
-            logits = model(features.to(device))
-            loss = criterion(logits, labels.to(device))
-            losses.append(loss.item())
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-        self.loss = (np.asarray(losses)).mean()
 
     def evaluate_model(self, model, loader, device):
         logits = torch.zeros(len(loader.dataset), self.class_num)

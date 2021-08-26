@@ -53,11 +53,6 @@ class CNN_model(Model):
         report.result.loss = self.loss
         report.result.train = mse
         return report
-
-    def predict_train(self):
-        """Predict the whole eval feature set"""
-        mse, truth, pred = self.evaluate_model(True)
-        return pred
     
 
     def evaluate_model(self, on_train=False):

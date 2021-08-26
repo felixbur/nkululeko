@@ -21,6 +21,14 @@ class Reporter:
         self.truths = truths
         self.preds = preds
         self.result = Result(0, 0, 0)
+        if self.util.exp_is_classification():
+            self.result.test = recall_score(self.truths, self.preds, average='macro')
+            self.result.loss = 1 - accuracy_score(self.truths, self.preds)
+            print(classification_report(self.truths, self.preds))
+        else:
+            # regression experiment
+            self.result.test = mean_squared_error(self.truths, self.preds)
+            # train and loss are being set by the model
 
     def continuous_to_categorical(self):
         bins = ast.literal_eval(glob_conf.config['DATA']['bins'])
@@ -76,12 +84,4 @@ class Reporter:
         print(labels)
 
     def get_result(self):
-        if self.util.exp_is_classification():
-            self.result.test = recall_score(self.truths, self.preds, average='macro')
-            self.result.loss = 1 - accuracy_score(self.truths, self.preds)
-            print(classification_report(self.truths, self.preds))
-        else:
-            # regression experiment
-            self.result.test = mean_squared_error(self.truths, self.preds)
-            # train and loss are being set by the model
         return self.result
