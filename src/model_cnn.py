@@ -50,7 +50,6 @@ class CNN_model(Model):
         # evaluate on train set
         mse, _, _ = self.evaluate_model(True)
         report = Reporter(truths, predictions)
-        report.result()
         report.result.loss = self.loss
         report.result.train = mse
         return report
