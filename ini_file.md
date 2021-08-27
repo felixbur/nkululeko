@@ -14,8 +14,8 @@ to be specified in an .ini file, [config parser syntax](https://zetcode.com/pyth
 * **store**: (relative to *root*) folder for caches
   * store = ./store/
 * **name**: a name for debugging output
-  *  name = emodb_exp
-*  **fig_dir**: (relative to *root*) folder for plots
+  * name = emodb_exp
+* **fig_dir**: (relative to *root*) folder for plots
   * fig_dir = ./images/
 * **runs**: number of runs (e.g. to average over random initializations)
   * runs = 1
