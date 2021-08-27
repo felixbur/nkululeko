@@ -2,11 +2,10 @@
 # Demonstration code to use the ML-experiment framework
 
 import sys
-sys.path.append("/home/fburkhardt/ResearchProjects/nkululeko/src")
+sys.path.append("/home/felix/data/research/nkululeko/src")
 import experiment as exp
 import dataset as ds
 import configparser
-from emodb import Emodb
 import matplotlib.pyplot as plt
 import numpy as np
 from util import Util
@@ -39,9 +38,12 @@ def main(config_file):
     uars_dev, uars_train, losses = expr.run()
 
     # plot the results
-    plot_results(uars_dev,uars_train, losses, 'mlp_results.png')
+    plot_name = util.get_exp_name()
+    fig_dir = util.get_path('fig_dir')
 
-    print('DONE')
+    plot_results(uars_dev,uars_train, losses, fig_dir+plot_name+'_epochs.png')
+
+    util.debug('DONE')
 
 def plot_results(uars_dev, uars_train, losses, name):
     # do a plot per run
@@ -58,4 +60,4 @@ def plot_results(uars_dev, uars_train, losses, name):
     plt.close()
 
 if __name__ == "__main__":
-    main('/home/fburkhardt/ResearchProjects/nkululeko/exp_emodb_mlp.ini') #sys.argv[1])
+    main(sys.argv[1])
