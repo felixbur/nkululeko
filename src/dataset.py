@@ -50,10 +50,7 @@ class Dataset:
         store = self.util.get_path('store')
         storage_test = f'{store}{self.name}_testdf.pkl'
         storage_train = f'{store}{self.name}_traindf.pkl'
-        try:
-            split_strategy = glob_conf.config['DATA'][self.name+'.split_strategy']
-        except KeyError:
-            split_strategy = 'database'
+        split_strategy = self.util.config_val('DATA', self.name+'.split_strategy', 'database')
         # 'database' (default), 'speaker_split', 'specified', 'reuse'
         if split_strategy == 'database':
             #  use the splits from the database
@@ -63,10 +60,20 @@ class Dataset:
             self.df_test = self.df.loc[self.df.index.intersection(testdf.index)]
             self.df_train = self.df.loc[self.df.index.intersection(traindf.index)]
         elif split_strategy == 'specified':
-            test_table = glob_conf.config['DATA'][self.name+'.test_table']
-            train_table = glob_conf.config['DATA'][self.name+'.train_table']
-            testdf = self.db.tables[test_table].df
-            traindf = self.db.tables[train_table].df
+            traindf, testdf = pd.DataFrame(), pd.DataFrame()
+            # try to load some dataframes for testing
+            try:
+                test_tables =  ast.literal_eval(glob_conf.config['DATA'][self.name+'.test_tables'])
+                for test_table in test_tables:
+                    testdf = testdf.append(self.db.tables[test_table].df)
+            except KeyError:
+                pass
+            try:
+                train_tables = ast.literal_eval(glob_conf.config['DATA'][self.name+'.train_tables'])
+                for train_table in train_tables:
+                    traindf = traindf.append(self.db.tables[train_table].df)
+            except KeyError:
+                pass
             # use only the train and test samples that were not perhaps filtered out by an earlier processing step
             self.df_test = self.df.loc[self.df.index.intersection(testdf.index)]
             self.df_train = self.df.loc[self.df.index.intersection(traindf.index)]
@@ -75,7 +82,6 @@ class Dataset:
         elif split_strategy == 'reuse':
             self.df_test = pd.read_pickle(storage_test)
             self.df_train = pd.read_pickle(storage_train)
-        self.util.debug(f'{self.df_test.speaker.nunique()} speakers in test and {self.df_train.speaker.nunique()} speakers in train')
         # remember the splits for future use
         self.df_test.to_pickle(storage_test)
         self.df_train.to_pickle(storage_train)
