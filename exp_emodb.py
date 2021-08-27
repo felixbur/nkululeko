@@ -1,14 +1,10 @@
 # main.py
 # Demonstration code to use the ML-experiment framework
 
-
-from os import lseek
 import sys
-sys.path.append("/home/fburkhardt/ResearchProjects/nkululeko/src")
+sys.path.append("/home/felix/data/research/nkululeko/src")
 import experiment as exp
-import dataset as ds
 import configparser
-from emodb import Emodb
 from util import Util
 
 def main(config_file):
@@ -42,4 +38,4 @@ def main(config_file):
 
 
 if __name__ == "__main__":
-    main('/home/fburkhardt/ResearchProjects/nkululeko/exp_emodb_param_opt_xgb.ini') #sys.argv[1])
+    main(sys.argv[1])
