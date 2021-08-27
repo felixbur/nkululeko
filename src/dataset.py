@@ -78,8 +78,14 @@ class Dataset:
             self.df_test = self.df.loc[self.df.index.intersection(testdf.index)]
             self.df_train = self.df.loc[self.df.index.intersection(traindf.index)]
             # it might be necessary to copy the target values 
-            self.df_test[self.target] = testdf[self.target]
-            self.df_train[self.target] = traindf[self.target]
+            try:
+                self.df_test[self.target] = testdf[self.target]
+            except KeyError:
+                pass # if the dataframe is empty
+            try:
+                self.df_train[self.target] = traindf[self.target]
+            except KeyError:
+                pass # if the dataframe is empty
         elif split_strategy == 'speaker_split':
             self.split_speakers()
         elif split_strategy == 'reuse':
