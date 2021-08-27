@@ -6,7 +6,7 @@ The idea is to have a very high level framework (based on e.g. sklearn and pytor
 
 There is a central "experiment" class that can be used by own experiments, two examples are given with
 * [exp_emodb.py](exp_emodb.py) ([configuration](exp_emodb.ini)), using SVM classifier
-* [exp_emodb_mlp.py](exp_emodb_mlp.py), using MLP classifier
+* [exp_emodb_mlp.py](exp_emodb_mlp.py) ([configuration](exp_emodb_mlp.ini)), using MLP classifier
   
 An idea of the framework should give this UML sketch (not really valid any more, but to give you an idea).
 ![sketch](images/ml-experiment.jpg)
