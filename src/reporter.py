@@ -11,7 +11,6 @@ from sklearn.metrics import recall_score
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import classification_report
-from scipy.stats import pearsonr
 from result import Result
 
 class Reporter:
@@ -24,7 +23,6 @@ class Reporter:
         if self.util.exp_is_classification():
             self.result.test = recall_score(self.truths, self.preds, average='macro')
             self.result.loss = 1 - accuracy_score(self.truths, self.preds)
-            print(classification_report(self.truths, self.preds))
         else:
             # regression experiment
             self.result.test = mean_squared_error(self.truths, self.preds)
@@ -58,30 +56,6 @@ class Reporter:
         plt.savefig(fig_dir+plot_name)
         fig.clear()
         plt.close(fig)
-
-
-    def plot_confmatrix_old(self, plot_name): 
-        fig_dir = self.util.get_path('fig_dir')
-        sns.set()  # get prettier plots
-        labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
-        plt.figure()  # figsize=[5, 5]
-        plt.title('Confusion Matrix')
-        plt.ylabel('UAR')
-        audplot.confusion_matrix(self.truths, self.preds)
-        # replace labels
-        locs, _ = plt.xticks()
-        plt.xticks(locs, labels)
-        plt.yticks(locs, labels)
-        plt.tight_layout()
-        print(f'plotting conf matrix to {fig_dir+plot_name}')
-        plt.savefig(fig_dir+plot_name)
-        plt.close()
-        print('truths')
-        print(self.truths.values)
-        print('preds')
-        print(self.preds)
-        print('labels')
-        print(labels)
 
     def get_result(self):
         return self.result

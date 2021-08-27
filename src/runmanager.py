@@ -56,10 +56,9 @@ class Runmanager:
                 self.util.debug(f'epoch {e}')
                 self.model.train()
                 report = self.model.predict()
-                exp_name = glob_conf.config['EXP']['name']
                 plot_name = f'{self.util.get_exp_name()}_{r:02d}_{e:03d}_cnf.png'
                 self.reports.append(report)                
-                print(f'run: {r} epoch: {e}: result: {self.reports[-1].get_result().test:.3f}')
+                self.util.debug(f'run: {r} epoch: {e}: result: {self.reports[-1].get_result().test:.3f}')
                 plot = self.util.config_val('PLOT', 'plot_epochs', 0)
                 if plot:
                     report.plot_confmatrix(plot_name)
@@ -68,5 +67,5 @@ class Runmanager:
                 plot_name = glob_conf.config['PLOT']['name']+'_cnf.png'
             except KeyError:
                 pass
-            # Do a final consusion matrix plot
+            # Do a final confusion matrix plot
             self.reports[-1].plot_confmatrix(plot_name)

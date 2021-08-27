@@ -49,7 +49,6 @@ class MLP_model(Model):
         _, truths, predictions = self.evaluate_model(self.model, self.testloader, self.device)
         uar, _, _ = self.evaluate_model(self.model, self.trainloader, self.device)
         report = Reporter(truths, predictions)
-        report.result()
         report.result.loss = self.loss
         report.result.train = uar
         return report
