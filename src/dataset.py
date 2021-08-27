@@ -77,6 +77,9 @@ class Dataset:
             # use only the train and test samples that were not perhaps filtered out by an earlier processing step
             self.df_test = self.df.loc[self.df.index.intersection(testdf.index)]
             self.df_train = self.df.loc[self.df.index.intersection(traindf.index)]
+            # it might be necessary to copy the target values 
+            self.df_test[self.target] = testdf[self.target]
+            self.df_train[self.target] = traindf[self.target]
         elif split_strategy == 'speaker_split':
             self.split_speakers()
         elif split_strategy == 'reuse':
