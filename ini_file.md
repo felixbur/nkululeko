@@ -6,6 +6,11 @@ to be specified in an .ini file, [config parser syntax](https://zetcode.com/pyth
 
 * **root**: experiment root folder 
   * root = /xxx/projects/nkululeko/
+* **type**: the kind of experiment
+  * type = classification
+  * possible values:
+    * **classification**: supervised learning experiment with restricted set of categories (e.g. emotion categories).
+    * **regression**: supervised learning experiment with continous values (e.g. speaker age in years).
 * **store**: (relative to *root*) folder for caches
   * store = ./store/
 * **name**: a name for debugging output
