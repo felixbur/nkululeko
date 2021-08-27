@@ -79,6 +79,7 @@ class Experiment:
             glob_conf.set_label_encoder(self.label_encoder)
         else:
             pass
+        self.util.debug(f'{self.df_test.speaker.nunique()} speakers in test and {self.df_train.speaker.nunique()} speakers in train')
 
     def extract_feats(self):
         """Extract the features for train and dev sets. They will be stored on disk and need to be removed manually."""

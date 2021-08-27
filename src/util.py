@@ -14,6 +14,12 @@ class Util:
         audeer.mkdir(dir_name)
         return dir_name
 
+    def get_exp_name(self):
+        ds = '_'.join(ast.literal_eval(glob_conf.config['DATA']['databases']))
+        mt = glob_conf.config['MODEL']['type']
+        ft = glob_conf.config['FEATS']['type']
+        return f'{ds}_{mt}_{ft}'
+
     def exp_is_classification(self):
         type = self.config_val('EXP', 'type', 'classification')
         if type=='classification':
