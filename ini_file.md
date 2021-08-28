@@ -80,3 +80,5 @@ to be specified in an .ini file, [config parser syntax](https://zetcode.com/pyth
   * scoring = recall_macro
 * **layers**: layer outline (number of hidden layers and number of neurons per layer) for the MLP as a python dictionary
   * layers = {'l1':8, 'l2':4}
+* **class_weight**: add class_weight to linear classifier (XGB,XGR, SVM, SVR) fit methods for imbalanced data
+  * class_weight = 1

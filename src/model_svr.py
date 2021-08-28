@@ -36,12 +36,24 @@ class SVR_model(Model):
                 tuned_params[param] = values
             self.util.debug(f'tuning on {tuned_params}')
             self.clf = GridSearchCV(self.clf, tuned_params, refit = True, verbose = 3, scoring=scoring)
-            self.clf.fit(feats, self.df_train[target])
+            try:
+                class_weight = glob_conf.config['MODEL']['class_weight']
+                if class_weight:
+                    self.util.debug('using class weight')
+                    self.clf.fit(feats, self.df_train[target], sample_weight=self.classes_weights)
+            except KeyError:
+                self.clf.fit(feats, self.df_train[target])
             self.util.debug(f'winner parameters: {self.clf.best_params_}')
         except KeyError:
             c = float(self.util.config_val('MODEL', 'C', '0.001'))
             self.set_C(c)
-            self.clf.fit(feats, self.df_train[target])
+            try:
+                class_weight = glob_conf.config['MODEL']['class_weight']
+                if class_weight:
+                    self.util.debug('using class weight')
+                    self.clf.fit(feats, self.df_train[target], sample_weight=self.classes_weights)
+            except KeyError:
+                self.clf.fit(feats, self.df_train[target])
 
     def predict(self):
         """Predict the whole eval feature set"""
