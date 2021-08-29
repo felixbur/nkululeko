@@ -17,6 +17,8 @@ to be specified in an .ini file, [config parser syntax](https://zetcode.com/pyth
   * name = emodb_exp
 * **fig_dir**: (relative to *root*) folder for plots
   * fig_dir = ./images/
+* **res_dir**: (relative to *root*) folder for result output
+  * res_dir = ./results/
 * **runs**: number of runs (e.g. to average over random initializations)
   * runs = 1
 * **epochs**: number of epochs for ANN training
