@@ -144,6 +144,7 @@ class Experiment:
         # access the results per run
         self.reports = self.runmgr.reports
         self.collect_reports()
+        self.reports[-1].print_results()
         return self.results, self.train_results, self.losses
 
     def collect_reports(self):

@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
-import audplot
 from util import Util 
 import ast
 import numpy as np
@@ -10,7 +9,9 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import recall_score
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
 from sklearn.metrics import classification_report
+from scipy.stats import pearsonr
 from result import Result
 
 class Reporter:
@@ -56,6 +57,22 @@ class Reporter:
         plt.savefig(fig_dir+plot_name)
         fig.clear()
         plt.close(fig)
+
+    def print_results(self):
+        res_dir = self.util.get_path('res_dir')
+        if self.util.exp_is_classification():
+            rpt = classification_report(self.truths, self.preds, labels=glob_conf.label_encoder.classes_)
+            file_name = f'{res_dir}{self.util.get_exp_name()}.txt'
+            with open(file_name, "w") as text_file:
+                text_file.write(rpt)
+        else: # regression
+            mse = self.result.test
+            r2 = r2_score(self.truths, self.preds)
+            pcc = pearsonr(self.truths, self.preds)[0]
+            file_name = f'{res_dir}{self.util.get_exp_name()}.txt'
+            with open(file_name, "w") as text_file:
+                text_file.write(f'mse: {mse:.3f}, r_2: {r2:.3f}, pcc {pcc:.3f}')
+
 
     def get_result(self):
         return self.result
