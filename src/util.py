@@ -9,7 +9,15 @@ class Util:
     def get_path(self, entry):
         root = glob_conf.config['EXP']['root']
         name = glob_conf.config['EXP']['name']
-        entryn = glob_conf.config['EXP'][entry]
+        try:
+            entryn = glob_conf.config['EXP'][entry]
+        except KeyError:
+            if entry == 'fig_dir':
+                entryn = './images/'
+            elif entry == 'res_dir':
+                entryn = './results/'
+            else:
+                entryn = './store/'
         dir_name = f'{root}{name}/{entryn}'
         audeer.mkdir(dir_name)
         return dir_name
