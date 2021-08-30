@@ -25,6 +25,8 @@ to be specified in an .ini file, [config parser syntax](https://zetcode.com/pyth
   * epochs = 50
 
 ### DATA
+* **data_type**: just a flag now to mark continous data, so it can be binned to categorical data (using *bins* and *labels*)
+  * data_type = continous
 * **databases**: list of databases to be used in the experiment
   * databases = ['emodb', 'timit']
 * **db_name**: path with audformatted repository for each database listed in 'databases*
@@ -44,7 +46,8 @@ to be specified in an .ini file, [config parser syntax](https://zetcode.com/pyth
   * target = emotion
 * **labels**: for classification experiments: the names of the categories (is also used for regression when binning the values)
   * labels = ['anger', 'boredom', 'disgust', 'fear', 'happiness', 'neutral', 'sadness']
-
+* **bins**: array of integers to be used for binning continous data 
+  * bins  = [-100, 40, 50, 60, 70, 100]
 ### FEATS
 * **type**: the type of features
   * type = os
