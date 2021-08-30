@@ -2,7 +2,7 @@
 # Demonstration code to use the ML-experiment framework
 
 import sys
-sys.path.append("/home/felix/data/research/nkululeko/src")
+sys.path.append("./src")
 import experiment as exp
 import configparser
 from util import Util
