@@ -29,7 +29,7 @@ class Runmanager:
     def do_runs(self):
         """Start the runs"""
         # for all runs
-        for r in range(int(glob_conf.config['EXP']['runs'])):
+        for r in range(int(self.util.config_val('EXP', 'runs', 1))):
             self.util.debug(f'run {r}')
             # initialze results
             self.reports = []
@@ -52,7 +52,7 @@ class Runmanager:
             else:
                 self.util.error(f'unknown model type: \'{model_type}\'')
             # for all epochs
-            for e in range(int(glob_conf.config['EXP']['epochs'])):
+            for e in range(int(self.util.config_val('EXP', 'epochs', 1))):
                 self.util.debug(f'epoch {e}')
                 self.model.train()
                 report = self.model.predict()
