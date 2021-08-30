@@ -127,7 +127,7 @@ class Dataset:
             pass
 
     def check_continous_classification(self, df):
-        datatype = self.util.config_val('DATA', 'data_type', 'whatever')
+        datatype = self.util.config_val('DATA', 'data_type', 'dummy')
         if self.util.exp_is_classification() and datatype == 'continous':
             cat_vals = self.util.continuous_to_categorical(df[self.target])
             df[self.target] = cat_vals
