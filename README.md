@@ -3,6 +3,7 @@ A project to implement a reusable framework for machine learning experiments.
 
 ## Overview
 The idea is to have a very high level framework (based on e.g. sklearn and pytorch) that can be used by people not being experienced programmers as they mainly have to adapt the initialization parameter files.
+[Here's a blog post on how to set up nkululeko on your computer.](http://blog.syntheticspeech.de/2021/08/30/how-to-set-up-your-first-nkululeko-project/)
 
 There is a central "experiment" class that can be used by own experiments, two examples are given with
 * [exp_emodb.py](exp_emodb.py) ([configuration](exp_emodb.ini)), using SVM classifier
