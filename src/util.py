@@ -3,6 +3,7 @@ import audeer
 import ast 
 import sys
 import glob_conf
+import numpy as np
 
 class Util:
         
@@ -47,3 +48,8 @@ class Util:
             return glob_conf.config[category][key]
         except KeyError:
             return default
+
+    def continuous_to_categorical(self, array):
+        bins = ast.literal_eval(glob_conf.config['DATA']['bins'])
+        result =  np.digitize(array, bins)-1
+        return result

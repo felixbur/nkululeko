@@ -61,7 +61,10 @@ class Reporter:
     def print_results(self):
         res_dir = self.util.get_path('res_dir')
         if self.util.exp_is_classification():
-            labels = glob_conf.label_encoder.classes_
+            if self.util.config_val('DATA', 'data_type', 'whatever') == 'continous':
+                labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
+            else:
+                labels = glob_conf.label_encoder.classes_
             rpt = classification_report(self.truths, self.preds, target_names=labels)
             file_name = f'{res_dir}{self.util.get_exp_name()}.txt'
             with open(file_name, "w") as text_file:

@@ -91,6 +91,9 @@ class Dataset:
         elif split_strategy == 'reuse':
             self.df_test = pd.read_pickle(storage_test)
             self.df_train = pd.read_pickle(storage_train)
+        """Bin target values if they are continous but a classification experiment sould be done"""
+        self.check_continous_classification(self.df_train)
+        self.check_continous_classification(self.df_test)
         # remember the splits for future use
         self.df_test.to_pickle(storage_test)
         self.df_train.to_pickle(storage_train)
@@ -109,6 +112,8 @@ class Dataset:
         glob_conf.config['DATA']['needs_feature_extraction'] = 'true'
 
     def prepare_labels(self):
+        """Bin target values if they are continous but a classification experiment sould be done"""
+        self.check_continous_classification(self.df)
         """Rename the labels and remove the ones that are not needed."""
         try :
             mapping = ast.literal_eval(glob_conf.config['DATA'][f'{self.name}.mapping'])
@@ -120,3 +125,10 @@ class Dataset:
             print(f'for dataset {self.name} mapped {mapping}')
         except KeyError:
             pass
+
+    def check_continous_classification(self, df):
+        datatype = self.util.config_val('DATA', 'data_type', 'whatever')
+        if self.util.exp_is_classification() and datatype == 'continous':
+            cat_vals = self.util.continuous_to_categorical(df[self.target])
+            df[self.target] = cat_vals
+ 
