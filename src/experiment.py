@@ -132,9 +132,6 @@ class Experiment:
 
     def init_runmanager(self):
         """Initialize the manager object for the runs."""
-        if self.feats_train.df.isna().to_numpy().any():
-            self.util.error('exp 3: NANs exist')
-
         self.runmgr = Runmanager(self.df_train, self.df_test, self.feats_train, self.feats_test)
 
     def run(self):
