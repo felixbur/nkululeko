@@ -16,15 +16,6 @@ from scaler import Scaler
 class Experiment:
     """Main class specifying an experiment"""
     
-    name = '' # A name for the experiment. Will be used to label result and temporary files.
-    datasets = {} # Dictionary to store the datasets that are loaded
-    df_train = None # The training dataframe
-    df_test = None # The evaluation dataframe
-    feats_train = None # The training features
-    feats_test = None # The test features
-    runmgr = None  # The manager object for the runs
-    labels = None # set of string values for the categories
-    values = None # set of numerical values encoding the classes 
 
     def __init__(self, config_obj):
         """Constructor: takes a name and the config object"""
@@ -108,12 +99,17 @@ class Experiment:
             self.feats_train = MLD_set(f'{feats_name}_train', df_train)
             self.feats_train.extract()
             self.feats_train.filter()
+            if self.feats_train.df.isna().to_numpy().any():
+                self.util.error('exp 1: NANs exist')
             self.feats_test = MLD_set(f'{feats_name}_test', df_test)
             self.feats_test.extract()
             self.feats_test.filter()
             # remove samples that were not extracted by MLD
             self.df_test = self.df_test.loc[self.df_test.index.intersection(self.feats_test.df.index)]
             self.df_train = self.df_train.loc[self.df_train.index.intersection(self.feats_train.df.index)]
+            if self.feats_train.df.isna().to_numpy().any():
+                self.util.error('exp 2: NANs exist')
+
         elif feats_type=='spectra':
             # compute the spectrograms
             test_specs = Spectraloader(f'{feats_name}_test', df_test)
@@ -136,6 +132,9 @@ class Experiment:
 
     def init_runmanager(self):
         """Initialize the manager object for the runs."""
+        if self.feats_train.df.isna().to_numpy().any():
+            self.util.error('exp 3: NANs exist')
+
         self.runmgr = Runmanager(self.df_train, self.df_test, self.feats_train, self.feats_test)
 
     def run(self):

@@ -34,21 +34,29 @@ class MLD_set(Featureset):
             self.df = self.df[self.df['hld_nSyl']>=min_syls]
         except KeyError:
             pass
-        try:
-            # add opensmile features
-            with_os = int(glob_conf.config['FEATS']['with_os'])
-            if with_os:
-                df_os = self.extract_os()
-                df_os =  df_os.loc[ df_os.index.intersection(self.df.index)]
-                self.df = pd.concat([self.df, df_os], axis=1)
-        except KeyError:
-            pass
         try: 
             # use only some features
             selected_features = ast.literal_eval(glob_conf.config['FEATS']['features'])
             self.df = self.df[selected_features]
         except KeyError:
             pass
+        # add opensmile features
+        try:
+            with_os = int(glob_conf.config['FEATS']['with_os'])
+            if with_os:
+                df_os = self.extract_os()
+                # df_os =  df_os.loc[ df_os.index.intersection(self.df.index)]
+                self.df = pd.concat([self.df, df_os], axis=1)
+                self.util.debug(f'shape: {self.df.shape}')
+        except KeyError:
+            pass
+        # replace NANa with column means values
+        for i, col in enumerate(self.df.columns):
+            if self.df[col].isnull().values.any():
+                self.util.debug(f'{col} includes {self.df[col].isnull().sum()} nan, inserting mean values')
+                self.df[col] = self.df[col].fillna(self.df[col].mean())
+        if self.df.isna().to_numpy().any():
+            self.util.error('feats 0: NANs exist')
 
     def extract_os(self):
         store = self.util.get_path('store')
