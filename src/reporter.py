@@ -13,6 +13,8 @@ from sklearn.metrics import r2_score
 from sklearn.metrics import classification_report
 from scipy.stats import pearsonr
 from result import Result
+import imageio
+import glob
 
 class Reporter:
 
@@ -77,6 +79,13 @@ class Reporter:
             with open(file_name, "w") as text_file:
                 text_file.write(f'mse: {mse:.3f}, r_2: {r2:.3f}, pcc {pcc:.3f}')
 
+    def make_conf_animation(self, out_name):
+        fig_dir = self.util.get_path('fig_dir')
+        filenames =  glob.glob(fig_dir+'*_cnf.png')
+        images = []
+        for filename in filenames:
+            images.append(imageio.imread(filename))
+        imageio.mimsave(fig_dir+out_name, images)
 
     def get_result(self):
         return self.result

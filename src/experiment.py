@@ -141,6 +141,9 @@ class Experiment:
         self.reports = self.runmgr.reports
         self.collect_reports()
         self.reports[-1].print_results()
+        plot_epoch_progression = self.util.config_val('PLOT', 'plot_epoch_progression', 0)
+        if plot_epoch_progression:
+            self.reports[-1].make_conf_animation(self.util.get_exp_name()+'_conf_anim.gif')
         return self.results, self.train_results, self.losses
 
     def collect_reports(self):
