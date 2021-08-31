@@ -29,8 +29,8 @@ class Runmanager:
     def do_runs(self):
         """Start the runs"""
         # for all runs
-        for r in range(int(self.util.config_val('EXP', 'runs', 1))):
-            self.util.debug(f'run {r}')
+        for run in range(int(self.util.config_val('EXP', 'runs', 1))):
+            self.util.debug(f'run {run}')
             # initialze results
             self.reports = []
             # intialize a new model
@@ -52,20 +52,27 @@ class Runmanager:
             else:
                 self.util.error(f'unknown model type: \'{model_type}\'')
             # for all epochs
-            for e in range(int(self.util.config_val('EXP', 'epochs', 1))):
-                self.util.debug(f'epoch {e}')
+            for epoch in range(int(self.util.config_val('EXP', 'epochs', 1))):
+                self.util.debug(f'epoch {epoch}')
                 self.model.train()
                 report = self.model.predict()
-                plot_name = f'{self.util.get_exp_name()}_{r}_{e:03d}_cnf.png'
+                report.set_id(run, epoch)
+                plot_name = f'{self.util.get_exp_name()}_{run}_{epoch:03d}_cnf.png'
                 self.reports.append(report)                
-                self.util.debug(f'run: {r} epoch: {e}: result: {self.reports[-1].get_result().test:.3f}')
+                self.util.debug(f'run: {run} epoch: {epoch}: result: {self.reports[-1].get_result().test:.3f}')
                 plot = self.util.config_val('PLOT', 'plot_epochs', 0)
                 if plot:
+                    self.util.debug(f'plotting conf matrix to {plot_name}')
                     report.plot_confmatrix(plot_name)
+
             try:
                 # Is there a different name for a plot specified?
                 plot_name = glob_conf.config['PLOT']['name']+'_cnf.png'
             except KeyError:
                 pass
             # Do a final confusion matrix plot
+            self.util.debug(f'plotting final conf matrix to {plot_name}')
             self.reports[-1].plot_confmatrix(plot_name)
+
+
+        

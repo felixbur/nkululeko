@@ -141,10 +141,19 @@ class Experiment:
         self.reports = self.runmgr.reports
         self.collect_reports()
         self.reports[-1].print_results()
+        plot_anim_progression = self.util.config_val('PLOT', 'plot_anim_progression', 0)
+        if plot_anim_progression:
+            plot_name = self.util.get_exp_name()+'_conf_anim.gif'
+            self.util.debug(f'plotting animated confusion to {plot_name}')
+            self.reports[-1].make_conf_animation(plot_name)
         plot_epoch_progression = self.util.config_val('PLOT', 'plot_epoch_progression', 0)
         if plot_epoch_progression:
-            self.reports[-1].make_conf_animation(self.util.get_exp_name()+'_conf_anim.gif')
-        return self.results, self.train_results, self.losses
+            plot_name = self.util.get_exp_name()+'_epoch_progression.png'
+            self.util.debug(f'plotting progression to {plot_name}')
+            self.reports[-1].plot_epoch_progression(self.reports, plot_name)
+
+        return self.reports    
+#        return self.results, self.train_results, self.losses
 
     def collect_reports(self):
         self.results, self.losses, self.train_results = [], [], []

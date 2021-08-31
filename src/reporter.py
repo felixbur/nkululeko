@@ -19,17 +19,25 @@ import glob
 class Reporter:
 
     def __init__(self, truths, preds):
+        """Initialization with ground truth und predictions vector"""
         self.util = Util()
         self.truths = truths
         self.preds = preds
         self.result = Result(0, 0, 0)
         if self.util.exp_is_classification():
+            self.MEASURE = 'UAR'
             self.result.test = recall_score(self.truths, self.preds, average='macro')
             self.result.loss = 1 - accuracy_score(self.truths, self.preds)
         else:
             # regression experiment
+            self.MEASURE = 'MSE'
             self.result.test = mean_squared_error(self.truths, self.preds)
             # train and loss are being set by the model
+
+    def set_id(self, run, epoch):
+        """Make the report identifiable with run and epoch index"""
+        self.run = run
+        self.epoch = epoch
 
     def continuous_to_categorical(self):
         bins = ast.literal_eval(glob_conf.config['DATA']['bins'])
@@ -53,8 +61,6 @@ class Reporter:
             disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels).plot(cmap='Blues')
         except ValueError:
             disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=list(labels).remove('neutral')).plot(cmap='Blues')
-
-        print(f'plotting conf matrix to {fig_dir+plot_name}')
         plt.title(f'Confusion Matrix, UAR: {uar:.3f}')
         plt.savefig(fig_dir+plot_name)
         fig.clear()
@@ -89,3 +95,25 @@ class Reporter:
 
     def get_result(self):
         return self.result
+
+
+    def plot_epoch_progression(self, reports, out_name):
+        fig_dir = self.util.get_path('fig_dir')
+        results, losses, train_results = [], [], []
+        for r in reports:
+            results.append(r.get_result().test)
+            losses.append(r.get_result().loss)
+            train_results.append(r.get_result().train)
+
+        # do a plot per run
+        # scale the losses so they fit on the picture
+        losses = np.asarray(losses)/2
+        plt.figure(dpi=200)
+        plt.plot(train_results, 'green', label='train set') 
+        plt.plot(results, 'red', label='dev set')
+        plt.plot(losses, 'grey', label='losses/2')
+        plt.xlabel('epochs')
+        plt.ylabel(self.MEASURE)
+        plt.legend()
+        plt.savefig(fig_dir+ out_name)
+        plt.close()        
