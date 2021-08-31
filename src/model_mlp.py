@@ -51,7 +51,10 @@ class MLP_model(Model):
         _, truths, predictions = self.evaluate_model(self.model, self.testloader, self.device)
         uar, _, _ = self.evaluate_model(self.model, self.trainloader, self.device)
         report = Reporter(truths, predictions)
-        report.result.loss = self.loss
+        try:
+            report.result.loss = self.loss
+        except AttributeError: # if the model was loaded from disk the loss is unknown
+            pass 
         report.result.train = uar
         return report
 
@@ -60,21 +63,6 @@ class MLP_model(Model):
         for i in range(len(df_x)):
             data.append([df_x.values[i], df_y[self.target][i]])
         return torch.utils.data.DataLoader(data, shuffle=True, batch_size=8)
-
-    class MLP_test(torch.nn.Module):
-        def __init__(self, i, layers, o):
-            super().__init__()
-            self.linear = torch.nn.Sequential(
-                torch.nn.Linear(i, layers['l1']),
-                torch.nn.ReLU(),
-                torch.nn.Linear(layers['l1'], layers['l2']),
-                torch.nn.ReLU(),
-                torch.nn.Linear(layers['l2'], o)
-            )
-        def forward(self, x):
-            # x: (batch_size, channels, samples)
-            x = x.squeeze(dim=1)
-            return self.linear(x)
 
     class MLP(torch.nn.Module):
         def __init__(self, i, layers, o):
@@ -110,3 +98,18 @@ class MLP_model(Model):
         predictions = logits.argmax(dim=1)
         uar = recall_score(targets.numpy(), predictions.numpy(), average='macro')
         return uar, targets, predictions
+
+
+    def store(self):
+        dir = self.util.get_path('model_dir')
+        name = f'{self.util.get_exp_name()}_{self.run}_{self.epoch:03d}.model'
+        torch.save(self.model.state_dict(), dir+name)
+        
+    def load(self, run, epoch):
+        dir = self.util.get_path('model_dir')
+        name = f'{self.util.get_exp_name()}_{run}_{epoch:03d}.model'
+        self.device = self.util.config_val('MODEL', 'device', 'cpu')
+        layers = ast.literal_eval(glob_conf.config['MODEL']['layers'])
+        self.model = self.MLP(self.feats_train.df.shape[1], layers, self.class_num).to(self.device)
+        self.model.load_state_dict(torch.load(dir+name))
+        self.model.eval()

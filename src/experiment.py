@@ -161,3 +161,8 @@ class Experiment:
             self.results.append(r.get_result().test)
             self.losses.append(r.get_result().loss)
             self.train_results.append(r.get_result().train)
+
+    def print_best_model(self):
+        best_r = self.runmgr.get_best_result()
+        self.util.debug(f'best result with run {best_r.run} and epoch {best_r.epoch}: {best_r.result.test:.3f}')
+        self.runmgr.print_model(best_r) 

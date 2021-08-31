@@ -24,6 +24,8 @@ class Reporter:
         self.truths = truths
         self.preds = preds
         self.result = Result(0, 0, 0)
+        self.run = 0
+        self.epoch = 0
         if self.util.exp_is_classification():
             self.MEASURE = 'UAR'
             self.result.test = recall_score(self.truths, self.preds, average='macro')
@@ -107,7 +109,12 @@ class Reporter:
 
         # do a plot per run
         # scale the losses so they fit on the picture
-        losses = np.asarray(losses)/2
+        losses, results, train_results = np.asarray(losses), np.asarray(results), np.asarray(train_results)
+        losses = losses/2
+        if (self.util.exp_is_classification()):
+            # scale up UAR
+            results = results*100
+            train_results = train_results*100
         plt.figure(dpi=200)
         plt.plot(train_results, 'green', label='train set') 
         plt.plot(results, 'red', label='dev set')

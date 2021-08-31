@@ -1,11 +1,11 @@
 # model.py
 from util import Util 
 import glob_conf
-from sklearn.utils import class_weight
+import sklearn.utils
 from reporter import Reporter
 import ast
 from sklearn.model_selection import GridSearchCV
-
+import pickle
 
 class Model:
     """Generic model class"""
@@ -15,17 +15,29 @@ class Model:
         self.df_train, self.df_test, self.feats_train, self.feats_test = df_train, df_test, feats_train, feats_test
         self.util = Util()
         target = glob_conf.config['DATA']['target']
-        self.classes_weights = class_weight.compute_sample_weight(
-            class_weight='balanced',
-            y=df_train[target]
-        )
+        self.run = 0
+        self.epoch = 0
+
+    def set_id(self, run, epoch):
+        self.run = run
+        self.epoch = epoch
+ 
+
     def train(self):
         """Train the model"""
         target = glob_conf.config['DATA']['target']
+        # check for NANs in the features
         if self.feats_train.df.isna().to_numpy().any():
-            self.feats_train.df.to_pickle('feats_train.df')
-            self.util.error('NANs exist')
+            self.util.error('can\'t train: NANs exist')
+        # remove labels from features
         feats = self.feats_train.df.to_numpy()
+        # compute class weights
+        if self.util.config_val('MODEL', 'class_weight', 0):      
+            self.classes_weights = sklearn.utils.class_weight.compute_sample_weight(
+                class_weight='balanced',
+                y=self.df_train[target]
+            )
+
         try:
             # tune the model meta parameters
             tuning_params = ast.literal_eval(glob_conf.config['MODEL']['tuning_params'])
@@ -58,3 +70,16 @@ class Model:
         predictions =  self.clf.predict(self.feats_test.df.to_numpy())
         report = Reporter(self.df_test[glob_conf.config['DATA']['target']].to_numpy().astype(float), predictions)
         return report
+
+    def store(self):
+        dir = self.util.get_path('model_dir')
+        name = f'{self.util.get_exp_name()}_{self.run}_{self.epoch:03d}.model'
+        with open(dir+name, 'wb') as handle:
+            pickle.dump(self.clf, handle)
+
+        
+    def load(self, run, epoch):
+        dir = self.util.get_path('model_dir')
+        name = f'{self.util.get_exp_name()}_{self.run}_{self.epoch:03d}.model'
+        with open(dir+name, 'rb') as handle:
+            self.clf = pickle.load(handle)

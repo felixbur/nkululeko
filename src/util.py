@@ -17,6 +17,8 @@ class Util:
                 entryn = './images/'
             elif entry == 'res_dir':
                 entryn = './results/'
+            elif entry == 'model_dir':
+                entryn = './models/'
             else:
                 entryn = './store/'
         dir_name = f'{root}{name}/{entryn}'

@@ -54,6 +54,7 @@ class Runmanager:
             # for all epochs
             for epoch in range(int(self.util.config_val('EXP', 'epochs', 1))):
                 self.util.debug(f'epoch {epoch}')
+                self.model.set_id(run, epoch)
                 self.model.train()
                 report = self.model.predict()
                 report.set_id(run, epoch)
@@ -64,6 +65,9 @@ class Runmanager:
                 if plot:
                     self.util.debug(f'plotting conf matrix to {plot_name}')
                     report.plot_confmatrix(plot_name)
+                store_models = self.util.config_val('MODEL', 'store', 0)
+                if store_models:
+                    self.model.store()
 
             try:
                 # Is there a different name for a plot specified?
@@ -74,5 +78,49 @@ class Runmanager:
             self.util.debug(f'plotting final conf matrix to {plot_name}')
             self.reports[-1].plot_confmatrix(plot_name)
 
+    def print_model(self, report):
+        run = report.run
+        epoch = report.epoch
+        model_type = glob_conf.config['MODEL']['type']
+        if model_type=='svm':
+            self.model = SVM_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
+        elif model_type=='svr':
+            self.model = SVR_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
+        elif model_type=='xgb':
+            self.model = XGB_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
+        elif model_type=='xgr':
+            self.model = XGR_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
+        elif model_type=='cnn':
+            self.model = CNN_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
+        elif model_type=='mlp':
+            self.model = MLP_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
+        elif model_type=='mlp_reg':
+            self.model = MLP_Reg_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
+        else:
+            self.util.error(f'unknown model type: \'{model_type}\'')
+        self.model.load(run, epoch)
+        report = self.model.predict()
+        plot_name = f'{self.util.get_exp_name()}_BEST_{run}_{epoch:03d}_cnf.png'
+        self.util.debug(f'plotting conf matrix to {plot_name}')
+        report.plot_confmatrix(plot_name)
 
-        
+
+    def get_best_result(self):
+        best_r = Reporter([], [])
+        if self.util.exp_is_classification():
+            best_result = 0
+            for r in self.reports:
+                res = r.result.test
+                if self.util.exp_is_classification():
+                    if res > best_result:
+                        best_result = res
+                        best_r = r
+        else:
+            best_result = 10000
+            for r in self.reports:
+                res = r.result.test
+                if self.util.exp_is_classification():
+                    if res < best_result:
+                        best_result = res
+                        best_r = r
+        return best_r
