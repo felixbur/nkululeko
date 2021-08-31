@@ -1,5 +1,5 @@
 # Nkululeko
-A project to detect speaker characteristics with machine learning experiments with a very high level interface.
+A project to detect speaker characteristics with machine learning experiments with a very high level interface based on [audformat](https://github.com/audeering/audformat).
 
 ## Overview
 The idea is to have a very high level framework (based on e.g. sklearn and pytorch) that can be used by people not being experienced programmers as they mainly have to adapt the initialization parameter files.
@@ -8,16 +8,16 @@ The idea is to have a very high level framework (based on e.g. sklearn and pytor
 There is a central "experiment" class that can be used by own experiments, two examples are given with
 * [exp_emodb.py](exp_emodb.py) ([configuration](exp_emodb.ini)), using SVM classifier
 * [exp_emodb_mlp.py](exp_emodb_mlp.py) ([configuration](exp_emodb_mlp.ini)), using MLP classifier
-  
-An idea of the framework should give this UML sketch (not really valid any more, but to give you an idea).
+
+The framework is targeted at the speech domain and supports experiments where different classifiers are combined with different feature extractors.
+
+Here's a rough UML-like sketch of the framework.
 ![sketch](images/ml-experiment.jpg)
 
-Currently the following classifiers are implemented (integrated from sklearn):
-* SVM
-* SVR
-* XGB
-* XGR
-* MLP
+Currently the following linear classifiers are implemented (integrated from sklearn):
+* SVM, SVR, XGB, XGR
+  and the following ANNS
+* MLP, CNN (tbd)
 
 Here's [a movie that shows the progress of classification done with nkululeko](https://youtu.be/6Y0M382GjvM)
 
@@ -28,3 +28,15 @@ You could
 * and then adapt an .ini file (again adapting at least the paths to src and data)
   
 Here's [an overview on the ini-file options](./ini_file.md)
+
+## Features
+* Classifiers: XGB, XGR, SVM, SVR, MLP
+* Feature extractors: opensmile
+* Feature scaling
+* Label encoding
+* Binning (continuous to categorical)
+
+## Outlook
+* Classifiers: CNN
+* Feature extractors: mid level descriptors, Mel-spectra, embeddings
+* Online demo interface for trained models 
