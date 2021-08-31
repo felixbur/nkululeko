@@ -1,5 +1,5 @@
 # Nkululeko
-A project to detect speaker characteristics by machine learning experiments with a very high level interface based on [audformat](https://github.com/audeering/audformat).
+A project to detect speaker characteristics by machine learning experiments with a high level interface based on [audformat](https://github.com/audeering/audformat).
 
 ## Overview
 The idea is to have a very high level framework (based on e.g. sklearn and pytorch) that can be used by people not being experienced programmers as they mainly have to adapt the initialization parameter files.
