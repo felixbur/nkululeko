@@ -19,6 +19,8 @@ to be specified in an .ini file, [config parser syntax](https://zetcode.com/pyth
   * fig_dir = ./images/
 * **res_dir**: (relative to *root*) folder for result output
   * res_dir = ./results/
+* **models_dir**: (relative to *root*) folder to save models
+  * models_dir = ./models/
 * **runs**: number of runs (e.g. to average over random initializations)
   * runs = 1
 * **epochs**: number of epochs for ANN training
@@ -87,3 +89,15 @@ to be specified in an .ini file, [config parser syntax](https://zetcode.com/pyth
   * layers = {'l1':8, 'l2':4}
 * **class_weight**: add class_weight to linear classifier (XGB, SVM) fit methods for imbalanced data
   * class_weight = 1
+* **store**: whether to save all model states (per epoch) to disk
+  * store = 1
+
+### PLOT
+* **name**: special name for confusion matrix plots (stored in *img_dir*).
+  * name = special_c_value
+* **plot_epochs**: whether to make a plot each for every epoch result.
+  * plot_epochs = 1
+* **plot_anim_progression**: generate an animated gif from the epoch plots
+  * plot_anim_progression = 1
+* **plot_epoch_progression**: plot the progression of test, train and loss results over epochs
+  * plot_epoch_progression = 1
