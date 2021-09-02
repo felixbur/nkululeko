@@ -26,15 +26,16 @@ class Reporter:
         self.result = Result(0, 0, 0)
         self.run = 0
         self.epoch = 0
-        if self.util.exp_is_classification():
-            self.MEASURE = 'UAR'
-            self.result.test = recall_score(self.truths, self.preds, average='macro')
-            self.result.loss = 1 - accuracy_score(self.truths, self.preds)
-        else:
-            # regression experiment
-            self.MEASURE = 'MSE'
-            self.result.test = mean_squared_error(self.truths, self.preds)
-            # train and loss are being set by the model
+        if len(truths)>0 and len(preds)>0:
+            if self.util.exp_is_classification():
+                self.MEASURE = 'UAR'
+                self.result.test = recall_score(self.truths, self.preds, average='macro')
+                self.result.loss = 1 - accuracy_score(self.truths, self.preds)
+            else:
+                # regression experiment
+                self.MEASURE = 'MSE'
+                self.result.test = mean_squared_error(self.truths, self.preds)
+                # train and loss are being set by the model
 
     def set_id(self, run, epoch):
         """Make the report identifiable with run and epoch index"""

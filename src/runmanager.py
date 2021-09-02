@@ -111,16 +111,14 @@ class Runmanager:
             best_result = 0
             for r in self.reports:
                 res = r.result.test
-                if self.util.exp_is_classification():
-                    if res > best_result:
-                        best_result = res
-                        best_r = r
+                if res > best_result:
+                    best_result = res
+                    best_r = r
         else:
             best_result = 10000
             for r in self.reports:
                 res = r.result.test
-                if self.util.exp_is_classification():
-                    if res < best_result:
-                        best_result = res
-                        best_r = r
+                if res < best_result:
+                    best_result = res
+                    best_r = r
         return best_r

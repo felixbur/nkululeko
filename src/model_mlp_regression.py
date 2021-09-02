@@ -44,7 +44,10 @@ class MLP_Reg_model(Model):
         _, truths, predictions = self.evaluate_model(self.model, self.testloader, self.device)
         mse, _, _ = self.evaluate_model(self.model, self.trainloader, self.device)
         report = Reporter(truths.numpy(), predictions.numpy())
-        report.result.loss = self.loss
+        try:
+            report.result.loss = self.loss
+        except AttributeError: # if the model was loaded from disk the loss is unknown
+            pass 
         report.result.train = mse
         return report
 
@@ -122,3 +125,17 @@ class MLP_Reg_model(Model):
         predictions = logits
         mse = mean_squared_error(targets.numpy(), predictions.numpy())
         return mse, targets, predictions
+
+    def store(self):
+        dir = self.util.get_path('model_dir')
+        name = f'{self.util.get_exp_name()}_{self.run}_{self.epoch:03d}.model'
+        torch.save(self.model.state_dict(), dir+name)
+        
+    def load(self, run, epoch):
+        dir = self.util.get_path('model_dir')
+        name = f'{self.util.get_exp_name()}_{run}_{epoch:03d}.model'
+        self.device = self.util.config_val('MODEL', 'device', 'cpu')
+        layers = ast.literal_eval(glob_conf.config['MODEL']['layers'])
+        self.model = self.MLP(self.feats_train.df.shape[1], layers, 1).to(self.device)
+        self.model.load_state_dict(torch.load(dir+name))
+        self.model.eval()

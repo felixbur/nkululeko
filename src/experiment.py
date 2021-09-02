@@ -79,6 +79,7 @@ class Experiment:
         feats_type = self.util.config_val('FEATS', 'type', 'os')
         feats_name = "_".join(ast.literal_eval(glob_conf.config['DATA']['databases']))
         feats_name = f'{feats_name}_{strategy}_{feats_type}'   
+        scale = 1
         if feats_type=='os':
             self.feats_train = Opensmileset(f'{feats_name}_train', df_train)
             self.feats_train.extract()
@@ -118,9 +119,12 @@ class Experiment:
             train_specs = Spectraloader(f'{feats_name}_train', df_train)
             train_specs.make_feats()
             self.feats_train = train_specs.get_loader()
+            scale = 0
         else:
             self.util.error(f'unknown feats_type: {feats_type}')
-        self.scale()
+
+        if scale:
+            self.scale()
 
     def scale(self):
         try:
@@ -151,6 +155,9 @@ class Experiment:
             plot_name = self.util.get_exp_name()+'_epoch_progression.png'
             self.util.debug(f'plotting progression to {plot_name}')
             self.reports[-1].plot_epoch_progression(self.reports, plot_name)
+        plot_best_model = self.util.config_val('PLOT', 'plot_best_model', 0)
+        if plot_best_model:
+            self.print_best_model()
 
         return self.reports    
 #        return self.results, self.train_results, self.losses
