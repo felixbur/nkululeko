@@ -50,7 +50,10 @@ class CNN_model(Model):
         # evaluate on train set
         mse, _, _ = self.evaluate_model(True)
         report = Reporter(truths, predictions)
-        report.result.loss = self.loss
+        try:
+            report.result.loss = self.loss
+        except AttributeError: # if the model was loaded from disk the loss is unknown
+            pass 
         report.result.train = mse
         return report
     
@@ -82,12 +85,14 @@ class CNN_model(Model):
         dir = self.util.get_path('model_dir')
         name = f'{self.util.get_exp_name()}_{self.run}_{self.epoch:03d}.model'
         torch.save(self.model.state_dict(), dir+name)
-        
+        self.device = self.util.config_val('MODEL', 'device', 'cpu')
+        # self.model.to(self.device)
+
     def load(self, run, epoch):
         dir = self.util.get_path('model_dir')
         name = f'{self.util.get_exp_name()}_{run}_{epoch:03d}.model'
         self.device = self.util.config_val('MODEL', 'device', 'cpu')
-        layers = ast.literal_eval(glob_conf.config['MODEL']['layers'])
-        self.model = self.MLP(self.feats_train.df.shape[1], layers, 1).to(self.device)
-        self.model.load_state_dict(torch.load(dir+name))
-        self.model.eval()
+        self.model = audpann.Cnn10(sampling_rate=16000, output_dim=1)
+        state_dict = torch.load(dir+name, map_location='cpu')
+        self.model.load_state_dict(state_dict, strict=False)
+        self.model.to(self.device)   
