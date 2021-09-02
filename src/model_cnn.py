@@ -6,8 +6,8 @@ import audpann
 from sklearn.metrics import mean_squared_error
 import glob_conf
 from reporter import Reporter
-from result import Result
 import numpy as np
+import ast
 
 class CNN_model(Model):
     """A CNN (convolutional neural net) model"""
@@ -77,3 +77,17 @@ class CNN_model(Model):
         # pred = self.scaler.inverse_transform(logits.numpy().reshape(-1, 1)).flatten()
         mse = mean_squared_error(truth, pred)
         return mse, truth, pred
+
+    def store(self):
+        dir = self.util.get_path('model_dir')
+        name = f'{self.util.get_exp_name()}_{self.run}_{self.epoch:03d}.model'
+        torch.save(self.model.state_dict(), dir+name)
+        
+    def load(self, run, epoch):
+        dir = self.util.get_path('model_dir')
+        name = f'{self.util.get_exp_name()}_{run}_{epoch:03d}.model'
+        self.device = self.util.config_val('MODEL', 'device', 'cpu')
+        layers = ast.literal_eval(glob_conf.config['MODEL']['layers'])
+        self.model = self.MLP(self.feats_train.df.shape[1], layers, 1).to(self.device)
+        self.model.load_state_dict(torch.load(dir+name))
+        self.model.eval()
