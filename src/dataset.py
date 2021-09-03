@@ -29,7 +29,12 @@ class Dataset:
         # map the audio file paths 
         db.map_files(lambda x: os.path.join(root, x))
         # the dataframe with all other information 
-        df = db.tables['files'].df
+        df_files = self.util.config_val('DATA', f'{self.name}.files_table', 'files')
+        try :
+            df = db.tables[df_files].df
+        except audformat.core.errors.BadKeyError:
+            # if no such table exists, create a new one and hope for the best
+            df = pd.DataFrame()
         try :
            # There might be a separate table with the targets, e.g. emotion or age    
             df_target = db.tables[self.target].df
