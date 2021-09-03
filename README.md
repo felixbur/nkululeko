@@ -16,7 +16,7 @@ Here's a rough UML-like sketch of the framework.
 
 Currently the following linear classifiers are implemented (integrated from sklearn):
 * SVM, SVR, XGB, XGR
-  and the following ANNS
+  and the following ANNs
 * MLP, CNN (tbd)
 
 Here's [a movie that shows the progress of classification done with nkululeko](https://youtu.be/6Y0M382GjvM)
@@ -31,7 +31,7 @@ Here's [an overview on the ini-file options](./ini_file.md)
 
 ## Features
 * Classifiers: XGB, XGR, SVM, SVR, MLP
-* Feature extractors: opensmile
+* Feature extractors: opensmile, TRILL embeddings (experimental)
 * Feature scaling
 * Label encoding
 * Binning (continuous to categorical)
