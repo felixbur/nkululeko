@@ -147,12 +147,14 @@ class Experiment:
         self.reports[-1].print_results()
         plot_anim_progression = self.util.config_val('PLOT', 'plot_anim_progression', 0)
         if plot_anim_progression:
-            plot_name = self.util.get_exp_name()+'_conf_anim.gif'
+            plot_name_suggest = self.util.get_exp_name()
+            plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+'_conf_anim.gif'
             self.util.debug(f'plotting animated confusion to {plot_name}')
             self.reports[-1].make_conf_animation(plot_name)
         plot_epoch_progression = self.util.config_val('PLOT', 'plot_epoch_progression', 0)
         if plot_epoch_progression:
-            plot_name = self.util.get_exp_name()+'_epoch_progression.png'
+            plot_name_suggest = self.util.get_exp_name()
+            plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+'_epoch_progression.png'
             self.util.debug(f'plotting progression to {plot_name}')
             self.reports[-1].plot_epoch_progression(self.reports, plot_name)
         plot_best_model = self.util.config_val('PLOT', 'plot_best_model', 0)

@@ -44,10 +44,18 @@ class Util:
     def debug(self, message):
         print(f'DEBUG: {message}')
 
-    def config_val(self, category, key, default):
+    def set_config_val(self, section, key, value):
+        try:
+            # does the section already exists?
+            glob_conf.config[section][key] = str(value)
+        except KeyError:
+            glob_conf.config.add_section(section)
+            glob_conf.config[section][key] = str(value)
+
+    def config_val(self, section, key, default):
         try:
             # strategy is either train_test (default)  or cross_data
-            return glob_conf.config[category][key]
+            return glob_conf.config[section][key]
         except KeyError:
             return default
 

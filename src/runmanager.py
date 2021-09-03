@@ -100,7 +100,8 @@ class Runmanager:
             self.util.error(f'unknown model type: \'{model_type}\'')
         self.model.load(run, epoch)
         report = self.model.predict()
-        plot_name = f'{self.util.get_exp_name()}_BEST_{run}_{epoch:03d}_cnf.png'
+        plot_name_suggest = self.util.get_exp_name()
+        plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+f'_BEST_{run}_{epoch:03d}_cnf.png'
         self.util.debug(f'plotting conf matrix to {plot_name}')
         report.plot_confmatrix(plot_name)
 
