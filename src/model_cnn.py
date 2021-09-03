@@ -7,7 +7,7 @@ from sklearn.metrics import mean_squared_error
 import glob_conf
 from reporter import Reporter
 import numpy as np
-import ast
+from concordance_cor_coeff import ConcordanceCorCoeff
 
 class CNN_model(Model):
     """A CNN (convolutional neural net) model"""
@@ -26,21 +26,28 @@ class CNN_model(Model):
         model = audpann.Cnn10(sampling_rate=16000, output_dim=1)
         model.load_state_dict(state, strict=False)
         self.model = model.to(self.device)       
+        criterion = self.util.config_val('MODEL', 'loss_function', 'mse')
+        if criterion == 'mse':
+            self.criterion = torch.nn.MSELoss()
+        elif criterion == 'ccc':
+            self.criterion = ConcordanceCorCoeff()
+        else:
+            self.util.error(f'unknown loss function: {criterion}')
+        self.learning_rate = self.util.config_val('MODEL', 'learning_rate', 0.0001)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
 
     def train(self):
         """Train the model one epoch"""
         losses = []
         self.util.debug(f'training model')
-        criterion = torch.nn.MSELoss()
-        optimizer = torch.optim.SGD(self.model.parameters(), lr=0.001)
         self.model.train()
         for features, labels in self.feats_train:
             logits = self.model(features.to(self.device).float()).squeeze(1)
-            loss = criterion(logits, labels.float().to(self.device))
+            loss = self.criterion(logits, labels.float().to(self.device))
             losses.append(loss.item())
-            optimizer.zero_grad()
+            self.optimizer.zero_grad()
             loss.backward()
-            optimizer.step()
+            self.optimizer.step()
         self.loss = (np.asarray(losses)).mean()
 
     def predict(self):

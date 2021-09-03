@@ -10,5 +10,5 @@ import ast
 
 class XGR_model(Model):
     """An XGBoost model"""
-    clf = XGBRegressor() # set up the regressor
+    clf = XGBRegressor(use_label_encoder=False) # set up the regressor
 

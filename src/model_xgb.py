@@ -10,5 +10,5 @@ import ast
 
 class XGB_model(Model):
     """An XGBoost model"""
-    clf = XGBClassifier() # set up the classifier
+    clf = XGBClassifier(use_label_encoder=False) # set up the classifier
 

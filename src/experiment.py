@@ -1,8 +1,10 @@
+from numpy.lib.twodim_base import tril_indices_from
 from opensmile.core.define import FeatureSet
 from dataset import Dataset
 from dataset_emodb import Emodb
 from dataset_ravdess import Ravdess
 from feats_opensmile import Opensmileset
+from feats_trill import TRILLset
 from runmanager import Runmanager
 from util import Util
 import glob_conf
@@ -95,6 +97,13 @@ class Experiment:
             self.feats_test = AudIDset(f'{feats_name}_test', df_test)
             self.feats_test.extract()
             self.feats_test.filter()
+        elif feats_type=='trill':
+            self.feats_train = TRILLset(f'{feats_name}_train', df_train)
+            self.feats_train.extract()
+            self.feats_train.filter()
+            self.feats_test = AudIDset(f'{feats_name}_test', df_test)
+            self.feats_test.extract()
+            self.feats_test.filter()
         elif feats_type=='mld':
             from feats_mld import MLD_set
             self.feats_train = MLD_set(f'{feats_name}_train', df_train)
@@ -110,7 +119,6 @@ class Experiment:
             self.df_train = self.df_train.loc[self.df_train.index.intersection(self.feats_train.df.index)]
             if self.feats_train.df.isna().to_numpy().any():
                 self.util.error('exp 2: NANs exist')
-
         elif feats_type=='spectra':
             # compute the spectrograms
             test_specs = Spectraloader(f'{feats_name}_test', df_test)

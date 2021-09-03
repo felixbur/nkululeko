@@ -33,8 +33,16 @@ class Reporter:
                 self.result.loss = 1 - accuracy_score(self.truths, self.preds)
             else:
                 # regression experiment
-                self.MEASURE = 'MSE'
-                self.result.test = mean_squared_error(self.truths, self.preds)
+                measure = self.util.config_val('MODEL', 'measure', 'mse')
+                if measure == 'mse':
+                    self.MEASURE = 'MSE'
+                    self.result.test = mean_squared_error(self.truths, self.preds)
+                elif measure == 'ccc':
+                    self.MEASURE = 'CCC'
+                    self.result.test = self.ccc(self.truths, self.preds)
+                else:
+                    self.util.error(f'unknown measure: {measure}')
+
                 # train and loss are being set by the model
 
     def set_id(self, run, epoch):
@@ -111,7 +119,6 @@ class Reporter:
         # do a plot per run
         # scale the losses so they fit on the picture
         losses, results, train_results = np.asarray(losses), np.asarray(results), np.asarray(train_results)
-        losses = losses/2
         if (self.util.exp_is_classification()):
             # scale up UAR
             results = results*100
@@ -119,9 +126,25 @@ class Reporter:
         plt.figure(dpi=200)
         plt.plot(train_results, 'green', label='train set') 
         plt.plot(results, 'red', label='dev set')
-        plt.plot(losses, 'grey', label='losses/2')
+        plt.plot(losses, 'grey', label='losses')
         plt.xlabel('epochs')
         plt.ylabel(self.MEASURE)
         plt.legend()
         plt.savefig(fig_dir+ out_name)
         plt.close()        
+
+    @staticmethod
+    def ccc(ground_truth, prediction):
+        mean_gt = np.mean(ground_truth, 0)
+        mean_pred = np.mean(prediction, 0)
+        var_gt = np.var (ground_truth, 0)
+        var_pred = np.var (prediction, 0)
+        v_pred = prediction - mean_pred
+        v_gt = ground_truth - mean_gt
+        cor = sum (v_pred * v_gt) / (np.sqrt(sum(v_pred ** 2)) * np.sqrt(sum(v_gt ** 2)))
+        sd_gt = np.std(ground_truth)
+        sd_pred = np.std(prediction)
+        numerator=2*cor*sd_gt*sd_pred
+        denominator=var_gt+var_pred+(mean_gt-mean_pred)**2
+        ccc = numerator/denominator
+        return 1-ccc

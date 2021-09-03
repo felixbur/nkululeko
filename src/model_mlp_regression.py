@@ -3,15 +3,12 @@ from util import Util
 import glob_conf
 from model import Model
 from reporter import Reporter
-from result import Result
 import torch
-from torch import nn
 import ast
 import numpy as np
-import pandas as pd
 from sklearn.metrics import mean_squared_error
 from collections import OrderedDict
-
+from concordance_cor_coeff import ConcordanceCorCoeff
 
 class MLP_Reg_model(Model):
     """MLP = multi layer perceptron"""
@@ -24,7 +21,13 @@ class MLP_Reg_model(Model):
         labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
         self.class_num = len(labels)
         # set up loss criterion
-        self.criterion = torch.nn.MSELoss()
+        criterion = self.util.config_val('MODEL', 'loss_function', 'mse')
+        if criterion == 'mse':
+            self.criterion = torch.nn.MSELoss()
+        elif criterion == 'ccc':
+            self.criterion = ConcordanceCorCoeff()
+        else:
+            self.util.error(f'unknown loss function: {criterion}')
         # set up the data_loaders
         self.trainloader = self.get_loader(feats_train.df, df_train)
         self.testloader = self.get_loader(feats_test.df, df_test)
@@ -32,8 +35,9 @@ class MLP_Reg_model(Model):
         self.device = self.util.config_val('MODEL', 'device', 'cpu')
         layers = ast.literal_eval(glob_conf.config['MODEL']['layers'])
         self.model = self.MLP(feats_train.df.shape[1], layers, 1).to(self.device)
+        self.learning_rate = self.util.config_val('MODEL', 'learning_rate', 0.0001)
         # set up regularization
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.0001)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
 
 
     def train(self):
@@ -42,13 +46,13 @@ class MLP_Reg_model(Model):
 
     def predict(self):        
         _, truths, predictions = self.evaluate_model(self.model, self.testloader, self.device)
-        mse, _, _ = self.evaluate_model(self.model, self.trainloader, self.device)
+        result, _, _ = self.evaluate_model(self.model, self.trainloader, self.device)
         report = Reporter(truths.numpy(), predictions.numpy())
         try:
             report.result.loss = self.loss
         except AttributeError: # if the model was loaded from disk the loss is unknown
             pass 
-        report.result.train = mse
+        report.result.train = result
         return report
 
     def get_loader(self, df_x, df_y):
@@ -123,8 +127,14 @@ class MLP_Reg_model(Model):
                 targets[start_index:end_index] = labels
 
         predictions = logits
-        mse = mean_squared_error(targets.numpy(), predictions.numpy())
-        return mse, targets, predictions
+        measure = self.util.config_val('MODEL', 'measure', 'mse')
+        if measure == 'mse':
+            result = mean_squared_error(targets.numpy(), predictions.numpy())
+        elif measure == 'ccc':
+            result = Reporter.ccc(targets.numpy(), predictions.numpy())
+        else:
+            self.util.error(f'unknown measure: {measure}')
+        return result, targets, predictions
 
     def store(self):
         dir = self.util.get_path('model_dir')
