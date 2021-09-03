@@ -1,5 +1,6 @@
 # Overview on options for the nkululeko framework
-to be specified in an .ini file, [config parser syntax](https://zetcode.com/python/configparser/)
+* To be specified in an .ini file, [config parser syntax](https://zetcode.com/python/configparser/)
+* Kind of all (well, most) values have defaults 
 
 ## Sections
 ### EXP
@@ -24,7 +25,7 @@ to be specified in an .ini file, [config parser syntax](https://zetcode.com/pyth
 * **runs**: number of runs (e.g. to average over random initializations)
   * runs = 1
 * **epochs**: number of epochs for ANN training
-  * epochs = 50
+  * epochs = 1
 
 ### DATA
 * **data_type**: just a flag now to mark continous data, so it can be binned to categorical data (using *bins* and *labels*)
@@ -42,7 +43,7 @@ to be specified in an .ini file, [config parser syntax](https://zetcode.com/pyth
     * **specified**: specifiy the tables (an opportunity to assign multiple or no tables to train or dev set)
       * emodb.test_tables = ['emo.test', 'emo.train']
     * **speaker_split**: split samples randomly but speaker disjunct, given a percentage of speakers for the test set.
-      * emodb.testsplit = 30
+      * emodb.testsplit = 50
     * **reuse**: reuse the splits after a *speaker_split* run to save time with feature extraction.
 * **target**: the task name, e.g. *age* or *emotion*
   * target = emotion
@@ -91,6 +92,12 @@ to be specified in an .ini file, [config parser syntax](https://zetcode.com/pyth
   * class_weight = 1
 * **store**: whether to save all model states (per epoch) to disk
   * store = 1
+* **loss_function**: A  loss function for ANN models
+  * loss_function = mse
+* **measure**: A measure to report progress (and decide for the best outcome)
+  * measure = mse
+* **learning_rate**: The learning rate for ANN models
+  * learning_rate = 0.0001
 
 ### PLOT
 * **name**: special name as a prefix for all plots (stored in *img_dir*).
