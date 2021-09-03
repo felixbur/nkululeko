@@ -93,11 +93,13 @@ to be specified in an .ini file, [config parser syntax](https://zetcode.com/pyth
   * store = 1
 
 ### PLOT
-* **name**: special name for confusion matrix plots (stored in *img_dir*).
-  * name = special_c_value
+* **name**: special name as a prefix for all plots (stored in *img_dir*).
+  * name = my_special_config_within_the_experiment
 * **plot_epochs**: whether to make a plot each for every epoch result.
   * plot_epochs = 1
 * **plot_anim_progression**: generate an animated gif from the epoch plots
   * plot_anim_progression = 1
 * **plot_epoch_progression**: plot the progression of test, train and loss results over epochs
   * plot_epoch_progression = 1
+* **plot_best_model**: search for the best performing model and plot conf matrix (needs *MODEL.store* to be turned on)
+  * plot_best_model = 1
