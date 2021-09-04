@@ -19,7 +19,7 @@ Currently the following linear classifiers are implemented (integrated from skle
   and the following ANNs
 * MLP, CNN (tbd)
 
-Here's [a movie that shows the progress of classification done with nkululeko](https://youtu.be/6Y0M382GjvM)
+Here's [an animation that shows the progress of classification done with nkululeko](https://youtu.be/6Y0M382GjvM)
 
 ## Usage
 You could 
