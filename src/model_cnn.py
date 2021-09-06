@@ -17,8 +17,8 @@ class CNN_model(Model):
         Model.__init__(self, df_train, df_test, feats_train, feats_test)
         self.util.debug(f'initializing model')
         self.device = glob_conf.config['MODEL']['device']
-        store = self.util.get_path('store')
-        state = torch.load(store+'gender_state.pth.tar')
+        pretrained_state = self.util.config_val('MODEL', 'pre_train', 'gender_state.pth.tar')
+        state = torch.load(pretrained_state)
         state.pop('out.gender.weight')
         state.pop('out.gender.bias')
         state['fc1.weight'] = state.pop('fc1.gender.weight')
