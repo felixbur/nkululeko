@@ -1,5 +1,6 @@
 # cnnmodel.py
 
+from sklearn.utils import resample
 from model import Model
 import torch
 import audpann
@@ -55,13 +56,13 @@ class CNN_model(Model):
         # evaluate on dev set
         _, truths, predictions = self.evaluate_model(False)
         # evaluate on train set
-        mse, _, _ = self.evaluate_model(True)
-        report = Reporter(truths, predictions)
+        result, _, _ = self.evaluate_model(True)
+        report = Reporter(truths.numpy(), predictions.numpy())
         try:
             report.result.loss = self.loss
         except AttributeError: # if the model was loaded from disk the loss is unknown
             pass 
-        report.result.train = mse
+        report.result.train = result
         return report
     
 
@@ -81,12 +82,15 @@ class CNN_model(Model):
                     end_index = len(loader.dataset)
                 logits[start_index:end_index] =  self.model(features.to(self.device).float()).squeeze(1)
                 targets[start_index:end_index] = labels
-        truth = targets.numpy()
-        pred = logits.numpy()
-        # truth = self.scaler.inverse_transform(targets.numpy().reshape(-1, 1)).flatten()
-        # pred = self.scaler.inverse_transform(logits.numpy().reshape(-1, 1)).flatten()
-        mse = mean_squared_error(truth, pred)
-        return mse, truth, pred
+
+        measure = self.util.config_val('MODEL', 'measure', 'mse')
+        if measure == 'mse':
+            result = mean_squared_error(targets.numpy(), logits.numpy())
+        elif measure == 'ccc':
+            result = Reporter.ccc(targets.numpy(), logits.numpy())
+        else:
+            self.util.error(f'unknown measure: {measure}')
+        return result, targets, logits
 
     def store(self):
         dir = self.util.get_path('model_dir')
