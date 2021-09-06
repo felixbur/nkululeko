@@ -4,7 +4,6 @@ from dataset import Dataset
 from dataset_emodb import Emodb
 from dataset_ravdess import Ravdess
 from feats_opensmile import Opensmileset
-from feats_trill import TRILLset
 from runmanager import Runmanager
 from util import Util
 import glob_conf
@@ -98,6 +97,7 @@ class Experiment:
             self.feats_test.extract()
             self.feats_test.filter()
         elif feats_type=='trill':
+            from feats_trill import TRILLset
             self.feats_train = TRILLset(f'{feats_name}_train', df_train)
             self.feats_train.extract()
             self.feats_train.filter()
