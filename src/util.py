@@ -31,6 +31,13 @@ class Util:
         ft = glob_conf.config['FEATS']['type']
         return f'{ds}_{mt}_{ft}'
 
+    def get_plot_name(self):
+        try:
+            plot_name = glob_conf.config['PLOT']['name']
+        except KeyError:
+            plot_name = self.get_exp_name()
+        return plot_name
+
     def exp_is_classification(self):
         type = self.config_val('EXP', 'type', 'classification')
         if type=='classification':

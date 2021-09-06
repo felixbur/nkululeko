@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.utils import resample
 from util import Util 
 import ast
 import numpy as np
@@ -15,6 +16,7 @@ from scipy.stats import pearsonr
 from result import Result
 import imageio
 import glob
+import math
 
 class Reporter:
 
@@ -40,6 +42,10 @@ class Reporter:
                 elif measure == 'ccc':
                     self.MEASURE = 'CCC'
                     self.result.test = self.ccc(self.truths, self.preds)
+                    if math.isnan(self.result.test):
+                        self.util.debug(self.truths)
+                        self.util.debug(self.preds)
+                        self.util.error(f'result is NAN')
                 else:
                     self.util.error(f'unknown measure: {measure}')
 
@@ -98,7 +104,7 @@ class Reporter:
 
     def make_conf_animation(self, out_name):
         fig_dir = self.util.get_path('fig_dir')
-        filenames =  glob.glob(fig_dir+'*_cnf.png')
+        filenames =  glob.glob(fig_dir+f'{self.util.get_plot_name()}*_cnf.png')
         images = []
         for filename in filenames:
             images.append(imageio.imread(filename))

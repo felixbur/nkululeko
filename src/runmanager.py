@@ -51,6 +51,7 @@ class Runmanager:
                 self.model = MLP_Reg_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
             else:
                 self.util.error(f'unknown model type: \'{model_type}\'')
+            plot_epochs = self.util.config_val('PLOT', 'plot_epochs', 0)
             # for all epochs
             for epoch in range(int(self.util.config_val('EXP', 'epochs', 1))):
                 self.util.debug(f'epoch {epoch}')
@@ -58,25 +59,19 @@ class Runmanager:
                 self.model.train()
                 report = self.model.predict()
                 report.set_id(run, epoch)
-                plot_name = f'{self.util.get_exp_name()}_{run}_{epoch:03d}_cnf.png'
+                plot_name = self.util.get_plot_name()+f'_{run}_{epoch:03d}_cnf.png'
                 self.reports.append(report)                
                 self.util.debug(f'run: {run} epoch: {epoch}: result: {self.reports[-1].get_result().test:.3f}')
-                plot = self.util.config_val('PLOT', 'plot_epochs', 0)
-                if plot:
+                if plot_epochs:
                     self.util.debug(f'plotting conf matrix to {plot_name}')
                     report.plot_confmatrix(plot_name)
                 store_models = self.util.config_val('MODEL', 'store', 0)
                 if store_models:
                     self.model.store()
-
-            try:
-                # Is there a different name for a plot specified?
-                plot_name = glob_conf.config['PLOT']['name']+'_cnf.png'
-            except KeyError:
-                pass
-            # Do a final confusion matrix plot
-            self.util.debug(f'plotting final conf matrix to {plot_name}')
-            self.reports[-1].plot_confmatrix(plot_name)
+            if not plot_epochs:
+                # Do a final confusion matrix plot
+                self.util.debug(f'plotting final conf matrix to {plot_name}')
+                self.reports[-1].plot_confmatrix(plot_name)
 
     def print_model(self, report):
         run = report.run
