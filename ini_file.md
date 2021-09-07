@@ -34,7 +34,9 @@
   * databases = ['emodb', 'timit']
 * **db_name**: path with audformatted repository for each database listed in 'databases*
   * emodb = /home/data/audformat/emodb/
-* **db_name.mapping**: mapping python dictionary to map between categories for cross-database experiments
+* **db_name.type**: type of storage, e.g. audformat database or CSV (needs header: file,speaker,task)
+  * emodb.type = audformat
+* * **db_name.mapping**: mapping python dictionary to map between categories for cross-database experiments
   * emodb.mapping = {'anger':'angry', 'happiness':'happy', 'sadness':'sad', 'neutral':'neutral'}
 * **db_name.split_strategy**: How to identify sets for train/development data splits within one database
   * emodb.split_strategy = reuse
