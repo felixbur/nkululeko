@@ -6,3 +6,6 @@ class Result:
         self.test = test
         self.train = train
         self.loss = loss 
+
+    def to_string(self):
+        return f'test: {self.test}, train: {self.train}, loss: {self.loss}'
