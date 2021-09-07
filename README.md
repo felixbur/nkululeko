@@ -7,7 +7,7 @@ The idea is to have a very high level framework (based on e.g. sklearn and pytor
 
 There is a central "experiment" class that can be used by own experiments, two examples are given with
 * [experiment.py](experiment.py) ([configuration](exp_emodb.ini)), using SVM classifier
-* [configuration](exp_emodb_mlp.ini)), using MLP classifier
+* [configuration](exp_emodb_mlp.ini), using MLP classifier
 
 The framework is targeted at the speech domain and supports experiments where different classifiers are combined with different feature extractors.
 
