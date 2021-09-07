@@ -1,6 +1,7 @@
 from numpy.lib.twodim_base import tril_indices_from
 from opensmile.core.define import FeatureSet
 from dataset import Dataset
+from dataset_csv import Dataset_CSV
 from dataset_emodb import Emodb
 from dataset_ravdess import Ravdess
 from feats_opensmile import Opensmileset
@@ -12,6 +13,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from feats_spectra import Spectraloader
 from scaler import Scaler
+
 
 
 class Experiment:
@@ -34,7 +36,13 @@ class Experiment:
             elif d == 'ravdess':
                 data = Ravdess()
             else:
-                data = Dataset(d)
+                ds_type = self.util.config_val('DATA', d+'.type', 'audformat')
+                if ds_type == 'audformat':
+                    data = Dataset(d)
+                elif ds_type == 'csv':
+                    data = Dataset_CSV(d)
+                else:
+                    self.util.error(f'unknown data type: {ds_type}')
             data.load()
             data.prepare_labels()
             self.datasets.update({d: data})

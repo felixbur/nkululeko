@@ -53,6 +53,8 @@ class Model:
                 if class_weight:
                     self.util.debug('using class weight')
                     self.clf.fit(feats, self.df_train[target], sample_weight=self.classes_weights)
+                else:
+                    self.clf.fit(feats, self.df_train[target])    
             except KeyError:
                 self.clf.fit(feats, self.df_train[target])
             self.util.debug(f'winner parameters: {self.clf.best_params_}')
