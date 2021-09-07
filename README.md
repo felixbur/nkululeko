@@ -6,8 +6,8 @@ The idea is to have a very high level framework (based on e.g. sklearn and pytor
 [Here's a blog post on how to set up nkululeko on your computer.](http://blog.syntheticspeech.de/2021/08/30/how-to-set-up-your-first-nkululeko-project/)
 
 There is a central "experiment" class that can be used by own experiments, two examples are given with
-* [exp_emodb.py](exp_emodb.py) ([configuration](exp_emodb.ini)), using SVM classifier
-* [exp_emodb_mlp.py](exp_emodb_mlp.py) ([configuration](exp_emodb_mlp.ini)), using MLP classifier
+* [experiment.py](experiment.py) ([configuration](exp_emodb.ini)), using SVM classifier
+* [configuration](exp_emodb_mlp.ini)), using MLP classifier
 
 The framework is targeted at the speech domain and supports experiments where different classifiers are combined with different feature extractors.
 
