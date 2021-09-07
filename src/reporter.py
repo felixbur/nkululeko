@@ -90,7 +90,11 @@ class Reporter:
                 labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
             else:
                 labels = glob_conf.label_encoder.classes_
-            rpt = classification_report(self.truths, self.preds, target_names=labels)
+            try:
+                rpt = classification_report(self.truths, self.preds, target_names=labels)
+            except ValueError:
+                self.util.debug('Reporter: caught a ValueError when trying to get classification_report')
+                rpt = self.result.to_string()
             file_name = f'{res_dir}{self.util.get_exp_name()}.txt'
             with open(file_name, "w") as text_file:
                 text_file.write(rpt)
