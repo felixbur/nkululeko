@@ -113,6 +113,7 @@ class Dataset:
         test_spkrs =  sample(list(df.speaker.unique()), test_num)
         self.df_test = df[df.speaker.isin(test_spkrs)]
         self.df_train = df[~df.index.isin(self.df_test.index)]
+        self.util.debug(f'{self.name}: [{self.df_train.shape[0]}/{self.df_test.shape[0]}] samples in train/test')
         # because this generates new train/test sample quantaties, the feature extraction has to be done again
         glob_conf.config['DATA']['needs_feature_extraction'] = 'true'
 
@@ -127,7 +128,9 @@ class Dataset:
             df = self.df
             df[target] = df[target].map(mapping)
             self.df = df[df[target].isin(labels)]
-            print(f'for dataset {self.name} mapped {mapping}')
+            self.util.debug(f'for dataset {self.name} mapped {mapping}')
+            self.util.debug(f'Categories: {self.df[target].unique()}')
+
         except KeyError:
             pass
 

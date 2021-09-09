@@ -66,8 +66,7 @@ class Experiment:
                 self.df_train = self.df_train.append(d.df_train)
                 self.df_test = self.df_test.append(d.df_test)
         else:
-            print(f'unknown strategy: {strategy}')
-            quit()
+            self.util.error(f'unknown strategy: {strategy}')
 
         # encode the labels
         if self.util.exp_is_classification():
@@ -77,9 +76,12 @@ class Experiment:
             self.df_train[target] = self.label_encoder.fit_transform(self.df_train[target])
             self.df_test[target] = self.label_encoder.transform(self.df_test[target])
             glob_conf.set_label_encoder(self.label_encoder)
+            self.util.debug(f'Categories test: {self.df_test[target].unique()}')
+            self.util.debug(f'Categories train: {self.df_train[target].unique()}')
         else:
             pass
         self.util.debug(f'{self.df_test.speaker.nunique()} speakers in test and {self.df_train.speaker.nunique()} speakers in train')
+
 
     def extract_feats(self):
         """Extract the features for train and dev sets. They will be stored on disk and need to be removed manually."""
