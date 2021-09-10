@@ -31,6 +31,8 @@ class Runmanager:
         # for all runs
         for run in range(int(self.util.config_val('EXP', 'runs', 1))):
             self.util.debug(f'run {run}')
+            # set the run index as global variable for reporting
+            self.util.set_config_val('EXP', 'run', run)
             # initialze results
             self.reports = []
             # intialize a new model
@@ -72,6 +74,27 @@ class Runmanager:
                 # Do a final confusion matrix plot
                 self.util.debug(f'plotting final conf matrix to {plot_name}')
                 self.reports[-1].plot_confmatrix(plot_name)
+            # wrap up the run 
+            plot_anim_progression = self.util.config_val('PLOT', 'plot_anim_progression', 0)
+            if plot_anim_progression:
+                plot_name_suggest = self.util.get_exp_name()
+                plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+'_conf_anim.gif'
+                self.util.debug(f'plotting animated confusion to {plot_name}')
+                self.reports[-1].make_conf_animation(plot_name)
+            plot_epoch_progression = self.util.config_val('PLOT', 'plot_epoch_progression', 0)
+            if plot_epoch_progression:
+                plot_name_suggest = self.util.get_exp_name()
+                plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+'_epoch_progression.png'
+                self.util.debug(f'plotting progression to {plot_name}')
+                self.reports[-1].plot_epoch_progression(self.reports, plot_name)
+            plot_best_model = self.util.config_val('PLOT', 'plot_best_model', 0)
+            if plot_best_model:
+                best_r = self.get_best_result()
+                self.util.debug(f'best result with run {best_r.run} and epoch {best_r.epoch}: {best_r.result.test:.3f}')
+                self.print_model(best_r)
+            # finally, print out the numbers for this run
+            self.reports[-1].print_results()
+
 
     def print_model(self, report):
         run = report.run

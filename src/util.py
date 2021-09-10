@@ -13,6 +13,7 @@ class Util:
         try:
             entryn = glob_conf.config['EXP'][entry]
         except KeyError:
+            # some default values
             if entry == 'fig_dir':
                 entryn = './images/'
             elif entry == 'res_dir':
@@ -21,6 +22,12 @@ class Util:
                 entryn = './models/'
             else:
                 entryn = './store/'
+
+        # Expand image, model and result directories with run index
+        if entry == 'fig_dir' or entry == 'res_dir' or entry == 'model_dir':
+            run = self.config_val('EXP', 'run', 0)
+            entryn = entryn +  f'run_{run}/'
+
         dir_name = f'{root}{name}/{entryn}'
         audeer.mkdir(dir_name)
         return dir_name

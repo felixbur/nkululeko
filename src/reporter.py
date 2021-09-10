@@ -86,7 +86,8 @@ class Reporter:
     def print_results(self):
         res_dir = self.util.get_path('res_dir')
         if self.util.exp_is_classification():
-            if self.util.config_val('DATA', 'data_type', 'whatever') == 'continous':
+            data_type = self.util.config_val('DATA', 'data_type', 'whatever')
+            if data_type == 'continuous' or data_type == 'continous':
                 labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
             else:
                 labels = glob_conf.label_encoder.classes_
