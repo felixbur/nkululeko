@@ -14,7 +14,7 @@ from util import Util
 import glob_conf
 
 class Runmanager:
-    """Class to manage the runs of the experiment (e.g. when differs caused by random initialization)"""
+    """Class to manage the runs of the experiment (e.g. when results differ caused by random initialization)"""
     model = None  # The underlying model
     df_train, df_test, feats_train, feats_test = None, None, None, None # The dataframes
 
@@ -28,6 +28,7 @@ class Runmanager:
 
     def do_runs(self):
         """Start the runs"""
+        self.best_results = [] # keep the best result per run 
         # for all runs
         for run in range(int(self.util.config_val('EXP', 'runs', 1))):
             self.util.debug(f'run {run}')
@@ -87,13 +88,20 @@ class Runmanager:
                 plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+'_epoch_progression.png'
                 self.util.debug(f'plotting progression to {plot_name}')
                 self.reports[-1].plot_epoch_progression(self.reports, plot_name)
+                # remember the best run
+                best_report = self.get_best_result(self.reports)
             plot_best_model = self.util.config_val('PLOT', 'plot_best_model', 0)
             if plot_best_model:
-                best_r = self.get_best_result()
-                self.util.debug(f'best result with run {best_r.run} and epoch {best_r.epoch}: {best_r.result.test:.3f}')
-                self.print_model(best_r)
+                self.util.debug(f'best result with run {best_report.run} and epoch {best_report.epoch}: {best_report.result.test:.3f}')
+                self.print_model(best_report)
             # finally, print out the numbers for this run
             self.reports[-1].print_results()
+            self.best_results.append(best_report)
+
+    def print_best_result_runs(self):
+        best_report = self.get_best_result(self.best_results)
+        self.util.debug(f'best result with run {best_report.run} and epoch {best_report.epoch}: {best_report.result.test:.3f}')
+        self.print_model(best_report)
 
 
     def print_model(self, report):
@@ -124,18 +132,18 @@ class Runmanager:
         report.plot_confmatrix(plot_name)
 
 
-    def get_best_result(self):
+    def get_best_result(self, reports):
         best_r = Reporter([], [])
         if self.util.exp_is_classification():
             best_result = 0
-            for r in self.reports:
+            for r in reports:
                 res = r.result.test
                 if res > best_result:
                     best_result = res
                     best_r = r
         else:
             best_result = 10000
-            for r in self.reports:
+            for r in reports:
                 res = r.result.test
                 if res < best_result:
                     best_result = res

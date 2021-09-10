@@ -1,5 +1,3 @@
-from numpy.lib.twodim_base import tril_indices_from
-from opensmile.core.define import FeatureSet
 from dataset import Dataset
 from dataset_csv import Dataset_CSV
 from dataset_emodb import Emodb
@@ -13,7 +11,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from feats_spectra import Spectraloader
 from scaler import Scaler
-
+import pickle
 
 
 class Experiment:
@@ -22,9 +20,13 @@ class Experiment:
 
     def __init__(self, config_obj):
         """Constructor: takes a name and the config object"""
-        glob_conf.init_config(config_obj)
+        self.set_globals(config_obj)
         self.name = glob_conf.config['EXP']['name']
         self.util = Util()
+
+    def set_globals(self, config_obj):
+        """install a config object in the global space"""
+        glob_conf.init_config(config_obj)
 
     def load_datasets(self):
         """Load all databases specified in the configuration and map the labels"""
@@ -164,9 +166,23 @@ class Experiment:
         # self.collect_reports()
         return self.reports    
 
+    def print_best_model(self):
+        self.runmgr.print_best_result_runs()
+
     def collect_reports(self):
         self.results, self.losses, self.train_results = [], [], []
         for r in self.reports:
             self.results.append(r.get_result().test)
             self.losses.append(r.get_result().loss)
             self.train_results.append(r.get_result().train)
+
+    def load(self, filename):
+        f = open(filename, 'rb')
+        tmp_dict = pickle.load(f)
+        f.close()          
+        self.__dict__.update(tmp_dict) 
+
+    def save(self, filename):
+        f = open(filename, 'wb')
+        pickle.dump(self.__dict__, f)
+        f.close()
