@@ -108,6 +108,8 @@
   * plot_epochs = 1
 * **plot_anim_progression**: generate an animated gif from the epoch plots
   * plot_anim_progression = 1
+* **fps**: frames per second for the animated gif
+  * fps = 1
 * **plot_epoch_progression**: plot the progression of test, train and loss results over epochs
   * plot_epoch_progression = 1
 * **plot_best_model**: search for the best performing model and plot conf matrix (needs *MODEL.store* to be turned on)

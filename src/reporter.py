@@ -61,7 +61,7 @@ class Reporter:
         self.truths = np.digitize(self.truths, bins)-1
         self.preds = np.digitize(self.preds, bins)-1
 
-    def plot_confmatrix(self, plot_name): 
+    def plot_confmatrix(self, plot_name, epoch): 
         if not self.util.exp_is_classification():
             self.continuous_to_categorical()
 
@@ -78,7 +78,11 @@ class Reporter:
             disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels).plot(cmap='Blues')
         except ValueError:
             disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=list(labels).remove('neutral')).plot(cmap='Blues')
-        plt.title(f'Confusion Matrix, UAR: {uar:.3f}')
+        if epoch != 0:
+            plt.title(f'Confusion Matrix, UAR: {uar:.3f}, Epoch: {epoch}')
+        else:
+            plt.title(f'Confusion Matrix, UAR: {uar:.3f}')
+
         plt.savefig(fig_dir+plot_name)
         fig.clear()
         plt.close(fig)
@@ -113,7 +117,8 @@ class Reporter:
         images = []
         for filename in filenames:
             images.append(imageio.imread(filename))
-        imageio.mimsave(fig_dir+out_name, images)
+        fps = self.util.config_val('PLOT', 'fps', '1')
+        imageio.mimsave(fig_dir+out_name, images, fps=int(fps))
 
     def get_result(self):
         return self.result

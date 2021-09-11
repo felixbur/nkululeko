@@ -67,14 +67,15 @@ class Runmanager:
                 self.util.debug(f'run: {run} epoch: {epoch}: result: {self.reports[-1].get_result().test:.3f}')
                 if plot_epochs:
                     self.util.debug(f'plotting conf matrix to {plot_name}')
-                    report.plot_confmatrix(plot_name)
+                    report.plot_confmatrix(plot_name, epoch)
                 store_models = self.util.config_val('MODEL', 'store', 0)
-                if store_models:
+                plot_best_model = self.util.config_val('PLOT', 'plot_best_model', 0)
+                if store_models or plot_best_model: # in any case the model needs to be stored to disk.
                     self.model.store()
             if not plot_epochs:
                 # Do a final confusion matrix plot
                 self.util.debug(f'plotting final conf matrix to {plot_name}')
-                self.reports[-1].plot_confmatrix(plot_name)
+                self.reports[-1].plot_confmatrix(plot_name, epoch)
             # wrap up the run 
             plot_anim_progression = self.util.config_val('PLOT', 'plot_anim_progression', 0)
             if plot_anim_progression:
@@ -129,7 +130,7 @@ class Runmanager:
         plot_name_suggest = self.util.get_exp_name()
         plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+f'_BEST_{run}_{epoch:03d}_cnf.png'
         self.util.debug(f'plotting conf matrix to {plot_name}')
-        report.plot_confmatrix(plot_name)
+        report.plot_confmatrix(plot_name, epoch)
 
 
     def get_best_result(self, reports):
