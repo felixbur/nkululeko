@@ -23,6 +23,7 @@ class MLD_set(Featureset):
         fex_mld = mld.MLD()
         self.df = fex_mld.extract_from_index(index=self.data_df, cache_path=storage)
         # replace NANa with column means values
+        self.util.debug('MLD extractor: checking for NANs...')
         for i, col in enumerate(self.df.columns):
             if self.df[col].isnull().values.any():
                 self.util.debug(f'{col} includes {self.df[col].isnull().sum()} nan, inserting mean values')
@@ -40,31 +41,23 @@ class MLD_set(Featureset):
             self.df = self.df[selected_features]
         except KeyError:
             pass
+        self.util.debug(f'MLD feats shape: {self.df.shape}')
         # add opensmile features
-        try:
-            with_os = int(glob_conf.config['FEATS']['with_os'])
-            if with_os:
-                df_os = self.extract_os()
-                # df_os =  df_os.loc[ df_os.index.intersection(self.df.index)]
-                self.df = pd.concat([self.df, df_os], axis=1)
-                self.util.debug(f'shape: {self.df.shape}')
-        except KeyError:
-            pass
-        # replace NANa with column means values
-        for i, col in enumerate(self.df.columns):
-            if self.df[col].isnull().values.any():
-                self.util.debug(f'{col} includes {self.df[col].isnull().sum()} nan, inserting mean values')
-                self.df[col] = self.df[col].fillna(self.df[col].mean())
+        with_os = self.util.config_val('FEATS', 'with_os', '0')
+        if with_os:
+            df_os = self.extract_os()
+            # df_os =  df_os.loc[ df_os.index.intersection(self.df.index)]
+            self.df = pd.concat([self.df, df_os], axis=1)
+            self.util.debug(f'new feats shape after adding OS featues: {self.df.shape}')
+        # shouldn't happen
         if self.df.isna().to_numpy().any():
             self.util.error('feats 0: NANs exist')
 
     def extract_os(self):
         store = self.util.get_path('store')
-        storage = f'{store}{self.name}.pkl'.replace('mld', 'os')
-        try:
-            extract = glob_conf.config['DATA']['needs_feature_extraction']
-        except KeyError:
-            extract = False
+        name = self.name.replace('mld', 'os')
+        storage = f'{store}{name}.pkl'
+        extract = self.util.config_val('DATA', 'needs_feature_extraction', False)
         if extract or not os.path.isfile(storage):
             self.util.debug('extracting openSmile features, this might take a while...')
             smile = opensmile.Smile(
@@ -72,19 +65,18 @@ class MLD_set(Featureset):
             feature_level=opensmile.FeatureLevel.Functionals,)
             df = smile.process_files(self.data_df.index)
             df.to_pickle(storage)
-            try:
-                glob_conf.config['DATA']['needs_feature_extraction'] = 'false'
-            except KeyError:
-                pass
+            self.util.set_config_val('DATA', 'needs_feature_extraction', '0')
         else:
+            self.util.debug('OS: reusing already extracted features.')
             df = pd.read_pickle(storage)
         # drop the multiindex  if still there
         try:
-            df.index = self.df.index.droplevel(1)
-            df.index = self.df.index.droplevel(1)
+            df.index = df.index.droplevel(1)
+            df.index = df.index.droplevel(1)
         except IndexError:
             pass
         # replace NANa with column means values
+        self.util.debug('OS extractor: checking for NANs...')
         for i, col in enumerate(df.columns):
             if np.isnan(df[col]).any():
                 self.util.debug(f'{col} includes {df[col].isna().sum()} nan, inserting mean values')

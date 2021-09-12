@@ -89,8 +89,8 @@ class Runmanager:
                 plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+'_epoch_progression.png'
                 self.util.debug(f'plotting progression to {plot_name}')
                 self.reports[-1].plot_epoch_progression(self.reports, plot_name)
-                # remember the best run
-                best_report = self.get_best_result(self.reports)
+            # remember the best run
+            best_report = self.get_best_result(self.reports)
             plot_best_model = self.util.config_val('PLOT', 'plot_best_model', 0)
             if plot_best_model:
                 self.util.debug(f'best result with run {best_report.run} and epoch {best_report.epoch}: {best_report.result.test:.3f}')

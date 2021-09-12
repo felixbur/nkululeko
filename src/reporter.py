@@ -113,7 +113,7 @@ class Reporter:
 
     def make_conf_animation(self, out_name):
         fig_dir = self.util.get_path('fig_dir')
-        filenames =  glob.glob(fig_dir+f'{self.util.get_plot_name()}*_cnf.png')
+        filenames =  glob.glob(fig_dir+f'{self.util.get_plot_name()}*_?_???_cnf.png')
         images = []
         for filename in filenames:
             images.append(imageio.imread(filename))

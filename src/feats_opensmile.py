@@ -11,12 +11,9 @@ class Opensmileset(Featureset):
     def extract(self):
         store = self.util.get_path('store')
         storage = f'{store}{self.name}.pkl'
-        try:
-            extract = glob_conf.config['DATA']['needs_feature_extraction']
-        except KeyError:
-            extract = False
+        extract = self.util.config_val('DATA', 'needs_feature_extraction', False)
         if extract or not os.path.isfile(storage):
-            print('extracting openSmile features, this might take a while...')
+            self.util.debug('extracting openSmile features, this might take a while...')
             smile = opensmile.Smile(
             feature_set=opensmile.FeatureSet.GeMAPSv01b,
             feature_level=opensmile.FeatureLevel.Functionals,
@@ -28,6 +25,7 @@ class Opensmileset(Featureset):
             except KeyError:
                 pass
         else:
+            self.util.debug('reusing extracted OS features.')
             self.df = pd.read_pickle(storage)
         # drop the multiindex
         self.df.index = self.df.index.droplevel(1)
