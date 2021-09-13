@@ -96,13 +96,22 @@ class Dataset:
         elif split_strategy == 'reuse':
             self.df_test = pd.read_pickle(storage_test)
             self.df_train = pd.read_pickle(storage_train)
-        """Bin target values if they are continous but a classification experiment sould be done"""
+        """Bin target values if they are continous but a classification experiment should be done"""
         self.check_continous_classification(self.df_train)
         self.check_continous_classification(self.df_test)
         # remember the splits for future use
         self.df_test.to_pickle(storage_test)
         self.df_train.to_pickle(storage_train)
-        
+        if self.util.config_val('PLOT', 'value_counts', False):
+            self.plot_distribution()
+
+
+    def plot_distribution(self):
+        import plots
+        fig_dir = self.util.get_path('fig_dir')        
+        plots.describe_df(self.df, self.target, fig_dir+f'{self.name}_distplot.png')
+        plots.describe_df(self.df_test, self.target, fig_dir+f'{self.name}_test_distplot.png')
+        plots.describe_df(self.df_train, self.target, fig_dir+f'{self.name}_train_distplot.png')
 
     def split_speakers(self):
         """One way to split train and eval sets: Specify percentage of evaluation speakers"""

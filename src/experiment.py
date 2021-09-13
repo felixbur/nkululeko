@@ -83,6 +83,16 @@ class Experiment:
         else:
             pass
         self.util.debug(f'{self.df_test.speaker.nunique()} speakers in test and {self.df_train.speaker.nunique()} speakers in train')
+        augment = self.util.config_val('DATA', 'augment', 0)
+        if augment:
+            self.augment_train()
+
+    def augment_train(self):
+        # augment the train and dev dataframes
+        from augmenter import Augmenter
+        augment_train = Augmenter(self.df_train)
+        df_train_aug = augment_train.augment()
+        self.df_train = self.df_train.append(df_train_aug)
 
 
     def extract_feats(self):

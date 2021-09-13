@@ -19,7 +19,7 @@ class Emodb(Dataset):
         db = audformat.Database.load(root)
         db.map_files(lambda x: os.path.join(root, x))    
         df_emotion = db.tables['emotion'].df
-        df = db.tables['files'].df
+        df = db.tables['files'].get(map={'speaker': ['speaker', 'gender']})
         # copy the emotion label from the the emotion dataframe to the files dataframe
         df['emotion'] = df_emotion['emotion']
         self.df = df
