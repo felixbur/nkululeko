@@ -48,6 +48,7 @@ class Experiment:
             data.load()
             data.prepare_labels()
             self.datasets.update({d: data})
+        self.target = self.util.config_val('DATA', 'target', 'emotion')
 
     def fill_train_and_tests(self):
         """Set up train and development sets. The method should be specified in the config."""
@@ -73,19 +74,27 @@ class Experiment:
         # encode the labels
         if self.util.exp_is_classification():
             # encode the labels as numbers
-            target = glob_conf.config['DATA']['target']
             self.label_encoder = LabelEncoder()
-            self.df_train[target] = self.label_encoder.fit_transform(self.df_train[target])
-            self.df_test[target] = self.label_encoder.transform(self.df_test[target])
+            self.df_train[self.target] = self.label_encoder.fit_transform(self.df_train[self.target])
+            self.df_test[self.target] = self.label_encoder.transform(self.df_test[self.target])
             glob_conf.set_label_encoder(self.label_encoder)
-            self.util.debug(f'Categories test: {self.df_test[target].unique()}')
-            self.util.debug(f'Categories train: {self.df_train[target].unique()}')
+            self.util.debug(f'Categories test: {self.df_test[self.target].unique()}')
+            self.util.debug(f'Categories train: {self.df_train[self.target].unique()}')
         else:
             pass
         self.util.debug(f'{self.df_test.speaker.nunique()} speakers in test and {self.df_train.speaker.nunique()} speakers in train')
         augment = self.util.config_val('DATA', 'augment', 0)
         if augment:
             self.augment_train()
+        if self.util.config_val('PLOT', 'value_counts', False):
+            self.plot_distribution()
+
+
+    def plot_distribution(self):
+        import plots
+        fig_dir = self.util.get_path('fig_dir')        
+        plots.describe_df(self.df_test, self.target, fig_dir+f'test_distplot.png')
+        plots.describe_df(self.df_train, self.target, fig_dir+f'train_distplot.png')
 
     def augment_train(self):
         # augment the train and dev dataframes
