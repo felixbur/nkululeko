@@ -8,6 +8,10 @@ import glob_conf
 
 class Opensmileset(Featureset):
 
+    def __init__(self, name, data_df):
+        super().__init__(name, data_df)
+        self.feature_set = opensmile.FeatureSet.eGeMAPSv02
+
     def extract(self):
         store = self.util.get_path('store')
         storage = f'{store}{self.name}.pkl'
@@ -15,7 +19,7 @@ class Opensmileset(Featureset):
         if extract or not os.path.isfile(storage):
             self.util.debug('extracting openSmile features, this might take a while...')
             smile = opensmile.Smile(
-            feature_set=opensmile.FeatureSet.GeMAPSv01b,
+            feature_set= self.feature_set,
             feature_level=opensmile.FeatureLevel.Functionals,
             num_workers=5,)
             self.df = smile.process_files(self.data_df.index)
@@ -30,3 +34,10 @@ class Opensmileset(Featureset):
         # drop the multiindex
         self.df.index = self.df.index.droplevel(1)
         self.df.index = self.df.index.droplevel(1)
+
+    def extract_sample(self, signal, sr):
+        smile = opensmile.Smile(
+                feature_set=self.feature_set,
+                feature_level=opensmile.FeatureLevel.Functionals,)
+        feats = smile.process_signal(signal, sr)
+        return feats

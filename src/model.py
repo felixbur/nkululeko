@@ -73,6 +73,12 @@ class Model:
         report = Reporter(self.df_test[glob_conf.config['DATA']['target']].to_numpy().astype(float), predictions)
         return report
 
+    def predict_sample(self, features):
+        """Predict one sample"""
+        prediction =  self.clf.predict(features)
+        return prediction
+
+
     def store(self):
         dir = self.util.get_path('model_dir')
         name = f'{self.util.get_exp_name()}_{self.run}_{self.epoch:03d}.model'

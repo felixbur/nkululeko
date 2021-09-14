@@ -132,6 +132,11 @@ class Runmanager:
         self.util.debug(f'plotting conf matrix to {plot_name}')
         report.plot_confmatrix(plot_name, epoch)
 
+    def get_best_model(self):
+        best_report = self.get_best_result(self.best_results)
+        self.print_model(best_report)
+        return self.model
+
 
     def get_best_result(self, reports):
         best_r = Reporter([], [])

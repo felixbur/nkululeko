@@ -6,7 +6,8 @@ from feats_opensmile import Opensmileset
 from runmanager import Runmanager
 from util import Util
 import glob_conf
-import plots
+from plots import Plots
+from demo_predictor import Demo_predictor
 import ast # To convert strings to objects
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
@@ -191,10 +192,17 @@ class Experiment:
         self.runmgr = Runmanager(self.df_train, self.df_test, self.feats_train, self.feats_test)
 
     def run(self):
-        """Start up the runs."""
+        """Do the runs."""
         self.runmgr.do_runs()
+
         # access the results of the last run
         self.reports = self.runmgr.reports
+        # try to save yourself
+        save = self.util.config_val('EXP', 'save', False)
+        if save: 
+            # save the experiment for future use
+            self.save(f'{self.util.get_exp_name()}.pkl')
+
         # self.collect_reports()
         return self.reports    
 
@@ -207,6 +215,13 @@ class Experiment:
             self.results.append(r.get_result().test)
             self.losses.append(r.get_result().loss)
             self.train_results.append(r.get_result().train)
+
+    def demo(self):
+        model = self.runmgr.get_best_model()
+        feature_extractor = self.feats_train
+        demo = Demo_predictor(model, feature_extractor, self.label_encoder)
+        demo.run_demo()
+
 
     def load(self, filename):
         f = open(filename, 'rb')
