@@ -105,13 +105,12 @@ class Dataset:
         if self.util.config_val('PLOT', 'value_counts', False):
             self.plot_distribution()
 
-
     def plot_distribution(self):
-        import plots
-        fig_dir = self.util.get_path('fig_dir')        
-        plots.describe_df(self.df, self.target, fig_dir+f'{self.name}_distplot.png')
-        plots.describe_df(self.df_test, self.target, fig_dir+f'{self.name}_test_distplot.png')
-        plots.describe_df(self.df_train, self.target, fig_dir+f'{self.name}_train_distplot.png')
+        from plots import Plots
+        plot = Plots()
+        plot.describe_df(self.df, self.target, f'{self.name}_distplot.png')
+        plot.describe_df(self.df_test, self.target, f'{self.name}_test_distplot.png')
+        plot.describe_df(self.df_train, self.target, f'{self.name}_train_distplot.png')
 
     def split_speakers(self):
         """One way to split train and eval sets: Specify percentage of evaluation speakers"""

@@ -128,7 +128,7 @@ class Runmanager:
         self.model.load(run, epoch)
         report = self.model.predict()
         plot_name_suggest = self.util.get_exp_name()
-        plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+f'_BEST_{run}_{epoch:03d}_cnf.png'
+        plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+f'_BEST_{run}_{epoch:03d}_BEST_cnf.png'
         self.util.debug(f'plotting conf matrix to {plot_name}')
         report.plot_confmatrix(plot_name, epoch)
 

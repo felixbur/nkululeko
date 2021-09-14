@@ -97,9 +97,12 @@ class Experiment:
 
     def plot_distribution(self):
         """Plot the distribution of samples and speaker per target class and biological sex"""
-        fig_dir = self.util.get_path('fig_dir')        
-        plots.describe_df(self.df_test, self.target, fig_dir+f'test_distplot.png')
-        plots.describe_df(self.df_train, self.target, fig_dir+f'train_distplot.png')
+        from plots import Plots
+        plot = Plots()
+        self.df_train['labels'] = self.label_encoder.inverse_transform(self.df_train[self.target])
+        self.df_test['labels'] = self.label_encoder.inverse_transform(self.df_test[self.target])
+        plot.describe_df(self.df_test, 'labels', f'test_distplot.png')
+        plot.describe_df(self.df_train, 'labels', f'train_distplot.png')
 
     def augment_train(self):
         """Augment the train dataframe"""
