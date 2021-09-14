@@ -18,8 +18,13 @@ An example is the [my_experiment.py](my_experiment.py) file.
 
 ## Usage
 There is a central "experiment" class that can be used by own experiments, two examples are given with
-* [my_experiment.py](my_experiment.py) ([configuration](exp_emodb.ini)), using SVM classifier
-* [configuration](exp_emodb_mlp.ini), using MLP classifier
+* [my_experiment.py](demos/my_experiment.py) ([configuration](demos/exp_emodb.ini)), using SVM classifier
+* [configuration](demos/exp_emodb_mlp.ini), using MLP classifier
+
+Here are some other use case demonstrations:
+* [On-th-fly classification with the best model](demos/demo_best_model.py)
+* [Re-generate the progressing confusion matrix animation wit a different framerate](demos/plot_faster_anim.py)
+
 
 The framework is targeted at the speech domain and supports experiments where different classifiers are combined with different feature extractors.
 
