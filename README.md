@@ -2,6 +2,9 @@
 
 ## Description
 A project to detect speaker characteristics by machine learning experiments with a high level interface based on [audformat](https://github.com/audeering/audformat).
+The idea is to have a very high level framework (based on e.g. sklearn and pytorch) that can be used by people not being experienced programmers as they mainly have to adapt the initialization parameter files.
+[Here's a blog post on how to set up nkululeko on your computer.](http://blog.syntheticspeech.de/2021/08/30/how-to-set-up-your-first-nkululeko-project/)
+
 
 ## Installation
 Download the sources via git clone or zip export to your hard drive.
@@ -14,9 +17,6 @@ in your main python file and use them.
 An example is the [my_experiment.py](my_experiment.py) file.
 
 ## Usage
-The idea is to have a very high level framework (based on e.g. sklearn and pytorch) that can be used by people not being experienced programmers as they mainly have to adapt the initialization parameter files.
-[Here's a blog post on how to set up nkululeko on your computer.](http://blog.syntheticspeech.de/2021/08/30/how-to-set-up-your-first-nkululeko-project/)
-
 There is a central "experiment" class that can be used by own experiments, two examples are given with
 * [my_experiment.py](my_experiment.py) ([configuration](exp_emodb.ini)), using SVM classifier
 * [configuration](exp_emodb_mlp.ini), using MLP classifier
