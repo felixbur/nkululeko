@@ -6,10 +6,10 @@ from feats_opensmile import Opensmileset
 from runmanager import Runmanager
 from util import Util
 import glob_conf
+import plots
 import ast # To convert strings to objects
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
-from feats_spectra import Spectraloader
 from scaler import Scaler
 import pickle
 
@@ -19,7 +19,12 @@ class Experiment:
     
 
     def __init__(self, config_obj):
-        """Constructor: takes a name and the config object"""
+        """
+        Parameters
+        ----------
+        config_obj : a config parser object that sets the experiment parameters and being set as a global object.
+        """
+
         self.set_globals(config_obj)
         self.name = glob_conf.config['EXP']['name']
         self.util = Util()
@@ -91,13 +96,13 @@ class Experiment:
 
 
     def plot_distribution(self):
-        import plots
+        """Plot the distribution of samples and speaker per target class and biological sex"""
         fig_dir = self.util.get_path('fig_dir')        
         plots.describe_df(self.df_test, self.target, fig_dir+f'test_distplot.png')
         plots.describe_df(self.df_train, self.target, fig_dir+f'train_distplot.png')
 
     def augment_train(self):
-        # augment the train and dev dataframes
+        """Augment the train dataframe"""
         from augmenter import Augmenter
         augment_train = Augmenter(self.df_train)
         df_train_aug = augment_train.augment()
@@ -105,7 +110,13 @@ class Experiment:
 
 
     def extract_feats(self):
-        """Extract the features for train and dev sets. They will be stored on disk and need to be removed manually."""
+        """Extract the features for train and dev sets. 
+        
+        They will be stored on disk and need to be removed manually.
+        
+        The string FEATS.feats_type is read from the config, defaults to os. 
+        
+        """
         df_train, df_test = self.df_train, self.df_test
         strategy = self.util.config_val('DATA', 'strategy', 'train_test')
         feats_type = self.util.config_val('FEATS', 'type', 'os')
@@ -132,7 +143,7 @@ class Experiment:
             self.feats_train = TRILLset(f'{feats_name}_train', df_train)
             self.feats_train.extract()
             self.feats_train.filter()
-            self.feats_test = AudIDset(f'{feats_name}_test', df_test)
+            self.feats_test = TRILLset(f'{feats_name}_test', df_test)
             self.feats_test.extract()
             self.feats_test.filter()
         elif feats_type=='mld':
@@ -140,8 +151,6 @@ class Experiment:
             self.feats_train = MLD_set(f'{feats_name}_train', df_train)
             self.feats_train.extract()
             self.feats_train.filter()
-            if self.feats_train.df.isna().to_numpy().any():
-                self.util.error('exp 1: NANs exist')
             self.feats_test = MLD_set(f'{feats_name}_test', df_test)
             self.feats_test.extract()
             self.feats_test.filter()
@@ -152,6 +161,7 @@ class Experiment:
                 self.util.error('exp 2: NANs exist')
         elif feats_type=='spectra':
             # compute the spectrograms
+            from feats_spectra import Spectraloader # not yet open source
             test_specs = Spectraloader(f'{feats_name}_test', df_test)
             test_specs.make_feats()
             self.feats_test = test_specs.get_loader()
