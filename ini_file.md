@@ -116,3 +116,5 @@
   * plot_epoch_progression = 1
 * **plot_best_model**: search for the best performing model and plot conf matrix (needs *MODEL.store* to be turned on)
   * plot_best_model = 1
+* **value_counts** plot statistics for each database and the train/dev splits (in the *image_dir*)
+  * value_counts = 1
