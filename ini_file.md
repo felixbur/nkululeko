@@ -26,6 +26,8 @@
   * runs = 1
 * **epochs**: number of epochs for ANN training
   * epochs = 1
+* **save**: save the experiment as a pickle file to be restored again later
+  * save = 1
 
 ### DATA
 * **data_type**: just a flag now to mark continous data, so it can be binned to categorical data (using *bins* and *labels*)
