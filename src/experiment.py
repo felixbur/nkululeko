@@ -100,10 +100,15 @@ class Experiment:
         """Plot the distribution of samples and speaker per target class and biological sex"""
         from plots import Plots
         plot = Plots()
-        self.df_train['labels'] = self.label_encoder.inverse_transform(self.df_train[self.target])
-        self.df_test['labels'] = self.label_encoder.inverse_transform(self.df_test[self.target])
-        plot.describe_df(self.df_test, 'labels', f'test_distplot.png')
-        plot.describe_df(self.df_train, 'labels', f'train_distplot.png')
+        if self.util.exp_is_classification():
+            self.df_train['labels'] = self.label_encoder.inverse_transform(self.df_train[self.target])
+            self.df_test['labels'] = self.label_encoder.inverse_transform(self.df_test[self.target])
+            plot.describe_df('dev_set', self.df_test, 'labels', f'test_distplot.png')
+            plot.describe_df('train_set', self.df_train, 'labels', f'train_distplot.png')
+        else:
+            plot.describe_df('dev_set', self.df_test, self.target, f'test_distplot.png')
+            plot.describe_df('train_set', self.df_train, self.target, f'train_distplot.png')
+
 
     def augment_train(self):
         """Augment the train dataframe"""

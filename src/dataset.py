@@ -24,6 +24,7 @@ class Dataset:
 
     def load(self):
         """Load the dataframe with files, speakers and task labels"""
+        self.util.debug(f'loading {self.name}')
         root = glob_conf.config['DATA'][self.name]
         db = audformat.Database.load(root)
         # map the audio file paths 
@@ -31,7 +32,7 @@ class Dataset:
         # the dataframe with all other information 
         df_files = self.util.config_val('DATA', f'{self.name}.files_table', 'files')
         try :
-            df = db.tables[df_files].df
+            df = db[df_files].df
         except audformat.core.errors.BadKeyError:
             # if no such table exists, create a new one and hope for the best
             df = pd.DataFrame()
@@ -47,6 +48,14 @@ class Dataset:
             df = df[df.gender==s]
         except KeyError:
             pass 
+        try:
+            df['gender'] = db['files']['speaker'].get(map='gender')
+        except (ValueError, audformat.core.errors.BadKeyError) as e:
+            pass
+        try:
+            df[self.target] = db['files']['speaker'].get(map=self.target)
+        except (ValueError, audformat.core.errors.BadKeyError) as e:
+            pass
         self.df = df
         self.db = db
 
@@ -108,9 +117,12 @@ class Dataset:
     def plot_distribution(self):
         from plots import Plots
         plot = Plots()
-        plot.describe_df(self.df, self.target, f'{self.name}_distplot.png')
-        plot.describe_df(self.df_test, self.target, f'{self.name}_test_distplot.png')
-        plot.describe_df(self.df_train, self.target, f'{self.name}_train_distplot.png')
+        all_df = self.df_test.append(self.df_train)
+        plot.describe_df(self.name, all_df, self.target, f'{self.name}_distplot.png')
+        if self.df_test.shape[0]>0:
+            plot.describe_df(self.name+' dev', self.df_test, self.target, f'{self.name}_test_distplot.png')
+        if self.df_train.shape[0]>0:
+            plot.describe_df(self.name+' train', self.df_train, self.target, f'{self.name}_train_distplot.png')
 
     def split_speakers(self):
         """One way to split train and eval sets: Specify percentage of evaluation speakers"""
