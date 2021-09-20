@@ -59,6 +59,7 @@ class Spectraloader(Featureset):
             extract = False
 
         if extract or not os.path.isfile(os.path.join(self.feats_dir, 'index.pkl')):
+            self.util.debug('extracting spectra, this might take a while...')
             filenames = []
             for counter, file in audeer.progress_bar(
                 enumerate(self.data_df.index), 

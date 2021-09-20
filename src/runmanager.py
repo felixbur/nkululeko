@@ -118,6 +118,7 @@ class Runmanager:
         elif model_type=='xgr':
             self.model = XGR_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
         elif model_type=='cnn':
+            from model_cnn import CNN_model
             self.model = CNN_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
         elif model_type=='mlp':
             self.model = MLP_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
