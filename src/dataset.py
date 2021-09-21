@@ -105,12 +105,12 @@ class Dataset:
         elif split_strategy == 'reuse':
             self.df_test = pd.read_pickle(storage_test)
             self.df_train = pd.read_pickle(storage_train)
-        """Bin target values if they are continous but a classification experiment should be done"""
-        self.check_continous_classification(self.df_train)
-        self.check_continous_classification(self.df_test)
         # remember the target in case they get labelencoded later
         self.df_test['class_label'] = self.df_test[self.target]
         self.df_train['class_label'] = self.df_train[self.target]
+        # Bin target values if they are continous but a classification experiment should be done
+        self.check_continous_classification(self.df_train)
+        self.check_continous_classification(self.df_test)
         # remember the splits for future use
         self.df_test.to_pickle(storage_test)
         self.df_train.to_pickle(storage_train)
@@ -163,4 +163,7 @@ class Dataset:
             self.util.debug('binning continuous variable to categories')
             cat_vals = self.util.continuous_to_categorical(df[self.target])
             df[self.target] = cat_vals
- 
+            labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
+            df['class_label'] = df[self.target]
+            for i, l in enumerate(labels):
+                df['class_label'] = df['class_label'].replace(i, l)
