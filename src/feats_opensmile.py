@@ -35,6 +35,7 @@ class Opensmileset(Featureset):
         self.df.index = self.df.index.droplevel(1)
         self.df.index = self.df.index.droplevel(1)
 
+
     def extract_sample(self, signal, sr):
         smile = opensmile.Smile(
                 feature_set=self.feature_set,

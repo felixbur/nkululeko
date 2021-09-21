@@ -1,9 +1,12 @@
 # plots.py
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.manifold import TSNE
 import ast
 from util import Util
 import glob_conf
+import seaborn as sns
+import numpy as np
 
 class Plots():
     
@@ -24,5 +27,21 @@ class Plots():
         df.groupby(target)['speaker'].nunique().plot(kind='bar', ax=axes[1], title=f'speakers ({spkr_num})')
         plt.tight_layout()
         plt.savefig(fig_dir+filename)
+        fig.clear()
+        plt.close(fig)
+
+    def plotTsne(self, feats, labels, filename, perplexity=30, learning_rate=200):
+        """Make a TSNE plot to see whether features are useful for classification"""
+        fig_dir = self.util.get_path('fig_dir')+'../' # one up because of the runs 
+        filename = fig_dir+filename
+        self.util.debug(f'plotting tsne to {filename}, this might take a while...')
+        model = TSNE(n_components=2, random_state=0, perplexity=perplexity, learning_rate=learning_rate)
+        tsne_data = model.fit_transform(feats)
+        tsne_data_labs = np.vstack((tsne_data.T, labels)).T
+        tsne_df = pd.DataFrame(data=tsne_data_labs, columns=('Dim_1', 'Dim_2', 'label'))
+        fg = sns.FacetGrid(tsne_df, hue='label', size=6).map(plt.scatter, 'Dim_1', 'Dim_2').add_legend()
+        fig = fg.fig
+        plt.tight_layout()
+        plt.savefig(filename)
         fig.clear()
         plt.close(fig)

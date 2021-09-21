@@ -184,6 +184,15 @@ class Experiment:
         if scale:
             self.scale()
 
+        # check if a tsne should be plotted
+        tsne = self.util.config_val('PLOT', 'tsne', False)
+        if tsne and self.util.exp_is_classification():
+            from plots import Plots
+            plots = Plots()
+            target = self.util.config_val('DATA', 'target', 'emotion')
+            plots.plotTsne(self.feats_train.df, self.df_train['class_label'], self.util.get_exp_name()+'_tsne')
+
+
     def scale(self):
         try:
             dummy = glob_conf.config['FEATS']['scale'] 
