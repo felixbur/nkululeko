@@ -50,7 +50,7 @@ class Dataset:
             pass 
         try:
             df['gender'] = db['files']['speaker'].get(map='gender')
-        except (ValueError, audformat.core.errors.BadKeyError) as e:
+        except (ValueError, audformat.errors.BadKeyError) as e:
             pass
         try:
             df[self.target] = db['files']['speaker'].get(map=self.target)
@@ -158,8 +158,9 @@ class Dataset:
             pass
 
     def check_continous_classification(self, df):
-        datatype = self.util.config_val('DATA', 'data_type', 'dummy')
-        if self.util.exp_is_classification() and datatype == 'continous':
+        datatype = self.util.config_val('DATA', 'type', 'dummy')
+        if self.util.exp_is_classification() and datatype == 'continuous':
+            self.util.debug('binning continuous variable to categories')
             cat_vals = self.util.continuous_to_categorical(df[self.target])
             df[self.target] = cat_vals
  
