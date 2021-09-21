@@ -118,3 +118,5 @@
   * plot_best_model = 1
 * **value_counts** plot statistics for each database and the train/dev splits (in the *image_dir*)
   * value_counts = 1
+* **tsne** make a tsne plot to get a feeling how the features might perform
+  * tsne = 1
