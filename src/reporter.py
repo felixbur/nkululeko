@@ -104,12 +104,13 @@ class Reporter:
             with open(file_name, "w") as text_file:
                 text_file.write(rpt)
         else: # regression
-            mse = self.result.test
+            result = self.result.test
             r2 = r2_score(self.truths, self.preds)
             pcc = pearsonr(self.truths, self.preds)[0]
             file_name = f'{res_dir}{self.util.get_exp_name()}.txt'
+            measure = self.util.config_val('MODEL', 'measure', 'mse')
             with open(file_name, "w") as text_file:
-                text_file.write(f'mse: {mse:.3f}, r_2: {r2:.3f}, pcc {pcc:.3f}')
+                text_file.write(f'{measure}: {result:.3f}, r_2: {r2:.3f}, pcc {pcc:.3f}')
 
     def make_conf_animation(self, out_name):
         fig_dir = self.util.get_path('fig_dir')
