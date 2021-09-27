@@ -73,6 +73,7 @@ class Reporter:
 
         fig = plt.figure()  # figsize=[5, 5]
         uar = recall_score(self.truths, self.preds, average='macro')
+        acc = accuracy_score(self.truths, self.preds)
         cm = confusion_matrix(self.truths, self.preds,  normalize = None) #normalize must be one of {'true', 'pred', 'all', None}
         try:
             disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels).plot(cmap='Blues')
@@ -86,6 +87,11 @@ class Reporter:
         plt.savefig(fig_dir+plot_name)
         fig.clear()
         plt.close(fig)
+        res_dir = self.util.get_path('res_dir')
+        rpt = f'epoch: {epoch}, UAR: {uar}, ACC {acc}'
+        file_name = f'{res_dir}{self.util.get_exp_name()}_conf.txt'
+        with open(file_name, "w") as text_file:
+            text_file.write(rpt)
 
     def print_results(self):
         res_dir = self.util.get_path('res_dir')
