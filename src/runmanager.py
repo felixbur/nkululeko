@@ -102,10 +102,20 @@ class Runmanager:
     def print_best_result_runs(self):
         best_report = self.get_best_result(self.best_results)
         self.util.debug(f'best result with run {best_report.run} and epoch {best_report.epoch}: {best_report.result.test:.3f}')
-        self.print_model(best_report)
+        plot_name_suggest = self.util.get_exp_name()
+        plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+f'_BEST_{best_report.run}_{best_report.epoch:03d}_BEST_cnf.png'
+        self.print_model(best_report, plot_name)
+
+    def print_given_result(self, run, epoch):
+        report =  Reporter([], [])
+        report.set_id(run, epoch)
+        self.util.debug(f'Re-testing result with run {run} and epoch {epoch}')
+        plot_name_suggest = self.util.get_exp_name()
+        plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+f'_extra_{run}_{epoch:03d}_cnf.png'
+        self.print_model(report, plot_name)
 
 
-    def print_model(self, report):
+    def print_model(self, report, plot_name):
         run = report.run
         epoch = report.epoch
         model_type = glob_conf.config['MODEL']['type']
@@ -128,8 +138,6 @@ class Runmanager:
             self.util.error(f'unknown model type: \'{model_type}\'')
         self.model.load(run, epoch)
         report = self.model.predict()
-        plot_name_suggest = self.util.get_exp_name()
-        plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+f'_BEST_{run}_{epoch:03d}_BEST_cnf.png'
         self.util.debug(f'plotting conf matrix to {plot_name}')
         report.plot_confmatrix(plot_name, epoch)
 
