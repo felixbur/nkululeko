@@ -43,7 +43,7 @@ class MLD_set(Featureset):
             pass
         self.util.debug(f'MLD feats shape: {self.df.shape}')
         # add opensmile features
-        with_os = self.util.config_val('FEATS', 'with_os', '0')
+        with_os = self.util.config_val('FEATS', 'with_os', False)
         if with_os:
             df_os = self.extract_os()
             # df_os =  df_os.loc[ df_os.index.intersection(self.df.index)]
@@ -52,6 +52,7 @@ class MLD_set(Featureset):
         # shouldn't happen
         if self.df.isna().to_numpy().any():
             self.util.error('feats 0: NANs exist')
+        self.df = self.df.astype(float)
 
     def extract_os(self):
         store = self.util.get_path('store')
