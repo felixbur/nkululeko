@@ -1,4 +1,5 @@
 # model_mlp.py
+from sklearn.utils.validation import as_float_array
 from util import Util 
 import glob_conf
 from model import Model
@@ -78,7 +79,7 @@ class MLP_model(Model):
             self.linear = torch.nn.Sequential(layers)
         def forward(self, x):
             # x: (batch_size, channels, samples)
-            x = x.squeeze(dim=1)
+            x = x.squeeze(dim=1).float()
             return self.linear(x)
 
 
