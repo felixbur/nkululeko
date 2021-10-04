@@ -139,6 +139,7 @@ class Experiment:
             self.feats_test = Opensmileset(f'{feats_name}_test', df_test)
             self.feats_test.extract()
             self.feats_test.filter()
+            self.util.debug(f'train shape : {self.feats_train.df.shape}, test shape:{self.feats_test.df.shape}')
         elif feats_type=='audid':
             from feats_audid import AudIDset
             self.feats_train = AudIDset(f'{feats_name}_train', df_train)

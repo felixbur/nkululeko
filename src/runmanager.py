@@ -140,6 +140,7 @@ class Runmanager:
         report = self.model.predict()
         self.util.debug(f'plotting conf matrix to {plot_name}')
         report.plot_confmatrix(plot_name, epoch)
+        report.print_results()
 
     def get_best_model(self):
         best_report = self.get_best_result(self.best_results)
