@@ -16,6 +16,7 @@ class Opensmileset(Featureset):
         store = self.util.get_path('store')
         storage = f'{store}{self.name}.pkl'
         extract = self.util.config_val('DATA', 'needs_feature_extraction', False)
+        is_multi_index = False
         if extract or not os.path.isfile(storage):
             self.util.debug('extracting openSmile features, this might take a while...')
             smile = opensmile.Smile(
@@ -24,6 +25,7 @@ class Opensmileset(Featureset):
             num_workers=5,)
             print(self.data_df.head(1))
             if isinstance(self.data_df.index, pd.MultiIndex):
+                is_multi_index = True
                 self.df = smile.process_index(self.data_df.index)
             else:
                 self.df = smile.process_files(self.data_df.index)
@@ -37,9 +39,10 @@ class Opensmileset(Featureset):
         else:
             self.util.debug('reusing extracted OS features.')
             self.df = pd.read_pickle(storage)
-        # drop the multiindex
-        #self.df.index = self.df.index.droplevel(1)
-        #self.df.index = self.df.index.droplevel(1)
+        # drop the multiindex if it's not in the data
+        if not is_multi_index:
+            self.df.index = self.df.index.droplevel(1)
+            self.df.index = self.df.index.droplevel(1)
 
 
     def extract_sample(self, signal, sr):
