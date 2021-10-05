@@ -5,6 +5,7 @@ import ast
 import os
 from random import sample
 from util import Util
+from plots import Plots
 import glob_conf
 
 class Dataset:
@@ -21,6 +22,7 @@ class Dataset:
         self.name = name
         self.target = glob_conf.config['DATA']['target']
         self.util = Util()
+        self.plot = Plots()
 
     def load(self):
         """Load the dataframe with files, speakers and task labels"""
@@ -58,6 +60,9 @@ class Dataset:
             pass
         self.df = df
         self.db = db
+        if self.util.config_val('DATA', f'{self.name}.value_counts', False):
+            self.plot.describe_df(self.name, df, self.target, f'{self.name}_distplot.png')
+
 
     def split(self):
         """Split the datbase into train and development set"""
@@ -114,18 +119,16 @@ class Dataset:
         # remember the splits for future use
         self.df_test.to_pickle(storage_test)
         self.df_train.to_pickle(storage_train)
-        if self.util.config_val('PLOT', 'value_counts', False):
+        if self.util.config_val('DATA', f'{self.name}.value_counts', False):
             self.plot_distribution()
 
     def plot_distribution(self):
-        from plots import Plots
-        plot = Plots()
         all_df = self.df_test.append(self.df_train)
-        plot.describe_df(self.name, all_df, self.target, f'{self.name}_distplot.png')
+        self.plot.describe_df(self.name, all_df, self.target, f'{self.name}_distplot.png')
         if self.df_test.shape[0]>0:
-            plot.describe_df(self.name+' dev', self.df_test, self.target, f'{self.name}_test_distplot.png')
+            self.plot.describe_df(self.name+' dev', self.df_test, self.target, f'{self.name}_test_distplot.png')
         if self.df_train.shape[0]>0:
-            plot.describe_df(self.name+' train', self.df_train, self.target, f'{self.name}_train_distplot.png')
+            self.plot.describe_df(self.name+' train', self.df_train, self.target, f'{self.name}_train_distplot.png')
 
     def split_speakers(self):
         """One way to split train and eval sets: Specify percentage of evaluation speakers"""

@@ -39,9 +39,11 @@ class Experiment:
         ds = ast.literal_eval(glob_conf.config['DATA']['databases'])
         self.datasets = {}
         for d in ds:
-            if d == 'emodb':
-                data = Emodb()
-            elif d == 'ravdess':
+            # if 
+            # d == 'emodb':
+            #     data = Emodb()
+            # el
+            if d == 'ravdess':
                 data = Ravdess()
             else:
                 ds_type = self.util.config_val('DATA', d+'.type', 'audformat')
