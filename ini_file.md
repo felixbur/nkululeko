@@ -34,6 +34,10 @@
   * data_type = continous
 * **databases**: list of databases to be used in the experiment
   * databases = ['emodb', 'timit']
+* **strategy**: how the databases should be used, either *train_test* or *cross_data*
+  * strategy = train_test
+* **trains**: if *strategy* = cross_data, denote the train databases
+* **tests**: if *strategy* = cross_data, denote the test databases
 * **db_name**: path with audformatted repository for each database listed in 'databases*
   * emodb = /home/data/audformat/emodb/
 * **db_name.type**: type of storage, e.g. audformat database or CSV (needs header: file,speaker,task)
