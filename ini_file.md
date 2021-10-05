@@ -49,6 +49,8 @@
     * **speaker_split**: split samples randomly but speaker disjunct, given a percentage of speakers for the test set.
       * emodb.testsplit = 50
     * **reuse**: reuse the splits after a *speaker_split* run to save time with feature extraction.
+* **db_name.files_table**: main table that containes the audio file names
+  * emodb.files_table = files
 * **target**: the task name, e.g. *age* or *emotion*
   * target = emotion
 * **labels**: for classification experiments: the names of the categories (is also used for regression when binning the values)
