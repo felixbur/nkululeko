@@ -93,8 +93,10 @@ class Runmanager:
             best_report = self.get_best_result(self.reports)
             plot_best_model = self.util.config_val('PLOT', 'plot_best_model', 0)
             if plot_best_model:
+                plot_name_suggest = self.util.get_exp_name()
+                plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+f'_BEST_{best_report.run}_{best_report.epoch:03d}_BEST_cnf.png'
                 self.util.debug(f'best result with run {best_report.run} and epoch {best_report.epoch}: {best_report.result.test:.3f}')
-                self.print_model(best_report)
+                self.print_model(best_report, plot_name)
             # finally, print out the numbers for this run
             self.reports[-1].print_results()
             self.best_results.append(best_report)
