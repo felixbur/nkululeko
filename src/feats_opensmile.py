@@ -23,13 +23,11 @@ class Opensmileset(Featureset):
             feature_set= self.feature_set,
             feature_level=opensmile.FeatureLevel.Functionals,
             num_workers=5,)
-            print(self.data_df.head(1))
             if isinstance(self.data_df.index, pd.MultiIndex):
                 is_multi_index = True
                 self.df = smile.process_index(self.data_df.index)
             else:
                 self.df = smile.process_files(self.data_df.index)
-            print(self.df.shape)
 
             self.df.to_pickle(storage)
             try:
