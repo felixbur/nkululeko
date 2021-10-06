@@ -42,7 +42,10 @@ class Model:
             # tune the model meta parameters
             tuning_params = ast.literal_eval(glob_conf.config['MODEL']['tuning_params'])
             tuned_params={}
-            scoring = glob_conf.config['MODEL']['scoring']
+            try:
+                scoring = glob_conf.config['MODEL']['scoring']
+            except KeyError:
+                self.util.error('got tuning params but no scoring')
             for param in tuning_params:
                 values = ast.literal_eval(glob_conf.config['MODEL'][param])
                 tuned_params[param] = values
