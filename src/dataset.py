@@ -112,6 +112,7 @@ class Dataset:
             self.df_train = pd.read_pickle(storage_train)
         # remember the target in case they get labelencoded later
         self.df_test['class_label'] = self.df_test[self.target]
+
         self.df_train['class_label'] = self.df_train[self.target]
         # Bin target values if they are continous but a classification experiment should be done
         self.check_continous_classification(self.df_train)
