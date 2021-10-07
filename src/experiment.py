@@ -177,9 +177,11 @@ class Experiment:
             test_specs = Spectraloader(f'{feats_name}_test', df_test)
             test_specs.make_feats()
             self.feats_test = test_specs.get_loader()
-            train_specs = Spectraloader(f'{feats_name}_train', df_train)
-            train_specs.make_feats()
-            self.feats_train = train_specs.get_loader()
+            self.feats_train = None
+            if df_train.shape[0]>0:
+                train_specs = Spectraloader(f'{feats_name}_train', df_train)
+                train_specs.make_feats()
+                self.feats_train = train_specs.get_loader()
             scale = 0
         else:
             self.util.error(f'unknown feats_type: {feats_type}')

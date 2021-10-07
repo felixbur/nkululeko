@@ -55,8 +55,10 @@ class CNN_model(Model):
         """Predict the whole eval feature set"""
         # evaluate on dev set
         _, truths, predictions = self.evaluate_model(False)
-        # evaluate on train set
-        result, _, _ = self.evaluate_model(True)
+        # evaluate on train set, if there is one
+        result = 0
+        if self.feats_train != None:
+            result, _, _ = self.evaluate_model(True)
         report = Reporter(truths.numpy(), predictions.numpy())
         try:
             report.result.loss = self.loss

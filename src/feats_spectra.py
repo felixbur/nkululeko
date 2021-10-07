@@ -60,18 +60,45 @@ class Spectraloader(Featureset):
 
         if extract or not os.path.isfile(os.path.join(self.feats_dir, 'index.pkl')):
             self.util.debug('extracting spectra, this might take a while...')
-            filenames = []
-            for counter, file in audeer.progress_bar(
-                enumerate(self.data_df.index), 
-                total=len(self.data_df.index), 
-                desc='Extraction'
-            ):
-                signal, fs = audiofile.read(
-                    file)
-                spects = self.transform(signal, 16000)
-                filename = os.path.join(self.feats_dir, '{:08}.npy'.format(counter))
-                np.save(filename, spects)
-                filenames.append(filename)
+            is_multi_index = False
+            if isinstance(self.data_df.index, pd.MultiIndex):
+                is_multi_index = True
+                index = self.data_df.index
+                filenames = [] 
+                # print(self.data_df.head(1))
+                for counter, (file, start, end) in audeer.progress_bar(
+                    enumerate(index), 
+                    total=len(index), 
+                    desc='Extraction'
+                ):
+                    offset = start.total_seconds()
+                    if end != end:
+                        duration = None
+                    else:
+                        duration = (end-start).total_seconds()
+                    signal, fs = audiofile.read(
+                        file,
+                        offset=offset,
+                        duration=duration,
+                        always_2d=True
+                    )
+                    spects = self.transform(signal, fs)
+                    filename = os.path.join(self.feats_dir, '{:08}.npy'.format(counter))
+                    np.save(filename, spects)
+                    filenames.append(filename)
+            else:
+                filenames = []
+                for counter, file in audeer.progress_bar(
+                    enumerate(self.data_df.index), 
+                    total=len(self.data_df.index), 
+                    desc='Extraction'
+                ):
+                    signal, fs = audiofile.read(
+                        file)
+                    spects = self.transform(signal, fs)
+                    filename = os.path.join(self.feats_dir, '{:08}.npy'.format(counter))
+                    np.save(filename, spects)
+                    filenames.append(filename)
             data = pd.DataFrame(
                 index=self.data_df.index,
                 data=filenames,

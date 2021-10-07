@@ -16,6 +16,7 @@ class Runmanager:
     """Class to manage the runs of the experiment (e.g. when results differ caused by random initialization)"""
     model = None  # The underlying model
     df_train, df_test, feats_train, feats_test = None, None, None, None # The dataframes
+    reports = []
 
 
     def __init__(self, df_train, df_test, feats_train, feats_test):
