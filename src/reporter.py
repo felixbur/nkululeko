@@ -154,7 +154,7 @@ class Reporter:
         plt.plot(results, 'red', label='dev set')
         plt.plot(losses, 'grey', label='losses')
         plt.xlabel('epochs')
-        plt.ylabel(self.MEASURE)
+        plt.ylabel(f'1-{self.MEASURE}')
         plt.legend()
         plt.savefig(fig_dir+ out_name)
         plt.close()        
@@ -173,4 +173,4 @@ class Reporter:
         numerator=2*cor*sd_gt*sd_pred
         denominator=var_gt+var_pred+(mean_gt-mean_pred)**2
         ccc = numerator/denominator
-        return 1-ccc
+        return ccc

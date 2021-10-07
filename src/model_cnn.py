@@ -27,10 +27,10 @@ class CNN_model(Model):
         model = audpann.Cnn10(sampling_rate=16000, output_dim=1)
         model.load_state_dict(state, strict=False)
         self.model = model.to(self.device)       
-        criterion = self.util.config_val('MODEL', 'loss_function', 'mse')
-        if criterion == 'mse':
+        self.loss_func = self.util.config_val('MODEL', 'loss_function', 'mse')
+        if self.loss_func == 'mse':
             self.criterion = torch.nn.MSELoss()
-        elif criterion == 'ccc':
+        elif self.loss_func == '1-ccc':
             self.criterion = ConcordanceCorCoeff()
         else:
             self.util.error(f'unknown loss function: {criterion}')
@@ -40,7 +40,7 @@ class CNN_model(Model):
     def train(self):
         """Train the model one epoch"""
         losses = []
-        self.util.debug(f'training model')
+        self.util.debug(f'training model with {self.loss_func} loss function')
         self.model.train()
         for features, labels in self.feats_train:
             logits = self.model(features.to(self.device).float()).squeeze(1)

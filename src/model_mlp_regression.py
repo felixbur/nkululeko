@@ -24,7 +24,7 @@ class MLP_Reg_model(Model):
         criterion = self.util.config_val('MODEL', 'loss_function', 'mse')
         if criterion == 'mse':
             self.criterion = torch.nn.MSELoss()
-        elif criterion == 'ccc':
+        elif criterion == '1-ccc':
             self.criterion = ConcordanceCorCoeff()
         else:
             self.util.error(f'unknown loss function: {criterion}')
