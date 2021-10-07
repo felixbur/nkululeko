@@ -51,11 +51,11 @@ class Dataset:
         except KeyError:
             pass 
         try:
-            df['gender'] = db['files']['speaker'].get(map='gender')
+            df['gender'] = db[df_files]['speaker'].get(map='gender')
         except (ValueError, audformat.errors.BadKeyError) as e:
             pass
         try:
-            df[self.target] = db['files']['speaker'].get(map=self.target)
+            df[self.target] = db[df_files]['speaker'].get(map=self.target)
         except (ValueError, audformat.core.errors.BadKeyError) as e:
             pass
         self.df = df
