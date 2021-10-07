@@ -102,9 +102,9 @@
   * class_weight = 1
 * **store**: whether to save all model states (per epoch) to disk
   * store = 1
-* **loss_function**: A  loss function for ANN models
+* **loss_function**: A  loss function for ANN models, either 'mse' or '1-ccc'
   * loss_function = mse
-* **measure**: A measure to report progress (and decide for the best outcome)
+* **measure**: A measure to report progress (and decide for the best outcome, either 'mse' or 'ccc') (classification is UAR)
   * measure = mse
 * **learning_rate**: The learning rate for ANN models
   * learning_rate = 0.0001
