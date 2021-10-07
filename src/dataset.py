@@ -110,26 +110,22 @@ class Dataset:
         elif split_strategy == 'reuse':
             self.df_test = pd.read_pickle(storage_test)
             self.df_train = pd.read_pickle(storage_train)
-        # remember the target in case they get labelencoded later
-        self.df_test['class_label'] = self.df_test[self.target]
-
-        self.df_train['class_label'] = self.df_train[self.target]
-        # Bin target values if they are continous but a classification experiment should be done
-        self.check_continous_classification(self.df_train)
-        self.check_continous_classification(self.df_test)
-        # remember the splits for future use
-        self.df_test.to_pickle(storage_test)
-        self.df_train.to_pickle(storage_train)
-        if self.util.config_val('DATA', f'{self.name}.value_counts', False):
-            self.plot_distribution()
-
-    def plot_distribution(self):
-        all_df = self.df_test.append(self.df_train)
-        self.plot.describe_df(self.name, all_df, self.target, f'{self.name}_distplot.png')
         if self.df_test.shape[0]>0:
-            self.plot.describe_df(self.name+' dev', self.df_test, self.target, f'{self.name}_test_distplot.png')
+            self.finish_up(self.df_test, 'test', storage_test)
         if self.df_train.shape[0]>0:
-            self.plot.describe_df(self.name+' train', self.df_train, self.target, f'{self.name}_train_distplot.png')
+            self.finish_up(self.df_train, 'train', storage_train)
+
+    def finish_up(self, df, name, storage):
+        # remember the target in case they get labelencoded later
+        df['class_label'] = df[self.target]
+        # Bin target values if they are continous but a classification experiment should be done
+        self.check_continous_classification(df)
+        # remember the splits for future use
+        df.to_pickle(storage)
+        if self.util.config_val('DATA', f'{self.name}.value_counts', False):
+            all_df = self.df_test.append(self.df_train)
+            self.plot.describe_df(self.name, all_df, self.target, f'{self.name}_distplot.png')
+            self.plot.describe_df(self.name+' dev', self.df_test, self.target, f'{self.name}_{name}_distplot.png')
 
     def split_speakers(self):
         """One way to split train and eval sets: Specify percentage of evaluation speakers"""
