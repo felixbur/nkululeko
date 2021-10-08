@@ -10,11 +10,21 @@ class Opensmileset(Featureset):
 
     def __init__(self, name, data_df):
         super().__init__(name, data_df)
-        self.feature_set = opensmile.FeatureSet.eGeMAPSv02
+        self.featset = self.util.config_val('FEATS', 'set', 'eGeMAPSv02')
+        if self.featset == 'eGeMAPSv02':
+            self.feature_set = opensmile.FeatureSet.eGeMAPSv02
+        elif self.featset == 'ComParE_2016':
+            self.feature_set = opensmile.FeatureSet.ComParE_2016
+        elif self.featset == 'GeMAPSv01a':
+            self.feature_set = opensmile.FeatureSet.GeMAPSv01a
+        elif self.featset == 'eGeMAPSv01a':
+            self.feature_set = opensmile.FeatureSet.eGeMAPSv01a
+        else:
+            self.util.error(f'unknown feature set: {self.featset}')        
 
     def extract(self):
         store = self.util.get_path('store')
-        storage = f'{store}{self.name}.pkl'
+        storage = f'{store}{self.name}_{self.featset}.pkl'
         extract = self.util.config_val('DATA', 'needs_feature_extraction', False)
         is_multi_index = False
         if extract or not os.path.isfile(storage):
