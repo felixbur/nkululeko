@@ -11,16 +11,19 @@ class Opensmileset(Featureset):
     def __init__(self, name, data_df):
         super().__init__(name, data_df)
         self.featset = self.util.config_val('FEATS', 'set', 'eGeMAPSv02')
-        if self.featset == 'eGeMAPSv02':
-            self.feature_set = opensmile.FeatureSet.eGeMAPSv02
-        elif self.featset == 'ComParE_2016':
-            self.feature_set = opensmile.FeatureSet.ComParE_2016
-        elif self.featset == 'GeMAPSv01a':
-            self.feature_set = opensmile.FeatureSet.GeMAPSv01a
-        elif self.featset == 'eGeMAPSv01a':
-            self.feature_set = opensmile.FeatureSet.eGeMAPSv01a
-        else:
-            self.util.error(f'unknown feature set: {self.featset}')        
+        try:
+            self.feature_set = eval(f'opensmile.FeatureSet.{self.featset}')
+            #'eGeMAPSv02, ComParE_2016, GeMAPSv01a, eGeMAPSv01a':
+        except AttributeError:        
+            self.util.error(f'something is wrong with feature set: {self.featset}')        
+        self.featlevel = self.util.config_val('FEATS', 'level', 'functionals')
+        try:
+            self.featlevel = self.featlevel.replace('lld', 'LowLevelDescriptors')
+            self.featlevel = self.featlevel.replace('functionals', 'Functionals')
+            self.feature_level = eval(f'opensmile.FeatureLevel.{self.featlevel}')
+        except AttributeError:        
+            self.util.error(f'something is wrong with feature level: {self.featlevel}')        
+
 
     def extract(self):
         store = self.util.get_path('store')
@@ -31,7 +34,7 @@ class Opensmileset(Featureset):
             self.util.debug('extracting openSmile features, this might take a while...')
             smile = opensmile.Smile(
             feature_set= self.feature_set,
-            feature_level=opensmile.FeatureLevel.Functionals,
+            feature_level=self.feature_level,
             num_workers=5,)
             if isinstance(self.data_df.index, pd.MultiIndex):
                 is_multi_index = True
