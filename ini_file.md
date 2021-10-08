@@ -78,8 +78,11 @@
     * **speaker**: like *standard* but based on individual speaker sets (also for test)
 * **set**: name of opensmile feature set, e.g. eGeMAPSv02, ComParE_2016, GeMAPSv01a, eGeMAPSv01a
   * set = eGeMAPSv02
-* **level**: level of opensmile features: functional or lld (low level descriptor: framewise)
+* **level**: level of opensmile features
   * level = functional
+  * possible values:
+    * **functional**: aggregated over the whole utterance
+    * **lld**: low level descriptor: framewise
 
 ### MODEL
 * **type**: type of classifier
