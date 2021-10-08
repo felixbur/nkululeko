@@ -76,6 +76,10 @@
   * possible values:
     * **standard**: z-transformation (mean of 0 and stdv of 1) based on training set
     * **speaker**: like *standard* but based on individual speaker sets (also for test)
+* **set**: name of opensmile feature set, e.g. eGeMAPSv02, ComParE_2016, GeMAPSv01a, eGeMAPSv01a
+  * set = eGeMAPSv02
+* **level**: level of opensmile features: functional or lld (low level descriptor: framewise)
+  * level = functional
 
 ### MODEL
 * **type**: type of classifier
@@ -102,10 +106,16 @@
   * class_weight = 1
 * **store**: whether to save all model states (per epoch) to disk
   * store = 1
-* **loss_function**: A  loss function for ANN models, either 'mse' or '1-ccc'
+* **loss_function**: A  loss function for ANN models
   * loss_function = mse
-* **measure**: A measure to report progress (and decide for the best outcome, either 'mse' or 'ccc') (classification is UAR)
+  * possible values:
+    * **mse**: mean squared error
+    * **1-ccc**: concordance correlation coefficient
+* **measure**: A measure to report progress with regression experiments (classification is UAR)
   * measure = mse
+  * possible values:
+    * **mse**: mean squared error
+    * **ccc**: concordance correlation coefficient
 * **learning_rate**: The learning rate for ANN models
   * learning_rate = 0.0001
 
