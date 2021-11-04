@@ -65,12 +65,21 @@
 * **type**: the type of features
   * type = os
   * possible values:
-    * **os**: open smile features
+    * **os**: [open smile features](https://www.audeering.com/research/opensmile/)
+      * set = eGeMAPSv02 *(features set)*
+      * level = functionals *(or lld: feature level)*
     * **spectra**: Melspecs for convolutional networks
-    * **mld**: mid-level-descriptors
+    * **trill**: [TRILL embeddings](https://ai.googleblog.com/2020/06/improving-speech-representations-and.html)
+    * **mld**: [mid-level-descriptors](http://www.essv.de/paper.php?id=447)
       * min_syls = *minimum number of syllables*
-      * with_os = *adding opensmile eGemaps features*
+      * with_os = *with added opensmile eGemaps features*
       * features = *python list of selected features to be used (all others ignored)*
+    * **xbow**: [open crossbow](https://github.com/openXBOW) features codebook computed from open smile features
+      * size = 500 *(codebook size)*
+      * assignments = 1 *(number of words in the bag representation where the counter is increased for each input LLD)*
+      * with_os = *with added opensmile eGemaps features*
+* **needs_feature_extraction**: if features should be extracted newly even if already stored
+  * needs_feature_extraction = False
 * **scale**: scale the features
   * scale=standard
   * possible values:

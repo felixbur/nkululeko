@@ -29,7 +29,7 @@ class Opensmileset(Featureset):
         """Extract the features based on the initialized dataset or re-open them when found on disk."""
         store = self.util.get_path('store')
         storage = f'{store}{self.name}_{self.featset}.pkl'
-        extract = self.util.config_val('DATA', 'needs_feature_extraction', False)
+        extract = self.util.config_val('FEATS', 'needs_feature_extraction', False)
         is_multi_index = False
         if extract or not os.path.isfile(storage):
             self.util.debug('extracting openSmile features, this might take a while...')

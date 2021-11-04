@@ -25,7 +25,7 @@ class TRILLset(Featureset):
         store = self.util.get_path('store')
         storage = f'{store}{self.name}.pkl'
         try:
-            extract = glob_conf.config['DATA']['needs_feature_extraction']
+            extract = self.util.config_val('FEATS', 'needs_feature_extraction', False)
         except KeyError:
             extract = False
         if extract or not os.path.isfile(storage):

@@ -171,6 +171,16 @@ class Experiment:
             self.df_train = self.df_train.loc[self.df_train.index.intersection(self.feats_train.df.index)]
             if self.feats_train.df.isna().to_numpy().any():
                 self.util.error('exp 2: NANs exist')
+        elif feats_type=='xbow':
+            from feats_oxbow import Openxbow
+            self.feats_train = Openxbow(f'{feats_name}_train', df_train, is_train=True)
+            self.feats_train.extract()
+            self.feats_train.filter()
+            self.feats_test = Openxbow(f'{feats_name}_test', df_test)
+            self.feats_test.extract()
+            self.feats_test.filter()
+            self.util.debug(f'train shape : {self.feats_train.df.shape}, test shape:{self.feats_test.df.shape}')
+
         elif feats_type=='spectra':
             # compute the spectrograms
             from feats_spectra import Spectraloader # not yet open source

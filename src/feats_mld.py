@@ -58,7 +58,7 @@ class MLD_set(Featureset):
         store = self.util.get_path('store')
         name = self.name.replace('mld', 'os')
         storage = f'{store}{name}.pkl'
-        extract = self.util.config_val('DATA', 'needs_feature_extraction', False)
+        extract = self.util.config_val('FEATS', 'needs_feature_extraction', False)
         if extract or not os.path.isfile(storage):
             self.util.debug('extracting openSmile features, this might take a while...')
             smile = opensmile.Smile(
@@ -66,7 +66,7 @@ class MLD_set(Featureset):
             feature_level=opensmile.FeatureLevel.Functionals,)
             df = smile.process_files(self.data_df.index)
             df.to_pickle(storage)
-            self.util.set_config_val('DATA', 'needs_feature_extraction', '0')
+            self.util.set_config_val('FEATS', 'needs_feature_extraction', '0')
         else:
             self.util.debug('OS: reusing already extracted features.')
             df = pd.read_pickle(storage)
