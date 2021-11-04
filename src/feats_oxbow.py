@@ -50,12 +50,12 @@ class Openxbow(Featureset):
             # differentiate between train and test
             if self.is_train:
                 # store the codebook
-                os.system(f'java -jar {xbow_path}openXBOW.jar -i {lld_name} \
+                os.system(f'java -jar {xbow_path}openXBOW.jar -i {lld_name} -standardizeInput -log \
                     -o {xbow_name} -size {size} -a {assignments} -B {codebook_name}')
             else:
                 # use the codebook
                 os.system(f'java -jar {xbow_path}openXBOW.jar -i {lld_name} \
-                    -o {xbow_name} -size {size}  -a {assignments} -b {codebook_name}')
+                    -o {xbow_name} -b {codebook_name}')
             # read in the result from disk
             xbow_df = pd.read_csv(xbow_name, sep=';', header=None)
             # set the index
@@ -66,7 +66,7 @@ class Openxbow(Featureset):
                 # extract smile functionals
                 self.util.debug('extracting openSmile functionals, this might take a while...')
                 smile = opensmile.Smile(
-                    feature_set= self.feature_set,
+                    feature_set= opensmile.FeatureSet.eGeMAPSv02, # always use eGemaps for this
                     feature_level=opensmile.FeatureLevel.Functionals,
                     num_workers=5,)
                 if isinstance(self.data_df.index, pd.MultiIndex):
