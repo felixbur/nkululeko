@@ -45,13 +45,17 @@ class Openxbow(Featureset):
             xbow_path = self.util.config_val('FEATS', 'xbow', '../openXBOW/')
             # get the size of the codebook
             size = self.util.config_val('FEATS', 'size', 500)
+            # get the number of assignements
+            assignments = self.util.config_val('FEATS', 'assignments', 1)
             # differentiate between train and test
             if self.is_train:
                 # store the codebook
-                os.system(f'java -jar {xbow_path}openXBOW.jar -i {lld_name} -o {xbow_name} -size {size} -B {codebook_name}')
+                os.system(f'java -jar {xbow_path}openXBOW.jar -i {lld_name} \
+                    -o {xbow_name} -size {size} -a {assignments} -B {codebook_name}')
             else:
                 # use the codebook
-                os.system(f'java -jar {xbow_path}openXBOW.jar -i {lld_name} -o {xbow_name} -size {size} -b {codebook_name}')
+                os.system(f'java -jar {xbow_path}openXBOW.jar -i {lld_name} \
+                    -o {xbow_name} -size {size}  -a {assignments} -b {codebook_name}')
             # read in the result from disk
             xbow_df = pd.read_csv(xbow_name, sep=';', header=None)
             # set the index
