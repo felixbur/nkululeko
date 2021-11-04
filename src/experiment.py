@@ -173,7 +173,7 @@ class Experiment:
                 self.util.error('exp 2: NANs exist')
         elif feats_type=='xbow':
             from feats_oxbow import Openxbow
-            self.feats_train = Openxbow(f'{feats_name}_train', df_train)
+            self.feats_train = Openxbow(f'{feats_name}_train', df_train, is_train=True)
             self.feats_train.extract()
             self.feats_train.filter()
             self.feats_test = Openxbow(f'{feats_name}_test', df_test)
