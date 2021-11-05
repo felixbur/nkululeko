@@ -225,7 +225,7 @@ class Experiment:
         self.runmgr.do_runs()
 
         # access the results of the last run
-        self.reports = self.runmgr.reports
+        self.reports = self.runmgr.best_results
         # try to save yourself
         save = self.util.config_val('EXP', 'save', False)
         if save: 
@@ -233,7 +233,10 @@ class Experiment:
             self.save(f'{self.util.get_exp_name()}.pkl')
 
         # self.collect_reports()
+        self.util.print_best_results(self.reports)
+
         return self.reports    
+
 
     def print_best_model(self):
         self.runmgr.print_best_result_runs()

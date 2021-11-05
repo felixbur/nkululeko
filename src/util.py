@@ -31,6 +31,14 @@ class Util:
         dir_name = f'{root}{name}/{entryn}'
         audeer.mkdir(dir_name)
         return dir_name
+    
+    def get_res_dir(self):
+        root = glob_conf.config['EXP']['root']
+        name = glob_conf.config['EXP']['name']
+        dir_name = f'{root}{name}/results/'
+        audeer.mkdir(dir_name)
+        return dir_name
+
 
     def get_exp_name(self):
         ds = '_'.join(ast.literal_eval(glob_conf.config['DATA']['databases']))
@@ -77,3 +85,18 @@ class Util:
         bins = ast.literal_eval(glob_conf.config['DATA']['bins'])
         result =  np.digitize(array, bins)-1
         return result
+
+    def print_best_results(self, best_reports):
+        res_dir = self.get_res_dir()
+        # go one level up above the "run" level
+        all = ''
+        mean = 0
+        for report in best_reports:
+            all += str(report.result.test) + ', '
+            mean += report.result.test
+        runs = int(self.config_val('EXP', 'runS', 0))
+        mean = mean / runs
+        file_name = f'{res_dir}{self.get_exp_name()}_runs.txt'
+        with open(file_name, "w") as text_file:
+            text_file.write(all)
+            text_file.write(f'\nmean: {mean:.3f}')
