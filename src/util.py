@@ -90,13 +90,11 @@ class Util:
         res_dir = self.get_res_dir()
         # go one level up above the "run" level
         all = ''
-        mean = 0
+        vals = np.empty(0)
         for report in best_reports:
             all += str(report.result.test) + ', '
-            mean += report.result.test
-        runs = int(self.config_val('EXP', 'runS', 0))
-        mean = mean / runs
+            vals = np.append(vals, report.result.test)
         file_name = f'{res_dir}{self.get_exp_name()}_runs.txt'
         with open(file_name, "w") as text_file:
             text_file.write(all)
-            text_file.write(f'\nmean: {mean:.3f}')
+            text_file.write(f'\nmean: {vals.mean():.3f}, max: {vals.max():.3f}, max_index: {vals.argmax()}')
