@@ -1,6 +1,5 @@
 from dataset import Dataset
 from dataset_csv import Dataset_CSV
-from dataset_emodb import Emodb
 from dataset_ravdess import Ravdess
 from feats_opensmile import Opensmileset
 from runmanager import Runmanager
@@ -39,10 +38,6 @@ class Experiment:
         ds = ast.literal_eval(glob_conf.config['DATA']['databases'])
         self.datasets = {}
         for d in ds:
-            # if 
-            # d == 'emodb':
-            #     data = Emodb()
-            # el
             if d == 'ravdess':
                 data = Ravdess()
             else:
