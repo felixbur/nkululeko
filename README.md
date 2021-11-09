@@ -62,6 +62,7 @@ Here's [an overview on the ini-file options](./ini_file.md)
   * run the demo
     * ```python my_experiment.py```
   * find the results in the newly created folder exp_emodb 
+    * inspect ```exp_emodb/images/run_0/emodb_xgb_os_0_000_cnf.png```
 
 ### Features
 * Classifiers: XGB, XGR, SVM, SVR, MLP
