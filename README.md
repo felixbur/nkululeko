@@ -50,8 +50,13 @@ Here's [an overview on the ini-file options](./ini_file.md)
 * Download nkululeko
 * Get a copy of the [Berlin emodb in audformat](http://blog.syntheticspeech.de/2021/08/10/get-all-information-from-emodb/) and unpack somewhere in a local folder
 * Replace the path to the emodb root folder in line 9 of the [demo configuration file](demos/emodb_exp.ini)
-* create a [python environment and activate it](http://blog.syntheticspeech.de/2021/06/01/how-to-set-up-a-python-project/)
 * In the nkululeko root folder 
+  * create a python environment and activate it
+    * ```python3 -m venv venv```
+    * under linux / mac
+      * ```source venv/bin/activate```
+    * under Windows
+      * ```venv\Scripts\activate.bat```
   * install the required packages in your environment
     * ```pip install -r requirements.txt```
   * run the demo
