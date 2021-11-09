@@ -2,7 +2,7 @@
 # Demonstration code to use the ML-experiment framework
 
 import sys
-sys.path.append("/home/felix/data/research/nkululeko/src")
+sys.path.append("./src")
 import experiment as exp
 import configparser
 from util import Util
@@ -38,4 +38,5 @@ def main(config_file):
 
 
 if __name__ == "__main__":
-    main('./maschinelle_sprachverarbeitung/experiment_1/exp_A.ini')
+    main('./demos/exp_emodb.ini')
+#    main('./maschinelle_sprachverarbeitung/experiment_1/exp_A.ini')
