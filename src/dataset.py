@@ -138,7 +138,7 @@ class Dataset:
         self.df_train = df[~df.index.isin(self.df_test.index)]
         self.util.debug(f'{self.name}: [{self.df_train.shape[0]}/{self.df_test.shape[0]}] samples in train/test')
         # because this generates new train/test sample quantaties, the feature extraction has to be done again
-        glob_conf.config['DATA']['needs_feature_extraction'] = 'true'
+        glob_conf.config['FEATS']['needs_feature_extraction'] = 'True'
 
     def prepare_labels(self):
         """Bin target values if they are continous but a classification experiment sould be done"""
