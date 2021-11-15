@@ -66,15 +66,15 @@ Here's [an overview on the ini-file options](./ini_file.md)
 
 ### Features
 * Classifiers: XGB, XGR, SVM, SVR, MLP
-* Feature extractors: opensmile, TRILL embeddings (experimental)
+* Feature extractors: opensmile, openXBOW BoAW, TRILL embeddings
 * Feature scaling
 * Label encoding
 * Binning (continuous to categorical)
+* Online demo interface for trained models 
 
 ### Outlook
 * Classifiers: CNN
-* Feature extractors: mid level descriptors, Mel-spectra, embeddings
-* Online demo interface for trained models 
+* Feature extractors: mid level descriptors, Mel-spectra
 
 ## Licence
 Nkululeko can be used under the [MIT license](https://choosealicense.com/licenses/mit/)
