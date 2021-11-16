@@ -98,7 +98,7 @@
   * type = svm
   * possible values:
     * **svm**: Support Vector Machine 
-      * C = 0.001
+      * C_val = 0.001
     * **xgb**:XG-Boost
     * **svr**: Support Vector Regression
     * **xgr**: XG-Boost Regression
