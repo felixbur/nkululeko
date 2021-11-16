@@ -13,7 +13,8 @@ class SVM_model(Model):
     """An SVM model"""
     def __init__(self, df_train, df_test, feats_train, feats_test):
         super().__init__(df_train, df_test, feats_train, feats_test)
-        self.clf = svm.SVC(kernel='linear') # set up the classifier
+        c = float(self.util.config_val('MODEL', 'C_val', '0.001'))
+        self.clf = svm.SVC(kernel='linear', C=c) # set up the classifier
 
     def set_C(self, c):
         """Set the C parameter"""
