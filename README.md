@@ -49,7 +49,7 @@ Here's [an overview on the ini-file options](./ini_file.md)
 ### <a name="helloworld">Hello World example</a>
 * Download nkululeko
 * Get a copy of the [Berlin emodb in audformat](https://tubcloud.tu-berlin.de/s/LzPWz83Fjneb6SP/download) and unpack somewhere in a local folder
-* Replace the path to the emodb root folder in line 9 of the [demo configuration file (demos/exp_emodb.ini)](demos/exp_emodb.ini)
+* Replace the path to the emodb root folder in line 9 of the [demo configuration file](demos/exp_emodb.ini) (demos/exp_emodb.ini)
 * In the nkululeko root folder 
   * create a python environment and activate it
     * ```python3 -m venv venv```
