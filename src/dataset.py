@@ -31,10 +31,13 @@ class Dataset:
         db = audformat.Database.load(root)
         # map the audio file paths 
         db.map_files(lambda x: os.path.join(root, x))
-        # the dataframe with all other information 
-        df_files = self.util.config_val('DATA', f'{self.name}.files_table', 'files')
+        # the dataframes (potentially more than one) with all other information 
+        df_files = self.util.config_val('DATA', f'{self.name}.files_tables', '[\'files\']')
         try :
-            df = db[df_files].df
+            df_files_tables =  ast.literal_eval(df_files)
+            df = pd.DataFrame()
+            for table in df_files_tables:
+                df = df.append(db[table].df)
         except audformat.core.errors.BadKeyError:
             # if no such table exists, create a new one and hope for the best
             df = pd.DataFrame()
@@ -51,6 +54,7 @@ class Dataset:
         except KeyError:
             pass 
         try:
+            # also it might be possible that the sex is part of the speaker description
             df['gender'] = db[df_files]['speaker'].get(map='gender')
         except (ValueError, audformat.errors.BadKeyError) as e:
             pass
