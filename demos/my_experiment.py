@@ -36,6 +36,6 @@ def main(config_file):
 
     print('DONE')
 
-
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main('./demos/exp_emodb.ini')
+#    main(sys.argv[1]) # use this if you want to state the config file path on command line
