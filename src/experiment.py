@@ -49,7 +49,6 @@ class Experiment:
                 else:
                     self.util.error(f'unknown data type: {ds_type}')
             data.load()
-            data.prepare_labels()
             self.datasets.update({d: data})
         self.target = self.util.config_val('DATA', 'target', 'emotion')
 
@@ -62,13 +61,16 @@ class Experiment:
             train_dbs = ast.literal_eval(glob_conf.config['DATA']['trains'])
             test_dbs = ast.literal_eval(glob_conf.config['DATA']['tests'])
             for d in train_dbs:
+                d.prepare_labels()
                 self.df_train = self.df_train.append(self.datasets[d].df)
             for d in test_dbs:
+                d.prepare_labels()
                 self.df_test = self.df_test.append(self.datasets[d].df)
         elif strategy == 'train_test':
             # default: train vs. test combined from all datasets
             for d in self.datasets.values():
                 d.split()
+                d.prepare_labels()
                 self.df_train = self.df_train.append(d.df_train)
                 self.df_test = self.df_test.append(d.df_test)
         else:

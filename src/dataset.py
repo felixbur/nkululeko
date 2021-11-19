@@ -145,21 +145,35 @@ class Dataset:
         glob_conf.config['FEATS']['needs_feature_extraction'] = 'True'
 
     def prepare_labels(self):
-        """Bin target values if they are continous but a classification experiment sould be done"""
+        """Bin target values if they are continous but a classification experiment should be done"""
         self.check_continous_classification(self.df)
+        strategy = self.util.config_val('DATA', 'strategy', 'train_test')
+        if strategy == 'cross_data':
+            self.df = self.map_labels(self.df)
+        elif strategy == 'train_test':        
+            self.df_train = self.map_labels(self.df_train)
+            self.df_test = self.map_labels(self.df_test)
+
+    def map_labels(self, df):
+        if df.shape[0]==0 or not self.util.exp_is_classification():
+            return df
         """Rename the labels and remove the ones that are not needed."""
         target = glob_conf.config['DATA']['target']
         try :
             # see if a special mapping should be used
             mapping = ast.literal_eval(glob_conf.config['DATA'][f'{self.name}.mapping'])
-            self.df[target] = self.df[target].map(mapping)
+            df[target] = df[target].map(mapping)
             self.util.debug(f'for dataset {self.name} mapped {mapping}')
         except KeyError:
             pass
         # remove labels that are not in the labels list
-        labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
-        self.df = self.df[self.df[target].isin(labels)]
-        self.util.debug(f'Categories: {self.df[target].unique()}')
+        try :
+            labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
+            df = df[df[target].isin(labels)]
+            self.util.debug(f'Categories: {df[target].unique()}')
+        except KeyError:
+            pass
+        return df 
 
     def check_continous_classification(self, df):
         datatype = self.util.config_val('DATA', 'type', 'dummy')
