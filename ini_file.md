@@ -65,7 +65,7 @@
 * **type**: the type of features
   * type = os
   * possible values:
-    * **os**: [open smile features](https://www.audeering.com/research/opensmile/)
+    * **os**: [open smile features](https://audeering.github.io/opensmile-python/)
       * set = eGeMAPSv02 *(features set)*
       * level = functionals *(or lld: feature level)*
     * **spectra**: Melspecs for convolutional networks
