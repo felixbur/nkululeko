@@ -60,12 +60,14 @@ class Experiment:
         if strategy == 'cross_data':
             train_dbs = ast.literal_eval(glob_conf.config['DATA']['trains'])
             test_dbs = ast.literal_eval(glob_conf.config['DATA']['tests'])
-            for d in train_dbs:
+            for dn in train_dbs:
+                d = self.datasets[dn]
                 d.prepare_labels()
-                self.df_train = self.df_train.append(self.datasets[d].df)
-            for d in test_dbs:
+                self.df_train = self.df_train.append(d.df)
+            for dn in test_dbs:
+                d = self.datasets[dn]
                 d.prepare_labels()
-                self.df_test = self.df_test.append(self.datasets[d].df)
+                self.df_test = self.df_test.append(d.df)
         elif strategy == 'train_test':
             # default: train vs. test combined from all datasets
             for d in self.datasets.values():
