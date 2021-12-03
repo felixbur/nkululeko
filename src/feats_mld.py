@@ -1,17 +1,22 @@
 # mld_fset.py
 from featureset import Featureset
 import sys
-sys.path.append("/home/felix/data/research/mld/src")
 import os
 import ast
 import pandas as pd
 import numpy as np
 from util import Util 
-import midlevel_descriptors as mld
 import opensmile
 import glob_conf
 
 class MLD_set(Featureset):
+
+    def __init__(self, name, data_df):
+        self.name = name
+        self.data_df = data_df
+        self.util = Util()
+        mld_path = self.util.config_val('FEATS', 'mld', '/home/felix/data/research/mld/src')
+        sys.path.append(mld_path)
 
     def extract(self):
         store = self.util.get_path('store')
@@ -20,6 +25,7 @@ class MLD_set(Featureset):
             self.util.debug('extracting midleveldescriptor features, this might take a while...')
         else:
             self.util.debug('reusing previously extracted midleveldescriptor features')
+        import midlevel_descriptors as mld
         fex_mld = mld.MLD()
         self.df = fex_mld.extract_from_index(index=self.data_df, cache_path=storage)
         # replace NANa with column means values

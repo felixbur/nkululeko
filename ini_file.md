@@ -71,6 +71,7 @@
     * **spectra**: Melspecs for convolutional networks
     * **trill**: [TRILL embeddings](https://ai.googleblog.com/2020/06/improving-speech-representations-and.html)
     * **mld**: [mid-level-descriptors](http://www.essv.de/paper.php?id=447)
+      * mld = *path to the mld sources folder*
       * min_syls = *minimum number of syllables*
       * with_os = *with added opensmile eGemaps features*
       * features = *python list of selected features to be used (all others ignored)*
