@@ -35,7 +35,8 @@ class TRILLset(Featureset):
             for idx, file in enumerate(self.data_df.index):
                 emb = self.getEmbeddings(file)
                 emb_series[idx] = emb
-                self.util.debug(f'TRILL: {idx} of {length} done')
+                if idx%10==0:
+                    self.util.debug(f'TRILL: {idx} of {length} done')
             self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index) 
             self.df.to_pickle(storage)
             try:

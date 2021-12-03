@@ -69,7 +69,9 @@
       * set = eGeMAPSv02 *(features set)*
       * level = functionals *(or lld: feature level)*
     * **spectra**: Melspecs for convolutional networks
-    * **trill**: [TRILL embeddings](https://ai.googleblog.com/2020/06/improving-speech-representations-and.html)
+    * **trill**: [TRILL embeddings](https://ai.googleblog.com/2020/06/improving-speech-representations-and.html) from Google
+    * **wav2vec**: [Wav2vec2 embeddings](https://huggingface.co/facebook/wav2vec2-large-robust-ft-swbd-300h) from facebook
+      * **model** = = *path to the wav2vec2 model folder*
     * **mld**: [mid-level-descriptors](http://www.essv.de/paper.php?id=447)
       * mld = *path to the mld sources folder*
       * min_syls = *minimum number of syllables*

@@ -66,7 +66,7 @@ Here's [an overview on the ini-file options](./ini_file.md)
 
 ### Features
 * Classifiers: XGB, XGR, SVM, SVR, MLP
-* Feature extractors: opensmile, openXBOW BoAW, TRILL embeddings
+* Feature extractors: opensmile, openXBOW BoAW, TRILL embeddings, Wav2vec2 embeddings, ...
 * Feature scaling
 * Label encoding
 * Binning (continuous to categorical)

@@ -157,6 +157,14 @@ class Experiment:
             self.feats_test = TRILLset(f'{feats_name}_test', df_test)
             self.feats_test.extract()
             self.feats_test.filter()
+        elif feats_type=='wav2vec':
+            from feats_wav2vec2 import Wav2vec2
+            self.feats_train = Wav2vec2(f'{feats_name}_train', df_train)
+            self.feats_train.extract()
+            self.feats_train.filter()
+            self.feats_test = Wav2vec2(f'{feats_name}_test', df_test)
+            self.feats_test.extract()
+            self.feats_test.filter()
         elif feats_type=='mld':
             from feats_mld import MLD_set
             self.feats_train = MLD_set(f'{feats_name}_train', df_train)
