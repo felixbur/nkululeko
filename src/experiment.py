@@ -261,6 +261,9 @@ class Experiment:
         self.__dict__.update(tmp_dict) 
 
     def save(self, filename):
-        f = open(filename, 'wb')
-        pickle.dump(self.__dict__, f)
-        f.close()
+        try:
+            f = open(filename, 'wb')
+            pickle.dump(self.__dict__, f)
+            f.close()
+        except AttributeError: 
+            self.util.error('Store experiment: Can\'t pickle local object')
