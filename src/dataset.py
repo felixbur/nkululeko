@@ -37,7 +37,18 @@ class Dataset:
             df_files_tables =  ast.literal_eval(df_files)
             df = pd.DataFrame()
             for table in df_files_tables:
-                df = df.append(db[table].df)
+                df_local = db[table].df
+                try:
+                    # also it might be possible that the sex is part of the speaker description
+                    df_local['gender'] = db[table]['speaker'].get(map='gender')
+                except (ValueError, audformat.errors.BadKeyError) as e:
+                    pass
+                try:
+                    # same for the target, e.g. "age"
+                    df_local[self.target] = db[table]['speaker'].get(map=self.target)
+                except (ValueError, audformat.core.errors.BadKeyError) as e:
+                    pass
+                df = df.append(df_local)
         except audformat.core.errors.BadKeyError:
             # if no such table exists, create a new one and hope for the best
             df = pd.DataFrame()
@@ -53,15 +64,6 @@ class Dataset:
             df = df[df.gender==s]
         except KeyError:
             pass 
-        try:
-            # also it might be possible that the sex is part of the speaker description
-            df['gender'] = db[df_files]['speaker'].get(map='gender')
-        except (ValueError, audformat.errors.BadKeyError) as e:
-            pass
-        try:
-            df[self.target] = db[df_files]['speaker'].get(map=self.target)
-        except (ValueError, audformat.core.errors.BadKeyError) as e:
-            pass
         self.df = df
         self.db = db
         if self.util.config_val('DATA', f'{self.name}.value_counts', False):
