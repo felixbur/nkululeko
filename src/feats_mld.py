@@ -28,6 +28,15 @@ class MLD_set(Featureset):
         import midlevel_descriptors as mld
         fex_mld = mld.MLD()
         self.df = fex_mld.extract_from_index(index=self.data_df, cache_path=storage)
+        self.util.debug(f'MLD feats shape: {self.df.shape}')
+        # add opensmile features
+        with_os = self.util.config_val('FEATS', 'with_os', False)
+        if with_os:
+            df_os = self.extract_os()
+            # df_os =  df_os.loc[ df_os.index.intersection(self.df.index)]
+            self.df = pd.concat([self.df, df_os], axis=1)
+            self.util.debug(f'new feats shape after adding OS featues: {self.df.shape}')
+        # shouldn't happen
         # replace NANa with column means values
         self.util.debug('MLD extractor: checking for NANs...')
         for i, col in enumerate(self.df.columns):
@@ -41,23 +50,15 @@ class MLD_set(Featureset):
             self.df = self.df[self.df['hld_nSyl']>=min_syls]
         except KeyError:
             pass
+        if self.df.isna().to_numpy().any():
+            self.util.error('feats 0: NANs exist')
         try: 
             # use only some features
             selected_features = ast.literal_eval(glob_conf.config['FEATS']['features'])
             self.df = self.df[selected_features]
+            self.util.debug(f'new feats shape after selecting features: {self.df.shape}')
         except KeyError:
             pass
-        self.util.debug(f'MLD feats shape: {self.df.shape}')
-        # add opensmile features
-        with_os = self.util.config_val('FEATS', 'with_os', False)
-        if with_os:
-            df_os = self.extract_os()
-            # df_os =  df_os.loc[ df_os.index.intersection(self.df.index)]
-            self.df = pd.concat([self.df, df_os], axis=1)
-            self.util.debug(f'new feats shape after adding OS featues: {self.df.shape}')
-        # shouldn't happen
-        if self.df.isna().to_numpy().any():
-            self.util.error('feats 0: NANs exist')
         self.df = self.df.astype(float)
 
     def extract_os(self):
