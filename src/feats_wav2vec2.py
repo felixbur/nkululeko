@@ -19,14 +19,19 @@ class Wav2vec2(Featureset):
     def __init__(self, name, data_df):
         """Constructor. is_train is needed to distinguish from test/dev sets, because they use the codebook from the training"""
         super().__init__(name, data_df)
-        model_path = self.util.config_val('FEATS', 'model', 'wav2vec2-large-robust-ft-swbd-300h')
         self.device = self.util.config_val('MODEL', 'device', 'cpu')
+        self.model_initialized = False
 
+
+
+    def init_model(self):
         # load model
+        self.util.debug('loading wav2vec model...')
+        model_path = self.util.config_val('FEATS', 'model', 'wav2vec2-large-robust-ft-swbd-300h')
         self.processor = transformers.Wav2Vec2Processor.from_pretrained(model_path)
         self.model = Wav2Vec2Model.from_pretrained(model_path).to(self.device)
         self.model.eval()
-
+        self.model_initialized = True
 
 
     def extract(self):
@@ -35,6 +40,8 @@ class Wav2vec2(Featureset):
         storage = f'{store}{self.name}.pkl'
         extract = self.util.config_val('FEATS', 'needs_feature_extraction', False)
         if extract or not os.path.isfile(storage):
+            if not self.model_initialized:
+                self.init_model()
             self.util.debug('extracting wav2vec2 embeddings, this might take a while...')
             emb_series = pd.Series(index = self.data_df.index, dtype=object)
             length = len(self.data_df.index)
