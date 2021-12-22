@@ -56,23 +56,25 @@ class Runmanager:
             else:
                 self.util.error(f'unknown model type: \'{model_type}\'')
             plot_epochs = self.util.config_val('PLOT', 'plot_epochs', 0)
+            save_test = self.util.config_val('MODEL', 'save_test', 'False')
             # for all epochs
             for epoch in range(int(self.util.config_val('EXP', 'epochs', 1))):
                 self.util.debug(f'epoch {epoch}')
                 self.model.set_id(run, epoch)
                 self.model.train()
-                report = self.model.predict()
-                report.set_id(run, epoch)
-                plot_name = self.util.get_plot_name()+f'_{run}_{epoch:03d}_cnf.png'
-                self.reports.append(report)                
-                self.util.debug(f'run: {run} epoch: {epoch}: result: {self.reports[-1].get_result().test:.3f}')
-                if plot_epochs:
-                    self.util.debug(f'plotting conf matrix to {plot_name}')
-                    report.plot_confmatrix(plot_name, epoch)
-                store_models = self.util.config_val('MODEL', 'store', 0)
-                plot_best_model = self.util.config_val('PLOT', 'plot_best_model', 0)
-                if store_models or plot_best_model: # in any case the model needs to be stored to disk.
-                    self.model.store()
+                if not save_test:
+                    report = self.model.predict()
+                    report.set_id(run, epoch)
+                    plot_name = self.util.get_plot_name()+f'_{run}_{epoch:03d}_cnf.png'
+                    self.reports.append(report)                
+                    self.util.debug(f'run: {run} epoch: {epoch}: result: {self.reports[-1].get_result().test:.3f}')
+                    if plot_epochs:
+                        self.util.debug(f'plotting conf matrix to {plot_name}')
+                        report.plot_confmatrix(plot_name, epoch)
+                    store_models = self.util.config_val('MODEL', 'store', 0)
+                    plot_best_model = self.util.config_val('PLOT', 'plot_best_model', 0)
+                    if store_models or plot_best_model: # in any case the model needs to be stored to disk.
+                        self.model.store()
             if not plot_epochs:
                 # Do a final confusion matrix plot
                 self.util.debug(f'plotting final conf matrix to {plot_name}')
