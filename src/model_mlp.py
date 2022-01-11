@@ -32,8 +32,9 @@ class MLP_model(Model):
         self.device = self.util.config_val('MODEL', 'device', 'cpu')
         layers = ast.literal_eval(glob_conf.config['MODEL']['layers'])
         self.model = self.MLP(feats_train.df.shape[1], layers, self.class_num).to(self.device)
+        self.learning_rate = float(self.util.config_val('MODEL', 'learning_rate', 0.0001))
         # set up regularization
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.0001)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
 
 
     def train(self):

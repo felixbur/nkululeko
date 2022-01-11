@@ -99,10 +99,11 @@ class Runmanager:
                 self.util.debug(f'best result with run {best_report.run} and epoch {best_report.epoch}: {best_report.result.test:.3f}')
                 self.print_model(best_report, plot_name)
             # finally, print out the numbers for this run
-            self.reports[-1].print_results()
+            self.reports[-1].print_results(int(self.util.config_val('EXP', 'epochs', 1)))
             self.best_results.append(best_report)
 
     def print_best_result_runs(self):
+        """Print the best result for all runs"""
         best_report = self.get_best_result(self.best_results)
         self.util.debug(f'best result with run {best_report.run} and epoch {best_report.epoch}: {best_report.result.test:.3f}')
         plot_name_suggest = self.util.get_exp_name()
@@ -110,6 +111,7 @@ class Runmanager:
         self.print_model(best_report, plot_name)
 
     def print_given_result(self, run, epoch):
+        """Print a result for a given epoch and run"""
         report =  Reporter([], [])
         report.set_id(run, epoch)
         self.util.debug(f'Re-testing result with run {run} and epoch {epoch}')
@@ -119,6 +121,7 @@ class Runmanager:
 
 
     def print_model(self, report, plot_name):
+        """Load a model from disk for a specific run and epoch and evaluate"""
         run = report.run
         epoch = report.epoch
         model_type = glob_conf.config['MODEL']['type']
@@ -143,7 +146,7 @@ class Runmanager:
         report = self.model.predict()
         self.util.debug(f'plotting conf matrix to {plot_name}')
         report.plot_confmatrix(plot_name, epoch)
-        report.print_results()
+        report.print_results(epoch)
 
     def get_best_model(self):
         best_report = self.get_best_result(self.best_results)
@@ -152,6 +155,16 @@ class Runmanager:
 
 
     def get_best_result(self, reports):
+        best_r = Reporter([], [])
+        best_result = 0
+        for r in reports:
+            res = r.result.test
+            if res > best_result:
+                best_result = res
+                best_r = r
+        return best_r
+
+    def get_best_result_II(self, reports):
         best_r = Reporter([], [])
         if self.util.exp_is_classification():
             best_result = 0

@@ -96,8 +96,10 @@ class Reporter:
         with open(file_name, "w") as text_file:
             text_file.write(rpt)
 
-    def print_results(self):
+    def print_results(self, epoch):
+        """Print all evaluation values to text file"""
         res_dir = self.util.get_path('res_dir')
+        file_name = f'{res_dir}{self.util.get_exp_name()}_{epoch}.txt'
         if self.util.exp_is_classification():
             data_type = self.util.config_val('DATA', 'type', 'whatever')
             if data_type == 'continuous' or data_type == 'continous':
@@ -109,14 +111,12 @@ class Reporter:
             except ValueError:
                 self.util.debug('Reporter: caught a ValueError when trying to get classification_report')
                 rpt = self.result.to_string()
-            file_name = f'{res_dir}{self.util.get_exp_name()}.txt'
             with open(file_name, "w") as text_file:
                 text_file.write(rpt)
         else: # regression
             result = self.result.test
             r2 = r2_score(self.truths, self.preds)
             pcc = pearsonr(self.truths, self.preds)[0]
-            file_name = f'{res_dir}{self.util.get_exp_name()}.txt'
             measure = self.util.config_val('MODEL', 'measure', 'mse')
             with open(file_name, "w") as text_file:
                 text_file.write(f'{measure}: {result:.3f}, r_2: {r2:.3f}, pcc {pcc:.3f}')
@@ -145,16 +145,16 @@ class Reporter:
         # do a plot per run
         # scale the losses so they fit on the picture
         losses, results, train_results = np.asarray(losses), np.asarray(results), np.asarray(train_results)
-        if (self.util.exp_is_classification()):
-            # scale up UAR
-            results = results*100
-            train_results = train_results*100
+        # if (self.util.exp_is_classification()):
+        #     # scale up UAR
+        #     results = results*100
+        #     train_results = train_results*100
         plt.figure(dpi=200)
         plt.plot(train_results, 'green', label='train set') 
         plt.plot(results, 'red', label='dev set')
         plt.plot(losses, 'grey', label='losses')
         plt.xlabel('epochs')
-        plt.ylabel(f'1-{self.MEASURE}')
+        plt.ylabel(f'{self.MEASURE}')
         plt.legend()
         plt.savefig(fig_dir+ out_name)
         plt.close()        
