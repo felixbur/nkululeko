@@ -3,6 +3,7 @@ import seaborn as sns
 from sklearn.utils import resample
 from util import Util 
 import ast
+import json
 import numpy as np
 import glob_conf
 from sklearn.metrics import ConfusionMatrixDisplay
@@ -107,12 +108,19 @@ class Reporter:
             else:
                 labels = glob_conf.label_encoder.classes_
             try:
-                rpt = classification_report(self.truths, self.preds, target_names=labels)
+                rpt = classification_report(self.truths, self.preds, target_names=labels, output_dict=True)
             except ValueError:
                 self.util.debug('Reporter: caught a ValueError when trying to get classification_report')
                 rpt = self.result.to_string()
             with open(file_name, "w") as text_file:
-                text_file.write(rpt)
+                c_ress = list(range(len(labels)))
+                for i, l in enumerate(labels):
+                    c_res = rpt[l]['f1-score']
+                    c_ress[i] = c_res
+                print(f'labels: {labels}')
+                print(f'result per class: {c_ress}')
+                rpt_str = json.dumps(rpt)
+                text_file.write(rpt_str)
         else: # regression
             result = self.result.test
             r2 = r2_score(self.truths, self.preds)

@@ -8,7 +8,7 @@ from sklearn.model_selection import GridSearchCV
 import pickle
 
 class Model:
-    """Generic model class"""
+    """Generic model class for linear (non-neural) algorithms"""
 
     def __init__(self, df_train, df_test, feats_train, feats_test):
         """Constructor taking the configuration and all dataframes"""
