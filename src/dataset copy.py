@@ -23,7 +23,6 @@ class Dataset:
         self.target = glob_conf.config['DATA']['target']
         self.util = Util()
         self.plot = Plots()
-        self.max = 500
 
     def load(self):
         """Load the dataframe with files, speakers and task labels"""
@@ -32,29 +31,22 @@ class Dataset:
         db = audformat.Database.load(root)
         # map the audio file paths 
         db.map_files(lambda x: os.path.join(root, x))
-        # the dataframes (potentially more than one) with at least the file names
+        # the dataframes (potentially more than one) with all other information 
         df_files = self.util.config_val('DATA', f'{self.name}.files_tables', '[\'files\']')
-        df_files_tables =  ast.literal_eval(df_files)
-        # The label for the target column 
-        self.col_label = self.util.config_val('DATA', f'{self.name}.label', self.target)
-        df, got_target, got_speaker, got_gender = self.get_df_for_lists(db, df_files_tables)
-        if False in {got_target, got_speaker, got_gender}:
-            try :
-            # There might be a separate table with the targets, e.g. emotion or age    
-                df_targets = self.util.config_val('DATA', f'{self.name}.target_tables', f'[\'{self.target}\']')
-                df_target_tables =  ast.literal_eval(df_targets)
-                df_target, got_target2, got_speaker2, got_gender2 = self.get_df_for_lists(db, df_target_tables)
-                got_target = got_target2 or got_target
-                got_speaker = got_speaker2 or got_speaker
-                got_gender = got_gender2 or got_gender
-                if got_target2:
-                    df[self.target] = df_target[self.target]
-                if got_speaker2:
-                    df['speaker'] = df_target['speaker']
-                if got_gender2:
-                    df['gender'] = df_target['gender']
-            except audformat.core.errors.BadKeyError:
-                pass
+        try :
+            df = self.get_df_for_lists(db, df_files)
+        except audformat.core.errors.BadKeyError:
+            # if no such table exists, create a new one and hope for the best
+            df = pd.DataFrame()
+        try :
+           # There might be a separate table with the targets, e.g. emotion or age    
+            df_targets = self.util.config_val('DATA', f'{self.name}.target_tables', f'[\'{self.target}\']')
+            df_target = self.get_df_for_lists(db, df_targets)
+            df[self.target] = df_target[self.target]
+        except audformat.core.errors.BadKeyError:
+            pass
+        except KeyError:
+            pass
         try: 
             # for experiments that do separate sex models
             s = glob_conf.config['DATA']['sex']
@@ -64,52 +56,25 @@ class Dataset:
         self.df = df
         self.db = db
         if self.util.config_val('DATA', f'{self.name}.value_counts', False):
-            if not got_gender or not got_speaker:
-                self.util.error('can\'t plot value counts if no speaker or gender is given')
-            else:
-                self.plot.describe_df(self.name, df, self.target, f'{self.name}_distplot.png')
+            self.plot.describe_df(self.name, df, self.target, f'{self.name}_distplot.png')
 
     def get_df_for_lists(self, db, df_files):
-        got_target, got_speaker, got_gender = False, False, False
+        df_files_tables =  ast.literal_eval(df_files)
         df = pd.DataFrame()
-        for table in df_files:
-            source_df = db.tables[table].df.iloc[:self.max]
-            # create a dataframe with the index (the filenames)
-            df_local = pd.DataFrame(index=source_df.index)
-            # try to get the targets from this dataframe
-            try:
-                # try to get the target values
-                df_local[self.target] = source_df[self.col_label]
-                got_target = True
-            except (KeyError, ValueError, audformat.errors.BadKeyError) as e:
-                pass
-            try:
-                # try to get the speaker values
-                df_local['speaker'] = source_df['speaker']
-                got_speaker = True
-            except (KeyError, ValueError, audformat.errors.BadKeyError) as e:
-                pass
-            try:
-                # try to get the gender values
-                df_local['gender'] = source_df['gender']
-                got_gender = True
-            except (KeyError, ValueError, audformat.errors.BadKeyError) as e:
-                pass
+        for table in df_files_tables:
+            df_local = db[table].df
             try:
                 # also it might be possible that the sex is part of the speaker description
-                df_local['gender'] = db[table]['speaker'].get(map='gender').iloc[:self.max]
-                got_gender = True
+                df_local['gender'] = db[table]['speaker'].get(map='gender')
             except (ValueError, audformat.errors.BadKeyError) as e:
                 pass
             try:
                 # same for the target, e.g. "age"
-                df_local[self.target] = db[table]['speaker'].get(map=self.target).iloc[:self.max]
-                got_target = True
+                df_local[self.target] = db[table]['speaker'].get(map=self.target)
             except (ValueError, audformat.core.errors.BadKeyError) as e:
                 pass
             df = df.append(df_local)
-            print (df.head(1))
-        return df, got_target, got_speaker, got_gender
+        return df
 
     def split(self):
         """Split the datbase into train and development set"""
