@@ -50,9 +50,12 @@
     * **database**: default (*task*.train and *task*.test)
     * **specified**: specifiy the tables (an opportunity to assign multiple or no tables to train or dev set)
       * emodb.test_tables = ['emo.test', 'emo.train']
+      * emodb.train_tables = ['emo.train']
     * **speaker_split**: split samples randomly but speaker disjunct, given a percentage of speakers for the test set.
       * emodb.testsplit = 50
     * **reuse**: reuse the splits after a *speaker_split* run to save time with feature extraction.
+* **db_name.target_tables**: tables that containes the target / speaker / sex labels
+  * emodb.target_tables = ['emotion']
 * **db_name.files_tables**: tables that containes the audio file names
   * emodb.files_tables = ['files']
 * **target**: the task name, e.g. *age* or *emotion*
