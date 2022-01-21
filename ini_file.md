@@ -58,6 +58,8 @@
   * emodb.target_tables = ['emotion']
 * **db_name.files_tables**: tables that containes the audio file names
   * emodb.files_tables = ['files']
+* **db_name.limit**: maximum number of samples per table (for testing with very large data mainly)
+  * emodb.limit = 20
 * **target**: the task name, e.g. *age* or *emotion*
   * target = emotion
 * **labels**: for classification experiments: the names of the categories (is also used for regression when binning the values)
