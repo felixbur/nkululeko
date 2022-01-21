@@ -80,13 +80,13 @@ class Experiment:
 
         # encode the labels
         if self.util.exp_is_classification():
+            self.util.debug(f'Categories test: {self.df_test[self.target].unique().to_list()}')
+            self.util.debug(f'Categories train: {self.df_train[self.target].unique().to_list()}')
             # encode the labels as numbers
             self.label_encoder = LabelEncoder()
             self.df_train[self.target] = self.label_encoder.fit_transform(self.df_train[self.target])
             self.df_test[self.target] = self.label_encoder.transform(self.df_test[self.target])
             glob_conf.set_label_encoder(self.label_encoder)
-            self.util.debug(f'Categories test: {self.df_test[self.target].unique()}')
-            self.util.debug(f'Categories train: {self.df_train[self.target].unique()}')
         else:
             pass
         self.util.debug(f'{self.df_test.speaker.nunique()} speakers in test and {self.df_train.speaker.nunique()} speakers in train')

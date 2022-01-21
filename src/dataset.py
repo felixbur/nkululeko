@@ -23,7 +23,7 @@ class Dataset:
         self.target = glob_conf.config['DATA']['target']
         self.util = Util()
         self.plot = Plots()
-        self.max = 500
+        self.limit = int(self.util.config_val('DATA', f'{self.name}.limit', 0))
 
     def load(self):
         """Load the dataframe with files, speakers and task labels"""
@@ -63,6 +63,9 @@ class Dataset:
             pass 
         self.df = df
         self.db = db
+        self.util.debug(f'Loaded database {self.name} with {df.shape[0]} '\
+            f'samples: got target: {got_target}, got speaker: {got_speaker}, '\
+            f'got sex: {got_gender} labels.')
         if self.util.config_val('DATA', f'{self.name}.value_counts', False):
             if not got_gender or not got_speaker:
                 self.util.error('can\'t plot value counts if no speaker or gender is given')
@@ -73,7 +76,10 @@ class Dataset:
         got_target, got_speaker, got_gender = False, False, False
         df = pd.DataFrame()
         for table in df_files:
-            source_df = db.tables[table].df.iloc[:self.max]
+            if self.limit:
+                source_df = db.tables[table].df.iloc[:self.limit]
+            else:
+                source_df = db.tables[table].df
             # create a dataframe with the index (the filenames)
             df_local = pd.DataFrame(index=source_df.index)
             # try to get the targets from this dataframe
@@ -97,18 +103,24 @@ class Dataset:
                 pass
             try:
                 # also it might be possible that the sex is part of the speaker description
-                df_local['gender'] = db[table]['speaker'].get(map='gender').iloc[:self.max]
+                if self.limit:
+                    df_local['gender'] = db[table]['speaker'].get(map='gender').iloc[:self.limit]
+                else:
+                    df_local['gender'] = db[table]['speaker'].get(map='gender')
+
                 got_gender = True
             except (ValueError, audformat.errors.BadKeyError) as e:
                 pass
             try:
                 # same for the target, e.g. "age"
-                df_local[self.target] = db[table]['speaker'].get(map=self.target).iloc[:self.max]
+                if self.limit:
+                    df_local[self.target] = db[table]['speaker'].get(map=self.target).iloc[:self.limit]
+                else:
+                    df_local[self.target] = db[table]['speaker'].get(map=self.target)
                 got_target = True
             except (ValueError, audformat.core.errors.BadKeyError) as e:
                 pass
             df = df.append(df_local)
-            print (df.head(1))
         return df, got_target, got_speaker, got_gender
 
     def split(self):
@@ -213,7 +225,7 @@ class Dataset:
         try :
             labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
             df = df[df[target].isin(labels)]
-            self.util.debug(f'Categories: {df[target].unique()}')
+            # self.util.debug(f'Categories: {df[target].unique()}')
         except KeyError:
             pass
         return df 
