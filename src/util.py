@@ -32,6 +32,12 @@ class Util:
         audeer.mkdir(dir_name)
         return dir_name
     
+    def get_save_name(self):
+        """Return a relative path to a name to save the experiment"""
+        store = self.get_path('store')
+        return f'{store}/{self.get_exp_name()}.pkl'
+
+
     def get_res_dir(self):
         root = glob_conf.config['EXP']['root']
         name = glob_conf.config['EXP']['name']
