@@ -137,6 +137,12 @@ class Dataset:
             # use only the train and test samples that were not perhaps filtered out by an earlier processing step
             self.df_test = self.df.loc[self.df.index.intersection(testdf.index)]
             self.df_train = self.df.loc[self.df.index.intersection(traindf.index)]
+        elif split_strategy == 'train':
+            self.df_train = self.df
+            self.df_test = pd.DataFrame()
+        elif split_strategy == 'test':
+            self.df_test = self.df
+            self.df_train = pd.DataFrame()
         elif split_strategy == 'specified':
             traindf, testdf = pd.DataFrame(), pd.DataFrame()
             # try to load some dataframes for testing
@@ -169,6 +175,7 @@ class Dataset:
         elif split_strategy == 'reuse':
             self.df_test = pd.read_pickle(storage_test)
             self.df_train = pd.read_pickle(storage_train)
+
         if self.df_test.shape[0]>0:
             self.finish_up(self.df_test, 'test', storage_test)
         if self.df_train.shape[0]>0:

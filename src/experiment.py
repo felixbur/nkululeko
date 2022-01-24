@@ -5,6 +5,7 @@ from dataset_csv import Dataset_CSV
 from dataset_ravdess import Ravdess
 from feats_opensmile import Opensmileset
 from runmanager import Runmanager
+from test_predictor import Test_predictor
 from util import Util
 import glob_conf
 from plots import Plots
@@ -269,6 +270,11 @@ class Experiment:
         feature_extractor = self.feats_train
         demo = Demo_predictor(model, feature_extractor, self.label_encoder)
         demo.run_demo()
+
+    def  predict_test_and_save(self, name):
+        model = self.runmgr.get_best_model()
+        test_predictor = Test_predictor(model, self.df_test, self.label_encoder, name)        
+        test_predictor.predict_and_store()
 
 
     def load(self, filename):

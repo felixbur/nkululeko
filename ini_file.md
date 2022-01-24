@@ -40,7 +40,7 @@
 * **tests**: if *strategy* = cross_data, denote the test databases
 * **db_name**: path with audformatted repository for each database listed in 'databases*
   * emodb = /home/data/audformat/emodb/
-* **db_name.type**: type of storage, e.g. audformat database or CSV (needs header: file,speaker,task)
+* **db_name.type**: type of storage, e.g. audformat database or 'csv' (needs header: file,speaker,task)
   * emodb.type = audformat
 * * **db_name.mapping**: mapping python dictionary to map between categories for cross-database experiments
   * emodb.mapping = {'anger':'angry', 'happiness':'happy', 'sadness':'sad', 'neutral':'neutral'}

@@ -60,6 +60,10 @@ class MLP_model(Model):
         report.result.train = uar
         return report
 
+    def get_predictions(self):
+        _, truths, predictions = self.evaluate_model(self.model, self.testloader, self.device)
+        return predictions
+
     def get_loader(self, df_x, df_y):
         data=[]
         for i in range(len(df_x)):

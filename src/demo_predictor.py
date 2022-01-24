@@ -1,8 +1,6 @@
 import sounddevice as sd
-import audiofile
 import glob_conf
 from util import Util
-from model import Model
 
 
 class Demo_predictor():

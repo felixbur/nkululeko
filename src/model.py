@@ -70,9 +70,13 @@ class Model:
             except KeyError:
                 self.clf.fit(feats, self.df_train[target])
 
+    def get_predictions(self):
+        predictions =  self.clf.predict(self.feats_test.df.to_numpy())
+        return predictions
+
     def predict(self):
         """Predict the whole eval feature set"""
-        predictions =  self.clf.predict(self.feats_test.df.to_numpy())
+        predictions = self.get_predictions()
         report = Reporter(self.df_test[glob_conf.config['DATA']['target']].to_numpy().astype(float), predictions)
         return report
 
