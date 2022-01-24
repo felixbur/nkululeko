@@ -1,3 +1,5 @@
+from cgi import test
+import numpy
 from dataset import Dataset
 from dataset_csv import Dataset_CSV
 from dataset_ravdess import Ravdess
@@ -80,8 +82,15 @@ class Experiment:
 
         # encode the labels
         if self.util.exp_is_classification():
-            self.util.debug(f'Categories test: {self.df_test[self.target].unique().to_list()}')
-            self.util.debug(f'Categories train: {self.df_train[self.target].unique().to_list()}')
+            test_cats = self.df_test[self.target].unique()
+            train_cats = self.df_train[self.target].unique()
+            if type(test_cats) == numpy.ndarray:
+                self.util.debug(f'Categories test: {test_cats}')
+                self.util.debug(f'Categories train: {train_cats}')
+            else:
+                self.util.debug(f'Categories test: {test_cats.to_list()}')
+                self.util.debug(f'Categories train: {train_cats.to_list()}')
+
             # encode the labels as numbers
             self.label_encoder = LabelEncoder()
             self.df_train[self.target] = self.label_encoder.fit_transform(self.df_train[self.target])
