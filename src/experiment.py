@@ -248,7 +248,7 @@ class Experiment:
             # save the experiment for future use
             self.save(self.util.get_save_name())
 
-        # self.collect_reports()
+        # self.__collect_reports()
         self.util.print_best_results(self.reports)
 
         return self.reports    
@@ -257,7 +257,7 @@ class Experiment:
     def print_best_model(self):
         self.runmgr.print_best_result_runs()
 
-    def collect_reports(self):
+    def __collect_reports(self):
         self.results, self.losses, self.train_results = [], [], []
         for r in self.reports:
             self.results.append(r.get_result().test)
