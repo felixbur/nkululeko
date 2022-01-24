@@ -64,8 +64,8 @@ class Dataset:
         self.df = df
         self.db = db
         self.util.debug(f'Loaded database {self.name} with {df.shape[0]} '\
-            f'samples: got target: {got_target}, got speaker: {got_speaker}, '\
-            f'got sex: {got_gender} labels.')
+            f'samples: got targets: {got_target}, got speakers: {got_speaker}, '\
+            f'got sexes: {got_gender}')
         if self.util.config_val('DATA', f'{self.name}.value_counts', False):
             if not got_gender or not got_speaker:
                 self.util.error('can\'t plot value counts if no speaker or gender is given')
