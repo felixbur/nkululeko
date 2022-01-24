@@ -8,6 +8,7 @@ sys.path.append("./src")
 import experiment as exp
 import configparser
 from util import Util
+import constants
 
 def main(config_file):
     # load one configuration per experiment
@@ -17,7 +18,7 @@ def main(config_file):
     
     # create a new experiment
     expr = exp.Experiment(config)
-    print(f'running {expr.name}')
+    print(f'running {expr.name}, nkululeko version {constants.VERSION}')
 
     # load the experiment
     expr.load(f'{util.get_save_name()}')
