@@ -246,7 +246,7 @@ class Experiment:
         save = self.util.config_val('EXP', 'save', False)
         if save: 
             # save the experiment for future use
-            self.save(f'{self.util.get_exp_name()}.pkl')
+            self.save(self.util.get_save_name())
 
         # self.collect_reports()
         self.util.print_best_results(self.reports)
@@ -283,4 +283,4 @@ class Experiment:
             pickle.dump(self.__dict__, f)
             f.close()
         except AttributeError: 
-            self.util.error('Store experiment: Can\'t pickle local object')
+            self.util.error('Save experiment: Can\'t pickle local object')
