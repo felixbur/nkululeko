@@ -69,7 +69,7 @@ class Runmanager:
                 if plot_epochs:
                     self.util.debug(f'plotting conf matrix to {plot_name}')
                     report.plot_confmatrix(plot_name, epoch)
-                store_models = self.util.config_val('MODEL', 'store', 0)
+                store_models = self.util.config_val('MODEL', 'save', 0)
                 plot_best_model = self.util.config_val('PLOT', 'plot_best_model', 0)
                 if store_models or plot_best_model: # in any case the model needs to be stored to disk.
                     self.model.store()
@@ -119,8 +119,17 @@ class Runmanager:
         plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+f'_extra_{run}_{epoch:03d}_cnf.png'
         self.print_model(report, plot_name)
 
-
     def print_model(self, report, plot_name):
+        run = report.run
+        epoch = report.epoch
+        self.load_model(report)
+        report = self.model.predict()
+        self.util.debug(f'plotting conf matrix to {plot_name}')
+        report.plot_confmatrix(plot_name, epoch)
+        report.print_results(epoch)
+
+
+    def load_model(self, report):
         """Load a model from disk for a specific run and epoch and evaluate"""
         run = report.run
         epoch = report.epoch
@@ -143,14 +152,10 @@ class Runmanager:
         else:
             self.util.error(f'unknown model type: \'{model_type}\'')
         self.model.load(run, epoch)
-        report = self.model.predict()
-        self.util.debug(f'plotting conf matrix to {plot_name}')
-        report.plot_confmatrix(plot_name, epoch)
-        report.print_results(epoch)
 
     def get_best_model(self):
         best_report = self.get_best_result(self.best_results)
-        self.print_model(best_report)
+        self.load_model(best_report)
         return self.model
 
 
