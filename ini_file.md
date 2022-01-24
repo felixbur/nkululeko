@@ -26,8 +26,8 @@
   * runs = 1
 * **epochs**: number of epochs for ANN training
   * epochs = 1
-* **save**: save the experiment as a pickle file to be restored again later
-  * save = 1
+* **save**: save the experiment as a pickle file to be restored again later (True or False)
+  * save = False
 
 ### DATA
 * **data_type**: just a flag now to mark continous data, so it can be binned to categorical data (using *bins* and *labels*)
@@ -124,8 +124,8 @@
   * layers = {'l1':8, 'l2':4}
 * **class_weight**: add class_weight to linear classifier (XGB, SVM) fit methods for imbalanced data
   * class_weight = 1
-* **store**: whether to save all model states (per epoch) to disk
-  * store = 1
+* **save**: whether to save all model states (per epoch) to disk (True or False)
+  * save = False
 * **loss_function**: A  loss function for ANN models
   * loss_function = mse
   * possible values:
