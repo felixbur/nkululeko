@@ -1,4 +1,4 @@
-import sounddevice
+import sounddevice as sd
 import audiofile
 import glob_conf
 from util import Util
@@ -20,6 +20,7 @@ class Demo_predictor():
     def run_demo(self):
         while True:
             signal = self.record_audio(3)
+            self.play_audio(signal)
             features = self.feature_extractor.extract_sample(signal, self.sr)
             features = features.to_numpy()
             result = self.model.predict_sample(features)
@@ -28,7 +29,12 @@ class Demo_predictor():
 
     def record_audio(self, seconds): 
         print("recording ...") 
-        y = sounddevice.rec(int(seconds * self.sr), samplerate=self.sr, channels=1) 
-        sounddevice.wait() 
+        y = sd.rec(int(seconds * self.sr), samplerate=self.sr, channels=1) 
+        sd.wait() 
         y = y.T 
         return y 
+
+    def play_audio(self, signal): 
+        print("playback ...") 
+        sd.play(signal.T, self.sr)
+        status = sd.wait()
