@@ -16,7 +16,6 @@ class Test_predictor():
 
     def predict_and_store(self):
         predictions = self.model.get_predictions()
-        print(type(predictions))
         df = pd.DataFrame(index = self.orig_df.index)
         df['speaker'] = self.orig_df['speaker']
         df['gender'] = self.orig_df['gender']

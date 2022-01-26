@@ -61,6 +61,8 @@ class Dataset:
             df = df[df.gender==s]
         except KeyError:
             pass 
+        # remember the target in case they get labelencoded later
+        df['class_label'] = df[self.target]
         self.df = df
         self.db = db
         self.util.debug(f'Loaded database {self.name} with {df.shape[0]} '\
@@ -182,8 +184,6 @@ class Dataset:
             self.finish_up(self.df_train, 'train', storage_train)
 
     def finish_up(self, df, name, storage):
-        # remember the target in case they get labelencoded later
-        df['class_label'] = df[self.target]
         # Bin target values if they are continous but a classification experiment should be done
         # self.check_continous_classification(df)
         # remember the splits for future use

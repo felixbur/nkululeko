@@ -228,7 +228,6 @@ class Experiment:
         if tsne and self.util.exp_is_classification():
             from plots import Plots
             plots = Plots()
-            target = self.util.config_val('DATA', 'target', 'emotion')
             plots.plotTsne(self.feats_train.df, self.df_train['class_label'], self.util.get_exp_name()+'_tsne')
 
 
