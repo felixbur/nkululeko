@@ -20,4 +20,4 @@ class Test_predictor():
         df['speaker'] = self.orig_df['speaker']
         df['gender'] = self.orig_df['gender']
         df[self.target] = self.label_encoder.inverse_transform(predictions)
-        df.to_csv(f'{self.name}.csv')
+        df.to_csv(self.name)

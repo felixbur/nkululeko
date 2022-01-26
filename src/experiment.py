@@ -258,6 +258,11 @@ class Experiment:
         # self.__collect_reports()
         self.util.print_best_results(self.reports)
 
+        # check if the test predictions should be saved to disk
+        test_pred_file = self.util.config_val('EXP', 'save_test', 'False')
+        if test_pred_file:
+            self.predict_test_and_save(test_pred_file)
+
         return self.reports    
 
 
