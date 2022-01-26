@@ -122,8 +122,8 @@
   * scoring = recall_macro
 * **layers**: layer outline (number of hidden layers and number of neurons per layer) for the MLP as a python dictionary
   * layers = {'l1':8, 'l2':4}
-* **class_weight**: add class_weight to linear classifier (XGB, SVM) fit methods for imbalanced data
-  * class_weight = 1
+* **class_weight**: add class_weight to linear classifier (XGB, SVM) fit methods for imbalanced data (True or False)
+  * class_weight = False
 * **save**: whether to save all model states (per epoch) to disk (True or False)
   * save = False
 * **loss_function**: A  loss function for ANN models
@@ -143,16 +143,16 @@
 * **name**: special name as a prefix for all plots (stored in *img_dir*).
   * name = my_special_config_within_the_experiment
 * **plot_epochs**: whether to make a plot each for every epoch result.
-  * plot_epochs = 1
+  * plot_epochs = False
 * **plot_anim_progression**: generate an animated gif from the epoch plots
-  * plot_anim_progression = 1
+  * plot_anim_progression = False
 * **fps**: frames per second for the animated gif
   * fps = 1
 * **plot_epoch_progression**: plot the progression of test, train and loss results over epochs
-  * plot_epoch_progression = 1
+  * plot_epoch_progression = False
 * **plot_best_model**: search for the best performing model and plot conf matrix (needs *MODEL.store* to be turned on)
-  * plot_best_model = 1
+  * plot_best_model = False
 * **value_counts** plot statistics for each database and the train/dev splits (in the *image_dir*)
-  * value_counts = 1
+  * value_counts = False
 * **tsne** make a tsne plot to get a feeling how the features might perform
-  * tsne = 1
+  * tsne = False
