@@ -28,6 +28,8 @@
   * epochs = 1
 * **save**: save the experiment as a pickle file to be restored again later (True or False)
   * save = False
+* **save_test**: save the test predictions as a new database in CSV format (default is False)
+  * save_test = ./my_saved_test_predictions.csv
 
 ### DATA
 * **type**: just a flag now to mark continous data, so it can be binned to categorical data (using *bins* and *labels*)
