@@ -185,7 +185,7 @@ class Dataset:
         # remember the target in case they get labelencoded later
         df['class_label'] = df[self.target]
         # Bin target values if they are continous but a classification experiment should be done
-        self.check_continous_classification(df)
+        # self.check_continous_classification(df)
         # remember the splits for future use
         df.to_pickle(storage)
         if self.util.config_val('DATA', f'{self.name}.value_counts', False):
@@ -207,17 +207,20 @@ class Dataset:
         glob_conf.config['FEATS']['needs_feature_extraction'] = 'True'
 
     def prepare_labels(self):
-        """Bin target values if they are continous but a classification experiment should be done"""
-        self.check_continous_classification(self.df)
         strategy = self.util.config_val('DATA', 'strategy', 'train_test')
         if strategy == 'cross_data':
             self.df = self.map_labels(self.df)
+            # Bin target values if they are continuous but a classification experiment should be done
+            self.map_continuous_classification(self.df)
         elif strategy == 'train_test':        
             self.df_train = self.map_labels(self.df_train)
             self.df_test = self.map_labels(self.df_test)
+            self.map_continuous_classification(self.df_train)
+            self.map_continuous_classification(self.df_test)
 
     def map_labels(self, df):
-        if df.shape[0]==0 or not self.util.exp_is_classification():
+        if df.shape[0]==0 or not self.util.exp_is_classification() \
+            or self.check_continuous_classification() :
             return df
         """Rename the labels and remove the ones that are not needed."""
         target = glob_conf.config['DATA']['target']
@@ -235,15 +238,22 @@ class Dataset:
             # self.util.debug(f'Categories: {df[target].unique()}')
         except KeyError:
             pass
-        return df 
+        return df
 
-    def check_continous_classification(self, df):
+    def check_continuous_classification(self):
         datatype = self.util.config_val('DATA', 'type', 'dummy')
         if self.util.exp_is_classification() and datatype == 'continuous':
+            return True
+        return False
+
+    def map_continuous_classification(self, df):
+        """Map labels to bins for continuous data that should be classified"""
+        if self.check_continuous_classification():
             self.util.debug('binning continuous variable to categories')
             cat_vals = self.util.continuous_to_categorical(df[self.target])
             df[self.target] = cat_vals
             labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
             df['class_label'] = df[self.target]
+#            print(df['class_label'].unique())
             for i, l in enumerate(labels):
-                df['class_label'] = df['class_label'].replace(i, l)
+                df['class_label'] = df['class_label'].replace(i, str(l))

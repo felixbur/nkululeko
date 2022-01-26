@@ -118,7 +118,7 @@ class Reporter:
                     c_res = rpt[l]['f1-score']
                     c_ress[i] = float(f'{c_res:.3f}')
                 self.util.debug(f'labels: {labels}')
-                self.util.debug(f'result per class: {c_ress}')
+                self.util.debug(f'result per class (F1 score): {c_ress}')
                 rpt_str = json.dumps(rpt)
                 text_file.write(rpt_str)
         else: # regression

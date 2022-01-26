@@ -83,8 +83,13 @@ class Experiment:
 
         # encode the labels
         if self.util.exp_is_classification():
-            test_cats = self.df_test[self.target].unique()
-            train_cats = self.df_train[self.target].unique()
+            datatype = self.util.config_val('DATA', 'type', 'dummy')
+            if datatype == 'continuous':
+                test_cats = self.df_test['class_label'].unique()
+                train_cats = self.df_train['class_label'].unique()
+            else:
+                test_cats = self.df_test[self.target].unique()
+                train_cats = self.df_train[self.target].unique()
             if type(test_cats) == numpy.ndarray:
                 self.util.debug(f'Categories test: {test_cats}')
             else:

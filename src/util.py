@@ -79,7 +79,12 @@ class Util:
         except KeyError:
             glob_conf.config.add_section(section)
             glob_conf.config[section][key] = str(value)
-
+    
+    def check_df(self, i, df):
+        """Check a dataframe"""
+        print(f'check {i}: {df.shape}')
+        print(df.head(1)
+        )
     def config_val(self, section, key, default):
         try:
             # strategy is either train_test (default)  or cross_data
