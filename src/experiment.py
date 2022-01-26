@@ -87,9 +87,11 @@ class Experiment:
             train_cats = self.df_train[self.target].unique()
             if type(test_cats) == numpy.ndarray:
                 self.util.debug(f'Categories test: {test_cats}')
-                self.util.debug(f'Categories train: {train_cats}')
             else:
                 self.util.debug(f'Categories test: {test_cats.to_list()}')
+            if type(train_cats) == numpy.ndarray:
+                self.util.debug(f'Categories train: {train_cats}')
+            else:
                 self.util.debug(f'Categories train: {train_cats.to_list()}')
 
             # encode the labels as numbers
