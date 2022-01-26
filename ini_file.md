@@ -30,8 +30,8 @@
   * save = False
 
 ### DATA
-* **data_type**: just a flag now to mark continous data, so it can be binned to categorical data (using *bins* and *labels*)
-  * data_type = continous
+* **type**: just a flag now to mark continous data, so it can be binned to categorical data (using *bins* and *labels*)
+  * type = continuous
 * **databases**: list of databases to be used in the experiment
   * databases = ['emodb', 'timit']
 * **strategy**: how the databases should be used, either *train_test* or *cross_data*
