@@ -4,7 +4,7 @@
 A project to detect speaker characteristics by machine learning experiments with a high level interface based on [audformat](https://github.com/audeering/audformat).
 The idea is to have a very high level framework (based on e.g. sklearn and pytorch) that can be used by people not being experienced programmers as they mainly have to adapt the initialization parameter files.
 [Here's a blog post on how to set up nkululeko on your computer.](http://blog.syntheticspeech.de/2021/08/30/how-to-set-up-your-first-nkululeko-project/)
-
+[Here's a presentation on nkululeko](docs/nkululeko.pdf)
 
 ## Installation
 Download the sources via git clone or zip export to your hard drive.
