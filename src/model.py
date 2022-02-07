@@ -94,6 +94,7 @@ class Model:
 
         
     def load(self, run, epoch):
+        self.set_id(run, epoch)
         dir = self.util.get_path('model_dir')
         name = f'{self.util.get_exp_name()}_{self.run}_{self.epoch:03d}.model'
         with open(dir+name, 'rb') as handle:
