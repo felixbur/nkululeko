@@ -26,12 +26,13 @@ class Reporter:
         self.util = Util()
         self.truths = truths
         self.preds = preds
-        self.result = Result(0, 0, 0)
+        self.result = Result(0, 0, 0, 'unknown')
         self.run = 0
         self.epoch = 0
         if len(truths)>0 and len(preds)>0:
             if self.util.exp_is_classification():
                 self.MEASURE = 'UAR'
+                self.result.measure = self.MEASURE
                 self.result.test = recall_score(self.truths, self.preds, average='macro')
                 self.result.loss = 1 - accuracy_score(self.truths, self.preds)
             else:
@@ -39,9 +40,11 @@ class Reporter:
                 measure = self.util.config_val('MODEL', 'measure', 'mse')
                 if measure == 'mse':
                     self.MEASURE = 'MSE'
+                    self.result.measure = self.MEASURE
                     self.result.test = mean_squared_error(self.truths, self.preds)
                 elif measure == 'ccc':
                     self.MEASURE = 'CCC'
+                    self.result.measure = self.MEASURE
                     self.result.test = self.ccc(self.truths, self.preds)
                     if math.isnan(self.result.test):
                         self.util.debug(self.truths)

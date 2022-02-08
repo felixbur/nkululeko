@@ -20,7 +20,16 @@ class Runmanager:
 
 
     def __init__(self, df_train, df_test, feats_train, feats_test):
-        """Constructor setting up the dataframes"""
+        """Constructor setting up the dataframes
+        Args:
+            df_train: train dataframe
+            df_test: test dataframe
+            feats_train: train features
+            feats_train: test features
+
+        Returns:
+        
+        """
         self.df_train, self.df_test, self.feats_train, self.feats_test = df_train, df_test, feats_train, feats_test
         self.util = Util()
         self.target = glob_conf.config['DATA']['target']
@@ -65,7 +74,8 @@ class Runmanager:
                 report.set_id(run, epoch)
                 plot_name = self.util.get_plot_name()+f'_{run}_{epoch:03d}_cnf.png'
                 self.reports.append(report)                
-                self.util.debug(f'run: {run} epoch: {epoch}: result: {self.reports[-1].get_result().test:.3f}')
+                self.util.debug(f'run: {run} epoch: {epoch}: result: '
+                    f'{self.reports[-1].get_result().get_test_result()}')
                 if plot_epochs:
                     self.util.debug(f'plotting conf matrix to {plot_name}')
                     report.plot_confmatrix(plot_name, epoch)
@@ -96,7 +106,7 @@ class Runmanager:
             if plot_best_model:
                 plot_name_suggest = self.util.get_exp_name()
                 plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+f'_BEST_{best_report.run}_{best_report.epoch:03d}_BEST_cnf.png'
-                self.util.debug(f'best result with run {best_report.run} and epoch {best_report.epoch}: {best_report.result.test:.3f}')
+                self.util.debug(f'best result with run {best_report.run} and epoch {best_report.epoch}: {best_report.result.get_test_result()}')
                 self.print_model(best_report, plot_name)
             # finally, print out the numbers for this run
             self.reports[-1].print_results(int(self.util.config_val('EXP', 'epochs', 1)))
@@ -112,7 +122,12 @@ class Runmanager:
         self.print_model(best_report, plot_name)
 
     def print_given_result(self, run, epoch):
-        """Print a result for a given epoch and run"""
+        """Print a result (confusion matrix) for a given epoch and run
+        Args: 
+            run: for which run
+            epoch: for which epoch
+        
+        """
         report =  Reporter([], [])
         report.set_id(run, epoch)
         self.util.debug(f'Re-testing result with run {run} and epoch {epoch}')
@@ -121,6 +136,11 @@ class Runmanager:
         self.print_model(report, plot_name)
 
     def print_model(self, report, plot_name):
+        """Print a confusion matrix for a special report
+        Args:
+            report: for which report (will be computed newly from model)
+            plot_name: name of plot file
+        """
         epoch = report.epoch
         self.load_model(report)
         report = self.model.predict()
@@ -130,7 +150,11 @@ class Runmanager:
 
 
     def load_model(self, report):
-        """Load a model from disk for a specific run and epoch and evaluate"""
+        """Load a model from disk for a specific run and epoch and evaluate
+        Args:
+            report: for which report (will be re-evaluated)
+        
+        """
         run = report.run
         epoch = report.epoch
         self.util.set_config_val('EXP', 'run', run)
@@ -162,17 +186,20 @@ class Runmanager:
 
     def get_best_result(self, reports):
         best_r = Reporter([], [])
-        best_result = 0
-        for r in reports:
-            res = r.result.test
-            if res > best_result:
-                best_result = res
-                best_r = r
+        if self.util.exp_is_classification():
+            measure = self.util.config_val('MODEL', 'measure', 'uar')
+            best_r = self.search_best_result(reports, 'ascending')
+        else:
+            measure = self.util.config_val('MODEL', 'measure', 'mse')
+            if measure == 'mse':
+                best_r = self.search_best_result(reports, 'descending')
+            elif measure == 'ccc':
+                best_r = self.search_best_result(reports, 'ascending')
         return best_r
 
-    def get_best_result_II(self, reports):
+    def search_best_result(self, reports, order):
         best_r = Reporter([], [])
-        if self.util.exp_is_classification():
+        if order == 'ascending':
             best_result = 0
             for r in reports:
                 res = r.result.test
