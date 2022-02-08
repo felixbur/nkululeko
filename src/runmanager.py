@@ -92,7 +92,7 @@ class Runmanager:
                 self.reports[-1].plot_epoch_progression(self.reports, plot_name)
             # remember the best run
             best_report = self.get_best_result(self.reports)
-            plot_best_model = self.util.config_val('PLOT', 'plot_best_model', 0)
+            plot_best_model = self.util.config_val('PLOT', 'plot_best_model', False)
             if plot_best_model:
                 plot_name_suggest = self.util.get_exp_name()
                 plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+f'_BEST_{best_report.run}_{best_report.epoch:03d}_BEST_cnf.png'
@@ -105,7 +105,8 @@ class Runmanager:
     def print_best_result_runs(self):
         """Print the best result for all runs"""
         best_report = self.get_best_result(self.best_results)
-        self.util.debug(f'best result with run {best_report.run} and epoch {best_report.epoch}: {best_report.result.test:.3f}')
+        self.util.debug(f'best result all runs with run {best_report.run} \
+            and epoch {best_report.epoch}: {best_report.result.test:.3f}')
         plot_name_suggest = self.util.get_exp_name()
         plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+f'_BEST_{best_report.run}_{best_report.epoch:03d}_BEST_cnf.png'
         self.print_model(best_report, plot_name)
@@ -120,7 +121,6 @@ class Runmanager:
         self.print_model(report, plot_name)
 
     def print_model(self, report, plot_name):
-        run = report.run
         epoch = report.epoch
         self.load_model(report)
         report = self.model.predict()
@@ -133,6 +133,7 @@ class Runmanager:
         """Load a model from disk for a specific run and epoch and evaluate"""
         run = report.run
         epoch = report.epoch
+        self.util.set_config_val('EXP', 'run', run)
         model_type = glob_conf.config['MODEL']['type']
         if model_type=='svm':
             self.model = SVM_model(self.df_train, self.df_test, self.feats_train, self.feats_test)

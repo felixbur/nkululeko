@@ -109,8 +109,8 @@ class Reporter:
                 labels = glob_conf.label_encoder.classes_
             try:
                 rpt = classification_report(self.truths, self.preds, target_names=labels, output_dict=True)
-            except ValueError:
-                self.util.debug('Reporter: caught a ValueError when trying to get classification_report')
+            except ValueError as e:
+                self.util.debug('Reporter: caught a ValueError when trying to get classification_report: '+e)
                 rpt = self.result.to_string()
             with open(file_name, "w") as text_file:
                 c_ress = list(range(len(labels)))
@@ -136,7 +136,10 @@ class Reporter:
         for filename in filenames:
             images.append(imageio.imread(filename))
         fps = self.util.config_val('PLOT', 'fps', '1')
-        imageio.mimsave(fig_dir+out_name, images, fps=int(fps))
+        try:
+            imageio.mimsave(fig_dir+out_name, images, fps=int(fps))
+        except RuntimeError as e:
+            self.util.error('error writing anim gif: '+e)
 
     def get_result(self):
         return self.result
