@@ -91,6 +91,13 @@ class Util:
             return glob_conf.config[section][key]
         except KeyError:
             return default
+            
+    def get_labels(self):
+        try:
+            labels = glob_conf.label_encoder.classes_
+        except AttributeError:
+            labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
+        return labels
 
     def continuous_to_categorical(self, array):
         bins = ast.literal_eval(glob_conf.config['DATA']['bins'])

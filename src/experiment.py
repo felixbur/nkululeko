@@ -1,5 +1,6 @@
 from cgi import test
 import numpy
+import random
 from dataset import Dataset
 from dataset_csv import Dataset_CSV
 from dataset_ravdess import Ravdess
@@ -67,17 +68,21 @@ class Experiment:
                 d = self.datasets[dn]
                 d.prepare_labels()
                 self.df_train = self.df_train.append(d.df)
+                self.df_train.is_labeled = d.is_labeled
             for dn in test_dbs:
                 d = self.datasets[dn]
                 d.prepare_labels()
                 self.df_test = self.df_test.append(d.df)
+                self.df_test.is_labeled = d.is_labeled
         elif strategy == 'train_test':
             # default: train vs. test combined from all datasets
             for d in self.datasets.values():
                 d.split()
                 d.prepare_labels()
                 self.df_train = self.df_train.append(d.df_train)
+                self.df_train.is_labeled = d.is_labeled
                 self.df_test = self.df_test.append(d.df_test)
+                self.df_test.is_labeled = d.is_labeled
         else:
             self.util.error(f'unknown strategy: {strategy}')
 
@@ -85,15 +90,24 @@ class Experiment:
         if self.util.exp_is_classification():
             datatype = self.util.config_val('DATA', 'type', 'dummy')
             if datatype == 'continuous':
-                test_cats = self.df_test['class_label'].unique()
+                if self.df_test.is_labeled:
+                    test_cats = self.df_test['class_label'].unique()
+                else:
+                    # if there is no target, copy a dummy label
+                    self.df_test = self.add_random_target(self.df_test)
                 train_cats = self.df_train['class_label'].unique()
             else:
-                test_cats = self.df_test[self.target].unique()
+                if self.df_test.is_labeled:
+                    test_cats = self.df_test[self.target].unique()
+                else:   
+                    # if there is no target, copy a dummy label
+                    self.df_test = self.add_random_target(self.df_test)
                 train_cats = self.df_train[self.target].unique()
-            if type(test_cats) == numpy.ndarray:
-                self.util.debug(f'Categories test: {test_cats}')
-            else:
-                self.util.debug(f'Categories test: {test_cats.to_list()}')
+            if self.df_test.is_labeled:
+                if type(test_cats) == numpy.ndarray:
+                    self.util.debug(f'Categories test: {test_cats}')
+                else:
+                    self.util.debug(f'Categories test: {test_cats.to_list()}')
             if type(train_cats) == numpy.ndarray:
                 self.util.debug(f'Categories train: {train_cats}')
             else:
@@ -112,7 +126,14 @@ class Experiment:
             self.augment_train()
         if self.util.config_val('PLOT', 'value_counts', False):
             self.plot_distribution()
-
+    
+    def add_random_target(self, df):
+        labels = self.util.get_labels()
+        a = [None]*len(df)
+        for i in range(0, len(df)):
+            a[i] = random.choice(labels)
+        df[self.target] = a
+        return df
 
     def plot_distribution(self):
         """Plot the distribution of samples and speaker per target class and biological sex"""
@@ -120,7 +141,8 @@ class Experiment:
         plot = Plots()
         if self.util.exp_is_classification():
             self.df_train['labels'] = self.label_encoder.inverse_transform(self.df_train[self.target])
-            self.df_test['labels'] = self.label_encoder.inverse_transform(self.df_test[self.target])
+            if self.df_test.is_labeled:
+                self.df_test['labels'] = self.label_encoder.inverse_transform(self.df_test[self.target])
             plot.describe_df('dev_set', self.df_test, 'labels', f'test_distplot.png')
             plot.describe_df('train_set', self.df_train, 'labels', f'train_distplot.png')
         else:

@@ -20,6 +20,7 @@ class Dataset_CSV(Dataset):
         self.df = df
         self.db = None
         got_target = True
+        self.is_labeled = got_target
         if 'gender' in df.columns:
             got_gender = True 
         if 'speaker' in df.columns:

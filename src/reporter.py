@@ -70,11 +70,7 @@ class Reporter:
             self.continuous_to_categorical()
 
         fig_dir = self.util.get_path('fig_dir')
-        try:
-            labels = glob_conf.label_encoder.classes_
-        except AttributeError:
-            labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
-
+        labels = self.util.get_labels()
         fig = plt.figure()  # figsize=[5, 5]
         uar = recall_score(self.truths, self.preds, average='macro')
         acc = accuracy_score(self.truths, self.preds)

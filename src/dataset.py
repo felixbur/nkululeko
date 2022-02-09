@@ -61,8 +61,10 @@ class Dataset:
             df = df[df.gender==s]
         except KeyError:
             pass 
-        # remember the target in case they get labelencoded later
-        df['class_label'] = df[self.target]
+        if got_target:
+            # remember the target in case they get labelencoded later
+            df['class_label'] = df[self.target]
+        df.is_labeled = got_target
         self.df = df
         self.db = db
         self.util.debug(f'Loaded database {self.name} with {df.shape[0]} '\
@@ -73,6 +75,8 @@ class Dataset:
                 self.util.error('can\'t plot value counts if no speaker or gender is given')
             else:
                 self.plot.describe_df(self.name, df, self.target, f'{self.name}_distplot.png')
+        self.is_labeled = got_target
+        self.df.is_labeled = self.is_labeled
 
     def get_df_for_lists(self, db, df_files):
         got_target, got_speaker, got_gender = False, False, False
@@ -179,19 +183,22 @@ class Dataset:
             self.df_train = pd.read_pickle(storage_train)
 
         if self.df_test.shape[0]>0:
-            self.finish_up(self.df_test, 'test', storage_test)
+            self.df_test = self.finish_up(self.df_test, 'test', storage_test)
         if self.df_train.shape[0]>0:
-            self.finish_up(self.df_train, 'train', storage_train)
+            self.df_train = self.finish_up(self.df_train, 'train', storage_train)
 
     def finish_up(self, df, name, storage):
         # Bin target values if they are continous but a classification experiment should be done
         # self.check_continous_classification(df)
         # remember the splits for future use
+        df.is_labeled = self.is_labeled
         df.to_pickle(storage)
         if self.util.config_val('DATA', f'{self.name}.value_counts', False):
             all_df = self.df_test.append(self.df_train)
+            all_df.is_labeled = self.is_labeled
             self.plot.describe_df(self.name, all_df, self.target, f'{self.name}_distplot.png')
             self.plot.describe_df(self.name+' dev', self.df_test, self.target, f'{self.name}_{name}_distplot.png')
+        return df
 
     def split_speakers(self):
         """One way to split train and eval sets: Specify percentage of evaluation speakers"""

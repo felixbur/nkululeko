@@ -22,13 +22,14 @@ class Plots():
         female_smpl_num = df[df.gender=='female'].shape[0]
         male_smpl_num = df[df.gender=='male'].shape[0]
         self.util.debug(f'{name}: # samples: {sampl_num} (f: {female_smpl_num}, m: {male_smpl_num}), # speakers: {spkr_num}')
-        fig, axes = plt.subplots(nrows=1, ncols=2)
-        df.groupby(target)['gender'].value_counts().unstack().plot(kind='bar', stacked=True, ax=axes[0], title=f'samples ({sampl_num})')
-        df.groupby(target)['speaker'].nunique().plot(kind='bar', ax=axes[1], title=f'speakers ({spkr_num})')
-        plt.tight_layout()
-        plt.savefig(fig_dir+filename)
-        fig.clear()
-        plt.close(fig)
+        if df.is_labeled:
+            fig, axes = plt.subplots(nrows=1, ncols=2)
+            df.groupby(target)['gender'].value_counts().unstack().plot(kind='bar', stacked=True, ax=axes[0], title=f'samples ({sampl_num})')
+            df.groupby(target)['speaker'].nunique().plot(kind='bar', ax=axes[1], title=f'speakers ({spkr_num})')
+            plt.tight_layout()
+            plt.savefig(fig_dir+filename)
+            fig.clear()
+            plt.close(fig)
 
     def plotTsne(self, feats, labels, filename, perplexity=30, learning_rate=200):
         """Make a TSNE plot to see whether features are useful for classification"""
