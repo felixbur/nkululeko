@@ -192,12 +192,8 @@ class Dataset:
         # self.check_continous_classification(df)
         # remember the splits for future use
         df.is_labeled = self.is_labeled
+        self.df_test.is_labeled = self.is_labeled
         df.to_pickle(storage)
-        if self.util.config_val('DATA', f'{self.name}.value_counts', False):
-            all_df = self.df_test.append(self.df_train)
-            all_df.is_labeled = self.is_labeled
-            self.plot.describe_df(self.name, all_df, self.target, f'{self.name}_distplot.png')
-            self.plot.describe_df(self.name+' dev', self.df_test, self.target, f'{self.name}_{name}_distplot.png')
         return df
 
     def split_speakers(self):

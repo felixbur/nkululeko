@@ -16,6 +16,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from scaler import Scaler
 import pickle
+import audformat
 
 
 class Experiment:
@@ -36,6 +37,13 @@ class Experiment:
     def set_globals(self, config_obj):
         """install a config object in the global space"""
         glob_conf.init_config(config_obj)
+
+    def check_segmented_index(self, df):
+        if len(df)==0:
+            return df
+        if not isinstance(df.index, pd.MultiIndex):
+            df.index = audformat.utils.to_segmented_index(df.index, allow_nat=False)
+        return df
 
     def load_datasets(self):
         """Load all databases specified in the configuration and map the labels"""
@@ -67,21 +75,21 @@ class Experiment:
             for dn in train_dbs:
                 d = self.datasets[dn]
                 d.prepare_labels()
-                self.df_train = self.df_train.append(d.df)
+                self.df_train = self.df_train.append(self.check_segmented_index(d.df))
                 self.df_train.is_labeled = d.is_labeled
             for dn in test_dbs:
                 d = self.datasets[dn]
                 d.prepare_labels()
-                self.df_test = self.df_test.append(d.df)
+                self.df_test = self.df_test.append(self.check_segmented_index(d.df))
                 self.df_test.is_labeled = d.is_labeled
         elif strategy == 'train_test':
             # default: train vs. test combined from all datasets
             for d in self.datasets.values():
                 d.split()
                 d.prepare_labels()
-                self.df_train = self.df_train.append(d.df_train)
+                self.df_train = self.df_train.append(self.check_segmented_index(d.df_train))
                 self.df_train.is_labeled = d.is_labeled
-                self.df_test = self.df_test.append(d.df_test)
+                self.df_test = self.df_test.append(self.check_segmented_index(d.df_test))
                 self.df_test.is_labeled = d.is_labeled
         else:
             self.util.error(f'unknown strategy: {strategy}')
