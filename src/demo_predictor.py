@@ -1,7 +1,7 @@
 import sounddevice as sd
 import glob_conf
 from util import Util
-
+import numpy as np
 
 class Demo_predictor():
 
@@ -18,12 +18,17 @@ class Demo_predictor():
     def run_demo(self):
         while True:
             signal = self.record_audio(3)
-            self.play_audio(signal)
+#            self.play_audio(signal)
             features = self.feature_extractor.extract_sample(signal, self.sr)
             features = features.to_numpy()
-            result = self.model.predict_sample(features)
-            result = self.label_encoder.inverse_transform(result)[0]
-            print(f'{self.target}: {result}')
+            result_dict = self.model.predict_sample(features)
+            keys = result_dict.keys()
+            dict_2 = {}
+            for i, k in enumerate(keys):
+                ak = np.array(int(k)).reshape(1)
+                lab = self.label_encoder.inverse_transform(ak)[0]
+                dict_2[lab] = f'{result_dict[k]:.3f}'
+            print(dict_2)
 
     def record_audio(self, seconds): 
         print("recording ...") 

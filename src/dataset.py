@@ -126,6 +126,7 @@ class Dataset:
                 got_target = True
             except (ValueError, audformat.core.errors.BadKeyError) as e:
                 pass
+            #pd.concat([df, df_local], axis=0, join='outer')
             df = df.append(df_local)
         return df, got_target, got_speaker, got_gender
 
