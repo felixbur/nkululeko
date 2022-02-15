@@ -155,10 +155,11 @@ class Reporter:
         # do a plot per run
         # scale the losses so they fit on the picture
         losses, results, train_results = np.asarray(losses), np.asarray(results), np.asarray(train_results)
-        # if (self.util.exp_is_classification()):
-        #     # scale up UAR
-        #     results = results*100
-        #     train_results = train_results*100
+
+        if np.all((results < 1)):
+            # scale up values 
+            results = results*100
+            train_results = train_results*100
         plt.figure(dpi=200)
         plt.plot(train_results, 'green', label='train set') 
         plt.plot(results, 'red', label='dev set')

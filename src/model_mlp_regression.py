@@ -21,7 +21,7 @@ class MLP_Reg_model(Model):
         labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
         self.class_num = len(labels)
         # set up loss criterion
-        criterion = self.util.config_val('MODEL', 'loss_function', 'mse')
+        criterion = self.util.config_val('MODEL', 'loss', 'mse')
         if criterion == 'mse':
             self.criterion = torch.nn.MSELoss()
         elif criterion == '1-ccc':

@@ -64,7 +64,7 @@ class Runmanager:
                 self.model = MLP_Reg_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
             else:
                 self.util.error(f'unknown model type: \'{model_type}\'')
-            plot_epochs = self.util.config_val('PLOT', 'plot_epochs', 0)
+            plot_epochs = self.util.config_val('PLOT', 'epochs', 0)
             # for all epochs
             for epoch in range(int(self.util.config_val('EXP', 'epochs', 1))):
                 self.util.debug(f'epoch {epoch}')
@@ -80,7 +80,7 @@ class Runmanager:
                     self.util.debug(f'plotting conf matrix to {plot_name}')
                     report.plot_confmatrix(plot_name, epoch)
                 store_models = self.util.config_val('MODEL', 'save', 0)
-                plot_best_model = self.util.config_val('PLOT', 'plot_best_model', 0)
+                plot_best_model = self.util.config_val('PLOT', 'best_model', 0)
                 if store_models or plot_best_model: # in any case the model needs to be stored to disk.
                     self.model.store()
             if not plot_epochs:
@@ -88,13 +88,13 @@ class Runmanager:
                 self.util.debug(f'plotting final conf matrix to {plot_name}')
                 self.reports[-1].plot_confmatrix(plot_name, epoch)
             # wrap up the run 
-            plot_anim_progression = self.util.config_val('PLOT', 'plot_anim_progression', 0)
+            plot_anim_progression = self.util.config_val('PLOT', 'anim_progression', 0)
             if plot_anim_progression:
                 plot_name_suggest = self.util.get_exp_name()
                 plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+'_conf_anim.gif'
                 self.util.debug(f'plotting animated confusion to {plot_name}')
                 self.reports[-1].make_conf_animation(plot_name)
-            plot_epoch_progression = self.util.config_val('PLOT', 'plot_epoch_progression', 0)
+            plot_epoch_progression = self.util.config_val('PLOT', 'epoch_progression', 0)
             if plot_epoch_progression:
                 plot_name_suggest = self.util.get_exp_name()
                 plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+'_epoch_progression.png'
@@ -102,7 +102,7 @@ class Runmanager:
                 self.reports[-1].plot_epoch_progression(self.reports, plot_name)
             # remember the best run
             best_report = self.get_best_result(self.reports)
-            plot_best_model = self.util.config_val('PLOT', 'plot_best_model', False)
+            plot_best_model = self.util.config_val('PLOT', 'best_model', False)
             if plot_best_model:
                 plot_name_suggest = self.util.get_exp_name()
                 plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+f'_BEST_{best_report.run}_{best_report.epoch:03d}_BEST_cnf.png'
