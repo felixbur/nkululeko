@@ -80,7 +80,7 @@ class Runmanager:
                     self.util.debug(f'plotting conf matrix to {plot_name}')
                     report.plot_confmatrix(plot_name, epoch)
                 store_models = self.util.config_val('MODEL', 'save', 0)
-                plot_best_model = self.util.config_val('PLOT', 'best_model', 0)
+                plot_best_model = self.util.config_val('PLOT', 'best_model', False)
                 if store_models or plot_best_model: # in any case the model needs to be stored to disk.
                     self.model.store()
             if not plot_epochs:
@@ -185,7 +185,7 @@ class Runmanager:
 
 
     def get_best_result(self, reports):
-        best_r = Reporter([], [])
+        best_r = Reporter([], [], 0, 0)
         if self.util.exp_is_classification():
             measure = self.util.config_val('MODEL', 'measure', 'uar')
             best_r = self.search_best_result(reports, 'ascending')
@@ -198,7 +198,7 @@ class Runmanager:
         return best_r
 
     def search_best_result(self, reports, order):
-        best_r = Reporter([], [])
+        best_r = Reporter([], [], 0, 0)
         if order == 'ascending':
             best_result = 0
             for r in reports:

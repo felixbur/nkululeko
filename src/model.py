@@ -77,7 +77,8 @@ class Model:
     def predict(self):
         """Predict the whole eval feature set"""
         predictions = self.get_predictions()
-        report = Reporter(self.df_test[glob_conf.config['DATA']['target']].to_numpy().astype(float), predictions)
+        report = Reporter(self.df_test[glob_conf.config['DATA']['target']]\
+            .to_numpy().astype(float), predictions, self.run, self.epoch)
         return report
 
     def predict_sample(self, features):

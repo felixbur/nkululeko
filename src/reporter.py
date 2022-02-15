@@ -21,30 +21,38 @@ import math
 
 class Reporter:
 
-    def __init__(self, truths, preds):
+    def __set_measure(self):
+        if self.util.exp_is_classification():
+            self.MEASURE = 'UAR'
+            self.result.measure = self.MEASURE
+        else:
+            self.measure = self.util.config_val('MODEL', 'measure', 'mse')
+            if self.measure == 'mse':
+                self.MEASURE = 'MSE'
+                self.result.measure = self.MEASURE
+            elif self.measure == 'ccc':
+                self.MEASURE = 'CCC'
+                self.result.measure = self.MEASURE
+
+
+    def __init__(self, truths, preds, run, epoch):
         """Initialization with ground truth und predictions vector"""
         self.util = Util()
         self.truths = truths
         self.preds = preds
         self.result = Result(0, 0, 0, 'unknown')
-        self.run = 0
-        self.epoch = 0
+        self.run = run
+        self.epoch = epoch
+        self.__set_measure()
         if len(truths)>0 and len(preds)>0:
             if self.util.exp_is_classification():
-                self.MEASURE = 'UAR'
-                self.result.measure = self.MEASURE
                 self.result.test = recall_score(self.truths, self.preds, average='macro')
                 self.result.loss = 1 - accuracy_score(self.truths, self.preds)
             else:
                 # regression experiment
-                measure = self.util.config_val('MODEL', 'measure', 'mse')
-                if measure == 'mse':
-                    self.MEASURE = 'MSE'
-                    self.result.measure = self.MEASURE
+                if self.measure == 'mse':
                     self.result.test = mean_squared_error(self.truths, self.preds)
-                elif measure == 'ccc':
-                    self.MEASURE = 'CCC'
-                    self.result.measure = self.MEASURE
+                elif self.measure == 'ccc':
                     self.result.test = self.ccc(self.truths, self.preds)
                     if math.isnan(self.result.test):
                         self.util.debug(self.truths)
@@ -160,6 +168,9 @@ class Reporter:
             # scale up values 
             results = results*100
             train_results = train_results*100
+        if np.all((losses < 1)):
+            # scale up values 
+            losses = losses*100
         plt.figure(dpi=200)
         plt.plot(train_results, 'green', label='train set') 
         plt.plot(results, 'red', label='dev set')
