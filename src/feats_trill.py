@@ -19,7 +19,10 @@ class TRILLset(Featureset):
         self.name = name
         self.data_df = data_df
         self.util = Util()
-        self.module = hub.load('https://tfhub.dev/google/nonsemantic-speech-benchmark/trill/3')
+#        self.module = hub.load('https://tfhub.dev/google/nonsemantic-speech-benchmark/trill/3')
+        model_path = self.util.config_val('FEATS', 'model', \
+            'https://tfhub.dev/google/nonsemantic-speech-benchmark/trill/3')
+        self.module = hub.load(model_path)
 
     def extract(self):
         store = self.util.get_path('store')
