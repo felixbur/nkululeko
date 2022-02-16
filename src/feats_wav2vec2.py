@@ -45,7 +45,7 @@ class Wav2vec2(Featureset):
             self.util.debug('extracting wav2vec2 embeddings, this might take a while...')
             emb_series = pd.Series(index = self.data_df.index, dtype=object)
             length = len(self.data_df.index)
-            for idx, file in enumerate(self.data_df.index):
+            for idx, file in enumerate(self.data_df.index.get_level_values(0)):
                 emb = self.get_embeddings(file)
                 emb_series[idx] = emb
                 if idx%10==0:

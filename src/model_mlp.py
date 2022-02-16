@@ -42,7 +42,6 @@ class MLP_model(Model):
         losses = []
         for features, labels in self.trainloader:
             logits = self.model(features.to(self.device))
-#            labels = labels.to(device=self.device, dtype=torch.int64)
             loss = self.criterion(logits, labels.to(self.device, dtype=torch.int64))
             losses.append(loss.item())
             self.optimizer.zero_grad()
