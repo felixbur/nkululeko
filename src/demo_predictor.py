@@ -1,4 +1,3 @@
-import sounddevice as sd
 import glob_conf
 from util import Util
 import numpy as np
@@ -16,6 +15,7 @@ class Demo_predictor():
         self.util = Util()
 
     def run_demo(self):
+        import sounddevice as sd
         while True:
             signal = self.record_audio(3)
 #            self.play_audio(signal)
