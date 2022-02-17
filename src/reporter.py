@@ -15,7 +15,6 @@ from sklearn.metrics import r2_score
 from sklearn.metrics import classification_report
 from scipy.stats import pearsonr
 from result import Result
-import imageio
 import glob
 import math
 
@@ -137,6 +136,7 @@ class Reporter:
                 text_file.write(f'{measure}: {result:.3f}, r_2: {r2:.3f}, pcc {pcc:.3f}')
 
     def make_conf_animation(self, out_name):
+        import imageio
         fig_dir = self.util.get_path('fig_dir')
         filenames =  glob.glob(fig_dir+f'{self.util.get_plot_name()}*_?_???_cnf.png')
         images = []
