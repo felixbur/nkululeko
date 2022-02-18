@@ -30,6 +30,7 @@ class Wav2vec2(Featureset):
         model_path = self.util.config_val('FEATS', 'model', 'wav2vec2-large-robust-ft-swbd-300h')
         self.processor = transformers.Wav2Vec2Processor.from_pretrained(model_path)
         self.model = Wav2Vec2Model.from_pretrained(model_path).to(self.device)
+        print(f'intialized wav22vec model on {self.device}')
         self.model.eval()
         self.model_initialized = True
 
@@ -45,8 +46,10 @@ class Wav2vec2(Featureset):
             self.util.debug('extracting wav2vec2 embeddings, this might take a while...')
             emb_series = pd.Series(index = self.data_df.index, dtype=object)
             length = len(self.data_df.index)
-            for idx, file in enumerate(self.data_df.index.get_level_values(0)):
-                emb = self.get_embeddings(file)
+            for idx, (file, start, end) in enumerate(self.data_df.index.to_list()):
+                signal, sampling_rate = audiofile.read(file, offset=start.total_seconds(), duration=(end-start).total_seconds(), always_2d=True)
+                #signal, sampling_rate = audiofile.read(audio_path, always_2d=True)
+                emb = self.get_embeddings(signal, sampling_rate)
                 emb_series[idx] = emb
                 if idx%10==0:
                     self.util.debug(f'Wav2vec2: {idx} of {length} done')
@@ -61,9 +64,8 @@ class Wav2vec2(Featureset):
             self.df = pd.read_pickle(storage)
 
 
-    def get_embeddings(self, audio_path):
+    def get_embeddings(self, signal, sampling_rate):
         r"""Extract embeddings from raw audio signal."""
-        signal, sampling_rate = audiofile.read(audio_path, always_2d=True)
         with torch.no_grad():
             # run through processor to normalize signal
             # always returns a batch, so we just get the first entry

@@ -151,10 +151,12 @@ class Experiment:
             self.df_train['labels'] = self.label_encoder.inverse_transform(self.df_train[self.target])
             if self.df_test.is_labeled:
                 self.df_test['labels'] = self.label_encoder.inverse_transform(self.df_test[self.target])
-            plot.describe_df('dev_set', self.df_test, 'labels', f'test_distplot.png')
+            if self.df_test.shape[0] > 0:
+                plot.describe_df('dev_set', self.df_test, 'labels', f'test_distplot.png')
             plot.describe_df('train_set', self.df_train, 'labels', f'train_distplot.png')
         else:
-            plot.describe_df('dev_set', self.df_test, self.target, f'test_distplot.png')
+            if self.df_test.shape[0] > 0:
+                plot.describe_df('dev_set', self.df_test, self.target, f'test_distplot.png')
             plot.describe_df('train_set', self.df_train, self.target, f'train_distplot.png')
 
 
