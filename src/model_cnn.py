@@ -59,7 +59,7 @@ class CNN_model(Model):
         result = 0
         if self.feats_train != None:
             result, _, _ = self.evaluate_model(True)
-        report = Reporter(truths.numpy(), predictions.numpy())
+        report = Reporter(truths.numpy(), predictions.numpy(), self.run, self.epoch)
         try:
             report.result.loss = self.loss
         except AttributeError: # if the model was loaded from disk the loss is unknown
