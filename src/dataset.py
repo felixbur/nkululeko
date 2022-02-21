@@ -7,6 +7,7 @@ from random import sample
 from util import Util
 from plots import Plots
 import glob_conf
+import configparser
 
 class Dataset:
     """ Class to represent datasets"""
@@ -28,7 +29,15 @@ class Dataset:
     def load(self):
         """Load the dataframe with files, speakers and task labels"""
         self.util.debug(f'loading {self.name}')
-        root = glob_conf.config['DATA'][self.name]
+        data_roots = self.util.config_val('DATA', 'root_folders', False)
+        if data_roots:
+            # if there is a global data rootfolder file, read from there
+            roots = configparser.ConfigParser()
+            roots.read(data_roots)
+            root = roots['Data_folders'][self.name]
+        else:
+            # else there should be one in the experiment ini
+            root = glob_conf.config['DATA'][self.name]
         db = audformat.Database.load(root)
         # map the audio file paths 
         db.map_files(lambda x: os.path.join(root, x))
