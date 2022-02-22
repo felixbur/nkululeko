@@ -1,4 +1,3 @@
-from cgi import test
 import numpy
 import random
 from dataset import Dataset
@@ -9,7 +8,6 @@ from runmanager import Runmanager
 from test_predictor import Test_predictor
 from util import Util
 import glob_conf
-from plots import Plots
 from demo_predictor import Demo_predictor
 import ast # To convert strings to objects
 import pandas as pd
@@ -148,12 +146,12 @@ class Experiment:
         from plots import Plots
         plot = Plots()
         if self.util.exp_is_classification():
-            self.df_train['labels'] = self.label_encoder.inverse_transform(self.df_train[self.target])
-            if self.df_test.is_labeled:
-                self.df_test['labels'] = self.label_encoder.inverse_transform(self.df_test[self.target])
+            # self.df_train['labels'] = self.label_encoder.inverse_transform(self.df_train[self.target])
+            # if self.df_test.is_labeled:
+            #     self.df_test['labels'] = self.label_encoder.inverse_transform(self.df_test[self.target])
             if self.df_test.shape[0] > 0:
-                plot.describe_df('dev_set', self.df_test, 'labels', f'test_distplot.png')
-            plot.describe_df('train_set', self.df_train, 'labels', f'train_distplot.png')
+                plot.describe_df('dev_set', self.df_test, self.target, f'test_distplot.png')
+            plot.describe_df('train_set', self.df_train, self.target, f'train_distplot.png')
         else:
             if self.df_test.shape[0] > 0:
                 plot.describe_df('dev_set', self.df_test, self.target, f'test_distplot.png')
@@ -300,13 +298,6 @@ class Experiment:
 
     def print_best_model(self):
         self.runmgr.print_best_result_runs()
-
-    def __collect_reports(self):
-        self.results, self.losses, self.train_results = [], [], []
-        for r in self.reports:
-            self.results.append(r.get_result().test)
-            self.losses.append(r.get_result().loss)
-            self.train_results.append(r.get_result().train)
 
     def demo(self):
         model = self.runmgr.get_best_model()

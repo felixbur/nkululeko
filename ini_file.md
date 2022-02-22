@@ -58,13 +58,16 @@
     * **reuse**: reuse the splits after a *speaker_split* run to save time with feature extraction.
     * **train**: use the entire database for training
     * **test**: use the entire database for evaluation
-  
 * **db_name.target_tables**: tables that containes the target / speaker / sex labels
   * emodb.target_tables = ['emotion']
 * **db_name.files_tables**: tables that containes the audio file names
   * emodb.files_tables = ['files']
 * **db_name.limit**: maximum number of samples per table (for testing with very large data mainly)
   * emodb.limit = 20
+* **db_name.required**: force a data set to have a specific feature (for example filter all sets that have gender labeled)
+  * emodb.required = gender
+* **db_name.max_samples_per_speaker**: maximum number of samples per speaker (for leveling data where same speakers have a large number of samples)
+  * emodb.max_samples_per_speaker = 20
 * **target**: the task name, e.g. *age* or *emotion*
   * target = emotion
 * **labels**: for classification experiments: the names of the categories (is also used for regression when binning the values)

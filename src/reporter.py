@@ -58,7 +58,7 @@ class Reporter:
                         self.util.debug(self.preds)
                         self.util.error(f'result is NAN')
                 else:
-                    self.util.error(f'unknown measure: {measure}')
+                    self.util.error(f'unknown measure: {self.measure}')
 
                 # train and loss are being set by the model
 

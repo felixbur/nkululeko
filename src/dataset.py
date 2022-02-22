@@ -30,6 +30,19 @@ class Dataset:
     def load(self):
         """Load the dataframe with files, speakers and task labels"""
         self.util.debug(f'loading {self.name}')
+        store = self.util.get_path('store')
+        store_file = f'{store}{self.name}.pkl' 
+        if os.path.isfile(store_file):
+            self.util.debug(f'reusing previously stored file {store_file}')
+            self.df = pd.read_pickle(store_file)
+            got_target = self.target in self.df
+            got_gender = 'gender' in self.df
+            got_speaker = 'speaker' in self.df
+            self.is_labeled = got_target
+            self.util.debug(f'Loaded database {self.name} with {self.df.shape[0]} '\
+                f'samples: got targets: {got_target}, got speakers: {got_speaker}, '\
+                f'got sexes: {got_gender}')        
+            return
         data_roots = self.util.config_val('DATA', 'root_folders', False)
         if data_roots:
             # if there is a global data rootfolder file, read from there
@@ -41,6 +54,7 @@ class Dataset:
         else:
             # else there should be one in the experiment ini
             root = glob_conf.config['DATA'][self.name]
+        self.util.debug(f'loading from {root}')
         db = audformat.Database.load(root)
         # map the audio file paths 
         db.map_files(lambda x: os.path.join(root, x))
@@ -49,13 +63,13 @@ class Dataset:
         df_files_tables =  ast.literal_eval(df_files)
         # The label for the target column 
         self.col_label = self.util.config_val('DATA', f'{self.name}.label', self.target)
-        df, got_target, got_speaker, got_gender = self.get_df_for_lists(db, df_files_tables)
+        df, got_target, got_speaker, got_gender = self._get_df_for_lists(db, df_files_tables)
         if False in {got_target, got_speaker, got_gender}:
             try :
             # There might be a separate table with the targets, e.g. emotion or age    
                 df_targets = self.util.config_val('DATA', f'{self.name}.target_tables', f'[\'{self.target}\']')
                 df_target_tables =  ast.literal_eval(df_targets)
-                df_target, got_target2, got_speaker2, got_gender2 = self.get_df_for_lists(db, df_target_tables)
+                df_target, got_target2, got_speaker2, got_gender2 = self._get_df_for_lists(db, df_target_tables)
                 got_target = got_target2 or got_target
                 got_speaker = got_speaker2 or got_speaker
                 got_gender = got_gender2 or got_gender
@@ -89,15 +103,34 @@ class Dataset:
                 self.plot.describe_df(self.name, df, self.target, f'{self.name}_distplot.png')
         self.is_labeled = got_target
         self.df.is_labeled = self.is_labeled
+        # Perform some filtering if desired
+        required = self.util.config_val('DATA', f'{self.name}.required', False)
+        if required:
+            pre = self.df.shape[0]
+            self.df = self.df[self.df[required].notna()]
+            post = self.df.shape[0]
+            self.util.debug(f'kept {post} samples with {required} (from {pre}, filtered {pre-post})')
+        samples_per_speaker = self.util.config_val('DATA', f'{self.name}.max_samples_per_speaker', False)
+        if samples_per_speaker:
+            pre = self.df.shape[0]
+            self.df = self._limit_speakers(self.df, int(samples_per_speaker))            
+            post = self.df.shape[0]
+            self.util.debug(f'kept {post} samples with {samples_per_speaker} per speaker (from {pre}, filtered {pre-post})')
+        if self.limit:
+            pre = self.df.shape[0]
+            self.df = self.df.head(self.limit)
+            post = self.df.shape[0]
+            self.util.debug(f'lmited to {post} samples (from {pre}, filtered {pre-post})')
 
-    def get_df_for_lists(self, db, df_files):
+        # store the dataframe
+        self.df.to_pickle(store_file)
+
+
+    def _get_df_for_lists(self, db, df_files):
         got_target, got_speaker, got_gender = False, False, False
         df = pd.DataFrame()
         for table in df_files:
-            if self.limit:
-                source_df = db.tables[table].df.iloc[:self.limit]
-            else:
-                source_df = db.tables[table].df
+            source_df = db.tables[table].df
             # create a dataframe with the index (the filenames)
             df_local = pd.DataFrame(index=source_df.index)
             # try to get the targets from this dataframe
@@ -121,26 +154,33 @@ class Dataset:
                 pass
             try:
                 # also it might be possible that the sex is part of the speaker description
-                if self.limit:
-                    df_local['gender'] = db[table]['speaker'].get(map='gender').iloc[:self.limit]
-                else:
-                    df_local['gender'] = db[table]['speaker'].get(map='gender')
+                df_local['gender'] = db[table]['speaker'].get(map='gender')
 
                 got_gender = True
             except (ValueError, audformat.errors.BadKeyError) as e:
                 pass
             try:
                 # same for the target, e.g. "age"
-                if self.limit:
-                    df_local[self.target] = db[table]['speaker'].get(map=self.target).iloc[:self.limit]
-                else:
-                    df_local[self.target] = db[table]['speaker'].get(map=self.target)
+                df_local[self.target] = db[table]['speaker'].get(map=self.target)
                 got_target = True
             except (ValueError, audformat.core.errors.BadKeyError) as e:
                 pass
-            #pd.concat([df, df_local], axis=0, join='outer')
             df = df.append(df_local)
         return df, got_target, got_speaker, got_gender
+
+    def _limit_speakers(self, df, max=20):
+        """ limit number of samples per speaker
+            call e.g. df = limit_speakers(df)            
+        """
+        df_ret = pd.DataFrame()
+        for s in df.speaker.unique():
+            s_df = df[df['speaker'].eq(s)]
+            if s_df.shape[0] < max:
+                df_ret = df_ret.append(s_df)
+            else:
+                df_ret = df_ret.append(s_df.sample(max))
+        return df_ret
+
 
     def split(self):
         """Split the datbase into train and development set"""
@@ -149,6 +189,12 @@ class Dataset:
         storage_train = f'{store}{self.name}_traindf.pkl'
         split_strategy = self.util.config_val('DATA', self.name+'.split_strategy', 'database')
         # 'database' (default), 'speaker_split', 'specified', 'reuse'
+        if os.path.isfile(storage_test) and os.path.isfile(storage_train) and split_strategy != 'speaker_split':
+            self.util.debug(f'splits: reusing previously stored files {storage_test} and {storage_train}')
+            self.df_test = pd.read_pickle(storage_test)
+            self.df_train = pd.read_pickle(storage_train)
+            return
+
         if split_strategy == 'database':
             #  use the splits from the database
             testdf = self.db.tables[self.target+'.test'].df
@@ -196,13 +242,13 @@ class Dataset:
             self.df_train = pd.read_pickle(storage_train)
 
         if self.df_test.shape[0]>0:
-            self.df_test = self.finish_up(self.df_test, 'test', storage_test)
+            self.df_test = self.finish_up(self.df_test, storage_test)
         if self.df_train.shape[0]>0:
-            self.df_train = self.finish_up(self.df_train, 'train', storage_train)
+            self.df_train = self.finish_up(self.df_train, storage_train)
 
-    def finish_up(self, df, name, storage):
-        # Bin target values if they are continous but a classification experiment should be done
-        # self.check_continous_classification(df)
+    def finish_up(self, df, storage):
+        # Bin target values if they are continuous but a classification experiment should be done
+        # self.check_continuous_classification(df)
         # remember the splits for future use
         df.is_labeled = self.is_labeled
         self.df_test.is_labeled = self.is_labeled
@@ -236,7 +282,7 @@ class Dataset:
 
     def map_labels(self, df):
         if df.shape[0]==0 or not self.util.exp_is_classification() \
-            or self.check_continuous_classification() :
+            or self.check_continuous_classification():
             return df
         """Rename the labels and remove the ones that are not needed."""
         target = glob_conf.config['DATA']['target']
@@ -251,7 +297,8 @@ class Dataset:
         try :
             labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
             df = df[df[target].isin(labels)]
-            # self.util.debug(f'Categories: {df[target].unique()}')
+            # remember in case they get encoded later
+            df['class_label'] = df[target]
         except KeyError:
             pass
         return df

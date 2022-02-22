@@ -19,8 +19,13 @@ class Plots():
         fig_dir = self.util.get_path('fig_dir')+'../' # one up because of the runs 
         sampl_num = df.shape[0]
         spkr_num = df.speaker.nunique()
-        female_smpl_num = df[df.gender=='female'].shape[0]
-        male_smpl_num = df[df.gender=='male'].shape[0]
+        sex_col = 'gender'
+        if target == 'gender':
+            sex_col = 'class_label'
+        if self.util.exp_is_classification():
+            target = 'class_label'
+        female_smpl_num = df[df[sex_col]=='female'].shape[0]
+        male_smpl_num = df[df[sex_col]=='male'].shape[0]
         self.util.debug(f'{name}: # samples: {sampl_num} (f: {female_smpl_num}, m: {male_smpl_num}), # speakers: {spkr_num}')
         if df.is_labeled:
             fig, axes = plt.subplots(nrows=1, ncols=2)
