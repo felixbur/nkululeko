@@ -2,16 +2,21 @@
 # Demonstration code to use the ML-experiment framework
 
 import sys
-sys.path.append("./src")
+sys.path.append("../src")
 import experiment as exp
 import configparser
 from util import Util
+import os.path
 
 def main(config_file):
+    util = Util()
+    # test if the configuration file exists
+    if not os.path.isfile(config_file):
+        util.error(f'no such file: {config_file}')
+
     # load one configuration per experiment
     config = configparser.ConfigParser()
     config.read(config_file)
-    util = Util()
     
     # create a new experiment
     expr = exp.Experiment(config)
@@ -37,5 +42,5 @@ def main(config_file):
     print('DONE')
 
 if __name__ == "__main__":
-    main('./demos/exp_emodb.ini')
+    main('./exp_emodb.ini')
 #    main(sys.argv[1]) # use this if you want to state the config file path on command line
