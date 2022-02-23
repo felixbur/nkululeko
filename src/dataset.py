@@ -25,7 +25,7 @@ class Dataset:
         self.target = glob_conf.config['DATA']['target']
         self.util = Util()
         self.plot = Plots()
-        self.limit = int(self.util.config_val('DATA', f'{self.name}.limit', 0))
+        self.limit = int(self.util.config_val_data(self.name, 'limit', 0))
 
     def load(self):
         """Load the dataframe with files, speakers and task labels"""
@@ -43,31 +43,21 @@ class Dataset:
                 f'samples: got targets: {got_target}, got speakers: {got_speaker}, '\
                 f'got sexes: {got_gender}')        
             return
-        data_roots = self.util.config_val('DATA', 'root_folders', False)
-        if data_roots:
-            # if there is a global data rootfolder file, read from there
-            if not os.path.isfile(data_roots):
-                self.util.error(f'no such file: {data_roots}')
-            roots = configparser.ConfigParser()
-            roots.read(data_roots)
-            root = roots['Data_folders'][self.name]
-        else:
-            # else there should be one in the experiment ini
-            root = glob_conf.config['DATA'][self.name]
+        root = self.util.config_val_data(self.name, '', '')
         self.util.debug(f'loading from {root}')
         db = audformat.Database.load(root)
         # map the audio file paths 
         db.map_files(lambda x: os.path.join(root, x))
         # the dataframes (potentially more than one) with at least the file names
-        df_files = self.util.config_val('DATA', f'{self.name}.files_tables', '[\'files\']')
+        df_files = self.util.config_val_data(self.name, 'files_tables', '[\'files\']')
         df_files_tables =  ast.literal_eval(df_files)
         # The label for the target column 
-        self.col_label = self.util.config_val('DATA', f'{self.name}.label', self.target)
+        self.col_label = self.util.config_val_data(self.name, 'label', self.target)
         df, got_target, got_speaker, got_gender = self._get_df_for_lists(db, df_files_tables)
         if False in {got_target, got_speaker, got_gender}:
             try :
             # There might be a separate table with the targets, e.g. emotion or age    
-                df_targets = self.util.config_val('DATA', f'{self.name}.target_tables', f'[\'{self.target}\']')
+                df_targets = self.util.config_val_data(self.name, 'target_tables', f'[\'{self.target}\']')
                 df_target_tables =  ast.literal_eval(df_targets)
                 df_target, got_target2, got_speaker2, got_gender2 = self._get_df_for_lists(db, df_target_tables)
                 got_target = got_target2 or got_target
@@ -96,7 +86,7 @@ class Dataset:
         self.util.debug(f'Loaded database {self.name} with {df.shape[0]} '\
             f'samples: got targets: {got_target}, got speakers: {got_speaker}, '\
             f'got sexes: {got_gender}')
-        if self.util.config_val('DATA', f'{self.name}.value_counts', False):
+        if self.util.config_val_data(self.name, 'value_counts', False):
             if not got_gender or not got_speaker:
                 self.util.error('can\'t plot value counts if no speaker or gender is given')
             else:
@@ -104,13 +94,13 @@ class Dataset:
         self.is_labeled = got_target
         self.df.is_labeled = self.is_labeled
         # Perform some filtering if desired
-        required = self.util.config_val('DATA', f'{self.name}.required', False)
+        required = self.util.config_val_data(self.name, 'required', False)
         if required:
             pre = self.df.shape[0]
             self.df = self.df[self.df[required].notna()]
             post = self.df.shape[0]
             self.util.debug(f'kept {post} samples with {required} (from {pre}, filtered {pre-post})')
-        samples_per_speaker = self.util.config_val('DATA', f'{self.name}.max_samples_per_speaker', False)
+        samples_per_speaker = self.util.config_val_data(self.name, 'max_samples_per_speaker', False)
         if samples_per_speaker:
             pre = self.df.shape[0]
             self.df = self._limit_speakers(self.df, int(samples_per_speaker))            
@@ -181,13 +171,15 @@ class Dataset:
                 df_ret = df_ret.append(s_df.sample(max))
         return df_ret
 
+            
+
 
     def split(self):
         """Split the datbase into train and development set"""
         store = self.util.get_path('store')
         storage_test = f'{store}{self.name}_testdf.pkl'
         storage_train = f'{store}{self.name}_traindf.pkl'
-        split_strategy = self.util.config_val('DATA', self.name+'.split_strategy', 'database')
+        split_strategy = self.util.config_val_data(self.name,'split_strategy', 'database')
         # 'database' (default), 'speaker_split', 'specified', 'reuse'
         if os.path.isfile(storage_test) and os.path.isfile(storage_train) and split_strategy != 'speaker_split':
             self.util.debug(f'splits: reusing previously stored files {storage_test} and {storage_train}')
@@ -257,7 +249,7 @@ class Dataset:
 
     def split_speakers(self):
         """One way to split train and eval sets: Specify percentage of evaluation speakers"""
-        test_percent = int(self.util.config_val('DATA', self.name+'.testsplit', 50))
+        test_percent = int(self.util.config_val_data(self.name, 'testsplit', 50))
         df = self.df
         s_num = df.speaker.nunique()
         test_num = int(s_num * (test_percent/100))        

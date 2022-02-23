@@ -4,6 +4,8 @@ import ast
 import sys
 import glob_conf
 import numpy as np
+import os.path
+import configparser
 
 class Util:
         
@@ -32,6 +34,27 @@ class Util:
         audeer.mkdir(dir_name)
         return dir_name
     
+
+    def config_val_data(self, dataset, key, default):
+        data_roots = self.config_val('DATA', 'root_folders', False)
+        if data_roots:
+            # if there is a global data rootfolder file, read from there
+            if not os.path.isfile(data_roots):
+                self.util.error(f'no such file: {data_roots}')
+            configuration = configparser.ConfigParser()
+            configuration.read(data_roots)
+        else:
+            configuration = glob_conf.config
+        try:
+            # strategy is either train_test (default)  or cross_data
+            if len(key)>0:
+                return configuration['DATA'][dataset+'.'+key]
+            else:
+                return configuration['DATA'][dataset]
+        except KeyError:
+            return default
+
+
     def get_save_name(self):
         """Return a relative path to a name to save the experiment"""
         store = self.get_path('store')
