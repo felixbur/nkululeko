@@ -170,7 +170,7 @@ class Dataset:
 
     def _limit_speakers(self, df, max=20):
         """ limit number of samples per speaker
-            call e.g. df = limit_speakers(df)            
+            the samples are selected randomly          
         """
         df_ret = pd.DataFrame()
         for s in df.speaker.unique():
