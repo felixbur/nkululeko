@@ -33,7 +33,7 @@ There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
 * [How to set up wav2vec embedding](http://blog.syntheticspeech.de/2021/12/03/how-to-set-up-wav2vec-embedding-for-nkululeko/)
 * [How to soft-label a database](http://blog.syntheticspeech.de/2022/01/24/how-to-soft-label-a-database-with-nkululeko/) 
 * [Re-generate the progressing confusion matrix animation wit a different framerate](demos/plot_faster_anim.py)
-* [How to limit/filter a dataset] (http://blog.syntheticspeech.de/2022/02/22/how-to-limit-a-dataset-with-nkululeko/)
+* [How to limit/filter a dataset](http://blog.syntheticspeech.de/2022/02/22/how-to-limit-a-dataset-with-nkululeko/)
 * [Specifying database disk location](http://blog.syntheticspeech.de/2022/02/21/specifying-database-disk-location-with-nkululeko/) 
 
 The framework is targeted at the speech domain and supports experiments where different classifiers are combined with different feature extractors.
