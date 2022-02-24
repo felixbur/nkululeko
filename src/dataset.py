@@ -1,5 +1,6 @@
 # dataset.py
 import audformat
+#import audb
 import pandas as pd
 import ast
 import os
@@ -27,25 +28,49 @@ class Dataset:
         self.plot = Plots()
         self.limit = int(self.util.config_val_data(self.name, 'limit', 0))
 
+    def _get_tables(self):
+        tables = []
+        targets = self.util.config_val_data(self.name, 'target_tables', False)
+        if targets:
+            target_tables = ast.literal_eval(targets)
+            tables += target_tables
+        files = self.util.config_val_data(self.name, 'files_tables', False)
+        if files:
+            files_tables = ast.literal_eval(files)
+            tables += files_tables
+        tests = self.util.config_val_data(self.name, 'test_tables', False)
+        if tests:
+            test_tables = ast.literal_eval(tests)
+            tables += test_tables
+        trains = self.util.config_val_data(self.name, 'train_tables', False)
+        if trains:
+            train_tables = ast.literal_eval(trains)
+            tables += train_tables
+        return tables
+
+
     def load(self):
         """Load the dataframe with files, speakers and task labels"""
-        self.util.debug(f'loading {self.name}')
+        self.util.debug(f'{self.name}: loading ...')
         store = self.util.get_path('store')
         store_file = f'{store}{self.name}.pkl' 
         if os.path.isfile(store_file):
-            self.util.debug(f'reusing previously stored file {store_file}')
+            self.util.debug(f'{self.name}: reusing previously stored file {store_file}')
             self.df = pd.read_pickle(store_file)
             got_target = self.target in self.df
             got_gender = 'gender' in self.df
             got_speaker = 'speaker' in self.df
             self.is_labeled = got_target
-            self.util.debug(f'Loaded database {self.name} with {self.df.shape[0]} '\
+            self.util.debug(f'{self.name}: loaded with {self.df.shape[0]} '\
                 f'samples: got targets: {got_target}, got speakers: {got_speaker}, '\
                 f'got sexes: {got_gender}')        
             return
         root = self.util.config_val_data(self.name, '', '')
-        self.util.debug(f'loading from {root}')
+        self.util.debug(f'{self.name}: loading from {root}')
         db = audformat.Database.load(root)
+        tables = self._get_tables()
+        self.util.debug(f'{self.name}: loading tables: {tables}')
+        #db = audb.load(root, )
         # map the audio file paths 
         db.map_files(lambda x: os.path.join(root, x))
         # the dataframes (potentially more than one) with at least the file names
@@ -83,7 +108,7 @@ class Dataset:
         df.is_labeled = got_target
         self.df = df
         self.db = db
-        self.util.debug(f'Loaded database {self.name} with {df.shape[0]} '\
+        self.util.debug(f'{self.name}: loaded data with {df.shape[0]} '\
             f'samples: got targets: {got_target}, got speakers: {got_speaker}, '\
             f'got sexes: {got_gender}')
         if self.util.config_val_data(self.name, 'value_counts', False):
@@ -99,18 +124,18 @@ class Dataset:
             pre = self.df.shape[0]
             self.df = self.df[self.df[required].notna()]
             post = self.df.shape[0]
-            self.util.debug(f'kept {post} samples with {required} (from {pre}, filtered {pre-post})')
+            self.util.debug(f'{self.name}: kept {post} samples with {required} (from {pre}, filtered {pre-post})')
         samples_per_speaker = self.util.config_val_data(self.name, 'max_samples_per_speaker', False)
         if samples_per_speaker:
             pre = self.df.shape[0]
             self.df = self._limit_speakers(self.df, int(samples_per_speaker))            
             post = self.df.shape[0]
-            self.util.debug(f'kept {post} samples with {samples_per_speaker} per speaker (from {pre}, filtered {pre-post})')
+            self.util.debug(f'{self.name}: kept {post} samples with {samples_per_speaker} per speaker (from {pre}, filtered {pre-post})')
         if self.limit:
             pre = self.df.shape[0]
             self.df = self.df.head(self.limit)
             post = self.df.shape[0]
-            self.util.debug(f'lmited to {post} samples (from {pre}, filtered {pre-post})')
+            self.util.debug(f'{self.name}: lmited to {post} samples (from {pre}, filtered {pre-post})')
 
         # store the dataframe
         self.df.to_pickle(store_file)
@@ -203,18 +228,16 @@ class Dataset:
         elif split_strategy == 'specified':
             traindf, testdf = pd.DataFrame(), pd.DataFrame()
             # try to load some dataframes for testing
-            try:
-                test_tables =  ast.literal_eval(glob_conf.config['DATA'][self.name+'.test_tables'])
+            entry_test_tables = self.util.config_val_data(self.name, 'test_tables', False)
+            if entry_test_tables: 
+                test_tables =  ast.literal_eval(entry_test_tables)
                 for test_table in test_tables:
                     testdf = testdf.append(self.db.tables[test_table].df)
-            except KeyError:
-                pass
-            try:
-                train_tables = ast.literal_eval(glob_conf.config['DATA'][self.name+'.train_tables'])
+            entry_train_tables = self.util.config_val_data(self.name, 'train_tables', False)
+            if entry_train_tables: 
+                train_tables =  ast.literal_eval(entry_train_tables)
                 for train_table in train_tables:
                     traindf = traindf.append(self.db.tables[train_table].df)
-            except KeyError:
-                pass
             # use only the train and test samples that were not perhaps filtered out by an earlier processing step
             self.df_test = self.df.loc[self.df.index.intersection(testdf.index)]
             self.df_train = self.df.loc[self.df.index.intersection(traindf.index)]
@@ -282,7 +305,7 @@ class Dataset:
             # see if a special mapping should be used
             mapping = ast.literal_eval(glob_conf.config['DATA'][f'{self.name}.mapping'])
             df[target] = df[target].map(mapping)
-            self.util.debug(f'for dataset {self.name} mapped {mapping}')
+            self.util.debug(f'{self.name}: mapped {mapping}')
         except KeyError:
             pass
         # remove labels that are not in the labels list
@@ -304,7 +327,7 @@ class Dataset:
     def map_continuous_classification(self, df):
         """Map labels to bins for continuous data that should be classified"""
         if self.check_continuous_classification():
-            self.util.debug('binning continuous variable to categories')
+            self.util.debug('{self.name}: binning continuous variable to categories')
             cat_vals = self.util.continuous_to_categorical(df[self.target])
             df[self.target] = cat_vals
             labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
