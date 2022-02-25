@@ -70,7 +70,7 @@ class Dataset:
         try:
             db = audformat.Database.load(root)
         except FileNotFoundError:
-            self.util.error( f'{self.name}:no database found at {root}')
+            self.util.error( f'{self.name}: no database found at {root}')
         tables = self._get_tables()
         self.util.debug(f'{self.name}: loading tables: {tables}')
         #db = audb.load(root, )
