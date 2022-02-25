@@ -67,7 +67,10 @@ class Dataset:
             return
         root = self.util.config_val_data(self.name, '', '')
         self.util.debug(f'{self.name}: loading from {root}')
-        db = audformat.Database.load(root)
+        try:
+            db = audformat.Database.load(root)
+        except FileNotFoundError:
+            self.util.error( f'{self.name}:no database found at {root}')
         tables = self._get_tables()
         self.util.debug(f'{self.name}: loading tables: {tables}')
         #db = audb.load(root, )
