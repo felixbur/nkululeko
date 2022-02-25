@@ -40,7 +40,7 @@ class Util:
         if data_roots:
             # if there is a global data rootfolder file, read from there
             if not os.path.isfile(data_roots):
-                self.util.error(f'no such file: {data_roots}')
+                self.error(f'no such file: {data_roots}')
             configuration = configparser.ConfigParser()
             configuration.read(data_roots)
         else:
