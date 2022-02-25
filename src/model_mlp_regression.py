@@ -28,6 +28,7 @@ class MLP_Reg_model(Model):
             self.criterion = ConcordanceCorCoeff()
         else:
             self.util.error(f'unknown loss function: {criterion}')
+        self.util.debug(f'training model with {criterion} loss function')
         # set up the data_loaders
         self.trainloader = self.get_loader(feats_train.df, df_train)
         self.testloader = self.get_loader(feats_test.df, df_test)

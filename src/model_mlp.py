@@ -25,6 +25,7 @@ class MLP_model(Model):
         self.class_num = len(labels)
         # set up loss criterion
         self.criterion = torch.nn.CrossEntropyLoss()
+        self.util.debug(f'training model with cross entropy loss function')
         # set up the data_loaders
         self.trainloader = self.get_loader(feats_train.df, df_train)
         self.testloader = self.get_loader(feats_test.df, df_test)
