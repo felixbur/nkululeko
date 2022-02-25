@@ -304,13 +304,12 @@ class Dataset:
             return df
         """Rename the labels and remove the ones that are not needed."""
         target = glob_conf.config['DATA']['target']
-        try :
-            # see if a special mapping should be used
-            mapping = ast.literal_eval(glob_conf.config['DATA'][f'{self.name}.mapping'])
+        # see if a special mapping should be used
+        mappings = self.util.config_val_data(self.name, 'mapping', False)
+        if mappings:        
+            mapping = ast.literal_eval(mappings)
             df[target] = df[target].map(mapping)
             self.util.debug(f'{self.name}: mapped {mapping}')
-        except KeyError:
-            pass
         # remove labels that are not in the labels list
         try :
             labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
