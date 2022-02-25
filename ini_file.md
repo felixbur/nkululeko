@@ -147,6 +147,8 @@
     * **ccc**: concordance correlation coefficient
 * **learning_rate**: The learning rate for ANN models
   * learning_rate = 0.0001
+* **drop**: Adding dropout (after each hidden layer). Value states dropout probability
+  * drop = .5
 
 ### PLOT
 * **name**: special name as a prefix for all plots (stored in *img_dir*).

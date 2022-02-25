@@ -1,4 +1,5 @@
 # model_mlp.py
+from distutils.log import debug
 from sklearn.utils.validation import as_float_array
 from util import Util 
 import glob_conf
@@ -32,7 +33,11 @@ class MLP_model(Model):
         # set up the model
         self.device = self.util.config_val('MODEL', 'device', 'cpu')
         layers = ast.literal_eval(glob_conf.config['MODEL']['layers'])
-        self.model = self.MLP(feats_train.df.shape[1], layers, self.class_num).to(self.device)
+        # with dropout?
+        drop = self.util.config_val('MODEL', 'drop', False)
+        if drop:
+            self.util.debug(f'training with dropout: {drop}')
+        self.model = self.MLP(feats_train.df.shape[1], layers, self.class_num, drop).to(self.device)
         self.learning_rate = float(self.util.config_val('MODEL', 'learning_rate', 0.0001))
         # set up regularization
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
@@ -72,7 +77,7 @@ class MLP_model(Model):
         return torch.utils.data.DataLoader(data, shuffle=True, batch_size=8)
 
     class MLP(torch.nn.Module):
-        def __init__(self, i, layers, o):
+        def __init__(self, i, layers, o, drop):
             super().__init__()
             sorted_layers = sorted(layers.items(), key=lambda x: x[1])
             layers = OrderedDict()
@@ -80,6 +85,8 @@ class MLP_model(Model):
             layers['0_r'] = torch.nn.ReLU()
             for i in range(0, len(sorted_layers)-1):         
                 layers[str(i+1)] = torch.nn.Linear(sorted_layers[i][1], sorted_layers[i+1][1])
+                if drop:
+                    layers[str(i)+'_d'] = torch.nn.Dropout(float(drop))
                 layers[str(i)+'_r'] = torch.nn.ReLU()
             layers[str(len(sorted_layers)+1)] = torch.nn.Linear(sorted_layers[-1][1], o)
             self.linear = torch.nn.Sequential(layers)
@@ -126,6 +133,9 @@ class MLP_model(Model):
         name = f'{self.util.get_exp_name()}_{run}_{epoch:03d}.model'
         self.device = self.util.config_val('MODEL', 'device', 'cpu')
         layers = ast.literal_eval(glob_conf.config['MODEL']['layers'])
-        self.model = self.MLP(self.feats_train.df.shape[1], layers, self.class_num).to(self.device)
+        drop = self.util.config_val('MODEL', 'drop', False)
+        if drop:
+            self.util.debug(f'training with dropout: {drop}')
+        self.model = self.MLP(self.feats_train.df.shape[1], layers, self.class_num, drop).to(self.device)
         self.model.load_state_dict(torch.load(dir+name))
         self.model.eval()
