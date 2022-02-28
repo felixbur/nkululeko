@@ -28,8 +28,8 @@ class MLP_model(Model):
         self.criterion = torch.nn.CrossEntropyLoss()
         self.util.debug(f'training model with cross entropy loss function')
         # set up the data_loaders
-        self.trainloader = self.get_loader(feats_train.df, df_train)
-        self.testloader = self.get_loader(feats_test.df, df_test)
+        self.trainloader = self.get_loader(feats_train.df, df_train, True)
+        self.testloader = self.get_loader(feats_test.df, df_test, False)
         # set up the model
         self.device = self.util.config_val('MODEL', 'device', 'cpu')
         layers = ast.literal_eval(glob_conf.config['MODEL']['layers'])
@@ -70,11 +70,11 @@ class MLP_model(Model):
         _, truths, predictions = self.evaluate_model(self.model, self.testloader, self.device)
         return predictions
 
-    def get_loader(self, df_x, df_y):
+    def get_loader(self, df_x, df_y, shuffle):
         data=[]
         for i in range(len(df_x)):
             data.append([df_x.values[i], df_y[self.target][i]])
-        return torch.utils.data.DataLoader(data, shuffle=True, batch_size=8)
+        return torch.utils.data.DataLoader(data, shuffle=shuffle, batch_size=8)
 
     class MLP(torch.nn.Module):
         def __init__(self, i, layers, o, drop):

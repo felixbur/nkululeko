@@ -277,7 +277,7 @@ class Experiment:
         """Do the runs."""
         self.runmgr.do_runs()
 
-        # access the results of the last run
+        # access the best results all runs
         self.reports = self.runmgr.best_results
         # try to save yourself
         save = self.util.config_val('EXP', 'save', False)
@@ -293,7 +293,25 @@ class Experiment:
         if test_pred_file:
             self.predict_test_and_save(test_pred_file)
 
+        # check if the majority voting for all speakers should be plotted
+        conf_mat_per_speaker = self.util.config_val('PLOT', 'conf_mat_per_speaker', False)
+        if (conf_mat_per_speaker):
+            self._plot_confmat_per_speaker()
+
+
         return self.reports    
+
+    def _plot_confmat_per_speaker(self):
+        best = self._get_best_report(self.reports)
+        truths = best.truths
+        preds = best.preds
+        speakers = self.df_test.speaker.values
+        df = pd.DataFrame(data={'truth':truths, 'pred':preds, 'speaker':speakers})
+        print(df.head(20))
+        best.plot_per_speaker(df, 'result_speaker_mode.png')
+
+    def _get_best_report(self, best_reports):
+        return self.runmgr.get_best_result(best_reports)
 
 
     def print_best_model(self):

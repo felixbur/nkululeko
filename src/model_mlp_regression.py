@@ -30,8 +30,8 @@ class MLP_Reg_model(Model):
             self.util.error(f'unknown loss function: {criterion}')
         self.util.debug(f'training model with {criterion} loss function')
         # set up the data_loaders
-        self.trainloader = self.get_loader(feats_train.df, df_train)
-        self.testloader = self.get_loader(feats_test.df, df_test)
+        self.trainloader = self.get_loader(feats_train.df, df_train, True)
+        self.testloader = self.get_loader(feats_test.df, df_test, False)
         # set up the model
         self.device = self.util.config_val('MODEL', 'device', 'cpu')
         layers = ast.literal_eval(glob_conf.config['MODEL']['layers'])
@@ -59,12 +59,12 @@ class MLP_Reg_model(Model):
         report.result.train = result
         return report
 
-    def get_loader(self, df_x, df_y):
+    def get_loader(self, df_x, df_y, shuffle):
         data_set = self.Dataset(df_y, df_x, self.target)
         loader = torch.utils.data.DataLoader(
             dataset=data_set,
             batch_size=8,
-            shuffle=True,
+            shuffle=shuffle,
             num_workers=3
         )
         return loader

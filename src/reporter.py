@@ -75,16 +75,30 @@ class Reporter:
     def plot_confmatrix(self, plot_name, epoch): 
         if not self.util.exp_is_classification():
             self.continuous_to_categorical()
+        self._plot_confmat(self.truths, self.preds, plot_name, epoch)
+
+    def plot_per_speaker(self, result_df, plot_name):
+        """ Plot a confusion matrix with the mode category per speakers
+            Args:
+                * result_df: a pandas dataframe with columns: preds, truths and speaker
+        """
+        speakers = result_df.speaker.unique()
+        for s in speakers:
+            s_df = result_df[result_df.speaker==s]
+            s_df.pred = s_df.pred.mode()
+
+        self._plot_confmat(result_df.truth, result_df.pred, plot_name, 0)            
+
+    def _plot_confmat(self, truths, preds, plot_name, epoch): 
 
         fig_dir = self.util.get_path('fig_dir')
         labels = self.util.get_labels()
         fig = plt.figure()  # figsize=[5, 5]
-        uar = recall_score(self.truths, self.preds, average='macro')
-        acc = accuracy_score(self.truths, self.preds)
-        cm = confusion_matrix(self.truths, self.preds,  normalize = None) #normalize must be one of {'true', 'pred', 'all', None}
+        uar = recall_score(truths, preds, average='macro')
+        acc = accuracy_score(truths, preds)
+        cm = confusion_matrix(truths, preds,  normalize = None) #normalize must be one of {'true', 'pred', 'all', None}
         if cm.shape[0] != len(labels):
             self.util.error(f'mismatch between confmatrix dim ({cm.shape[0]}) and labels length ({len(labels)}: {labels})')
-
         try:
             disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels).plot(cmap='Blues')
         except ValueError:
