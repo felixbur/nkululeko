@@ -209,12 +209,25 @@ class Dataset:
         storage_train = f'{store}{self.name}_traindf.pkl'
         split_strategy = self.util.config_val_data(self.name,'split_strategy', 'database')
         # 'database' (default), 'speaker_split', 'specified', 'reuse'
-        if os.path.isfile(storage_test) and os.path.isfile(storage_train) and split_strategy != 'speaker_split':
-            self.util.debug(f'splits: reusing previously stored files {storage_test} and {storage_train}')
-            self.df_test = pd.read_pickle(storage_test)
-            self.df_train = pd.read_pickle(storage_train)
-            return
-
+        if split_strategy != 'speaker_split':
+            # check if the splits have been computed previously (not for speaker split)
+            if os.path.isfile(storage_train) and os.path.isfile(storage_test):
+                # if self.util.config_val_data(self.name, 'test_tables', False):
+                self.util.debug(f'splits: reusing previously stored test file {storage_test}')
+                self.df_test = pd.read_pickle(storage_test)
+                self.util.debug(f'splits: reusing previously stored train file {storage_train}')
+                self.df_train = pd.read_pickle(storage_train)
+                return
+            elif os.path.isfile(storage_train):
+                self.util.debug(f'splits: reusing previously stored train file {storage_train}')
+                self.df_train = pd.read_pickle(storage_train)
+                self.df_test = pd.DataFrame()
+                return
+            elif os.path.isfile(storage_test):
+                self.util.debug(f'splits: reusing previously stored test file {storage_test}')
+                self.df_test = pd.read_pickle(storage_test)
+                self.df_train = pd.DataFrame()
+                return
         if split_strategy == 'database':
             #  use the splits from the database
             testdf = self.db.tables[self.target+'.test'].df
