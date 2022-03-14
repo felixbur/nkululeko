@@ -56,7 +56,8 @@ class Reporter:
                     if math.isnan(self.result.test):
                         self.util.debug(self.truths)
                         self.util.debug(self.preds)
-                        self.util.error(f'result is NAN')
+                        self.util.debug(f'result is NAN: setting to -1')
+                        self.result.test = -1
                 else:
                     self.util.error(f'unknown measure: {self.measure}')
 

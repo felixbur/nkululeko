@@ -62,6 +62,10 @@ class Wav2vec2(Featureset):
         else:
             self.util.debug('reusing extracted wav2vec2 embeddings')
             self.df = pd.read_pickle(storage)
+            if self.df.isnull().values.any():
+                nanrows = self.df.columns[self.df.isna().any()].tolist()
+                print(nanrows)
+                self.util.error(f'got nan: {self.df.shape} {self.df.isnull().sum().sum()}')
 
 
     def get_embeddings(self, signal, sampling_rate):

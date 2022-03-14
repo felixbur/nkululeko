@@ -67,7 +67,6 @@ class Runmanager:
             plot_epochs = self.util.config_val('PLOT', 'epochs', 0)
             # for all epochs
             for epoch in range(int(self.util.config_val('EXP', 'epochs', 1))):
-                self.util.debug(f'epoch {epoch}')
                 self.model.set_id(run, epoch)
                 self.model.train()
                 report = self.model.predict()
