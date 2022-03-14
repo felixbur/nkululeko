@@ -22,7 +22,7 @@ class Plots():
         sex_col = 'gender'
         if target == 'gender':
             sex_col = 'class_label'
-        if self.util.exp_is_classification():
+        if self.util.exp_is_classification() and target != 'gender':
             target = 'class_label'
         female_smpl_num = df[df[sex_col]=='female'].shape[0]
         male_smpl_num = df[df[sex_col]=='male'].shape[0]
