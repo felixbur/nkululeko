@@ -92,6 +92,7 @@
       * with_os = *with added opensmile eGemaps features*
       * features = *python list of selected features to be used (all others ignored)*
     * **xbow**: [open crossbow](https://github.com/openXBOW) features codebook computed from open smile features
+      * xbow = *path to xbow root folder (containing xbow.jar)*
       * size = 500 *(codebook size)*
       * assignments = 1 *(number of words in the bag representation where the counter is increased for each input LLD)*
       * with_os = *with added opensmile eGemaps features*
