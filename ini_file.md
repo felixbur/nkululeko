@@ -55,6 +55,8 @@
       * emodb.train_tables = ['emo.train']
     * **speaker_split**: split samples randomly but speaker disjunct, given a percentage of speakers for the test set.
       * emodb.testsplit = 50
+    * **random**: split samples randomly (but NOT speaker disjunct, e.g. no speaker info given or each sample a speaker), given a percentage of samples for the test set.
+      * emodb.testsplit = 50
     * **reuse**: reuse the splits after a *speaker_split* run to save time with feature extraction.
     * **train**: use the entire database for training
     * **test**: use the entire database for evaluation

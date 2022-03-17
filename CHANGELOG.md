@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Version 1.0.0
+Version 16.0.0
 -------------
 
-* First working version
+* Added random sample splits
 

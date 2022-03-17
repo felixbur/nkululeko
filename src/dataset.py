@@ -268,6 +268,8 @@ class Dataset:
                 pass # if the dataframe is empty
         elif split_strategy == 'speaker_split':
             self.split_speakers()
+        elif split_strategy == 'random':
+            self.random_split()
         elif split_strategy == 'reuse':
             self.df_test = pd.read_pickle(storage_test)
             self.df_train = pd.read_pickle(storage_train)
@@ -294,6 +296,19 @@ class Dataset:
         test_num = int(s_num * (test_percent/100))        
         test_spkrs =  sample(list(df.speaker.unique()), test_num)
         self.df_test = df[df.speaker.isin(test_spkrs)]
+        self.df_train = df[~df.index.isin(self.df_test.index)]
+        self.util.debug(f'{self.name}: [{self.df_train.shape[0]}/{self.df_test.shape[0]}] samples in train/test')
+        # because this generates new train/test sample quantaties, the feature extraction has to be done again
+        glob_conf.config['FEATS']['needs_feature_extraction'] = 'True'
+
+    def random_split(self):
+        """One way to split train and eval sets: Specify percentage of random samples"""
+        test_percent = int(self.util.config_val_data(self.name, 'testsplit', 50))
+        df = self.df
+        s_num = len(df)
+        test_num = int(s_num * (test_percent/100))        
+        test_smpls =  sample(list(df.index), test_num)
+        self.df_test = df[df.index.isin(test_smpls)]
         self.df_train = df[~df.index.isin(self.df_test.index)]
         self.util.debug(f'{self.name}: [{self.df_train.shape[0]}/{self.df_test.shape[0]}] samples in train/test')
         # because this generates new train/test sample quantaties, the feature extraction has to be done again
