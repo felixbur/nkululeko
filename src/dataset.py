@@ -27,6 +27,9 @@ class Dataset:
         self.util = Util()
         self.plot = Plots()
         self.limit = int(self.util.config_val_data(self.name, 'limit', 0))
+        self.start_fresh = self.util.config_val('DATA', 'no_reuse', False)
+        self.is_labeled, self.got_speaker, self.got_gender = False, False, False 
+
 
     def _get_tables(self):
         tables = []
@@ -53,17 +56,17 @@ class Dataset:
         """Load the dataframe with files, speakers and task labels"""
         self.util.debug(f'{self.name}: loading ...')
         store = self.util.get_path('store')
-        store_file = f'{store}{self.name}.pkl' 
-        if os.path.isfile(store_file):
+        store_file = f'{store}{self.name}.pkl'
+        self.got_speaker, self.got_gender = False, False 
+        if os.path.isfile(store_file and not self.start_fresh):
             self.util.debug(f'{self.name}: reusing previously stored file {store_file}')
             self.df = pd.read_pickle(store_file)
-            got_target = self.target in self.df
-            got_gender = 'gender' in self.df
-            got_speaker = 'speaker' in self.df
-            self.is_labeled = got_target
+            self.is_labeled = self.target in self.df
+            self.got_gender = 'gender' in self.df
+            self.got_speaker = 'speaker' in self.df
             self.util.debug(f'{self.name}: loaded with {self.df.shape[0]} '\
-                f'samples: got targets: {got_target}, got speakers: {got_speaker}, '\
-                f'got sexes: {got_gender}')        
+                f'samples: got targets: {self.is_labeled}, got speakers: {self.got_speaker}, '\
+                f'got sexes: {self.got_gender}')        
             return
         root = self.util.config_val_data(self.name, '', '')
         self.util.debug(f'{self.name}: loading from {root}')
@@ -81,16 +84,16 @@ class Dataset:
         df_files_tables =  ast.literal_eval(df_files)
         # The label for the target column 
         self.col_label = self.util.config_val_data(self.name, 'label', self.target)
-        df, got_target, got_speaker, got_gender = self._get_df_for_lists(db, df_files_tables)
-        if False in {got_target, got_speaker, got_gender}:
+        df, self.is_labeled, self.got_speaker, self.got_gender = self._get_df_for_lists(db, df_files_tables)
+        if False in {self.is_labeled, self.got_speaker, self.got_gender}:
             try :
             # There might be a separate table with the targets, e.g. emotion or age    
                 df_targets = self.util.config_val_data(self.name, 'target_tables', f'[\'{self.target}\']')
                 df_target_tables =  ast.literal_eval(df_targets)
                 df_target, got_target2, got_speaker2, got_gender2 = self._get_df_for_lists(db, df_target_tables)
-                got_target = got_target2 or got_target
-                got_speaker = got_speaker2 or got_speaker
-                got_gender = got_gender2 or got_gender
+                self.is_labeled = got_target2 or self.is_labeled
+                self.got_speaker = got_speaker2 or self.got_speaker
+                self.got_gender = got_gender2 or self.got_gender
                 if got_target2:
                     df[self.target] = df_target[self.target]
                 if got_speaker2:
@@ -105,21 +108,22 @@ class Dataset:
             df = df[df.gender==s]
         except KeyError:
             pass 
-        if got_target:
+        if self.is_labeled:
             # remember the target in case they get labelencoded later
             df['class_label'] = df[self.target]
-        df.is_labeled = got_target
+        df.is_labeled = self.is_labeled
+        df.got_gender = self.got_gender
+        df.got_speaker = self.got_speaker
         self.df = df
         self.db = db
         self.util.debug(f'{self.name}: loaded data with {df.shape[0]} '\
-            f'samples: got targets: {got_target}, got speakers: {got_speaker}, '\
-            f'got sexes: {got_gender}')
+            f'samples: got targets: {self.is_labeled}, got speakers: {self.got_speaker}, '\
+            f'got sexes: {self.got_gender}')
         if self.util.config_val_data(self.name, 'value_counts', False):
-            if not got_gender or not got_speaker:
+            if not self.got_gender or not self.got_speaker:
                 self.util.error('can\'t plot value counts if no speaker or gender is given')
             else:
                 self.plot.describe_df(self.name, df, self.target, f'{self.name}_distplot.png')
-        self.is_labeled = got_target
         self.df.is_labeled = self.is_labeled
         # Perform some filtering if desired
         required = self.util.config_val_data(self.name, 'required', False)
@@ -138,14 +142,14 @@ class Dataset:
             pre = self.df.shape[0]
             self.df = self.df.head(self.limit)
             post = self.df.shape[0]
-            self.util.debug(f'{self.name}: lmited to {post} samples (from {pre}, filtered {pre-post})')
+            self.util.debug(f'{self.name}: limited to {post} samples (from {pre}, filtered {pre-post})')
 
         # store the dataframe
         self.df.to_pickle(store_file)
 
 
     def _get_df_for_lists(self, db, df_files):
-        got_target, got_speaker, got_gender = False, False, False
+        is_labeled, got_speaker, got_gender = False, False, False
         df = pd.DataFrame()
         for table in df_files:
             source_df = db.tables[table].df
@@ -155,7 +159,7 @@ class Dataset:
             try:
                 # try to get the target values
                 df_local[self.target] = source_df[self.col_label]
-                got_target = True
+                is_labeled = True
             except (KeyError, ValueError, audformat.errors.BadKeyError) as e:
                 pass
             try:
@@ -180,11 +184,11 @@ class Dataset:
             try:
                 # same for the target, e.g. "age"
                 df_local[self.target] = db[table]['speaker'].get(map=self.target)
-                got_target = True
+                is_labeled = True
             except (ValueError, audformat.core.errors.BadKeyError) as e:
                 pass
             df = df.append(df_local)
-        return df, got_target, got_speaker, got_gender
+        return df, is_labeled, got_speaker, got_gender
 
     def _limit_speakers(self, df, max=20):
         """ limit number of samples per speaker
@@ -209,7 +213,7 @@ class Dataset:
         storage_train = f'{store}{self.name}_traindf.pkl'
         split_strategy = self.util.config_val_data(self.name,'split_strategy', 'database')
         # 'database' (default), 'speaker_split', 'specified', 'reuse'
-        if split_strategy != 'speaker_split':
+        if split_strategy != 'speaker_split' and not self.start_fresh:
             # check if the splits have been computed previously (not for speaker split)
             if os.path.isfile(storage_train) and os.path.isfile(storage_test):
                 # if self.util.config_val_data(self.name, 'test_tables', False):

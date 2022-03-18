@@ -47,11 +47,12 @@ class Experiment:
         """Load all databases specified in the configuration and map the labels"""
         ds = ast.literal_eval(glob_conf.config['DATA']['databases'])
         self.datasets = {}
+        self.got_speaker, self.got_gender = False, False
         for d in ds:
             if d == 'ravdess':
                 data = Ravdess()
             else:
-                ds_type = self.util.config_val('DATA', d+'.type', 'audformat')
+                ds_type = self.util.config_val_data(d, 'type', 'audformat')
                 if ds_type == 'audformat':
                     data = Dataset(d)
                 elif ds_type == 'csv':
@@ -59,6 +60,10 @@ class Experiment:
                 else:
                     self.util.error(f'unknown data type: {ds_type}')
             data.load()
+            if data.got_gender:
+                self.got_gender = True
+            if data.got_speaker:
+                self.got_speaker = True
             self.datasets.update({d: data})
         self.target = self.util.config_val('DATA', 'target', 'emotion')
 
@@ -91,6 +96,11 @@ class Experiment:
                 self.df_test.is_labeled = d.is_labeled
         else:
             self.util.error(f'unknown strategy: {strategy}')
+
+        self.df_train.got_gender = self.got_gender
+        self.df_train.got_speaker = self.got_speaker
+        self.df_test.got_gender = self.got_gender
+        self.df_test.got_speaker = self.got_speaker
 
         # encode the labels
         if self.util.exp_is_classification():
@@ -126,7 +136,8 @@ class Experiment:
             glob_conf.set_label_encoder(self.label_encoder)
         else:
             pass
-        self.util.debug(f'{self.df_test.speaker.nunique()} speakers in test and {self.df_train.speaker.nunique()} speakers in train')
+        if self.got_speaker:
+            self.util.debug(f'{self.df_test.speaker.nunique()} speakers in test and {self.df_train.speaker.nunique()} speakers in train')
         augment = self.util.config_val('DATA', 'augment', 0)
         if augment:
             self.augment_train()

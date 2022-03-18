@@ -76,6 +76,8 @@
   * labels = ['anger', 'boredom', 'disgust', 'fear', 'happiness', 'neutral', 'sadness']
 * **bins**: array of integers to be used for binning continous data 
   * bins  = [-100, 40, 50, 60, 70, 100]
+* **no_reuse**: don't re-use any tables but start fresh
+  * no_reuse = False
 ### FEATS
 * **type**: the type of features
   * type = os
@@ -95,9 +97,9 @@
       * features = *python list of selected features to be used (all others ignored)*
     * **xbow**: [open crossbow](https://github.com/openXBOW) features codebook computed from open smile features
       * xbow = *path to xbow root folder (containing xbow.jar)*
-      * size = 500 *(codebook size)*
-      * assignments = 1 *(number of words in the bag representation where the counter is increased for each input LLD)*
-      * with_os = *with added opensmile eGemaps features*
+      * size = 500 *(codebook size, rule of thumb: should grow with datasize)*
+      * assignments = 10 *(number of words in the bag representation where the counter is increased for each input LLD, rule of thumb: should grow/shrink with codebook size)*
+      * with_os = False *with added opensmile eGemaps functionals*
 * **needs_feature_extraction**: if features should be extracted newly even if already stored
   * needs_feature_extraction = False
 * **scale**: scale the features

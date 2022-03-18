@@ -46,7 +46,7 @@ class Openxbow(Featureset):
             # get the size of the codebook
             size = self.util.config_val('FEATS', 'size', 500)
             # get the number of assignements
-            assignments = self.util.config_val('FEATS', 'assignments', 1)
+            assignments = self.util.config_val('FEATS', 'assignments', 10)
             # differentiate between train and test
             if self.is_train:
                 # store the codebook
