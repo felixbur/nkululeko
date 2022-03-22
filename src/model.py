@@ -1,11 +1,14 @@
 # model.py
 from util import Util 
+import pandas as pd
+import numpy as np
 import glob_conf
 import sklearn.utils
 from reporter import Reporter
 import ast
 from sklearn.model_selection import GridSearchCV
 import pickle
+from sklearn.model_selection import LeaveOneGroupOut
 
 class Model:
     """Generic model class for linear (non-neural) algorithms"""
@@ -14,33 +17,80 @@ class Model:
         """Constructor taking the configuration and all dataframes"""
         self.df_train, self.df_test, self.feats_train, self.feats_test = df_train, df_test, feats_train, feats_test
         self.util = Util()
-        target = glob_conf.config['DATA']['target']
+        self.target = self.util.config_val('DATA', 'target', 'emotion')
         self.run = 0
         self.epoch = 0
+        self.loso = False
 
     def set_id(self, run, epoch):
         self.run = run
         self.epoch = epoch
  
+    def logo(self):
+        # ignore train and test sets and do a "leave one speaker out"  evaluation
+        self.util.debug('ignoring splits and doing LOSO')
+        feats = self.feats_train.df.append(self.feats_test.df)
+        annos = self.df_train.append(self.df_test)
+        targets = annos[self.target]
+        logo = LeaveOneGroupOut()
+        truths = []
+        preds = []
+        speakers = annos['speaker']
+        g_index = 0
+        # leave-one-speaker loop    
+        for train_index, test_index in logo.split(
+            feats, 
+            targets, 
+            groups=speakers,
+        ):
+            train_x = feats.iloc[train_index]
+            train_y = targets[train_index]
+            self.clf.fit(train_x, train_y)
+            
+            truth_x = feats.iloc[test_index]
+            truth_y = targets[test_index]
+            predict_y = self.clf.predict(truth_x)
+
+            report = Reporter(truth_y.astype(float), predict_y, self.run, self.epoch)
+            self.util.debug(f'result for speaker {g_index}: {report.get_result().get_test_result()} ')
+
+            truths.append(truth_y)
+            preds.append(predict_y)
+            g_index += 1
+            
+        # combine speaker folds
+        truth = pd.concat(truths)
+        truth.name = 'truth'
+        pred = pd.Series(
+            np.concatenate(preds),
+            index=truth.index,
+            name='prediction',
+        )
+        self.truths = truth
+        self.preds = pred        
 
     def train(self):
         """Train the model"""
-        target = glob_conf.config['DATA']['target']
+        self.loso = self.util.config_val('MODEL', 'loso', False)
+        if self.loso:
+            self.logo()
+            return
         # check for NANs in the features
         if self.feats_train.df.isna().to_numpy().any():
             self.util.error('can\'t train: NANs exist')
         # remove labels from features
         feats = self.feats_train.df.to_numpy()
         # compute class weights
-        if self.util.config_val('MODEL', 'class_weight', 0):      
+        if self.util.config_val('MODEL', 'class_weight', False):      
             self.classes_weights = sklearn.utils.class_weight.compute_sample_weight(
                 class_weight='balanced',
-                y=self.df_train[target]
+                y=self.df_train[self.target]
             )
 
-        try:
+        tuning_params = self.util.config_val('MODEL', 'tuning_params', False)
+        if tuning_params:
             # tune the model meta parameters
-            tuning_params = ast.literal_eval(glob_conf.config['MODEL']['tuning_params'])
+            tuning_params = ast.literal_eval(tuning_params)
             tuned_params={}
             try:
                 scoring = glob_conf.config['MODEL']['scoring']
@@ -52,40 +102,43 @@ class Model:
             self.util.debug(f'tuning on {tuned_params}')
             self.clf = GridSearchCV(self.clf, tuned_params, refit = True, verbose = 3, scoring=scoring)
             try: 
-                class_weight = self.util.config_val('MODEL', 'class_weight', 0)
+                class_weight = self.util.config_val('MODEL', 'class_weight', False)
                 if class_weight:
                     self.util.debug('using class weight')
-                    self.clf.fit(feats, self.df_train[target], sample_weight=self.classes_weights)
+                    self.clf.fit(feats, self.df_train[self.target], sample_weight=self.classes_weights)
                 else:
-                    self.clf.fit(feats, self.df_train[target])    
+                    self.clf.fit(feats, self.df_train[self.target])    
             except KeyError:
-                self.clf.fit(feats, self.df_train[target])
+                self.clf.fit(feats, self.df_train[self.target])
             self.util.debug(f'winner parameters: {self.clf.best_params_}')
-        except KeyError:
-            try: 
-                class_weight = glob_conf.config['MODEL']['class_weight']
-                if class_weight:
-                    self.util.debug('using class weight')
-                    self.clf.fit(feats, self.df_train[target], sample_weight=self.classes_weights)
-            except KeyError:
-                self.clf.fit(feats, self.df_train[target])
+        else:
+            class_weight = self.util.config_val('MODEL', 'class_weight', False)
+            if class_weight:
+                self.util.debug('using class weight')
+                self.clf.fit(feats, self.df_train[self.target], sample_weight=self.classes_weights)
+            else:
+                self.clf.fit(feats, self.df_train[self.target])
 
     def get_predictions(self):
         predictions =  self.clf.predict(self.feats_test.df.to_numpy())
         return predictions
 
     def predict(self):
+        if self.loso:
+            report = Reporter(self.truths.astype(float), self.preds, self.run, self.epoch)
+            return report
         """Predict the whole eval feature set"""
         predictions = self.get_predictions()
-        report = Reporter(self.df_test[glob_conf.config['DATA']['target']]\
+        report = Reporter(self.df_test[self.target]\
             .to_numpy().astype(float), predictions, self.run, self.epoch)
         return report
 
     def predict_sample(self, features):
         """Predict one sample"""
         prediction = {}
+        # get the class probabilities
         predictions = self.clf.predict_proba(features)
-        pred = self.clf.predict(features)
+        # pred = self.clf.predict(features)
         for i in range(len(self.clf.classes_)):
             cat = self.clf.classes_[i]
             prediction[cat] = predictions[0][i]

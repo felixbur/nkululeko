@@ -138,6 +138,8 @@
   * layers = {'l1':8, 'l2':4}
 * **class_weight**: add class_weight to linear classifier (XGB, SVM) fit methods for imbalanced data (True or False)
   * class_weight = False
+* **loso**: leave-one-speaker-out. Will disregard train/dev splits and do a LOSO evaluation
+  * loso = False
 * **save**: whether to save all model states (per epoch) to disk (True or False)
   * save = False
 * **loss**: A  loss function for ANN models
