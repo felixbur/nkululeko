@@ -140,6 +140,8 @@
   * class_weight = False
 * **loso**: leave-one-speaker-out. Will disregard train/dev splits and do a LOSO evaluation
   * loso = False
+* **k_fold_cross**: k-fold-cross validation. Will disregard train/dev splits and do a stratified cross validation (meaning that classes are balanced across folds)
+  * k_fold_cross = 10
 * **save**: whether to save all model states (per epoch) to disk (True or False)
   * save = False
 * **loss**: A  loss function for ANN models

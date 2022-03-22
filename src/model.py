@@ -9,6 +9,8 @@ import ast
 from sklearn.model_selection import GridSearchCV
 import pickle
 from sklearn.model_selection import LeaveOneGroupOut
+from sklearn.model_selection import StratifiedKFold
+
 
 class Model:
     """Generic model class for linear (non-neural) algorithms"""
@@ -25,29 +27,67 @@ class Model:
     def set_id(self, run, epoch):
         self.run = run
         self.epoch = epoch
- 
-    def logo(self):
+
+    def _x_fold_cross(self):
+        # ignore train and test sets and do a "leave one speaker out"  evaluation
+        self.util.debug(f'ignoring splits and doing {self.xfoldx} fold cross validation')
+        feats = self.feats_train.df.append(self.feats_test.df)
+        annos = self.df_train.append(self.df_test)
+        targets = annos[self.target]
+        _skf = StratifiedKFold(n_splits=int(self.xfoldx))
+        truths = []
+        preds = []
+        g_index = 0
+        # leave-one-speaker loop    
+        for train_index, test_index in _skf.split(
+            feats, 
+            targets,
+        ):
+            train_x = feats.iloc[train_index].to_numpy()
+            train_y = targets[train_index]
+            self.clf.fit(train_x, train_y)
+            truth_x = feats.iloc[test_index].to_numpy()
+            truth_y = targets[test_index]
+            predict_y = self.clf.predict(truth_x)
+            report = Reporter(truth_y.astype(float), predict_y, self.run, self.epoch)
+            self.util.debug(f'result for fold {g_index}: {report.get_result().get_test_result()} ')
+            truths.append(truth_y)
+            preds.append(predict_y)
+            g_index += 1
+            
+        # combine speaker folds
+        truth = pd.concat(truths)
+        truth.name = 'truth'
+        pred = pd.Series(
+            np.concatenate(preds),
+            index=truth.index,
+            name='prediction',
+        )
+        self.truths = truth
+        self.preds = pred        
+
+    def _logo(self):
         # ignore train and test sets and do a "leave one speaker out"  evaluation
         self.util.debug('ignoring splits and doing LOSO')
         feats = self.feats_train.df.append(self.feats_test.df)
         annos = self.df_train.append(self.df_test)
         targets = annos[self.target]
-        logo = LeaveOneGroupOut()
+        _logo = LeaveOneGroupOut()
         truths = []
         preds = []
         speakers = annos['speaker']
         g_index = 0
         # leave-one-speaker loop    
-        for train_index, test_index in logo.split(
+        for train_index, test_index in _logo.split(
             feats, 
             targets, 
             groups=speakers,
         ):
-            train_x = feats.iloc[train_index]
+            train_x = feats.iloc[train_index].to_numpy()
             train_y = targets[train_index]
             self.clf.fit(train_x, train_y)
             
-            truth_x = feats.iloc[test_index]
+            truth_x = feats.iloc[test_index].to_numpy()
             truth_y = targets[test_index]
             predict_y = self.clf.predict(truth_x)
 
@@ -71,10 +111,17 @@ class Model:
 
     def train(self):
         """Train the model"""
+        # first check if leave on  speaker out is wanted
         self.loso = self.util.config_val('MODEL', 'loso', False)
         if self.loso:
-            self.logo()
+            self._logo()
             return
+        # then if x fold cross validation is wanted
+        self.xfoldx = self.util.config_val('MODEL', 'k_fold_cross', False)
+        if self.xfoldx:
+            self._x_fold_cross()
+            return
+
         # check for NANs in the features
         if self.feats_train.df.isna().to_numpy().any():
             self.util.error('can\'t train: NANs exist')
@@ -124,7 +171,7 @@ class Model:
         return predictions
 
     def predict(self):
-        if self.loso:
+        if self.loso or self.xfoldx:
             report = Reporter(self.truths.astype(float), self.preds, self.run, self.epoch)
             return report
         """Predict the whole eval feature set"""

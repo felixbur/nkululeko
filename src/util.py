@@ -73,7 +73,11 @@ class Util:
         ds = '_'.join(ast.literal_eval(glob_conf.config['DATA']['databases']))
         mt = glob_conf.config['MODEL']['type']
         ft = glob_conf.config['FEATS']['type']
-        return f'{ds}_{mt}_{ft}'
+        set = self.config_val('FEATS', 'set', False)
+        if set:
+            return f'{ds}_{mt}_{ft}_{set}'
+        else:
+            return f'{ds}_{mt}_{ft}'
 
     def get_plot_name(self):
         try:

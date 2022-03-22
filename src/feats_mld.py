@@ -69,20 +69,14 @@ class MLD_set(Featureset):
         if extract or not os.path.isfile(storage):
             self.util.debug('extracting openSmile features, this might take a while...')
             smile = opensmile.Smile(
-            feature_set=opensmile.FeatureSet.GeMAPSv01b,
-            feature_level=opensmile.FeatureLevel.Functionals,)
-            df = smile.process_files(self.data_df.index)
+                feature_set=opensmile.FeatureSet.GeMAPSv01b,
+                feature_level=opensmile.FeatureLevel.Functionals,)
+            df = smile.process_index(self.data_df.index)
             df.to_pickle(storage)
-            self.util.set_config_val('FEATS', 'needs_feature_extraction', '0')
+            self.util.set_config_val('FEATS', 'needs_feature_extraction', False)
         else:
             self.util.debug('OS: reusing already extracted features.')
             df = pd.read_pickle(storage)
-        # drop the multiindex  if still there
-        try:
-            df.index = df.index.droplevel(1)
-            df.index = df.index.droplevel(1)
-        except IndexError:
-            pass
         # replace NANa with column means values
         self.util.debug('OS extractor: checking for NANs...')
         for i, col in enumerate(df.columns):
