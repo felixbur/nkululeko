@@ -1,12 +1,13 @@
 ```Mermaid
 classDiagram
-   Experiment <--> Dataset
-   Experiment <--> RunManager
-   Experiment <--> Augmenter
-   Experiment <--> FeatureSet
-   Experiment <--> Dataset
+   Experiment --> Dataset
+   Experiment --> RunManager
+   Experiment --> Augmenter
+   Experiment --> FeatureSet
+   Experiment <-- Configuration
+   RunManager --> Model
+   Experiment --> Reporter
    Dataset <|-- Dataset_csv
-   RunManager <--> Model
    Model <|-- Model_svm
    Model <|-- Model_xgb
    Model <|-- Model_mlp
@@ -22,6 +23,9 @@ classDiagram
 
    class Experiment{
        + Report reports
+       + Dataframe df_test
+       + Dataframe df_train
+
        + load_datasets()
        + fill_train_and_tests()
        + plot_distribution()
