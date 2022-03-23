@@ -70,6 +70,8 @@
   * emodb.required = gender
 * **db_name.max_samples_per_speaker**: maximum number of samples per speaker (for leveling data where same speakers have a large number of samples)
   * emodb.max_samples_per_speaker = 20
+* **db_name.min_duration_of_sample**: limit the samples to a minimum length (in seconds)
+  * emodb.min_duration_of_sample = 0.0
 * **target**: the task name, e.g. *age* or *emotion*
   * target = emotion
 * **labels**: for classification experiments: the names of the categories (is also used for regression when binning the values)

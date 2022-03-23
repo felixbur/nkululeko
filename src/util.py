@@ -6,6 +6,8 @@ import glob_conf
 import numpy as np
 import os.path
 import configparser
+import audformat
+import pandas as pd
 
 class Util:
         
@@ -68,6 +70,12 @@ class Util:
         audeer.mkdir(dir_name)
         return dir_name
 
+    def make_segmented_index(self, df):
+        if len(df)==0:
+            return df
+        if not isinstance(df.index, pd.MultiIndex):
+            df.index = audformat.utils.to_segmented_index(df.index, allow_nat=False)
+        return df
 
     def get_exp_name(self):
         ds = '_'.join(ast.literal_eval(glob_conf.config['DATA']['databases']))

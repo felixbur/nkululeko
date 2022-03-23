@@ -8,8 +8,8 @@ from random import sample
 from util import Util
 from plots import Plots
 import glob_conf
-import configparser
 import os.path
+from audformat.utils import duration
 
 class Dataset:
     """ Class to represent datasets"""
@@ -143,6 +143,19 @@ class Dataset:
             self.df = self.df.head(self.limit)
             post = self.df.shape[0]
             self.util.debug(f'{self.name}: limited to {post} samples (from {pre}, filtered {pre-post})')
+
+        min_dur = self.util.config_val_data(self.name, 'min_duration_of_sample', False)
+        if min_dur:
+            self.df = self.util.make_segmented_index(self.df)
+            pre = self.df.shape[0]
+            for i in self.df.index:
+                start = i[1]
+                end = i[2]
+                dur = (end - start).total_seconds()
+                if dur <= float(min_dur):
+                    self.df = self.df.drop(i, axis=0)
+            post = self.df.shape[0]
+            self.util.debug(f'{self.name}: dropped {pre-post} shorter than {min_dur} seconds (from {pre} to {post} samples)')
 
         # store the dataframe
         self.df.to_pickle(store_file)

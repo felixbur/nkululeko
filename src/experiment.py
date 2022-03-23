@@ -18,7 +18,9 @@ import audformat
 
 
 class Experiment:
-    """Main class specifying an experiment"""
+    """Main class specifying an experiment
+    
+    """
     
 
     def __init__(self, config_obj):
@@ -35,13 +37,6 @@ class Experiment:
     def set_globals(self, config_obj):
         """install a config object in the global space"""
         glob_conf.init_config(config_obj)
-
-    def check_segmented_index(self, df):
-        if len(df)==0:
-            return df
-        if not isinstance(df.index, pd.MultiIndex):
-            df.index = audformat.utils.to_segmented_index(df.index, allow_nat=False)
-        return df
 
     def load_datasets(self):
         """Load all databases specified in the configuration and map the labels"""
@@ -78,21 +73,21 @@ class Experiment:
             for dn in train_dbs:
                 d = self.datasets[dn]
                 d.prepare_labels()
-                self.df_train = self.df_train.append(self.check_segmented_index(d.df))
+                self.df_train = self.df_train.append(self.util.make_segmented_index(d.df))
                 self.df_train.is_labeled = d.is_labeled
             for dn in test_dbs:
                 d = self.datasets[dn]
                 d.prepare_labels()
-                self.df_test = self.df_test.append(self.check_segmented_index(d.df))
+                self.df_test = self.df_test.append(self.util.make_segmented_index(d.df))
                 self.df_test.is_labeled = d.is_labeled
         elif strategy == 'train_test':
             # default: train vs. test combined from all datasets
             for d in self.datasets.values():
                 d.split()
                 d.prepare_labels()
-                self.df_train = self.df_train.append(self.check_segmented_index(d.df_train))
+                self.df_train = self.df_train.append(self.util.make_segmented_index(d.df_train))
                 self.df_train.is_labeled = d.is_labeled
-                self.df_test = self.df_test.append(self.check_segmented_index(d.df_test))
+                self.df_test = self.df_test.append(self.util.make_segmented_index(d.df_test))
                 self.df_test.is_labeled = d.is_labeled
         else:
             self.util.error(f'unknown strategy: {strategy}')
@@ -110,14 +105,14 @@ class Experiment:
                     test_cats = self.df_test['class_label'].unique()
                 else:
                     # if there is no target, copy a dummy label
-                    self.df_test = self.add_random_target(self.df_test)
+                    self.df_test = self._add_random_target(self.df_test)
                 train_cats = self.df_train['class_label'].unique()
             else:
                 if self.df_test.is_labeled:
                     test_cats = self.df_test[self.target].unique()
                 else:   
                     # if there is no target, copy a dummy label
-                    self.df_test = self.add_random_target(self.df_test)
+                    self.df_test = self._add_random_target(self.df_test)
                 train_cats = self.df_train[self.target].unique()
             if self.df_test.is_labeled:
                 if type(test_cats) == numpy.ndarray:
@@ -144,7 +139,7 @@ class Experiment:
         if self.util.config_val('PLOT', 'value_counts', False):
             self.plot_distribution()
     
-    def add_random_target(self, df):
+    def _add_random_target(self, df):
         labels = self.util.get_labels()
         a = [None]*len(df)
         for i in range(0, len(df)):
@@ -190,7 +185,7 @@ class Experiment:
         feats_type = self.util.config_val('FEATS', 'type', 'os')
         feats_name = "_".join(ast.literal_eval(glob_conf.config['DATA']['databases']))
         feats_name = f'{feats_name}_{strategy}_{feats_type}'   
-        scale = 1
+        _scale = 1
         if feats_type=='os':
             self.feats_train = Opensmileset(f'{feats_name}_train', df_train)
             self.feats_train.extract()
@@ -257,12 +252,12 @@ class Experiment:
                 train_specs = Spectraloader(f'{feats_name}_train', df_train)
                 train_specs.make_feats()
                 self.feats_train = train_specs.get_loader()
-            scale = 0
+            _scale = 0
         else:
             self.util.error(f'unknown feats_type: {feats_type}')
 
-        if scale:
-            self.scale()
+        if _scale:
+            self._scale()
 
         # check if a tsne should be plotted
         tsne = self.util.config_val('PLOT', 'tsne', False)
@@ -272,11 +267,11 @@ class Experiment:
             plots.plotTsne(self.feats_train.df, self.df_train['class_label'], self.util.get_exp_name()+'_tsne')
 
 
-    def scale(self):
+    def _scale(self):
         try:
-            dummy = glob_conf.config['FEATS']['scale'] 
+            dummy = glob_conf.config['FEATS']['_scale'] 
             self.scaler = Scaler(self.df_train, self.df_test, self.feats_train, self.feats_test)
-            self.feats_train.df, self.feats_test.df = self.scaler.scale()
+            self.feats_train.df, self.feats_test.df = self.scaler._scale()
         except KeyError:
             pass
 
