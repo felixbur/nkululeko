@@ -12,7 +12,7 @@ classDiagram
    Model <|-- Model_xgb
    Model <|-- Model_mlp
    Model <|-- Model_svr
-   Model <|-- Model_xgr
+   Model <|-- Model_xgr 
    Model <|-- Model_mlp_reg
    FeatureSet <|-- Opensmile_set
    FeatureSet <|-- Spectraloader
