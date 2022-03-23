@@ -4,7 +4,7 @@ classDiagram
    Experiment --> RunManager
    Experiment --> Augmenter
    Experiment --> FeatureSet
-   Experiment <-- Configuration
+   Experiment --> Configuration
    RunManager --> Model
    Experiment --> Reporter
    Dataset <|-- Dataset_csv
