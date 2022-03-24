@@ -7,6 +7,7 @@ import experiment as exp
 import configparser
 from util import Util
 import os.path
+import constants
 
 def main(config_file):
     util = Util()
@@ -20,7 +21,7 @@ def main(config_file):
     
     # create a new experiment
     expr = exp.Experiment(config)
-    print(f'running {expr.name}')
+    print(f'running {expr.name}, nkululeko version {constants.VERSION}')
 
     # load the data
     expr.load_datasets()
