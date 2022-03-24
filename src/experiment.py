@@ -300,7 +300,7 @@ class Experiment:
             self.predict_test_and_save(test_pred_file)
 
         # check if the majority voting for all speakers should be plotted
-        conf_mat_per_speaker_function = self.util.config_val('PLOT', 'collaps_speakers', False)
+        conf_mat_per_speaker_function = self.util.config_val('PLOT', 'combine_per_speaker', False)
         if (conf_mat_per_speaker_function):
             self.plot_confmat_per_speaker(conf_mat_per_speaker_function)
 
