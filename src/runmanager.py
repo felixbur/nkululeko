@@ -33,6 +33,25 @@ class Runmanager:
         self.df_train, self.df_test, self.feats_train, self.feats_test = df_train, df_test, feats_train, feats_test
         self.util = Util()
         self.target = glob_conf.config['DATA']['target']
+        # intialize a new model
+        model_type = glob_conf.config['MODEL']['type']
+        if model_type=='svm':
+            self.model = SVM_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
+        elif model_type=='svr':
+            self.model = SVR_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
+        elif model_type=='xgb':
+            self.model = XGB_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
+        elif model_type=='xgr':
+            self.model = XGR_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
+        elif model_type=='cnn':
+            from model_cnn import CNN_model
+            self.model = CNN_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
+        elif model_type=='mlp':
+            self.model = MLP_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
+        elif model_type=='mlp_reg':
+            self.model = MLP_Reg_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
+        else:
+            self.util.error(f'unknown model type: \'{model_type}\'')
 
 
     def do_runs(self):
@@ -45,25 +64,6 @@ class Runmanager:
             self.util.set_config_val('EXP', 'run', run)
             # initialze results
             self.reports = []
-            # intialize a new model
-            model_type = glob_conf.config['MODEL']['type']
-            if model_type=='svm':
-                self.model = SVM_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
-            elif model_type=='svr':
-                self.model = SVR_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
-            elif model_type=='xgb':
-                self.model = XGB_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
-            elif model_type=='xgr':
-                self.model = XGR_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
-            elif model_type=='cnn':
-                from model_cnn import CNN_model
-                self.model = CNN_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
-            elif model_type=='mlp':
-                self.model = MLP_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
-            elif model_type=='mlp_reg':
-                self.model = MLP_Reg_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
-            else:
-                self.util.error(f'unknown model type: \'{model_type}\'')
             plot_epochs = self.util.config_val('PLOT', 'epochs', 0)
             # for all epochs
             for epoch in range(int(self.util.config_val('EXP', 'epochs', 1))):

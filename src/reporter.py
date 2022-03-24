@@ -5,6 +5,7 @@ from util import Util
 import ast
 import json
 import numpy as np
+import pandas as pd
 import glob_conf
 from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.metrics import confusion_matrix
@@ -24,7 +25,9 @@ class Reporter:
         if self.util.exp_is_classification():
             self.MEASURE = 'UAR'
             self.result.measure = self.MEASURE
+            self.is_classification = True
         else:
+            self.is_classification = False
             self.measure = self.util.config_val('MODEL', 'measure', 'mse')
             if self.measure == 'mse':
                 self.MEASURE = 'MSE'
@@ -69,6 +72,7 @@ class Reporter:
         self.epoch = epoch
 
     def continuous_to_categorical(self):
+        self.is_classification = True
         bins = ast.literal_eval(glob_conf.config['DATA']['bins'])
         self.truths = np.digitize(self.truths, bins)-1
         self.preds = np.digitize(self.preds, bins)-1
@@ -78,17 +82,32 @@ class Reporter:
             self.continuous_to_categorical()
         self._plot_confmat(self.truths, self.preds, plot_name, epoch)
 
-    def plot_per_speaker(self, result_df, plot_name):
+    def plot_per_speaker(self, result_df, plot_name, function):
         """ Plot a confusion matrix with the mode category per speakers
             Args:
                 * result_df: a pandas dataframe with columns: preds, truths and speaker
         """
         speakers = result_df.speaker.unique()
+        pred = np.zeros(0)
+        truth = np.zeros(0)
         for s in speakers:
             s_df = result_df[result_df.speaker==s]
-            s_df.pred = s_df.pred.mode()
+            mode = s_df.pred.mode().iloc[-1]
+            mean = s_df.pred.mean()
+            if function == 'mode':
+                s_df.pred=mode
+            elif function == 'mean':
+                s_df.pred=mean
+            else:
+                self.util.error(f'unkown function {function}')
+            pred = np.append(pred, s_df.pred.values)     
+            truth = np.append(truth, s_df['truth'].values)
+        if not self.is_classification:
+            bins = ast.literal_eval(glob_conf.config['DATA']['bins'])
+            truth = np.digitize(truth, bins)-1
+            pred = np.digitize(pred, bins)-1
+        self._plot_confmat(truth, pred, plot_name, 0)            
 
-        self._plot_confmat(result_df.truth, result_df.pred, plot_name, 0)            
 
     def _plot_confmat(self, truths, preds, plot_name, epoch): 
 

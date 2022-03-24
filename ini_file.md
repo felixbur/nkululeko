@@ -178,3 +178,5 @@
   * value_counts = False
 * **tsne** make a tsne plot to get a feeling how the features might perform
   * tsne = False
+* **collaps_speakers**: print an extra confusion plot where the predicions per speaker are collapsed, with either the mode or the mean function
+  * collaps_speakers = mode

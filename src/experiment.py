@@ -300,21 +300,23 @@ class Experiment:
             self.predict_test_and_save(test_pred_file)
 
         # check if the majority voting for all speakers should be plotted
-        conf_mat_per_speaker = self.util.config_val('PLOT', 'conf_mat_per_speaker', False)
-        if (conf_mat_per_speaker):
-            self._plot_confmat_per_speaker()
-
+        conf_mat_per_speaker_function = self.util.config_val('PLOT', 'collaps_speakers', False)
+        if (conf_mat_per_speaker_function):
+            self.plot_confmat_per_speaker(conf_mat_per_speaker_function)
 
         return self.reports    
 
-    def _plot_confmat_per_speaker(self):
+    def plot_confmat_per_speaker(self, function):
         best = self._get_best_report(self.reports)
+        # if not best.is_classification:
+        #     best.continuous_to_categorical()
         truths = best.truths
         preds = best.preds
         speakers = self.df_test.speaker.values
         df = pd.DataFrame(data={'truth':truths, 'pred':preds, 'speaker':speakers})
-        print(df.head(20))
-        best.plot_per_speaker(df, 'result_speaker_mode.png')
+        plot_name = 'result_speaker_mode.png'
+        self.util.debug(f'plotting speaker mode confusoin matric to {plot_name}')
+        best.plot_per_speaker(df, plot_name, function)
 
     def _get_best_report(self, best_reports):
         return self.runmgr.get_best_result(best_reports)
@@ -329,7 +331,7 @@ class Experiment:
         demo = Demo_predictor(model, feature_extractor, self.label_encoder)
         demo.run_demo()
 
-    def  predict_test_and_save(self, name):
+    def predict_test_and_save(self, name):
         model = self.runmgr.get_best_model()
         test_predictor = Test_predictor(model, self.df_test, self.label_encoder, name)        
         test_predictor.predict_and_store()

@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 16.0.4
+-------------
+
+* Added possibility to collaps predictions per speaker (with mean or mode function)
+
 Version 16.0.3
 -------------
 
