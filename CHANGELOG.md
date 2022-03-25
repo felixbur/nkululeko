@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 17.0.0
+-------------
+
+* Added minimum duration for test samples
+
+
 Version 16.0.4
 -------------
 

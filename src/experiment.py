@@ -4,6 +4,7 @@ from dataset import Dataset
 from dataset_csv import Dataset_CSV
 from dataset_ravdess import Ravdess
 from feats_opensmile import Opensmileset
+from filter_data import filter_min_dur
 from runmanager import Runmanager
 from test_predictor import Test_predictor
 from util import Util
@@ -15,7 +16,6 @@ from sklearn.preprocessing import LabelEncoder
 from scaler import Scaler
 import pickle
 import audformat
-
 
 class Experiment:
     """Main class specifying an experiment
@@ -33,6 +33,7 @@ class Experiment:
         self.set_globals(config_obj)
         self.name = glob_conf.config['EXP']['name']
         self.util = Util()
+        glob_conf.set_util(self.util)
 
     def set_globals(self, config_obj):
         """install a config object in the global space"""
@@ -96,6 +97,14 @@ class Experiment:
         self.df_train.got_speaker = self.got_speaker
         self.df_test.got_gender = self.got_gender
         self.df_test.got_speaker = self.got_speaker
+
+        # Check for filters
+        min_dur_test = self.util.config_val('DATA', 'min_dur_test', False)
+        if min_dur_test:
+            pre = self.df_test.shape[0]
+            self.df_test = filter_min_dur(self.df_test, min_dur_test)
+            post = self.df_test.shape[0]
+            self.util.debug(f'Dropped {pre-post} test samples shorter than {min_dur_test} seconds (from {pre} to {post} samples)')
 
         # encode the labels
         if self.util.exp_is_classification():

@@ -44,7 +44,7 @@
   * emodb = /home/data/audformat/emodb/
 * **db_name.type**: type of storage, e.g. audformat database or 'csv' (needs header: file,speaker,task)
   * emodb.type = audformat
-* * **db_name.mapping**: mapping python dictionary to map between categories for cross-database experiments
+* **db_name.mapping**: mapping python dictionary to map between categories for cross-database experiments
   * emodb.mapping = {'anger':'angry', 'happiness':'happy', 'sadness':'sad', 'neutral':'neutral'}
 * **db_name.split_strategy**: How to identify sets for train/development data splits within one database
   * emodb.split_strategy = reuse
@@ -64,7 +64,7 @@
   * emodb.target_tables = ['emotion']
 * **db_name.files_tables**: tables that containes the audio file names
   * emodb.files_tables = ['files']
-* **db_name.limit**: maximum number of samples per table (for testing with very large data mainly)
+* **db_name.limit**: maximum number of random N samples per table (for testing with very large data mainly)
   * emodb.limit = 20
 * **db_name.required**: force a data set to have a specific feature (for example filter all sets that have gender labeled in a database where this is not the case for all samples, e.g. MozillaCommonVoice)
   * emodb.required = gender
@@ -80,6 +80,8 @@
   * bins  = [-100, 40, 50, 60, 70, 100]
 * **no_reuse**: don't re-use any tables but start fresh
   * no_reuse = False
+* **min_dur_test**: specify a minimum duration for test samples (in seconds)
+  * min_dur_test = 3.5
 ### FEATS
 * **type**: the type of features
   * type = os

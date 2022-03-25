@@ -10,6 +10,7 @@ from plots import Plots
 import glob_conf
 import os.path
 from audformat.utils import duration
+import filter_data as filter
 
 class Dataset:
     """ Class to represent datasets"""
@@ -116,14 +117,6 @@ class Dataset:
         df.got_speaker = self.got_speaker
         self.df = df
         self.db = db
-        self.util.debug(f'{self.name}: loaded data with {df.shape[0]} '\
-            f'samples: got targets: {self.is_labeled}, got speakers: {self.got_speaker}, '\
-            f'got sexes: {self.got_gender}')
-        if self.util.config_val_data(self.name, 'value_counts', False):
-            if not self.got_gender or not self.got_speaker:
-                self.util.error('can\'t plot value counts if no speaker or gender is given')
-            else:
-                self.plot.describe_df(self.name, df, self.target, f'{self.name}_distplot.png')
         self.df.is_labeled = self.is_labeled
         # Perform some filtering if desired
         required = self.util.config_val_data(self.name, 'required', False)
@@ -135,27 +128,30 @@ class Dataset:
         samples_per_speaker = self.util.config_val_data(self.name, 'max_samples_per_speaker', False)
         if samples_per_speaker:
             pre = self.df.shape[0]
-            self.df = self._limit_speakers(self.df, int(samples_per_speaker))            
+            self.df = filter.limit_speakers(self.df, int(samples_per_speaker))            
             post = self.df.shape[0]
             self.util.debug(f'{self.name}: kept {post} samples with {samples_per_speaker} per speaker (from {pre}, filtered {pre-post})')
         if self.limit:
             pre = self.df.shape[0]
-            self.df = self.df.head(self.limit)
+            self.df = self.df.sample(self.limit)
             post = self.df.shape[0]
             self.util.debug(f'{self.name}: limited to {post} samples (from {pre}, filtered {pre-post})')
 
         min_dur = self.util.config_val_data(self.name, 'min_duration_of_sample', False)
         if min_dur:
-            self.df = self.util.make_segmented_index(self.df)
             pre = self.df.shape[0]
-            for i in self.df.index:
-                start = i[1]
-                end = i[2]
-                dur = (end - start).total_seconds()
-                if dur <= float(min_dur):
-                    self.df = self.df.drop(i, axis=0)
+            self.df = filter.filter_min_dur(self.df, min_dur)
             post = self.df.shape[0]
             self.util.debug(f'{self.name}: dropped {pre-post} shorter than {min_dur} seconds (from {pre} to {post} samples)')
+
+        self.util.debug(f'{self.name}: loaded data with {self.df.shape[0]} '\
+            f'samples: got targets: {self.is_labeled}, got speakers: {self.got_speaker}, '\
+            f'got sexes: {self.got_gender}')
+        if self.util.config_val_data(self.name, 'value_counts', False):
+            if not self.got_gender or not self.got_speaker:
+                self.util.error('can\'t plot value counts if no speaker or gender is given')
+            else:
+                self.plot.describe_df(self.name, df, self.target, f'{self.name}_distplot.png')
 
         # store the dataframe
         self.df.to_pickle(store_file)
@@ -202,21 +198,6 @@ class Dataset:
                 pass
             df = df.append(df_local)
         return df, is_labeled, got_speaker, got_gender
-
-    def _limit_speakers(self, df, max=20):
-        """ limit number of samples per speaker
-            the samples are selected randomly          
-        """
-        df_ret = pd.DataFrame()
-        for s in df.speaker.unique():
-            s_df = df[df['speaker'].eq(s)]
-            if s_df.shape[0] < max:
-                df_ret = df_ret.append(s_df)
-            else:
-                df_ret = df_ret.append(s_df.sample(max))
-        return df_ret
-
-            
 
 
     def split(self):
