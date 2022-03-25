@@ -66,7 +66,7 @@
   * emodb.files_tables = ['files']
 * **db_name.limit**: maximum number of samples per table (for testing with very large data mainly)
   * emodb.limit = 20
-* **db_name.required**: force a data set to have a specific feature (for example filter all sets that have gender labeled)
+* **db_name.required**: force a data set to have a specific feature (for example filter all sets that have gender labeled in a database where this is not the case for all samples, e.g. MozillaCommonVoice)
   * emodb.required = gender
 * **db_name.max_samples_per_speaker**: maximum number of samples per speaker (for leveling data where same speakers have a large number of samples)
   * emodb.max_samples_per_speaker = 20
