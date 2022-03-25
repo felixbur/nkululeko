@@ -315,7 +315,7 @@ class Experiment:
         speakers = self.df_test.speaker.values
         df = pd.DataFrame(data={'truth':truths, 'pred':preds, 'speaker':speakers})
         plot_name = 'result_speaker_mode.png'
-        self.util.debug(f'plotting speaker mode confusoin matric to {plot_name}')
+        self.util.debug(f'plotting speaker combination confusion matrix to {plot_name}')
         best.plot_per_speaker(df, plot_name, function)
 
     def _get_best_report(self, best_reports):
