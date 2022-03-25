@@ -6,6 +6,8 @@ The idea is to have a very high level framework (based on e.g. sklearn and pytor
 [Here's a blog post on how to set up nkululeko on your computer.](http://blog.syntheticspeech.de/2021/08/30/how-to-set-up-your-first-nkululeko-project/)
 [Here's a presentation on nkululeko](docs/nkululeko.pdf)
 
+[Below](#helloworld) is a hello world example that should set you up fastly.
+
 ## Installation
 Download the sources via git clone or zip export to your hard drive.
 Include the classes via 
