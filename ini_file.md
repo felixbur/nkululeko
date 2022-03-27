@@ -89,23 +89,23 @@
   * type = os
   * possible values:
     * **os**: [open smile features](https://audeering.github.io/opensmile-python/)
-      * set = eGeMAPSv02 *(features set)*
-      * level = functionals *(or lld: feature level)*
+      * **set** = eGeMAPSv02 *(features set)*
+      * **level** = functionals *(or lld: feature level)*
     * **spectra**: Melspecs for convolutional networks
     * **trill**: [TRILL embeddings](https://ai.googleblog.com/2020/06/improving-speech-representations-and.html) from Google
-      * **model** = *path to the TRILL model folder, optional*
+      * **trill.model** = *path to the TRILL model folder, optional*
     * **wav2vec**: [Wav2vec2 embeddings](https://huggingface.co/facebook/wav2vec2-large-robust-ft-swbd-300h) from facebook
-      * **model** = *path to the wav2vec2 model folder*
+      * **wav2vec.model** = *path to the wav2vec2 model folder*
     * **mld**: [mid-level-descriptors](http://www.essv.de/paper.php?id=447)
-      * mld = *path to the mld sources folder*
-      * min_syls = *minimum number of syllables*
-      * with_os = *with added opensmile eGemaps features*
-      * features = *python list of selected features to be used (all others ignored)*
+      * **mld.model** = *path to the mld sources folder*
+      * **min_syls** = *minimum number of syllables*
+      * **with_os** = *with added opensmile eGemaps features*
+      * **features** = *python list of selected features to be used (all others ignored)*
     * **xbow**: [open crossbow](https://github.com/openXBOW) features codebook computed from open smile features
-      * xbow = *path to xbow root folder (containing xbow.jar)*
-      * size = 500 *(codebook size, rule of thumb: should grow with datasize)*
-      * assignments = 10 *(number of words in the bag representation where the counter is increased for each input LLD, rule of thumb: should grow/shrink with codebook size)*
-      * with_os = False *with added opensmile eGemaps functionals*
+      * **xbow.model** = *path to xbow root folder (containing xbow.jar)*
+      * **size** = 500 *(codebook size, rule of thumb: should grow with datasize)*
+      * **assignments** = 10 *(number of words in the bag representation where the counter is increased for each input LLD, rule of thumb: should grow/shrink with codebook size)*
+      * **with_os** = False *with added opensmile eGemaps functionals*
 * **needs_feature_extraction**: if features should be extracted newly even if already stored
   * needs_feature_extraction = False
 * **scale**: scale the features

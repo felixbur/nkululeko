@@ -27,7 +27,7 @@ class Wav2vec2(Featureset):
     def init_model(self):
         # load model
         self.util.debug('loading wav2vec model...')
-        model_path = self.util.config_val('FEATS', 'model', 'wav2vec2-large-robust-ft-swbd-300h')
+        model_path = self.util.config_val('FEATS', 'wav2vec.model', 'wav2vec2-large-robust-ft-swbd-300h')
         self.processor = transformers.Wav2Vec2Processor.from_pretrained(model_path)
         self.model = Wav2Vec2Model.from_pretrained(model_path).to(self.device)
         print(f'intialized wav22vec model on {self.device}')

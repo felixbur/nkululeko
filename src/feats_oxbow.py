@@ -42,7 +42,7 @@ class Openxbow(Featureset):
             # save the smile features
             smile_df.to_csv(lld_name, sep=';', header=False)
             # get the path of the xbow java jar file
-            xbow_path = self.util.config_val('FEATS', 'xbow', '../openXBOW/')
+            xbow_path = self.util.config_val('FEATS', 'xbow.model', '../openXBOW/')
             # get the size of the codebook
             size = self.util.config_val('FEATS', 'size', 500)
             # get the number of assignements
