@@ -82,10 +82,17 @@ class Util:
         mt = glob_conf.config['MODEL']['type']
         ft = glob_conf.config['FEATS']['type']
         set = self.config_val('FEATS', 'set', False)
+        with_os = self.config_val('FEATS', 'with_os', False)
         if set:
-            return f'{ds}_{mt}_{ft}_{set}'
+            if not with_os:
+                return f'{ds}_{mt}_{ft}_{set}'
+            else:
+                return f'{ds}_{mt}_{ft}_{set}_withos'
         else:
-            return f'{ds}_{mt}_{ft}'
+            if not with_os:
+                return f'{ds}_{mt}_{ft}'
+            else:
+                return f'{ds}_{mt}_{ft}_withos'
 
     def get_plot_name(self):
         try:
