@@ -83,7 +83,7 @@
 * **min_dur_test**: specify a minimum duration for test samples (in seconds)
   * min_dur_test = 3.5
 * **sex**: limit dataset to one biological sex, *female* or *male*
-  * sex = female
+  * sex = male
 ### FEATS
 * **type**: the type of features
   * type = os

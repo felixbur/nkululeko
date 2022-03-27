@@ -138,6 +138,9 @@ class Dataset:
             self.df = self.df[self.df.gender==sex]
             post = self.df.shape[0]
             self.util.debug(f'{self.name}: limited to {post} samples with sex {sex} (from {pre}, filtered {pre-post})')
+            self.df.is_labeled = self.is_labeled
+            self.df.got_gender = self.got_gender
+            self.df.got_speaker = self.got_speaker
         min_dur = self.util.config_val_data(self.name, 'min_duration_of_sample', False)
         if min_dur:
             pre = self.df.shape[0]
