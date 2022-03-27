@@ -103,12 +103,7 @@ class Dataset:
                     df['gender'] = df_target['gender']
             except audformat.core.errors.BadKeyError:
                 pass
-        try: 
-            # for experiments that do separate sex models
-            s = glob_conf.config['DATA']['sex']
-            df = df[df.gender==s]
-        except KeyError:
-            pass 
+
         if self.is_labeled:
             # remember the target in case they get labelencoded later
             df['class_label'] = df[self.target]
@@ -136,7 +131,13 @@ class Dataset:
             self.df = self.df.sample(self.limit)
             post = self.df.shape[0]
             self.util.debug(f'{self.name}: limited to {post} samples (from {pre}, filtered {pre-post})')
-
+        sex = self.util.config_val('DATA', 'sex', False)
+        if sex:
+            # for experiments that do separate sex models
+            pre = self.df.shape[0]
+            self.df = self.df[self.df.gender==sex]
+            post = self.df.shape[0]
+            self.util.debug(f'{self.name}: limited to {post} samples with sex {sex} (from {pre}, filtered {pre-post})')
         min_dur = self.util.config_val_data(self.name, 'min_duration_of_sample', False)
         if min_dur:
             pre = self.df.shape[0]
