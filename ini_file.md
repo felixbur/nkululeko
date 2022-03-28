@@ -112,6 +112,7 @@
   * scale=standard
   * possible values:
     * **standard**: z-transformation (mean of 0 and stdv of 1) based on training set
+    * **robust**: robust scaler
     * **speaker**: like *standard* but based on individual speaker sets (also for test)
 * **set**: name of opensmile feature set, e.g. eGeMAPSv02, ComParE_2016, GeMAPSv01a, eGeMAPSv01a
   * set = eGeMAPSv02

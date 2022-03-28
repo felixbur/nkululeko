@@ -141,8 +141,8 @@ class Runmanager:
             plot_name: name of plot file
         """
         epoch = report.epoch
-        self.load_model(report)
-        report = self.model.predict()
+        # self.load_model(report)
+        # report = self.model.predict()
         self.util.debug(f'plotting conf matrix to {plot_name}')
         report.plot_confmatrix(plot_name, epoch)
         report.print_results(epoch)

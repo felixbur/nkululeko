@@ -197,7 +197,7 @@ class Experiment:
         feats_type = self.util.config_val('FEATS', 'type', 'os')
         feats_name = "_".join(ast.literal_eval(glob_conf.config['DATA']['databases']))
         feats_name = f'{feats_name}_{strategy}_{feats_type}'   
-        _scale = 1
+        _scale = True
         if feats_type=='os':
             self.feats_train = Opensmileset(f'{feats_name}_train', df_train)
             self.feats_train.extract()
@@ -264,7 +264,7 @@ class Experiment:
                 train_specs = Spectraloader(f'{feats_name}_train', df_train)
                 train_specs.make_feats()
                 self.feats_train = train_specs.get_loader()
-            _scale = 0
+            _scale = False
         else:
             self.util.error(f'unknown feats_type: {feats_type}')
 
@@ -280,12 +280,10 @@ class Experiment:
 
 
     def _scale(self):
-        try:
-            dummy = glob_conf.config['FEATS']['_scale'] 
-            self.scaler = Scaler(self.df_train, self.df_test, self.feats_train, self.feats_test)
-            self.feats_train.df, self.feats_test.df = self.scaler._scale()
-        except KeyError:
-            pass
+        scale = self.util.config_val('FEATS', 'scale', False)
+        if scale: 
+            self.scaler = Scaler(self.df_train, self.df_test, self.feats_train, self.feats_test, scale)
+            self.feats_train.df, self.feats_test.df = self.scaler.scale()
 
     def init_runmanager(self):
         """Initialize the manager object for the runs."""

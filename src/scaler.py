@@ -9,31 +9,28 @@ import glob_conf
 class Scaler:
     # class to normalize speech parameters
 
-    def __init__(self, train_data_df, test_data_df, train_feats, test_feats):
+    def __init__(self, train_data_df, test_data_df, train_feats, test_feats, scaler_type):
         self.util = Util()
-        scaler_type = glob_conf.config['FEATS']['scale'] 
         if scaler_type == 'standard':
             self.scaler = StandardScaler()
         elif scaler_type == 'robust':
             self.scaler = RobustScaler()
+        elif scaler_type == 'speaker':
+            pass
         else:
             self.util.error('unknown scaler: '+scaler_type)
-
+        self.scaler_type = scaler_type
         self.feats_train = train_feats.df
         self.data_train = train_data_df
         self.feats_test = test_feats.df
         self.data_test = test_data_df
 
     def scale(self):
-        try:
-            scale_speakers = glob_conf.config['FEATS']['scale_speakers']
-            self.util.debug('scaling features for speakers')
-        except KeyError:
-            scale_speakers = False
-        if not scale_speakers:
+        if self.scaler_type != 'speaker':
             self.util.debug('scaling features based on training')
             return self.scale_all()
         else:
+            self.util.debug('scaling features per speaker based on training')
             return self.speaker_scale()
 
     def scale_all(self):
