@@ -35,6 +35,9 @@ class Experiment:
         self.util = Util()
         glob_conf.set_util(self.util)
 
+    def get_name(self):
+        return self.util.get_exp_name()
+
     def set_globals(self, config_obj):
         """install a config object in the global space"""
         glob_conf.init_config(config_obj)
