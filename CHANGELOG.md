@@ -1,6 +1,18 @@
 Changelog
 =========
 
+Version 18.0.0
+-------------
+
+* added leave one speaker group out
+
+Version 17.0.2
+-------------
+
+* fixed scaler, added robust
+
+
+
 Version 17.0.0
 -------------
 
@@ -10,7 +22,7 @@ Version 17.0.0
 Version 16.0.4
 -------------
 
-* Added possibility to collaps predictions per speaker (with mean or mode function)
+* Added possibility to combine predictions per speaker (with mean or mode function)
 
 Version 16.0.3
 -------------
