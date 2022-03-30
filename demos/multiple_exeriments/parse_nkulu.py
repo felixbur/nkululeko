@@ -1,6 +1,6 @@
 
 import sys
-sys.path.append("../src")
+sys.path.append("../../src")
 import constants
 import numpy as np
 import experiment as exp
