@@ -34,6 +34,9 @@ class Experiment:
         self.name = glob_conf.config['EXP']['name']
         self.util = Util()
         glob_conf.set_util(self.util)
+        self.loso = self.util.config_val('MODEL', 'loso', False)
+        self.logo = self.util.config_val('MODEL', 'logo', False)
+        self.xfoldx = self.util.config_val('MODEL', 'k_fold_cross', False)
 
     def get_name(self):
         return self.util.get_exp_name()
@@ -317,15 +320,19 @@ class Experiment:
         return self.reports    
 
     def plot_confmat_per_speaker(self, function):
+        if self.loso or self.logo or self.xfoldx:
+            self.util.debug('plot combined speaker predictins not possible for cross validation')
+            return
         best = self._get_best_report(self.reports)
         # if not best.is_classification:
         #     best.continuous_to_categorical()
         truths = best.truths
         preds = best.preds
         speakers = self.df_test.speaker.values
+        print(f'{len(truths)} {len(preds)} {len(speakers) }')
         df = pd.DataFrame(data={'truth':truths, 'pred':preds, 'speaker':speakers})
         plot_name = 'result_combined_per_speaker.png'
-        self.util.debug(f'plotting speaker combination confusion matrix to {plot_name}')
+        self.util.debug(f'plotting speaker combination ({function}) confusion matrix to {plot_name}')
         best.plot_per_speaker(df, plot_name, function)
 
     def _get_best_report(self, best_reports):

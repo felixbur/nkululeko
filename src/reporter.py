@@ -46,6 +46,7 @@ class Reporter:
         self.run = run
         self.epoch = epoch
         self.__set_measure()
+        self.cont_to_cat = False
         if len(truths)>0 and len(preds)>0:
             if self.util.exp_is_classification():
                 self.result.test = recall_score(self.truths, self.preds, average='macro')
@@ -72,7 +73,9 @@ class Reporter:
         self.epoch = epoch
 
     def continuous_to_categorical(self):
-        self.is_classification = True
+        if self.cont_to_cat:
+            return 
+        self.cont_to_cat = True
         bins = ast.literal_eval(glob_conf.config['DATA']['bins'])
         self.truths = np.digitize(self.truths, bins)-1
         self.preds = np.digitize(self.preds, bins)-1
@@ -102,15 +105,16 @@ class Reporter:
                 self.util.error(f'unkown function {function}')
             pred = np.append(pred, s_df.pred.values)     
             truth = np.append(truth, s_df['truth'].values)
-        if not self.is_classification:
+        if not (self.is_classification or self.cont_to_cat):
             bins = ast.literal_eval(glob_conf.config['DATA']['bins'])
             truth = np.digitize(truth, bins)-1
             pred = np.digitize(pred, bins)-1
-        self._plot_confmat(truth, pred, plot_name, 0)            
+        self._plot_confmat(truth, pred.astype('int'), plot_name, 0)            
 
 
     def _plot_confmat(self, truths, preds, plot_name, epoch): 
-
+        # print(truths)
+        # print(preds)
         fig_dir = self.util.get_path('fig_dir')
         labels = self.util.get_labels()
         fig = plt.figure()  # figsize=[5, 5]
@@ -123,10 +127,15 @@ class Reporter:
             disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels).plot(cmap='Blues')
         except ValueError:
             disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=list(labels).remove('neutral')).plot(cmap='Blues')
+
+        reg_res = ''
+        if not self.is_classification:
+            reg_res = f', {self.MEASURE}: {self.result.test:.3f}'
+
         if epoch != 0:
-            plt.title(f'Confusion Matrix, UAR: {uar:.3f}, Epoch: {epoch}')
+            plt.title(f'Confusion Matrix, UAR: {uar:.3f}{reg_res}, Epoch: {epoch}')
         else:
-            plt.title(f'Confusion Matrix, UAR: {uar:.3f}')
+            plt.title(f'Confusion Matrix, UAR: {uar:.3f}{reg_res}')
 
         plt.savefig(fig_dir+plot_name)
         fig.clear()
