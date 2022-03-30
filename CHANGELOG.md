@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.18.2
+-------------
+
+* added preference of local dataset specs to global ones
+  
 Version 0.18.1
 -------------
 

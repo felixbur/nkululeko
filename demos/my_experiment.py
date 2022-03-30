@@ -10,10 +10,10 @@ import os.path
 import constants
 
 def main(config_file):
-    util = Util()
     # test if the configuration file exists
     if not os.path.isfile(config_file):
-        util.error(f'no such file: {config_file}')
+        print(f'ERROR: no such file: {config_file}')
+        exit()
 
     # load one configuration per experiment
     config = configparser.ConfigParser()
@@ -21,7 +21,8 @@ def main(config_file):
     
     # create a new experiment
     expr = exp.Experiment(config)
-    print(f'running {expr.name}, nkululeko version {constants.VERSION}')
+    util = Util()
+    util.debug(f'running {expr.name}, nkululeko version {constants.VERSION}')
 
     # load the data
     expr.load_datasets()

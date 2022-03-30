@@ -40,6 +40,8 @@
   * strategy = train_test
 * **trains**: if *strategy* = cross_data, denote the train databases
 * **tests**: if *strategy* = cross_data, denote the test databases
+* **root_folders**: specify an additional configuration specifically for all entries starting with a dataset name, acting as global defaults. 
+* root_folders = data_roots.ini
 * **db_name**: path with audformatted repository for each database listed in 'databases*
   * emodb = /home/data/audformat/emodb/
 * **db_name.type**: type of storage, e.g. audformat database or 'csv' (needs header: file,speaker,task)

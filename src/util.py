@@ -10,6 +10,15 @@ import audformat
 import pandas as pd
 
 class Util:
+
+    def __init__(self):
+        self.got_data_roots = self.config_val('DATA', 'root_folders', False)
+        if self.got_data_roots:
+            # if there is a global data rootfolder file, read from there
+            if not os.path.isfile(self.got_data_roots):
+                self.error(f'no such file: {self.got_data_roots}')
+            self.data_roots = configparser.ConfigParser()
+            self.data_roots.read(self.got_data_roots)
         
     def get_path(self, entry):
         root = glob_conf.config['EXP']['root']
@@ -38,23 +47,27 @@ class Util:
     
 
     def config_val_data(self, dataset, key, default):
-        data_roots = self.config_val('DATA', 'root_folders', False)
-        if data_roots:
-            # if there is a global data rootfolder file, read from there
-            if not os.path.isfile(data_roots):
-                self.error(f'no such file: {data_roots}')
-            configuration = configparser.ConfigParser()
-            configuration.read(data_roots)
-        else:
-            configuration = glob_conf.config
+        """ Retrieve a configuration value for datasets.
+        If the value is present in the experiment configuration it will be used, else 
+        we look in a global file specified by the root_folders value.
+        """
+        configuration = glob_conf.config
         try:
-            # strategy is either train_test (default)  or cross_data
             if len(key)>0:
                 return configuration['DATA'][dataset+'.'+key]
             else:
                 return configuration['DATA'][dataset]
         except KeyError:
+            if self.got_data_roots:
+                try:
+                    if len(key)>0:
+                        return self.data_roots['DATA'][dataset+'.'+key]
+                    else:
+                        return self.data_roots['DATA'][dataset]
+                except KeyError:
+                    return default
             return default
+
 
 
     def get_save_name(self):
