@@ -27,10 +27,9 @@ def main():
     args = parser.parse_args()
 
     config_file = './exp.ini'
-    util = Util()
     # test if config is there
     if not os.path.isfile(config_file):
-        util.error(f'no such file {config_file}')
+        print(f'ERROR: no such file {config_file}')
 
     config = configparser.ConfigParser()
     config.read(config_file)
@@ -67,11 +66,12 @@ def main():
 
 
     name = config['EXP']['name']
-    util = Util()
-    util.debug(f'running {name}, Nkululeko version {constants.VERSION}')
 
     # init the experiment
     expr = exp.Experiment(config)
+    util = Util()
+    util.debug(f'running {name}, Nkululeko version {constants.VERSION}')
+
     # load the data
     expr.load_datasets()
     # split into train and test
