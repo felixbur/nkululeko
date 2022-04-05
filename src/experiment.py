@@ -1,5 +1,7 @@
 import numpy
 import random
+import os
+import time
 from dataset import Dataset
 from dataset_csv import Dataset_CSV
 from dataset_ravdess import Ravdess
@@ -37,6 +39,7 @@ class Experiment:
         self.loso = self.util.config_val('MODEL', 'loso', False)
         self.logo = self.util.config_val('MODEL', 'logo', False)
         self.xfoldx = self.util.config_val('MODEL', 'k_fold_cross', False)
+        self.start = time.process_time()
 
     def get_name(self):
         return self.util.get_exp_name()
@@ -69,35 +72,60 @@ class Experiment:
             self.datasets.update({d: data})
         self.target = self.util.config_val('DATA', 'target', 'emotion')
 
+    def _import_csv(self, storage):
+        # df = pd.read_csv(storage, header=0, index_col=[0,1,2])
+        # df.index.set_levels(pd.to_timedelta(df.index.levels[1]), level=1)
+        # df.index.set_levels(pd.to_timedelta(df.index.levels[2]), level=2)
+        df = audformat.utils.read_csv(storage)
+        df.is_labeled = True if self.target in df else False
+        return df
+
+
     def fill_train_and_tests(self):
         """Set up train and development sets. The method should be specified in the config."""
-        self.df_train, self.df_test = pd.DataFrame(), pd.DataFrame()
-        strategy = self.util.config_val('DATA', 'strategy', 'train_test')
-        # some datasets against others in their entirety
-        if strategy == 'cross_data':
-            train_dbs = ast.literal_eval(glob_conf.config['DATA']['trains'])
-            test_dbs = ast.literal_eval(glob_conf.config['DATA']['tests'])
-            for dn in train_dbs:
-                d = self.datasets[dn]
-                d.prepare_labels()
-                self.df_train = self.df_train.append(self.util.make_segmented_index(d.df))
-                self.df_train.is_labeled = d.is_labeled
-            for dn in test_dbs:
-                d = self.datasets[dn]
-                d.prepare_labels()
-                self.df_test = self.df_test.append(self.util.make_segmented_index(d.df))
-                self.df_test.is_labeled = d.is_labeled
-        elif strategy == 'train_test':
-            # default: train vs. test combined from all datasets
-            for d in self.datasets.values():
-                d.split()
-                d.prepare_labels()
-                self.df_train = self.df_train.append(self.util.make_segmented_index(d.df_train))
-                self.df_train.is_labeled = d.is_labeled
-                self.df_test = self.df_test.append(self.util.make_segmented_index(d.df_test))
-                self.df_test.is_labeled = d.is_labeled
+        store = self.util.get_path('store')
+        storage_test = f'{store}testdf.csv'
+        storage_train = f'{store}traindf.csv'
+        start_fresh = self.util.config_val('DATA', 'no_reuse', False)
+        if os.path.isfile(storage_train) and os.path.isfile(storage_test) \
+            and not start_fresh:
+            self.util.debug(f'reusing previously stored {storage_test} and {storage_train}')
+            self.df_test = self._import_csv(storage_test)
+            self.df_train = self._import_csv(storage_train)
         else:
-            self.util.error(f'unknown strategy: {strategy}')
+            self.df_train, self.df_test = pd.DataFrame(), pd.DataFrame()
+            strategy = self.util.config_val('DATA', 'strategy', 'train_test')
+            # some datasets against others in their entirety
+            if strategy == 'cross_data':
+                train_dbs = ast.literal_eval(glob_conf.config['DATA']['trains'])
+                test_dbs = ast.literal_eval(glob_conf.config['DATA']['tests'])
+                for dn in train_dbs:
+                    d = self.datasets[dn]
+                    d.prepare_labels()
+                    self.df_train = self.df_train.append(self.util.make_segmented_index(d.df))
+                    self.df_train.is_labeled = d.is_labeled
+                for dn in test_dbs:
+                    d = self.datasets[dn]
+                    d.prepare_labels()
+                    self.df_test = self.df_test.append(self.util.make_segmented_index(d.df))
+                    self.df_test.is_labeled = d.is_labeled
+            elif strategy == 'train_test':
+                # default: train vs. test combined from all datasets
+                for d in self.datasets.values():
+                    d.split()
+                    d.prepare_labels()
+                    self.df_train = self.df_train.append(self.util.make_segmented_index(d.df_train))
+                    self.df_train.is_labeled = d.is_labeled
+                    self.df_test = self.df_test.append(self.util.make_segmented_index(d.df_test))
+                    self.df_test.is_labeled = d.is_labeled
+            else:
+                self.util.error(f'unknown strategy: {strategy}')
+            # save the file lists to disk for later reuse
+            store = self.util.get_path('store')
+            storage_test = f'{store}testdf.csv'
+            storage_train = f'{store}traindf.csv'
+            self.df_test.to_csv(storage_test)
+            self.df_train.to_csv(storage_train)
 
         self.df_train.got_gender = self.got_gender
         self.df_train.got_speaker = self.got_speaker
@@ -144,8 +172,6 @@ class Experiment:
             self.df_train[self.target] = self.label_encoder.fit_transform(self.df_train[self.target])
             self.df_test[self.target] = self.label_encoder.transform(self.df_test[self.target])
             glob_conf.set_label_encoder(self.label_encoder)
-        else:
-            pass
         if self.got_speaker:
             self.util.debug(f'{self.df_test.speaker.nunique()} speakers in test and {self.df_train.speaker.nunique()} speakers in train')
         augment = self.util.config_val('DATA', 'augment', 0)
@@ -153,7 +179,15 @@ class Experiment:
             self.augment_train()
         if self.util.config_val('PLOT', 'value_counts', False):
             self.plot_distribution()
-    
+
+        target_factor = self.util.config_val('DATA', 'target_divide_by', False)
+        if target_factor:
+            self.df_test[self.target] = self.df_test[self.target] / float(target_factor)
+            self.df_train[self.target] = self.df_train[self.target] / float(target_factor)
+            if not self.util.exp_is_classification():
+                self.df_test['class_label'] = self.df_test['class_label'] / float(target_factor)
+                self.df_train['class_label'] = self.df_train['class_label'] / float(target_factor)
+
     def _add_random_target(self, df):
         labels = self.util.get_labels()
         a = [None]*len(df)
@@ -316,7 +350,8 @@ class Experiment:
         conf_mat_per_speaker_function = self.util.config_val('PLOT', 'combine_per_speaker', False)
         if (conf_mat_per_speaker_function):
             self.plot_confmat_per_speaker(conf_mat_per_speaker_function)
-
+        used_time = time.process_time() - self.start
+        self.util.debug(f'Done, used {used_time:.3f} seconds')
         return self.reports    
 
     def plot_confmat_per_speaker(self, function):

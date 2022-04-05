@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Version 0.18.3
+-------------
+
+* added reuse of test and train file sets
+* added parameter to scale continous target values: target_divide_by
+
+
 Version 0.18.2
 -------------
 
