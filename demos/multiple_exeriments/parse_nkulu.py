@@ -1,6 +1,6 @@
 
 import sys
-sys.path.append("../../src")
+sys.path.append("./src")
 import constants
 import numpy as np
 import experiment as exp
@@ -8,6 +8,7 @@ import configparser
 from util import Util
 import argparse
 import os.path
+src_path = 'demos/multiple_exeriments/'
 
 
 def main():
@@ -18,6 +19,8 @@ def main():
         action='append')
     parser.add_argument('--tuning_params', nargs='*', help='parameters to be tuned', \
         action='append')
+    parser.add_argument('--layers', nargs='*', help='layer config for mlp, e.g. l1:128 ', \
+        action='append')
     parser.add_argument('--model', default='xgb', help='The model type', required=True)
     parser.add_argument('--feat', default='os', help='The model type')
     parser.add_argument('--set', help='The opensmile set')
@@ -26,7 +29,7 @@ def main():
     
     args = parser.parse_args()
 
-    config_file = './exp.ini'
+    config_file = f'{src_path}exp.ini'
     # test if config is there
     if not os.path.isfile(config_file):
         print(f'ERROR: no such file {config_file}')
@@ -53,6 +56,8 @@ def main():
         for tp in args.tuning_params:
             tuning_params.append(tp[0])
         config['MODEL']['tuning_params'] = str(tuning_params)
+    if args.layers is not None:
+        config['MODEL']['layers'] = args.layers[0][0]
     if args.target is not None:
         config['DATA']['target'] = args.target
     if args.model is not None:

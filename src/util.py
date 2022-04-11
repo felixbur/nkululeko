@@ -95,17 +95,21 @@ class Util:
         mt = glob_conf.config['MODEL']['type']
         ft = glob_conf.config['FEATS']['type']
         set = self.config_val('FEATS', 'set', False)
-        with_os = self.config_val('FEATS', 'with_os', False)
+        set_string = '_'
         if set:
-            if not with_os:
-                return f'{ds}_{mt}_{ft}_{set}'
-            else:
-                return f'{ds}_{mt}_{ft}_{set}_withos'
-        else:
-            if not with_os:
-                return f'{ds}_{mt}_{ft}'
-            else:
-                return f'{ds}_{mt}_{ft}_withos'
+            set_string += set
+        with_os_string = '_'
+        if self.config_val('FEATS', 'with_os', False):
+            with_os_string = '_withos'
+        layer_string = '_'
+        layer_s = self.config_val('MODEL', 'layers', False)
+        if layer_s:
+            layers = ast.literal_eval(layer_s)
+            sorted_layers = sorted(layers.items(), key=lambda x: x[1])
+            for l in sorted_layers:
+                layer_string += f'{str(l[1])}-'
+        return_string = f'{ds}_{mt}_{ft}{set_string}{with_os_string}{layer_string[:-1]}'.replace('__','')
+        return return_string
 
     def get_plot_name(self):
         try:

@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.18.4
+-------------
+
+* added support for ANN layers as arguments
+
 Version 0.18.3
 -------------
 

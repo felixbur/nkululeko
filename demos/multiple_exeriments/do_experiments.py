@@ -1,31 +1,43 @@
 import os
 
+src_path = 'demos/multiple_exeriments/'
+
 classifiers = [
-    {'--model': 'xgb'},
-    {'--model': 'svm'},
+    {'--model': 'mlp',
+    '--layers': '\"{\'l1\':16,\'l2\':4}\"'},
+    {'--model': 'mlp',
+    '--layers': '\"{\'l1\':64}\"'},
+    {'--model': 'mlp',
+    '--layers': '\"{\'l1\':128,\'l2\':32}\"'},
+    # [['--model', 'mlp'],
+    # ['--layer', 'l1:128'],
+    # ['--layer', 'l2:16'],
+    # ],
+    # {'--model': 'xgb'},
+    # {'--model': 'svm'},
 ]
 
 features = [
     {'--feat': 'os'},
-    {'--feat': 'os', 
-    '--set': 'ComParE_2016',
-    },
-    {'--feat': 'mld'},
-    {'--feat': 'mld',
-    '--with_os': 'True',
-    },
-    {'--feat': 'xbow'},
-    {'--feat': 'xbow',
-    '--with_os': 'True',
-    },
-    {'--feat': 'trill'},
-    {'--feat': 'wav2vec'},
+    # {'--feat': 'os', 
+    # '--set': 'ComParE_2016',
+    # },
+    # {'--feat': 'mld'},
+    # {'--feat': 'mld',
+    # '--with_os': 'True',
+    # },
+    # {'--feat': 'xbow'},
+    # {'--feat': 'xbow',
+    # '--with_os': 'True',
+    # },
+    # {'--feat': 'trill'},
+    # {'--feat': 'wav2vec'},
 ]
 
 
 for c in classifiers:
     for f in features:
-        cmd = f'python parse_nkulu.py '
+        cmd = f'python {src_path}parse_nkulu.py '
         for item in c:
             cmd += f'{item} {c[item]} '
         for item in f:

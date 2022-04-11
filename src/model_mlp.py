@@ -32,7 +32,9 @@ class MLP_model(Model):
         self.testloader = self.get_loader(feats_test.df, df_test, False)
         # set up the model
         self.device = self.util.config_val('MODEL', 'device', 'cpu')
-        layers = ast.literal_eval(glob_conf.config['MODEL']['layers'])
+        layers_string = glob_conf.config['MODEL']['layers']
+        self.util.debug(f'using layers {layers_string}')
+        layers = ast.literal_eval(layers_string)
         # with dropout?
         drop = self.util.config_val('MODEL', 'drop', False)
         if drop:
