@@ -1,6 +1,12 @@
 Changelog
 =========
 
+
+Version 0.18.5
+-------------
+
+* added support for epoch number as argument
+  
 Version 0.18.4
 -------------
 

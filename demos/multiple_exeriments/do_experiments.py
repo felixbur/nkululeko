@@ -6,15 +6,13 @@ classifiers = [
     {'--model': 'mlp',
     '--layers': '\"{\'l1\':16,\'l2\':4}\"'},
     {'--model': 'mlp',
-    '--layers': '\"{\'l1\':64}\"'},
+    '--layers': '\"{\'l1\':64,\'l2\':16}\"'},
     {'--model': 'mlp',
     '--layers': '\"{\'l1\':128,\'l2\':32}\"'},
-    # [['--model', 'mlp'],
-    # ['--layer', 'l1:128'],
-    # ['--layer', 'l2:16'],
-    # ],
-    # {'--model': 'xgb'},
-    # {'--model': 'svm'},
+    {'--model': 'xgb',
+    '--epochs':1},
+    {'--model': 'svm',
+    '--epochs':1},
 ]
 
 features = [

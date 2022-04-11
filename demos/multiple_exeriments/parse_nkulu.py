@@ -26,6 +26,7 @@ def main():
     parser.add_argument('--set', help='The opensmile set')
     parser.add_argument('--with_os', help='To add os features')
     parser.add_argument('--target', help='The target designation')
+    parser.add_argument('--epochs', help='The number of epochs')
     
     args = parser.parse_args()
 
@@ -60,6 +61,8 @@ def main():
         config['MODEL']['layers'] = args.layers[0][0]
     if args.target is not None:
         config['DATA']['target'] = args.target
+    if args.epochs is not None:
+        config['EXP']['epochs'] = args.epochs
     if args.model is not None:
         config['MODEL']['type'] = args.model
     if args.feat is not None:
