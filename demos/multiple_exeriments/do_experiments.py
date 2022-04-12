@@ -4,11 +4,15 @@ src_path = 'demos/multiple_exeriments/'
 
 classifiers = [
     {'--model': 'mlp',
-    '--layers': '\"{\'l1\':16,\'l2\':4}\"'},
-    {'--model': 'mlp',
     '--layers': '\"{\'l1\':64,\'l2\':16}\"'},
     {'--model': 'mlp',
-    '--layers': '\"{\'l1\':128,\'l2\':32}\"'},
+    '--layers': '\"{\'l1\':64,\'l2\':16}\"',
+    '--learning_rate': '.1',},
+    {'--model': 'mlp',
+    '--layers': '\"{\'l1\':64,\'l2\':16}\"',
+    '--learning_rate': '.0001',
+    '--drop': '.3',
+    },
     {'--model': 'xgb',
     '--epochs':1},
     {'--model': 'svm',

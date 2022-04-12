@@ -95,20 +95,29 @@ class Util:
         mt = glob_conf.config['MODEL']['type']
         ft = glob_conf.config['FEATS']['type']
         set = self.config_val('FEATS', 'set', False)
-        set_string = '_'
+        set_string = ''
         if set:
             set_string += set
-        with_os_string = '_'
+        with_os_string = ''
         if self.config_val('FEATS', 'with_os', False):
             with_os_string = '_withos'
-        layer_string = '_'
+        lr_string = ''
+        if self.config_val('MODEL', 'learning_rate', False):
+            lr = self.config_val('MODEL', 'learning_rate', False)
+            lr_string = f'_lr-{str(lr)}'
+        drop_string = ''
+        if self.config_val('MODEL', 'drop', False):
+            drop = self.config_val('MODEL', 'drop', False)
+            drop_string = f'_drop-{str(drop)}'
+        layer_string = ''
         layer_s = self.config_val('MODEL', 'layers', False)
         if layer_s:
             layers = ast.literal_eval(layer_s)
             sorted_layers = sorted(layers.items(), key=lambda x: x[1])
             for l in sorted_layers:
                 layer_string += f'{str(l[1])}-'
-        return_string = f'{ds}_{mt}_{ft}{set_string}{with_os_string}{layer_string[:-1]}'.replace('__','')
+        return_string = f'{ds}_{mt}_{ft}{set_string}'\
+            f'{with_os_string}{layer_string[:-1]}{lr_string}{drop_string}'.replace('__','')
         return return_string
 
     def get_plot_name(self):

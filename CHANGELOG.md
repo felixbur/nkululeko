@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.18.6
+-------------
+
+* added support for learning and dropout rate as argument
+
 
 Version 0.18.5
 -------------
