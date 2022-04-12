@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 0.19.0
+-------------
+
+* added "max_duration_of_sample" for datasets
+
+
 Version 0.18.6
 -------------
 

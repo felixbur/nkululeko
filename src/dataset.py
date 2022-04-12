@@ -148,6 +148,13 @@ class Dataset:
             post = self.df.shape[0]
             self.util.debug(f'{self.name}: dropped {pre-post} shorter than {min_dur} seconds (from {pre} to {post} samples)')
 
+        max_dur = self.util.config_val_data(self.name, 'max_duration_of_sample', False)
+        if max_dur:
+            pre = self.df.shape[0]
+            self.df = filter.filter_max_dur(self.df, max_dur)
+            post = self.df.shape[0]
+            self.util.debug(f'{self.name}: dropped {pre-post} longer than {max_dur} seconds (from {pre} to {post} samples)')
+
         self.util.debug(f'{self.name}: loaded data with {self.df.shape[0]} '\
             f'samples: got targets: {self.is_labeled}, got speakers: {self.got_speaker}, '\
             f'got sexes: {self.got_gender}')

@@ -74,6 +74,8 @@
   * emodb.max_samples_per_speaker = 20
 * **db_name.min_duration_of_sample**: limit the samples to a minimum length (in seconds)
   * emodb.min_duration_of_sample = 0.0
+* **db_name.max_duration_of_sample**: limit the samples to a maximum length (in seconds)
+  * emodb.max_duration_of_sample = 0.0
 * **target**: the task name, e.g. *age* or *emotion*
   * target = emotion
 * **labels**: for classification experiments: the names of the categories (is also used for regression when binning the values)
