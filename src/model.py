@@ -11,6 +11,7 @@ import pickle
 import random
 from sklearn.model_selection import LeaveOneGroupOut
 from sklearn.model_selection import StratifiedKFold
+import os
 
 
 class Model:
@@ -30,6 +31,10 @@ class Model:
     def set_id(self, run, epoch):
         self.run = run
         self.epoch = epoch
+        dir = self.util.get_path('model_dir')
+        name = f'{self.util.get_exp_name()}_{self.run}_{self.epoch:03d}.model'
+        self.store_path = dir+name
+
 
     def _x_fold_cross(self):
         # ignore train and test sets and do a "leave one speaker out"  evaluation
@@ -167,6 +172,12 @@ class Model:
 
     def train(self):
         """Train the model"""
+        # first check if the model already has been trained
+        if os.path.isfile(self.store_path):
+            self.load(self.run, self.epoch)
+            self.util.debug(f'reusing model: {self.store_path}')
+            return
+
         # first check if leave on  speaker out is wanted
         if self.loso:
             self._loso()
@@ -251,9 +262,7 @@ class Model:
 
 
     def store(self):
-        dir = self.util.get_path('model_dir')
-        name = f'{self.util.get_exp_name()}_{self.run}_{self.epoch:03d}.model'
-        with open(dir+name, 'wb') as handle:
+        with open(self.store_path, 'wb') as handle:
             pickle.dump(self.clf, handle)
 
         

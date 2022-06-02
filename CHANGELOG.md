@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.20.0
+-------------
+
+* implemented reuse of trained and saved models
+
 Version 0.19.0
 -------------
 

@@ -1,4 +1,5 @@
 # model_mlp.py
+import os
 from util import Util 
 import glob_conf
 from model import Model
@@ -9,6 +10,7 @@ import numpy as np
 from sklearn.metrics import mean_squared_error
 from collections import OrderedDict
 from concordance_cor_coeff import ConcordanceCorCoeff
+import os
 
 class MLP_Reg_model(Model):
     """MLP = multi layer perceptron"""
@@ -110,7 +112,12 @@ class MLP_Reg_model(Model):
 
 
     def train_epoch(self, model, loader, device, optimizer, criterion):
-        model.train()
+        # first check if the model already has been trained
+        if os.path.isfile(self.store_path):
+            self.load(self.run, self.epoch)
+            self.util.debug(f'reusing model: {self.store_path}')
+            return
+        self.model.train()
         losses = []
         for features, labels in loader:
             logits = model(features.to(device)).reshape(-1)
@@ -145,9 +152,7 @@ class MLP_Reg_model(Model):
         return result, targets, predictions
 
     def store(self):
-        dir = self.util.get_path('model_dir')
-        name = f'{self.util.get_exp_name()}_{self.run}_{self.epoch:03d}.model'
-        torch.save(self.model.state_dict(), dir+name)
+        torch.save(self.model.state_dict(), self.store_path)
         
     def load(self, run, epoch):
         dir = self.util.get_path('model_dir')

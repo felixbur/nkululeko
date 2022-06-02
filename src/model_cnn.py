@@ -9,6 +9,7 @@ import glob_conf
 from reporter import Reporter
 import numpy as np
 from concordance_cor_coeff import ConcordanceCorCoeff
+import os
 
 class CNN_model(Model):
     """A CNN (convolutional neural net) model"""
@@ -41,7 +42,14 @@ class CNN_model(Model):
     def train(self):
         """Train the model one epoch"""
         losses = []
+        # first check if the model already has been trained
+        if os.path.isfile(self.store_path):
+            self.load(self.run, self.epoch)
+            self.util.debug(f'reusing model: {self.store_path}')
+            return
+            
         self.model.train()
+
         for features, labels in self.feats_train:
             logits = self.model(features.to(self.device).float()).squeeze(1)
             loss = self.criterion(logits, labels.float().to(self.device))
@@ -95,9 +103,7 @@ class CNN_model(Model):
         return result, targets, logits
 
     def store(self):
-        dir = self.util.get_path('model_dir')
-        name = f'{self.util.get_exp_name()}_{self.run}_{self.epoch:03d}.model'
-        torch.save(self.model.state_dict(), dir+name)
+        torch.save(self.model.state_dict(), self.store_path)
         self.device = self.util.config_val('MODEL', 'device', 'cpu')
         # self.model.to(self.device)
 
