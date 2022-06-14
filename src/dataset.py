@@ -280,6 +280,7 @@ class Dataset:
         elif split_strategy == 'random':
             self.random_split()
         elif split_strategy == 'reuse':
+            self.util.debug(f'{self.name}: trying to reuse data splits')
             self.df_test = pd.read_pickle(storage_test)
             self.df_train = pd.read_pickle(storage_train)
 

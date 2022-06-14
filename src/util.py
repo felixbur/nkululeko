@@ -90,8 +90,17 @@ class Util:
             df.index = audformat.utils.to_segmented_index(df.index, allow_nat=False)
         return df
 
-    def get_exp_name(self):
-        ds = '_'.join(ast.literal_eval(glob_conf.config['DATA']['databases']))
+    def get_exp_name(self, only_train = False):
+        if only_train:
+            # try to get only the train tables
+            trains_val = self.config_val('DATA', 'trains', False)
+            if trains_val:
+                ds = '_'.join(ast.literal_eval(glob_conf.config['DATA']['trains']))
+            else:
+                # else use all the data
+                ds = '_'.join(ast.literal_eval(glob_conf.config['DATA']['databases']))
+        else:
+            ds = '_'.join(ast.literal_eval(glob_conf.config['DATA']['databases']))
         mt = glob_conf.config['MODEL']['type']
         ft = glob_conf.config['FEATS']['type']
         set = self.config_val('FEATS', 'set', False)

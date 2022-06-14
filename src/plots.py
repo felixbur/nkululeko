@@ -47,7 +47,7 @@ class Plots():
     def plotTsne(self, feats, labels, filename, perplexity=30, learning_rate=200):
         """Make a TSNE plot to see whether features are useful for classification"""
         fig_dir = self.util.get_path('fig_dir')+'../' # one up because of the runs 
-        filename = fig_dir+filename
+        filename = fig_dir+filename+'.png'
         self.util.debug(f'plotting tsne to {filename}, this might take a while...')
         model = TSNE(n_components=2, random_state=0, perplexity=perplexity, learning_rate=learning_rate)
         tsne_data = model.fit_transform(feats)

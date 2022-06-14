@@ -43,10 +43,10 @@ class CNN_model(Model):
         """Train the model one epoch"""
         losses = []
         # first check if the model already has been trained
-        if os.path.isfile(self.store_path):
-            self.load(self.run, self.epoch)
-            self.util.debug(f'reusing model: {self.store_path}')
-            return
+        # if os.path.isfile(self.store_path):
+        #     self.load(self.run, self.epoch)
+        #     self.util.debug(f'reusing model: {self.store_path}')
+        #     return
             
         self.model.train()
 
@@ -108,9 +108,11 @@ class CNN_model(Model):
         # self.model.to(self.device)
 
     def load(self, run, epoch):
+        self.set_id(run, epoch)
         dir = self.util.get_path('model_dir')
         name = f'{self.util.get_exp_name()}_{run}_{epoch:03d}.model'
         self.device = self.util.config_val('MODEL', 'device', 'cpu')
+        self.store_path = dir+name
         self.model = audpann.Cnn10(sampling_rate=16000, output_dim=1)
         state_dict = torch.load(dir+name, map_location='cpu')
         self.model.load_state_dict(state_dict, strict=False)

@@ -64,11 +64,17 @@ class Runmanager:
             self.util.set_config_val('EXP', 'run', run)
             # initialze results
             self.reports = []
-            plot_epochs = self.util.config_val('PLOT', 'epochs', 0)
+            plot_epochs = self.util.config_val('PLOT', 'epochs', False)
+            only_test = self.util.config_val('MODEL', 'only_test', False)
             # for all epochs
             for epoch in range(int(self.util.config_val('EXP', 'epochs', 1))):
-                self.model.set_id(run, epoch)
-                self.model.train()
+                if only_test:
+                    self.model.load(run, epoch)
+                    self.util.debug(f'reusing model: {self.model.store_path}')
+                    self.model.reset_test(self.df_test, self.feats_test)
+                else:
+                    self.model.set_id(run, epoch)
+                    self.model.train()
                 report = self.model.predict()
                 report.set_id(run, epoch)
                 plot_name = self.util.get_plot_name()+f'_{run}_{epoch:03d}_cnf.png'
@@ -80,7 +86,7 @@ class Runmanager:
                     report.plot_confmatrix(plot_name, epoch)
                 store_models = self.util.config_val('MODEL', 'save', 0)
                 plot_best_model = self.util.config_val('PLOT', 'best_model', False)
-                if store_models or plot_best_model: # in any case the model needs to be stored to disk.
+                if (store_models or plot_best_model) and (not only_test): # in any case the model needs to be stored to disk.
                     self.model.store()
             if not plot_epochs:
                 # Do a final confusion matrix plot

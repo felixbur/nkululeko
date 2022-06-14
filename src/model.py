@@ -28,11 +28,15 @@ class Model:
         self.logo = self.util.config_val('MODEL', 'logo', False)
         self.xfoldx = self.util.config_val('MODEL', 'k_fold_cross', False)
 
+    def reset_test(self,  df_test, feats_test):
+        self.df_test, self.feats_test = df_test, feats_test
+
+
     def set_id(self, run, epoch):
         self.run = run
         self.epoch = epoch
         dir = self.util.get_path('model_dir')
-        name = f'{self.util.get_exp_name()}_{self.run}_{self.epoch:03d}.model'
+        name = f'{self.util.get_exp_name(only_train=True)}_{self.run}_{self.epoch:03d}.model'
         self.store_path = dir+name
 
 
@@ -172,11 +176,11 @@ class Model:
 
     def train(self):
         """Train the model"""
-        # first check if the model already has been trained
-        if os.path.isfile(self.store_path):
-            self.load(self.run, self.epoch)
-            self.util.debug(f'reusing model: {self.store_path}')
-            return
+        # # first check if the model already has been trained
+        # if os.path.isfile(self.store_path):
+        #     self.load(self.run, self.epoch)
+        #     self.util.debug(f'reusing model: {self.store_path}')
+        #     return
 
         # first check if leave on  speaker out is wanted
         if self.loso:

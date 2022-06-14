@@ -44,13 +44,15 @@ class MLP_model(Model):
         # set up regularization
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
 
+    def reset_test(self,  df_test, feats_test):
+        self.testloader = self.get_loader(feats_test.df, df_test, False)
 
     def train(self):
         # first check if the model already has been trained
-        if os.path.isfile(self.store_path):
-            self.load(self.run, self.epoch)
-            self.util.debug(f'reusing model: {self.store_path}')
-            return 
+        # if os.path.isfile(self.store_path):
+        #     self.load(self.run, self.epoch)
+        #     self.util.debug(f'reusing model: {self.store_path}')
+        #     return 
             
         self.model.train()
         losses = []
@@ -135,13 +137,16 @@ class MLP_model(Model):
         torch.save(self.model.state_dict(), self.store_path)
         
     def load(self, run, epoch):
+        self.set_id(run, epoch)
         dir = self.util.get_path('model_dir')
-        name = f'{self.util.get_exp_name()}_{run}_{epoch:03d}.model'
+        # name = f'{self.util.get_exp_name()}_{run}_{epoch:03d}.model'
+        name = f'{self.util.get_exp_name(only_train=True)}_{self.run}_{self.epoch:03d}.model'
         self.device = self.util.config_val('MODEL', 'device', 'cpu')
         layers = ast.literal_eval(glob_conf.config['MODEL']['layers'])
+        self.store_path = dir+name
         drop = self.util.config_val('MODEL', 'drop', False)
         if drop:
             self.util.debug(f'training with dropout: {drop}')
         self.model = self.MLP(self.feats_train.df.shape[1], layers, self.class_num, drop).to(self.device)
-        self.model.load_state_dict(torch.load(dir+name))
+        self.model.load_state_dict(torch.load(self.store_path))
         self.model.eval()
