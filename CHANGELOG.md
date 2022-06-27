@@ -1,6 +1,16 @@
 Changelog
 =========
 
+Version 0.22.0
+-------------
+* added David R. Feinberg's Praat features, praise also to parselmouth
+
+Version 0.21.0
+-------------
+
+* Revoked 0.20.0
+* Added support for only_test = True, to enable later testing of trained models with new test data
+
 Version 0.20.0
 -------------
 

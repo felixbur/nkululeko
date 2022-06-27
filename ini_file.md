@@ -97,6 +97,7 @@
     * **os**: [open smile features](https://audeering.github.io/opensmile-python/)
       * **set** = eGeMAPSv02 *(features set)*
       * **level** = functionals *(or lld: feature level)*
+    * **praat**: Praat selected features thanks to (David R. Feinberg scripts)[https://github.com/drfeinberg/PraatScripts]
     * **spectra**: Melspecs for convolutional networks
     * **trill**: [TRILL embeddings](https://ai.googleblog.com/2020/06/improving-speech-representations-and.html) from Google
       * **trill.model** = *path to the TRILL model folder, optional*
