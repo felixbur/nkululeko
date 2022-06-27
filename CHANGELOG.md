@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.23.0
+-------------
+* added selectable features for Praat interface
+
 Version 0.22.0
 -------------
 * added David R. Feinberg's Praat features, praise also to parselmouth
