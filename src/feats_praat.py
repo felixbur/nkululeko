@@ -33,6 +33,9 @@ class Praatset(Featureset):
         else:
             self.util.debug('reusing extracted Praat features.')
             self.df = pd.read_pickle(storage)
+
+        self.util.debug(f'praat feature names: {self.df.columns}')
+
         try: 
             # use only some features
             selected_features = ast.literal_eval(glob_conf.config['FEATS']['features'])

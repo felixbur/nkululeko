@@ -13,3 +13,4 @@ scipy
 scikit_learn
 sklearn
 sounddevice
+praat-parselmouth
