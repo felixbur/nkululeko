@@ -1,11 +1,10 @@
 # feats_praat.py
 from featureset import Featureset
-import opensmile
 import os
 import pandas as pd
-from util import Util 
 import glob_conf
 import feinberg_praat
+import ast
 
 class Praatset(Featureset):
     """
@@ -34,6 +33,15 @@ class Praatset(Featureset):
         else:
             self.util.debug('reusing extracted Praat features.')
             self.df = pd.read_pickle(storage)
+        try: 
+            # use only some features
+            selected_features = ast.literal_eval(glob_conf.config['FEATS']['features'])
+            self.df = self.df[selected_features]
+            self.util.debug(f'new feats shape after selecting features: {self.df.shape}')
+        except KeyError:
+            pass
+        self.df = self.df.astype(float)
+
 
 
     def extract_sample(self, signal, sr):
