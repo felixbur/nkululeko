@@ -94,6 +94,11 @@
 * **type**: the type of features
   * type = os
   * possible values:
+    * **mld**: [mid-level-descriptors](http://www.essv.de/paper.php?id=447)
+      * **mld.model** = *path to the mld sources folder*
+      * **min_syls** = *minimum number of syllables*
+      * **with_os** = *with added opensmile eGemaps features*
+      * **features** = *python list of selected features to be used (all others ignored)*
     * **os**: [open smile features](https://audeering.github.io/opensmile-python/)
       * **set** = eGeMAPSv02 *(features set)*
       * **level** = functionals *(or lld: feature level)*
@@ -103,11 +108,6 @@
       * **trill.model** = *path to the TRILL model folder, optional*
     * **wav2vec**: [Wav2vec2 embeddings](https://huggingface.co/facebook/wav2vec2-large-robust-ft-swbd-300h) from facebook
       * **wav2vec.model** = *path to the wav2vec2 model folder*
-    * **mld**: [mid-level-descriptors](http://www.essv.de/paper.php?id=447)
-      * **mld.model** = *path to the mld sources folder*
-      * **min_syls** = *minimum number of syllables*
-      * **with_os** = *with added opensmile eGemaps features*
-      * **features** = *python list of selected features to be used (all others ignored)*
     * **xbow**: [open crossbow](https://github.com/openXBOW) features codebook computed from open smile features
       * **xbow.model** = *path to xbow root folder (containing xbow.jar)*
       * **size** = 500 *(codebook size, rule of thumb: should grow with datasize)*
