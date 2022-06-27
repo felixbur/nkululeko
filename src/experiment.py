@@ -267,6 +267,14 @@ class Experiment:
             self.feats_test = Wav2vec2(f'{feats_name}_test', df_test)
             self.feats_test.extract()
             self.feats_test.filter()
+        elif feats_type=='praat':
+            from feats_praat import Praatset
+            self.feats_train = Praatset(f'{feats_name}_train', df_train)
+            self.feats_train.extract()
+            self.feats_train.filter()
+            self.feats_test = Praatset(f'{feats_name}_test', df_test)
+            self.feats_test.extract()
+            self.feats_test.filter()
         elif feats_type=='mld':
             from feats_mld import MLD_set
             self.feats_train = MLD_set(f'{feats_name}_train', df_train)
