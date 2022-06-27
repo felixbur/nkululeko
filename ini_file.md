@@ -98,11 +98,12 @@
       * **mld.model** = *path to the mld sources folder*
       * **min_syls** = *minimum number of syllables*
       * **with_os** = *with added opensmile eGemaps features*
-      * **features** = *python list of selected features to be used (all others ignored)*
+      * **features** = *python list of selected MLD features to be used (all others ignored)*
     * **os**: [open smile features](https://audeering.github.io/opensmile-python/)
       * **set** = eGeMAPSv02 *(features set)*
       * **level** = functionals *(or lld: feature level)*
     * **praat**: Praat selected features thanks to (David R. Feinberg scripts)[https://github.com/drfeinberg/PraatScripts]
+      * **features** = *python list of selected praat features to be used (all others ignored)*
     * **spectra**: Melspecs for convolutional networks
     * **trill**: [TRILL embeddings](https://ai.googleblog.com/2020/06/improving-speech-representations-and.html) from Google
       * **trill.model** = *path to the TRILL model folder, optional*
