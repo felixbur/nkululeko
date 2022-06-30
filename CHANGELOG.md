@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.25.1
+-------------
+* fixed bug that no features were chosen if not selected
+
 Version 0.25.0
 -------------
 * made selectable features universal for feature sets

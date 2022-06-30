@@ -26,13 +26,16 @@ class Featureset:
             selected_features = ast.literal_eval(glob_conf.config['FEATS']['features'])
             self.util.debug(f'trying to select features: {selected_features}')
             sel_feats_df = pd.DataFrame()
+            hit = False
             for feat in selected_features:
                 try:
                     sel_feats_df[feat] = self.df[feat]
+                    hit = True
                 except KeyError:
                     pass
-            self.df = sel_feats_df
-            self.util.debug(f'new feats shape after selecting features: {self.df.shape}')
+            if hit:
+                self.df = sel_feats_df
+                self.util.debug(f'new feats shape after selecting features: {self.df.shape}')
         except KeyError:
             pass
 
