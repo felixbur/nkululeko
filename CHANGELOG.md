@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.25.0
+-------------
+* made selectable features universal for feature sets
+
 Version 0.24.0
 -------------
 * added multiple feature sets (will simply be concatenated)

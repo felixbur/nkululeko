@@ -33,16 +33,7 @@ class Praatset(Featureset):
         else:
             self.util.debug('reusing extracted Praat features.')
             self.df = pd.read_pickle(storage)
-
         self.util.debug(f'praat feature names: {self.df.columns}')
-
-        try: 
-            # use only some features
-            selected_features = ast.literal_eval(glob_conf.config['FEATS']['features'])
-            self.df = self.df[selected_features]
-            self.util.debug(f'new feats shape after selecting features: {self.df.shape}')
-        except KeyError:
-            pass
         self.df = self.df.astype(float)
 
 

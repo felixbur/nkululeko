@@ -261,11 +261,6 @@ class Experiment:
                 from feats_mld import MLD_set
                 featExtractor_train = MLD_set(f'{store_name}_train', df_train)
                 featExtractor_test = MLD_set(f'{store_name}_test', df_test)
-                # remove samples that were not extracted by MLD
-                self.df_test = self.df_test.loc[self.df_test.index.intersection(self.feats_test.df.index)]
-                self.df_train = self.df_train.loc[self.df_train.index.intersection(featExtractor_train.df.index)]
-                if self.feats_train.df.isna().to_numpy().any():
-                    self.util.error('exp 2: NANs exist')
             elif feats_type=='xbow':
                 from feats_oxbow import Openxbow
                 featExtractor_train = Openxbow(f'{store_name}_train', df_train, is_train=True)
@@ -289,6 +284,9 @@ class Experiment:
             featExtractor_train.filter()
             featExtractor_test.extract()
             featExtractor_test.filter()
+            # remove samples that were not extracted by MLD
+            #self.df_test = self.df_test.loc[self.df_test.index.intersection(featExtractor_test.df.index)]
+            #self.df_train = self.df_train.loc[self.df_train.index.intersection(featExtractor_train.df.index)]
             self.util.debug(f'{feats_type}: train shape : {featExtractor_train.df.shape}, test shape:{featExtractor_test.df.shape}')
             self.feats_train = pd.concat([self.feats_train, featExtractor_train.df], axis = 1)
             self.feats_test = pd.concat([self.feats_test, featExtractor_test.df], axis = 1)
