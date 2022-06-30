@@ -112,6 +112,7 @@
       * **assignments** = 10 *(number of words in the bag representation where the counter is increased for each input LLD, rule of thumb: should grow/shrink with codebook size)*
       * **with_os** = False *with added opensmile eGemaps functionals*
 * **features** = *python list of selected features to be used (all others ignored)*
+  * features = ['JitterPCA', 'meanF0Hz', 'hld_sylRate']
 * **needs_feature_extraction**: if features should be extracted newly even if already stored
   * needs_feature_extraction = False
 * **scale**: scale the features
