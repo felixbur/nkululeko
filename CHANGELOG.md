@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.24.0
+-------------
+* added multiple feature sets (will simply be concatenated)
+
 Version 0.23.0
 -------------
 * added selectable features for Praat interface

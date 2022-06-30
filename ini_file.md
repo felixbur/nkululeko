@@ -36,8 +36,8 @@
   * type = continuous
 * **databases**: list of databases to be used in the experiment
   * databases = ['emodb', 'timit']
-* **strategy**: how the databases should be used, either *train_test* or *cross_data*
-  * strategy = train_test
+* **strategy**: how the databases should be used, either *traintest* or *cross_data*
+  * strategy = traintest
 * **trains**: if *strategy* = cross_data, denote the train databases
 * **tests**: if *strategy* = cross_data, denote the test databases
 * **root_folders**: specify an additional configuration specifically for all entries starting with a dataset name, acting as global defaults. 
@@ -91,8 +91,8 @@
 * **target_divide_by**: divide the target values by some factor, e.g. to make age smaller and encode years from .0 to 1
   * **target_divide_by = 100
 ### FEATS
-* **type**: the type of features
-  * type = os
+* **type**: a list of types of features, they will be columnwise concatenated
+  * type = ['os']
   * possible values:
     * **mld**: [mid-level-descriptors](http://www.essv.de/paper.php?id=447)
       * **mld.model** = *path to the mld sources folder*
@@ -175,6 +175,10 @@
   * learning_rate = 0.0001
 * **drop**: Adding dropout (after each hidden layer). Value states dropout probability
   * drop = .5
+* **batch_size**: Size of batch before backpropagation for neural nets
+  * batch_size = 8
+* **num_workers**: Number of parallel processes for neural nets
+  * num_workers = 5
 
 ### PLOT
 * **name**: special name as a prefix for all plots (stored in *img_dir*).

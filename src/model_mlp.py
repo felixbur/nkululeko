@@ -27,9 +27,6 @@ class MLP_model(Model):
         # set up loss criterion
         self.criterion = torch.nn.CrossEntropyLoss()
         self.util.debug(f'training model with cross entropy loss function')
-        # set up the data_loaders
-        self.trainloader = self.get_loader(feats_train.df, df_train, True)
-        self.testloader = self.get_loader(feats_test.df, df_test, False)
         # set up the model
         self.device = self.util.config_val('MODEL', 'device', 'cpu')
         layers_string = glob_conf.config['MODEL']['layers']
@@ -39,21 +36,29 @@ class MLP_model(Model):
         drop = self.util.config_val('MODEL', 'drop', False)
         if drop:
             self.util.debug(f'training with dropout: {drop}')
-        self.model = self.MLP(feats_train.df.shape[1], layers, self.class_num, drop).to(self.device)
+        self.model = self.MLP(feats_train.shape[1], layers, self.class_num, drop).to(self.device)
         self.learning_rate = float(self.util.config_val('MODEL', 'learning_rate', 0.0001))
         # set up regularization
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
+        # batch size
+        self.batch_size = int(self.util.config_val('MODEL', 'batch_size', 8))
+        # number of parallel processes
+        self.num_workers = int(self.util.config_val('MODEL', 'num_workers', 5))
+        if feats_train.isna().to_numpy().any():
+            self.util.debug(f'Model, train: replacing {feats_train.isna().sum().sum()} NANs with 0')
+            feats_train = feats_train.fillna(0)
+        if feats_test.isna().to_numpy().any():
+            self.util.debug(f'Model, test: replacing {feats_test.isna().sum().sum()} NANs with 0')
+            feats_test = feats_test.fillna(0)
+        # set up the data_loaders
+        self.trainloader = self.get_loader(feats_train, df_train, True)
+        self.testloader = self.get_loader(feats_test, df_test, False)
+
 
     def reset_test(self,  df_test, feats_test):
-        self.testloader = self.get_loader(feats_test.df, df_test, False)
+        self.testloader = self.get_loader(feats_test, df_test, False)
 
-    def train(self):
-        # first check if the model already has been trained
-        # if os.path.isfile(self.store_path):
-        #     self.load(self.run, self.epoch)
-        #     self.util.debug(f'reusing model: {self.store_path}')
-        #     return 
-            
+    def train(self):            
         self.model.train()
         losses = []
         for features, labels in self.trainloader:
@@ -84,7 +89,7 @@ class MLP_model(Model):
         data=[]
         for i in range(len(df_x)):
             data.append([df_x.values[i], df_y[self.target][i]])
-        return torch.utils.data.DataLoader(data, shuffle=shuffle, batch_size=8)
+        return torch.utils.data.DataLoader(data, shuffle=shuffle, batch_size=self.batch_size)
 
     class MLP(torch.nn.Module):
         def __init__(self, i, layers, o, drop):
@@ -147,6 +152,6 @@ class MLP_model(Model):
         drop = self.util.config_val('MODEL', 'drop', False)
         if drop:
             self.util.debug(f'training with dropout: {drop}')
-        self.model = self.MLP(self.feats_train.df.shape[1], layers, self.class_num, drop).to(self.device)
+        self.model = self.MLP(self.feats_train.shape[1], layers, self.class_num, drop).to(self.device)
         self.model.load_state_dict(torch.load(self.store_path))
         self.model.eval()

@@ -164,8 +164,15 @@ class Util:
         )
     def config_val(self, section, key, default):
         try:
-            # strategy is either train_test (default)  or cross_data
+            # strategy is either traintest (default)  or cross_data
             return glob_conf.config[section][key]
+        except KeyError:
+            return default
+            
+    def config_val_list(self, section, key, default):
+        try:
+            # strategy is either traintest (default)  or cross_data
+            return ast.literal_eval(glob_conf.config[section][key])
         except KeyError:
             return default
             

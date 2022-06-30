@@ -31,9 +31,6 @@ class MLP_Reg_model(Model):
         else:
             self.util.error(f'unknown loss function: {criterion}')
         self.util.debug(f'training model with {criterion} loss function')
-        # set up the data_loaders
-        self.trainloader = self.get_loader(feats_train.df, df_train, True)
-        self.testloader = self.get_loader(feats_test.df, df_test, False)
         # set up the model
         self.device = self.util.config_val('MODEL', 'device', 'cpu')
         layers_string = glob_conf.config['MODEL']['layers']
@@ -42,11 +39,23 @@ class MLP_Reg_model(Model):
         drop = self.util.config_val('MODEL', 'drop', False)
         if drop:
             self.util.debug(f'training with dropout: {drop}')
-        self.model = self.MLP(feats_train.df.shape[1], layers, 1, drop).to(self.device)
+        self.model = self.MLP(feats_train.shape[1], layers, 1, drop).to(self.device)
         self.learning_rate = float(self.util.config_val('MODEL', 'learning_rate', 0.0001))
         # set up regularization
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
-
+        # batch size
+        self.batch_size = int(self.util.config_val('MODEL', 'batch_size', 8))
+        # number of parallel processes
+        self.num_workers = int(self.util.config_val('MODEL', 'num_workers', 5))
+        # set up the data_loaders
+        if feats_train.isna().to_numpy().any():
+            self.util.debug(f'Model, train: replacing {feats_train.isna().sum().sum()} NANs with 0')
+            feats_train = feats_train.fillna(0)
+        if feats_test.isna().to_numpy().any():
+            self.util.debug(f'Model, test: replacing {feats_test.isna().sum().sum()} NANs with 0')
+            feats_test = feats_test.fillna(0)
+        self.trainloader = self.get_loader(feats_train, df_train, True)
+        self.testloader = self.get_loader(feats_test, df_test, False)
 
     def train(self):
         loss = self.train_epoch(self.model, self.trainloader, self.device, self.optimizer, self.criterion)
@@ -67,12 +76,11 @@ class MLP_Reg_model(Model):
         data_set = self.Dataset(df_y, df_x, self.target)
         loader = torch.utils.data.DataLoader(
             dataset=data_set,
-            batch_size=8,
+            batch_size=self.batch_size,
             shuffle=shuffle,
-            num_workers=3
+            num_workers=self.num_workers
         )
         return loader
-
 
     class Dataset(torch.utils.data.Dataset):
         def __init__(self, df, features,
@@ -107,7 +115,7 @@ class MLP_Reg_model(Model):
             self.linear = torch.nn.Sequential(layers)
         def forward(self, x):
             # x: (batch_size, channels, samples)
-            x = x.squeeze(dim=1)
+            x = x.squeeze(dim=1).float()
             return self.linear(x)
 
 
@@ -164,6 +172,6 @@ class MLP_Reg_model(Model):
         drop = self.util.config_val('MODEL', 'drop', False)
         if drop:
             self.util.debug(f'training with dropout: {drop}')
-        self.model = self.MLP(self.feats_train.df.shape[1], layers, 1, drop).to(self.device)
+        self.model = self.MLP(self.feats_train.shape[1], layers, 1, drop).to(self.device)
         self.model.load_state_dict(torch.load(dir+name))
         self.model.eval()

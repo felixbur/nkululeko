@@ -16,6 +16,7 @@ from parselmouth.praat import call
 from scipy.stats.mstats import zscore
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+import pickle
 
 #input_wavs = '/home/audeering.local/fburkhardt/audb/emodb/1.1.1/135fc543/wav/'
 #input_wavs = './test_wavs/'
@@ -108,12 +109,29 @@ def runPCA(df):
     measures = ['localJitter', 'localabsoluteJitter', 'rapJitter', 'ppq5Jitter', 'ddpJitter',
                 'localShimmer', 'localdbShimmer', 'apq3Shimmer', 'apq5Shimmer', 'apq11Shimmer', 'ddaShimmer']
     x = df.loc[:, measures].values
+    # f = open('x.pickle', 'wb')
+    # pickle.dump(x, f)
+    # f.close()
+
     x = StandardScaler().fit_transform(x)
+    if np.any(np.isnan(x)):
+        print (f'Warning: {np.count_nonzero(np.isnan(x))} Nans in x, replacing with 0')
+        x[np.isnan(x)] = 0
+    if np.any(np.isfinite(x)):
+        print (f'Warning: {np.count_nonzero(np.isfinite(x))} infinite in x')
+    
     # PCA
     pca = PCA(n_components=2)
     principalComponents = pca.fit_transform(x)
+    print(type(principalComponents))
+    if np.any(np.isnan(principalComponents)):
+        print ('pc is nan')
+        print(f'count: {np.count_nonzero(np.isnan(principalComponents))}')
+        print(principalComponents)
+        principalComponents=np.nan_to_num(principalComponents)
+
     principalDf = pd.DataFrame(data = principalComponents, columns = ['JitterPCA', 'ShimmerPCA'])
-    principalDf
+
     return principalDf
 
 

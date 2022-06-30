@@ -20,9 +20,9 @@ class Scaler:
         else:
             self.util.error('unknown scaler: '+scaler_type)
         self.scaler_type = scaler_type
-        self.feats_train = train_feats.df
+        self.feats_train = train_feats
         self.data_train = train_data_df
-        self.feats_test = test_feats.df
+        self.feats_test = test_feats
         self.data_test = test_data_df
 
     def scale(self):

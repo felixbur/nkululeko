@@ -94,7 +94,7 @@ class Experiment:
             self.df_train = self._import_csv(storage_train)
         else:
             self.df_train, self.df_test = pd.DataFrame(), pd.DataFrame()
-            strategy = self.util.config_val('DATA', 'strategy', 'train_test')
+            strategy = self.util.config_val('DATA', 'strategy', 'traintest')
             # some datasets against others in their entirety
             if strategy == 'cross_data':
                 train_dbs = ast.literal_eval(glob_conf.config['DATA']['trains'])
@@ -109,7 +109,7 @@ class Experiment:
                     d.prepare_labels()
                     self.df_test = self.df_test.append(self.util.make_segmented_index(d.df))
                     self.df_test.is_labeled = d.is_labeled
-            elif strategy == 'train_test':
+            elif strategy == 'traintest':
                 # default: train vs. test combined from all datasets
                 for d in self.datasets.values():
                     d.split()
@@ -230,89 +230,69 @@ class Experiment:
         
         """
         df_train, df_test = self.df_train, self.df_test
-        strategy = self.util.config_val('DATA', 'strategy', 'train_test')
-        feats_type = self.util.config_val('FEATS', 'type', 'os')
+        strategy = self.util.config_val('DATA', 'strategy', 'traintest')
+        feats_types = self.util.config_val_list('FEATS', 'type', ['os'])
         feats_name = "_".join(ast.literal_eval(glob_conf.config['DATA']['databases']))
-        feats_name = f'{feats_name}_{strategy}_{feats_type}'   
+        featExtractor_train, featExtractor_test = None, None
+        self.feats_test, self.feats_train = pd.DataFrame(), pd.DataFrame()
         _scale = True
-        if feats_type=='os':
-            self.feats_train = Opensmileset(f'{feats_name}_train', df_train)
-            self.feats_train.extract()
-            self.feats_train.filter()
-            self.feats_test = Opensmileset(f'{feats_name}_test', df_test)
-            self.feats_test.extract()
-            self.feats_test.filter()
-            self.util.debug(f'train shape : {self.feats_train.df.shape}, test shape:{self.feats_test.df.shape}')
-        elif feats_type=='audid':
-            from feats_audid import AudIDset
-            self.feats_train = AudIDset(f'{feats_name}_train', df_train)
-            self.feats_train.extract()
-            self.feats_train.filter()
-            self.feats_test = AudIDset(f'{feats_name}_test', df_test)
-            self.feats_test.extract()
-            self.feats_test.filter()
-        elif feats_type=='trill':
-            from feats_trill import TRILLset
-            self.feats_train = TRILLset(f'{feats_name}_train', df_train)
-            self.feats_train.extract()
-            self.feats_train.filter()
-            self.feats_test = TRILLset(f'{feats_name}_test', df_test)
-            self.feats_test.extract()
-            self.feats_test.filter()
-        elif feats_type=='wav2vec':
-            from feats_wav2vec2 import Wav2vec2
-            self.feats_train = Wav2vec2(f'{feats_name}_train', df_train)
-            self.feats_train.extract()
-            self.feats_train.filter()
-            self.feats_test = Wav2vec2(f'{feats_name}_test', df_test)
-            self.feats_test.extract()
-            self.feats_test.filter()
-        elif feats_type=='praat':
-            from feats_praat import Praatset
-            self.feats_train = Praatset(f'{feats_name}_train', df_train)
-            self.feats_train.extract()
-            self.feats_train.filter()
-            self.feats_test = Praatset(f'{feats_name}_test', df_test)
-            self.feats_test.extract()
-            self.feats_test.filter()
-        elif feats_type=='mld':
-            from feats_mld import MLD_set
-            self.feats_train = MLD_set(f'{feats_name}_train', df_train)
-            self.feats_train.extract()
-            self.feats_train.filter()
-            self.feats_test = MLD_set(f'{feats_name}_test', df_test)
-            self.feats_test.extract()
-            self.feats_test.filter()
-            # remove samples that were not extracted by MLD
-            self.df_test = self.df_test.loc[self.df_test.index.intersection(self.feats_test.df.index)]
-            self.df_train = self.df_train.loc[self.df_train.index.intersection(self.feats_train.df.index)]
-            if self.feats_train.df.isna().to_numpy().any():
-                self.util.error('exp 2: NANs exist')
-        elif feats_type=='xbow':
-            from feats_oxbow import Openxbow
-            self.feats_train = Openxbow(f'{feats_name}_train', df_train, is_train=True)
-            self.feats_train.extract()
-            self.feats_train.filter()
-            self.feats_test = Openxbow(f'{feats_name}_test', df_test)
-            self.feats_test.extract()
-            self.feats_test.filter()
-            self.util.debug(f'train shape : {self.feats_train.df.shape}, test shape:{self.feats_test.df.shape}')
+        for feats_type in feats_types:
+            store_name = f'{feats_name}_{strategy}_{feats_type}'   
+            if feats_type=='os':
+                featExtractor_train = Opensmileset(f'{store_name}_train', df_train)
+                featExtractor_test = Opensmileset(f'{store_name}_test', df_test)
+            elif feats_type=='audid':
+                from feats_audid import AudIDset
+                featExtractor_train = AudIDset(f'{store_name}_train', df_train)
+                featExtractor_test = AudIDset(f'{store_name}_test', df_test)
+            elif feats_type=='trill':
+                from feats_trill import TRILLset
+                featExtractor_train = TRILLset(f'{store_name}_train', df_train)
+                featExtractor_test = TRILLset(f'{store_name}_test', df_test)
+            elif feats_type=='wav2vec':
+                from feats_wav2vec2 import Wav2vec2
+                featExtractor_train = Wav2vec2(f'{store_name}_train', df_train)
+                featExtractor_test = Wav2vec2(f'{store_name}_test', df_test)
+            elif feats_type=='praat':
+                from feats_praat import Praatset
+                featExtractor_train = Praatset(f'{store_name}_train', df_train)
+                featExtractor_test = Praatset(f'{store_name}_test', df_test)
+            elif feats_type=='mld':
+                from feats_mld import MLD_set
+                featExtractor_train = MLD_set(f'{store_name}_train', df_train)
+                featExtractor_test = MLD_set(f'{store_name}_test', df_test)
+                # remove samples that were not extracted by MLD
+                self.df_test = self.df_test.loc[self.df_test.index.intersection(self.feats_test.df.index)]
+                self.df_train = self.df_train.loc[self.df_train.index.intersection(featExtractor_train.df.index)]
+                if self.feats_train.df.isna().to_numpy().any():
+                    self.util.error('exp 2: NANs exist')
+            elif feats_type=='xbow':
+                from feats_oxbow import Openxbow
+                featExtractor_train = Openxbow(f'{store_name}_train', df_train, is_train=True)
+                featExtractor_test = Openxbow(f'{store_name}_test', df_test)
+            elif feats_type=='spectra':
+                # compute the spectrograms
+                from feats_spectra import Spectraloader # not yet open source
+                test_specs = Spectraloader(f'{store_name}_test', df_test)
+                test_specs.make_feats()
+                self.feats_test = test_specs.get_loader()
+                self.feats_train = None
+                if df_train.shape[0]>0:
+                    train_specs = Spectraloader(f'{store_name}_train', df_train)
+                    train_specs.make_feats()
+                    self.feats_train = train_specs.get_loader()
+                _scale = False
+            else:
+                self.util.error(f'unknown feats_type: {feats_type}')
 
-        elif feats_type=='spectra':
-            # compute the spectrograms
-            from feats_spectra import Spectraloader # not yet open source
-            test_specs = Spectraloader(f'{feats_name}_test', df_test)
-            test_specs.make_feats()
-            self.feats_test = test_specs.get_loader()
-            self.feats_train = None
-            if df_train.shape[0]>0:
-                train_specs = Spectraloader(f'{feats_name}_train', df_train)
-                train_specs.make_feats()
-                self.feats_train = train_specs.get_loader()
-            _scale = False
-        else:
-            self.util.error(f'unknown feats_type: {feats_type}')
-
+            featExtractor_train.extract()
+            featExtractor_train.filter()
+            featExtractor_test.extract()
+            featExtractor_test.filter()
+            self.util.debug(f'{feats_type}: train shape : {featExtractor_train.df.shape}, test shape:{featExtractor_test.df.shape}')
+            self.feats_train = pd.concat([self.feats_train, featExtractor_train.df], axis = 1)
+            self.feats_test = pd.concat([self.feats_test, featExtractor_test.df], axis = 1)
+        self.util.debug(f'All features: train shape : {self.feats_train.shape}, test shape:{self.feats_test.shape}')
         if _scale:
             self._scale()
 
@@ -321,8 +301,9 @@ class Experiment:
         if tsne and self.util.exp_is_classification():
             from plots import Plots
             plots = Plots()
-            plots.plotTsne(self.feats_train.df, self.df_train['class_label'], self.util.get_exp_name()+'_tsne')
-
+            all_feats =self.feats_train.append(self.feats_test)
+            all_labels = self.df_train['class_label'].append(self.df_test['class_label'])
+            plots.plotTsne(all_feats, all_labels, self.util.get_exp_name()+'_tsne')
 
     def _scale(self):
         scale = self.util.config_val('FEATS', 'scale', False)

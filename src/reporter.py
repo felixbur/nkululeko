@@ -58,9 +58,9 @@ class Reporter:
                 elif self.measure == 'ccc':
                     self.result.test = self.ccc(self.truths, self.preds)
                     if math.isnan(self.result.test):
-                        self.util.debug(self.truths)
-                        self.util.debug(self.preds)
-                        self.util.debug(f'result is NAN: setting to -1')
+                        self.util.debug(f'Truth: {self.truths}')
+                        self.util.debug(f'Predict.: {self.preds}')
+                        self.util.debug(f'Result is NAN: setting to -1')
                         self.result.test = -1
                 else:
                     self.util.error(f'unknown measure: {self.measure}')

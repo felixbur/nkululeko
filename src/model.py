@@ -43,7 +43,7 @@ class Model:
     def _x_fold_cross(self):
         # ignore train and test sets and do a "leave one speaker out"  evaluation
         self.util.debug(f'ignoring splits and doing {self.xfoldx} fold cross validation')
-        feats = self.feats_train.df.append(self.feats_test.df)
+        feats = self.feats_train.append(self.feats_test)
         annos = self.df_train.append(self.df_test)
         targets = annos[self.target]
         _skf = StratifiedKFold(n_splits=int(self.xfoldx))
@@ -83,7 +83,7 @@ class Model:
     def _loso(self):
         # ignore train and test sets and do a "leave one speaker out"  evaluation
         self.util.debug('ignoring splits and doing LOSO')
-        feats = self.feats_train.df.append(self.feats_test.df)
+        feats = self.feats_train.append(self.feats_test)
         annos = self.df_train.append(self.df_test)
         targets = annos[self.target]
         _logo = LeaveOneGroupOut()
@@ -125,7 +125,7 @@ class Model:
     def _do_logo(self):
         # ignore train and test sets and do a "leave one speaker group out"  evaluation
         self.util.debug('ignoring splits and doing LOSGO')
-        feats = self.feats_train.df.append(self.feats_test.df)
+        feats = self.feats_train.append(self.feats_test)
         annos = self.df_train.append(self.df_test)
         targets = annos[self.target]
         _logo = LeaveOneGroupOut()
@@ -196,10 +196,12 @@ class Model:
             return
 
         # check for NANs in the features
-        if self.feats_train.df.isna().to_numpy().any():
-            self.util.error('can\'t train: NANs exist')
+        # set up the data_loaders
+        if self.feats_train.isna().to_numpy().any():
+            self.util.debug(f'Model, train: replacing {self.feats_train.isna().sum().sum()} NANs with 0')
+            self.feats_train = self.feats_train.fillna(0)
         # remove labels from features
-        feats = self.feats_train.df.to_numpy()
+        feats = self.feats_train.to_numpy()
         # compute class weights
         if self.util.config_val('MODEL', 'class_weight', False):      
             self.classes_weights = sklearn.utils.class_weight.compute_sample_weight(
@@ -240,10 +242,13 @@ class Model:
                 self.clf.fit(feats, self.df_train[self.target])
 
     def get_predictions(self):
-        predictions =  self.clf.predict(self.feats_test.df.to_numpy())
+        predictions =  self.clf.predict(self.feats_test.to_numpy())
         return predictions
 
     def predict(self):
+        if self.feats_test.isna().to_numpy().any():
+            self.util.debug(f'Model, test: replacing {self.feats_test.isna().sum().sum()} NANs with 0')
+            self.feats_test = self.feats_test.fillna(0)
         if self.loso or self.logo or self.xfoldx:
             report = Reporter(self.truths.astype(float), self.preds, self.run, self.epoch)
             return report
