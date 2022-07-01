@@ -8,11 +8,12 @@ import configparser
 from util import Util
 import argparse
 import os.path
-src_path = 'demos/multiple_exeriments/'
+src_path = './demos/multiple_experiments/'
 
 
 def main():
     parser = argparse.ArgumentParser(description='Call the nkululeko framework.')
+    parser.add_argument('--config', default='exp.ini', help='The base configuration')
     parser.add_argument('--data', help='The databases', nargs='*', \
         action='append')
     parser.add_argument('--label', nargs='*', help='The labels for the target', \
@@ -21,8 +22,8 @@ def main():
         action='append')
     parser.add_argument('--layers', nargs='*', help='layer config for mlp, e.g. l1:128 ', \
         action='append')
-    parser.add_argument('--model', default='xgb', help='The model type', required=True)
-    parser.add_argument('--feat', default='os', help='The model type')
+    parser.add_argument('--model', default='xgb', help='The model type')
+    parser.add_argument('--feat', default='os', help='The feature type')
     parser.add_argument('--set', help='The opensmile set')
     parser.add_argument('--with_os', help='To add os features')
     parser.add_argument('--target', help='The target designation')
@@ -32,7 +33,10 @@ def main():
     
     args = parser.parse_args()
 
-    config_file = f'{src_path}exp.ini'
+    if args.config is not None:
+        config_file = args.config    
+    else:
+        config_file = f'{src_path}exp.ini'
     # test if config is there
     if not os.path.isfile(config_file):
         print(f'ERROR: no such file {config_file}')
