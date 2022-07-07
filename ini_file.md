@@ -93,7 +93,7 @@
 * **target_divide_by**: divide the target values by some factor, e.g. to make age smaller and encode years from .0 to 1
   * **target_divide_by = 100
 ### FEATS
-* **type**: a list of types of features, they will be columnwise concatenated
+* **type**: a comma separated list of types of features, they will be columnwise concatenated
   * type = ['os']
   * possible values:
     * **mld**: [mid-level-descriptors](http://www.essv.de/paper.php?id=447)
