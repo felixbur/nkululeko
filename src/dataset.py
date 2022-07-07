@@ -164,6 +164,10 @@ class Dataset:
             else:
                 self.plot.describe_df(self.name, df, self.target, f'{self.name}_distplot.png')
 
+        if self.got_speaker and self.util.config_val_data(self.name, 'rename_speakers', False):
+            # we might need to append the database name to all speakers in case other datbaases have the same speaker names
+            df.speaker = df.speaker.apply(lambda x: self.name+x)
+
         # store the dataframe
         self.df.to_pickle(store_file)
 

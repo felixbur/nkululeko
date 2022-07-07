@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.26.0
+-------------
+* added the rename_speakers funcionality to prevent identical speaker names in datasets
+
 Version 0.25.1
 -------------
 * fixed bug that no features were chosen if not selected
