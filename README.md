@@ -8,6 +8,7 @@ The idea is to have a very high level framework (based on e.g. sklearn and pytor
 * [Here's a blog post on how to set up nkululeko on your computer.](http://blog.syntheticspeech.de/2021/08/30/how-to-set-up-your-first-nkululeko-project/)
 * [Here's a slide presentation about nkululeko](docs/nkululeko.pdf)
 * [Here's a video presentation about nkululeko](https://www.youtube.com/watch?v=Ueuetnu7d7M)
+* [Here's the 2022 LREC article on nkululeko](http://felix.syntheticspeech.de/publications/Nkululeko_LREC.pdf)
 
 ## Installation
 Download the sources via git clone or zip export to your hard drive.
