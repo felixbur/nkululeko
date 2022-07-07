@@ -16,7 +16,7 @@ class Scaler:
         elif scaler_type == 'robust':
             self.scaler = RobustScaler()
         elif scaler_type == 'speaker':
-            pass
+            self.scaler = StandardScaler()
         else:
             self.util.error('unknown scaler: '+scaler_type)
         self.scaler_type = scaler_type
