@@ -76,7 +76,7 @@
   * emodb.min_duration_of_sample = 0.0
 * **db_name.max_duration_of_sample**: limit the samples to a maximum length (in seconds)
   * emodb.max_duration_of_sample = 0.0
-* **db_name.rename_speakers: add the database name to the speaker names, e.g. because several databases use the same names
+* **db_name.rename_speakers**: add the database name to the speaker names, e.g. because several databases use the same names
   * emodb.rename_speakers = False
 * **target**: the task name, e.g. *age* or *emotion*
   * target = emotion
