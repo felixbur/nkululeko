@@ -18,7 +18,7 @@ import sys
 sys.path.append("./src")
 ```
 in your main python file and use them.
-An example is the [my_experiment.py](my_experiment.py) file.
+An example is the [my_experiment.py](demos/my_experiment.py) file.
 
 ## Usage
 There is a central "experiment" class that can be used by own experiments, two examples are given with
