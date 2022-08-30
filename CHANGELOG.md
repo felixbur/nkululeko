@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.26.1
+-------------
+* Fixed some bugs caused by the multitude of feature sets
+* Added possibilty to distinguish between absolut or relative pathes in csv datasets
+
 Version 0.26.0
 -------------
 * added the rename_speakers funcionality to prevent identical speaker names in datasets

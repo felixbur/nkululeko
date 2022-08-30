@@ -110,7 +110,7 @@ class CNN_model(Model):
     def load(self, run, epoch):
         self.set_id(run, epoch)
         dir = self.util.get_path('model_dir')
-        name = f'{self.util.get_exp_name()}_{run}_{epoch:03d}.model'
+        name = f'{self.util.get_exp_name(only_train=True)}_{run}_{epoch:03d}.model'
         self.device = self.util.config_val('MODEL', 'device', 'cpu')
         self.store_path = dir+name
         self.model = audpann.Cnn10(sampling_rate=16000, output_dim=1)

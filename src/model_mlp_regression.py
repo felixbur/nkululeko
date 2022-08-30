@@ -165,7 +165,7 @@ class MLP_Reg_model(Model):
     def load(self, run, epoch):
         self.set_id(run, epoch)
         dir = self.util.get_path('model_dir')
-        name = f'{self.util.get_exp_name()}_{run}_{epoch:03d}.model'
+        name = f'{self.util.get_exp_name(only_train=True)}_{run}_{epoch:03d}.model'
         self.store_path = dir+name
         self.device = self.util.config_val('MODEL', 'device', 'cpu')
         layers = ast.literal_eval(glob_conf.config['MODEL']['layers'])

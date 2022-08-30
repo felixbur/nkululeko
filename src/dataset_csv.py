@@ -17,10 +17,12 @@ class Dataset_CSV(Dataset):
         """Load the dataframe with files, speakers and task labels"""
         self.got_target, self.got_speaker, self.got_gender = False, False, False
         root = self.util.config_val_data(self.name, '', '')
+        absolut_path = self.util.config_val_data(self.name, 'absolut_path', True)
         self.util.debug(f'loading {self.name}')
         df = pd.read_csv(root, index_col='file')       
-        # add the root folder to the relative paths of the files 
-        df = df.set_index(df.index.to_series().apply(lambda x: os.path.dirname(root)+'/'+x))
+        if not absolut_path:
+            # add the root folder to the relative paths of the files 
+            df = df.set_index(df.index.to_series().apply(lambda x: os.path.dirname(root)+'/'+x))
         self.df = df
         self.db = None
         self.got_target = True

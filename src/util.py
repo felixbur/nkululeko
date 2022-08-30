@@ -102,7 +102,8 @@ class Util:
         else:
             ds = '_'.join(ast.literal_eval(glob_conf.config['DATA']['databases']))
         mt = glob_conf.config['MODEL']['type']
-        ft = glob_conf.config['FEATS']['type']
+        ft = '_'.join(ast.literal_eval(glob_conf.config['FEATS']['type']))
+        ft += '_'
         set = self.config_val('FEATS', 'set', False)
         set_string = ''
         if set:

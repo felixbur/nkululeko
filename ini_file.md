@@ -46,6 +46,8 @@
   * emodb = /home/data/audformat/emodb/
 * **db_name.type**: type of storage, e.g. audformat database or 'csv' (needs header: file,speaker,task)
   * emodb.type = audformat
+* **db_name.absolute_path**: only for 'csv' databases: are the audio file pathes relative or absolute?
+  * my_data.absolute_path = True
 * **db_name.mapping**: mapping python dictionary to map between categories for cross-database experiments
   * emodb.mapping = {'anger':'angry', 'happiness':'happy', 'sadness':'sad', 'neutral':'neutral'}
 * **db_name.split_strategy**: How to identify sets for train/development data splits within one database

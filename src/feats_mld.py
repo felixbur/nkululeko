@@ -15,7 +15,7 @@ class MLD_set(Featureset):
         self.name = name
         self.data_df = data_df
         self.util = Util()
-        mld_path = self.util.config_val('FEATS', 'mld.model', '/home/felix/data/research/mld/src')
+        mld_path = self.util.config_val('FEATS', 'mld.model', None)
         sys.path.append(mld_path)
 
     def extract(self):
