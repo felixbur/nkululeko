@@ -29,6 +29,7 @@ def main():
     parser.add_argument('--with_os', help='To add os features')
     parser.add_argument('--target', help='The target designation')
     parser.add_argument('--epochs', help='The number of epochs')
+    parser.add_argument('--runs', help='The number of runs')
     parser.add_argument('--learning_rate', help='The learning rate')
     parser.add_argument('--drop', help='The dropout rate [0:1]')
     
@@ -70,6 +71,8 @@ def main():
         config['DATA']['target'] = args.target
     if args.epochs is not None:
         config['EXP']['epochs'] = args.epochs
+    if args.runs is not None:
+        config['EXP']['runs'] = args.runs
     if args.learning_rate is not None:
         config['MODEL']['learning_rate'] = args.learning_rate
     if args.drop is not None:
