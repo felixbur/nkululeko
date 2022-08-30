@@ -1,6 +1,7 @@
 
 import sys
-sys.path.append("./src")
+#sys.path.append("../../src")
+sys.path.append("../nkululeko/src")
 import constants
 import numpy as np
 import experiment as exp
@@ -76,7 +77,7 @@ def main():
     if args.model is not None:
         config['MODEL']['type'] = args.model
     if args.feat is not None:
-        config['FEATS']['type'] = args.feat
+        config['FEATS']['type'] = f'[\'{args.feat}\']'
     if args.with_os is not None:
         config['FEATS']['with_os'] = args.with_os
     if args.set is not None:
