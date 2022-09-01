@@ -5,7 +5,6 @@ import time
 from dataset import Dataset
 from dataset_csv import Dataset_CSV
 from dataset_ravdess import Ravdess
-from feats_opensmile import Opensmileset
 from filter_data import filter_min_dur
 from runmanager import Runmanager
 from test_predictor import Test_predictor
@@ -18,6 +17,7 @@ from sklearn.preprocessing import LabelEncoder
 from scaler import Scaler
 import pickle
 import audformat
+from feats_opensmile import Opensmileset
 
 class Experiment:
     """Main class specifying an experiment
@@ -370,9 +370,10 @@ class Experiment:
         demo = Demo_predictor(model, feature_extractor, self.label_encoder)
         demo.run_demo()
 
-    def predict_test_and_save(self, name):
+    def predict_test_and_save(self, result_name):
         model = self.runmgr.get_best_model()
-        test_predictor = Test_predictor(model, self.df_test, self.label_encoder, name)        
+
+        test_predictor = Test_predictor(model, self.df_test, self.label_encoder, result_name)        
         test_predictor.predict_and_store()
 
 

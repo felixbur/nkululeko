@@ -175,3 +175,16 @@ class MLP_Reg_model(Model):
         self.model = self.MLP(self.feats_train.shape[1], layers, 1, drop).to(self.device)
         self.model.load_state_dict(torch.load(dir+name))
         self.model.eval()
+        
+    def load_path(self, path, run, epoch):
+        self.set_id(run, epoch)
+        with open(path, 'rb') as handle:
+            self.device = self.util.config_val('MODEL', 'device', 'cpu')
+            layers = ast.literal_eval(glob_conf.config['MODEL']['layers'])
+            self.store_path = path
+            drop = self.util.config_val('MODEL', 'drop', False)
+            if drop:
+                self.util.debug(f'training with dropout: {drop}')
+            self.model = self.MLP(self.feats_train.shape[1], layers, self.class_num, drop).to(self.device)
+            self.model.load_state_dict(torch.load(self.store_path))
+            self.model.eval()

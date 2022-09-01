@@ -27,11 +27,9 @@ class TRILLset(Featureset):
     def extract(self):
         store = self.util.get_path('store')
         storage = f'{store}{self.name}.pkl'
-        try:
-            extract = self.util.config_val('FEATS', 'needs_feature_extraction', False)
-        except KeyError:
-            extract = False
-        if extract or not os.path.isfile(storage):
+        extract = self.util.config_val('FEATS', 'needs_feature_extraction', False)
+        start_fresh = self.util.config_val('DATA', 'no_reuse', False)
+        if extract or start_fresh or not os.path.isfile(storage):
             self.util.debug('extracting TRILL embeddings, this might take a while...')
             emb_series = pd.Series(index = self.data_df.index, dtype=object)
             length = len(self.data_df.index)

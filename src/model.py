@@ -281,3 +281,8 @@ class Model:
         name = f'{self.util.get_exp_name(only_train=True)}_{self.run}_{self.epoch:03d}.model'
         with open(dir+name, 'rb') as handle:
             self.clf = pickle.load(handle)
+
+    def load_path(self, path, run, epoch):
+        self.set_id(run, epoch)
+        with open(path, 'rb') as handle:
+            self.clf = pickle.load(handle)

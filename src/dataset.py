@@ -59,7 +59,8 @@ class Dataset:
         store = self.util.get_path('store')
         store_file = f'{store}{self.name}.pkl'
         self.got_speaker, self.got_gender = False, False 
-        if os.path.isfile(store_file and not self.start_fresh):
+        if os.path.isfile(store_file):
+            print (self.start_fresh)
             self.util.debug(f'{self.name}: reusing previously stored file {store_file}')
             self.df = pd.read_pickle(store_file)
             self.is_labeled = self.target in self.df

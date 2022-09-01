@@ -54,6 +54,8 @@ class MLP_model(Model):
         self.trainloader = self.get_loader(feats_train, df_train, True)
         self.testloader = self.get_loader(feats_test, df_test, False)
 
+    def set_testdata(self, data_df, feats_df):
+        self.testloader = self.get_loader(feats_df, data_df, False)
 
     def reset_test(self,  df_test, feats_test):
         self.testloader = self.get_loader(feats_test, df_test, False)
@@ -83,7 +85,7 @@ class MLP_model(Model):
 
     def get_predictions(self):
         _, truths, predictions = self.evaluate_model(self.model, self.testloader, self.device)
-        return predictions
+        return predictions.numpy()
 
     def get_loader(self, df_x, df_y, shuffle):
         data=[]
@@ -155,3 +157,16 @@ class MLP_model(Model):
         self.model = self.MLP(self.feats_train.shape[1], layers, self.class_num, drop).to(self.device)
         self.model.load_state_dict(torch.load(self.store_path))
         self.model.eval()
+    
+    def load_path(self, path, run, epoch):
+        self.set_id(run, epoch)
+        with open(path, 'rb') as handle:
+            self.device = self.util.config_val('MODEL', 'device', 'cpu')
+            layers = ast.literal_eval(glob_conf.config['MODEL']['layers'])
+            self.store_path = path
+            drop = self.util.config_val('MODEL', 'drop', False)
+            if drop:
+                self.util.debug(f'training with dropout: {drop}')
+            self.model = self.MLP(self.feats_train.shape[1], layers, self.class_num, drop).to(self.device)
+            self.model.load_state_dict(torch.load(self.store_path))
+            self.model.eval()

@@ -1,6 +1,7 @@
 import glob_conf
 from util import Util
 import numpy as np
+import sounddevice as sd
 
 class Demo_predictor():
 
@@ -15,12 +16,10 @@ class Demo_predictor():
         self.util = Util()
 
     def run_demo(self):
-        import sounddevice as sd
         while True:
             signal = self.record_audio(3)
 #            self.play_audio(signal)
             features = self.feature_extractor.extract_sample(signal, self.sr)
-            features = features.to_numpy()
             result_dict = self.model.predict_sample(features)
             keys = result_dict.keys()
             dict_2 = {}

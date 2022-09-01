@@ -15,7 +15,8 @@ class AudIDset(Featureset):
             extract = glob_conf.config['DATA']['needs_feature_extraction']
         except KeyError:
             extract = False
-        if extract or not os.path.isfile(storage):
+        start_fresh = self.util.config_val('DATA', 'no_reuse', False)
+        if extract or start_fresh or not os.path.isfile(storage):
             print('extracting audid embeddings, this might take a while...')
             feature_extractor = audid.Embedding(num_workers=4, verbose=False)
             embeddings = feature_extractor.process_files(self.data_df.index, ends=5).to_numpy()

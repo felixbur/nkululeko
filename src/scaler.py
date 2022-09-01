@@ -7,9 +7,22 @@ from util import Util
 import glob_conf
 
 class Scaler:
-    # class to normalize speech parameters
-
+    """
+        class to normalize speech parameters   
+    """
+    
     def __init__(self, train_data_df, test_data_df, train_feats, test_feats, scaler_type):
+        '''
+        Initializer.
+
+                Parameters:
+                        train_data_df (pd.DataFrame): The training dataframe with speakers.
+                            only needed for speaker normalization
+                        test_data_df (pd.DataFrame): The test dataframe with speakers
+                            only needed for speaker normalization
+                        train_feats (pd.DataFrame): The train features dataframe 
+                        test_feats (pd.DataFrame): The test features dataframe (can be None) 
+        '''
         self.util = Util()
         if scaler_type == 'standard':
             self.scaler = StandardScaler()
@@ -26,6 +39,13 @@ class Scaler:
         self.data_test = test_data_df
 
     def scale(self):
+        '''
+        Actually scales/normalizes.
+
+                Returns:
+                        train_feats (pd.DataFrame): The scaled train features dataframe 
+                        test_feats (pd.DataFrame): The scaled test features dataframe (can be None) 
+        '''
         if self.scaler_type != 'speaker':
             self.util.debug('scaling features based on training')
             return self.scale_all()
@@ -36,7 +56,8 @@ class Scaler:
     def scale_all(self):
         self.scaler.fit(self.feats_train.values)
         self.feats_train = self.scale_df(self.feats_train)
-        self.feats_test = self.scale_df(self.feats_test)
+        if self.feats_test is not None:
+            self.feats_test = self.scale_df(self.feats_test)
         return self.feats_train, self.feats_test
 
     def scale_df(self, df):
@@ -46,7 +67,8 @@ class Scaler:
 
     def speaker_scale(self):
         self.feats_train = self.speaker_scale_df(self.data_train, self.feats_train)
-        self.feats_test = self.speaker_scale_df(self.data_test, self.feats_test)
+        if self.feats_test is not None:
+            self.feats_test = self.speaker_scale_df(self.data_test, self.feats_test)
         return self.feats_train, self.feats_test
 
 

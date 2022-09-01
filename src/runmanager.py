@@ -188,7 +188,6 @@ class Runmanager:
         self.load_model(best_report)
         return self.model
 
-
     def get_best_result(self, reports):
         best_r = Reporter([], [], 0, 0)
         if self.util.exp_is_classification():

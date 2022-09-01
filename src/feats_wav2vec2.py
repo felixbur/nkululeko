@@ -30,7 +30,7 @@ class Wav2vec2(Featureset):
         model_path = self.util.config_val('FEATS', 'wav2vec.model', 'wav2vec2-large-robust-ft-swbd-300h')
         self.processor = transformers.Wav2Vec2Processor.from_pretrained(model_path)
         self.model = Wav2Vec2Model.from_pretrained(model_path).to(self.device)
-        print(f'intialized wav22vec model on {self.device}')
+        print(f'intialized vec model on {self.device}')
         self.model.eval()
         self.model_initialized = True
 
@@ -40,7 +40,8 @@ class Wav2vec2(Featureset):
         store = self.util.get_path('store')
         storage = f'{store}{self.name}.pkl'
         extract = self.util.config_val('FEATS', 'needs_feature_extraction', False)
-        if extract or not os.path.isfile(storage):
+        start_fresh = self.util.config_val('DATA', 'no_reuse', False)
+        if extract or start_fresh or not os.path.isfile(storage):
             if not self.model_initialized:
                 self.init_model()
             self.util.debug('extracting wav2vec2 embeddings, this might take a while...')
@@ -87,3 +88,8 @@ class Wav2vec2(Featureset):
             y = y.detach().cpu().numpy()
     
         return y.flatten()
+
+    def extract_sample(self, signal, sr):
+        self.init_model()
+        feats = self.get_embeddings(signal, sr)
+        return feats

@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.27.0
+-------------
+* added "label_data" configuration to label data with trained model (so now there can be train, dev and test set)
+
 Version 0.26.1
 -------------
 * Fixed some bugs caused by the multitude of feature sets

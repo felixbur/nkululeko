@@ -40,6 +40,8 @@
   * strategy = traintest
 * **trains**: if *strategy* = cross_data, denote the train databases
 * **tests**: if *strategy* = cross_data, denote the test databases
+* **label_data**: a dataset to be used by the *experiment.predict_test_and_save()* function as test data for the given best model
+  * label_data = emovo
 * **root_folders**: specify an additional configuration specifically for all entries starting with a dataset name, acting as global defaults. 
 * root_folders = data_roots.ini
 * **db_name**: path with audformatted repository for each database listed in 'databases*

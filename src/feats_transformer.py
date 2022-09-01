@@ -37,7 +37,7 @@ class TransformerFeats(Featureset):
         self.util.debug('loading wav2vec model...')
         self.processor = transformers.Wav2Vec2Processor.from_pretrained(model_path)
         self.model = Wav2Vec2Model.from_pretrained(model_path).to(self.device)
-        print(f'intialized wav22vec model on {self.device}')
+        print(f'intialized wav2vec model on {self.device}')
         self.model.eval()
         self.model_initialized = True
 
