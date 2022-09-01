@@ -57,6 +57,9 @@ class MLP_Reg_model(Model):
         self.trainloader = self.get_loader(feats_train, df_train, True)
         self.testloader = self.get_loader(feats_test, df_test, False)
 
+    def set_testdata(self, data_df, feats_df):
+        self.testloader = self.get_loader(feats_df, data_df, False)
+
     def train(self):
         loss = self.train_epoch(self.model, self.trainloader, self.device, self.optimizer, self.criterion)
         return loss

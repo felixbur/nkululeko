@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.28.0
+-------------
+* made "label_data" configuration automatic and added "label_result"
+
+
 Version 0.27.0
 -------------
 * added "label_data" configuration to label data with trained model (so now there can be train, dev and test set)

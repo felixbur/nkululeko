@@ -339,6 +339,13 @@ class Experiment:
             self.plot_confmat_per_speaker(conf_mat_per_speaker_function)
         used_time = time.process_time() - self.start
         self.util.debug(f'Done, used {used_time:.3f} seconds')
+
+        # check if a test set should be labeled by the model:
+        label_data = self.util.config_val('DATA', 'label_data', False)
+        label_result = self.util.config_val('DATA', 'label_result', False)
+        if label_data and label_result:
+            self.predict_test_and_save(label_result)
+
         return self.reports    
 
     def plot_confmat_per_speaker(self, function):

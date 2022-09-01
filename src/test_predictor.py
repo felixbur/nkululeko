@@ -5,6 +5,9 @@ import pandas as pd
 from dataset import Dataset
 from feature_extractor import FeatureExtractor
 from scaler import Scaler
+import numpy as np
+from sklearn.preprocessing import LabelEncoder
+
 
 class Test_predictor():
 
@@ -29,16 +32,18 @@ class Test_predictor():
             featextractor = FeatureExtractor(data_df, label_data, '')
             feats_df = featextractor.extract()
             scale = self.util.config_val('FEATS', 'scale', False)
-            data_df[self.target] = self.label_encoder.fit_transform(data_df[self.target])
+            labelenc = LabelEncoder()
+            data_df[self.target] = labelenc.fit_transform(data_df[self.target])
+#            data_df[self.target] = self.label_encoder.fit_transform(data_df[self.target])
             if scale: 
                 self.scaler = Scaler(data_df, None, feats_df, None, scale)
                 feats_df, _ = self.scaler.scale()
             self.model.set_testdata(data_df, feats_df)
-            predictions = self.model.get_predictions().tolist()
+            predictions = self.model.get_predictions()
             df = pd.DataFrame(index = data_df.index)
             df['speaker'] = data_df['speaker']
             df['gender'] = data_df['gender']
-            df[self.target] = self.label_encoder.inverse_transform(predictions)
+            df[self.target] = labelenc.inverse_transform(predictions.tolist())
             df.to_csv(self.name)
         else:
             predictions = self.model.get_predictions()
