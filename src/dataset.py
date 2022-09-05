@@ -159,11 +159,6 @@ class Dataset:
         self.util.debug(f'{self.name}: loaded data with {self.df.shape[0]} '\
             f'samples: got targets: {self.is_labeled}, got speakers: {self.got_speaker}, '\
             f'got sexes: {self.got_gender}')
-        if self.util.config_val_data(self.name, 'value_counts', False):
-            if not self.got_gender or not self.got_speaker:
-                self.util.error('can\'t plot value counts if no speaker or gender is given')
-            else:
-                self.plot.describe_df(self.name, df, self.target, f'{self.name}_distplot.png')
 
         if self.got_speaker and self.util.config_val_data(self.name, 'rename_speakers', False):
             # we might need to append the database name to all speakers in case other datbaases have the same speaker names
@@ -329,17 +324,38 @@ class Dataset:
         # because this generates new train/test sample quantaties, the feature extraction has to be done again
         glob_conf.config['FEATS']['needs_feature_extraction'] = 'True'
 
+    def _add_labels(self, df):
+        df.is_labeled = self.is_labeled
+        df.got_gender = self.got_gender
+        df.got_speaker = self.got_speaker
+        return df
+
     def prepare_labels(self):
         strategy = self.util.config_val('DATA', 'strategy', 'train_test')
         if strategy == 'cross_data':
             self.df = self.map_labels(self.df)
             # Bin target values if they are continuous but a classification experiment should be done
             self.map_continuous_classification(self.df)
+            self.df = self._add_labels(self.df)
+            if self.util.config_val_data(self.name, 'value_counts', False):
+                if not self.got_gender or not self.got_speaker:
+                    self.util.error('can\'t plot value counts if no speaker or gender is given')
+                else:
+                    self.plot.describe_df(self.name, self.df, self.target, f'{self.name}_distplot.png')
         elif strategy == 'train_test':        
             self.df_train = self.map_labels(self.df_train)
             self.df_test = self.map_labels(self.df_test)
             self.map_continuous_classification(self.df_train)
             self.map_continuous_classification(self.df_test)
+            self.df_train = self._add_labels(self.df_train)
+            self.df_test = self._add_labels(self.df_test)
+            if self.util.config_val_data(self.name, 'value_counts', False):
+                if not self.got_gender or not self.got_speaker:
+                    self.util.error('can\'t plot value counts if no speaker or gender is given')
+                else:
+                    self.plot.describe_df(self.name, self.df_train, self.target, f'{self.name}_train_distplot.png')
+                    self.plot.describe_df(self.name, self.df_test, self.target, f'{self.name}_test_distplot.png')
+
 
     def map_labels(self, df):
         if df.shape[0]==0 or not self.util.exp_is_classification() \
@@ -347,6 +363,7 @@ class Dataset:
             return df
         """Rename the labels and remove the ones that are not needed."""
         target = glob_conf.config['DATA']['target']
+        print(f'HERE {df[target].value_counts()}')
         # see if a special mapping should be used
         mappings = self.util.config_val_data(self.name, 'mapping', False)
         if mappings:        
@@ -354,13 +371,13 @@ class Dataset:
             df[target] = df[target].map(mapping)
             self.util.debug(f'{self.name}: mapped {mapping}')
         # remove labels that are not in the labels list
-        try :
-            labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
-            df = df[df[target].isin(labels)]
-            # remember in case they get encoded later
-            df['class_label'] = df[target]
-        except KeyError:
-            pass
+        labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
+        df = df[df[target].isin(labels)]
+        # try:
+        # except KeyError:
+        #     pass
+        # remember in case they get encoded later
+        df['class_label'] = df[target]
         return df
 
     def check_continuous_classification(self):

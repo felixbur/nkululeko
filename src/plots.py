@@ -30,10 +30,13 @@ class Plots():
                 male_smpl_num = df[df[sex_col]=='male'].shape[0]
                 self.util.debug(f'plotting {name}: # samples: {sampl_num} (f: {female_smpl_num}, m: '+\
                     f'{male_smpl_num}), # speakers: {spkr_num}')
-                fig, axes = plt.subplots(nrows=1, ncols=2)
-                df.groupby(target)['gender'].value_counts().unstack().plot(kind='bar', stacked=True, ax=axes[0], \
+                # fig, axes = plt.subplots(nrows=1, ncols=2)
+                fig, axes = plt.subplots(nrows=1, ncols=1)
+                # df.groupby(target)['gender'].value_counts().unstack().plot(kind='bar', stacked=True, ax=axes[0], \
+                #     title=f'samples ({sampl_num})')
+                df.groupby(target)['gender'].value_counts().unstack().plot(kind='bar', stacked=True, \
                     title=f'samples ({sampl_num})')
-                df.groupby(target)['speaker'].nunique().plot(kind='bar', ax=axes[1], title=f'speakers ({spkr_num})')
+                # df.groupby(target)['speaker'].nunique().plot(kind='bar', ax=axes[1], title=f'speakers ({spkr_num})')
             else:
                 self.util.debug(f'plotting {name}: # samples: {sampl_num}')
                 fig, axes = plt.subplots(nrows=1, ncols=1)

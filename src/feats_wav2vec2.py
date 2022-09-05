@@ -40,8 +40,7 @@ class Wav2vec2(Featureset):
         store = self.util.get_path('store')
         storage = f'{store}{self.name}.pkl'
         extract = self.util.config_val('FEATS', 'needs_feature_extraction', False)
-        start_fresh = self.util.config_val('DATA', 'no_reuse', False)
-        if extract or start_fresh or not os.path.isfile(storage):
+        if extract or not os.path.isfile(storage):
             if not self.model_initialized:
                 self.init_model()
             self.util.debug('extracting wav2vec2 embeddings, this might take a while...')

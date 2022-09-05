@@ -30,8 +30,7 @@ class Opensmileset(Featureset):
         store = self.util.get_path('store')
         storage = f'{store}{self.name}_{self.featset}.pkl'
         extract = self.util.config_val('FEATS', 'needs_feature_extraction', False)
-        start_fresh = self.util.config_val('DATA', 'no_reuse', False)
-        if extract or start_fresh or not os.path.isfile(storage):
+        if extract or not os.path.isfile(storage):
             self.util.debug('extracting openSmile features, this might take a while...')
             smile = opensmile.Smile(
             feature_set= self.feature_set,

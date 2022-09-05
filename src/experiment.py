@@ -1,7 +1,7 @@
-import numpy
 import random
 import os
 import time
+import numpy as np
 from dataset import Dataset
 from dataset_csv import Dataset_CSV
 from dataset_ravdess import Ravdess
@@ -158,11 +158,11 @@ class Experiment:
                     self.df_test = self._add_random_target(self.df_test)
                 train_cats = self.df_train[self.target].unique()
             if self.df_test.is_labeled:
-                if type(test_cats) == numpy.ndarray:
+                if type(test_cats) == np.ndarray:
                     self.util.debug(f'Categories test: {test_cats}')
                 else:
                     self.util.debug(f'Categories test: {test_cats.to_list()}')
-            if type(train_cats) == numpy.ndarray:
+            if type(train_cats) == np.ndarray:
                 self.util.debug(f'Categories train: {train_cats}')
             else:
                 self.util.debug(f'Categories train: {train_cats.to_list()}')
