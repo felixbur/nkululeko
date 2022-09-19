@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.28.2
+-------------
+* removed some Pandas warnings
+* added no_reuse function to database.load()
+
 Version 0.28.1
 -------------
 * with database.value_counts show only the data that is actually used

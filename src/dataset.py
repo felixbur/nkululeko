@@ -59,7 +59,7 @@ class Dataset:
         store = self.util.get_path('store')
         store_file = f'{store}{self.name}.pkl'
         self.got_speaker, self.got_gender = False, False 
-        if os.path.isfile(store_file):
+        if not self.start_fresh and os.path.isfile(store_file):
             print (self.start_fresh)
             self.util.debug(f'{self.name}: reusing previously stored file {store_file}')
             self.df = pd.read_pickle(store_file)
@@ -207,7 +207,7 @@ class Dataset:
                 is_labeled = True
             except (ValueError, audformat.core.errors.BadKeyError) as e:
                 pass
-            df = df.append(df_local)
+            df = pd.concat([df, df_local])
         return df, is_labeled, got_speaker, got_gender
 
 
@@ -358,12 +358,12 @@ class Dataset:
 
 
     def map_labels(self, df):
+        pd.options.mode.chained_assignment = None
         if df.shape[0]==0 or not self.util.exp_is_classification() \
             or self.check_continuous_classification():
             return df
         """Rename the labels and remove the ones that are not needed."""
         target = glob_conf.config['DATA']['target']
-        print(f'HERE {df[target].value_counts()}')
         # see if a special mapping should be used
         mappings = self.util.config_val_data(self.name, 'mapping', False)
         if mappings:        

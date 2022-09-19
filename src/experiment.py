@@ -114,9 +114,9 @@ class Experiment:
                 for d in self.datasets.values():
                     d.split()
                     d.prepare_labels()
-                    self.df_train = self.df_train.append(self.util.make_segmented_index(d.df_train))
+                    self.df_train = pd.concat([self.df_train, self.util.make_segmented_index(d.df_train)])
                     self.df_train.is_labeled = d.is_labeled
-                    self.df_test = self.df_test.append(self.util.make_segmented_index(d.df_test))
+                    self.df_test = pd.concat([self.df_test, self.util.make_segmented_index(d.df_test)])
                     self.df_test.is_labeled = d.is_labeled
             else:
                 self.util.error(f'unknown strategy: {strategy}')
