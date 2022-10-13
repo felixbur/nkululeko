@@ -45,7 +45,7 @@
 * **label_result**: a file path for the result of the step above
   * label_data = ./labelresult.csv
 * **root_folders**: specify an additional configuration specifically for all entries starting with a dataset name, acting as global defaults. 
-* root_folders = data_roots.ini
+  * root_folders = data_roots.ini
 * **db_name**: path with audformatted repository for each database listed in 'databases*
   * emodb = /home/data/audformat/emodb/
 * **db_name.type**: type of storage, e.g. audformat database or 'csv' (needs header: file,speaker,task)
