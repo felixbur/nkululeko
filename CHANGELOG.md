@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.29.0
+-------------
+* added a new FeatureExtractor class 
+
 Version 0.28.2
 -------------
 * removed some Pandas warnings

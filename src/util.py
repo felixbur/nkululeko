@@ -147,6 +147,9 @@ class Util:
         print(f'ERROR: {message}')
         sys.exit()
 
+    def warn(self, message):
+        print(f'WARNING: {message}')
+
     def debug(self, message):
         print(f'DEBUG: {message}')
 

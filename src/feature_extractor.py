@@ -42,6 +42,9 @@ class FeatureExtractor:
             elif feats_type=='mld':
                 from feats_mld import MLD_set
                 featExtractor = MLD_set(f'{store_name}{self.feats_designation}', self.data_df)
+            elif feats_type=='import':
+                from feats_import import Importset
+                featExtractor = Importset(f'{store_name}{self.feats_designation}', self.data_df)
             else:
                 self.util.error(f'unknown feats_type: {feats_type}')
 

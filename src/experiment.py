@@ -5,6 +5,7 @@ import numpy as np
 from dataset import Dataset
 from dataset_csv import Dataset_CSV
 from dataset_ravdess import Ravdess
+from feature_extractor import FeatureExtractor
 from filter_data import filter_min_dur
 from runmanager import Runmanager
 from test_predictor import Test_predictor
@@ -233,63 +234,13 @@ class Experiment:
         strategy = self.util.config_val('DATA', 'strategy', 'traintest')
         feats_types = self.util.config_val_list('FEATS', 'type', ['os'])
         feats_name = "_".join(ast.literal_eval(glob_conf.config['DATA']['databases']))
-        featExtractor_train, featExtractor_test = None, None
         self.feats_test, self.feats_train = pd.DataFrame(), pd.DataFrame()
         _scale = True
-        for feats_type in feats_types:
-            store_name = f'{feats_name}_{strategy}_{feats_type}'   
-            if feats_type=='os':
-                featExtractor_train = Opensmileset(f'{store_name}_train', df_train)
-                featExtractor_test = Opensmileset(f'{store_name}_test', df_test)
-            elif feats_type=='audid':
-                from feats_audid import AudIDset
-                featExtractor_train = AudIDset(f'{store_name}_train', df_train)
-                featExtractor_test = AudIDset(f'{store_name}_test', df_test)
-            elif feats_type=='trill':
-                from feats_trill import TRILLset
-                featExtractor_train = TRILLset(f'{store_name}_train', df_train)
-                featExtractor_test = TRILLset(f'{store_name}_test', df_test)
-            elif feats_type=='wav2vec':
-                from feats_wav2vec2 import Wav2vec2
-                featExtractor_train = Wav2vec2(f'{store_name}_train', df_train)
-                featExtractor_test = Wav2vec2(f'{store_name}_test', df_test)
-            elif feats_type=='praat':
-                from feats_praat import Praatset
-                featExtractor_train = Praatset(f'{store_name}_train', df_train)
-                featExtractor_test = Praatset(f'{store_name}_test', df_test)
-            elif feats_type=='mld':
-                from feats_mld import MLD_set
-                featExtractor_train = MLD_set(f'{store_name}_train', df_train)
-                featExtractor_test = MLD_set(f'{store_name}_test', df_test)
-            elif feats_type=='xbow':
-                from feats_oxbow import Openxbow
-                featExtractor_train = Openxbow(f'{store_name}_train', df_train, is_train=True)
-                featExtractor_test = Openxbow(f'{store_name}_test', df_test)
-            elif feats_type=='spectra':
-                # compute the spectrograms
-                from feats_spectra import Spectraloader # not yet open source
-                test_specs = Spectraloader(f'{store_name}_test', df_test)
-                test_specs.make_feats()
-                self.feats_test = test_specs.get_loader()
-                self.feats_train = None
-                if df_train.shape[0]>0:
-                    train_specs = Spectraloader(f'{store_name}_train', df_train)
-                    train_specs.make_feats()
-                    self.feats_train = train_specs.get_loader()
-                _scale = False
-            else:
-                self.util.error(f'unknown feats_type: {feats_type}')
-
-            featExtractor_train.extract()
-            featExtractor_train.filter()
-            featExtractor_test.extract()
-            featExtractor_test.filter()
-            # remove samples that were not extracted by MLD
-            #self.df_test = self.df_test.loc[self.df_test.index.intersection(featExtractor_test.df.index)]
-            #self.df_train = self.df_train.loc[self.df_train.index.intersection(featExtractor_train.df.index)]
-            self.util.debug(f'{feats_type}: train shape : {featExtractor_train.df.shape}, test shape:{featExtractor_test.df.shape}')
-            self.feats_train = pd.concat([self.feats_train, featExtractor_train.df], axis = 1)
-            self.feats_test = pd.concat([self.feats_test, featExtractor_test.df], axis = 1)
+        from feature_extractor import FeatureExtractor
+        featExtractor_train = FeatureExtractor(df_train, feats_name, 'train')
+        featExtractor_test = FeatureExtractor(df_test, feats_name, 'test')
+        self.feats_train =featExtractor_train.extract()
+        self.feats_test =featExtractor_test.extract()
         self.util.debug(f'All features: train shape : {self.feats_train.shape}, test shape:{self.feats_test.shape}')
         if _scale:
             self._scale()
