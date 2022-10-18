@@ -1,9 +1,14 @@
 Changelog
 =========
 
+Version 0.29.1
+-------------
+* bug fix for 0.29
+
+
 Version 0.29.0
 -------------
-* added a new FeatureExtractor class 
+* added a new FeatureExtractor class to import external data
 
 Version 0.28.2
 -------------

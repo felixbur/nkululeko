@@ -55,5 +55,4 @@ class FeatureExtractor:
             #self.df_train = self.df_train.loc[self.df_train.index.intersection(featExtractor_train.df.index)]
             self.util.debug(f'{feats_type}: shape : {featExtractor.df.shape}')
             self.feats = pd.concat([self.feats, featExtractor.df], axis = 1)
-        self.util.debug(f'All features: train shape : {self.feats.shape}')
         return self.feats

@@ -5,6 +5,7 @@ from featureset import Featureset
 import os
 import pandas as pd
 import opensmile
+import audformat
 
 class Importset(Featureset):
     """Class to import features that have been compiled elsewhere"""
@@ -22,12 +23,19 @@ class Importset(Featureset):
         if not os.path.isfile(feat_import_file):
             self.util.warn(f'no import file: {feat_import_file}')
         if extract or start_fresh or not os.path.isfile(storage):
-            self.util.debug('importing features')
-            df = pd.read_csv(feat_import_file, sep=',', header=0, 
-                index_col=['file', 'start', 'end'])
+            self.util.debug(f'importing features for {self.name}')
+            # df = pd.read_csv(feat_import_file, sep=',', header=0, 
+            #     index_col=['file', 'start', 'end'])
+            df = audformat.utils.read_csv(feat_import_file)
+            # scale features before use?
+            # from sklearn.preprocessing import StandardScaler
+            # scaler = StandardScaler()
+            # scaled_features = scaler.fit_transform(df.values)
+            # df = pd.DataFrame(scaled_features, index=df.index, columns=df.columns)
             # use only the rows from the data index
-            df = self.data_df.join(df).drop(columns=self.data_df.columns)
-            self.util.debug(f'shape {df.shape}')
+            #df = self.data_df.join(df).drop(columns=self.data_df.columns)
+            df = df.loc[self.data_df.index]
+            #df = pd.concat([self.data_df, df], axis=1, join="inner").drop(columns=self.data_df.columns)
             # in any case, store to disk for later use
             df.to_pickle(storage) 
             # and assign to be the "official" feature set
