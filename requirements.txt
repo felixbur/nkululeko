@@ -3,7 +3,6 @@ audeer
 audiofile
 matplotlib
 xgboost
-audtorch
 seaborn
 numpy
 imageio
