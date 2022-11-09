@@ -84,7 +84,7 @@ Here's [an overview on the ini-file options](./ini_file.md)
       * ```source venv/bin/activate```
     * under Windows
       * ```venv\Scripts\activate.bat```
-    * if that worked, you should see a *(venv)* in front of your prompt
+    * if that worked, you should see a ```(venv)``` in front of your prompt
   * Install the required packages in your environment
     * ```pip install -r ./nkululeko/requirements.txt```
 * Now you should have three folders in your *nkulu_work* folder:
