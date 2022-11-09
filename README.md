@@ -70,24 +70,30 @@ Here's [an overview on the ini-file options](./ini_file.md)
 
 ### <a name="helloworld">Hello World example</a>
 * Set up Python on your computer, version >= 3.6
-* Download nkululeko
-* Get a copy of the [Berlin emodb in audformat](https://tubcloud.tu-berlin.de/s/LzPWz83Fjneb6SP/download) and unpack somewhere in a local folder
-* Replace the path to the emodb root folder in line 9 of the [demo configuration file](demos/exp_emodb.ini) (demos/exp_emodb.ini)
-* In the nkululeko root folder 
-  * create a python environment
+* Create a folder on your computer for this example, let's call it *nkulu_work*
+* Download nkululeko and unpack to this folder, or use "git clone" (prefered, if you know git)  
+* Make sure the folder is called *nkululeko* and not somethin else, e.g. *nkululeko_main*
+* Get a copy of the [Berlin emodb in audformat](https://tubcloud.tu-berlin.de/s/LzPWz83Fjneb6SP/download) and unpack the same folder (*nkulu_work*)
+* Also, in the *nkulu_work* folder: 
+  * Create a python environment
     * ```python3 -m venv venv```
-  * then, activate it:
+  * Then, activate it:
     * under linux / mac
       * ```source venv/bin/activate```
     * under Windows
       * ```venv\Scripts\activate.bat```
-  * install the required packages in your environment
-    * ```pip install -r requirements.txt```
-  * run the demo
-    * ```python demos/my_experiment.py```
-  * find the results in the newly created folder exp_emodb 
-    * inspect ```exp_emodb/images/run_0/emodb_xgb_os_0_000_cnf.png```
-
+    * if that worked, you should see a *(venv)* in front of your prompt
+  * Install the required packages in your environment
+    * ```pip install -r ./nkululeko/requirements.txt```
+* Now you should have three folders in your *nkulu_work* folder:
+  * *emodb*, *nkululeko* and *venv*
+* Run the demo
+  * ```python ./nkululeko/demos/my_experiment.py```
+* Find the results in the newly created folder exp_emodb 
+  * Inspect ```exp_emodb/images/run_0/emodb_xgb_os_0_000_cnf.png```
+  * This is the main result of you experiment: a confusion matriix for the emodb emotional categories
+* Inspect and play around with the [demo configuration file](demos/exp_emodb.ini) that defined your experiment, then re-run.
+  
 ### Features
 * Classifiers: XGB, XGR, SVM, SVR, MLP
 * Feature extractors: opensmile, openXBOW BoAW, TRILL embeddings, Wav2vec2 embeddings, ...
