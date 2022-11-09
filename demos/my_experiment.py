@@ -2,7 +2,7 @@
 # Demonstration code to use the ML-experiment framework
 
 import sys
-sys.path.append("../src")
+sys.path.append("./nkululeko/src")
 import experiment as exp
 import configparser
 from util import Util
@@ -33,7 +33,6 @@ def main(config_file):
 
     # extract features
     expr.extract_feats()
-    util.debug(f'train feats shape : {expr.feats_train.df.shape}, test feats shape:{expr.feats_test.df.shape}')
 
     # initialize a run manager
     expr.init_runmanager()
@@ -44,5 +43,5 @@ def main(config_file):
     print('DONE')
 
 if __name__ == "__main__":
-    main('./exp_emodb.ini')
+    main('./nkululeko/demos/exp_emodb.ini')
 #    main(sys.argv[1]) # use this if you want to state the config file path on command line
