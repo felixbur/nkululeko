@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.29.2
+-------------
+* fixed hello world example
+
+
 Version 0.29.1
 -------------
 * bug fix for 0.29
