@@ -70,6 +70,8 @@ Here's [an overview on the ini-file options](./ini_file.md)
 
 ### <a name="helloworld">Hello World example</a>
 * Set up Python on your computer, version >= 3.6
+* Open a terminal/commandline/console window
+* Test python by typing ```python```, python should start with version >3 (NOT 2!)
 * Create a folder on your computer for this example, let's call it *nkulu_work*
 * Download nkululeko and unpack to this folder, or use "git clone" (prefered, if you know git)  
 * Make sure the folder is called *nkululeko* and not somethin else, e.g. *nkululeko_main*
