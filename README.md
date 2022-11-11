@@ -69,6 +69,7 @@ You could
 Here's [an overview on the ini-file options](./ini_file.md)
 
 ### <a name="helloworld">Hello World example</a>
+* NEW [I made a video to show you how to do this on Windows](https://www.youtube.com/watch?v=ytbCnM2iQnc)
 * Set up Python on your computer, version >= 3.6
 * Open a terminal/commandline/console window
 * Test python by typing ```python```, python should start with version >3 (NOT 2!)
