@@ -12,11 +12,11 @@ def main(config_file):
     # load one configuration per experiment
     config = configparser.ConfigParser()
     config.read(config_file)
-    util = Util()
     
     # create a new experiment
     expr = exp.Experiment(config)
-    print(f'running {expr.name}, nkululeko version {constants.VERSION}')
+    util = Util()
+    util.debug(f'running {expr.name}, nkululeko version {constants.VERSION}')
 
     # load the data
     expr.load_datasets()
