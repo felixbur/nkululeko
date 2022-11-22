@@ -156,7 +156,7 @@
     * **mlp**: Multi-Layer-Perceptron for classification
     * **mlp_reg**: Multi-Layer-Perceptron for regression
     * **cnn**: Convolutional neural network (tbd)
-* **tuning_params**: possible tuning parameters for x-fold optimization (for SVM, SVR, XGB and XGR)
+* **tuning_params**: possible tuning parameters for x-fold optimization (for Bayes, KNN, KNN_reg, Tree, Tree_reg, SVM, SVR, XGB and XGR)
   * tuning_params = ['subsample', 'n_estimators', 'max_depth']
     * subsample = [.5, .7]
     * n_estimators = [50, 80, 200]
