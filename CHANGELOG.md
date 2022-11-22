@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.31.0
+--------------
+* added models: tree and tree_reg
+  
 Version 0.30.0
 --------------
 * added models: bayes, knn and knn_reg

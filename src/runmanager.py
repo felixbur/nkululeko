@@ -8,6 +8,8 @@ from model_mlp import MLP_model
 from model_bayes import Bayes_model
 from model_knn import KNN_model
 from model_knn_reg import KNN_reg_model
+from model_tree import Tree_model
+from model_tree_reg import Tree_reg_model
 from model_mlp_regression import MLP_Reg_model
 from reporter import Reporter
 from result import Result
@@ -154,6 +156,10 @@ class Runmanager:
             self.model = KNN_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
         elif model_type=='knn_reg':
             self.model = KNN_reg_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
+        elif model_type=='tree':
+            self.model = Tree_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
+        elif model_type=='tree_reg':
+            self.model = Tree_reg_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
         elif model_type=='cnn':
             from model_cnn import CNN_model
             self.model = CNN_model(self.df_train, self.df_test, self.feats_train, self.feats_test)

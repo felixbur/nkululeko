@@ -146,6 +146,8 @@
       * K_val = 5
       * KNN_weights = uniform | distance
     * **knn_reg**: K nearest neighbor regressor
+    * **tree**: Classification tree classifier 
+    * **tree_reg**: Classification tree regressor
     * **svm**: Support Vector Machine 
       * C_val = 0.001
     * **xgb**:XG-Boost
