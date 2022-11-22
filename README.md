@@ -54,7 +54,7 @@ Here's a rough UML-like sketch of the framework.
 ![sketch](images/class_diagram.png)
 
 Currently the following linear classifiers are implemented (integrated from sklearn):
-* SVM, SVR, XGB, XGR
+* SVM, SVR, XGB, XGR, Tree, Tree_regressor, KNN, KNN_regressor, NaiveBayes
   and the following ANNs
 * MLP, CNN (tbd)
 
