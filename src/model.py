@@ -242,7 +242,8 @@ class Model:
                 self.util.debug('using class weight')
                 self.clf.fit(feats, self.df_train[self.target], sample_weight=self.classes_weights)
             else:
-                self.clf.fit(feats, self.df_train[self.target])
+                labels = self.df_train[self.target]
+                self.clf.fit(feats, labels)
 
     def get_predictions(self):
         predictions =  self.clf.predict(self.feats_test.to_numpy())

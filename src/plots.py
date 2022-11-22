@@ -56,7 +56,7 @@ class Plots():
         tsne_data = model.fit_transform(feats)
         tsne_data_labs = np.vstack((tsne_data.T, labels)).T
         tsne_df = pd.DataFrame(data=tsne_data_labs, columns=('Dim_1', 'Dim_2', 'label'))
-        fg = sns.FacetGrid(tsne_df, hue='label', size=6).map(plt.scatter, 'Dim_1', 'Dim_2').add_legend()
+        fg = sns.FacetGrid(tsne_df, hue='label', height=6).map(plt.scatter, 'Dim_1', 'Dim_2').add_legend()
         fig = fg.fig
         plt.tight_layout()
         plt.savefig(filename)

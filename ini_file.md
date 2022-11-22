@@ -141,6 +141,11 @@
 * **type**: type of classifier
   * type = svm
   * possible values:
+    * **bayes**: Naive Bayes classifier 
+    * **knn**: k nearest neighbor classifier 
+      * K_val = 5
+      * KNN_weights = uniform | distance
+    * **knn_reg**: K nearest neighbor regressor
     * **svm**: Support Vector Machine 
       * C_val = 0.001
     * **xgb**:XG-Boost
