@@ -99,7 +99,7 @@ Here's [an overview on the ini-file options](./ini_file.md)
 * Inspect and play around with the [demo configuration file](demos/exp_emodb.ini) that defined your experiment, then re-run.
   
 ### Features
-* Classifiers: XGB, XGR, SVM, SVR, MLP
+* Classifiers: Naive Bayes, KNN, Tree, XGBoost, SVM, MLP
 * Feature extractors: opensmile, openXBOW BoAW, TRILL embeddings, Wav2vec2 embeddings, audModel embeddings, ...
 * Feature scaling
 * Label encoding
