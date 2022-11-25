@@ -102,6 +102,8 @@
 * **type**: a comma separated list of types of features, they will be columnwise concatenated
   * type = ['os']
   * possible values:
+    * **import**: [already computed features](http://blog.syntheticspeech.de/2022/10/18/how-to-import-features-from-outside-the-nkululeko-software/)
+      * **import_file** = path to a file with features in csv format  
     * **mld**: [mid-level-descriptors](http://www.essv.de/paper.php?id=447)
       * **mld.model** = *path to the mld sources folder*
       * **min_syls** = *minimum number of syllables*
