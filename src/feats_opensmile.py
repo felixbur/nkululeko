@@ -44,7 +44,7 @@ class Opensmileset(Featureset):
                 self.df.index = self.df.index.droplevel(1)
             self.df.to_pickle(storage)
             try:
-                glob_conf.config['DATA']['needs_feature_extraction'] = 'false'
+                glob_conf.config['DATA']['needs_feature_extraction'] = False
             except KeyError:
                 pass
         else:

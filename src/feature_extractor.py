@@ -36,6 +36,9 @@ class FeatureExtractor:
             elif feats_type=='wav2vec':
                 from feats_wav2vec2 import Wav2vec2
                 featExtractor = Wav2vec2(f'{store_name}{self.feats_designation}', self.data_df)
+            elif feats_type=='audmodel':
+                from feats_audmodel import AudModelSet
+                featExtractor = AudModelSet(f'{store_name}{self.feats_designation}', self.data_df)
             elif feats_type=='praat':
                 from feats_praat import Praatset
                 featExtractor = Praatset(f'{store_name}{self.feats_designation}', self.data_df)

@@ -114,6 +114,8 @@
       * **trill.model** = *path to the TRILL model folder, optional*
     * **wav2vec**: [Wav2vec2 embeddings](https://huggingface.co/facebook/wav2vec2-large-robust-ft-swbd-300h) from facebook
       * **wav2vec.model** = *path to the wav2vec2 model folder*
+    * **audmodel**: [audEERING emotion model embeddings](https://arxiv.org/abs/2203.07378), wav2vec2.0 model finetuned on [MSPPodcast](https://ecs.utdallas.edu/research/researchlabs/msp-lab/MSP-Podcast.html) emotions, embeddings
+      * **aud.model** = ./audmodel/ (*path to the audEERING model folder*)
     * **xbow**: [open crossbow](https://github.com/openXBOW) features codebook computed from open smile features
       * **xbow.model** = *path to xbow root folder (containing xbow.jar)*
       * **size** = 500 *(codebook size, rule of thumb: should grow with datasize)*

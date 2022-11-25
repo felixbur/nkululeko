@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.32.0
+--------------
+* added audmodel embeddings as features
+
 Version 0.31.0
 --------------
 * added models: tree and tree_reg
