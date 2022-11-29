@@ -95,7 +95,7 @@ Here's [an overview on the ini-file options](./ini_file.md)
   * ```python ./nkululeko/demos/my_experiment.py```
 * Find the results in the newly created folder exp_emodb 
   * Inspect ```exp_emodb/images/run_0/emodb_xgb_os_0_000_cnf.png```
-  * This is the main result of you experiment: a confusion matriix for the emodb emotional categories
+  * This is the main result of you experiment: a confusion matrix for the emodb emotional categories
 * Inspect and play around with the [demo configuration file](demos/exp_emodb.ini) that defined your experiment, then re-run.
   
 ### Features
