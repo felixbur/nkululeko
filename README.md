@@ -101,7 +101,7 @@ Here's [an overview on the ini-file options](./ini_file.md)
   
 ### Features
 * Classifiers: Naive Bayes, KNN, Tree, XGBoost, SVM, MLP
-* Feature extractors: opensmile, openXBOW BoAW, TRILL embeddings, Wav2vec2 embeddings, audModel embeddings, ...
+* Feature extractors: Praat, Opensmile, openXBOW BoAW, TRILL embeddings, Wav2vec2 embeddings, audModel embeddings, ...
 * Feature scaling
 * Label encoding
 * Binning (continuous to categorical)
