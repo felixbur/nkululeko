@@ -4,6 +4,7 @@
 A project to detect speaker characteristics by machine learning experiments with a high level interface based on [audformat](https://github.com/audeering/audformat).
 The idea is to have a very high level framework (based on e.g. sklearn and pytorch) that can be used by people not being experienced programmers as they mainly have to adapt the initialization parameter files.
 
+* The latest features can be derived from [the ini-file options](./ini_file.md) that are used to control Nkululeko
 * Below is a [Hello World example](#helloworld) that should set you up fastly.
 * [Here's a blog post on how to set up nkululeko on your computer.](http://blog.syntheticspeech.de/2021/08/30/how-to-set-up-your-first-nkululeko-project/)
 * [Here's a slide presentation about nkululeko](docs/nkululeko.pdf)
@@ -95,12 +96,12 @@ Here's [an overview on the ini-file options](./ini_file.md)
   * ```python ./nkululeko/demos/my_experiment.py```
 * Find the results in the newly created folder exp_emodb 
   * Inspect ```exp_emodb/images/run_0/emodb_xgb_os_0_000_cnf.png```
-  * This is the main result of you experiment: a confusion matriix for the emodb emotional categories
+  * This is the main result of you experiment: a confusion matrix for the emodb emotional categories
 * Inspect and play around with the [demo configuration file](demos/exp_emodb.ini) that defined your experiment, then re-run.
   
 ### Features
 * Classifiers: Naive Bayes, KNN, Tree, XGBoost, SVM, MLP
-* Feature extractors: opensmile, openXBOW BoAW, TRILL embeddings, Wav2vec2 embeddings, audModel embeddings, ...
+* Feature extractors: Praat, Opensmile, openXBOW BoAW, TRILL embeddings, Wav2vec2 embeddings, audModel embeddings, ...
 * Feature scaling
 * Label encoding
 * Binning (continuous to categorical)
