@@ -7,6 +7,7 @@ from model_xgr import XGR_model
 from model_mlp import MLP_model
 from model_bayes import Bayes_model
 from model_knn import KNN_model
+from model_gmm import GMM_model
 from model_knn_reg import KNN_reg_model
 from model_tree import Tree_model
 from model_tree_reg import Tree_reg_model
@@ -152,6 +153,8 @@ class Runmanager:
             self.model = XGR_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
         elif model_type=='bayes':
             self.model = Bayes_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
+        elif model_type=='gmm':
+            self.model = GMM_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
         elif model_type=='knn':
             self.model = KNN_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
         elif model_type=='knn_reg':

@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.33.0
+--------------
+* added GMM as a model type
+
 Version 0.32.0
 --------------
 * added audmodel embeddings as features
