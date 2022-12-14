@@ -145,6 +145,9 @@
   * type = svm
   * possible values:
     * **bayes**: Naive Bayes classifier 
+    * **gmm**: Gaussian mixture classifier 
+      * GMM_components = 4
+      * GMM_covariance_type = [full | tied | diag | spherical](https://scikit-learn.org/stable/auto_examples/mixture/plot_gmm_covariances.html)
     * **knn**: k nearest neighbor classifier 
       * K_val = 5
       * KNN_weights = uniform | distance
