@@ -8,6 +8,7 @@ import numpy as np
 from util import Util 
 import opensmile
 import glob_conf
+import audeer
 
 class MLD_set(Featureset):
 
@@ -21,6 +22,9 @@ class MLD_set(Featureset):
     def extract(self):
         store = self.util.get_path('store')
         storage = f'{store}{self.name}.pkl'
+        no_reuse = eval(self.util.config_val('DATA', 'no_reuse', False))
+        if no_reuse:
+            os.remove(storage)
         if not os.path.isfile(storage):
             self.util.debug('extracting midleveldescriptor features, this might take a while...')
         else:
