@@ -217,6 +217,7 @@ class Dataset:
         storage_test = f'{store}{self.name}_testdf.pkl'
         storage_train = f'{store}{self.name}_traindf.pkl'
         split_strategy = self.util.config_val_data(self.name,'split_strategy', 'database')
+        self.util.debug(f'splitting database {self.name} with strategy {split_strategy}')
         # 'database' (default), 'speaker_split', 'specified', 'reuse'
         if split_strategy != 'speaker_split' and not self.start_fresh:
             # check if the splits have been computed previously (not for speaker split)
@@ -288,7 +289,7 @@ class Dataset:
             self.df_test = self.finish_up(self.df_test, storage_test)
         if self.df_train.shape[0]>0:
             self.df_train = self.finish_up(self.df_train, storage_train)
-
+        
     def finish_up(self, df, storage):
         # Bin target values if they are continuous but a classification experiment should be done
         # self.check_continuous_classification(df)

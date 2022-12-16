@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.34.0
+--------------
+* smaller bug fixes and debug ouputs
+
 Version 0.33.0
 --------------
 * added GMM as a model type
