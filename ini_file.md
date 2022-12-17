@@ -2,6 +2,14 @@
 * To be specified in an .ini file, [config parser syntax](https://zetcode.com/python/configparser/)
 * Kind of all (well, most) values have defaults 
 
+## Contents
+* [Experiment: EXP](#exp)
+* [Datasets: DATA](#data)
+* [Acoustic features: FEATS](#feats)
+* [Classifiers \& Regressors: MODEL](#model)
+* [Visulaization: PLOT](#plot)
+
+
 ## Sections
 ### EXP
 
