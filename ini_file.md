@@ -7,7 +7,7 @@
 * [Datasets: DATA](#data)
 * [Acoustic features: FEATS](#feats)
 * [Classifiers \& Regressors: MODEL](#model)
-* [Visulaization: PLOT](#plot)
+* [Visualization: PLOT](#plot)
 
 
 ## Sections
