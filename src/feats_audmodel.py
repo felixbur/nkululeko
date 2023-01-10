@@ -19,8 +19,9 @@ class AudModelSet(Featureset):
         model_url = 'https://zenodo.org/record/6221127/files/w2v2-L-robust-12.6bc4a7fd-1.1.0.zip'
         model_root = self.util.config_val('FEATS', 'aud.model', './audmodel/')
         if not os.path.isdir(model_root):
-            zip_file = model_root+'/audmodel.zip'
-            archive_path = audeer.download_url(model_url, zip_file, verbose=True)
+            cache_root = audeer.mkdir('cache')
+            model_root = audeer.mkdir(model_root)
+            archive_path = audeer.download_url(model_url, cache_root, verbose=True)
             audeer.extract_archive(archive_path, model_root)
         self.model = audonnx.load(model_root)
 
