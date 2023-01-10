@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import recall_score
 from collections import OrderedDict
-import os
+from loss_softf1loss import SoftF1Loss
 
 class MLP_model(Model):
     """MLP = multi layer perceptron"""
@@ -25,7 +25,13 @@ class MLP_model(Model):
         labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
         self.class_num = len(labels)
         # set up loss criterion
-        self.criterion = torch.nn.CrossEntropyLoss()
+        criterion = self.util.config_val('MODEL', 'loss', 'cross')
+        if criterion == 'cross':
+            self.criterion = torch.nn.CrossEntropyLoss()
+        elif criterion == 'f1':
+            self.criterion = SoftF1Loss(num_classes=self.class_num, weight=None, epsilon=1e-7)
+        else:
+            self.util.error(f'unknown loss function: {criterion}')
         self.util.debug(f'training model with cross entropy loss function')
         # set up the model
         self.device = self.util.config_val('MODEL', 'device', 'cpu')
