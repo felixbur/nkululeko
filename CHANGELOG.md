@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.34.1
+--------------
+* smaller bug fixes and tried Soft_f1 loss
+
+
 Version 0.34.0
 --------------
 * smaller bug fixes and debug ouputs
