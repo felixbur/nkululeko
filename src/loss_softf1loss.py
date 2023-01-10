@@ -22,7 +22,6 @@ class SoftF1Loss(torch.nn.Module):
         y_pred = softmax(y_pred, dim=1)
 
         tp = (y_true * y_pred).sum(dim=0).to(torch.float32)
-        tn = ((1 - y_true) * (1 - y_pred)).sum(dim=0).to(torch.float32)
         fp = ((1 - y_true) * y_pred).sum(dim=0).to(torch.float32)
         fn = (y_true * (1 - y_pred)).sum(dim=0).to(torch.float32)
 
