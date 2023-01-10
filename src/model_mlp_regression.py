@@ -9,7 +9,7 @@ import ast
 import numpy as np
 from sklearn.metrics import mean_squared_error
 from collections import OrderedDict
-from concordance_cor_coeff import ConcordanceCorCoeff
+from loss_ccc import ConcordanceCorCoeff
 import os
 
 class MLP_Reg_model(Model):

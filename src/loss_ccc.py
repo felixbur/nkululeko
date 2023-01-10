@@ -1,4 +1,4 @@
-# concordance_cor_coeff.py
+# loss_concordance_cor_coeff.py
 
 import torch 
 

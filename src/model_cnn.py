@@ -8,7 +8,7 @@ from sklearn.metrics import mean_squared_error
 import glob_conf
 from reporter import Reporter
 import numpy as np
-from concordance_cor_coeff import ConcordanceCorCoeff
+from loss_ccc import ConcordanceCorCoeff
 import os
 
 class CNN_model(Model):
