@@ -190,10 +190,12 @@
 * **save**: whether to save all model states (per epoch) to disk (True or False)
   * save = False
 * **loss**: A  loss function for regression ANN models (classification models use Cross Entropy Loss with or without class weights)
-  * loss = mse
+  * loss = mse/cross
   * possible values:
     * **mse**: mean squared error
     * **1-ccc**: concordance correlation coefficient
+    * **cross**: cross entropy correlation
+    * **f1**: Soft (differentiable) F1 Loss
 * **measure**: A measure to report progress with regression experiments (classification is UAR)
   * measure = mse
   * possible values:
