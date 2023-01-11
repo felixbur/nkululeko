@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.34.2
+--------------
+* smaller bug fixed concerning the loss_string
+
 Version 0.34.1
 --------------
 * smaller bug fixes and tried Soft_f1 loss

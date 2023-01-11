@@ -15,14 +15,26 @@ class TRILLset(Featureset):
     """A feature extractor for the Google TRILL embeddings"""
     """https://ai.googleblog.com/2020/06/improving-speech-representations-and.html"""
 
-    def __init__(self, name, data_df):
-        self.name = name
-        self.data_df = data_df
-        self.util = Util()
-#        self.module = hub.load('https://tfhub.dev/google/nonsemantic-speech-benchmark/trill/3')
-        model_path = self.util.config_val('FEATS', 'trill.model', \
-            'https://tfhub.dev/google/nonsemantic-speech-benchmark/trill/3')
-        self.module = hub.load(model_path)
+# Initialization of the class
+def __init__(self, name, data_df):
+    """
+    Initialize the class with name, data and Util instance
+    Also loads the model from hub
+    
+    :param name: Name of the class
+    :type name: str
+    :param data_df: Data of the class
+    :type data_df: DataFrame
+    :return: None
+    """
+    self.name = name
+    self.data_df = data_df 
+    self.util = Util()
+    # Load the model from the configured path
+    model_path = self.util.config_val('FEATS', 'trill.model', \
+        'https://tfhub.dev/google/nonsemantic-speech-benchmark/trill/3')
+    self.module = hub.load(model_path)
+
 
     def extract(self):
         store = self.util.get_path('store')

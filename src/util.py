@@ -21,6 +21,9 @@ class Util:
             self.data_roots.read(self.got_data_roots)
         
     def get_path(self, entry):
+        """
+        This method allows the user to get the directory path for the given argument.
+        """
         root = glob_conf.config['EXP']['root']
         name = glob_conf.config['EXP']['name']
         try:
@@ -47,7 +50,8 @@ class Util:
     
 
     def config_val_data(self, dataset, key, default):
-        """ Retrieve a configuration value for datasets.
+        """ 
+        Retrieve a configuration value for datasets.
         If the value is present in the experiment configuration it will be used, else 
         we look in a global file specified by the root_folders value.
         """
@@ -115,6 +119,10 @@ class Util:
         if self.config_val('MODEL', 'learning_rate', False):
             lr = self.config_val('MODEL', 'learning_rate', False)
             lr_string = f'_lr-{str(lr)}'
+        loss_string = ''
+        if self.config_val('MODEL', 'loss', False):
+            loss = self.config_val('MODEL', 'loss', False)
+            loss_string = f'_loss-{loss}'
         drop_string = ''
         if self.config_val('MODEL', 'drop', False):
             drop = self.config_val('MODEL', 'drop', False)
@@ -127,7 +135,7 @@ class Util:
             for l in sorted_layers:
                 layer_string += f'{str(l[1])}-'
         return_string = f'{ds}_{mt}_{ft}{set_string}'\
-            f'{with_os_string}{layer_string[:-1]}{lr_string}{drop_string}'.replace('__','')
+            f'{with_os_string}{layer_string[:-1]}{lr_string}{drop_string}{loss_string}'.replace('__','')
         return return_string
 
     def get_plot_name(self):

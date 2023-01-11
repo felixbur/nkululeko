@@ -1,6 +1,7 @@
 audformat
 audeer
 audiofile
+audonnx
 matplotlib
 xgboost
 seaborn
