@@ -26,28 +26,28 @@ class FeatureExtractor:
         for feats_type in feats_types:
             store_name = f'{self.data_name}_{strategy}_{feats_type}'   
             if feats_type=='os':
-                featExtractor = Opensmileset(f'{store_name}{self.feats_designation}', self.data_df)
+                featExtractor = Opensmileset(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='audid':
                 from feats_audid import AudIDset
-                featExtractor = AudIDset(f'{store_name}{self.feats_designation}', self.data_df)
+                featExtractor = AudIDset(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='trill':
                 from feats_trill import TRILLset
-                featExtractor = TRILLset(f'{store_name}{self.feats_designation}', self.data_df)
+                featExtractor = TRILLset(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='wav2vec':
                 from feats_wav2vec2 import Wav2vec2
-                featExtractor = Wav2vec2(f'{store_name}{self.feats_designation}', self.data_df)
+                featExtractor = Wav2vec2(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='audmodel':
                 from feats_audmodel import AudModelSet
-                featExtractor = AudModelSet(f'{store_name}{self.feats_designation}', self.data_df)
+                featExtractor = AudModelSet(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='praat':
                 from feats_praat import Praatset
-                featExtractor = Praatset(f'{store_name}{self.feats_designation}', self.data_df)
+                featExtractor = Praatset(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='mld':
                 from feats_mld import MLD_set
-                featExtractor = MLD_set(f'{store_name}{self.feats_designation}', self.data_df)
+                featExtractor = MLD_set(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='import':
                 from feats_import import Importset
-                featExtractor = Importset(f'{store_name}{self.feats_designation}', self.data_df)
+                featExtractor = Importset(f'{store_name}_{self.feats_designation}', self.data_df)
             else:
                 self.util.error(f'unknown feats_type: {feats_type}')
 
