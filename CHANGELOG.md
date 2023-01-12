@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.35.0
+--------------
+* fixed bug that prevented scaling (normalization)
+
 Version 0.34.2
 --------------
 * smaller bug fixed concerning the loss_string

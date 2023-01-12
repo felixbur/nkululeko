@@ -258,7 +258,7 @@ class Experiment:
         scale = self.util.config_val('FEATS', 'scale', False)
         if scale: 
             self.scaler = Scaler(self.df_train, self.df_test, self.feats_train, self.feats_test, scale)
-            self.feats_train.df, self.feats_test.df = self.scaler.scale()
+            self.feats_train, self.feats_test = self.scaler.scale()
 
     def init_runmanager(self):
         """Initialize the manager object for the runs."""

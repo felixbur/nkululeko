@@ -133,6 +133,7 @@ class MLP_Reg_model(Model):
         for features, labels in loader:
             logits = model(features.to(device)).reshape(-1)
             loss = criterion(logits, labels.to(device))
+            #print(f'loss: {loss.item()}')
             losses.append(loss.item())
             optimizer.zero_grad()
             loss.backward()

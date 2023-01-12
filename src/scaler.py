@@ -47,7 +47,7 @@ class Scaler:
                         test_feats (pd.DataFrame): The scaled test features dataframe (can be None) 
         '''
         if self.scaler_type != 'speaker':
-            self.util.debug('scaling features based on training')
+            self.util.debug('scaling features based on training set')
             return self.scale_all()
         else:
             self.util.debug('scaling features per speaker based on training')
@@ -69,7 +69,7 @@ class Scaler:
         self.feats_train = self.speaker_scale_df(self.data_train, self.feats_train)
         if self.feats_test is not None:
             self.feats_test = self.speaker_scale_df(self.data_test, self.feats_test)
-        return self.feats_train, self.feats_test
+        return [self.feats_train, self.feats_test]
 
 
     def speaker_scale_df(self, df, feats_df):

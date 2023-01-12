@@ -189,9 +189,9 @@
   * k_fold_cross = 10
 * **save**: whether to save all model states (per epoch) to disk (True or False)
   * save = False
-* **loss**: A  loss function for regression ANN models (classification models use Cross Entropy Loss with or without class weights)
+* **loss**: A loss function for regression ANN models (classification models use Cross Entropy Loss with or without class weights)
   * loss = mse/cross
-  * possible values:
+  * possible values (SHOULD correspond with *measure*):
     * **mse**: mean squared error
     * **1-ccc**: concordance correlation coefficient
     * **cross**: cross entropy correlation
