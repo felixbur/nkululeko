@@ -94,7 +94,7 @@ Here's [an overview on the ini-file options](./ini_file.md)
 * Now you should have three folders in your *nkulu_work* folder:
   * *emodb*, *nkululeko* and *venv*
 * Run the demo
-  * ```python ./nkululeko/demos/my_experiment.py```
+  * ```python ./nkululeko/nkululeko.py --config ./nkululeko/demos/exp_emodb.ini```
 * Find the results in the newly created folder exp_emodb 
   * Inspect ```exp_emodb/images/run_0/emodb_xgb_os_0_000_cnf.png```
   * This is the main result of you experiment: a confusion matrix for the emodb emotional categories

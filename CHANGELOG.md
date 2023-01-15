@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.36.0
+--------------
+* added entry nkululeko.py script
+
+
 Version 0.35.0
 --------------
 * fixed bug that prevented scaling (normalization)
