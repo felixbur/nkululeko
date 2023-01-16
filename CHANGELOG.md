@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.36.3
+--------------
+* published as a pypi module
+
 Version 0.36.0
 --------------
 * added entry nkululeko.py script
