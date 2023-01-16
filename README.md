@@ -89,12 +89,13 @@ Here's [an overview on the ini-file options](./ini_file.md)
       * ```venv\Scripts\activate.bat```
     * if that worked, you should see a ```(venv)``` in front of your prompt
   * Install the required packages in your environment
-    * ```pip install -r ./nkululeko/requirements.txt```
+    * ```pip install nkululeko```
     * Repeat until all error messages vanished (or fix them)...
-* Now you should have three folders in your *nkulu_work* folder:
-  * *emodb*, *nkululeko* and *venv*
+* Now you should have two folders in your *nkulu_work* folder:
+  * *emodb* and *venv*
+* Download a copy of the file [exp_emodb.ini](demos/exp_emodb.ini)
 * Run the demo
-  * ```python ./nkululeko/nkululeko.py --config ./nkululeko/demos/exp_emodb.ini```
+  * ```python -m nkululeko.nkululeko --config exp_emodb.ini```
 * Find the results in the newly created folder exp_emodb 
   * Inspect ```exp_emodb/images/run_0/emodb_xgb_os_0_000_cnf.png```
   * This is the main result of you experiment: a confusion matrix for the emodb emotional categories
