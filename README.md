@@ -22,7 +22,10 @@ pip install -r nkululeko
 An example is the [my_experiment.py](demos/my_experiment.py) file.
 
 ## Usage
-There is a central "experiment" class that can be used by own experiments, two examples are given with
+Basically, you specify your experiment in an "ini" file (e.g. *experiment.ini*) and then call Nkululeko to run the experiment like this:
+  * ```python -m nkululeko.nkululeko --config experiment.ini```
+
+Alternatively, there is a central "experiment" class that can be used by own experiments, two examples are given with
 * [my_experiment.py](demos/my_experiment.py) ([configuration](demos/exp_emodb.ini)), using SVM classifier
 * [configuration](demos/exp_emodb_mlp.ini), using MLP classifier
 
