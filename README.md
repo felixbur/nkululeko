@@ -13,13 +13,12 @@ The idea is to have a framework (based on e.g. sklearn and torch) that can be us
 * [Here's the 2022 LREC article on nkululeko](http://felix.syntheticspeech.de/publications/Nkululeko_LREC.pdf)
 
 ## Installation
-Download the sources via git clone or zip export to your hard drive.
-Include the classes via 
+
+Creat and activate a virtual python environment and simply run
 ```
-import sys
-sys.path.append("./src")
+pip install -r nkululeko
 ```
-in your main python file and use them.
+
 An example is the [my_experiment.py](demos/my_experiment.py) file.
 
 ## Usage
