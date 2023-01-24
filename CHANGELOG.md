@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.37.0
+--------------
+* fixed bug cvs import not detecting multiindex 
+
 Version 0.36.3
 --------------
 * published as a pypi module

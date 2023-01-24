@@ -19,15 +19,13 @@ Creat and activate a virtual python environment and simply run
 pip install -r nkululeko
 ```
 
-An example is the [my_experiment.py](demos/my_experiment.py) file.
+Some examples for *ini*-files (which you use to control nkululeko) are in the [demo folder](https://github.com/felixbur/nkululeko/tree/main/demos).
 
 ## Usage
 Basically, you specify your experiment in an "ini" file (e.g. *experiment.ini*) and then call Nkululeko to run the experiment like this:
   * ```python -m nkululeko.nkululeko --config experiment.ini```
 
-Alternatively, there is a central "experiment" class that can be used by own experiments, two examples are given with
-* [my_experiment.py](demos/my_experiment.py) ([configuration](demos/exp_emodb.ini)), using SVM classifier
-* [configuration](demos/exp_emodb_mlp.ini), using MLP classifier
+Alternatively, there is a central "experiment" class that can be used by own experiments
 
 There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
 * [How to set up your first nkululeko project](http://blog.syntheticspeech.de/2021/08/30/how-to-set-up-your-first-nkululeko-project/)

@@ -39,6 +39,7 @@ class Opensmileset(Featureset):
             num_workers=5,)
             if isinstance(self.data_df.index, pd.MultiIndex):
                 self.df = smile.process_index(self.data_df.index)
+                self.df = self.df.set_index(self.data_df.index)
             else:
                 self.df = smile.process_files(self.data_df.index)
                 self.df.index = self.df.index.droplevel(1)

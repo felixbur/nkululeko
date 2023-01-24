@@ -66,6 +66,7 @@ class Experiment:
                 else:
                     self.util.error(f'unknown data type: {ds_type}')
             data.load()
+#            data.prepare()
             if data.got_gender:
                 self.got_gender = True
             if data.got_speaker:
@@ -96,7 +97,7 @@ class Experiment:
         else:
             self.df_train, self.df_test = pd.DataFrame(), pd.DataFrame()
             strategy = self.util.config_val('DATA', 'strategy', 'traintest')
-            # some datasets against others in their entirety
+            # some datasets against others in their entierty
             if strategy == 'cross_data':
                 train_dbs = ast.literal_eval(glob_conf.config['DATA']['trains'])
                 test_dbs = ast.literal_eval(glob_conf.config['DATA']['tests'])
@@ -146,11 +147,16 @@ class Experiment:
             datatype = self.util.config_val('DATA', 'type', 'dummy')
             if datatype == 'continuous':
                 if self.df_test.is_labeled:
+                    # remember the target in case they get labelencoded later
+                    self.df_test['class_label'] = self.df_test[self.target]
                     test_cats = self.df_test['class_label'].unique()
                 else:
                     # if there is no target, copy a dummy label
                     self.df_test = self._add_random_target(self.df_test)
-                train_cats = self.df_train['class_label'].unique()
+                if self.df_train.is_labeled:
+                    # remember the target in case they get labelencoded later
+                    self.df_train['class_label'] = self.df_train[self.target]
+                    train_cats = self.df_train['class_label'].unique()
             else:
                 if self.df_test.is_labeled:
                     test_cats = self.df_test[self.target].unique()

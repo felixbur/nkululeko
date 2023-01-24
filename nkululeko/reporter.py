@@ -118,7 +118,7 @@ class Reporter:
         fig = plt.figure()  # figsize=[5, 5]
         uar = recall_score(truths, preds, average='macro')
         acc = accuracy_score(truths, preds)
-        cm = confusion_matrix(truths, preds,  normalize = None) #normalize must be one of {'true', 'pred', 'all', None}
+        cm = confusion_matrix(truths, preds, normalize = None) #normalize must be one of {'true', 'pred', 'all', None}
         if cm.shape[0] != len(labels):
             self.util.error(f'mismatch between confmatrix dim ({cm.shape[0]}) and labels length ({len(labels)}: {labels})')
         try:

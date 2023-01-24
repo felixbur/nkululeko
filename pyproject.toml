@@ -1,22 +1,6 @@
 [build-system]
-requires = ["audeer","audformat","audinterface","audiofile","audonnx","audtorch","datasets","imageio","matplotlib","numpy","opensmile","pandas","parselmouth","scikit_learn","scipy","seaborn","sounddevice","tensorflow","tensorflow_hub","torch","transformers","xgboost"]
-build-backend = "hatchling.build"
-
-[project]
-name = "nkululeko"
-version = "0.36.0"
-authors = [
-  { name="Felix Burkhardt", email="fxburk@gmail.com" },
+requires = [
+  "setuptools>=54",
+  "wheel"
 ]
-description = "A framework to do audio classification."
-readme = "README.md"
-requires-python = ">=3.7"
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-]
-
-[project.urls]
-"Homepage" = "https://github.com/felixbur/nkululeko"
-"Bug Tracker" = "https://github.com/felixbur/nkululeko/issues"
+build-backend = "setuptools.build_meta"

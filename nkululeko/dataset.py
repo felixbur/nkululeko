@@ -55,12 +55,12 @@ class Dataset:
 
     def load(self):
         """Load the dataframe with files, speakers and task labels"""
-        self.util.debug(f'{self.name}: loading ...')
+        # store the dataframe
         store = self.util.get_path('store')
         store_file = f'{store}{self.name}.pkl'
+        self.util.debug(f'{self.name}: loading ...')
         self.got_speaker, self.got_gender = False, False 
         if not self.start_fresh and os.path.isfile(store_file):
-            print (self.start_fresh)
             self.util.debug(f'{self.name}: reusing previously stored file {store_file}')
             self.df = pd.read_pickle(store_file)
             self.is_labeled = self.target in self.df
@@ -114,6 +114,9 @@ class Dataset:
         self.df = df
         self.db = db
         self.df.is_labeled = self.is_labeled
+        print('huhu')
+
+    def prepare(self):
         # Perform some filtering if desired
         required = self.util.config_val_data(self.name, 'required', False)
         if required:
@@ -162,9 +165,11 @@ class Dataset:
 
         if self.got_speaker and self.util.config_val_data(self.name, 'rename_speakers', False):
             # we might need to append the database name to all speakers in case other datbaases have the same speaker names
-            df.speaker = df.speaker.apply(lambda x: self.name+x)
+            self.df.speaker = self.df.speaker.apply(lambda x: self.name+x)
 
         # store the dataframe
+        store = self.util.get_path('store')
+        store_file = f'{store}{self.name}.pkl'
         self.df.to_pickle(store_file)
 
 
