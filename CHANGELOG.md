@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.37.1
+--------------
+* fixed bug preventing praat feature extraction to work
+
 Version 0.37.0
 --------------
 * fixed bug cvs import not detecting multiindex 

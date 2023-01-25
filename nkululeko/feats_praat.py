@@ -3,7 +3,7 @@ from nkululeko.featureset import Featureset
 import os
 import pandas as pd
 import nkululeko.glob_conf as glob_conf
-import feinberg_praat
+from nkululeko import feinberg_praat
 
 class Praatset(Featureset):
     """
