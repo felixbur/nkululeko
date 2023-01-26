@@ -253,8 +253,8 @@ class Experiment:
         tsne = self.util.config_val('PLOT', 'tsne', False)
         if tsne and self.util.exp_is_classification():
             plots = Plots()
-            all_feats =self.feats_train.append(self.feats_test)
-            all_labels = self.df_train['class_label'].append(self.df_test['class_label'])
+            all_feats = pd.concat([self.feats_train, self.feats_test])
+            all_labels = pd.concat([self.df_train['class_label'], self.df_test['class_label']])
             plots.plotTsne(all_feats, all_labels, self.util.get_exp_name()+'_tsne')
 
     def _scale(self):

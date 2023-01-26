@@ -44,10 +44,6 @@
   * type = continuous
 * **databases**: list of databases to be used in the experiment
   * databases = ['emodb', 'timit']
-* **strategy**: how the databases should be used, either *traintest* or *cross_data*
-  * strategy = traintest
-* **trains**: if *strategy* = cross_data, denote the train databases
-* **tests**: if *strategy* = cross_data, denote the test databases
 * **label_data**: a dataset to be used as test data for the given best model
   * label_data = emovo
 * **label_result**: a file path for the result of the step above
@@ -67,8 +63,8 @@
   * Possible values:
     * **database**: default (*task*.train and *task*.test)
     * **specified**: specifiy the tables (an opportunity to assign multiple or no tables to train or dev set)
-      * emodb.test_tables = ['emo.test', 'emo.train']
-      * emodb.train_tables = ['emo.train']
+      * emodb.train_tables = ['emotion.categories.train.gold_standard']
+      * emodb.test_tables = ['emotion.categories.test.gold_standard']
     * **speaker_split**: split samples randomly but speaker disjunct, given a percentage of speakers for the test set.
       * emodb.testsplit = 50
     * **random**: split samples randomly (but NOT speaker disjunct, e.g. no speaker info given or each sample a speaker), given a percentage of samples for the test set.
@@ -225,7 +221,7 @@
   * best_model = False
 * **value_counts** plot statistics for each database and the train/dev splits (in the *image_dir*)
   * value_counts = False
-* **tsne** make a tsne plot to get a feeling how the features might perform
+* **tsne** make a tsne plot of combined train and test data to get a feeling how the features might perform
   * tsne = False
 * **combine_per_speaker**: print an extra confusion plot where the predicions per speaker are combined, with either the mode or the mean function
   * combine_per_speaker = mode

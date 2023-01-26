@@ -268,7 +268,7 @@ class Dataset:
             if entry_train_tables: 
                 train_tables =  ast.literal_eval(entry_train_tables)
                 for train_table in train_tables:
-                    traindf = traindf.append(self.db.tables[train_table].df)
+                    traindf = pd.concat([traindf, self.db.tables[train_table].df])
             # use only the train and test samples that were not perhaps filtered out by an earlier processing step
             self.df_test = self.df.loc[self.df.index.intersection(testdf.index)]
             self.df_train = self.df.loc[self.df.index.intersection(traindf.index)]

@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.37.2
+--------------
+* mainly replaced pd.append with pd.concat
+
+
 Version 0.37.1
 --------------
 * fixed bug preventing praat feature extraction to work
