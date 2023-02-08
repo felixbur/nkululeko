@@ -241,10 +241,13 @@ class Experiment:
         feats_name = "_".join(ast.literal_eval(glob_conf.config['DATA']['databases']))
         self.feats_test, self.feats_train = pd.DataFrame(), pd.DataFrame()
         _scale = True
-        featExtractor_train = FeatureExtractor(df_train, feats_name, 'train')
-        featExtractor_test = FeatureExtractor(df_test, feats_name, 'test')
-        self.feats_train =featExtractor_train.extract()
-        self.feats_test =featExtractor_test.extract()
+        self.feature_extractor = FeatureExtractor() 
+        # featExtractor_train = FeatureExtractor(df_train, feats_name, 'train')
+        # featExtractor_test = FeatureExtractor(df_test, feats_name, 'test')
+        self.feature_extractor.set_data(df_train, feats_name, 'train')
+        self.feats_train =self.feature_extractor.extract()
+        self.feature_extractor.set_data(df_test, feats_name, 'test')
+        self.feats_test = self.feature_extractor.extract()
         self.util.debug(f'All features: train shape : {self.feats_train.shape}, test shape:{self.feats_test.shape}')
         if _scale:
             self._scale()
@@ -253,8 +256,8 @@ class Experiment:
         tsne = self.util.config_val('PLOT', 'tsne', False)
         if tsne and self.util.exp_is_classification():
             plots = Plots()
-            all_feats = pd.concat([self.feats_train, self.feats_test])
-            all_labels = pd.concat([self.df_train['class_label'], self.df_test['class_label']])
+            all_feats =self.feats_train.append(self.feats_test)
+            all_labels = self.df_train['class_label'].append(self.df_test['class_label'])
             plots.plotTsne(all_feats, all_labels, self.util.get_exp_name()+'_tsne')
 
     def _scale(self):
@@ -327,8 +330,7 @@ class Experiment:
 
     def demo(self):
         model = self.runmgr.get_best_model()
-        feature_extractor = self.feats_train
-        demo = Demo_predictor(model, feature_extractor, self.label_encoder)
+        demo = Demo_predictor(model, self.feature_extractor, self.label_encoder)
         demo.run_demo()
 
     def predict_test_and_save(self, result_name):

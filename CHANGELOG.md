@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.38.0
+--------------
+* fixed demo mode
+
 Version 0.37.2
 --------------
 * mainly replaced pd.append with pd.concat
