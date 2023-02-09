@@ -17,11 +17,11 @@ class Importset(Featureset):
         store = self.util.get_path('store')
         storage = f'{store}{self.name}.pkl'
         extract = eval(self.util.config_val('FEATS', 'needs_feature_extraction', False))
-        start_fresh = eval(self.util.config_val('DATA', 'no_reuse', False))
+        no_reuse = eval(self.util.config_val('FEATS', 'no_reuse', 'False'))
         feat_import_file = self.util.config_val('FEATS', 'import_file', False)
         if not os.path.isfile(feat_import_file):
             self.util.warn(f'no import file: {feat_import_file}')
-        if extract or start_fresh or not os.path.isfile(storage):
+        if extract or no_reuse or not os.path.isfile(storage):
             self.util.debug(f'importing features for {self.name}')
             # df = pd.read_csv(feat_import_file, sep=',', header=0, 
             #     index_col=['file', 'start', 'end'])

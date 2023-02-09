@@ -19,7 +19,7 @@ class MLD_set(Featureset):
     def extract(self):
         store = self.util.get_path('store')
         storage = f'{store}{self.name}.pkl'
-        no_reuse = eval(self.util.config_val('DATA', 'no_reuse', False))
+        no_reuse = eval(self.util.config_val('FEATS', 'no_reuse', 'False'))
         if no_reuse:
             os.remove(storage)
         if not os.path.isfile(storage):

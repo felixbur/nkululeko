@@ -128,8 +128,8 @@
       * **assignments** = 10 *(number of words in the bag representation where the counter is increased for each input LLD, rule of thumb: should grow/shrink with codebook size)*
 * **features** = *python list of selected features to be used (all others ignored)*
   * features = ['JitterPCA', 'meanF0Hz', 'hld_sylRate']
-* **needs_feature_extraction**: if features should be extracted newly even if already stored
-  * needs_feature_extraction = False
+* **no_reuse**: don't re-use already extracted features but start fresh
+  * no_reuse = False
 * **scale**: scale the features
   * scale=standard
   * possible values:

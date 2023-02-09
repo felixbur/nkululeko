@@ -28,7 +28,7 @@ class Dataset:
         self.util = Util()
         self.plot = Plots()
         self.limit = int(self.util.config_val_data(self.name, 'limit', 0))
-        self.start_fresh = self.util.config_val('DATA', 'no_reuse', False)
+        self.start_fresh = eval(self.util.config_val('DATA', 'no_reuse', 'False'))
         self.is_labeled, self.got_speaker, self.got_gender = False, False, False 
 
 

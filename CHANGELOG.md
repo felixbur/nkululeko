@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version 0.38.2
+--------------
+* fixed a bug concerned with "no_reuse" evaluation
+
+Version 0.38.1
+--------------
+* demo mode with file argument
+
 Version 0.38.0
 --------------
 * fixed demo mode

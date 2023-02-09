@@ -88,7 +88,7 @@ class Experiment:
         store = self.util.get_path('store')
         storage_test = f'{store}testdf.csv'
         storage_train = f'{store}traindf.csv'
-        start_fresh = self.util.config_val('DATA', 'no_reuse', False)
+        start_fresh = eval(self.util.config_val('DATA', 'no_reuse', 'False'))
         if os.path.isfile(storage_train) and os.path.isfile(storage_test) \
             and not start_fresh:
             self.util.debug(f'reusing previously stored {storage_test} and {storage_train}')
@@ -328,9 +328,9 @@ class Experiment:
     def print_best_model(self):
         self.runmgr.print_best_result_runs()
 
-    def demo(self):
+    def demo(self, file):
         model = self.runmgr.get_best_model()
-        demo = Demo_predictor(model, self.feature_extractor, self.label_encoder)
+        demo = Demo_predictor(model, file, self.feature_extractor, self.label_encoder)
         demo.run_demo()
 
     def predict_test_and_save(self, result_name):

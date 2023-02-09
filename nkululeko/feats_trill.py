@@ -40,8 +40,8 @@ def __init__(self, name, data_df):
         store = self.util.get_path('store')
         storage = f'{store}{self.name}.pkl'
         extract = self.util.config_val('FEATS', 'needs_feature_extraction', False)
-        start_fresh = self.util.config_val('DATA', 'no_reuse', False)
-        if extract or start_fresh or not os.path.isfile(storage):
+        no_reuse = eval(self.util.config_val('FEATS', 'no_reuse', 'False'))
+        if extract or no_reuse or not os.path.isfile(storage):
             self.util.debug('extracting TRILL embeddings, this might take a while...')
             emb_series = pd.Series(index = self.data_df.index, dtype=object)
             length = len(self.data_df.index)

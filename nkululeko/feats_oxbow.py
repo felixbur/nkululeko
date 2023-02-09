@@ -21,8 +21,8 @@ class Openxbow(Featureset):
         store = self.util.get_path('store')
         storage = f'{store}{self.name}_{self.featset}.pkl'
         extract = self.util.config_val('FEATS', 'needs_feature_extraction', False)
-        start_fresh = self.util.config_val('DATA', 'no_reuse', False)
-        if extract or start_fresh or not os.path.isfile(storage):
+        no_reuse = eval(self.util.config_val('FEATS', 'no_reuse', 'False'))
+        if extract or no_reuse or not os.path.isfile(storage):
             # extract smile features first
             self.util.debug('extracting openSmile features, this might take a while...')
             smile = opensmile.Smile(
