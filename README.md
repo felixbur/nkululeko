@@ -102,6 +102,7 @@ Here's [an overview on the ini-file options](./ini_file.md)
   * Inspect ```exp_emodb/images/run_0/emodb_xgb_os_0_000_cnf.png```
   * This is the main result of you experiment: a confusion matrix for the emodb emotional categories
 * Inspect and play around with the [demo configuration file](demos/exp_emodb.ini) that defined your experiment, then re-run.
+* There are many ways to experiment with different classifiers and acoustic features sets, [all described here](https://github.com/felixbur/nkululeko/blob/main/ini_file.md)
   
 ### Features
 * Classifiers: Naive Bayes, KNN, Tree, XGBoost, SVM, MLP
