@@ -92,7 +92,7 @@ Here's [an overview on the ini-file options](./ini_file.md)
     * if that worked, you should see a ```(venv)``` in front of your prompt
   * Install the required packages in your environment
     * ```pip install nkululeko```
-    * Repeat until all error messages vanished (or fix them)...
+    * Repeat until all error messages vanished (or fix them, or try to ignore them)...
 * Now you should have two folders in your *nkulu_work* folder:
   * *emodb* and *venv*
 * Download a copy of the file [exp_emodb.ini](demos/exp_emodb.ini)
