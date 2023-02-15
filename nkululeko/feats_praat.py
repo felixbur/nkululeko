@@ -39,6 +39,6 @@ class Praatset(Featureset):
 
 
     def extract_sample(self, signal, sr):
-        self.util.error('feats_praat: not implemented yet')
+        self.util.error('feats_praat: extracting single samples not implemented yet')
         feats = None
         return feats

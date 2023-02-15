@@ -328,9 +328,14 @@ class Experiment:
     def print_best_model(self):
         self.runmgr.print_best_result_runs()
 
-    def demo(self, file):
+    def demo(self, file, is_list):
         model = self.runmgr.get_best_model()
-        demo = Demo_predictor(model, file, self.feature_extractor, self.label_encoder)
+        labelEncoder = None
+        try: 
+            labelEncoder = self.label_encoder
+        except AttributeError:
+            pass
+        demo = Demo_predictor(model, file, is_list, self.feature_extractor, labelEncoder)
         demo.run_demo()
 
     def predict_test_and_save(self, result_name):

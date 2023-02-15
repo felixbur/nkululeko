@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.38.3
+--------------
+* added demo mode with list argument
+
 Version 0.38.2
 --------------
 * fixed a bug concerned with "no_reuse" evaluation

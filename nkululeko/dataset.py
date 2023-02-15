@@ -114,7 +114,6 @@ class Dataset:
         self.df = df
         self.db = db
         self.df.is_labeled = self.is_labeled
-        print('huhu')
 
     def prepare(self):
         # Perform some filtering if desired
@@ -263,7 +262,7 @@ class Dataset:
             if entry_test_tables: 
                 test_tables =  ast.literal_eval(entry_test_tables)
                 for test_table in test_tables:
-                    testdf = testdf.append(self.db.tables[test_table].df)
+                    testdf = pd.concat([testdf, self.db.tables[test_table].df]) 
             entry_train_tables = self.util.config_val_data(self.name, 'train_tables', False)
             if entry_train_tables: 
                 train_tables =  ast.literal_eval(entry_train_tables)

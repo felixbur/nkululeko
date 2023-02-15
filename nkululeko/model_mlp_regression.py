@@ -191,3 +191,6 @@ class MLP_Reg_model(Model):
             self.model = self.MLP(self.feats_train.shape[1], layers, self.class_num, drop).to(self.device)
             self.model.load_state_dict(torch.load(self.store_path))
             self.model.eval()
+    def predict_sample(self, features):
+        """Predict one sample"""
+        self.util.error('model_mlp_regression: predicting one sample not implemented yet')

@@ -264,12 +264,16 @@ class Model:
     def predict_sample(self, features):
         """Predict one sample"""
         prediction = {}
-        # get the class probabilities
-        predictions = self.clf.predict_proba(features)
-        # pred = self.clf.predict(features)
-        for i in range(len(self.clf.classes_)):
-            cat = self.clf.classes_[i]
-            prediction[cat] = predictions[0][i]
+        if self.util.exp_is_classification():
+            # get the class probabilities
+            predictions = self.clf.predict_proba(features)
+            # pred = self.clf.predict(features)
+            for i in range(len(self.clf.classes_)):
+                cat = self.clf.classes_[i]
+                prediction[cat] = predictions[0][i]
+        else:
+            predictions = self.clf.predict(features)
+            prediction['result'] = predictions[0]
         return prediction
 
 
