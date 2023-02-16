@@ -211,12 +211,12 @@ class Experiment:
             # if self.df_test.is_labeled:
             #     self.df_test['labels'] = self.label_encoder.inverse_transform(self.df_test[self.target])
             if self.df_test.shape[0] > 0:
-                plot.describe_df('dev_set', self.df_test, self.target, f'test_distplot.png')
-            plot.describe_df('train_set', self.df_train, self.target, f'train_distplot.png')
+                plot.describe_df('dev_set', self.df_test, self.target, f'test_distplot')
+            plot.describe_df('train_set', self.df_train, self.target, f'train_distplot')
         else:
             if self.df_test.shape[0] > 0:
-                plot.describe_df('dev_set', self.df_test, self.target, f'test_distplot.png')
-            plot.describe_df('train_set', self.df_train, self.target, f'train_distplot.png')
+                plot.describe_df('dev_set', self.df_test, self.target, f'test_distplot')
+            plot.describe_df('train_set', self.df_train, self.target, f'train_distplot')
 
 
     def augment_train(self):
@@ -236,31 +236,50 @@ class Experiment:
         
         """
         df_train, df_test = self.df_train, self.df_test
-        strategy = self.util.config_val('DATA', 'strategy', 'traintest')
-        feats_types = self.util.config_val_list('FEATS', 'type', ['os'])
         feats_name = "_".join(ast.literal_eval(glob_conf.config['DATA']['databases']))
         self.feats_test, self.feats_train = pd.DataFrame(), pd.DataFrame()
-        _scale = True
         self.feature_extractor = FeatureExtractor() 
-        # featExtractor_train = FeatureExtractor(df_train, feats_name, 'train')
-        # featExtractor_test = FeatureExtractor(df_test, feats_name, 'test')
         self.feature_extractor.set_data(df_train, feats_name, 'train')
         self.feats_train =self.feature_extractor.extract()
         self.feature_extractor.set_data(df_test, feats_name, 'test')
         self.feats_test = self.feature_extractor.extract()
         self.util.debug(f'All features: train shape : {self.feats_train.shape}, test shape:{self.feats_test.shape}')
-        if _scale:
-            self._scale()
 
         # check if a tsne should be plotted
-        tsne = self.util.config_val('PLOT', 'tsne', False)
-        if tsne and self.util.exp_is_classification():
-            plots = Plots()
-            all_feats =self.feats_train.append(self.feats_test)
-            all_labels = self.df_train['class_label'].append(self.df_test['class_label'])
-            plots.plotTsne(all_feats, all_labels, self.util.get_exp_name()+'_tsne')
+        tsne = eval(self.util.config_val('PLOT', 'tsne', 'False'))
+        if tsne: 
+            if self.util.exp_is_classification():
+                plots = Plots()
+                all_feats =self.feats_train.append(self.feats_test)
+                all_labels = self.df_train['class_label'].append(self.df_test['class_label'])
+                plots.plotTsne(all_feats, all_labels, self.util.get_exp_name()+'_tsne')
+            else:
+                 self.util.debug('can\'t plot tsne if not classification')
 
-    def _scale(self):
+        # check if feature distributions should be plotted
+        plot_feats = self.util.config_val('PLOT', 'feature_distributions', False)
+        if plot_feats: 
+            if self.util.exp_is_classification():
+                plots = Plots()
+                if plot_feats=='all':
+                    df_feats = pd.concat([self.feats_train, self.feats_test])
+                    df_labels = pd.concat([self.df_train, self.df_test])
+                elif plot_feats=='train':
+                    df_feats = self.feats_train
+                    df_labels = self.df_train
+                elif plot_feats=='test':
+                    df_feats = self.feats_test
+                    df_labels = self.df_test
+                else:
+                    self.util.error(f'unkown feature_distribution specifier {plot_feats}, should be [all | train | test]')
+                for feature in df_feats.columns:
+                    plots.plot_feature(plot_feats, feature, 'class_label', df_labels, df_feats)
+            else:
+                self.util.debug('can\'t plot feature distributions if not classification')
+        self._check_scale()
+
+
+    def _check_scale(self):
         scale = self.util.config_val('FEATS', 'scale', False)
         if scale: 
             self.scaler = Scaler(self.df_train, self.df_test, self.feats_train, self.feats_test, scale)
@@ -307,7 +326,7 @@ class Experiment:
 
     def plot_confmat_per_speaker(self, function):
         if self.loso or self.logo or self.xfoldx:
-            self.util.debug('plot combined speaker predictins not possible for cross validation')
+            self.util.debug('plot combined speaker predictions not possible for cross validation')
             return
         best = self._get_best_report(self.reports)
         # if not best.is_classification:
@@ -323,7 +342,6 @@ class Experiment:
 
     def _get_best_report(self, best_reports):
         return self.runmgr.get_best_result(best_reports)
-
 
     def print_best_model(self):
         self.runmgr.print_best_result_runs()

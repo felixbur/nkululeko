@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.39.0
+--------------
+* added feature distribution plots
+* added  plot format
+
 Version 0.38.3
 --------------
 * added demo mode with list argument

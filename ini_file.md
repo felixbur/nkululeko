@@ -221,7 +221,11 @@
   * best_model = False
 * **value_counts** plot statistics for each database and the train/dev splits (in the *image_dir*)
   * value_counts = False
+* **feature_distributions** plot distributions for all features per category for either *test*, *train*, or *all* samples
+  * feature_distributions = test
 * **tsne** make a tsne plot of combined train and test data to get a feeling how the features might perform
   * tsne = False
 * **combine_per_speaker**: print an extra confusion plot where the predicions per speaker are combined, with either the mode or the mean function
   * combine_per_speaker = mode
+* **format**: format for plots, either *png* or *eps* (for scalable graphics)
+  * format = png

@@ -11,6 +11,7 @@ class Plots():
     def __init__(self):
         """Initializing the util system"""
         self.util = Util()
+        self.format = self.util.config_val('PLOT', 'format', 'png')
 
     def describe_df(self, name, df, target, filename):
         """Make a stacked barplot of samples and speakers per sex and target values. speaker, gender and target columns must be present"""
@@ -41,21 +42,33 @@ class Plots():
                 df[target].value_counts().plot(kind='bar', ax=axes, \
                     title=f'samples ({sampl_num})')
             plt.tight_layout()
-            plt.savefig(fig_dir+filename)
+            plt.savefig(f'{fig_dir}{filename}.{self.format}')
             fig.clear()
             plt.close(fig)
 
     def plotTsne(self, feats, labels, filename, perplexity=30, learning_rate=200):
         """Make a TSNE plot to see whether features are useful for classification"""
         fig_dir = self.util.get_path('fig_dir')+'../' # one up because of the runs 
-        filename = fig_dir+filename+'.png'
+        filename = f'{fig_dir}{filename}.{self.format}'
         self.util.debug(f'plotting tsne to {filename}, this might take a while...')
         model = TSNE(n_components=2, random_state=0, perplexity=perplexity, learning_rate=learning_rate)
         tsne_data = model.fit_transform(feats)
         tsne_data_labs = np.vstack((tsne_data.T, labels)).T
         tsne_df = pd.DataFrame(data=tsne_data_labs, columns=('Dim_1', 'Dim_2', 'label'))
-        fg = sns.FacetGrid(tsne_df, hue='label', height=6).map(plt.scatter, 'Dim_1', 'Dim_2').add_legend()
-        fig = fg.fig
+        ax = sns.FacetGrid(tsne_df, hue='label', height=6).map(plt.scatter, 'Dim_1', 'Dim_2').add_legend()
+        fig = ax.figure
+        plt.tight_layout()
+        plt.savefig(filename)
+        fig.clear()
+        plt.close(fig)
+
+    def plot_feature(self, title, feature, label, df_labels, df_features):
+        fig_dir = self.util.get_path('fig_dir')+'../' # one up because of the runs 
+        filename = f'{fig_dir}feat_dist_{title}_{feature}.{self.format}'
+        df_plot =  pd.DataFrame({label:df_labels[label], feature:df_features[feature]})
+        ax = sns.violinplot(data=df_plot, x=label, y=feature)
+        ax.set(title=f'{title} samples')
+        fig = ax.figure
         plt.tight_layout()
         plt.savefig(filename)
         fig.clear()

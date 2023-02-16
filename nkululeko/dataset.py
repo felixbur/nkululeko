@@ -346,7 +346,7 @@ class Dataset:
                 if not self.got_gender or not self.got_speaker:
                     self.util.error('can\'t plot value counts if no speaker or gender is given')
                 else:
-                    self.plot.describe_df(self.name, self.df, self.target, f'{self.name}_distplot.png')
+                    self.plot.describe_df(self.name, self.df, self.target, f'{self.name}_distplot')
         elif strategy == 'train_test':        
             self.df_train = self.map_labels(self.df_train)
             self.df_test = self.map_labels(self.df_test)
@@ -358,8 +358,8 @@ class Dataset:
                 if not self.got_gender or not self.got_speaker:
                     self.util.error('can\'t plot value counts if no speaker or gender is given')
                 else:
-                    self.plot.describe_df(self.name, self.df_train, self.target, f'{self.name}_train_distplot.png')
-                    self.plot.describe_df(self.name, self.df_test, self.target, f'{self.name}_test_distplot.png')
+                    self.plot.describe_df(self.name, self.df_train, self.target, f'{self.name}_train_distplot')
+                    self.plot.describe_df(self.name, self.df_test, self.target, f'{self.name}_test_distplot')
 
 
     def map_labels(self, df):
