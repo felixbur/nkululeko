@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.40.0
+--------------
+* added EXPL section and first functionality
+* added test module (for test databases)
+
 Version 0.39.0
 --------------
 * added feature distribution plots

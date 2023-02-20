@@ -94,7 +94,7 @@ class Util:
             df.index = audformat.utils.to_segmented_index(df.index, allow_nat=False)
         return df
 
-    def get_exp_name(self, only_train = False):
+    def get_exp_name(self, only_train = False, only_data = False):
         if only_train:
             # try to get only the train tables
             trains_val = self.config_val('DATA', 'trains', False)
@@ -105,37 +105,36 @@ class Util:
                 ds = '_'.join(ast.literal_eval(glob_conf.config['DATA']['databases']))
         else:
             ds = '_'.join(ast.literal_eval(glob_conf.config['DATA']['databases']))
-        mt = glob_conf.config['MODEL']['type']
+        mt = ''
+        if not only_data:
+            mt = f'_{glob_conf.config["MODEL"]["type"]}'
         ft = '_'.join(ast.literal_eval(glob_conf.config['FEATS']['type']))
         ft += '_'
         set = self.config_val('FEATS', 'set', False)
         set_string = ''
         if set:
             set_string += set
-        with_os_string = ''
-        if self.config_val('FEATS', 'with_os', False):
-            with_os_string = '_withos'
         lr_string = ''
-        if self.config_val('MODEL', 'learning_rate', False):
+        if self.config_val('MODEL', 'learning_rate', False) and not only_data:
             lr = self.config_val('MODEL', 'learning_rate', False)
             lr_string = f'_lr-{str(lr)}'
         loss_string = ''
-        if self.config_val('MODEL', 'loss', False):
+        if self.config_val('MODEL', 'loss', False) and not only_data:
             loss = self.config_val('MODEL', 'loss', False)
             loss_string = f'_loss-{loss}'
         drop_string = ''
-        if self.config_val('MODEL', 'drop', False):
+        if self.config_val('MODEL', 'drop', False) and not only_data:
             drop = self.config_val('MODEL', 'drop', False)
             drop_string = f'_drop-{str(drop)}'
         layer_string = ''
         layer_s = self.config_val('MODEL', 'layers', False)
-        if layer_s:
+        if layer_s and not only_data:
             layers = ast.literal_eval(layer_s)
             sorted_layers = sorted(layers.items(), key=lambda x: x[1])
             for l in sorted_layers:
                 layer_string += f'{str(l[1])}-'
-        return_string = f'{ds}_{mt}_{ft}{set_string}'\
-            f'{with_os_string}{layer_string[:-1]}{lr_string}{drop_string}{loss_string}'.replace('__','')
+        return_string = f'{ds}{mt}_{ft}{set_string}'\
+            f'{layer_string[:-1]}{lr_string}{drop_string}{loss_string}'.replace('__','')
         return return_string
 
     def get_plot_name(self):

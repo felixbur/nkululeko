@@ -337,7 +337,8 @@ class Dataset:
 
     def prepare_labels(self):
         strategy = self.util.config_val('DATA', 'strategy', 'train_test')
-        if strategy == 'cross_data':
+        only_tests = eval(self.util.config_val('DATA', 'tests', 'False'))
+        if strategy == 'cross_data' or only_tests:
             self.df = self.map_labels(self.df)
             # Bin target values if they are continuous but a classification experiment should be done
             self.map_continuous_classification(self.df)

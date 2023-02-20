@@ -30,6 +30,8 @@ class Runmanager:
         #model_type = glob_conf.config['MODEL']['type']
         #self._select_model(model_type)
 
+        
+
     def do_runs(self):
         """Start the runs"""
         self.best_results = [] # keep the best result per run 
@@ -50,7 +52,7 @@ class Runmanager:
             plot_epoch_progression = self.util.config_val('PLOT', 'epoch_progression', 0)
             if plot_epoch_progression:
                 plot_name_suggest = self.util.get_exp_name()
-                plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+'_epoch_progression.png'
+                plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+'_epoch_progression'
                 self.util.debug(f'plotting progression to {plot_name}')
                 self.reports[-1].plot_epoch_progression(self.reports, plot_name)
             # remember the best run
@@ -58,7 +60,7 @@ class Runmanager:
             plot_best_model = self.util.config_val('PLOT', 'best_model', False)
             if plot_best_model:
                 plot_name_suggest = self.util.get_exp_name()
-                plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+f'_BEST_{best_report.run}_{best_report.epoch:03d}_BEST_cnf.png'
+                plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+f'_BEST_{best_report.run}_{best_report.epoch:03d}_BEST_cnf'
                 self.util.debug(f'best result with run {best_report.run} and epoch {best_report.epoch}: {best_report.result.get_test_result()}')
                 self.print_model(best_report, plot_name)
             # finally, print out the numbers for this run
@@ -71,7 +73,7 @@ class Runmanager:
         self.util.debug(f'best result all runs with run {best_report.run} \
             and epoch {best_report.epoch}: {best_report.result.test:.3f}')
         plot_name_suggest = self.util.get_exp_name()
-        plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+f'_BEST_{best_report.run}_{best_report.epoch:03d}_BEST_cnf.png'
+        plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+f'_BEST_{best_report.run}_{best_report.epoch:03d}_BEST_cnf'
         self.print_model(best_report, plot_name)
 
     def print_given_result(self, run, epoch):
@@ -85,7 +87,7 @@ class Runmanager:
         report.set_id(run, epoch)
         self.util.debug(f'Re-testing result with run {run} and epoch {epoch}')
         plot_name_suggest = self.util.get_exp_name()
-        plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+f'_extra_{run}_{epoch:03d}_cnf.png'
+        plot_name = self.util.config_val('PLOT', 'name', plot_name_suggest)+f'_extra_{run}_{epoch:03d}_cnf'
         self.print_model(report, plot_name)
 
     def print_model(self, report, plot_name):

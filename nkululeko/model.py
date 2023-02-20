@@ -26,7 +26,7 @@ class Model:
         self.loso = self.util.config_val('MODEL', 'loso', False)
         self.logo = self.util.config_val('MODEL', 'logo', False)
         self.xfoldx = self.util.config_val('MODEL', 'k_fold_cross', False)
-        
+                
     def set_testdata(self, data_df, feats_df):
         self.df_test, self.feats_test = data_df, feats_df
 

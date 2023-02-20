@@ -38,6 +38,7 @@ class Reporter:
     def __init__(self, truths, preds, run, epoch):
         """Initialization with ground truth und predictions vector"""
         self.util = Util()
+        self.format = self.util.config_val('PLOT', 'format', 'png')
         self.truths = truths
         self.preds = preds
         self.result = Result(0, 0, 0, 'unknown')
@@ -135,7 +136,7 @@ class Reporter:
         else:
             plt.title(f'Confusion Matrix, UAR: {uar:.3f}{reg_res}')
 
-        plt.savefig(fig_dir+plot_name)
+        plt.savefig(f'{fig_dir}{plot_name}.{self.format}')
         fig.clear()
         plt.close(fig)
         res_dir = self.util.get_path('res_dir')
@@ -220,7 +221,7 @@ class Reporter:
         plt.xlabel('epochs')
         plt.ylabel(f'{self.MEASURE}')
         plt.legend()
-        plt.savefig(fig_dir+ out_name)
+        plt.savefig(f'{fig_dir}{out_name}.{self.format}')
         plt.close()        
 
     @staticmethod

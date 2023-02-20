@@ -40,7 +40,7 @@ class Modelrunner:
                 self.model.train()
             report = self.model.predict()
             report.set_id(self.run, epoch)
-            plot_name = self.util.get_plot_name()+f'_{self.run}_{epoch:03d}_cnf.png'
+            plot_name = self.util.get_plot_name()+f'_{self.run}_{epoch:03d}_cnf'
             reports.append(report)                
             self.util.debug(f'run: {self.run} epoch: {epoch}: result: '
                 f'{reports[-1].get_result().get_test_result()}')

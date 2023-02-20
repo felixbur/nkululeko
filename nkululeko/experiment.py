@@ -8,6 +8,7 @@ from nkululeko.dataset_ravdess import Ravdess
 from nkululeko.filter_data import filter_min_dur
 from nkululeko.runmanager import Runmanager
 from nkululeko.test_predictor import Test_predictor
+from nkululeko.feats_analyser import FeatureAnalyser
 from nkululeko.util import Util
 from nkululeko.feature_extractor import FeatureExtractor
 from nkululeko.plots import Plots
@@ -82,6 +83,34 @@ class Experiment:
         df.is_labeled = True if self.target in df else False
         return df
 
+    def fill_tests(self):
+        """Only fill a new test set"""
+
+        test_dbs = ast.literal_eval(glob_conf.config['DATA']['tests'])
+        self.df_test = pd.DataFrame()
+        for d in test_dbs:
+            if d == 'ravdess':
+                data = Ravdess()
+            else:
+                ds_type = self.util.config_val_data(d, 'type', 'audformat')
+                if ds_type == 'audformat':
+                    data = Dataset(d)
+                elif ds_type == 'csv':
+                    data = Dataset_CSV(d)
+                else:
+                    self.util.error(f'unknown data type: {ds_type}')
+            data.load()
+            if data.got_gender:
+                self.got_gender = True
+            if data.got_speaker:
+                self.got_speaker = True
+            data.prepare_labels()
+            self.df_test = pd.concat([self.df_test, self.util.make_segmented_index(data.df)])
+            self.df_test.is_labeled = data.is_labeled
+        self.df_test.got_gender = self.got_gender
+        self.df_test.got_speaker = self.got_speaker
+        self.util.set_config_val('FEATS', 'needs_features_extraction', 'True')
+        self.util.set_config_val('FEATS', 'no_reuse', 'True')
 
     def fill_train_and_tests(self):
         """Set up train and development sets. The method should be specified in the config."""
@@ -226,6 +255,13 @@ class Experiment:
         df_train_aug = augment_train.augment()
         self.df_train = self.df_train.append(df_train_aug)
 
+    def extract_test_feats(self):
+        self.feats_test = pd.DataFrame()
+        feats_name = "_".join(ast.literal_eval(glob_conf.config['DATA']['tests']))
+        self.feature_extractor = FeatureExtractor() 
+        self.feature_extractor.set_data(self.df_test, feats_name, 'test')
+        self.feats_test = self.feature_extractor.extract()
+        self.util.debug(f'Test features shape:{self.feats_test.shape}')
 
     def extract_feats(self):
         """Extract the features for train and dev sets. 
@@ -246,7 +282,7 @@ class Experiment:
         self.util.debug(f'All features: train shape : {self.feats_train.shape}, test shape:{self.feats_test.shape}')
 
         # check if a tsne should be plotted
-        tsne = eval(self.util.config_val('PLOT', 'tsne', 'False'))
+        tsne = eval(self.util.config_val('EXPL', 'tsne', 'False'))
         if tsne: 
             if self.util.exp_is_classification():
                 plots = Plots()
@@ -257,7 +293,7 @@ class Experiment:
                  self.util.debug('can\'t plot tsne if not classification')
 
         # check if feature distributions should be plotted
-        plot_feats = self.util.config_val('PLOT', 'feature_distributions', False)
+        plot_feats = self.util.config_val('EXPL', 'feature_distributions', False)
         if plot_feats: 
             if self.util.exp_is_classification():
                 plots = Plots()
@@ -277,6 +313,22 @@ class Experiment:
             else:
                 self.util.debug('can\'t plot feature distributions if not classification')
         self._check_scale()
+
+    def analyse_features(self):
+        sample_selection = self.util.config_val('EXPL', 'sample_selection', 'all')
+        if sample_selection=='all':
+            df_feats = pd.concat([self.feats_train, self.feats_test])
+            df_labels = pd.concat([self.df_train, self.df_test])
+        elif sample_selection=='train':
+            df_feats = self.feats_train
+            df_labels = self.df_train
+        elif sample_selection=='test':
+            df_feats = self.feats_test
+            df_labels = self.df_test
+        else:
+            self.util.error(f'unkown feature_distribution specifier {sample_selection}, should be [all | train | test]')
+        feat_analyser = FeatureAnalyser(sample_selection, df_labels[self.target], df_feats)        
+        feat_analyser.analyse()
 
 
     def _check_scale(self):
@@ -336,7 +388,7 @@ class Experiment:
         speakers = self.df_test.speaker.values
         print(f'{len(truths)} {len(preds)} {len(speakers) }')
         df = pd.DataFrame(data={'truth':truths, 'pred':preds, 'speaker':speakers})
-        plot_name = 'result_combined_per_speaker.png'
+        plot_name = 'result_combined_per_speaker'
         self.util.debug(f'plotting speaker combination ({function}) confusion matrix to {plot_name}')
         best.plot_per_speaker(df, plot_name, function)
 
@@ -358,7 +410,7 @@ class Experiment:
 
     def predict_test_and_save(self, result_name):
         model = self.runmgr.get_best_model()
-
+        model.set_testdata(self.df_test, self.feats_test)
         test_predictor = Test_predictor(model, self.df_test, self.label_encoder, result_name)        
         test_predictor.predict_and_store()
 

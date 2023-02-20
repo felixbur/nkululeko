@@ -55,9 +55,9 @@ class Plots():
         tsne_data = model.fit_transform(feats)
         tsne_data_labs = np.vstack((tsne_data.T, labels)).T
         tsne_df = pd.DataFrame(data=tsne_data_labs, columns=('Dim_1', 'Dim_2', 'label'))
+        plt.tight_layout()
         ax = sns.FacetGrid(tsne_df, hue='label', height=6).map(plt.scatter, 'Dim_1', 'Dim_2').add_legend()
         fig = ax.figure
-        plt.tight_layout()
         plt.savefig(filename)
         fig.clear()
         plt.close(fig)
@@ -67,7 +67,8 @@ class Plots():
         filename = f'{fig_dir}feat_dist_{title}_{feature}.{self.format}'
         df_plot =  pd.DataFrame({label:df_labels[label], feature:df_features[feature]})
         ax = sns.violinplot(data=df_plot, x=label, y=feature)
-        ax.set(title=f'{title} samples')
+        label = self.util.config_val('DATA', 'target', 'class_label')
+        ax.set(title=f'{title} samples', xlabel = label)
         fig = ax.figure
         plt.tight_layout()
         plt.savefig(filename)

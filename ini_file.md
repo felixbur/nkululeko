@@ -7,6 +7,7 @@
 * [Datasets: DATA](#data)
 * [Acoustic features: FEATS](#feats)
 * [Classifiers \& Regressors: MODEL](#model)
+* [Exploration: EXPL](#expl)
 * [Visualization: PLOT](#plot)
 
 
@@ -206,6 +207,19 @@
 * **num_workers**: Number of parallel processes for neural nets
   * num_workers = 5
 
+
+### EXPL
+* **model**: Which model to use to estimate feature importance.
+  * model = log_reg # can be log_reg, lin_reg or tree
+* **max_feats**: Maximal number of important features 
+  * max_feats = 10
+* **sample_selection**: Which sample set to use for feature importance
+  * sample_selection = all # either all, train or test
+* **feature_distributions** plot distributions for all features per category for either *test*, *train*, or *all* samples
+  * feature_distributions = test
+* **tsne** make a tsne plot of combined train and test data to get a feeling how the features might perform
+  * tsne = False
+
 ### PLOT
 * **name**: special name as a prefix for all plots (stored in *img_dir*).
   * name = my_special_config_within_the_experiment
@@ -221,10 +235,6 @@
   * best_model = False
 * **value_counts** plot statistics for each database and the train/dev splits (in the *image_dir*)
   * value_counts = False
-* **feature_distributions** plot distributions for all features per category for either *test*, *train*, or *all* samples
-  * feature_distributions = test
-* **tsne** make a tsne plot of combined train and test data to get a feeling how the features might perform
-  * tsne = False
 * **combine_per_speaker**: print an extra confusion plot where the predicions per speaker are combined, with either the mode or the mean function
   * combine_per_speaker = mode
 * **format**: format for plots, either *png* or *eps* (for scalable graphics)
