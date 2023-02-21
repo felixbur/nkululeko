@@ -12,6 +12,28 @@ The idea is to have a framework (based on e.g. sklearn and torch) that can be us
 * [Here's a video presentation about nkululeko](https://www.youtube.com/watch?v=Ueuetnu7d7M)
 * [Here's the 2022 LREC article on nkululeko](http://felix.syntheticspeech.de/publications/Nkululeko_LREC.pdf)
 
+Here are some examples of typical output:
+
+### Confusion matrix
+Per default, Nkululeko displays results as a  confusion matrix, using binning with regression.
+
+![confusion matrix](images/conf_mat.png)
+
+### Epoch progression
+The point when overfitting starts can sometimes be seen by looking at the results per epoch:
+
+![epoch progression](images/epoch_progression.png)
+
+### Feature importance
+Using the *explore* interface, Nkululeko analyses the importance of acoustic features:
+
+![feature importance](images/feat_importance.png)
+
+### Feature distribution
+And can show the distribution of speciific features per category:
+
+![feature distribution](images/feat_dist.png)
+
 ## Installation
 
 Creat and activate a virtual python environment and simply run
@@ -21,6 +43,8 @@ pip install -r nkululeko
 
 Some examples for *ini*-files (which you use to control nkululeko) are in the [demo folder](https://github.com/felixbur/nkululeko/tree/main/demos).
 
+
+
 ## Usage
 Basically, you specify your experiment in an "ini" file (e.g. *experiment.ini*) and then call Nkululeko to run the experiment like this:
   * ```python -m nkululeko.nkululeko --config experiment.ini```
@@ -28,16 +52,17 @@ Basically, you specify your experiment in an "ini" file (e.g. *experiment.ini*) 
 Alternatively, there is a central "experiment" class that can be used by own experiments
 
 There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
+* [Introduction](http://blog.syntheticspeech.de/2021/08/04/machine-learning-experiment-framework/)
+* [Nkulueko FAQ](http://blog.syntheticspeech.de/2022/07/07/nkululeko-faq/)
 * [How to set up your first nkululeko project](http://blog.syntheticspeech.de/2021/08/30/how-to-set-up-your-first-nkululeko-project/)
 * [Setting up a base nkululeko experiment](http://blog.syntheticspeech.de/2021/10/05/setting-up-a-base-nkululeko-experiment/)
 * [How to import a database](http://blog.syntheticspeech.de/2022/01/27/nkululeko-how-to-import-a-database/) 
 * [Comparing classifiers and features](http://blog.syntheticspeech.de/2021/10/05/nkululeko-comparing-classifiers-and-features/)
 * [Use Praat features](http://blog.syntheticspeech.de/2022/06/27/how-to-use-selected-features-from-praat-with-nkululeko/)
 * [Combine feature sets](http://blog.syntheticspeech.de/2022/06/30/how-to-combine-feature-sets-with-nkululeko/)
-* [Plot distributions of feature values](http://blog.syntheticspeech.de/2023/02/16/nkululeko-how-to-plot-distributions-of-feature-values/)
 * [Classifying continuous variables](http://blog.syntheticspeech.de/2022/01/26/nkululeko-classifying-continuous-variables/) 
 * [Try out / demo a trained model](http://blog.syntheticspeech.de/2022/01/24/nkululeko-try-out-demo-a-trained-model/) 
-* [How to predict many samples](http://blog.syntheticspeech.de/2023/02/09/nkululeko-how-to-predict-many-samples/)
+* [Plot distributions of feature values](http://blog.syntheticspeech.de/2023/02/16/nkululeko-how-to-plot-distributions-of-feature-values/)
 * [Perform cross database experiments](http://blog.syntheticspeech.de/2021/10/05/nkululeko-perform-cross-database-experiments/)
 * [Meta parameter optimization](http://blog.syntheticspeech.de/2021/09/03/perform-optimization-with-nkululeko/)
 * [How to set up wav2vec embedding](http://blog.syntheticspeech.de/2021/12/03/how-to-set-up-wav2vec-embedding-for-nkululeko/)
@@ -51,6 +76,9 @@ There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
 * [Run multiple experiments in one go](http://blog.syntheticspeech.de/2022/03/28/how-to-run-multiple-experiments-in-one-go-with-nkululeko/)
 * [Compare several MLP layer layouts with each other](http://blog.syntheticspeech.de/2022/04/11/how-to-compare-several-mlp-layer-layouts-with-each-other/)
 * [Import features from outside the software](http://blog.syntheticspeech.de/2022/10/18/how-to-import-features-from-outside-the-nkululeko-software/)
+* [Explore feature importance](http://blog.syntheticspeech.de/2023/02/20/nkululeko-show-feature-importance/)
+*  [Plot distributions for feature values](http://blog.syntheticspeech.de/2023/02/16/nkululeko-how-to-plot-distributions-of-feature-values/)
+
 
 The framework is targeted at the speech domain and supports experiments where different classifiers are combined with different feature extractors.
 
