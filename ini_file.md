@@ -48,7 +48,7 @@
 * **label_data**: a dataset to be used as test data for the given best model
   * label_data = emovo
 * **label_result**: a file path for the result of the step above
-  * label_data = ./labelresult.csv
+  * label_result = ./labelresult.csv
 * **root_folders**: specify an additional configuration specifically for all entries starting with a dataset name, acting as global defaults. 
   * root_folders = data_roots.ini
 * **db_name**: path with audformatted repository for each database listed in 'databases*
