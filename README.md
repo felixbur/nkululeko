@@ -34,6 +34,11 @@ And can show the distribution of specific features per category:
 
 ![feature distribution](images/feat_dist.png)
 
+### Data distribution
+Sometimes you only want to take a look at your data:
+
+![data distribution](images/data_plot.png)
+
 ## Installation
 
 Creat and activate a virtual python environment and simply run
