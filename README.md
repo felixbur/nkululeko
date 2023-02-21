@@ -30,7 +30,7 @@ Using the *explore* interface, Nkululeko analyses the importance of acoustic fea
 ![feature importance](images/feat_importance.png)
 
 ### Feature distribution
-And can show the distribution of speciific features per category:
+And can show the distribution of specific features per category:
 
 ![feature distribution](images/feat_dist.png)
 
