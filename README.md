@@ -34,6 +34,11 @@ And can show the distribution of specific features per category:
 
 ![feature distribution](images/feat_dist.png)
 
+### t-SNE plots
+A t-SNE plot can give you an estimate wether your acoustic features are useful at all:
+
+![tsne plot](images/tsne.png)
+
 ### Data distribution
 Sometimes you only want to take a look at your data:
 
