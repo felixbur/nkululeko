@@ -45,10 +45,8 @@
   * type = continuous
 * **databases**: list of databases to be used in the experiment
   * databases = ['emodb', 'timit']
-* **label_data**: a dataset to be used as test data for the given best model
-  * label_data = emovo
-* **label_result**: a file path for the result of the step above
-  * label_result = ./labelresult.csv
+* **tests**: Datasets to be used as test data for the given best model. The datases do NOT have to appear in the **databases** field!
+  * tests = ['emovo']
 * **root_folders**: specify an additional configuration specifically for all entries starting with a dataset name, acting as global defaults. 
   * root_folders = data_roots.ini
 * **db_name**: path with audformatted repository for each database listed in 'databases*
