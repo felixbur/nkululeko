@@ -46,7 +46,7 @@ Sometimes you only want to take a look at your data:
 
 ## Installation
 
-Creat and activate a virtual python environment and simply run
+Create and activate a virtual python environment and simply run
 ```
 pip install -r nkululeko
 ```
