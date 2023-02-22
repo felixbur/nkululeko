@@ -28,7 +28,7 @@ class MLP_model(Model):
             self.criterion = SoftF1Loss(num_classes=self.class_num, weight=None, epsilon=1e-7)
         else:
             self.util.error(f'unknown loss function: {criterion}')
-        self.util.debug(f'training model with cross entropy loss function')
+        self.util.debug(f'using model with cross entropy loss function')
         # set up the model
         self.device = self.util.config_val('MODEL', 'device', 'cpu')
         layers_string = glob_conf.config['MODEL']['layers']
@@ -37,7 +37,7 @@ class MLP_model(Model):
         # with dropout?
         drop = self.util.config_val('MODEL', 'drop', False)
         if drop:
-            self.util.debug(f'training with dropout: {drop}')
+            self.util.debug(f'init: training with dropout: {drop}')
         self.model = self.MLP(feats_train.shape[1], layers, self.class_num, drop).to(self.device)
         self.learning_rate = float(self.util.config_val('MODEL', 'learning_rate', 0.0001))
         # set up regularization
@@ -155,7 +155,7 @@ class MLP_model(Model):
         self.store_path = dir+name
         drop = self.util.config_val('MODEL', 'drop', False)
         if drop:
-            self.util.debug(f'training with dropout: {drop}')
+            self.util.debug(f'loading: dropout set to: {drop}')
         self.model = self.MLP(self.feats_train.shape[1], layers, self.class_num, drop).to(self.device)
         self.model.load_state_dict(torch.load(self.store_path))
         self.model.eval()
@@ -168,7 +168,7 @@ class MLP_model(Model):
             self.store_path = path
             drop = self.util.config_val('MODEL', 'drop', False)
             if drop:
-                self.util.debug(f'training with dropout: {drop}')
+                self.util.debug(f'dropout set to: {drop}')
             self.model = self.MLP(self.feats_train.shape[1], layers, self.class_num, drop).to(self.device)
             self.model.load_state_dict(torch.load(self.store_path))
             self.model.eval()

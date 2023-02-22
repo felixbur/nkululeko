@@ -377,8 +377,12 @@ class Dataset:
             df[target] = df[target].map(mapping)
             self.util.debug(f'{self.name}: mapped {mapping}')
         # remove labels that are not in the labels list
-        labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
-        df = df[df[target].isin(labels)]
+        labels = self.util.config_val('DATA', 'labels', False)
+        if labels:
+            labels = ast.literal_eval(labels)
+            df = df[df[target].isin(labels)]
+        else:
+            labels = df[target].unique().codes
         # try:
         # except KeyError:
         #     pass

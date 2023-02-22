@@ -88,29 +88,40 @@ class Experiment:
 
         test_dbs = ast.literal_eval(glob_conf.config['DATA']['tests'])
         self.df_test = pd.DataFrame()
-        for d in test_dbs:
-            if d == 'ravdess':
-                data = Ravdess()
-            else:
-                ds_type = self.util.config_val_data(d, 'type', 'audformat')
-                if ds_type == 'audformat':
-                    data = Dataset(d)
-                elif ds_type == 'csv':
-                    data = Dataset_CSV(d)
+        start_fresh = eval(self.util.config_val('DATA', 'no_reuse', 'False'))
+        store = self.util.get_path('store')
+        storage_test = f'{store}extra_testdf.csv'
+        if os.path.isfile(storage_test) \
+            and not start_fresh:
+            self.util.debug(f'reusing previously stored {storage_test}')
+            self.df_test = self._import_csv(storage_test)
+        else:
+            for d in test_dbs:
+                if d == 'ravdess':
+                    data = Ravdess()
                 else:
-                    self.util.error(f'unknown data type: {ds_type}')
-            data.load()
-            if data.got_gender:
-                self.got_gender = True
-            if data.got_speaker:
-                self.got_speaker = True
-            data.prepare_labels()
-            self.df_test = pd.concat([self.df_test, self.util.make_segmented_index(data.df)])
-            self.df_test.is_labeled = data.is_labeled
-        self.df_test.got_gender = self.got_gender
-        self.df_test.got_speaker = self.got_speaker
-        self.util.set_config_val('FEATS', 'needs_features_extraction', 'True')
-        self.util.set_config_val('FEATS', 'no_reuse', 'True')
+                    ds_type = self.util.config_val_data(d, 'type', 'audformat')
+                    if ds_type == 'audformat':
+                        data = Dataset(d)
+                    elif ds_type == 'csv':
+                        data = Dataset_CSV(d)
+                    else:
+                        self.util.error(f'unknown data type: {ds_type}')
+                data.load()
+                if data.got_gender:
+                    self.got_gender = True
+                if data.got_speaker:
+                    self.got_speaker = True
+                data.prepare_labels()
+                self.df_test = pd.concat([self.df_test, self.util.make_segmented_index(data.df)])
+                self.df_test.is_labeled = data.is_labeled
+            self.df_test.got_gender = self.got_gender
+            self.df_test.got_speaker = self.got_speaker
+            # self.util.set_config_val('FEATS', 'needs_features_extraction', 'True')
+            # self.util.set_config_val('FEATS', 'no_reuse', 'True')
+            self.df_test['class_labels'] = self.df_test[self.target]
+            self.df_test[self.target] = self.label_encoder.transform(self.df_test[self.target])
+            self.df_test.to_csv(storage_test)
 
     def fill_train_and_tests(self):
         """Set up train and development sets. The method should be specified in the config."""

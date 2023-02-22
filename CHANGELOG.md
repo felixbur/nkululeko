@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.40.1
+--------------
+* fixed a bug: additional test database was not label encoded
+
 Version 0.40.0
 --------------
 * added EXPL section and first functionality
