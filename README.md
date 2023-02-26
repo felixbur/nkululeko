@@ -9,7 +9,7 @@ The idea is to have a framework (based on e.g. sklearn and torch) that can be us
 * Below is a [Hello World example](#helloworld) that should set you up fastly.
 * [Here's a blog post on how to set up nkululeko on your computer.](http://blog.syntheticspeech.de/2021/08/30/how-to-set-up-your-first-nkululeko-project/)
 * [Here's a slide presentation about nkululeko](docs/nkululeko.pdf)
-* [Here's a video presentation about nkululeko](https://www.youtube.com/watch?v=Ueuetnu7d7M)
+* [Here's a video presentation about nkululeko](https://www.youtube.com/playlist?list=PLRceVavtxLg0y2jiLmpnUfiMtfvkK912D)
 * [Here's the 2022 LREC article on nkululeko](http://felix.syntheticspeech.de/publications/Nkululeko_LREC.pdf)
 
 Here are some examples of typical output:
@@ -111,7 +111,7 @@ You could
 Here's [an overview on the ini-file options](./ini_file.md)
 
 ### <a name="helloworld">Hello World example</a>
-* NEW [I made a video to show you how to do this on Windows](https://www.youtube.com/watch?v=ytbCnM2iQnc)
+* NEW [I made a video to show you how to do this on Windows](https://www.youtube.com/playlist?list=PLRceVavtxLg0y2jiLmpnUfiMtfvkK912D)
 * Set up Python on your computer, version >= 3.6
 * Open a terminal/commandline/console window
 * Test python by typing ```python```, python should start with version >3 (NOT 2!)
