@@ -114,6 +114,10 @@ class Dataset:
         self.df = df
         self.db = db
         self.df.is_labeled = self.is_labeled
+        self.util.debug(f'Loaded database {self.name} with {df.shape[0]} '\
+            f'samples: got targets: {self.is_labeled}, got speakers: {self.got_speaker}, '\
+            f'got sexes: {self.got_gender}')
+
 
     def prepare(self):
         # Perform some filtering if desired

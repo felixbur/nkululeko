@@ -74,3 +74,20 @@ class Plots():
         plt.savefig(filename)
         fig.clear()
         plt.close(fig)
+
+    def plot_tree(self, model, features):
+        from sklearn import tree
+        ax = plt.gca()
+        ax.figure.set_size_inches(100, 60)
+#        tree.plot_tree(model, ax = ax)
+        tree.plot_tree(model, feature_names=features.columns, ax = ax)
+        plt.tight_layout()
+        #print(ax)
+        fig_dir = self.util.get_path('fig_dir')+'../' # one up because of the runs 
+        exp_name = self.util.get_exp_name(only_data=True)
+        format = self.util.config_val('PLOT', 'format', 'png')
+        filename = f'{fig_dir}{exp_name}EXPL_tree-plot.{format}'
+        fig = ax.figure
+        fig.savefig(filename)
+        fig.clear()
+        plt.close(fig)

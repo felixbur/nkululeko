@@ -1,6 +1,7 @@
 # feats_analyser.py
 import pandas as pd
 from nkululeko.util import Util 
+from nkululeko.plots import Plots
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LinearRegression
@@ -21,6 +22,7 @@ class FeatureAnalyser:
         model_s = self.util.config_val('EXPL', 'model', 'log_reg')
         max_feat_num = int(self.util.config_val('EXPL', 'max_feats', '10'))
         importance = None
+        self.util.debug('analysing features...')
         if self.util.exp_is_classification():
             if model_s == 'log_reg':
                 model = LogisticRegression()
@@ -30,6 +32,10 @@ class FeatureAnalyser:
                 model = DecisionTreeClassifier()
                 model.fit(self.X, self.y)
                 importance = model.feature_importances_
+                plot_tree = eval(self.util.config_val('EXPL', 'plot_tree', 'False'))
+                if plot_tree:
+                    plots = Plots()
+                    plots.plot_tree(model, self.X)
             else:
                 self.util.error(f'invalid analysis method: {model}')
         else: # regression experiment

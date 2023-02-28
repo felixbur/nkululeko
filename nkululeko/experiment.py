@@ -56,16 +56,16 @@ class Experiment:
         self.datasets = {}
         self.got_speaker, self.got_gender = False, False
         for d in ds:
-            if d == 'ravdess':
-                data = Ravdess()
+            # if d == 'ravdess':
+            #     data = Ravdess()
+            # else:
+            ds_type = self.util.config_val_data(d, 'type', 'audformat')
+            if ds_type == 'audformat':
+                data = Dataset(d)
+            elif ds_type == 'csv':
+                data = Dataset_CSV(d)
             else:
-                ds_type = self.util.config_val_data(d, 'type', 'audformat')
-                if ds_type == 'audformat':
-                    data = Dataset(d)
-                elif ds_type == 'csv':
-                    data = Dataset_CSV(d)
-                else:
-                    self.util.error(f'unknown data type: {ds_type}')
+                self.util.error(f'unknown data type: {ds_type}')
             data.load()
 #            data.prepare()
             if data.got_gender:
@@ -437,5 +437,5 @@ class Experiment:
             f = open(filename, 'wb')
             pickle.dump(self.__dict__, f)
             f.close()
-        except AttributeError: 
-            self.util.error('Save experiment: Can\'t pickle local object')
+        except (AttributeError, TypeError) as error: 
+            self.util.debug(f'Save experiment: Can\'t pickle local object: {error}')

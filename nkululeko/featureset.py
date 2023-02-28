@@ -24,7 +24,7 @@ class Featureset:
         try: 
             # use only some features
             selected_features = ast.literal_eval(glob_conf.config['FEATS']['features'])
-            self.util.debug(f'trying to select features: {selected_features}')
+            self.util.debug(f'selecting features: {selected_features}')
             sel_feats_df = pd.DataFrame()
             hit = False
             for feat in selected_features:

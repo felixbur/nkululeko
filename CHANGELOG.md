@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.41.0
+--------------
+* added feature tree plot
+
 Version 0.40.1
 --------------
 * fixed a bug: additional test database was not label encoded
