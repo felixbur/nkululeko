@@ -26,7 +26,7 @@ The point when overfitting starts can sometimes be seen by looking at the result
 
 ### Feature importance
 Using the *explore* interface, Nkululeko analyses the importance of acoustic features:
-
+ 
 ![feature importance](images/feat_importance.png)
 
 ### Feature distribution
