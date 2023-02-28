@@ -215,8 +215,10 @@
   * sample_selection = all # either all, train or test
 * **feature_distributions** plot distributions for all features per category for either *test*, *train*, or *all* samples
   * feature_distributions = test
-* **tsne** make a tsne plot of combined train and test data to get a feeling how the features might perform
+* **tsne**: make a tsne plot of combined train and test data to get a feeling how the features might perform
   * tsne = False
+* **plot_tree**: Plot a decision tree for classification (Requires model = tree)
+  * plot_tree = False
 
 ### PLOT
 * **name**: special name as a prefix for all plots (stored in *img_dir*).
