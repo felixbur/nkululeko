@@ -29,7 +29,7 @@ class Dataset:
         self.plot = Plots()
         self.limit = int(self.util.config_val_data(self.name, 'limit', 0))
         self.start_fresh = eval(self.util.config_val('DATA', 'no_reuse', 'False'))
-        self.is_labeled, self.got_speaker, self.got_gender = False, False, False 
+        self.is_labeled, self.got_speaker, self.got_gender, self.got_age = False, False, False, False 
 
 
     def _get_tables(self):
@@ -59,12 +59,13 @@ class Dataset:
         store = self.util.get_path('store')
         store_file = f'{store}{self.name}.pkl'
         self.util.debug(f'{self.name}: loading ...')
-        self.got_speaker, self.got_gender = False, False 
+#        self.got_speaker, self.got_gender = False, False 
         if not self.start_fresh and os.path.isfile(store_file):
             self.util.debug(f'{self.name}: reusing previously stored file {store_file}')
             self.df = pd.read_pickle(store_file)
             self.is_labeled = self.target in self.df
             self.got_gender = 'gender' in self.df
+            self.got_age = 'age' in self.df
             self.got_speaker = 'speaker' in self.df
             self.util.debug(f'{self.name}: loaded with {self.df.shape[0]} '\
                 f'samples: got targets: {self.is_labeled}, got speakers: {self.got_speaker}, '\
@@ -86,22 +87,25 @@ class Dataset:
         df_files_tables =  ast.literal_eval(df_files)
         # The label for the target column 
         self.col_label = self.util.config_val_data(self.name, 'label', self.target)
-        df, self.is_labeled, self.got_speaker, self.got_gender = self._get_df_for_lists(db, df_files_tables)
-        if False in {self.is_labeled, self.got_speaker, self.got_gender}:
+        df, self.is_labeled, self.got_speaker, self.got_gender, self.got_age = self._get_df_for_lists(db, df_files_tables)
+        if False in {self.is_labeled, self.got_speaker, self.got_gender, self.got_age}:
             try :
             # There might be a separate table with the targets, e.g. emotion or age    
                 df_targets = self.util.config_val_data(self.name, 'target_tables', f'[\'{self.target}\']')
                 df_target_tables =  ast.literal_eval(df_targets)
-                df_target, got_target2, got_speaker2, got_gender2 = self._get_df_for_lists(db, df_target_tables)
+                df_target, got_target2, got_speaker2, got_gender2, got_age2 = self._get_df_for_lists(db, df_target_tables)
                 self.is_labeled = got_target2 or self.is_labeled
                 self.got_speaker = got_speaker2 or self.got_speaker
                 self.got_gender = got_gender2 or self.got_gender
+                self.got_age = got_age2 or self.got_age
                 if got_target2:
                     df[self.target] = df_target[self.target]
                 if got_speaker2:
                     df['speaker'] = df_target['speaker']
                 if got_gender2:
                     df['gender'] = df_target['gender']
+                if got_age2:
+                    df['age'] = df_target['age']
             except audformat.core.errors.BadKeyError:
                 pass
 
@@ -110,18 +114,19 @@ class Dataset:
             df['class_label'] = df[self.target]
         df.is_labeled = self.is_labeled
         df.got_gender = self.got_gender
+        df.got_age = self.got_age
         df.got_speaker = self.got_speaker
         self.df = df
         self.db = db
         self.df.is_labeled = self.is_labeled
         self.util.debug(f'Loaded database {self.name} with {df.shape[0]} '\
             f'samples: got targets: {self.is_labeled}, got speakers: {self.got_speaker}, '\
-            f'got sexes: {self.got_gender}')
+            f'got sexes: {self.got_gender}, got age: {self.got_age}')
 
 
     def prepare(self):
         # Perform some filtering if desired
-        required = self.util.config_val_data(self.name, 'required', False)
+        required = eval(self.util.config_val_data(self.name, 'required', 'False'))
         if required:
             pre = self.df.shape[0]
             self.df = self.df[self.df[required].notna()]
@@ -177,7 +182,7 @@ class Dataset:
 
 
     def _get_df_for_lists(self, db, df_files):
-        is_labeled, got_speaker, got_gender = False, False, False
+        is_labeled, got_speaker, got_gender, got_age = False, False, False, False
         df = pd.DataFrame()
         for table in df_files:
             source_df = db.tables[table].df
@@ -203,10 +208,21 @@ class Dataset:
             except (KeyError, ValueError, audformat.errors.BadKeyError) as e:
                 pass
             try:
+                # try to get the age values
+                df_local['age'] = source_df['age']
+                got_age = True
+            except (KeyError, ValueError, audformat.errors.BadKeyError) as e:
+                pass
+            try:
                 # also it might be possible that the sex is part of the speaker description
                 df_local['gender'] = db[table]['speaker'].get(map='gender')
-
                 got_gender = True
+            except (ValueError, audformat.errors.BadKeyError) as e:
+                pass
+            try:
+                # also it might be possible that the age is part of the speaker description
+                df_local['age'] = db[table]['speaker'].get(map='age')
+                got_age = True
             except (ValueError, audformat.errors.BadKeyError) as e:
                 pass
             try:
@@ -216,7 +232,7 @@ class Dataset:
             except (ValueError, audformat.core.errors.BadKeyError) as e:
                 pass
             df = pd.concat([df, df_local])
-        return df, is_labeled, got_speaker, got_gender
+        return df, is_labeled, got_speaker, got_gender, got_age
 
 
     def split(self):
@@ -336,6 +352,7 @@ class Dataset:
     def _add_labels(self, df):
         df.is_labeled = self.is_labeled
         df.got_gender = self.got_gender
+        df.got_age = self.got_age
         df.got_speaker = self.got_speaker
         return df
 

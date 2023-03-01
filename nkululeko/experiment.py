@@ -54,7 +54,7 @@ class Experiment:
         """Load all databases specified in the configuration and map the labels"""
         ds = ast.literal_eval(glob_conf.config['DATA']['databases'])
         self.datasets = {}
-        self.got_speaker, self.got_gender = False, False
+        self.got_speaker, self.got_gender, self.got_age = False, False, False
         for d in ds:
             # if d == 'ravdess':
             #     data = Ravdess()
@@ -70,6 +70,8 @@ class Experiment:
 #            data.prepare()
             if data.got_gender:
                 self.got_gender = True
+            if data.got_age:
+                self.got_age = True
             if data.got_speaker:
                 self.got_speaker = True
             self.datasets.update({d: data})
@@ -110,6 +112,8 @@ class Experiment:
                 data.load()
                 if data.got_gender:
                     self.got_gender = True
+                if data.got_age:
+                    self.got_age = True
                 if data.got_speaker:
                     self.got_speaker = True
                 data.prepare_labels()
@@ -170,9 +174,11 @@ class Experiment:
             self.df_train.to_csv(storage_train)
 
         self.df_train.got_gender = self.got_gender
+        self.df_train.got_age = self.got_age
         self.df_train.got_speaker = self.got_speaker
         self.df_test.got_gender = self.got_gender
         self.df_test.got_speaker = self.got_speaker
+        self.df_test.got_age = self.got_age
 
         # Check for filters
         min_dur_test = self.util.config_val('DATA', 'min_dur_test', False)
