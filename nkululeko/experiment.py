@@ -12,6 +12,7 @@ from nkululeko.feats_analyser import FeatureAnalyser
 from nkululeko.util import Util
 from nkululeko.feature_extractor import FeatureExtractor
 from nkululeko.plots import Plots
+from nkululeko.augmenter import Augmenter 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.demo_predictor import Demo_predictor
 import ast # To convert strings to objects
@@ -331,7 +332,18 @@ class Experiment:
                 self.util.debug('can\'t plot feature distributions if not classification')
         self._check_scale()
 
+    def augment(self):
+        """
+        Augment the training set
+        """
+        augmenter = Augmenter(self.df_train)
+        augmenter.augment()
+
     def analyse_features(self):
+        """
+        Do a feature exploration
+        
+        """
         sample_selection = self.util.config_val('EXPL', 'sample_selection', 'all')
         if sample_selection=='all':
             df_feats = pd.concat([self.feats_train, self.feats_test])

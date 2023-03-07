@@ -100,7 +100,9 @@
 * **sex**: limit dataset to one biological sex, *female* or *male*
   * sex = male
 * **target_divide_by**: divide the target values by some factor, e.g. to make age smaller and encode years from .0 to 1
-  * **target_divide_by = 100
+  * target_divide_by = 100
+* **augment**: filename to write the augmented filepathes to
+  * augment = augment.csv 
 ### FEATS
 * **type**: a comma separated list of types of features, they will be columnwise concatenated
   * type = ['os']

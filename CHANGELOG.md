@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.43.0
+--------------
+* added augmentation module based on audiomentation
+
 Version 0.42.0
 --------------
 * age labels should now be detected in dataases
