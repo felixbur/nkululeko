@@ -17,7 +17,7 @@ Here are some examples of typical output:
 ### Confusion matrix
 Per default, Nkululeko displays results as a  confusion matrix, using binning with regression.
 
-![confusion matrix](images/conf_mat.png)
+<img src="images/conf_mat.png" width="500px"/>
 
 ### Epoch progression
 The point when overfitting starts can sometimes be seen by looking at the results per epoch:
@@ -59,7 +59,7 @@ Some examples for *ini*-files (which you use to control nkululeko) are in the [d
 Basically, you specify your experiment in an "ini" file (e.g. *experiment.ini*) and then call one of the Nkululeko interfaces to run the experiment like this:
   * ```python -m nkululeko.nkululeko --config experiment.ini```
 
-Here is an overview on the interfaces:
+Here is an overview of the interfaces:
 * **nkululeko.nkululeko**: doing experiments
 * **nkululeko.demo**: demo the current best model on commandline
 * **nkululeko.test**: predict a series of files with the current best model
