@@ -51,7 +51,7 @@ Create and activate a virtual python environment and simply run
 pip install nkululeko
 ```
 
-Some examples for *ini*-files (which you use to control nkululeko) are in the [demo folder](https://github.com/felixbur/nkululeko/tree/main/demos).
+Some examples for *ini*-files (which you use to control nkululeko) are in the [tests folder](https://github.com/felixbur/nkululeko/tree/main/tests).
 
 
 
