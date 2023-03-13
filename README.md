@@ -22,27 +22,27 @@ Per default, Nkululeko displays results as a  confusion matrix, using binning wi
 ### Epoch progression
 The point when overfitting starts can sometimes be seen by looking at the results per epoch:
 
-![epoch progression](images/epoch_progression.png)
+<img src="images/epoch_progression.png" width="500px"/>
 
 ### Feature importance
 Using the *explore* interface, Nkululeko analyses the importance of acoustic features:
  
-![feature importance](images/feat_importance.png)
+<img src="images/feat_importance.png" width="500px"/>
 
 ### Feature distribution
 And can show the distribution of specific features per category:
 
-![feature distribution](images/feat_dist.png)
+<img src="images/feat_dist.png" width="500px"/>
 
 ### t-SNE plots
 A t-SNE plot can give you an estimate wether your acoustic features are useful at all:
 
-![tsne plot](images/tsne.png)
+<img src="images/tsne.png" width="500px"/>
 
 ### Data distribution
 Sometimes you only want to take a look at your data:
 
-![data distribution](images/data_plot.png)
+<img src="images/data_plot.png" width="500px"/>
 
 ## Installation
 
