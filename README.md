@@ -48,7 +48,7 @@ Sometimes you only want to take a look at your data:
 
 Create and activate a virtual python environment and simply run
 ```
-pip install -r nkululeko
+pip install nkululeko
 ```
 
 Some examples for *ini*-files (which you use to control nkululeko) are in the [demo folder](https://github.com/felixbur/nkululeko/tree/main/demos).
