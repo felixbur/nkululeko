@@ -56,8 +56,15 @@ Some examples for *ini*-files (which you use to control nkululeko) are in the [d
 
 
 ## Usage
-Basically, you specify your experiment in an "ini" file (e.g. *experiment.ini*) and then call Nkululeko to run the experiment like this:
+Basically, you specify your experiment in an "ini" file (e.g. *experiment.ini*) and then call one of the Nkululeko interfaces to run the experiment like this:
   * ```python -m nkululeko.nkululeko --config experiment.ini```
+
+Here is an overview on the interfaces:
+* **nkululeko.nkululeko**: doing experiments
+* **nkululeko.demo**: demo the current best model on commandline
+* **nkululeko.test**: predict a series of files with the current best model
+* **nkululeko.explore**: perform data exploration
+* **nkululeko.augment**: augment the current training data
 
 Alternatively, there is a central "experiment" class that can be used by own experiments
 
