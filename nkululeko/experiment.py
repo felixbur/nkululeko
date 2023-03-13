@@ -231,8 +231,6 @@ class Experiment:
         augment = self.util.config_val('DATA', 'augment', 0)
         if augment:
             self.augment_train()
-        if self.util.config_val('PLOT', 'value_counts', False):
-            self.plot_distribution()
 
         target_factor = self.util.config_val('DATA', 'target_divide_by', False)
         if target_factor:
@@ -299,37 +297,6 @@ class Experiment:
         self.feats_test = self.feature_extractor.extract()
         self.util.debug(f'All features: train shape : {self.feats_train.shape}, test shape:{self.feats_test.shape}')
 
-        # check if a tsne should be plotted
-        tsne = eval(self.util.config_val('EXPL', 'tsne', 'False'))
-        if tsne: 
-            if self.util.exp_is_classification():
-                plots = Plots()
-                all_feats =self.feats_train.append(self.feats_test)
-                all_labels = self.df_train['class_label'].append(self.df_test['class_label'])
-                plots.plotTsne(all_feats, all_labels, self.util.get_exp_name()+'_tsne')
-            else:
-                 self.util.debug('can\'t plot tsne if not classification')
-
-        # check if feature distributions should be plotted
-        plot_feats = self.util.config_val('EXPL', 'feature_distributions', False)
-        if plot_feats: 
-            if self.util.exp_is_classification():
-                plots = Plots()
-                if plot_feats=='all':
-                    df_feats = pd.concat([self.feats_train, self.feats_test])
-                    df_labels = pd.concat([self.df_train, self.df_test])
-                elif plot_feats=='train':
-                    df_feats = self.feats_train
-                    df_labels = self.df_train
-                elif plot_feats=='test':
-                    df_feats = self.feats_test
-                    df_labels = self.df_test
-                else:
-                    self.util.error(f'unkown feature_distribution specifier {plot_feats}, should be [all | train | test]')
-                for feature in df_feats.columns:
-                    plots.plot_feature(plot_feats, feature, 'class_label', df_labels, df_feats)
-            else:
-                self.util.debug('can\'t plot feature distributions if not classification')
         self._check_scale()
 
     def augment(self):
@@ -344,7 +311,11 @@ class Experiment:
         Do a feature exploration
         
         """
-        sample_selection = self.util.config_val('EXPL', 'sample_selection', 'all')
+
+        if self.util.config_val('EXPL', 'value_counts', False):
+            self.plot_distribution()
+
+        sample_selection = self.util.config_val('EXPL', 'sample_selection', 'False')
         if sample_selection=='all':
             df_feats = pd.concat([self.feats_train, self.feats_test])
             df_labels = pd.concat([self.df_train, self.df_test])
@@ -354,10 +325,24 @@ class Experiment:
         elif sample_selection=='test':
             df_feats = self.feats_test
             df_labels = self.df_test
+        elif sample_selection=='False':
+            pass
         else:
             self.util.error(f'unkown feature_distribution specifier {sample_selection}, should be [all | train | test]')
-        feat_analyser = FeatureAnalyser(sample_selection, df_labels[self.target], df_feats)        
-        feat_analyser.analyse()
+        if sample_selection in ('all', 'train', 'test'):
+            feat_analyser = FeatureAnalyser(sample_selection, df_labels, df_feats)        
+            feat_analyser.analyse()
+
+        # check if a tsne should be plotted
+        tsne = eval(self.util.config_val('EXPL', 'tsne', 'False'))
+        if tsne: 
+            if self.util.exp_is_classification():
+                plots = Plots()
+                all_feats =self.feats_train.append(self.feats_test)
+                all_labels = self.df_train['class_label'].append(self.df_test['class_label'])
+                plots.plotTsne(all_feats, all_labels, self.util.get_exp_name()+'_tsne')
+            else:
+                 self.util.debug('can\'t plot tsne if not classification')
 
 
     def _check_scale(self):

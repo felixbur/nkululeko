@@ -37,8 +37,11 @@ def main(src_dir):
     expr.fill_train_and_tests()
     util.debug(f'train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}')
 
-    # extract features
-    expr.extract_feats()
+    plot_feats = eval(util.config_val('EXPL', 'feature_distributions', 'False'))
+    tsne = eval(util.config_val('EXPL', 'tsne', 'False'))
+    if plot_feats or tsne: 
+        # extract features
+        expr.extract_feats()
 
     # explore
     expr.analyse_features()

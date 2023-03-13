@@ -214,13 +214,15 @@
 * **max_feats**: Maximal number of important features 
   * max_feats = 10
 * **sample_selection**: Which sample set to use for feature importance
-  * sample_selection = all # either all, train or test
+  * sample_selection = False # either all, train or test
 * **feature_distributions** plot distributions for all features per category for either *test*, *train*, or *all* samples
   * feature_distributions = test
 * **tsne**: make a tsne plot of combined train and test data to get a feeling how the features might perform
   * tsne = False
 * **plot_tree**: Plot a decision tree for classification (Requires model = tree)
   * plot_tree = False
+* **value_counts** plot statistics for each database and the train/dev splits (in the *image_dir*)
+  * value_counts = False
 
 ### PLOT
 * **name**: special name as a prefix for all plots (stored in *img_dir*).
@@ -235,8 +237,6 @@
   * epoch_progression = False
 * **best_model**: search for the best performing model and plot conf matrix (needs *MODEL.store* to be turned on)
   * best_model = False
-* **value_counts** plot statistics for each database and the train/dev splits (in the *image_dir*)
-  * value_counts = False
 * **combine_per_speaker**: print an extra confusion plot where the predicions per speaker are combined, with either the mode or the mean function
   * combine_per_speaker = mode
 * **format**: format for plots, either *png* or *eps* (for scalable graphics)

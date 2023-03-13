@@ -24,11 +24,11 @@ class Augmenter:
         ])
 
     def changepath(self, fp, np):
-        parent = os.path.dirname(fp).split('/')[-1]
+#        parent = os.path.dirname(fp).split('/')[-1]
         fullpath = os.path.dirname(fp)
-        newpath = f'{np}/{parent}'
-        audeer.mkdir(newpath)
-        return fp.replace(fullpath, newpath)
+ #       newpath = f'{np}{parent}'
+ #       audeer.mkdir(newpath)
+        return fp.replace(fullpath, np)
 
     def augment(self):
         """
@@ -39,15 +39,19 @@ class Augmenter:
         filepath = f'{store}augmentations/'
         audeer.mkdir(filepath)
         self.util.debug(f'augmenting the training set to {filepath}')
+        newpath = ''
         for i, f in enumerate(files):
             signal, sr = audiofile.read(f)
             filename = os.path.basename(f)
+            parent = os.path.dirname(f).split('/')[-1]
             sig_aug = self.audioment(samples = signal, sample_rate = sr)
-            audiofile.write(f'{filepath}{filename}', signal=sig_aug, sampling_rate=sr)
+            newpath = f'{filepath}/{parent}/'
+            audeer.mkdir(newpath)
+            audiofile.write(f'{newpath}{filename}', signal=sig_aug, sampling_rate=sr)
             if i%10==0:
                 print(f'augmented {i} of {len(files)}')
         df_ret = self.train_df.copy()
-        df_ret = df_ret.set_index(map_file_path(df_ret.index, lambda x: self.changepath(x, filepath)))
+        df_ret = df_ret.set_index(map_file_path(df_ret.index, lambda x: self.changepath(x, newpath)))
         aug_db_filename = self.util.config_val('DATA', 'augment', 'augment.csv')
         df_ret.to_csv(aug_db_filename)
         return df_ret

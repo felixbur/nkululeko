@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.43.1
+--------------
+* fixed test_runs
+
 Version 0.43.0
 --------------
 * added augmentation module based on audiomentation

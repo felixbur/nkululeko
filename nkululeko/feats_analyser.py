@@ -12,9 +12,11 @@ class FeatureAnalyser:
  
 
     def __init__(self, label, df_labels, df_features):
-        self.y = df_labels
-        self.X = df_features
         self.util = Util()
+        target = self.util.config_val('DATA', 'target', 'emotion')    
+        self.y = df_labels[target]
+        self.df_labels = df_labels
+        self.X = df_features
         self.label = label
 
 
@@ -71,3 +73,12 @@ class FeatureAnalyser:
             f'{str(df_imp.feats.values)}\n')
 
         df_imp.to_csv(file_name, mode='a')
+
+                # check if feature distributions should be plotted
+        plot_feats = self.util.config_val('EXPL', 'feature_distributions', False)
+        if plot_feats: 
+            if self.util.exp_is_classification():
+                for feature in df_imp.feats:
+                    plots.plot_feature(plot_feats, feature, 'class_label', self.df_labels, self.X)
+            else:
+                self.util.debug('can\'t plot feature distributions if not classification')
