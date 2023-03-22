@@ -5,13 +5,17 @@ Version 0.43.1
 --------------
 * fixed test_runs
 
+Version 0.43.2
+--------------
+* fixed a bug when running continuous variable as classification problem
+
 Version 0.43.0
 --------------
 * added augmentation module based on audiomentation
 
 Version 0.42.0
 --------------
-* age labels should now be detected in dataases
+* age labels should now be detected in databases
 
 Version 0.41.0
 --------------
