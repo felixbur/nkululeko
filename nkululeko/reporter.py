@@ -48,8 +48,8 @@ class Reporter:
         self.cont_to_cat = False
         if len(self.truths)>0 and len(self.preds)>0:
             if self.util.exp_is_classification():
-                self.result.test = recall_score(self.truths.astype(int), self.preds.astype(int), average='macro')
-                self.result.loss = 1 - accuracy_score(self.truths.astype(int), self.preds.astype(int))
+                self.result.test = recall_score(self.truths, self.preds, average='macro')
+                self.result.loss = 1 - accuracy_score(self.truths, self.preds)
             else:
                 # regression experiment
                 if self.measure == 'mse':
@@ -117,9 +117,9 @@ class Reporter:
         fig_dir = self.util.get_path('fig_dir')
         labels = self.util.get_labels()
         fig = plt.figure()  # figsize=[5, 5]
-        uar = recall_score(truths.astype(int), preds.astype(int), average='macro')
-        acc = accuracy_score(truths.astype(int), preds.astype(int))
-        cm = confusion_matrix(truths.astype(int), preds.astype(int), normalize = None) #normalize must be one of {'true', 'pred', 'all', None}
+        uar = recall_score(truths, preds, average='macro')
+        acc = accuracy_score(truths, preds)
+        cm = confusion_matrix(truths, preds, normalize = None) #normalize must be one of {'true', 'pred', 'all', None}
         if cm.shape[0] != len(labels):
             self.util.error(f'mismatch between confmatrix dim ({cm.shape[0]}) and labels length ({len(labels)}: {labels})')
         try:
@@ -156,7 +156,7 @@ class Reporter:
             else:
                 labels = glob_conf.label_encoder.classes_
             try:
-                rpt = classification_report(self.truths.astype(int), self.preds.astype(int), target_names=labels, output_dict=True)
+                rpt = classification_report(self.truths, self.preds, target_names=labels, output_dict=True)
             except ValueError as e:
                 self.util.debug('Reporter: caught a ValueError when trying to get classification_report: '+e)
                 rpt = self.result.to_string()

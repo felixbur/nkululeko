@@ -68,7 +68,7 @@ class Experiment:
             else:
                 self.util.error(f'unknown data type: {ds_type}')
             data.load()
-#            data.prepare()
+            data.prepare()
             if data.got_gender:
                 self.got_gender = True
             if data.got_age:
@@ -228,9 +228,9 @@ class Experiment:
             glob_conf.set_label_encoder(self.label_encoder)
         if self.got_speaker:
             self.util.debug(f'{self.df_test.speaker.nunique()} speakers in test and {self.df_train.speaker.nunique()} speakers in train')
-        augment = self.util.config_val('DATA', 'augment', 0)
-        if augment:
-            self.augment_train()
+        #augment = self.util.config_val('DATA', 'augment', 0)
+        #if augment:
+        #    self.augment_train()
 
         target_factor = self.util.config_val('DATA', 'target_divide_by', False)
         if target_factor:

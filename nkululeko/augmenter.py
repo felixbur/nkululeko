@@ -53,5 +53,8 @@ class Augmenter:
         df_ret = self.train_df.copy()
         df_ret = df_ret.set_index(map_file_path(df_ret.index, lambda x: self.changepath(x, newpath)))
         aug_db_filename = self.util.config_val('DATA', 'augment', 'augment.csv')
+        target = self.util.config_val('DATA', 'target', 'emotion')
+        df_ret[target] = df_ret['class_label']
+        df_ret = df_ret.drop(columns=['class_label'])
         df_ret.to_csv(aug_db_filename)
         return df_ret

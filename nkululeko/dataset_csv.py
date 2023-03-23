@@ -25,7 +25,7 @@ class Dataset_CSV(Dataset):
         self.got_target = True
         self.is_labeled = self.got_target
         self.start_fresh = eval(self.util.config_val('DATA', 'no_reuse', 'False'))
-        if self.is_labeled:
+        if self.is_labeled and not 'class_label' in self.df.columns:
             self.df['class_label'] = self.df[self.target]
         if 'gender' in df.columns:
             self.got_gender = True 

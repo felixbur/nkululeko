@@ -7,3 +7,4 @@ python -m nkululeko.nkululeko --config tests/exp_agedb_os_xgr.ini
 python -m nkululeko.nkululeko --config tests/exp_agedb_os_mlp.ini 
 python -m nkululeko.nkululeko --config tests/exp_agedb_class_os_xgb.ini 
 python -m nkululeko.augment --config tests/exp_emodb_augment_os_xgb.ini
+python -m nkululeko.nkululeko --config tests/exp_emodb-aug_os_xgb.ini

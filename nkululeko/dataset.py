@@ -313,6 +313,9 @@ class Dataset:
             self.df_test = self.finish_up(self.df_test, storage_test)
         if self.df_train.shape[0]>0:
             self.df_train = self.finish_up(self.df_train, storage_train)
+
+        self.util.debug(f'{self.name}: {self.df_test.shape[0]} samples in test and {self.df_train.shape[0]} samples in train')
+
         
     def finish_up(self, df, storage):
         # Bin target values if they are continuous but a classification experiment should be done

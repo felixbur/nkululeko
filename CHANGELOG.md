@@ -5,6 +5,10 @@ Version 0.43.1
 --------------
 * fixed test_runs
 
+Version 0.43.3
+--------------
+* fixed further bugs and added augmentation to the test runs
+
 Version 0.43.2
 --------------
 * fixed a bug when running continuous variable as classification problem
