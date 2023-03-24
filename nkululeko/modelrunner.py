@@ -100,4 +100,6 @@ class Modelrunner:
             self.model = MLP_Reg_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
         else:
             self.util.error(f'unknown model type: \'{model_type}\'')
+        if self.util.exp_is_classification() and not self.model.is_classifier:
+            self.util.error('Experiment type set to classification but model type is not a classifier')
         return self.model

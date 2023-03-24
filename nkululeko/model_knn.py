@@ -4,7 +4,10 @@ from sklearn.neighbors import KNeighborsClassifier
 from nkululeko.model import Model
 
 class KNN_model(Model):
-    """An SVM model"""
+    """An KNN model"""
+
+    is_classifier = True
+
     def __init__(self, df_train, df_test, feats_train, feats_test):
         super().__init__(df_train, df_test, feats_train, feats_test)
         method = self.util.config_val('MODEL', 'KNN_weights', 'uniform') 

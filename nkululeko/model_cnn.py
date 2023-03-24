@@ -11,6 +11,7 @@ from loss_ccc import ConcordanceCorCoeff
 
 class CNN_model(Model):
     """A CNN (convolutional neural net) model"""
+    is_classifier = True
 
     def __init__(self, df_train, df_test, feats_train, feats_test):
         """Constructor taking the configuration and all dataframes"""

@@ -1,9 +1,9 @@
 Changelog
 =========
 
-Version 0.43.1
+Version 0.43.4
 --------------
-* fixed test_runs
+* added error when experiment type and predictor don't match
 
 Version 0.43.3
 --------------
@@ -12,6 +12,10 @@ Version 0.43.3
 Version 0.43.2
 --------------
 * fixed a bug when running continuous variable as classification problem
+
+Version 0.43.1
+--------------
+* fixed test_runs
 
 Version 0.43.0
 --------------

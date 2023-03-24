@@ -13,6 +13,8 @@ from nkululeko.loss_softf1loss import SoftF1Loss
 class MLP_model(Model):
     """MLP = multi layer perceptron"""
 
+    is_classifier = True
+
     def __init__(self, df_train, df_test, feats_train, feats_test):
         """Constructor taking the configuration and all dataframes"""
         Model.__init__(self, df_train, df_test, feats_train, feats_test)
