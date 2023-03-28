@@ -127,7 +127,7 @@ Here's [an overview on the ini-file options](./ini_file.md)
 * Make sure the folder is called "emodb" and does contain the database files directly (not box-in-a-box)
 * Also, in the *nkulu_work* folder: 
   * Create a python environment
-    * ```python3 -m venv venv```
+    * ```python -m venv venv```
   * Then, activate it:
     * under linux / mac
       * ```source venv/bin/activate```
