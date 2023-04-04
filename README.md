@@ -59,6 +59,28 @@ Some examples for *ini*-files (which you use to control nkululeko) are in the [t
 Basically, you specify your experiment in an "ini" file (e.g. *experiment.ini*) and then call one of the Nkululeko interfaces to run the experiment like this:
   * ```python -m nkululeko.nkululeko --config experiment.ini```
 
+A basic configuration looks like this:
+```
+[EXP]
+root = ./
+name = exp_emodb
+[DATA]
+databases = ['emodb']
+emodb = ./emodb/
+emodb.split_strategy = speaker_split
+target = emotion
+labels = ['anger', 'boredom', 'disgust', 'fear']
+[FEATS]
+type = ['os']
+[MODEL]
+type = xgb
+[EXPL]
+model = tree
+plot_tree = True
+[PLOT]
+combine_per_speaker = True
+```
+
 Here is an overview of the interfaces:
 * **nkululeko.nkululeko**: doing experiments
 * **nkululeko.demo**: demo the current best model on commandline
