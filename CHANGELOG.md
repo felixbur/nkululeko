@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.43.5
+--------------
+* because of difficulties with numba and audiomentations importing audiomentations only when augmenting
+
 Version 0.43.4
 --------------
 * added error when experiment type and predictor don't match
