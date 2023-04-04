@@ -71,9 +71,9 @@ emodb.split_strategy = speaker_split
 target = emotion
 labels = ['anger', 'boredom', 'disgust', 'fear']
 [FEATS]
-type = ['os']
+type = ['praat']
 [MODEL]
-type = xgb
+type = svm
 [EXPL]
 model = tree
 plot_tree = True
