@@ -1,11 +1,11 @@
 # Nkululeko
-* [Description](#description)
+* [Overview](#overview)
 * [Installation](#installation)
 * [Usage](#usage)
 * [Hello World](#hello-world-example)
 * [Licence](#licence)
 
-## Description
+## Overview
 A project to detect speaker characteristics by machine learning experiments with a high level interface.
 
 The idea is to have a framework (based on e.g. sklearn and torch) that can be used by people not being experienced programmers as they mainly have to adapt an initialization parameter file per experiment.
