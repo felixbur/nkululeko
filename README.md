@@ -1,4 +1,9 @@
 # Nkululeko
+* [Description](#description)
+* [Installation](#installation)
+* [Usage](#usage)
+* [Hello World](#hello-world-example)
+* [License](#license)
 
 ## Description
 A project to detect speaker characteristics by machine learning experiments with a high level interface.
