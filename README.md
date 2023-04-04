@@ -3,7 +3,7 @@
 * [Installation](#installation)
 * [Usage](#usage)
 * [Hello World](#hello-world-example)
-* [License](#license)
+* [License](#licence)
 
 ## Description
 A project to detect speaker characteristics by machine learning experiments with a high level interface.
