@@ -79,6 +79,8 @@ class FeatureAnalyser:
         if plot_feats: 
             if self.util.exp_is_classification():
                 for feature in df_imp.feats:
-                    plots.plot_feature(plot_feats, feature, 'class_label', self.df_labels, self.X)
+                    # plot_feature(self, title, feature, label, df_labels, df_features):
+                    _plots = Plots()
+                    _plots.plot_feature(plot_feats, feature, 'class_label', self.df_labels, self.X)
             else:
                 self.util.debug('can\'t plot feature distributions if not classification')

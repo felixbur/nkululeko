@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.43.6
+--------------
+* small bugs
+
+
 Version 0.43.5
 --------------
 * because of difficulties with numba and audiomentations importing audiomentations only when augmenting
