@@ -69,7 +69,7 @@ python
 
 # Experiment age prediction
 
-1) With opensmile features and a (multi-layer perceptron)[http://blog.syntheticspeech.de/2022/11/21/different-machine-learners/]
+1) With opensmile features and a [multi-layer perceptron](http://blog.syntheticspeech.de/2022/11/21/different-machine-learners/)
 
     ```
     python 
