@@ -23,9 +23,9 @@ steps:
 
 * create virtual python environment
 * install via pip 
-```
-pip install nkululeko
-```
+    ```
+    pip install nkululeko
+    ```
 
 # Nkululeko docs
 
