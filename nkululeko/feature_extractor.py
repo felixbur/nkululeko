@@ -34,6 +34,9 @@ class FeatureExtractor:
             elif feats_type=='audmodel':
                 from nkululeko.feats_audmodel import AudModelSet
                 self.featExtractor = AudModelSet(f'{store_name}_{self.feats_designation}', self.data_df)
+            elif feats_type=='clap':
+                from nkululeko.feats_clap import Clap
+                self.featExtractor = Clap(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='praat':
                 from nkululeko.feats_praat import Praatset
                 self.featExtractor = Praatset(f'{store_name}_{self.feats_designation}', self.data_df)

@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.43.7
+--------------
+* added clap features
+
 Version 0.43.6
 --------------
 * small bugs
