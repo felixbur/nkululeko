@@ -46,6 +46,44 @@ class Plots():
             fig.clear()
             plt.close(fig)
 
+    def scatter_plot(self, feats, labels, dimred_type):
+        fig_dir = self.util.get_path('fig_dir')+'../' # one up because of the runs 
+        filename = self.util.get_exp_name()+dimred_type
+        filename = f'{fig_dir}{filename}.{self.format}'
+        self.util.debug(f'computing {dimred_type}, this might take a while...')
+        data = None
+        if dimred_type == 'tsne':
+            data = self.getTsne(feats)
+        elif dimred_type == 'umap':
+            import umap
+            y_umap = umap.UMAP(n_neighbors=10, random_state=0,).fit_transform(feats.values)
+            data = pd.DataFrame(
+                y_umap,
+                feats.index,
+                columns=['Dim_1', 'Dim_2'],
+            )
+        elif dimred_type == 'pca':
+            from sklearn.decomposition import PCA
+            from sklearn.preprocessing import StandardScaler
+            scaler = StandardScaler()
+            pca = PCA(n_components=2)
+            y_pca = pca.fit_transform(scaler.fit_transform(feats.values))
+            data = pd.DataFrame(
+                y_pca,
+                feats.index,
+                columns=['Dim_1', 'Dim_2'],
+            )
+        else:
+            self.util.error(f'no such dimensionaity reduction functin: {dimred_type}')
+        plot_data = np.vstack((data.T, labels)).T
+        plot_df = pd.DataFrame(data=plot_data, columns=('Dim_1', 'Dim_2', 'label'))
+        plt.tight_layout()
+        ax = sns.FacetGrid(plot_df, hue='label', height=6).map(plt.scatter, 'Dim_1', 'Dim_2').add_legend()
+        fig = ax.figure
+        plt.savefig(filename)
+        fig.clear()
+        plt.close(fig)
+
     def plotTsne(self, feats, labels, filename, perplexity=30, learning_rate=200):
         """Make a TSNE plot to see whether features are useful for classification"""
         fig_dir = self.util.get_path('fig_dir')+'../' # one up because of the runs 
@@ -61,6 +99,12 @@ class Plots():
         plt.savefig(filename)
         fig.clear()
         plt.close(fig)
+
+    def getTsne(self, feats, perplexity=30, learning_rate=200):
+        """Make a TSNE plot to see whether features are useful for classification"""
+        model = TSNE(n_components=2, random_state=0, perplexity=perplexity, learning_rate=learning_rate)
+        tsne_data = model.fit_transform(feats)
+        return tsne_data
 
     def plot_feature(self, title, feature, label, df_labels, df_features):
         fig_dir = self.util.get_path('fig_dir')+'../' # one up because of the runs 

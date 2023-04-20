@@ -332,6 +332,20 @@ class Experiment:
             feat_analyser = FeatureAnalyser(sample_selection, df_labels, df_feats)        
             feat_analyser.analyse()
 
+        # check if a scatterplot should be done
+        scatter_var = eval(self.util.config_val('EXPL', 'scatter', 'False'))
+        if scatter_var:
+            scatters = ast.literal_eval(glob_conf.config['EXPL']['scatter'])
+            if self.util.exp_is_classification():
+                plots = Plots()
+                all_feats =self.feats_train.append(self.feats_test)
+                all_labels = self.df_train['class_label'].append(self.df_test['class_label'])
+                for scatter in scatters:
+                    plots.scatter_plot(all_feats, all_labels, scatter)
+            else:
+                 self.util.debug('can\'t do scatterplot if not classification')
+
+
         # check if a tsne should be plotted
         tsne = eval(self.util.config_val('EXPL', 'tsne', 'False'))
         if tsne: 

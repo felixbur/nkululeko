@@ -218,8 +218,8 @@
   * sample_selection = False # either all, train or test
 * **feature_distributions** plot distributions for all features per category for either *test*, *train*, or *all* samples
   * feature_distributions = test
-* **tsne**: make a tsne plot of combined train and test data to get a feeling how the features might perform
-  * tsne = False
+* **scatter**: make a scatter plot of combined train and test data, colored by label.
+  * scatter = ['tsne', 'umap', 'pca']
 * **plot_tree**: Plot a decision tree for classification (Requires model = tree)
   * plot_tree = False
 * **value_counts** plot statistics for each database and the train/dev splits (in the *image_dir*)

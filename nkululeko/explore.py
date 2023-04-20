@@ -39,7 +39,8 @@ def main(src_dir):
 
     plot_feats = eval(util.config_val('EXPL', 'feature_distributions', 'False'))
     tsne = eval(util.config_val('EXPL', 'tsne', 'False'))
-    if plot_feats or tsne: 
+    scatter = eval(util.config_val('EXPL', 'scatter', 'False'))
+    if plot_feats or tsne or scatter: 
         # extract features
         expr.extract_feats()
 

@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.44.0
+--------------
+* added scatter functions: tsne, pca, umap
+
 Version 0.43.7
 --------------
 * added clap features
