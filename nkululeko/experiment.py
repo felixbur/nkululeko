@@ -227,9 +227,6 @@ class Experiment:
             glob_conf.set_label_encoder(self.label_encoder)
         if self.got_speaker:
             self.util.debug(f'{self.df_test.speaker.nunique()} speakers in test and {self.df_train.speaker.nunique()} speakers in train')
-        #augment = self.util.config_val('DATA', 'augment', 0)
-        #if augment:
-        #    self.augment_train()
 
         target_factor = self.util.config_val('DATA', 'target_divide_by', False)
         if target_factor:
@@ -261,14 +258,6 @@ class Experiment:
             if self.df_test.shape[0] > 0:
                 plot.describe_df('dev_set', self.df_test, self.target, f'test_distplot')
             plot.describe_df('train_set', self.df_train, self.target, f'train_distplot')
-
-
-    def augment_train(self):
-        """Augment the train dataframe"""
-        from nkululeko.augmenter import Augmenter
-        augment_train = Augmenter(self.df_train)
-        df_train_aug = augment_train.augment()
-        self.df_train = self.df_train.append(df_train_aug)
 
     def extract_test_feats(self):
         self.feats_test = pd.DataFrame()
@@ -302,8 +291,17 @@ class Experiment:
         """
         Augment the training set
         """
+        from nkululeko.augmenter import Augmenter
         augmenter = Augmenter(self.df_train)
         augmenter.augment()
+
+    # def augment_train(self):
+    #     """Augment the train dataframe"""
+    #     from nkululeko.augmenter import Augmenter
+    #     augment_train = Augmenter(self.df_train)
+    #     df_train_aug = augment_train.augment()
+    #     self.df_train = self.df_train.append(df_train_aug)
+
 
     def analyse_features(self):
         """
