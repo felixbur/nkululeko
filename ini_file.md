@@ -238,7 +238,7 @@
   * epoch_progression = False
 * **best_model**: search for the best performing model and plot conf matrix (needs *MODEL.store* to be turned on)
   * best_model = False
-* **combine_per_speaker**: print an extra confusion plot where the predicions per speaker are combined, with either the mode or the mean function
+* **combine_per_speaker**: print an extra confusion plot where the predicions per speaker are combined, with either the `mode` or the `mean` function
   * combine_per_speaker = mode
 * **format**: format for plots, either *png* or *eps* (for scalable graphics)
   * format = png

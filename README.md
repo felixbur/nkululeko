@@ -6,11 +6,11 @@
 * [Licence](#licence)
 
 ## Overview
-A project to detect speaker characteristics by machine learning experiments with a high level interface.
+A project to detect speaker characteristics by machine learning experiments with a high-level interface.
 
 The idea is to have a framework (based on e.g. sklearn and torch) that can be used by people not being experienced programmers as they mainly have to adapt an initialization parameter file per experiment.
 
-* The latest features can be seen at [the ini-file options](./ini_file.md) that are used to control Nkululeko
+* The latest features can be seen in [the ini-file](./ini_file.md) options](./ini_file.md) that are used to control Nkululeko
 * Below is a [Hello World example](#helloworld) that should set you up fastly.
 * [Here's a blog post on how to set up nkululeko on your computer.](http://blog.syntheticspeech.de/2021/08/30/how-to-set-up-your-first-nkululeko-project/)
 * [Here's a slide presentation about nkululeko](docs/nkululeko.pdf)
@@ -20,7 +20,7 @@ The idea is to have a framework (based on e.g. sklearn and torch) that can be us
 Here are some examples of typical output:
 
 ### Confusion matrix
-Per default, Nkululeko displays results as a  confusion matrix, using binning with regression.
+Per default, Nkululeko displays results as a confusion matrix using binning with regression.
 
 <img src="images/conf_mat.png" width="500px"/>
 
@@ -51,7 +51,7 @@ Sometimes you only want to take a look at your data:
 
 ## Installation
 
-Create and activate a virtual python environment and simply run
+Create and activate a virtual Python environment and simply run
 ```
 pip install nkululeko
 ```
@@ -83,12 +83,13 @@ type = svm
 model = tree
 plot_tree = True
 [PLOT]
-combine_per_speaker = True
+combine_per_speaker = mode
 ```
+Read the [Hello World example](#hello-world-example) for initial usage with Emo-DB dataset.
 
 Here is an overview of the interfaces:
 * **nkululeko.nkululeko**: doing experiments
-* **nkululeko.demo**: demo the current best model on commandline
+* **nkululeko.demo**: demo the current best model on command line
 * **nkululeko.test**: predict a series of files with the current best model
 * **nkululeko.explore**: perform data exploration
 * **nkululeko.augment**: augment the current training data
@@ -131,7 +132,7 @@ The framework is targeted at the speech domain and supports experiments where di
 Here's a rough UML-like sketch of the framework.
 ![sketch](images/class_diagram.png)
 
-Currently the following linear classifiers are implemented (integrated from sklearn):
+Currently, the following linear classifiers are implemented (integrated from sklearn):
 * SVM, SVR, XGB, XGR, Tree, Tree_regressor, KNN, KNN_regressor, NaiveBayes, GMM
   and the following ANNs
 * MLP, CNN (tbd)
@@ -144,21 +145,21 @@ You could
 * adapt the path to your nkululeko src 
 * and then adapt an .ini file (again fitting at least the paths to src and data)
   
-Here's [an overview on the ini-file options](./ini_file.md)
+Here's [an overview of the ini-file options](./ini_file.md)
 
 ### <a name="helloworld">Hello World example</a>
-* NEW [I made a video to show you how to do this on Windows](https://www.youtube.com/playlist?list=PLRceVavtxLg0y2jiLmpnUfiMtfvkK912D)
+* NEW: [I made a video to show you how to do this on Windows](https://www.youtube.com/playlist?list=PLRceVavtxLg0y2jiLmpnUfiMtfvkK912D)
 * Set up Python on your computer, version >= 3.6
 * Open a terminal/commandline/console window
 * Test python by typing ```python```, python should start with version >3 (NOT 2!). You can leave the Python Interpreter by typing *exit()*
-* Create a folder on your computer for this example, let's call it *nkulu_work*
-* Get a copy of the [Berlin emodb in audformat](https://tubcloud.tu-berlin.de/s/LfkysdXJfiobiEG) and unpack the same folder (*nkulu_work*)
+* Create a folder on your computer for this example, let's call it `nkulu_work`
+* Get a copy of the [Berlin emodb in audformat](https://tubcloud.tu-berlin.de/s/LfkysdXJfiobiEG) and unpack the same folder (`nkulu_work`)
 * Make sure the folder is called "emodb" and does contain the database files directly (not box-in-a-box)
-* Also, in the *nkulu_work* folder: 
-  * Create a python environment
+* Also, in the `nkulu_work` folder: 
+  * Create a Python environment
     * ```python -m venv venv```
   * Then, activate it:
-    * under linux / mac
+    * under Linux / mac
       * ```source venv/bin/activate```
     * under Windows
       * ```venv\Scripts\activate.bat```
@@ -168,7 +169,7 @@ Here's [an overview on the ini-file options](./ini_file.md)
     * Repeat until all error messages vanished (or fix them, or try to ignore them)...
 * Now you should have two folders in your *nkulu_work* folder:
   * *emodb* and *venv*
-* Download a copy of the file [exp_emodb.ini](demos/exp_emodb.ini)
+* Download a copy of the file [exp_emodb.ini](demos/exp_emodb.ini) to the current working directory (```nkulu_work```)
 * Run the demo
   * ```python -m nkululeko.nkululeko --config exp_emodb.ini```
 * Find the results in the newly created folder exp_emodb 
@@ -187,7 +188,7 @@ Here's [an overview on the ini-file options](./ini_file.md)
 
 ### Outlook
 * Classifiers: CNN
-* Feature extractors: mid level descriptors, Mel-spectra
+* Feature extractors: mid-level descriptors, Mel-spectra
 
-## Licence
+## License
 Nkululeko can be used under the [MIT license](https://choosealicense.com/licenses/mit/)
