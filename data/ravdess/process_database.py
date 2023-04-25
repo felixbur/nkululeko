@@ -48,3 +48,11 @@ result_df.gender = result_df.gender.map(lambda x: get_gender(x))
 result_df = result_df.set_index('file')
 print(result_df.head())
 result_df.to_csv(database_name+'.csv')
+
+"""
+Should result into something like
+file,emotion,speaker,gender
+./Actor_09/03-01-08-01-02-02-09.wav,surprise,ravdess_09,male
+./Actor_09/03-01-08-02-01-01-09.wav,surprise,ravdess_09,male
+...
+"""
