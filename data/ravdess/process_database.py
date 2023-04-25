@@ -7,7 +7,7 @@ import pandas as pd
 source_dir = './'
 database_name = 'ravdess'
 
-ravdess_directory_list = os.listdir(Ravdess)
+ravdess_directory_list = os.listdir(source_dir)
 
 file_emotion = []
 file_speaker = []
