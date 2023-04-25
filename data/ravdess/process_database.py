@@ -26,7 +26,7 @@ for dir in ravdess_directory_list:
         
 # dataframe for emotion of files
 #emotion_df = pd.DataFrame(file_emotion, columns=['emotion'])
-data_df = pd.DataFrame([file_emotion,file_speaker] columns=['emotion', 'speaker'])
+data_df = pd.DataFrame(list(zip(file_emotion,file_speaker)), columns=['emotion', 'speaker'])
 
 # dataframe for path of files.
 path_df = pd.DataFrame(file_path, columns=['file'])
