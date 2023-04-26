@@ -40,11 +40,8 @@ for dir in ravdess_directory_list:
         
 # dataframe for emotion of files
 #emotion_df = pd.DataFrame(file_emotion, columns=['emotion'])
-data_df = pd.DataFrame(list(zip(file_emotion,file_speaker,file_gender)), columns=['emotion', 'speaker', 'gender'])
+result_df = pd.DataFrame(list(zip(file_path, file_emotion,file_speaker,file_gender)), columns=['file','emotion', 'speaker', 'gender'])
 
-# dataframe for path of files.
-path_df = pd.DataFrame(file_path, columns=['file'])
-result_df = pd.concat([data_df, path_df], axis=1)
 
 # changing integers to actual emotions.
 result_df.emotion.replace({1:'neutral', 2:'calm', 3:'happy', 4:'sad', 5:'angry', 6:'fear', 7:'disgust', 8:'surprise'}, inplace=True)
