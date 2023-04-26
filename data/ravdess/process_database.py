@@ -35,7 +35,7 @@ for dir in ravdess_directory_list:
             # third part in each file represents the emotion associated to that file.
             file_emotion.append(int(part[2]))
             file_gender.append(int(part[6]))
-            file_speaker.append( f'{database_name}_{str(part[6])}')
+            file_speaker.append(str(part[6]))
             file_path.append(source_dir + dir + '/' + file)
         
 # dataframe for emotion of files
@@ -56,10 +56,26 @@ def get_gender(x):
         return 'male'
 result_df.gender = result_df.gender.map(lambda x: get_gender(x))
 
+# For a gender balanced split close to 60%-20%-20%: train - 16, dev - 4 , test - 4
+speaker_splits = {
+    'train': ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '18'],
+    'dev': ['16', '17', '19', '20'],
+    'test': ['21', '22', '23', '24']
+}
 
+# set the index to file paths
 result_df = result_df.set_index('file')
-print(result_df.head())
+
+# split the data
+for split in ['train','test','dev']:
+    split_df = result_df[result_df.speaker.isin(speaker_splits[split])]
+    split_df.to_csv(f'{database_name}_{split}.csv')
+    print(f'{split} split #samples: {split_df.shape[0]}')
+
+
+# make a convinience file with all data
 result_df.to_csv(database_name+'.csv')
+
 
 """
 Should result into something like
