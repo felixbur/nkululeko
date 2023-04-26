@@ -38,8 +38,7 @@ for dir in ravdess_directory_list:
             file_speaker.append(str(part[6]))
             file_path.append(source_dir + dir + '/' + file)
         
-# dataframe for emotion of files
-#emotion_df = pd.DataFrame(file_emotion, columns=['emotion'])
+# put all in one dataframe
 result_df = pd.DataFrame(list(zip(file_path, file_emotion,file_speaker,file_gender)), columns=['file','emotion', 'speaker', 'gender'])
 
 
