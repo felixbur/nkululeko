@@ -37,7 +37,7 @@ def main(src_dir):
     expr.fill_train_and_tests()
     util.debug(f'train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}')
 
-    plot_feats = util.config_val('EXPL', 'feature_distributions', 'False'))
+    plot_feats = eval(util.config_val('EXPL', 'feature_distributions', 'False'))
     tsne = eval(util.config_val('EXPL', 'tsne', 'False'))
     scatter = eval(util.config_val('EXPL', 'scatter', 'False'))
     model_type = util.config_val('EXPL', 'model', False)
