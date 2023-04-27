@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.44.1
+--------------
+* bugfixing: feature importance: https://github.com/felixbur/nkululeko/issues/23
+* bugfixing: loading csv database with filewise index https://github.com/felixbur/nkululeko/issues/24 
+
 Version 0.44.0
 --------------
 * added scatter functions: tsne, pca, umap

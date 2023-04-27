@@ -207,6 +207,8 @@
   * batch_size = 8
 * **num_workers**: Number of parallel processes for neural nets
   * num_workers = 5
+* **device**: For torch/huggingface models: select you gpu if you have one
+  * device = cpu
 
 
 ### EXPL

@@ -18,8 +18,10 @@ class Dataset_CSV(Dataset):
         df = audformat.utils.read_csv(root)       
         if not absolut_path:
             # add the root folder to the relative paths of the files 
-            #df = df.set_index(df.index.to_series().apply(lambda x: os.path.dirname(root)+'/'+x))
-            df = df.set_index(df.index.set_levels(df.index.levels[0].map(lambda x: os.path.dirname(root)+'/'+x), 0))
+            if audformat.index_type(df.index) == 'segmented':
+                df = df.set_index(df.index.set_levels(df.index.levels[0].map(lambda x: os.path.dirname(root)+'/'+x), 0))
+            else:
+                df = df.set_index(df.index.to_series().apply(lambda x: os.path.dirname(root)+'/'+x)) 
         self.df = df
         self.db = None
         self.got_target = True
