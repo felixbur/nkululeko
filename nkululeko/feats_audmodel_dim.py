@@ -1,4 +1,4 @@
-# feats_audmodel.py
+# feats_audmodel_dim.py
 from nkululeko.featureset import Featureset
 import os
 import pandas as pd
@@ -8,9 +8,9 @@ import audonnx
 import numpy as np
 import audinterface
 
-class AudModelSet(Featureset):
+class AudModelDimSet(Featureset):
     """
-        Embeddings from the wav2vec2. based model finetuned on MSPPodcast emotions, described in the paper
+        Emotional dimensions from the wav2vec2. based model finetuned on MSPPodcast emotions, described in the paper
         "Dawn of the transformer era in speech emotion recognition: closing the valence gap"
         https://arxiv.org/abs/2203.07378
     """
@@ -35,19 +35,19 @@ class AudModelSet(Featureset):
         extract = eval(self.util.config_val('FEATS', 'needs_feature_extraction', 'False'))
         no_reuse = eval(self.util.config_val('FEATS', 'no_reuse', 'False'))
         if no_reuse or extract or not os.path.isfile(storage):
-            self.util.debug('extracting audmodel features, this might take a while...')
-            hidden_states = audinterface.Feature(
-                self.model.labels('hidden_states'),
+            self.util.debug('extracting audmodel dimensions, this might take a while...')
+            logits = audinterface.Feature(
+                self.model.labels('logits'),
                 process_func=self.model,
                 process_func_args={
-                    'outputs': 'hidden_states',
+                    'outputs': 'logits',
                 },
                 sampling_rate=16000,    
                 resample=True,    
                 num_workers=5,
                 verbose=True,
             )
-            self.df = hidden_states.process_index(self.data_df.index)
+            self.df = logits.process_index(self.data_df.index)
             self.util.write_store(self.df, storage, store_format)
             try:
                 glob_conf.config['DATA']['needs_feature_extraction'] = 'False'

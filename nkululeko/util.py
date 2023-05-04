@@ -211,3 +211,19 @@ class Util:
         with open(file_name, "w") as text_file:
             text_file.write(all)
             text_file.write(f'\nmean: {vals.mean():.3f}, max: {vals.max():.3f}, max_index: {vals.argmax()}')
+
+    def write_store(self, df, storage, format):
+        if format == 'pkl':
+            df.to_pickle(storage)
+        elif format == 'csv':
+            df.to_csv(storage)
+        else:
+            self.error(f'unkown store format: {format}')
+            
+    def get_store(self, name, format):
+        if format == 'pkl':
+            return pd.read_pickle(name)
+        elif format == 'csv':
+            return audformat.utils.read_csv(name)
+        else:
+            self.error(f'unkown store format: {format}')

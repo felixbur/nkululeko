@@ -1,4 +1,9 @@
-# feature_extractor.py
+"""
+feature_extractor.py
+
+Helper class to encapsulate feature extraction methods
+
+"""
 import pandas as pd
 from nkululeko.util import Util 
 from nkululeko.feats_opensmile import Opensmileset
@@ -34,6 +39,9 @@ class FeatureExtractor:
             elif feats_type=='audmodel':
                 from nkululeko.feats_audmodel import AudModelSet
                 self.featExtractor = AudModelSet(f'{store_name}_{self.feats_designation}', self.data_df)
+            elif feats_type=='auddim':
+                from nkululeko.feats_audmodel_dim import AudModelDimSet
+                self.featExtractor = AudModelDimSet(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='clap':
                 from nkululeko.feats_clap import Clap
                 self.featExtractor = Clap(f'{store_name}_{self.feats_designation}', self.data_df)

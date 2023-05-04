@@ -31,7 +31,8 @@ class Clap(Featureset):
     def extract(self):
         """Extract the features or load them from disk if present."""
         store = self.util.get_path('store')
-        storage = f'{store}{self.name}.pkl'
+        store_format = self.util.config_val('FEATS', 'store_format', 'pkl')
+        storage = f'{store}{self.name}.{store_format}'
         extract = self.util.config_val('FEATS', 'needs_feature_extraction', False)
         no_reuse = eval(self.util.config_val('FEATS', 'no_reuse', 'False'))
         if extract or no_reuse or not os.path.isfile(storage):
@@ -47,14 +48,14 @@ class Clap(Featureset):
                 if idx%10==0:
                     self.util.debug(f'Clap: {idx} of {length} done')
             self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index) 
-            self.df.to_pickle(storage)
+            self.util.write_store(self.df, storage, store_format)
             try:
                 glob_conf.config['DATA']['needs_feature_extraction'] = 'false'
             except KeyError:
                 pass
         else:
             self.util.debug('reusing extracted wav2vec2 embeddings')
-            self.df = pd.read_pickle(storage)
+            self.df = self.util.get_store(storage, store_format)
             if self.df.isnull().values.any():
                 nanrows = self.df.columns[self.df.isna().any()].tolist()
                 print(nanrows)
