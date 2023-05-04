@@ -11,6 +11,7 @@ Version 0.45.0
 --------------
 * added auddim as features
 * added FEATS store_format
+* added device use to feat_audmodel
 
 Version 0.44.1
 --------------
