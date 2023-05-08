@@ -22,7 +22,18 @@ Combines
 steps:
 
 * create virtual python environment
+ 
+    ```
+    python -m venv venv
+    ```
+* activate it
+ 
+    ```
+    source venv/bin/activate # linux/mac
+    venv\Scripts\Activate.bat # windows
+    ```
 * install via pip 
+  
     ```
     pip install nkululeko
     ```
