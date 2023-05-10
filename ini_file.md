@@ -219,10 +219,10 @@
   * model = log_reg # can be log_reg, lin_reg or tree
 * **max_feats**: Maximal number of important features 
   * max_feats = 10
-* **sample_selection**: Which sample set to use for feature importance
-  * sample_selection = False # either all, train or test
-* **feature_distributions** plot distributions for all features per category for either *test*, *train*, or *all* samples
-  * feature_distributions = test
+* **sample_selection**: Which sample set to use for feature importance and feature distributions
+  * sample_selection = all # either all, train or test
+* **feature_distributions** plot distributions for all features per category 
+  * feature_distributions = True
 * **scatter**: make a scatter plot of combined train and test data, colored by label.
   * scatter = ['tsne', 'umap', 'pca']
 * **plot_tree**: Plot a decision tree for classification (Requires model = tree)
