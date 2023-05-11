@@ -42,12 +42,13 @@ def main(src_dir):
     scatter = eval(util.config_val('EXPL', 'scatter', 'False'))
     model_type = util.config_val('EXPL', 'model', False)
     plot_tree = eval(util.config_val('EXPL', 'plot_tree', 'False'))
+    needs_feats = False
     if plot_feats or tsne or scatter or model_type or plot_tree: 
         # these investigations need features to explore
         expr.extract_feats()
-
+        needs_feats = True
     # explore
-    expr.analyse_features()
+    expr.analyse_features(needs_feats)
 
     print('DONE')
 

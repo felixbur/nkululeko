@@ -219,7 +219,7 @@
   * model = log_reg # can be log_reg, lin_reg or tree
 * **max_feats**: Maximal number of important features 
   * max_feats = 10
-* **sample_selection**: Which sample set to use for feature importance and feature distributions
+* **sample_selection**: Which sample set to use for feature importance, sample distribution and feature distributions
   * sample_selection = all # either all, train or test
 * **feature_distributions** plot distributions for all features per category 
   * feature_distributions = True
@@ -227,7 +227,7 @@
   * scatter = ['tsne', 'umap', 'pca']
 * **plot_tree**: Plot a decision tree for classification (Requires model = tree)
   * plot_tree = False
-* **value_counts** plot statistics for each database and the train/dev splits (in the *image_dir*)
+* **value_counts** plot statistics for the samples (gender and speaker) (in the *image_dir*)
   * value_counts = False
 
 ### PLOT

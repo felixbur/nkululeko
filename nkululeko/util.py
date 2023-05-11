@@ -227,3 +227,8 @@ class Util:
             return audformat.utils.read_csv(name)
         else:
             self.error(f'unkown store format: {format}')
+
+    def copy_flags(self, df_source, df_target):
+        df_target.is_labeled = df_source.is_labeled
+        df_target.got_gender = df_source.got_gender
+        df_target.got_speaker = df_source.got_speaker

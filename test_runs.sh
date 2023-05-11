@@ -1,4 +1,6 @@
 python -m nkululeko.explore --config tests/exp_emodb_explore_data.ini
+python -m nkululeko.explore --config tests/exp_agedb_explore_data.ini
+python -m nkululeko.explore --config tests/exp_emodb_explore_featimport
 python -m nkululeko.explore --config tests/exp_emodb_explore_featimportance.ini
 python -m nkululeko.explore --config tests/exp_emodb_explore_scatter.ini
 python -m nkululeko.explore --config tests/exp_emodb_explore_features.ini

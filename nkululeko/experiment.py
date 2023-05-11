@@ -247,17 +247,20 @@ class Experiment:
     def plot_distribution(self):
         """Plot the distribution of samples and speaker per target class and biological sex"""
         plot = Plots()
-        if self.util.exp_is_classification():
-            # self.df_train['labels'] = self.label_encoder.inverse_transform(self.df_train[self.target])
-            # if self.df_test.is_labeled:
-            #     self.df_test['labels'] = self.label_encoder.inverse_transform(self.df_test[self.target])
-            if self.df_test.shape[0] > 0:
-                plot.describe_df('dev_set', self.df_test, self.target, f'test_distplot')
-            plot.describe_df('train_set', self.df_train, self.target, f'train_distplot')
+        sample_selection = self.util.config_val('EXPL', 'sample_selection', 'all')
+        if sample_selection=='all':
+            df_labels = pd.concat([self.df_train, self.df_test])
+            self.util.copy_flags(self.df_train, df_labels)
+        elif sample_selection=='train':
+            df_labels = self.df_train
+            self.util.copy_flags(self.df_train, df_labels)
+        elif sample_selection=='test':
+            df_labels = self.df_test
+            self.util.copy_flags(self.df_test, df_labels)
         else:
-            if self.df_test.shape[0] > 0:
-                plot.describe_df('dev_set', self.df_test, self.target, f'test_distplot')
-            plot.describe_df('train_set', self.df_train, self.target, f'train_distplot')
+            self.util.error(f'unkown sample selection specifier {sample_selection}, should be [all | train | test]')
+
+        plot.describe_df(f'{sample_selection}_set', df_labels, self.target, f'{sample_selection}_distplot')
 
     def extract_test_feats(self):
         self.feats_test = pd.DataFrame()
@@ -303,7 +306,7 @@ class Experiment:
     #     self.df_train = self.df_train.append(df_train_aug)
 
 
-    def analyse_features(self):
+    def analyse_features(self, needs_feats):
         """
         Do a feature exploration
         
@@ -311,7 +314,8 @@ class Experiment:
 
         if self.util.config_val('EXPL', 'value_counts', False):
             self.plot_distribution()
-
+        if not needs_feats:
+            return
         sample_selection = self.util.config_val('EXPL', 'sample_selection', 'False')
         if sample_selection=='all':
             df_feats = pd.concat([self.feats_train, self.feats_test])
@@ -325,7 +329,7 @@ class Experiment:
         elif sample_selection=='False':
             pass
         else:
-            self.util.error(f'unkown feature_distribution specifier {sample_selection}, should be [all | train | test]')
+            self.util.error(f'unkown sample selection specifier {sample_selection}, should be [all | train | test]')
         if sample_selection in ('all', 'train', 'test'):
             feat_analyser = FeatureAnalyser(sample_selection, df_labels, df_feats)        
             feat_analyser.analyse()
