@@ -29,7 +29,7 @@ def main(src_dir):
     # create a new experiment
     expr = exp.Experiment(config)
     util = Util()
-    util.debug(f'running {expr.name}, nkululeko version {VERSION}')
+    util.debug(f'running {expr.name} from config {config_file}, nkululeko version {VERSION}')
 
     # load the data
     expr.load_datasets()

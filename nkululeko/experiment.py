@@ -312,11 +312,13 @@ class Experiment:
         
         """
 
+        plot_feats = eval(self.util.config_val('EXPL', 'feature_distributions', 'False'))
+        sample_selection = self.util.config_val('EXPL', 'sample_selection', 'all')
+
         if self.util.config_val('EXPL', 'value_counts', False):
             self.plot_distribution()
         if not needs_feats:
             return
-        sample_selection = self.util.config_val('EXPL', 'sample_selection', 'False')
         if sample_selection=='all':
             df_feats = pd.concat([self.feats_train, self.feats_test])
             df_labels = pd.concat([self.df_train, self.df_test])
@@ -326,11 +328,10 @@ class Experiment:
         elif sample_selection=='test':
             df_feats = self.feats_test
             df_labels = self.df_test
-        elif sample_selection=='False':
-            pass
         else:
-            self.util.error(f'unkown sample selection specifier {sample_selection}, should be [all | train | test]')
-        if sample_selection in ('all', 'train', 'test'):
+            self.util.error(f'unknown sample selection specifier {sample_selection}, should be [all | train | test]')
+
+        if plot_feats:
             feat_analyser = FeatureAnalyser(sample_selection, df_labels, df_feats)        
             feat_analyser.analyse()
 

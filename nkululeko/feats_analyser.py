@@ -50,7 +50,7 @@ class FeatureAnalyser:
                 model.fit(self.X, self.y)
                 importance = model.feature_importances_
             else:
-                self.util.error(f'invalid analysis method: {model}')
+                self.util.error(f'invalid analysis method: {model_s}')
 
         df_imp = pd.DataFrame({'feats':self.X.columns, 'importance':importance})
         df_imp = df_imp.sort_values(by='importance', ascending=False).iloc[:max_feat_num]

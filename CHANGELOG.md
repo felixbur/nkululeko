@@ -8,6 +8,10 @@ Version 0.44.1
 
 Version 0.45.2
 --------------
+* bugfix: sample_selection in EXPL was required wrongly
+
+Version 0.45.2
+--------------
 * added sample_selection for sample distribution plots
 
 Version 0.45.1
