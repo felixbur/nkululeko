@@ -10,7 +10,7 @@ matplotlib
 numpy
 opensmile
 pandas
-parselmouth
+praat-parselmouth
 scikit_learn
 scipy
 seaborn
