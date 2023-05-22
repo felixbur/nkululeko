@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.45.4
+--------------
+* added __version__ attribute
+
+
 Version 0.44.1
 --------------
 * bugfixing: feature importance: https://github.com/felixbur/nkululeko/issues/23
