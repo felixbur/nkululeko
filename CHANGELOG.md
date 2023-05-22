@@ -3,6 +3,10 @@ Changelog
 
 Version 0.45.4
 --------------
+* added version attribute to setup.cfg
+
+Version 0.45.4
+--------------
 * added __version__ attribute
 
 
