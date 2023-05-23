@@ -415,7 +415,7 @@ class Dataset:
         return df
 
     def check_continuous_classification(self):
-        datatype = self.util.config_val('DATA', 'type', 'dummy')
+        datatype = self.util.config_val('DATA', 'type', 'False')
         if self.util.exp_is_classification() and datatype == 'continuous':
             return True
         return False

@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.46.0
+--------------
+* added warnings for non-existent parameters
+* added sample selection for scatter plotting
+
 Version 0.45.4
 --------------
 * added version attribute to setup.cfg

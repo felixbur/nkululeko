@@ -48,7 +48,8 @@ class Plots():
 
     def scatter_plot(self, feats, labels, dimred_type):
         fig_dir = self.util.get_path('fig_dir')+'../' # one up because of the runs 
-        filename = self.util.get_exp_name()+dimred_type
+        sample_selection = self.util.config_val('EXPL', 'sample_selection', 'all')
+        filename = self.util.get_exp_name()+sample_selection+'_'+dimred_type
         filename = f'{fig_dir}{filename}.{self.format}'
         self.util.debug(f'computing {dimred_type}, this might take a while...')
         data = None

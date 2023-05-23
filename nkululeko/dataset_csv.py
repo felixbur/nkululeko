@@ -15,6 +15,9 @@ class Dataset_CSV(Dataset):
         absolut_path = eval(self.util.config_val_data(self.name, 'absolute_path', True))
         self.util.debug(f'loading {self.name}')
 #        df = pd.read_csv(root, index_col='file')       
+        if not os.path.isabs(root):
+            exp_root = self.util.config_val('EXP', 'root', '')
+            root = exp_root + root
         df = audformat.utils.read_csv(root)       
         if not absolut_path:
             # add the root folder to the relative paths of the files 

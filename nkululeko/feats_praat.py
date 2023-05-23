@@ -26,6 +26,11 @@ class Praatset(Featureset):
             self.util.debug('extracting Praat features, this might take a while...')
             self.df = feinberg_praat.compute_features(self.data_df.index)
             self.df = self.df.set_index(self.data_df.index)
+            for i, col in enumerate(self.df.columns):
+                if self.df[col].isnull().values.any():
+                    self.util.debug(f'{col} includes {self.df[col].isnull().sum()} nan, inserting mean values')
+                    self.df[col] = self.df[col].fillna(self.df[col].mean())
+
             self.util.write_store(self.df, storage, store_format)
             try:
                 glob_conf.config['DATA']['needs_feature_extraction'] = 'false'

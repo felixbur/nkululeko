@@ -11,6 +11,8 @@ import pandas as pd
 
 class Util:
 
+    stopvals = [False, 'False', 'classification', 'png']
+
     def __init__(self):
         self.got_data_roots = self.config_val('DATA', 'root_folders', False)
         if self.got_data_roots:
@@ -69,7 +71,11 @@ class Util:
                     else:
                         return self.data_roots['DATA'][dataset]
                 except KeyError:
+                    if not default in self.stopvals:
+                        self.debug(f'value for {key} not found, using default: {default}')
                     return default
+            if not default in self.stopvals:
+                self.debug(f'value for {key} not found, using default: {default}')
             return default
 
 
@@ -178,6 +184,8 @@ class Util:
             # strategy is either traintest (default)  or cross_data
             return glob_conf.config[section][key]
         except KeyError:
+            if not default in self.stopvals:
+                self.debug(f'value for {key} not found, using default: {default}')
             return default
             
     def config_val_list(self, section, key, default):
@@ -185,6 +193,8 @@ class Util:
             # strategy is either traintest (default)  or cross_data
             return ast.literal_eval(glob_conf.config[section][key])
         except KeyError:
+            if not default in self.stopvals:
+                self.debug(f'value for {key} not found, using default: {default}')
             return default
             
     def get_labels(self):

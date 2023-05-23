@@ -150,7 +150,7 @@ class Reporter:
         res_dir = self.util.get_path('res_dir')
         file_name = f'{res_dir}{self.util.get_exp_name()}_{epoch}.txt'
         if self.util.exp_is_classification():
-            data_type = self.util.config_val('DATA', 'type', 'whatever')
+            data_type = self.util.config_val('DATA', 'type', 'False')
             if data_type == 'continuous' or data_type == 'continous':
                 labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
             else:

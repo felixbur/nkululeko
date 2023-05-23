@@ -341,10 +341,8 @@ class Experiment:
             scatters = ast.literal_eval(glob_conf.config['EXPL']['scatter'])
             if self.util.exp_is_classification():
                 plots = Plots()
-                all_feats = pd.concat([self.feats_train, self.feats_test])
-                all_labels = pd.concat([self.df_train['class_label'], self.df_test['class_label']])
                 for scatter in scatters:
-                    plots.scatter_plot(all_feats, all_labels, scatter)
+                    plots.scatter_plot(df_feats, df_labels['class_label'], scatter)
             else:
                  self.util.debug('can\'t do scatterplot if not classification')
 
