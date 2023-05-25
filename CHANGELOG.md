@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.47.0
+--------------
+* added praat speech rate features
+
 Version 0.46.0
 --------------
 * added warnings for non-existent parameters

@@ -7,6 +7,7 @@ taken June 23rd 2022
 #!/usr/bin/env python3
 import numpy as np
 import pandas as pd
+import math
 import parselmouth 
 import statistics
 from nkululeko.util import Util
@@ -15,9 +16,6 @@ from parselmouth.praat import call
 from scipy.stats.mstats import zscore
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-
-#input_wavs = '/home/audeering.local/fburkhardt/audb/emodb/1.1.1/135fc543/wav/'
-#input_wavs = './test_wavs/'
 
 
 # This is the function to measure source acoustics using default male parameters.
@@ -281,5 +279,153 @@ def compute_features(file_index):
 
 
     df['vtl_delta_f'] = 35000 / (2 * df['delta_f'])
+    
+    print('Now extracting speech rate parameters...')
 
-    return df
+    df_speechrate = get_speech_rate(file_index)
+    print('')
+    
+    return df.join(df_speechrate)
+
+
+
+
+"""
+Speech rate script taken from https://github.com/drfeinberg/PraatScripts
+on 25/05/23
+"""
+
+def get_speech_rate(file_index):
+    cols = ['nsyll', 'npause', 'dur(s)', 'phonationtime(s)', 'speechrate(nsyll / dur)', 'articulation '
+            'rate(nsyll / phonationtime)', 'ASD(speakingtime / nsyll)']
+    datalist = []
+    for idx, (wave_file, start, end) in enumerate(file_index.to_list()):
+        signal, sampling_rate = audiofile.read(wave_file, offset=start.total_seconds(), duration=(end-start).total_seconds(), always_2d=True)
+        sound = parselmouth.Sound(values=signal, sampling_frequency=sampling_rate)
+        # print(f'processing {file}')
+        speechrate_dictionary = speech_rate(sound)
+        datalist.append(speechrate_dictionary)
+        if idx%10==0:
+            print('.', end=' ')
+    df = pd.DataFrame(datalist)
+    return df 
+
+def speech_rate(sound):
+    silencedb = -25
+    mindip = 2
+    minpause = 0.3
+    originaldur = sound.get_total_duration()
+    intensity = sound.to_intensity(50)
+    start = call(intensity, "Get time from frame number", 1)
+    nframes = call(intensity, "Get number of frames")
+    end = call(intensity, "Get time from frame number", nframes)
+    min_intensity = call(intensity, "Get minimum", 0, 0, "Parabolic")
+    max_intensity = call(intensity, "Get maximum", 0, 0, "Parabolic")
+
+    # get .99 quantile to get maximum (without influence of non-speech sound bursts)
+    max_99_intensity = call(intensity, "Get quantile", 0, 0, 0.99)
+
+    # estimate Intensity threshold
+    threshold = max_99_intensity + silencedb
+    threshold2 = max_intensity - max_99_intensity
+    threshold3 = silencedb - threshold2
+    if threshold < min_intensity:
+        threshold = min_intensity
+
+    # get pauses (silences) and speakingtime
+    textgrid = call(intensity, "To TextGrid (silences)", threshold3, minpause, 0.1, "silent", "sounding")
+    silencetier = call(textgrid, "Extract tier", 1)
+    silencetable = call(silencetier, "Down to TableOfReal", "sounding")
+    npauses = call(silencetable, "Get number of rows")
+    speakingtot = 0
+    for ipause in range(npauses):
+        pause = ipause + 1
+        beginsound = call(silencetable, "Get value", pause, 1)
+        endsound = call(silencetable, "Get value", pause, 2)
+        speakingdur = endsound - beginsound
+        speakingtot += speakingdur
+
+    intensity_matrix = call(intensity, "Down to Matrix")
+    # sndintid = sound_from_intensity_matrix
+    sound_from_intensity_matrix = call(intensity_matrix, "To Sound (slice)", 1)
+    # use total duration, not end time, to find out duration of intdur (intensity_duration)
+    # in order to allow nonzero starting times.
+    intensity_duration = call(sound_from_intensity_matrix, "Get total duration")
+    intensity_max = call(sound_from_intensity_matrix, "Get maximum", 0, 0, "Parabolic")
+    point_process = call(sound_from_intensity_matrix, "To PointProcess (extrema)", "Left", "yes", "no", "Sinc70")
+    # estimate peak positions (all peaks)
+    numpeaks = call(point_process, "Get number of points")
+    t = [call(point_process, "Get time from index", i + 1) for i in range(numpeaks)]
+
+    # fill array with intensity values
+    timepeaks = []
+    peakcount = 0
+    intensities = []
+    for i in range(numpeaks):
+        value = call(sound_from_intensity_matrix, "Get value at time", t[i], "Cubic")
+        if value > threshold:
+            peakcount += 1
+            intensities.append(value)
+            timepeaks.append(t[i])
+
+    # fill array with valid peaks: only intensity values if preceding
+    # dip in intensity is greater than mindip
+    validpeakcount = 0
+    currenttime = timepeaks[0]
+    currentint = intensities[0]
+    validtime = []
+
+    for p in range(peakcount - 1):
+        following = p + 1
+        followingtime = timepeaks[p + 1]
+        dip = call(intensity, "Get minimum", currenttime, timepeaks[p + 1], "None")
+        diffint = abs(currentint - dip)
+        if diffint > mindip:
+            validpeakcount += 1
+            validtime.append(timepeaks[p])
+        currenttime = timepeaks[following]
+        currentint = call(intensity, "Get value at time", timepeaks[following], "Cubic")
+
+    # Look for only voiced parts
+    pitch = sound.to_pitch_ac(0.02, 30, 4, False, 0.03, 0.25, 0.01, 0.35, 0.25, 450)
+    voicedcount = 0
+    voicedpeak = []
+
+    for time in range(validpeakcount):
+        querytime = validtime[time]
+        whichinterval = call(textgrid, "Get interval at time", 1, querytime)
+        whichlabel = call(textgrid, "Get label of interval", 1, whichinterval)
+        value = pitch.get_value_at_time(querytime) 
+        if not math.isnan(value):
+            if whichlabel == "sounding":
+                voicedcount += 1
+                voicedpeak.append(validtime[time])
+
+    # calculate time correction due to shift in time for Sound object versus
+    # intensity object
+    timecorrection = originaldur / intensity_duration
+
+    # Insert voiced peaks in TextGrid
+    call(textgrid, "Insert point tier", 1, "syllables")
+    for i in range(len(voicedpeak)):
+        position = (voicedpeak[i] * timecorrection)
+        call(textgrid, "Insert point", 1, position, "")
+
+    # return results
+    speakingrate = voicedcount / originaldur
+    articulationrate = voicedcount / speakingtot
+    npause = npauses - 1
+    try:
+        asd = speakingtot / voicedcount
+    except ZeroDivisionError:
+        asd = 0
+        print('caught zero division')
+    speechrate_dictionary = {'nsyll':voicedcount,
+                             'npause': npause,
+                             'dur(s)':originaldur,
+                             'phonationtime(s)':intensity_duration,
+                             'speechrate(nsyll / dur)': speakingrate,
+                             "articulation rate(nsyll / phonationtime)":articulationrate,
+                             "ASD(speakingtime / nsyll)":asd}
+    return speechrate_dictionary
+
