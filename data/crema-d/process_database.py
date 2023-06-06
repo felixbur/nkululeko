@@ -13,12 +13,17 @@ I only used the AudioWAV subdirectory
 
 adapted from https://www.kaggle.com/code/shivamburnwal/speech-emotion-recognition
 
+Usage: `python3 process_database_split.py /data/Crema-D/AudioWAV`
+
 """
 
 import pandas as pd
 import os
+import sys
 
-Crema = './AudioWAV'
+# Crema-D source dir as argument
+# Crema = './AudioWAV'
+Crema = sys.argv[1]
 dataset_name = 'crema-d'
 
 
@@ -48,7 +53,7 @@ for file in crema_directory_list:
         file_emotion.append('Unknown')
         
 # dataframe for emotion of files
-emotion_df = pd.DataFrame(file_emotion, columns=['Emotions'])
+emotion_df = pd.DataFrame(file_emotion, columns=['emotion'])
 
 # dataframe for path of files.
 path_df = pd.DataFrame(file_path, columns=['file'])
