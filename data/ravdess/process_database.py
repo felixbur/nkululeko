@@ -5,18 +5,22 @@ database to nkululeko.
 
 I used the version downloadable from [Zenodo](https://zenodo.org/record/1188976)
 
-Download and unzip the file Audio_Speech_Actors_01-24.zip
+Download and unzip the file Audio_Speech_Actors_01-24.zip e.g., `ravdess_speech`
 
 adapted from https://www.kaggle.com/code/shivamburnwal/speech-emotion-recognition
+
+Usage: `python3 process_database.py /data/ravdess_speech
 
 """
 
  
 import os
 import pandas as pd
+import sys
 
-# ravdess source directory
-source_dir = './'
+# ravdess source directory as argument
+# source_dir = './'
+source_dir = sys.argv[1]
 database_name = 'ravdess'
 
 ravdess_directory_list = os.listdir(source_dir)

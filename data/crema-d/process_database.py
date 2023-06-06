@@ -13,6 +13,8 @@ I only used the AudioWAV subdirectory
 
 adapted from https://www.kaggle.com/code/shivamburnwal/speech-emotion-recognition
 
+Usage: `python3 process_database_split.py /data/Crema-D/AudioWAV`
+
 """
 
 import pandas as pd
