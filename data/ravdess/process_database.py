@@ -9,21 +9,33 @@ Download and unzip the file Audio_Speech_Actors_01-24.zip e.g., `ravdess_speech`
 
 adapted from https://www.kaggle.com/code/shivamburnwal/speech-emotion-recognition
 
-Usage: `python3 process_database.py /data/ravdess_speech
-
+Usage: `python3 process_database.py -d /data/ravdess_speech
+OR
+`python3 process_database.py /data/ravdess_speech`
 """
 
  
 import os
 import pandas as pd
 import sys
+import argparse
+from pathlib import Path, PurePath
 
 # ravdess source directory as argument
 # source_dir = './'
-source_dir = sys.argv[1]
+parser = argparse.ArgumentParser()
+parser.add_argument('-d', '--dir', type=str, default='./', help='path to RAVDESS speech directory')
+args = parser.parse_args()
+source_dir = str(Path(args.dir))
 database_name = 'ravdess'
 
+# check if directory (e.g., Actor_01) exists
+if not os.path.exists(os.path.join(source_dir, "Actor_01")):
+    print(f'Error: {source_dir}/Actor_01 does not exist')
+    raise FileNotFoundError
+
 ravdess_directory_list = os.listdir(source_dir)
+print(ravdess_directory_list)
 
 file_emotion = []
 file_speaker = []
@@ -31,8 +43,8 @@ file_gender = []
 file_path = []
 for dir in ravdess_directory_list:
     # as their are 20 different actors in our previous directory we need to extract files for each actor.
-    if os.path.isdir(source_dir + dir):
-        actor = os.listdir(source_dir + dir)
+    if os.path.isdir(os.path.join(source_dir, dir)):
+        actor = os.listdir(os.path.join(source_dir, dir))
         for file in actor:
             part = file.split('.')[0]
             part = part.split('-')
@@ -40,7 +52,7 @@ for dir in ravdess_directory_list:
             file_emotion.append(int(part[2]))
             file_gender.append(int(part[6]))
             file_speaker.append(str(part[6]))
-            file_path.append(source_dir + dir + '/' + file)
+            file_path.append(source_dir + '/' + dir + '/' + file)
         
 # put all in one dataframe
 result_df = pd.DataFrame(list(zip(file_path, file_emotion,file_speaker,file_gender)), columns=['file','emotion', 'speaker', 'gender'])
