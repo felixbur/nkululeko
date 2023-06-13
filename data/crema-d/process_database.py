@@ -92,5 +92,10 @@ Crema_df['split'] = 0 # Initialize split column with 'train' for all rows
 Crema_df.loc[Crema_df['speaker_id'].isin(dev_speakers), 'split'] = 1 #'validation'
 Crema_df.loc[Crema_df['speaker_id'].isin(test_speakers), 'split'] =2 #'test'
 
-Crema_df.to_csv(f'{dataset_name}.csv')
+# save csv for each partition
+if Crema_df['split'].unique().size == 3:
+    Crema_df.loc[Crema_df['split'] == 0].to_csv(f'{dataset_name}_train.csv')
+    Crema_df.loc[Crema_df['split'] == 1].to_csv(f'{dataset_name}_dev.csv')
+    Crema_df.loc[Crema_df['split'] == 2].to_csv(f'{dataset_name}_test.csv')
+# Crema_df.to_csv(f'{dataset_name}.csv')
 
