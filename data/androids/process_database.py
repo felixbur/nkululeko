@@ -29,7 +29,7 @@ depressions, speakers, educations, genders, ages, tasks = [], [], [], [], [], []
 file_paths = []
 print(len(directory_list))
 gender_map = {'F':'female', 'M':'male'}
-depression_map = {'P':1, 'C':0}
+depression_map = {'P':'depressed', 'C':'control'}
 
 for file in directory_list:
     # storing file paths
