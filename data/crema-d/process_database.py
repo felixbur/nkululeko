@@ -83,8 +83,8 @@ Crema_df = pd.concat([emotion_df, path_df, speaker_df], axis=1)
 Crema_df = Crema_df.set_index('file')
 
 # Splitting data based on speaker ID
-train_speakers, remaining_speakers = train_test_split(Crema_df['speaker_id'].unique(), test_size=0.3, random_state=42)
-dev_speakers, test_speakers = train_test_split(remaining_speakers, test_size=0.2, random_state=42)
+remaining_speakers, test_speakers = train_test_split(Crema_df['speaker_id'].unique(), test_size=0.2, random_state=42)
+train_speakers, dev_speakers, = train_test_split(remaining_speakers, test_size=0.2, random_state=42)
 
 Crema_df['split'] = 0 # Initialize split column with 'train' for all rows
 
