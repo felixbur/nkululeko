@@ -23,32 +23,32 @@ Here are some examples of typical output:
 ### Confusion matrix
 Per default, Nkululeko displays results as a confusion matrix using binning with regression.
 
-<img src="images/conf_mat.png" width="500px"/>
+<img src="meta/images/conf_mat.png" width="500px"/>
 
 ### Epoch progression
 The point when overfitting starts can sometimes be seen by looking at the results per epoch:
 
-<img src="images/epoch_progression.png" width="500px"/>
+<img src="meta/images/epoch_progression.png" width="500px"/>
 
 ### Feature importance
 Using the *explore* interface, Nkululeko analyses the importance of acoustic features:
  
-<img src="images/feat_importance.png" width="500px"/>
+<img src="meta/images/feat_importance.png" width="500px"/>
 
 ### Feature distribution
 And can show the distribution of specific features per category:
 
-<img src="images/feat_dist.png" width="500px"/>
+<img src="meta/images/feat_dist.png" width="500px"/>
 
 ### t-SNE plots
 A t-SNE plot can give you an estimate wether your acoustic features are useful at all:
 
-<img src="images/tsne.png" width="500px"/>
+<img src="meta/images/tsne.png" width="500px"/>
 
 ### Data distribution
 Sometimes you only want to take a look at your data:
 
-<img src="images/data_plot.png" width="500px"/>
+<img src="meta/images/data_plot.png" width="500px"/>
 
 ## Installation
 
@@ -131,7 +131,7 @@ There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
 The framework is targeted at the speech domain and supports experiments where different classifiers are combined with different feature extractors.
 
 Here's a rough UML-like sketch of the framework.
-![sketch](images/class_diagram.png)
+![sketch](meta/images/class_diagram.png)
 
 Currently, the following linear classifiers are implemented (integrated from sklearn):
 * SVM, SVR, XGB, XGR, Tree, Tree_regressor, KNN, KNN_regressor, NaiveBayes, GMM

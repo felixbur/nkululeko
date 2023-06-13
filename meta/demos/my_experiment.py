@@ -43,5 +43,6 @@ def main(config_file):
     print('DONE')
 
 if __name__ == "__main__":
+    cwd = os.path.dirname(os.path.abspath(__file__))
     main('./nkululeko/demos/exp_emodb.ini')
 #    main(sys.argv[1]) # use this if you want to state the config file path on command line
