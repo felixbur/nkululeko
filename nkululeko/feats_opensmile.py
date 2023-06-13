@@ -28,7 +28,8 @@ class Opensmileset(Featureset):
     def extract(self):
         """Extract the features based on the initialized dataset or re-open them when found on disk."""
         store = self.util.get_path('store')
-        storage = f'{store}{self.name}_{self.featset}.pkl'
+        store_format = self.util.config_val('FEATS', 'store_format', 'pkl')
+        storage = f'{store}{self.name}.{store_format}'
         extract = eval(self.util.config_val('FEATS', 'needs_feature_extraction', 'False'))
         no_reuse = eval(self.util.config_val('FEATS', 'no_reuse', 'False'))
         if extract or not os.path.isfile(storage) or no_reuse:
@@ -44,7 +45,7 @@ class Opensmileset(Featureset):
                 self.df = smile.process_files(self.data_df.index)
                 self.df.index = self.df.index.droplevel(1)
                 self.df.index = self.df.index.droplevel(1)
-            self.df.to_pickle(storage)
+            self.util.write_store(self.df, storage, store_format)
             try:
                 glob_conf.config['DATA']['needs_feature_extraction'] = 'False'
             except KeyError:

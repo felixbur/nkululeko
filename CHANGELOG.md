@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.47.1
+--------------
+* enabled feature storage format csv for opensmile features
+
 Version 0.47.0
 --------------
 * added praat speech rate features
