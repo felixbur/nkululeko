@@ -25,7 +25,7 @@ data_root = './Androids-Corpus/'
 
 directory_list = audeer.list_file_names(data_root, filetype='wav', recursive=True, basenames=True)
 
-depressions, speakers, educations, genders, ages = [], [], [], [], []
+depressions, speakers, educations, genders, ages, tasks = [], [], [], [], [], []
 file_paths = []
 print(len(directory_list))
 gender_map = {'F':'female', 'M':'male'}
@@ -41,6 +41,13 @@ for file in directory_list:
     # The naming convention of the audio files is as follows:
     # nn_XGmm_t.wav
     # where nn is a unique integer identifier such that, in a given group, files with the same nn contain the voice of the same speaker (there is a trailing 0 for numbers lower than 10), X is an alphabetic character corresponding to the speaker’s condition (P for depression patient and C for control), G is an alphabetic character that stands for the speaker’s gender (M for male and F for female), mm is a two-digits integer number corresponding to the speaker’s age, and t is an integer number between 1 and 4 accounting for the education level (1 corresponds to primary school and 4 corresponds to university). The letter X was used for the 2 participants who did not provide information about this aspect. There is no indication of the task because recordings corresponding to RT and IT are stored in different directories.
+    if 'Reading-Task'in file:
+        task = 'reading'
+    elif 'Interview-Task' in file:
+        task = 'interview'
+    else:
+        print('ERROR: task undefined')
+        exit(-1)
  
     part = fn.split('_')
     depression = part[1][0]
@@ -52,12 +59,13 @@ for file in directory_list:
     speakers.append(speaker)
     genders.append(gender_map[gender])
     ages.append(age)
+    tasks.append(task)
     educations.append(education)
 #    print(f'{file} {speaker}')
 
 
 # dataframe for emotion of files
-df = pd.DataFrame({'file':file_paths, 'speaker':speaker, 'gender':genders, 'age':ages, 'depression':depressions})
+df = pd.DataFrame({'file':file_paths, 'speaker':speakers, 'gender':genders, 'age':ages, 'task':tasks, 'depression':depressions})
 
 df = df.set_index('file')
 df.head()
