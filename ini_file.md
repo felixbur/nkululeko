@@ -115,7 +115,9 @@
     * **os**: [open smile features](https://audeering.github.io/opensmile-python/)
       * **set** = eGeMAPSv02 *(features set)*
       * **level** = functionals *(or lld: feature level)*
+      * **os.features**: list of selected features (disregard others)
     * **praat**: Praat selected features thanks to [David R. Feinberg scripts](https://github.com/drfeinberg/PraatScripts)
+      * **praat.features**: list of selected features (disregard others)
     * **spectra**: Melspecs for convolutional networks
     * **trill**: [TRILL embeddings](https://ai.googleblog.com/2020/06/improving-speech-representations-and.html) from Google
       * **trill.model** = *path to the TRILL model folder, optional*
@@ -235,10 +237,10 @@
   * name = my_special_config_within_the_experiment
 * **epochs**: whether to make a plot each for every epoch result.
   * epochs = False
-* **anim_progression**: generate an animated gif from the epoch plots
+* **anim_progression**: generate an **animated** gif from the epoch plots
   * anim_progression = False
 * **fps**: frames per second for the animated gif
-  * fps = 1
+  * fps = **1**
 * **epoch_progression**: plot the progression of test, train and loss results over epochs
   * epoch_progression = False
 * **best_model**: search for the best performing model and plot conf matrix (needs *MODEL.store* to be turned on)

@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.48.0
+--------------
+* enabled specific feature selection for praat and opensmile features
+
 Version 0.47.1
 --------------
 * enabled feature storage format csv for opensmile features
