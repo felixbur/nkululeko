@@ -51,7 +51,15 @@ class Dataset:
             train_tables = ast.literal_eval(trains)
             tables += train_tables
         return tables
-
+    
+    def _load_db(self):
+        root = self.util.config_val_data(self.name, '', '')
+        self.util.debug(f'{self.name}: loading from {root}')
+        try:
+            self.db = audformat.Database.load(root)
+        except FileNotFoundError:
+            self.util.error( f'{self.name}: no database found at {root}')
+        return root
 
     def load(self):
         """Load the dataframe with files, speakers and task labels"""
@@ -59,6 +67,7 @@ class Dataset:
         store = self.util.get_path('store')
         store_file = f'{store}{self.name}.pkl'
         self.util.debug(f'{self.name}: loading ...')
+        root = self._load_db()
 #        self.got_speaker, self.got_gender = False, False 
         if not self.start_fresh and os.path.isfile(store_file):
             self.util.debug(f'{self.name}: reusing previously stored file {store_file}')
@@ -71,29 +80,23 @@ class Dataset:
                 f'samples: got targets: {self.is_labeled}, got speakers: {self.got_speaker}, '\
                 f'got sexes: {self.got_gender}')        
             return
-        root = self.util.config_val_data(self.name, '', '')
-        self.util.debug(f'{self.name}: loading from {root}')
-        try:
-            db = audformat.Database.load(root)
-        except FileNotFoundError:
-            self.util.error( f'{self.name}: no database found at {root}')
         tables = self._get_tables()
         self.util.debug(f'{self.name}: loading tables: {tables}')
         #db = audb.load(root, )
         # map the audio file paths 
-        db.map_files(lambda x: os.path.join(root, x))
+        self.db.map_files(lambda x: os.path.join(root, x))
         # the dataframes (potentially more than one) with at least the file names
         df_files = self.util.config_val_data(self.name, 'files_tables', '[\'files\']')
         df_files_tables =  ast.literal_eval(df_files)
         # The label for the target column 
         self.col_label = self.util.config_val_data(self.name, 'label', self.target)
-        df, self.is_labeled, self.got_speaker, self.got_gender, self.got_age = self._get_df_for_lists(db, df_files_tables)
+        df, self.is_labeled, self.got_speaker, self.got_gender, self.got_age = self._get_df_for_lists(self.db, df_files_tables)
         if False in {self.is_labeled, self.got_speaker, self.got_gender, self.got_age}:
             try :
             # There might be a separate table with the targets, e.g. emotion or age    
                 df_targets = self.util.config_val_data(self.name, 'target_tables', f'[\'{self.target}\']')
                 df_target_tables =  ast.literal_eval(df_targets)
-                df_target, got_target2, got_speaker2, got_gender2, got_age2 = self._get_df_for_lists(db, df_target_tables)
+                df_target, got_target2, got_speaker2, got_gender2, got_age2 = self._get_df_for_lists(self.db, df_target_tables)
                 self.is_labeled = got_target2 or self.is_labeled
                 self.got_speaker = got_speaker2 or self.got_speaker
                 self.got_gender = got_gender2 or self.got_gender
@@ -117,7 +120,6 @@ class Dataset:
         df.got_age = self.got_age
         df.got_speaker = self.got_speaker
         self.df = df
-        self.db = db
         self.df.is_labeled = self.is_labeled
         self.util.debug(f'Loaded database {self.name} with {df.shape[0]} '\
             f'samples: got targets: {self.is_labeled}, got speakers: {self.got_speaker}, '\

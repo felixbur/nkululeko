@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.48.1
+--------------
+* bugfix: database object was not loaded when dataframe was reused
+
 Version 0.48.0
 --------------
 * enabled specific feature selection for praat and opensmile features
