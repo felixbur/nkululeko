@@ -12,3 +12,13 @@ run
 ```
 python create.py
 ```
+
+then, you could run
+```
+python -m nkululeko.nkululeko --config nkulu_os_xgb.ini
+```
+to test the database and
+```
+python -m nkululeko.explore --config nkulu_os_xgb.ini
+```
+to see the data distribution
