@@ -292,18 +292,38 @@ class Experiment:
 
     def augment(self):
         """
-        Augment the training set
+        Augment the selected samples
         """
         from nkululeko.augmenter import Augmenter
-        augmenter = Augmenter(self.df_train)
-        augmenter.augment()
+        sample_selection = self.util.config_val(' DATA', 'augment', 'train')
+        if sample_selection=='all':
+            df = pd.concat([self.df_train, self.df_test])
+        elif sample_selection=='train':
+            df = self.df_train
+        elif sample_selection=='test':
+            df = self.df_test
+        else:
+            self.util.error(f'unknown augmentation selection specifier {sample_selection}, should be [all | train | test]')
 
-    # def augment_train(self):
-    #     """Augment the train dataframe"""
-    #     from nkululeko.augmenter import Augmenter
-    #     augment_train = Augmenter(self.df_train)
-    #     df_train_aug = augment_train.augment()
-    #     self.df_train = self.df_train.append(df_train_aug)
+        augmenter = Augmenter(df)
+        augmenter.augment(sample_selection)
+
+    def random_splice(self):
+        """
+        Random-splice the selected samples
+        """
+        from nkululeko.randomsplicer import Randomsplicer
+        sample_selection = self.util.config_val(' DATA', 'random_splice', 'train')
+        if sample_selection=='all':
+            df = pd.concat([self.df_train, self.df_test])
+        elif sample_selection=='train':
+            df = self.df_train
+        elif sample_selection=='test':
+            df = self.df_test
+        else:
+            self.util.error(f'unknown augmentation selection specifier {sample_selection}, should be [all | train | test]')
+        randomsplicer = Randomsplicer(df)
+        randomsplicer.run(sample_selection)
 
 
     def analyse_features(self, needs_feats):

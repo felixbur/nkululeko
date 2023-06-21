@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.49.0
+--------------
+* added random-splicing
+
 Version 0.48.1
 --------------
 * bugfix: database object was not loaded when dataframe was reused

@@ -101,8 +101,15 @@
   * sex = male
 * **target_divide_by**: divide the target values by some factor, e.g. to make age smaller and encode years from .0 to 1
   * target_divide_by = 100
-* **augment**: filename to write the augmented filepathes to
-  * augment = augment.csv 
+* **augment**: select the samples to augment: either *train*, *test*, or *all*
+  * augment = train
+* ** augment_result**: file name to store the augmented data (can then be added to training)
+  * augment_result = augment.csv
+* **random_splice**: select the samples to be random spliced: either *train*, *test*, or *all*
+  * random_splice = train
+* **random_splice_result**: file name to store the random spliced data (can then be added to training)
+  * random_splice_result = random_spliced.csv
+
 ### FEATS
 * **type**: a comma separated list of types of features, they will be columnwise concatenated
   * type = ['os']

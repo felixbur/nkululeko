@@ -38,7 +38,13 @@ def main(src_dir):
     util.debug(f'train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}')
 
     # augment
-    expr.augment()
+    augmenting = util.config_val('DATA', 'augment', False)
+    if augmenting:
+        expr.augment()
+    
+    random_splicing = util.config_val('DATA', 'random_splice', False)
+    if random_splicing:
+        expr.random_splice()
 
     print('DONE')
 
