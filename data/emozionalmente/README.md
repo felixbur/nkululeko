@@ -22,3 +22,7 @@ to test the database and
 python -m nkululeko.explore --config nkulu_os_xgb.ini
 ```
 to see the data distribution
+
+Should result into a confusion matrix like this
+
+![alt text](results/images/run_0/data_xgb_os__0_000_cnf.png "Confusion matrix")
