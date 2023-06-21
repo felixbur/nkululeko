@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.49.1
+--------------
+* bugfix: samples selection for augmentation didn't work
+
 Version 0.49.0
 --------------
 * added random-splicing

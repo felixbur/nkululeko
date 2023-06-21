@@ -295,7 +295,7 @@ class Experiment:
         Augment the selected samples
         """
         from nkululeko.augmenter import Augmenter
-        sample_selection = self.util.config_val(' DATA', 'augment', 'train')
+        sample_selection = self.util.config_val('DATA', 'augment', 'train')
         if sample_selection=='all':
             df = pd.concat([self.df_train, self.df_test])
         elif sample_selection=='train':
@@ -313,7 +313,7 @@ class Experiment:
         Random-splice the selected samples
         """
         from nkululeko.randomsplicer import Randomsplicer
-        sample_selection = self.util.config_val(' DATA', 'random_splice', 'train')
+        sample_selection = self.util.config_val('DATA', 'random_splice', 'train')
         if sample_selection=='all':
             df = pd.concat([self.df_train, self.df_test])
         elif sample_selection=='train':

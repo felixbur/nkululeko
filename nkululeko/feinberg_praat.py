@@ -119,7 +119,6 @@ def runPCA(df):
     # PCA
     pca = PCA(n_components=2)
     principalComponents = pca.fit_transform(x)
-    print(type(principalComponents))
     if np.any(np.isnan(principalComponents)):
         print ('pc is nan')
         print(f'count: {np.count_nonzero(np.isnan(principalComponents))}')
