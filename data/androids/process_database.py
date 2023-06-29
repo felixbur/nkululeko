@@ -85,6 +85,7 @@ df = pd.DataFrame({'file':file_paths,
                    'age':ages, 
                    'task':tasks, 
                    'depression':depressions, 
+                   'education':educations, 
                    'fold':folds})
 
 df = df.set_index('file')
