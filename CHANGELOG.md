@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.50.0
+--------------
+* removed loso and added pre-selected logo (leave-one-group-out), aka folds
+
 Version 0.49.1
 --------------
 * bugfix: samples selection for augmentation didn't work

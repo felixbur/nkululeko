@@ -191,11 +191,9 @@
   * layers = {'l1':8, 'l2':4}
 * **class_weight**: add class_weight to linear classifier (XGB, SVM) fit methods for imbalanced data (True or False)
   * class_weight = False
-* **loso**: leave-one-speaker-out. Will disregard train/dev splits and do a LOSO evaluation
-  * loso = False
-* **logo**: leave-one-speaker group out. Will disregard train/dev splits and split the speakers in *logo* groups and then do a LOGO evaluation
+* **logo**: leave-one-speaker group out. Will disregard train/dev splits and split the speakers in *logo* groups and then do a LOGO evaluation. If you want LOSO (leave one speaker out), simply set the number to the number of speakers.
   * logo = 10
-* **k_fold_cross**: k-fold-cross validation. Will disregard train/dev splits and do a stratified cross validation (meaning that classes are balanced across folds)
+* **k_fold_cross**: k-fold-cross validation. Will disregard train/dev splits and do a stratified cross validation (meaning that classes are balanced across folds). speaker id is ignored.
   * k_fold_cross = 10
 * **save**: whether to save all model states (per epoch) to disk (True or False)
   * save = False

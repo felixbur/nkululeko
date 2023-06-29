@@ -51,9 +51,8 @@ class Opensmileset(Featureset):
             except KeyError:
                 pass
         else:
-            self.util.debug('reusing extracted OS features.')
-            self.df = pd.read_pickle(storage)
-
+            self.util.debug(f'reusing extracted OS features: {storage}.')
+            self.df = self.util.get_store(storage, store_format)
 
     def extract_sample(self, signal, sr):
         smile = opensmile.Smile(

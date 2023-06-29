@@ -100,6 +100,12 @@ class Util:
             df.index = audformat.utils.to_segmented_index(df.index, allow_nat=False)
         return df
 
+    def _get_value_descript(self, section, name):
+        if self.config_val(section, name, False):
+            val = self.config_val(section, name, False)
+            return f'_{name}-{str(val)}'
+        return ''
+
     def get_exp_name(self, only_train = False, only_data = False):
         if only_train:
             # try to get only the train tables
@@ -120,18 +126,22 @@ class Util:
         set_string = ''
         if set:
             set_string += set
-        lr_string = ''
-        if self.config_val('MODEL', 'learning_rate', False) and not only_data:
-            lr = self.config_val('MODEL', 'learning_rate', False)
-            lr_string = f'_lr-{str(lr)}'
-        loss_string = ''
-        if self.config_val('MODEL', 'loss', False) and not only_data:
-            loss = self.config_val('MODEL', 'loss', False)
-            loss_string = f'_loss-{loss}'
-        drop_string = ''
-        if self.config_val('MODEL', 'drop', False) and not only_data:
-            drop = self.config_val('MODEL', 'drop', False)
-            drop_string = f'_drop-{str(drop)}'
+        # lr_string = ''
+        # if self.config_val('MODEL', 'learning_rate', False) and not only_data:
+        #     lr = self.config_val('MODEL', 'learning_rate', False)
+        #     lr_string = f'_lr-{str(lr)}'
+        # logo_string = ''
+        # if self.config_val('MODEL', 'logo', False):
+        #     logo = self.config_val('MODEL', 'logo', False)
+        #     logo_string = f'_logo-{str(logo)}'
+        # loss_string = ''
+        # if self.config_val('MODEL', 'loss', False) and not only_data:
+        #     loss = self.config_val('MODEL', 'loss', False)
+        #     loss_string = f'_loss-{loss}'
+        # drop_string = ''
+        # if self.config_val('MODEL', 'drop', False) and not only_data:
+        #     drop = self.config_val('MODEL', 'drop', False)
+        #     drop_string = f'_drop-{str(drop)}'
         layer_string = ''
         layer_s = self.config_val('MODEL', 'layers', False)
         if layer_s and not only_data:
@@ -140,8 +150,14 @@ class Util:
             for l in sorted_layers:
                 layer_string += f'{str(l[1])}-'
         return_string = f'{ds}{mt}_{ft}{set_string}'\
-            f'{layer_string[:-1]}{lr_string}{drop_string}{loss_string}'.replace('__','')
-        return return_string
+            f'{layer_string[:-1]}'
+        options = [['MODEL', 'drop'], ['MODEL', 'loss'], ['MODEL', 'logo'], 
+                   ['MODEL', 'learning_rate'],  ['MODEL', 'k_fold_cross']]
+        for option in options:
+            return_string += self._get_value_descript(option[0], option[1])
+        # return_string = f'{ds}{mt}_{ft}{set_string}'\
+        #     f'{layer_string[:-1]}{lr_string}{drop_string}{loss_string}{logo_string}'.replace('__','')
+        return return_string.replace('__','')
 
     def get_plot_name(self):
         try:

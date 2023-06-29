@@ -23,7 +23,6 @@ class Model:
         self.target = self.util.config_val('DATA', 'target', 'emotion')
         self.run = 0
         self.epoch = 0
-        self.loso = self.util.config_val('MODEL', 'loso', False)
         self.logo = self.util.config_val('MODEL', 'logo', False)
         self.xfoldx = self.util.config_val('MODEL', 'k_fold_cross', False)
                 
@@ -43,10 +42,10 @@ class Model:
 
 
     def _x_fold_cross(self):
-        # ignore train and test sets and do a "leave one speaker out"  evaluation
+        # ignore train and test sets and do a x-fold-cross  evaluation
         self.util.debug(f'ignoring splits and doing {self.xfoldx} fold cross validation')
-        feats = self.feats_train.append(self.feats_test)
-        annos = self.df_train.append(self.df_test)
+        feats = pd.concat([self.feats_train, self.feats_test])
+        annos = pd.concat([self.df_train, self.df_test])
         targets = annos[self.target]
         _skf = StratifiedKFold(n_splits=int(self.xfoldx))
         truths, preds, results = [], [], []
@@ -81,72 +80,38 @@ class Model:
         self.preds = pred        
         results = np.asarray(results)
         self.util.debug(f'KFOLD: {self.xfoldx} folds: mean {results.mean():.3f}, std: {results.std():.3f}')
-
-    def _loso(self):
-        # ignore train and test sets and do a "leave one speaker out"  evaluation
-        self.util.debug('ignoring splits and doing LOSO')
-        feats = self.feats_train.append(self.feats_test)
-        annos = self.df_train.append(self.df_test)
-        targets = annos[self.target]
-        _logo = LeaveOneGroupOut()
-        truths, preds, results = [], [], []
-        speakers = annos['speaker']
-        g_index = 0
-        # leave-one-speaker loop    
-        for train_index, test_index in _logo.split(
-            feats, 
-            targets, 
-            groups=speakers,
-        ):
-            train_x = feats.iloc[train_index].to_numpy()
-            train_y = targets[train_index]
-            self.clf.fit(train_x, train_y)
-            
-            truth_x = feats.iloc[test_index].to_numpy()
-            truth_y = targets[test_index]
-            predict_y = self.clf.predict(truth_x)
-            report = Reporter(truth_y.astype(float), predict_y, self.run, self.epoch)
-            self.util.debug(f'result for speaker {g_index}: {report.get_result().get_test_result()} ')
-            truths.append(truth_y)
-            preds.append(predict_y)
-            g_index += 1
-            results.append(float(report.get_result().test))            
-        # combine speaker folds
-        truth = pd.concat(truths)
-        truth.name = 'truth'
-        pred = pd.Series(
-            np.concatenate(preds),
-            index=truth.index,
-            name='prediction',
-        )
-        self.truths = truth
-        self.preds = pred        
-        results = np.asarray(results)
-        self.util.debug(f'LOSO: {self.loso} folds: mean {results.mean():.3f}, std: {results.std():.3f}')
-
     def _do_logo(self):
         # ignore train and test sets and do a "leave one speaker group out"  evaluation
-        self.util.debug('ignoring splits and doing LOSGO')
-        feats = self.feats_train.append(self.feats_test)
-        annos = self.df_train.append(self.df_test)
+        self.util.debug(f'ignoring splits and doing LOGO with {self.logo} groups')
+        logo = int(self.logo)
+        feats = pd.concat([self.feats_train, self.feats_test])
+        annos = pd.concat([self.df_train, self.df_test])
         targets = annos[self.target]
-        _logo = LeaveOneGroupOut()
+        _logo = LeaveOneGroupOut()        
         truths, preds, results = [], [], []
         # get unique list of speakers
         speakers = annos['speaker'].unique()
-        # create a random dictionary of groups
-        sdict = {}
-        for i, s in enumerate(speakers):
-            sdict[s] = random.sample(range(int(self.logo)), 1)[0]    
-        # add this to the annotations  
-        annos['speaker_groups'] = annos['speaker'].apply(lambda x: str(sdict[x]))
-        speaker_groups = annos['speaker_groups']
+        # check for folds columns
+        if not 'fold' in annos.columns:
+            self.util.debug(f'creating random folds for {logo} groups') 
+            # create a random dictionary of groups
+            sdict = {}
+            # randomize the speaker order
+            random.shuffle(speakers)
+            folds = list(range(logo))
+            for i, s in enumerate(speakers):
+                sdict[s] = folds[i % len(folds)]    
+            # add this to the annotations  
+            annos['fold'] = annos['speaker'].apply(lambda x: str(sdict[x]))
+        else:
+            fold_count = annos['fold'].nunique()
+            self.util.debug(f'using existing folds for {fold_count} groups')  
         g_index = 0
-        # leave-one-speaker loop    
+        # leave-one-group loop    
         for train_index, test_index in _logo.split(
             feats, 
             targets, 
-            groups=speaker_groups,
+            groups=annos['fold'],
         ):
             train_x = feats.iloc[train_index].to_numpy()
             train_y = targets[train_index]
@@ -184,10 +149,6 @@ class Model:
         #     self.util.debug(f'reusing model: {self.store_path}')
         #     return
 
-        # first check if leave on  speaker out is wanted
-        if self.loso:
-            self._loso()
-            return
         # then if leave one speaker group out validation is wanted
         if self.logo:
             self._do_logo()
@@ -252,7 +213,7 @@ class Model:
         if self.feats_test.isna().to_numpy().any():
             self.util.debug(f'Model, test: replacing {self.feats_test.isna().sum().sum()} NANs with 0')
             self.feats_test = self.feats_test.fillna(0)
-        if self.loso or self.logo or self.xfoldx:
+        if self.logo or self.xfoldx:
             report = Reporter(self.truths.astype(float), self.preds, self.run, self.epoch)
             return report
         """Predict the whole eval feature set"""

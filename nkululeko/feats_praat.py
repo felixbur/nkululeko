@@ -38,7 +38,7 @@ class Praatset(Featureset):
             except KeyError:
                 pass
         else:
-            self.util.debug('reusing extracted Praat features.')
+            self.util.debug(f'reusing extracted Praat features: {storage}.')
             self.df = self.util.get_store(storage, store_format)
         self.util.debug(f'praat feature names: {self.df.columns}')
         self.df = self.df.astype(float)
