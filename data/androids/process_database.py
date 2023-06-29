@@ -22,10 +22,22 @@ import audeer
 dataset_name = 'androids'
 data_root = './Androids-Corpus/'
 
-
+# read in the fold list
+fold_dict = {}
+df_fold = pd.read_csv(f'{data_root}fold-lists.csv')
+for i in range(df_fold.shape[0]): 
+    for j in range(df_fold.shape[1]): 
+        try:
+            value = df_fold.iloc[i, j].replace('\'', '')
+        except AttributeError:
+            value = 'na' 
+        if j in range(7, 12):
+            fold_dict[value] = j - 7
+        else:
+            fold_dict[value] = j 
 directory_list = audeer.list_file_names(data_root, filetype='wav', recursive=True, basenames=True)
 
-depressions, speakers, educations, genders, ages, tasks = [], [], [], [], [], []
+depressions, speakers, educations, genders, ages, tasks, folds = [], [], [], [], [], [], []
 file_paths = []
 print(len(directory_list))
 gender_map = {'F':'female', 'M':'male'}
@@ -50,6 +62,7 @@ for file in directory_list:
         exit(-1)
  
     part = fn.split('_')
+    dir_name = f'{part[0]}_{part[1]}_{part[2]}'
     depression = part[1][0]
     speaker = f'{depression}_{part[0]}'
     gender = part[1][1]
@@ -61,11 +74,18 @@ for file in directory_list:
     ages.append(age)
     tasks.append(task)
     educations.append(education)
+    folds.append(fold_dict[dir_name])
 #    print(f'{file} {speaker}')
 
 
 # dataframe for emotion of files
-df = pd.DataFrame({'file':file_paths, 'speaker':speakers, 'gender':genders, 'age':ages, 'task':tasks, 'depression':depressions})
+df = pd.DataFrame({'file':file_paths, 
+                   'speaker':speakers, 
+                   'gender':genders, 
+                   'age':ages, 
+                   'task':tasks, 
+                   'depression':depressions, 
+                   'fold':folds})
 
 df = df.set_index('file')
 df.head()
