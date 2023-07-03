@@ -25,7 +25,7 @@ class Dataset:
         """Constructor setting up name and configuration"""
         self.name = name
         self.target = glob_conf.config['DATA']['target']
-        self.util = Util()
+        self.util = Util('dataset')
         self.plot = Plots()
         self.limit = int(self.util.config_val_data(self.name, 'limit', 0))
         self.start_fresh = eval(self.util.config_val('DATA', 'no_reuse', 'False'))

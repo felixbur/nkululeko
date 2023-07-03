@@ -27,7 +27,7 @@ def main(src_dir):
     config.read(config_file)
     # create a new experiment
     expr = Experiment(config)
-    util = Util()
+    util = Util('augment')
     util.debug(f'running {expr.name}, nkululeko version {VERSION}')
 
     # load the data

@@ -28,7 +28,7 @@ def main(src_dir):
     
     # create a new experiment
     expr = Experiment(config)
-    util = Util()
+    util = Util('test')
     util.debug(f'running {expr.name} from config {config_file}, nkululeko version {VERSION}')
 
     # load the experiment

@@ -19,7 +19,7 @@ class Test_predictor():
         self.orig_df = orig_df
         self.label_encoder = labenc
         self.target = glob_conf.config['DATA']['target']
-        self.util = Util()
+        self.util = Util('test_predictor')
         self.name = name
 
     def predict_and_store(self):

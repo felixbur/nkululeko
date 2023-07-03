@@ -17,7 +17,7 @@ class FeatureExtractor:
     def set_data(self, data_df, data_name, feats_designation):
         self.data_df = data_df
         self.data_name = data_name
-        self.util = Util()
+        self.util = Util('feature_extractor')
         self.feats_designation = feats_designation
 
     def extract(self):

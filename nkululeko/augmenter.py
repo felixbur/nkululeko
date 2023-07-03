@@ -14,7 +14,7 @@ class Augmenter:
     """
     def __init__(self, df):
         self.df = df
-        self.util = Util()
+        self.util = Util('augmenter')
         # Define a standard transformation that randomly add augmentations to files
         self.audioment = Compose([
             AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.015, p=0.5),

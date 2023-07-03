@@ -27,9 +27,7 @@ class TRILLset(Featureset):
         :type data_df: DataFrame
         :return: None
         """
-        self.name = name
-        self.data_df = data_df 
-        self.util = Util()
+        super().__init__(name, data_df)   
         # Load the model from the configured path
         model_path = self.util.config_val('FEATS', 'trill.model', \
             'https://tfhub.dev/google/nonsemantic-speech-benchmark/trill/3')

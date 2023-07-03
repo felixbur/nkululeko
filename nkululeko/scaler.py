@@ -22,7 +22,7 @@ class Scaler:
                         train_feats (pd.DataFrame): The train features dataframe 
                         test_feats (pd.DataFrame): The test features dataframe (can be None) 
         '''
-        self.util = Util()
+        self.util = Util('scaler')
         if scaler_type == 'standard':
             self.scaler = StandardScaler()
         elif scaler_type == 'robust':

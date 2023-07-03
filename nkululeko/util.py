@@ -13,7 +13,7 @@ class Util:
 
     stopvals = [False, 'False', 'classification', 'png']
 
-    def __init__(self):
+    def __init__(self, caller=None):
         self.got_data_roots = self.config_val('DATA', 'root_folders', False)
         if self.got_data_roots:
             # if there is a global data rootfolder file, read from there
@@ -21,7 +21,11 @@ class Util:
                 self.error(f'no such file: {self.got_data_roots}')
             self.data_roots = configparser.ConfigParser()
             self.data_roots.read(self.got_data_roots)
-        
+        if caller is not None:
+            self.caller = caller
+        else:  
+            self.caller = ''
+
     def get_path(self, entry):
         """
         This method allows the user to get the directory path for the given argument.
@@ -173,14 +177,14 @@ class Util:
         return False
 
     def error(self, message):
-        print(f'ERROR: {message}')
+        print(f'ERROR {self.caller}: {message}')
         sys.exit()
 
     def warn(self, message):
-        print(f'WARNING: {message}')
+        print(f'WARNING {self.caller}: {message}')
 
     def debug(self, message):
-        print(f'DEBUG: {message}')
+        print(f'DEBUG {self.caller}: {message}')
 
     def set_config_val(self, section, key, value):
         try:

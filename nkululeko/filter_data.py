@@ -2,6 +2,11 @@ import audformat
 import pandas as pd
 import nkululeko.glob_conf as glob_conf
 
+class DataFilter:
+    def __init__(self, df):
+        self.util = glob_conf.util
+        
+
 def limit_speakers(df, max=20):
     """ limit number of samples per speaker
         the samples are selected randomly          

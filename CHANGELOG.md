@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.50.1
+--------------
+* added caller information for debug and error messages in Util
+
 Version 0.50.0
 --------------
 * removed loso and added pre-selected logo (leave-one-group-out), aka folds

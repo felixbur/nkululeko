@@ -36,7 +36,7 @@ class Experiment:
 
         self.set_globals(config_obj)
         self.name = glob_conf.config['EXP']['name']
-        self.util = Util()
+        self.util = Util('experiment')
         glob_conf.set_util(self.util)
         self.loso = self.util.config_val('MODEL', 'loso', False)
         self.logo = self.util.config_val('MODEL', 'logo', False)

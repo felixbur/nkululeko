@@ -10,9 +10,7 @@ import nkululeko.glob_conf as glob_conf
 class MLD_set(Featureset):
 
     def __init__(self, name, data_df):
-        self.name = name
-        self.data_df = data_df
-        self.util = Util()
+        super().__init__(name, data_df)   
         mld_path = self.util.config_val('FEATS', 'mld.model', None)
         sys.path.append(mld_path)
 

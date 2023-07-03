@@ -19,7 +19,7 @@ class Model:
     def __init__(self, df_train, df_test, feats_train, feats_test):
         """Constructor taking the configuration and all dataframes"""
         self.df_train, self.df_test, self.feats_train, self.feats_test = df_train, df_test, feats_train, feats_test
-        self.util = Util()
+        self.util = Util('model')
         self.target = self.util.config_val('DATA', 'target', 'emotion')
         self.run = 0
         self.epoch = 0

@@ -28,7 +28,7 @@ class Randomsplicer:
     """
     def __init__(self, df):
         self.df = df
-        self.util = Util()
+        self.util = Util('randomsplicer')
 
     def changepath(self, fp, np):
         fullpath = os.path.dirname(fp)

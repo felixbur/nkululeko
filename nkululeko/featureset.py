@@ -13,7 +13,7 @@ class Featureset:
     def __init__(self, name, data_df):
         self.name = name
         self.data_df = data_df
-        self.util = Util()
+        self.util = Util('featureset')
 
     def extract(self):
         pass

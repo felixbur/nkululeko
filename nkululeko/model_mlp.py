@@ -17,8 +17,7 @@ class MLP_model(Model):
 
     def __init__(self, df_train, df_test, feats_train, feats_test):
         """Constructor taking the configuration and all dataframes"""
-        Model.__init__(self, df_train, df_test, feats_train, feats_test)
-        self.util = Util()
+        super().__init__(df_train, df_test, feats_train, feats_test)
         self.target = glob_conf.config['DATA']['target']
         labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
         self.class_num = len(labels)

@@ -10,7 +10,7 @@ class Plots():
     
     def __init__(self):
         """Initializing the util system"""
-        self.util = Util()
+        self.util = Util('plots')
         self.format = self.util.config_val('PLOT', 'format', 'png')
 
     def describe_df(self, name, df, target, filename):

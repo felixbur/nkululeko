@@ -16,7 +16,7 @@ class Modelrunner:
                 feats_train: test features
         """
         self.df_train, self.df_test, self.feats_train, self.feats_test = df_train, df_test, feats_train, feats_test
-        self.util = Util()
+        self.util = Util('modelrunner')
         self.run = run
         self.target = glob_conf.config['DATA']['target']
         # intialize a new model

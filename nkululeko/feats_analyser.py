@@ -12,7 +12,7 @@ class FeatureAnalyser:
  
 
     def __init__(self, label, df_labels, df_features):
-        self.util = Util()
+        self.util = Util('feats_analyser')
         target = self.util.config_val('DATA', 'target', 'emotion')    
         self.y = df_labels[target]
         self.df_labels = df_labels

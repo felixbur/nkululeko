@@ -15,7 +15,7 @@ class Demo_predictor():
         self.is_list = is_list
         self.sr = 16000
         self.target = glob_conf.config['DATA']['target']
-        self.util = Util()
+        self.util = Util('demo_predictor')
         self.file = file
 
     def run_demo(self):

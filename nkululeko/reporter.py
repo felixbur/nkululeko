@@ -37,7 +37,7 @@ class Reporter:
 
     def __init__(self, truths, preds, run, epoch):
         """Initialization with ground truth und predictions vector"""
-        self.util = Util()
+        self.util = Util('reporter')
         self.format = self.util.config_val('PLOT', 'format', 'png')
         self.truths = truths
         self.preds = preds
