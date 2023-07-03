@@ -130,8 +130,9 @@ There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
 
 The framework is targeted at the speech domain and supports experiments where different classifiers are combined with different feature extractors.
 
-Here's a rough UML-like sketch of the framework.
+Here's a rough UML-like sketch of the framework (and [here's the real one done with pyreverse](meta/images/classes.png)).
 ![sketch](meta/images/class_diagram.png)
+
 
 Currently, the following linear classifiers are implemented (integrated from sklearn):
 * SVM, SVR, XGB, XGR, Tree, Tree_regressor, KNN, KNN_regressor, NaiveBayes, GMM
