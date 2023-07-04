@@ -12,6 +12,9 @@ class Plots():
         """Initializing the util system"""
         self.util = Util('plots')
         self.format = self.util.config_val('PLOT', 'format', 'png')
+        
+    def plot_distributions(self, df, name, filename):
+        pass
 
     def describe_df(self, name, df, target, filename):
         """Make a stacked barplot of samples and speakers per sex and target values. speaker, gender and target columns must be present"""

@@ -89,6 +89,10 @@ class Util:
         store = self.get_path('store')
         return f'{store}/{self.get_exp_name()}.pkl'
 
+    def is_categorical(array_like):
+        """Check if a dataframe column is categorical"""
+        return array_like.dtype.name == 'category'
+
 
     def get_res_dir(self):
         root = glob_conf.config['EXP']['root']
@@ -257,6 +261,17 @@ class Util:
             self.error(f'unkown store format: {format}')
 
     def copy_flags(self, df_source, df_target):
-        df_target.is_labeled = df_source.is_labeled
-        df_target.got_gender = df_source.got_gender
-        df_target.got_speaker = df_source.got_speaker
+        if hasattr(df_source, 'is_labeled'):
+            df_target.is_labeled = df_source.is_labeled
+        if hasattr(df_source, 'is_test'):
+            df_target.is_test = df_source.is_test
+        if hasattr(df_source, 'is_train'):
+            df_target.is_train = df_source.is_train
+        if hasattr(df_source, 'is_val'):
+            df_target.is_val = df_source.is_val
+        if hasattr(df_source, 'got_gender'):
+            df_target.got_gender = df_source.got_gender
+        if hasattr(df_source, 'got_age'):
+            df_target.got_age = df_source.got_age
+        if hasattr(df_source, 'got_speaker'):
+            df_target.got_speaker = df_source.got_speaker

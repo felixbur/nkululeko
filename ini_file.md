@@ -87,6 +87,8 @@
   * emodb.max_duration_of_sample = 0.0
 * **db_name.rename_speakers**: add the database name to the speaker names, e.g. because several databases use the same names
   * emodb.rename_speakers = False
+* **db_name.filter**: don't use all the data but only selected values from columns: [col, val]*
+  * emodb.filter = [['gender', 'female']]
 * **target**: the task name, e.g. *age* or *emotion*
   * target = emotion
 * **labels**: for classification experiments: the names of the categories (is also used for regression when binning the values)
@@ -109,6 +111,11 @@
   * random_splice = train
 * **random_splice_result**: file name to store the random spliced data (can then be added to training)
   * random_splice_result = random_spliced.csv
+* **filter**: don't use all the data but only selected values from columns: [col, val]*
+  * filter = [['gender', 'female'], ['task', 'reading']]
+* **filter.sample_selection**: Which sample set to use for filtering
+  * filter.sample_selection = all # either all, train or test
+
 
 ### FEATS
 * **type**: a comma separated list of types of features, they will be columnwise concatenated

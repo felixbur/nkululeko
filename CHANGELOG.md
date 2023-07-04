@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.51.0
+--------------
+* added datafilter
+
 Version 0.50.1
 --------------
 * added caller information for debug and error messages in Util

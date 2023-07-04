@@ -12,6 +12,7 @@ from nkululeko.feats_analyser import FeatureAnalyser
 from nkululeko.util import Util
 from nkululeko.feature_extractor import FeatureExtractor
 from nkululeko.plots import Plots
+from nkululeko.filter_data import DataFilter
 import nkululeko.glob_conf as glob_conf
 from nkululeko.demo_predictor import Demo_predictor
 import ast # To convert strings to objects
@@ -20,6 +21,7 @@ from sklearn.preprocessing import LabelEncoder
 from nkululeko.scaler import Scaler
 import pickle
 import audformat
+import audeer 
 
 class Experiment:
     """Main class specifying an experiment
@@ -36,6 +38,8 @@ class Experiment:
 
         self.set_globals(config_obj)
         self.name = glob_conf.config['EXP']['name']
+        self.root = glob_conf.config['EXP']['root']
+        audeer.mkdir(self.root+self.name) # create the experiment directory
         self.util = Util('experiment')
         glob_conf.set_util(self.util)
         self.loso = self.util.config_val('MODEL', 'loso', False)
@@ -149,21 +153,21 @@ class Experiment:
                     d = self.datasets[dn]
                     d.prepare_labels()
                     self.df_train = self.df_train.append(self.util.make_segmented_index(d.df))
-                    self.df_train.is_labeled = d.is_labeled
+                    self.util.copy_flags(d, self.df_train)
                 for dn in test_dbs:
                     d = self.datasets[dn]
                     d.prepare_labels()
                     self.df_test = self.df_test.append(self.util.make_segmented_index(d.df))
-                    self.df_test.is_labeled = d.is_labeled
+                    self.util.copy_flags(d, self.df_test)
             elif strategy == 'traintest':
                 # default: train vs. test combined from all datasets
                 for d in self.datasets.values():
                     d.split()
                     d.prepare_labels()
-                    self.df_train = pd.concat([self.df_train, self.util.make_segmented_index(d.df_train)])
-                    self.df_train.is_labeled = d.is_labeled
-                    self.df_test = pd.concat([self.df_test, self.util.make_segmented_index(d.df_test)])
-                    self.df_test.is_labeled = d.is_labeled
+                    self.df_train = pd.concat([self.df_train, d.df_train])
+                    self.util.copy_flags(d, self.df_train)
+                    self.df_test = pd.concat([self.df_test, d.df_test])
+                    self.util.copy_flags(d, self.df_test)
             else:
                 self.util.error(f'unknown strategy: {strategy}')
             # save the file lists to disk for later reuse
@@ -173,20 +177,23 @@ class Experiment:
             self.df_test.to_csv(storage_test)
             self.df_train.to_csv(storage_train)
 
-        self.df_train.got_gender = self.got_gender
-        self.df_train.got_age = self.got_age
-        self.df_train.got_speaker = self.got_speaker
-        self.df_test.got_gender = self.got_gender
-        self.df_test.got_speaker = self.got_speaker
-        self.df_test.got_age = self.got_age
-
+        self.util.copy_flags(self, self.df_test)
+        self.util.copy_flags(self, self.df_train)
         # Check for filters
-        min_dur_test = self.util.config_val('DATA', 'min_dur_test', False)
-        if min_dur_test:
-            pre = self.df_test.shape[0]
-            self.df_test = filter_min_dur(self.df_test, min_dur_test)
-            post = self.df_test.shape[0]
-            self.util.debug(f'Dropped {pre-post} test samples shorter than {min_dur_test} seconds (from {pre} to {post} samples)')
+        filter_sample_selection = self.util.config_val('DATA', 'filter.sample_selection', 'all')
+        if filter_sample_selection=='all':
+            datafilter = DataFilter(self.df_train)
+            self.df_train = datafilter.all_filters()
+            datafilter = DataFilter(self.df_test)
+            self.df_test = datafilter.all_filters()
+        elif filter_sample_selection=='train':
+            datafilter = DataFilter(self.df_train)
+            self.df_train = datafilter.all_filters()
+        elif filter_sample_selection=='test':
+            datafilter = DataFilter(self.df_test)
+            self.df_test = datafilter.all_filters()
+        else:
+            self.util.error(f'unkown filter sample selection specifier {filter_sample_selection}, should be [all | train | test]')
 
         # encode the labels
         if self.util.exp_is_classification():

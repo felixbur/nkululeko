@@ -11,6 +11,7 @@ import nkululeko.glob_conf as glob_conf
 import os.path
 from audformat.utils import duration
 import nkululeko.filter_data as filter
+from nkululeko.filter_data import DataFilter
 
 class Dataset:
     """ Class to represent datasets"""
@@ -67,7 +68,7 @@ class Dataset:
         store = self.util.get_path('store')
         store_file = f'{store}{self.name}.pkl'
         self.util.debug(f'{self.name}: loading ...')
-        root = self._load_db()
+        self.root = self._load_db()
 #        self.got_speaker, self.got_gender = False, False 
         if not self.start_fresh and os.path.isfile(store_file):
             self.util.debug(f'{self.name}: reusing previously stored file {store_file}')
@@ -76,6 +77,7 @@ class Dataset:
             self.got_gender = 'gender' in self.df
             self.got_age = 'age' in self.df
             self.got_speaker = 'speaker' in self.df
+            self.util.copy_flags(self, self.df)
             self.util.debug(f'{self.name}: loaded with {self.df.shape[0]} '\
                 f'samples: got targets: {self.is_labeled}, got speakers: {self.got_speaker}, '\
                 f'got sexes: {self.got_gender}')        
@@ -84,7 +86,7 @@ class Dataset:
         self.util.debug(f'{self.name}: loading tables: {tables}')
         #db = audb.load(root, )
         # map the audio file paths 
-        self.db.map_files(lambda x: os.path.join(root, x))
+        self.db.map_files(lambda x: os.path.join(self.root, x))
         # the dataframes (potentially more than one) with at least the file names
         df_files = self.util.config_val_data(self.name, 'files_tables', '[\'files\']')
         df_files_tables =  ast.literal_eval(df_files)
@@ -115,18 +117,23 @@ class Dataset:
         if self.is_labeled:
             # remember the target in case they get labelencoded later
             df['class_label'] = df[self.target]
-        df.is_labeled = self.is_labeled
-        df.got_gender = self.got_gender
-        df.got_age = self.got_age
-        df.got_speaker = self.got_speaker
+
         self.df = df
-        self.df.is_labeled = self.is_labeled
         self.util.debug(f'Loaded database {self.name} with {df.shape[0]} '\
             f'samples: got targets: {self.is_labeled}, got speakers: {self.got_speaker}, '\
             f'got sexes: {self.got_gender}, got age: {self.got_age}')
 
 
     def prepare(self):
+        # ensure segmented index
+        self.df = self.util.make_segmented_index(self.df)
+        self.util.copy_flags(self, self.df)
+        # add duration
+        if 'duration' not in self.df:
+            start = self.df.index.get_level_values(1)
+            end = self.df.index.get_level_values(2)
+            self.df['duration']=(end-start).total_seconds()
+
         # Perform some filtering if desired
         required = eval(self.util.config_val_data(self.name, 'required', 'False'))
         if required:
@@ -134,40 +141,9 @@ class Dataset:
             self.df = self.df[self.df[required].notna()]
             post = self.df.shape[0]
             self.util.debug(f'{self.name}: kept {post} samples with {required} (from {pre}, filtered {pre-post})')
-        samples_per_speaker = self.util.config_val_data(self.name, 'max_samples_per_speaker', False)
-        if samples_per_speaker:
-            pre = self.df.shape[0]
-            self.df = filter.limit_speakers(self.df, int(samples_per_speaker))            
-            post = self.df.shape[0]
-            self.util.debug(f'{self.name}: kept {post} samples with {samples_per_speaker} per speaker (from {pre}, filtered {pre-post})')
-        if self.limit:
-            pre = self.df.shape[0]
-            self.df = self.df.sample(self.limit)
-            post = self.df.shape[0]
-            self.util.debug(f'{self.name}: limited to {post} samples (from {pre}, filtered {pre-post})')
-        sex = self.util.config_val('DATA', 'sex', False)
-        if sex:
-            # for experiments that do separate sex models
-            pre = self.df.shape[0]
-            self.df = self.df[self.df.gender==sex]
-            post = self.df.shape[0]
-            self.util.debug(f'{self.name}: limited to {post} samples with sex {sex} (from {pre}, filtered {pre-post})')
-            self.df.is_labeled = self.is_labeled
-            self.df.got_gender = self.got_gender
-            self.df.got_speaker = self.got_speaker
-        min_dur = self.util.config_val_data(self.name, 'min_duration_of_sample', False)
-        if min_dur:
-            pre = self.df.shape[0]
-            self.df = filter.filter_min_dur(self.df, min_dur)
-            post = self.df.shape[0]
-            self.util.debug(f'{self.name}: dropped {pre-post} shorter than {min_dur} seconds (from {pre} to {post} samples)')
 
-        max_dur = self.util.config_val_data(self.name, 'max_duration_of_sample', False)
-        if max_dur:
-            pre = self.df.shape[0]
-            self.df = filter.filter_max_dur(self.df, max_dur)
-            post = self.df.shape[0]
-            self.util.debug(f'{self.name}: dropped {pre-post} longer than {max_dur} seconds (from {pre} to {post} samples)')
+        datafilter = DataFilter(self.df)
+        self.df = datafilter.all_filters(data_name=self.name)
 
         self.util.debug(f'{self.name}: loaded data with {self.df.shape[0]} '\
             f'samples: got targets: {self.is_labeled}, got speakers: {self.got_speaker}, '\
@@ -253,6 +229,7 @@ class Dataset:
                 self.df_test = pd.read_pickle(storage_test)
                 self.util.debug(f'splits: reusing previously stored train file {storage_train}')
                 self.df_train = pd.read_pickle(storage_train)
+
                 return
             elif os.path.isfile(storage_train):
                 self.util.debug(f'splits: reusing previously stored train file {storage_train}')
@@ -291,6 +268,10 @@ class Dataset:
                 for train_table in train_tables:
                     traindf = pd.concat([traindf, self.db.tables[train_table].df])
             # use only the train and test samples that were not perhaps filtered out by an earlier processing step
+            #testdf.index.map(lambda x: os.path.join(self.root, x))
+#            testdf.index = testdf.index.to_series().apply(lambda x: self.root+x)
+            testdf = testdf.set_index(audformat.utils.to_segmented_index(testdf.index, allow_nat=False))
+            traindf = traindf.set_index(audformat.utils.to_segmented_index(traindf.index, allow_nat=False))
             self.df_test = self.df.loc[self.df.index.intersection(testdf.index)]
             self.df_train = self.df.loc[self.df.index.intersection(traindf.index)]
             # it might be necessary to copy the target values 
