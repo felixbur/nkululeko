@@ -41,9 +41,9 @@ class DataFilter:
             the samples are selected randomly          
         """
         if data_name=='':
-            max = self.util.config_val('DATA', 'limit_speakers', False)
+            max = self.util.config_val('DATA', 'limit_samples_per_speaker', False)
         else:
-            max = self.util.config_val_data(data_name, 'limit_speakers', False)
+            max = self.util.config_val_data(data_name, 'limit_samples_per_speaker', False)
         if max:
             df = pd.DataFrame()
             for s in self.df.speaker.unique():

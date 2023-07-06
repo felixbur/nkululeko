@@ -75,12 +75,12 @@
   * emodb.target_tables = ['emotion']
 * **db_name.files_tables**: tables that containes the audio file names
   * emodb.files_tables = ['files']
-* **db_name.limit**: maximum number of random N samples per table (for testing with very large data mainly)
-  * emodb.limit = 20
+* **db_name.limit_samples**: maximum number of random N samples per table (for testing with very large data mainly)
+  * emodb.limit_samples = 20
 * **db_name.required**: force a data set to have a specific feature (for example filter all sets that have gender labeled in a database where this is not the case for all samples, e.g. MozillaCommonVoice)
   * emodb.required = gender
-* **db_name.max_samples_per_speaker**: maximum number of samples per speaker (for leveling data where same speakers have a large number of samples)
-  * emodb.max_samples_per_speaker = 20
+* **db_name.limit_samples_per_speaker**: maximum number of samples per speaker (for leveling data where same speakers have a large number of samples)
+  * emodb.limit_samples_per_speaker = 20
 * **db_name.min_duration_of_sample**: limit the samples to a minimum length (in seconds)
   * emodb.min_duration_of_sample = 0.0
 * **db_name.max_duration_of_sample**: limit the samples to a maximum length (in seconds)
@@ -115,7 +115,14 @@
   * filter = [['gender', 'female'], ['task', 'reading']]
 * **filter.sample_selection**: Which sample set to use for filtering
   * filter.sample_selection = all # either all, train or test
-
+* **limit_samples**: maximum number of random N samples per sample selection
+  * limit_samples = 20
+* **limit_samples_per_speaker**: maximum number of samples per speaker per sample selection
+  * limit_samples_per_speaker = 20
+* **min_duration_of_sample**: limit the samples to a minimum length (in seconds) per sample selection
+  * min_duration_of_sample = 0.0
+* **max_duration_of_sample**: limit the samples to a maximum length (in seconds) per sample selection
+  * max_duration_of_sample = 0.0
 
 ### FEATS
 * **type**: a comma separated list of types of features, they will be columnwise concatenated
@@ -241,8 +248,10 @@
   * scatter = ['tsne', 'umap', 'pca']
 * **plot_tree**: Plot a decision tree for classification (Requires model = tree)
   * plot_tree = False
-* **value_counts** plot statistics for the samples (gender and speaker) (in the *image_dir*)
-  * value_counts = False
+* **value_counts**: plot distributions of target for the samples and speakers (in the *image_dir*)
+  * value_counts = [['gender'], ['age'], ['age', 'duration']] 
+* **dist_type**: type of plot for value counts, either histogram or density estimation (kde)
+  * dist_type = hist
 
 ### PLOT
 * **name**: special name as a prefix for all plots (stored in *img_dir*).

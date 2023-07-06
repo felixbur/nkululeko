@@ -89,9 +89,9 @@ class Util:
         store = self.get_path('store')
         return f'{store}/{self.get_exp_name()}.pkl'
 
-    def is_categorical(array_like):
+    def is_categorical(self, pd_series):
         """Check if a dataframe column is categorical"""
-        return array_like.dtype.name == 'category'
+        return pd_series.dtype.name == 'object'
 
 
     def get_res_dir(self):
