@@ -5,6 +5,7 @@ from sklearn.manifold import TSNE
 from nkululeko.util import Util
 import seaborn as sns
 import numpy as np
+import ast
 
 class Plots():
     
@@ -12,9 +13,88 @@ class Plots():
         """Initializing the util system"""
         self.util = Util('plots')
         self.format = self.util.config_val('PLOT', 'format', 'png')
-        
-    def plot_distributions(self, df, name, filename):
-        pass
+        self.target = self.util.config_val('DATA', 'target', 'emotion')
+
+    def plot_distributions_speaker(self, df):
+        df_speakers = pd.DataFrame()
+        pd.options.mode.chained_assignment = None  # default='warn'
+        for s in df.speaker.unique():
+            df_speaker = df[df.speaker == s]
+            df_speaker['samplenum'] = df_speaker.shape[0]
+            df_speakers = pd.concat([df_speakers, df_speaker.head(1)])
+        # plot the distrubution of samples per speaker        
+        fig_dir = self.util.get_path('fig_dir')+'../' # one up because of the runs 
+        self.util.debug(f'plotting samples per speaker')
+        if 'gender' in df_speakers:
+            filename = f'samples_value_counts'
+            ax = df_speakers.groupby('samplenum')['gender'].value_counts().unstack().plot(kind='bar', stacked=True, title=f'samples per speaker ({df_speakers.shape[0]})', rot=0)
+            ax.set_ylabel(f'number of speakers')
+            ax.set_xlabel('number of samples')
+            fig = ax.figure
+            plt.tight_layout()
+            plt.savefig(f'{fig_dir}{filename}.{self.format}')
+            plt.close(fig)
+            fig.clear()
+        else:
+            filename = f'samples_value_counts'
+            ax = df_speakers['samplenum'].value_counts().sort_values().plot(kind='bar', stacked=True, title=f'samples per speaker ({df_speakers.shape[0]})', rot=0)
+            ax.set_ylabel(f'number of speakers')
+            ax.set_xlabel('number of samples')
+            fig = ax.figure
+            plt.tight_layout()
+            plt.savefig(f'{fig_dir}{filename}.{self.format}')
+            plt.close(fig)
+            fig.clear()
+
+        self.plot_distributions(df_speakers, type='speakers')
+
+    def plot_distributions(self, df, type='samples'):
+        fig_dir = self.util.get_path('fig_dir')+'../' # one up because of the runs 
+        attributes = ast.literal_eval(self.util.config_val('EXPL', 'value_counts', False))
+        dist_type = self.util.config_val('EXPL', 'dist_type', 'hist')
+        for att in attributes:
+            if len(att) == 1:
+                self.util.debug(f'plotting {att[0]}')
+                filename = f'{self.target}-{att[0]}'
+                if self.util.is_categorical(df[att[0]]):
+                    ax = df.groupby('class_label')[att[0]].value_counts().unstack().plot(kind='bar', stacked=True, title=f'{type} {df.shape[0]}', rot=0)
+                    ax.set_ylabel(f'number of {type}')
+                    ax.set_xlabel(self.target)
+                else:
+                    if dist_type == 'hist':
+                        ax = sns.histplot(df, x=att[0], hue='class_label', kde=True)
+                        ax.set_title(f'{type} {df.shape[0]}')
+                        ax.set_xlabel(f'value of {att[0]}')
+                        ax.set_ylabel(f'number of {type}')
+                    else:
+                        ax = sns.displot(df, x=att[0], hue='class_label', kind="kde", fill=True)
+                        ax.fig.suptitle(f'{type} {df.shape[0]}') 
+                fig = ax.figure
+                plt.tight_layout()
+                plt.savefig(f'{fig_dir}{filename}_{type}.{self.format}')
+                plt.close(fig)
+                fig.clear()
+            elif len(att) == 2:
+                self.util.debug(f'plotting {att}')
+                att1 = att[0]
+                att2 = att[1]
+                filename = f'{att[0]}-{att[1]}'
+                filename = f'{self.target}-{filename}'
+                if self.util.is_categorical(df[att1]):
+                    ax = sns.scatterplot(data=df, x=self.target, y=att2, hue=att1)                                
+                elif self.util.is_categorical(df[att2]):
+                    ax = sns.scatterplot(data=df, x=self.target, y=att1, hue=att2)                
+                else:
+                    ax = sns.scatterplot(data=df, x=att1, y=att2, hue='class_label')
+                fig = ax.figure
+                ax.set_title(f'{type} {df.shape[0]}')
+                plt.tight_layout()
+                plt.savefig(f'{fig_dir}{filename}_{type}.{self.format}')   
+                plt.close(fig)
+                fig.clear()
+            else:
+                self.util.error(f'plot value counts: target {att} has more than 2 values')
+
 
     def describe_df(self, name, df, target, filename):
         """Make a stacked barplot of samples and speakers per sex and target values. speaker, gender and target columns must be present"""

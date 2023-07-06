@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.52.0
+--------------
+* added flexible value distribution plots
+
 Version 0.51.0
 --------------
 * added datafilter

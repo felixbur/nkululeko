@@ -267,7 +267,9 @@ class Experiment:
         else:
             self.util.error(f'unkown sample selection specifier {sample_selection}, should be [all | train | test]')
 
-        plot.describe_df(f'{sample_selection}_set', df_labels, self.target, f'{sample_selection}_distplot')
+        plot.plot_distributions(df_labels)
+        if self.got_speaker:
+            plot.plot_distributions_speaker(df_labels)
 
     def extract_test_feats(self):
         self.feats_test = pd.DataFrame()
