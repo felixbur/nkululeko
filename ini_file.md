@@ -75,6 +75,10 @@
   * emodb.target_tables = ['emotion']
 * **db_name.files_tables**: tables that containes the audio file names
   * emodb.files_tables = ['files']
+* **db_name.test_tables**: tables that should be used for testing
+  * emodb.test_tables = ['emotion.categories.test.gold_standard']
+* **db_name.train_tables**: tables that should be used for training
+  * emodb.train_tables = ['emotion.categories.train.gold_standard']
 * **db_name.limit_samples**: maximum number of random N samples per table (for testing with very large data mainly)
   * emodb.limit_samples = 20
 * **db_name.required**: force a data set to have a specific feature (for example filter all sets that have gender labeled in a database where this is not the case for all samples, e.g. MozillaCommonVoice)
