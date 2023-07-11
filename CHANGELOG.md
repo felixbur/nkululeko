@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.53.0
+--------------
+* added file checks: size in bytes and voice activity detection with silero
+
 Version 0.52.1
 --------------
 * bugfix: min/max duration_of_sample was not working

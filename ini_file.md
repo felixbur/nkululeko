@@ -127,6 +127,10 @@
   * min_duration_of_sample = 0.0
 * **max_duration_of_sample**: limit the samples to a maximum length (in seconds) per sample selection
   * max_duration_of_sample = 0.0
+* **check_size**: check the filesize of all samples in train and test splits, in bytes
+  * check_size = 1000
+* **check_vad**: check if the files contain speech, using [silero VAD](https://github.com/snakers4/silero-vad)
+  * check_vad = True
 
 ### FEATS
 * **type**: a comma separated list of types of features, they will be columnwise concatenated

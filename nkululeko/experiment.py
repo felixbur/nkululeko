@@ -13,6 +13,7 @@ from nkululeko.util import Util
 from nkululeko.feature_extractor import FeatureExtractor
 from nkululeko.plots import Plots
 from nkululeko.filter_data import DataFilter
+from nkululeko.file_checker import FileChecker
 import nkululeko.glob_conf as glob_conf
 from nkululeko.demo_predictor import Demo_predictor
 import ast # To convert strings to objects
@@ -179,6 +180,12 @@ class Experiment:
 
         self.util.copy_flags(self, self.df_test)
         self.util.copy_flags(self, self.df_train)
+        # Try data checks
+        datachecker = FileChecker(self.df_train)
+        self.df_train = datachecker.all_checks()
+        datachecker.set_data(self.df_test)
+        self.df_test = datachecker.all_checks()
+
         # Check for filters
         filter_sample_selection = self.util.config_val('DATA', 'filter.sample_selection', 'all')
         if filter_sample_selection=='all':
