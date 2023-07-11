@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.52.1
+--------------
+* bugfix: min/max duration_of_sample was not working
+
 Version 0.52.0
 --------------
 * added flexible value distribution plots

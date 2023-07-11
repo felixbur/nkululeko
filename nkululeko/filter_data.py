@@ -74,22 +74,24 @@ class DataFilter:
                 self.df.index = audformat.utils.to_segmented_index(self.df.index, allow_nat=False)    
             if min_dur:
                 old_samples = self.df.shape[0]
+                df = self.df.copy()
                 for i in self.df.index:
                     start = i[1]
                     end = i[2]
                     dur = (end - start).total_seconds()
                     if dur < float(min_dur):
-                        df = self.df.drop(i, axis=0)
-                self.util.debug(f'{data_name}: filtered samples less than {min_dur} seconds, reduced samples from {old_samples} to {self.df.shape[0]}')
+                        df = df.drop(i, axis=0)
+                self.util.debug(f'{data_name}: filtered samples less than {min_dur} seconds, reduced samples from {old_samples} to {df.shape[0]}')
             if max_dur:
                 old_samples = self.df.shape[0]
+                df = self.df.copy()
                 for i in self.df.index:
                     start = i[1]
                     end = i[2]
                     dur = (end - start).total_seconds()
                     if dur > float(max_dur):
-                        df = self.df.drop(i, axis=0)
-                self.util.debug(f'{data_name}: filtered samples more than {max_dur} seconds, reduced samples from {old_samples} to {self.df.shape[0]}')
+                        df = df.drop(i, axis=0)
+                self.util.debug(f'{data_name}: filtered samples more than {max_dur} seconds, reduced samples from {old_samples} to {df.shape[0]}')
             self.util.copy_flags(self.df, df)   
             self.df = df
             return df
