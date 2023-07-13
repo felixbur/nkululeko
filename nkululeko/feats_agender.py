@@ -8,16 +8,16 @@ import audonnx
 import numpy as np
 import audinterface
 
-class AudModelSet(Featureset):
+class AudModelAgenderSet(Featureset):
     """
-        Embeddings from the wav2vec2. based model finetuned on MSPPodcast emotions, described in the paper
-        "Dawn of the transformer era in speech emotion recognition: closing the valence gap"
-        https://arxiv.org/abs/2203.07378
+        Embeddings from the wav2vec2. based model finetuned on agender data, described in the paper
+        "Speech-based Age and Gender Prediction with Transformers"
+        https://arxiv.org/abs/2306.16962
     """
     def __init__(self, name, data_df):
         super().__init__(name, data_df)
-        model_url = 'https://zenodo.org/record/6221127/files/w2v2-L-robust-12.6bc4a7fd-1.1.0.zip'
-        model_root = self.util.config_val('FEATS', 'aud.model', './audmodel/')
+        model_url = 'https://zenodo.org/record/7761387/files/w2v2-L-robust-6-age-gender.25c844af-1.1.1.zip'
+        model_root = self.util.config_val('FEATS', 'agender.model', './audmodel_agender/')
         if not os.path.isdir(model_root):
             cache_root = audeer.mkdir('cache')
             model_root = audeer.mkdir(model_root)
@@ -35,7 +35,7 @@ class AudModelSet(Featureset):
         extract = eval(self.util.config_val('FEATS', 'needs_feature_extraction', 'False'))
         no_reuse = eval(self.util.config_val('FEATS', 'no_reuse', 'False'))
         if no_reuse or extract or not os.path.isfile(storage):
-            self.util.debug('extracting audmodel embeddings, this might take a while...')
+            self.util.debug('extracting agender model embeddings, this might take a while...')
             hidden_states = audinterface.Feature(
                 self.model.labels('hidden_states'),
                 process_func=self.model,

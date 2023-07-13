@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.54.0
+--------------
+* added audeering public age and gender model embeddings and age and gender predictions
+
 Version 0.53.0
 --------------
 * added file checks: size in bytes and voice activity detection with silero

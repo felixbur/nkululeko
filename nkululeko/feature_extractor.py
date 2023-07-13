@@ -42,6 +42,12 @@ class FeatureExtractor:
             elif feats_type=='auddim':
                 from nkululeko.feats_audmodel_dim import AudModelDimSet
                 self.featExtractor = AudModelDimSet(f'{store_name}_{self.feats_designation}', self.data_df)
+            elif feats_type=='agender':
+                from nkululeko.feats_agender import AudModelAgenderSet
+                self.featExtractor = AudModelAgenderSet(f'{store_name}_{self.feats_designation}', self.data_df)
+            elif feats_type=='agender_agender':
+                from nkululeko.feats_agender_agender import AgenderAgenderSet
+                self.featExtractor = AgenderAgenderSet(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='clap':
                 from nkululeko.feats_clap import Clap
                 self.featExtractor = Clap(f'{store_name}_{self.feats_designation}', self.data_df)

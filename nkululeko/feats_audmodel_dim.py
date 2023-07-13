@@ -54,7 +54,7 @@ class AudModelDimSet(Featureset):
             except KeyError:
                 pass
         else:
-            self.util.debug('reusing extracted audmodel features.')
+            self.util.debug('reusing extracted audmodel dimensions.')
             self.df = self.util.get_store(storage, store_format)
 
 
