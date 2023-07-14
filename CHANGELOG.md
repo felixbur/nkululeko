@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.55.0
+--------------
+* added segmentation module
+
 Version 0.54.0
 --------------
 * added audeering public age and gender model embeddings and age and gender predictions

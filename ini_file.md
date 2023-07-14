@@ -131,6 +131,8 @@
   * check_size = 1000
 * **check_vad**: check if the files contain speech, using [silero VAD](https://github.com/snakers4/silero-vad)
   * check_vad = True
+* **segment_target**: name of the extension that is added to the dataset names when storing the segemented data table with the *segment* module
+  * segment_target = _seg
 
 ### FEATS
 * **type**: a comma separated list of types of features, they will be columnwise concatenated

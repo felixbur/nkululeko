@@ -40,7 +40,8 @@ class Experiment:
         self.set_globals(config_obj)
         self.name = glob_conf.config['EXP']['name']
         self.root = glob_conf.config['EXP']['root']
-        audeer.mkdir(self.root+self.name) # create the experiment directory
+        self.data_dir = self.root+self.name
+        audeer.mkdir(self.data_dir) # create the experiment directory
         self.util = Util('experiment')
         glob_conf.set_util(self.util)
         self.loso = self.util.config_val('MODEL', 'loso', False)
@@ -81,6 +82,7 @@ class Experiment:
                 self.got_speaker = True
             self.datasets.update({d: data})
         self.target = self.util.config_val('DATA', 'target', 'emotion')
+        self.util.debug(f'loaded {self.datasets.keys()} databases')
 
     def _import_csv(self, storage):
         # df = pd.read_csv(storage, header=0, index_col=[0,1,2])
