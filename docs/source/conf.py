@@ -31,7 +31,7 @@ author = 'Felix Burkhardt, Bagus Tris Atmaja'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
-    'nbsphinx',           # to embedd ipynb files
+    # 'nbsphinx',           # to embedd ipynb files
     'sphinx.ext.mathjax' # to enable latex
 ]
 
