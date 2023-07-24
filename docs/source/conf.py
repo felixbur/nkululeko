@@ -32,7 +32,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'nbsphinx',           # to embedd ipynb files
-    'sphinx.ext.mathjax', # to enable latex
+    'sphinx.ext.mathjax' # to enable latex
 ]
 
 # Add any paths that contain templates here, relative to this directory.
