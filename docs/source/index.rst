@@ -14,9 +14,9 @@ Welcome to nkululeko's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Getting Started
+   :caption: USAGE
 
-   getting_started
+   usage
 
 .. toctree::
    :maxdepth: 2
@@ -29,6 +29,7 @@ Welcome to nkululeko's documentation!
    :caption: Examples
 
    how_to
+   hello_world
    comparing
 
 .. toctree::
