@@ -10,7 +10,9 @@ This post is about maschine classification (as opposed to regression problems) a
 In this post I will only talk about the config file, the python file can be re-used.
 
 I'll walk you through the sections of the config file (all options here):
-The first section deals with general setup.::
+The first section deals with general setup.
+
+::
 
     [EXP]
     # root is the base directory for the experiment relative to the python call
@@ -22,7 +24,9 @@ The first section deals with general setup.::
     # needed only for classifiers with random initialization
     # runs = 3 
 
-The DATA section deals with the data sets.::
+The DATA section deals with the data sets.
+
+::
 
     [DATA]
     # list all the databases  you will be using
@@ -40,32 +44,40 @@ The DATA section deals with the data sets.::
     # the categories for this label
     labels = ['anger', 'boredom', 'disgust', 'fear', 'happiness', 'neutral', 'sadness']
 
-The next secton deals with the features that should be used by the classifier.::
+The next secton deals with the features that should be used by the classifier.
+
+::
 
     [FEATS]
     # the type of features to use
     type = ['os']
 
-The following altenatives are currently implemented (only os and trill are opensource).::
+The following altenatives are currently implemented (only os and trill are opensource).
+
+::
 
     type = os # opensmile features
     type = mld # mid level descriptors, to be published
     type = trill # TRILL features requires keras to be installed
     type = spectra # log mel spectra, for convolutional ANNs
 
-Next comes the MODEL section which deals with the classifier.::
+Next comes the MODEL section which deals with the classifier.
+
+::
 
     [MODEL]
     # the main thing to sepecify is the kind of classifier:
     type = xgb
 
-Choices are.::
+Choices are::
 
     type = xgb # XG-boost algorithm, based on classification trees
     type = svm # Support Vector Machines, a classifier based on decision planes
     type = mlp # Multi-Layer-Perceptron, needs a layer-layout to be specified, e.g. layers = {'l1':64}
 
-And finally, the PLOT section specifies possible additional visualizations (a confusion matrix is always plotted).::
+And finally, the PLOT section specifies possible additional visualizations (a confusion matrix is always plotted).
+
+::
 
     [PLOT]
     tsne = True

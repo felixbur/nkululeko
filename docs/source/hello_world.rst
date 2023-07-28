@@ -4,14 +4,22 @@ Hello world!
 Here is an hello world of using Nkululeko. This hello world is also available in `Google Colab`_ and `Kaggle`_.
 
 
-1. Download the EmoDB dataset.::
+1. Download the EmoDB dataset.
+   
+::
+
     wget https://tubcloud.tu-berlin.de/s/LfkysdXJfiobiEG/download/emodb.zip
 
-2. Unzip the dataset.::
-    unzip emodb.zip
+2. Unzip the dataset.
+   
+::
 
-3. Create INI file, you can take example from `tests` directori. For more explanation about format of INI FILE, see `INI file <./ini.rst>`__.::
-    
+   unzip emodb.zip
+
+3. Create INI file, you can take example from `tests` directori. For more explanation about format of INI FILE, see `INI file <./ini.rst>`__.
+   
+::
+
     [EXP]
     root = ./results
     name = exp_emodb
@@ -29,10 +37,13 @@ Here is an hello world of using Nkululeko. This hello world is also available in
     type = xgb
     [PLOT]
 
-3. Run the experiment.::
+4. Run the experiment.
+
+::
+
     python -m nkululeko -i emodb.ini
 
-4. Check the results in the `results` directory.::
+5. Check the results in the `results` directory.
 
 
 .. _Google Colab: https://colab.research.google.com/drive/1GYNBd5cdZQ1QC3Jm58qoeMaJg3UuPhjw?usp=sharing#scrollTo=4G_SjuF9xeQf'
