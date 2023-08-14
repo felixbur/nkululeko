@@ -93,7 +93,7 @@ class Plots():
                 plt.close(fig)
                 # fig.clear()   # avoid error
             else:
-                self.util.error(f'plot value counts: target {att} has more than 2 values')
+                self.util.error(f'plot value counts: the plot distribution descriptor for {att} has more than 2 values')
 
 
     def describe_df(self, name, df, target, filename):
