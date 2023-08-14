@@ -5,7 +5,7 @@ The main usage of Nkululeko is as follows:
 
 .. code-block:: bash
 
-    python -m nkululeko -i INI_FILE.ini
+    python -m nkululeko.nkululeko --config INI_FILE.ini
 
 where `INI_FILE.ini` is a configuration file. The only file needed by the user is the INI file (after preparing the dataset). That's why we said this tool is intented without or less coding. The example of configuration file (INI_FILE.ini) is given below. See `INI file <ini.html>`__ for complete options.
 
