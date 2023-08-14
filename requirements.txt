@@ -3,8 +3,8 @@ audformat
 audinterface
 audiofile
 audonnx
-audtorch
-datasets
+# audtorch
+# datasets
 imageio
 matplotlib
 numpy
@@ -15,8 +15,9 @@ scikit_learn
 scipy
 seaborn
 sounddevice
-tensorflow
-tensorflow_hub
+# tensorflow
+# tensorflow_hub
 torch
-transformers
+# transformers
 xgboost
+umap-learn

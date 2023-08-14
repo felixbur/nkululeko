@@ -10,7 +10,7 @@ unzip emodb.zip
 # change to Nkululeko parent directory
 cd ..
 # run the nkululeko experiment
-python -m nkululeko --config meta/demos/exp_emodb.ini
+python -m nkululeko.nkululeko --config tests/exp_emodb_os_xgb.ini
 ```
 
 Then, check the results in the `results` directory.
