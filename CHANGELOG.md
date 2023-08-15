@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.55.1
+--------------
+* changed error message in plot class
+
 Version 0.55.0
 --------------
 * added segmentation module

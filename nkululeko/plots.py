@@ -34,7 +34,7 @@ class Plots():
             plt.tight_layout()
             plt.savefig(f'{fig_dir}{filename}.{self.format}')
             plt.close(fig)
-            fig.clear()
+            # fig.clear()
         else:
             filename = f'samples_value_counts'
             ax = df_speakers['samplenum'].value_counts().sort_values().plot(kind='bar', stacked=True, title=f'samples per speaker ({df_speakers.shape[0]})', rot=0)
@@ -73,7 +73,7 @@ class Plots():
                 plt.tight_layout()
                 plt.savefig(f'{fig_dir}{filename}_{type}.{self.format}')
                 plt.close(fig)
-                fig.clear()
+                # fig.clear()           # avoid error
             elif len(att) == 2:
                 self.util.debug(f'plotting {att}')
                 att1 = att[0]
@@ -91,9 +91,9 @@ class Plots():
                 plt.tight_layout()
                 plt.savefig(f'{fig_dir}{filename}_{type}.{self.format}')   
                 plt.close(fig)
-                fig.clear()
+                # fig.clear()   # avoid error
             else:
-                self.util.error(f'plot value counts: target {att} has more than 2 values')
+                self.util.error(f'plot value counts: the plot distribution descriptor for {att} has more than 2 values')
 
 
     def describe_df(self, name, df, target, filename):
