@@ -131,6 +131,8 @@
   * check_size = 1000
 * **check_vad**: check if the files contain speech, using [silero VAD](https://github.com/snakers4/silero-vad)
   * check_vad = True
+* **segment**: select the samples to segment: either *train*, *test*, or *all*
+  * segment = all
 * **segment_target**: name of the extension that is added to the dataset names when storing the segemented data table with the *segment* module
   * segment_target = _seg
 
@@ -165,6 +167,7 @@
       * **xbow.model** = *path to xbow root folder (containing xbow.jar)*
       * **size** = 500 *(codebook size, rule of thumb: should grow with datasize)*
       * **assignments** = 10 *(number of words in the bag representation where the counter is increased for each input LLD, rule of thumb: should grow/shrink with codebook size)*
+    * **snr**: estimated SNR (signal to noise ratio)
 * **features** = *python list of selected features to be used (all others ignored)*
   * features = ['JitterPCA', 'meanF0Hz', 'hld_sylRate']
 * **no_reuse**: don't re-use already extracted features but start fresh

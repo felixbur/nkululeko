@@ -82,7 +82,7 @@ class Experiment:
                 self.got_speaker = True
             self.datasets.update({d: data})
         self.target = self.util.config_val('DATA', 'target', 'emotion')
-        self.util.debug(f'loaded {self.datasets.keys()} databases')
+        self.util.debug(f'loaded databases {self.datasets.keys()}')
 
     def _import_csv(self, storage):
         # df = pd.read_csv(storage, header=0, index_col=[0,1,2])
@@ -283,8 +283,8 @@ class Experiment:
     def extract_test_feats(self):
         self.feats_test = pd.DataFrame()
         feats_name = "_".join(ast.literal_eval(glob_conf.config['DATA']['tests']))
-        self.feature_extractor = FeatureExtractor() 
-        self.feature_extractor.set_data(self.df_test, feats_name, 'test')
+        feats_types = self.util.config_val_list('FEATS', 'type', ['os'])
+        self.feature_extractor = FeatureExtractor(self.df_test, feats_types, feats_name, 'test')
         self.feats_test = self.feature_extractor.extract()
         self.util.debug(f'Test features shape:{self.feats_test.shape}')
 
@@ -299,10 +299,10 @@ class Experiment:
         df_train, df_test = self.df_train, self.df_test
         feats_name = "_".join(ast.literal_eval(glob_conf.config['DATA']['databases']))
         self.feats_test, self.feats_train = pd.DataFrame(), pd.DataFrame()
-        self.feature_extractor = FeatureExtractor() 
-        self.feature_extractor.set_data(df_train, feats_name, 'train')
+        feats_types = self.util.config_val_list('FEATS', 'type', ['os'])
+        self.feature_extractor = FeatureExtractor(df_train, feats_types, feats_name, 'train')
         self.feats_train =self.feature_extractor.extract()
-        self.feature_extractor.set_data(df_test, feats_name, 'test')
+        self.feature_extractor = FeatureExtractor(df_test, feats_types, feats_name, 'test')
         self.feats_test = self.feature_extractor.extract()
         self.util.debug(f'All features: train shape : {self.feats_train.shape}, test shape:{self.feats_test.shape}')
 
@@ -325,6 +325,35 @@ class Experiment:
 
         augmenter = Augmenter(df)
         augmenter.augment(sample_selection)
+
+    def autopredict(self):
+        """
+        Predict labels for samples with existing models and add to the dataframe. 
+        """
+        sample_selection = self.util.config_val('PREDICT', 'split', 'all')
+        if sample_selection=='all':
+            df = pd.concat([self.df_train, self.df_test])
+        elif sample_selection=='train':
+            df = self.df_train
+        elif sample_selection=='test':
+            df = self.df_test
+        else:
+            self.util.error(f'unknown augmentation selection specifier {sample_selection}, should be [all | train | test]')
+        targets = self.util.config_val_list('PREDICT', 'targets', ['gender'])
+        for target in targets:
+            if target == 'gender':
+                from nkululeko.ap_gender import GenderPredictor
+                predictor = GenderPredictor(df)
+                df = predictor.predict(sample_selection)
+            if target == 'age':
+                from nkululeko.ap_age import AgePredictor
+                predictor = AgePredictor(df)
+                df = predictor.predict(sample_selection)
+            if target == 'snr':
+                from nkululeko.ap_snr import SNRPredictor
+                predictor = SNRPredictor(df)
+                df = predictor.predict(sample_selection)
+        return df
 
     def random_splice(self):
         """

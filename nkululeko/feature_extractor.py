@@ -10,24 +10,34 @@ from nkululeko.feats_opensmile import Opensmileset
 
 
 class FeatureExtractor:
+    """
+    Extract acoustic features from audio samples, using several feature extractors (appends the features column-wise)
+    Args:
+        data_df (pandas.DataFrame): dataframe with audiofile paths as index
+        feats_types (array of strings): designations of acoustic feature extractors to be used
+        data_name (string): names of databases that are extracted (for the caching)
+        feats_designation (string): the type of split (train/test), also is used for the cache name.    
+    Returns:
+        df (pandas.DataFrame): dataframe with same index as data_df and acoustic features in columns  
+    """
     df = None # pandas dataframe to store the features (and indexed with the data from the sets)
     data_df = None # dataframe to get audio paths
 
 # def __init__
-    def set_data(self, data_df, data_name, feats_designation):
+    def __init__(self, data_df, feats_types, data_name, feats_designation):
         self.data_df = data_df
         self.data_name = data_name
+        self.feats_types = feats_types
         self.util = Util('feature_extractor')
         self.feats_designation = feats_designation
-
+    
     def extract(self):
-        strategy = self.util.config_val('DATA', 'strategy', 'traintest')
-        feats_types = self.util.config_val_list('FEATS', 'type', ['os'])
+        # feats_types = self.util.config_val_list('FEATS', 'type', ['os'])
         self.featExtractor = None
         self.feats= pd.DataFrame()
         _scale = True
-        for feats_type in feats_types:
-            store_name = f'{self.data_name}_{strategy}_{feats_type}'   
+        for feats_type in self.feats_types:
+            store_name = f'{self.data_name}_{feats_type}'   
             if feats_type=='os':
                 self.featExtractor = Opensmileset(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='trill':
@@ -48,6 +58,9 @@ class FeatureExtractor:
             elif feats_type=='agender_agender':
                 from nkululeko.feats_agender_agender import AgenderAgenderSet
                 self.featExtractor = AgenderAgenderSet(f'{store_name}_{self.feats_designation}', self.data_df)
+            elif feats_type=='snr':
+                from nkululeko.feats_snr import SNRSet
+                self.featExtractor = SNRSet(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='clap':
                 from nkululeko.feats_clap import Clap
                 self.featExtractor = Clap(f'{store_name}_{self.feats_designation}', self.data_df)

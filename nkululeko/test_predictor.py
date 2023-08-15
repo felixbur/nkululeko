@@ -1,5 +1,7 @@
-# test_predictor.py
+""" test_predictor.py
+    Predict targets from a model and save as csv file.
 
+"""
 import nkululeko.glob_conf as glob_conf
 from nkululeko.util import Util
 import pandas as pd
@@ -30,6 +32,7 @@ class Test_predictor():
             data.prepare_labels()
             data_df = self.util.make_segmented_index(data.df)
             data_df.is_labeled = data.is_labeled
+            
             featextractor = FeatureExtractor(data_df, label_data, '')
             feats_df = featextractor.extract()
             scale = self.util.config_val('FEATS', 'scale', False)

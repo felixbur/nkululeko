@@ -91,11 +91,19 @@ class Util:
         """Check if a dataframe column is categorical"""
         return pd_series.dtype.name == 'object'
 
-
-    def get_res_dir(self):
+    def get_dir(self):
+        """
+            Get the experiment directory
+        """
         root = glob_conf.config['EXP']['root']
         name = glob_conf.config['EXP']['name']
-        dir_name = f'{root}{name}/results/'
+        dir_name = f'{root}{name}'
+        audeer.mkdir(dir_name)
+        return dir_name
+
+    def get_res_dir(self):
+        home_dir = self.get_dir()
+        dir_name = f'{home_dir}/results/'
         audeer.mkdir(dir_name)
         return dir_name
 
@@ -112,15 +120,17 @@ class Util:
             return f'_{name}-{str(val)}'
         return ''
 
+    def get_data_name(self):
+        """
+            Get a string as name from all databases that are useed
+        """
+        return '_'.join(ast.literal_eval(glob_conf.config['DATA']['databases']))
+    
     def get_exp_name(self, only_train = False, only_data = False):
-        if only_train:
+        trains_val = self.config_val('DATA', 'trains', False)
+        if only_train and trains_val:
             # try to get only the train tables
-            trains_val = self.config_val('DATA', 'trains', False)
-            if trains_val:
-                ds = '_'.join(ast.literal_eval(glob_conf.config['DATA']['trains']))
-            else:
-                # else use all the data
-                ds = '_'.join(ast.literal_eval(glob_conf.config['DATA']['databases']))
+            ds = '_'.join(ast.literal_eval(glob_conf.config['DATA']['trains']))
         else:
             ds = '_'.join(ast.literal_eval(glob_conf.config['DATA']['databases']))
         mt = ''

@@ -68,7 +68,16 @@ def main(src_dir):
     #             name = f'{dataset}{segment_target}'
     #             df_seg.to_csv(f'{expr.data_dir}/{name}.csv')
 
-    df = pd.concat([expr.df_train, expr.df_test])
+    sample_selection = util.config_val('DATA', 'segment', 'all')
+    if sample_selection=='all':
+        df = pd.concat([expr.df_train, expr.df_test])
+    elif sample_selection=='train':
+        df = expr.df_train
+    elif sample_selection=='test':
+        df = expr.df_test
+    else:
+        util.error(f'unknown segmentation selection specifier {sample_selection}, should be [all | train | test]')
+
     if "duration" not in df.columns:
         df = df.drop(columns=['duration'], inplace=True)
     util.debug(f'segmenting train and test set: {df.shape[0]} samples') 

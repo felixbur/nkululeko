@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version 0.56.0
+--------------
+* added autopredict module
+* added snr as feature extractor
+* added gender autopredict
+* added age autopredict
+* added snr autopredict
+
 Version 0.55.1
 --------------
 * changed error message in plot class

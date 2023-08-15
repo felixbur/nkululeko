@@ -12,14 +12,14 @@ class Dataset_CSV(Dataset):
         """Load the dataframe with files, speakers and task labels"""
         self.got_target, self.got_speaker, self.got_gender = False, False, False
         root = self.util.config_val_data(self.name, '', '')
-        absolut_path = eval(self.util.config_val_data(self.name, 'absolute_path', True))
+        absolute_path = eval(self.util.config_val_data(self.name, 'absolute_path', True))
         self.util.debug(f'loading {self.name}')
 #        df = pd.read_csv(root, index_col='file')       
         if not os.path.isabs(root):
             exp_root = self.util.config_val('EXP', 'root', '')
             root = exp_root + root
         df = audformat.utils.read_csv(root)       
-        if not absolut_path:
+        if not absolute_path:
             # add the root folder to the relative paths of the files 
             if audformat.index_type(df.index) == 'segmented':
                 df = df.set_index(df.index.set_levels(df.index.levels[0].map(lambda x: os.path.dirname(root)+'/'+x), 0))
