@@ -345,14 +345,24 @@ class Experiment:
                 from nkululeko.ap_gender import GenderPredictor
                 predictor = GenderPredictor(df)
                 df = predictor.predict(sample_selection)
-            if target == 'age':
+            elif target == 'age':
                 from nkululeko.ap_age import AgePredictor
                 predictor = AgePredictor(df)
                 df = predictor.predict(sample_selection)
-            if target == 'snr':
+            elif target == 'snr':
                 from nkululeko.ap_snr import SNRPredictor
                 predictor = SNRPredictor(df)
                 df = predictor.predict(sample_selection)
+            elif target == 'arousal':
+                from nkululeko.ap_arousal import ArousalPredictor
+                predictor = ArousalPredictor(df)
+                df = predictor.predict(sample_selection)
+            elif target == 'valence':
+                from nkululeko.ap_valence import ValencePredictor
+                predictor = ValencePredictor(df)
+                df = predictor.predict(sample_selection)
+            else:
+                self.util.error(f'unkown auto predict target: {target}')
         return df
 
     def random_splice(self):

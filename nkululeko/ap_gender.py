@@ -22,10 +22,8 @@ class GenderPredictor:
         feats_name = "_".join(ast.literal_eval(glob_conf.config['DATA']['databases']))
         self.feature_extractor = FeatureExtractor(self.df, ['agender_agender'], feats_name, split_selection)
         agender_df = self.feature_extractor.extract()
-        pred_age = agender_df.age * 100
         pred_gender = agender_df.drop('age', axis=1).idxmax(axis=1)
         return_df = self.df.copy()
         return_df['gender_pred'] = pred_gender
-#        return_df['age_pred'] = pred_age.astype('int')
         return return_df
 

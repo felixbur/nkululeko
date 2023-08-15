@@ -8,6 +8,7 @@
 * [Acoustic features: FEATS](#feats)
 * [Classifiers \& Regressors: MODEL](#model)
 * [Exploration: EXPL](#expl)
+* [Prediction: PREDICT](#pred)
 * [Visualization: PLOT](#plot)
 
 
@@ -159,9 +160,9 @@
     * **audmodel**: [audEERING emotion model embeddings](https://arxiv.org/abs/2203.07378), wav2vec2.0 model finetuned on [MSPPodcast](https://ecs.utdallas.edu/research/researchlabs/msp-lab/MSP-Podcast.html) emotions, embeddings
       * **aud.model** = ./audmodel/ (*path to the audEERING model folder*)
     * **auddim**: [audEERING emotion model dimensions](https://arxiv.org/abs/2203.07378), wav2vec2.0 model finetuned on [MSPPodcast](https://ecs.utdallas.edu/research/researchlabs/msp-lab/MSP-Podcast.html) arousal, dominance, valence
-    * **agender**: [audEERING age and gender model embeddings](https://arxiv.org/abs/2306.16962), wav2vec2.0 model finetuned on [MSPPodcast](https://ecs.utdallas.edu/research/researchlabs/msp-lab/MSP-Podcast.html) emotions, embeddings
+    * **agender**: [audEERING age and gender model embeddings](https://arxiv.org/abs/2306.16962), wav2vec2.0 model finetuned on [several age databases](https://github.com/audeering/w2v2-age-gender-how-to), embeddings
       * **agender.model** = ./agender/ (*path to the audEERING model folder*)
-    * **agender_agender**: [audEERING age and gender model age and gender predictions](https://arxiv.org/abs/2306.16962), wav2vec2.0 model finetuned on [MSPPodcast](https://ecs.utdallas.edu/research/researchlabs/msp-lab/MSP-Podcast.html) age, female, male, child 
+    * **agender_agender**: [audEERING age and gender model age and gender predictions](https://arxiv.org/abs/2306.16962), wav2vec2.0 model finetuned on [several age and gendeer databases](https://github.com/audeering/w2v2-age-gender-how-to): age, female, male, child 
     * **clap**: [Laion's Clap embedding](https://github.com/LAION-AI/CLAP)
     * **xbow**: [open crossbow](https://github.com/openXBOW) features codebook computed from open smile features
       * **xbow.model** = *path to xbow root folder (containing xbow.jar)*
@@ -268,6 +269,12 @@
   * value_counts = [['gender'], ['age'], ['age', 'duration']] 
 * **dist_type**: type of plot for value counts, either histogram or density estimation (kde)
   * dist_type = hist
+
+### PREDICT: 
+* **targets**: Speaker/speech characteristics to be predicted by some models
+  * targets = ['gender', 'age', 'snr', 'arousal', 'valence']
+* **sample_selection**: which split: [train, test, all]
+  * sample_selection = all
 
 ### PLOT
 * **name**: special name as a prefix for all plots (stored in *img_dir*).

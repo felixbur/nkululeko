@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Version 0.57.0
+--------------
+* renamed autopredict predict
+* added arousal autopredict
+* added valence autopredict 
+
+
 Version 0.56.0
 --------------
 * added autopredict module

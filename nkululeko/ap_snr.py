@@ -30,6 +30,6 @@ class SNRPredictor:
         result_df = result_df.replace(np.nan, 0)
         result_df.replace([np.inf, -np.inf], 0, inplace=True)
         pred_snr = result_df.snr * 100
-        return_df['est_snr'] = pred_snr.astype('int')/100
+        return_df['snr_pred'] = pred_snr.astype('int')/100
         return return_df
 

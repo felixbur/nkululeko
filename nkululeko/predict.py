@@ -1,4 +1,4 @@
-# autopredict.py
+# predict.py
 # use some model and add automatically predicted labels to train and test splits, than save as a new dataset
 
 from nkululeko.experiment import Experiment
@@ -27,8 +27,8 @@ def main(src_dir):
     config.read(config_file)
     # create a new experiment
     expr = Experiment(config)
-    util = Util('autopredict')
-    util.debug(f'running {expr.name}, nkululeko version {VERSION}')
+    util = Util('predict')
+    util.debug(f'running {expr.name} from config {config_file}, nkululeko version {VERSION}')
 
     # load the data
     expr.load_datasets()
@@ -39,7 +39,11 @@ def main(src_dir):
 
     # process the data
     df = expr.autopredict()
-    name = util.get_data_name()+'_autopredicted'
+    target = util.config_val('DATA', 'target', 'emotion')
+    if 'class_label' in df.columns:
+        df = df.drop(columns=[target])
+        df = df.rename(columns={'class_label':target})
+    name = util.get_data_name()+'_predicted'
     df.to_csv(f'{expr.data_dir}/{name}.csv')
     util.debug(f'saved {name}.csv to {expr.data_dir}')
     print('DONE')
