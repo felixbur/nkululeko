@@ -2,6 +2,7 @@ audeer
 audformat
 audinterface
 audiofile
+audiomentations==0.31.0
 audonnx
 audtorch
 datasets
