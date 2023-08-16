@@ -135,6 +135,7 @@ There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
 * [Visualize your data distribution](http://blog.syntheticspeech.de/2023/05/11/nkululeko-how-to-visualize-your-data-distribution/)
 * [Check your dataset](http://blog.syntheticspeech.de/2023/07/11/nkululeko-check-your-dataset/) 
 * [Segmenting a database](http://blog.syntheticspeech.de/2023/07/14/nkululeko-segmenting-a-database/)
+* [Predict new labels for your data from public models and check bias](http://blog.syntheticspeech.de/2023/08/16/nkululeko-how-to-predict-labels-for-your-data-from-existing-models-and-check-them/)
 
 The framework is targeted at the speech domain and supports experiments where different classifiers are combined with different feature extractors.
 
