@@ -8,21 +8,23 @@ The easiest and safest way to try Nkululeko is using virtualenv, either using ve
     $ conda activate nkululeko  
     $ pip install nkululeko  
 
-And for venv. ::
+And for venv: ::
 
     $ python3 -m venv nkululeko  
     $ source nkululeko/bin/activate  
     $ pip install nkululeko
 
-For development version, you install directly from the source. ::
+For development version, you install directly from the source: ::
 
     # clone the repository  
     $ git clone https://github.com/felixbur/nkululeko.git  
     $ cd nkululeko  
     # install in editable mode  
     $ pip install -e .  
+    # or add the path to your PYTHONPATH
+    $ export PYTHONPATH=$PYTHONPATH:/path/to/nkululeko
 
-Check the installation. ::
+Check the installation: ::
 
     # via pip
     pip list | grep nkululeko

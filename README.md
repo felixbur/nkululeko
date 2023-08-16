@@ -1,6 +1,7 @@
 # Nkululeko
 * [Overview](#overview)
 * [Installation](#installation)
+* [Documentation](https://nkululeko.readthedocs.io)
 * [Usage](#usage)
 * [Hello World](#hello-world-example)
 * [Licence](#licence)
@@ -50,7 +51,11 @@ Sometimes you only want to take a look at your data:
 
 <img src="meta/images/data_plot.png" width="500px"/>
 
-## Installatione
+
+## Documentation
+The documentation, along with extensions of installation, usage, INI file format, and examples, can be found [nkululeko.readthedocs.io](https://nkululeko.readthedocs.io).
+
+## Installation
 
 Create and activate a virtual Python environment and simply run
 ```
@@ -90,10 +95,11 @@ Read the [Hello World example](#hello-world-example) for initial usage with Emo-
 
 Here is an overview of the interfaces:
 * **nkululeko.nkululeko**: doing experiments
-* **nkululeko.demo**: demo the current best model on command line
+* **nkululeko.demo**: demo the current best model on the command line
 * **nkululeko.test**: predict a series of files with the current best model
 * **nkululeko.explore**: perform data exploration
 * **nkululeko.augment**: augment the current training data
+* **nkululeko.predict**: predict a series of files with a given model
 
 Alternatively, there is a central "experiment" class that can be used by own experiments
 
