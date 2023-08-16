@@ -17,3 +17,4 @@ python -m nkululeko.nkululeko --config tests/exp_emodb-aug_os_xgb.ini
 python -m nkululeko.augment --config tests/exp_emodb_random_splice_os_xgb.ini
 python -m nkululeko.nkululeko --config tests/exp_emodb_rs_os_xgb.ini
 python -m nkululeko.nkululeko --config tests/exp_androids_os_svm.ini
+python -m nkululeko.predict --config tests/exp_emodb_predict.ini

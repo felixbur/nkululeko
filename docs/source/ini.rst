@@ -1,9 +1,9 @@
-Options for the nkululeko framework
+Overview on options for the nkululeko framework
 ===============================================
 
--  To be specified in an INI file, see `config parser
-   syntax <https://zetcode.com/python/configparser/>`__ for more detail.
--  Kind of all (well, most) values have defaults.
+-  To be specified in an .ini file, `config parser
+   syntax <https://zetcode.com/python/configparser/>`__
+-  Kind of all (well, most) values have defaults
 
 Contents
 --------
@@ -13,6 +13,7 @@ Contents
 -  `Acoustic features: FEATS <#feats>`__
 -  `Classifiers & Regressors: MODEL <#model>`__
 -  `Exploration: EXPL <#expl>`__
+-  `Prediction: PREDICT <#pred>`__
 -  `Visualization: PLOT <#plot>`__
 
 Sections
@@ -31,9 +32,9 @@ EXP
    -  possible values:
 
       -  **classification**: supervised learning experiment with
-         restricted set of categories (e.g. emotion categories).
+         restricted set of categories (e.g. emotion categories).
       -  **regression**: supervised learning experiment with continous
-         values (e.g. speaker age in years).
+         values (e.g. speaker age in years).
 
 -  **store**: (relative to *root*) folder for caches
 
@@ -55,7 +56,7 @@ EXP
 
    -  models_dir = ./models/
 
--  **runs**: number of runs (e.g. to average over random
+-  **runs**: number of runs (e.g. to average over random
    initializations)
 
    -  runs = 1
@@ -84,12 +85,12 @@ DATA
 
 -  **databases**: list of databases to be used in the experiment
 
-   -  databases = ['emodb', 'timit']
+   -  databases = [‘emodb’, ‘timit’]
 
 -  **tests**: Datasets to be used as test data for the given best model.
    The datases do NOT have to appear in the **databases** field!
 
-   -  tests = ['emovo']
+   -  tests = [‘emovo’]
 
 -  **root_folders**: specify an additional configuration specifically
    for all entries starting with a dataset name, acting as global
@@ -98,16 +99,16 @@ DATA
    -  root_folders = data_roots.ini
 
 -  **db_name**: path with audformatted repository for each database
-   listed in 'databases\*
+   listed in ’databases\*
 
    -  emodb = /home/data/audformat/emodb/
 
--  **db_name.type**: type of storage, e.g. audformat database or 'csv'
+-  **db_name.type**: type of storage, e.g. audformat database or ‘csv’
    (needs header: file,speaker,task)
 
    -  emodb.type = audformat
 
--  **db_name.absolute_path**: only for 'csv' databases: are the audio
+-  **db_name.absolute_path**: only for ‘csv’ databases: are the audio
    file pathes relative or absolute?
 
    -  my_data.absolute_path = True
@@ -115,8 +116,8 @@ DATA
 -  **db_name.mapping**: mapping python dictionary to map between
    categories for cross-database experiments
 
-   -  emodb.mapping = {'anger':'angry', 'happiness':'happy',
-      'sadness':'sad', 'neutral':'neutral'}
+   -  emodb.mapping = {‘anger’:‘angry’, ‘happiness’:‘happy’,
+      ‘sadness’:‘sad’, ‘neutral’:‘neutral’}
 
 -  **db_name.split_strategy**: How to identify sets for
    train/development data splits within one database
@@ -129,9 +130,9 @@ DATA
          multiple or no tables to train or dev set)
 
          -  emodb.train_tables =
-            ['emotion.categories.train.gold_standard']
+            [‘emotion.categories.train.gold_standard’]
          -  emodb.test_tables =
-            ['emotion.categories.test.gold_standard']
+            [‘emotion.categories.test.gold_standard’]
 
       -  **speaker_split**: split samples randomly but speaker disjunct,
          given a percentage of speakers for the test set.
@@ -152,19 +153,19 @@ DATA
 -  **db_name.target_tables**: tables that containes the target / speaker
    / sex labels
 
-   -  emodb.target_tables = ['emotion']
+   -  emodb.target_tables = [‘emotion’]
 
 -  **db_name.files_tables**: tables that containes the audio file names
 
-   -  emodb.files_tables = ['files']
+   -  emodb.files_tables = [‘files’]
 
 -  **db_name.test_tables**: tables that should be used for testing
 
-   -  emodb.test_tables = ['emotion.categories.test.gold_standard']
+   -  emodb.test_tables = [‘emotion.categories.test.gold_standard’]
 
 -  **db_name.train_tables**: tables that should be used for training
 
-   -  emodb.train_tables = ['emotion.categories.train.gold_standard']
+   -  emodb.train_tables = [‘emotion.categories.train.gold_standard’]
 
 -  **db_name.limit_samples**: maximum number of random N samples per
    table (for testing with very large data mainly)
@@ -198,10 +199,10 @@ DATA
 
    -  emodb.rename_speakers = False
 
--  **db_name.filter**: don't use all the data but only selected values
+-  **db_name.filter**: don’t use all the data but only selected values
    from columns: [col, val]\*
 
-   -  emodb.filter = [['gender', 'female']]
+   -  emodb.filter = [[‘gender’, ‘female’]]
 
 -  **target**: the task name, e.g. \ *age* or *emotion*
 
@@ -210,14 +211,14 @@ DATA
 -  **labels**: for classification experiments: the names of the
    categories (is also used for regression when binning the values)
 
-   -  labels = ['anger', 'boredom', 'disgust', 'fear', 'happiness',
-      'neutral', 'sadness']
+   -  labels = [‘anger’, ‘boredom’, ‘disgust’, ‘fear’, ‘happiness’,
+      ‘neutral’, ‘sadness’]
 
 -  **bins**: array of integers to be used for binning continous data
 
    -  bins = [-100, 40, 50, 60, 70, 100]
 
--  **no_reuse**: don't re-use any tables but start fresh
+-  **no_reuse**: don’t re-use any tables but start fresh
 
    -  no_reuse = False
 
@@ -255,10 +256,10 @@ DATA
 
    -  random_splice_result = random_spliced.csv
 
--  **filter**: don't use all the data but only selected values from
+-  **filter**: don’t use all the data but only selected values from
    columns: [col, val]\*
 
-   -  filter = [['gender', 'female'], ['task', 'reading']]
+   -  filter = [[‘gender’, ‘female’], [‘task’, ‘reading’]]
 
 -  **filter.sample_selection**: Which sample set to use for filtering
 
@@ -294,6 +295,11 @@ DATA
 
    -  check_vad = True
 
+-  **segment**: select the samples to segment: either *train*, *test*,
+   or *all*
+
+   -  segment = all
+
 -  **segment_target**: name of the extension that is added to the
    dataset names when storing the segemented data table with the
    *segment* module
@@ -306,7 +312,7 @@ FEATS
 -  **type**: a comma separated list of types of features, they will be
    columnwise concatenated
 
-   -  type = ['os']
+   -  type = [‘os’]
    -  possible values:
 
       -  **import**: `already computed
@@ -363,19 +369,19 @@ FEATS
          arousal, dominance, valence
       -  **agender**: `audEERING age and gender model
          embeddings <https://arxiv.org/abs/2306.16962>`__, wav2vec2.0
-         model finetuned on
-         `MSPPodcast <https://ecs.utdallas.edu/research/researchlabs/msp-lab/MSP-Podcast.html>`__
-         emotions, embeddings
+         model finetuned on `several age
+         databases <https://github.com/audeering/w2v2-age-gender-how-to>`__,
+         embeddings
 
          -  **agender.model** = ./agender/ (*path to the audEERING model
             folder*)
 
       -  **agender_agender**: `audEERING age and gender model age and
          gender predictions <https://arxiv.org/abs/2306.16962>`__,
-         wav2vec2.0 model finetuned on
-         `MSPPodcast <https://ecs.utdallas.edu/research/researchlabs/msp-lab/MSP-Podcast.html>`__
+         wav2vec2.0 model finetuned on `several age and gendeer
+         databases <https://github.com/audeering/w2v2-age-gender-how-to>`__:
          age, female, male, child
-      -  **clap**: `Laion's Clap
+      -  **clap**: `Laion’s Clap
          embedding <https://github.com/LAION-AI/CLAP>`__
       -  **xbow**: `open crossbow <https://github.com/openXBOW>`__
          features codebook computed from open smile features
@@ -388,12 +394,14 @@ FEATS
             representation where the counter is increased for each input
             LLD, rule of thumb: should grow/shrink with codebook size)*
 
+      -  **snr**: estimated SNR (signal to noise ratio)
+
 -  **features** = *python list of selected features to be used (all
    others ignored)*
 
-   -  features = ['JitterPCA', 'meanF0Hz', 'hld_sylRate']
+   -  features = [‘JitterPCA’, ‘meanF0Hz’, ‘hld_sylRate’]
 
--  **no_reuse**: don't re-use already extracted features but start fresh
+-  **no_reuse**: don’t re-use already extracted features but start fresh
 
    -  no_reuse = False
 
@@ -463,7 +471,7 @@ MODEL
 -  **tuning_params**: possible tuning parameters for x-fold optimization
    (for Bayes, KNN, KNN_reg, Tree, Tree_reg, SVM, SVR, XGB and XGR)
 
-   -  tuning_params = ['subsample', 'n_estimators', 'max_depth']
+   -  tuning_params = [‘subsample’, ‘n_estimators’, ‘max_depth’]
 
       -  subsample = [.5, .7]
       -  n_estimators = [50, 80, 200]
@@ -476,7 +484,7 @@ MODEL
 -  **layers**: layer outline (number of hidden layers and number of
    neurons per layer) for the MLP as a python dictionary
 
-   -  layers = {'l1':8, 'l2':4}
+   -  layers = {‘l1’:8, ‘l2’:4}
 
 -  **class_weight**: add class_weight to linear classifier (XGB, SVM)
    fit methods for imbalanced data (True or False)
@@ -567,7 +575,7 @@ EXPL
 -  **scatter**: make a scatter plot of combined train and test data,
    colored by label.
 
-   -  scatter = ['tsne', 'umap', 'pca']
+   -  scatter = [‘tsne’, ‘umap’, ‘pca’]
 
 -  **plot_tree**: Plot a decision tree for classification (Requires
    model = tree)
@@ -577,12 +585,24 @@ EXPL
 -  **value_counts**: plot distributions of target for the samples and
    speakers (in the *image_dir*)
 
-   -  value_counts = [['gender'], ['age'], ['age', 'duration']]
+   -  value_counts = [[‘gender’], [‘age’], [‘age’, ‘duration’]]
 
 -  **dist_type**: type of plot for value counts, either histogram or
    density estimation (kde)
 
    -  dist_type = hist
+
+PREDICT:
+~~~~~~~~
+
+-  **targets**: Speaker/speech characteristics to be predicted by some
+   models
+
+   -  targets = [‘gender’, ‘age’, ‘snr’, ‘arousal’, ‘valence’]
+
+-  **sample_selection**: which split: [train, test, all]
+
+   -  sample_selection = all
 
 PLOT
 ~~~~
