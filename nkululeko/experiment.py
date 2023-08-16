@@ -351,7 +351,7 @@ class Experiment:
                 predictor = AgePredictor(df)
                 df = predictor.predict(sample_selection)
             elif target == 'snr':
-                from nkululeko.ap_snr import SNRPredictor
+                from nkululeko.ap_sdr import SNRPredictor
                 predictor = SNRPredictor(df)
                 df = predictor.predict(sample_selection)
             elif target == 'mos':
@@ -361,6 +361,14 @@ class Experiment:
             elif target == 'pesq':
                 from nkululeko.ap_pesq import PESQPredictor
                 predictor = PESQPredictor(df)
+                df = predictor.predict(sample_selection)
+            elif target == 'sdr':
+                from nkululeko.ap_sdr import SDRPredictor
+                predictor = SDRPredictor(df)
+                df = predictor.predict(sample_selection)
+            elif target == 'stoi':
+                from nkululeko.ap_stoi import STOIPredictor
+                predictor = STOIPredictor(df)
                 df = predictor.predict(sample_selection)
             elif target == 'arousal':
                 from nkululeko.ap_arousal import ArousalPredictor

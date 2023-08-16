@@ -1,5 +1,12 @@
-""" feats_pesq.py
-predict PESQ (Perceptual Evaluation of Speech Quality)
+""" feats_squim.py
+predict SQUIM ( SPEECH QUALITY AND INTELLIGIBILITY
+MEASURES) features
+
+
+    Wideband Perceptual Estimation of Speech Quality (PESQ) [2]
+    Short-Time Objective Intelligibility (STOI) [3]
+    Scale-Invariant Signal-to-Distortion Ratio (SI-SDR) [4]
+
 
 adapted from
 from https://pytorch.org/audio/main/tutorials/squim_tutorial.html#sphx-glr-tutorials-squim-tutorial-py
@@ -21,8 +28,8 @@ import torch
 import torchaudio
 from torchaudio.pipelines import SQUIM_OBJECTIVE
 
-class PESQSet(Featureset):
-    """Class to predict PESQ (Perceptual Evaluation of Speech Quality)
+class SQUIMSet(Featureset):
+    """Class to predict SQUIM features
     
     """
 
@@ -50,7 +57,7 @@ class PESQSet(Featureset):
         if extract or no_reuse or not os.path.isfile(storage):
             if not self.model_initialized:
                 self.init_model()
-            self.util.debug('predicting PESQ, this might take a while...')
+            self.util.debug('predicting SQUIM, this might take a while...')
             emb_series = pd.Series(index = self.data_df.index, dtype=object)
             length = len(self.data_df.index)
             for idx, (file, start, end) in enumerate(self.data_df.index.to_list()):
@@ -58,16 +65,16 @@ class PESQSet(Featureset):
                 emb = self.get_embeddings(signal, sampling_rate)
                 emb_series[idx] = emb
                 if idx%10==0:
-                    self.util.debug(f'PESQ: {idx} of {length} done')
+                    self.util.debug(f'SQUIM: {idx} of {length} done')
             self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index) 
-            self.df.columns = ['pesq']
+            self.df.columns = ['pesq', 'sdr', 'stoi']
             self.util.write_store(self.df, storage, store_format)
             try:
                 glob_conf.config['DATA']['needs_feature_extraction'] = 'false'
             except KeyError:
                 pass
         else:
-            self.util.debug('reusing predicted PESQ values')
+            self.util.debug('reusing predicted SQUIM values')
             self.df = self.util.get_store(storage, store_format)
             if self.df.isnull().values.any():
                 nanrows = self.df.columns[self.df.isna().any()].tolist()
@@ -76,13 +83,16 @@ class PESQSet(Featureset):
 
 
     def get_embeddings(self, signal, sampling_rate):
-        tmp_audio_name = 'pesq_audio_tmp.wav'
+        tmp_audio_name = 'squim_audio_tmp.wav'
         audiofile.write(tmp_audio_name, signal, sampling_rate)
         WAVEFORM_SPEECH, SAMPLE_RATE_SPEECH = torchaudio.load(tmp_audio_name)
         with torch.no_grad():
             stoi_hyp, pesq_hyp, si_sdr_hyp = self.objective_model(WAVEFORM_SPEECH)
-        return float(pesq_hyp[0].numpy())
-    
+        pesq = float(pesq_hyp[0].numpy())
+        stoi = float(stoi_hyp[0].numpy())
+        sdr = float(si_sdr_hyp[0].numpy())
+        return pesq, sdr, stoi
+ 
     def extract_sample(self, signal, sr):
         self.init_model()
         feats = self.get_embeddings(signal, sr)

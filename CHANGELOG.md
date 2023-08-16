@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 0.59.0
+--------------
+* introduced SQUIM features
+* added SDR predict
+* added STOI predict
+
 Version 0.58.0
 --------------
 * added dominance predict
