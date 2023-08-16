@@ -172,8 +172,8 @@
       * **size** = 500 *(codebook size, rule of thumb: should grow with datasize)*
       * **assignments** = 10 *(number of words in the bag representation where the counter is increased for each input LLD, rule of thumb: should grow/shrink with codebook size)*
     * **snr**: estimated SNR (signal to noise ratio)
-    * **mos**: estimated MOS (mean opinion score)
-    * **pesq**: estimated PESQ (Perceptual Evaluation of Speech Quality)
+    * **mos**: estimated [MOS](https://arxiv.org/pdf/2304.01448.pdf) (mean opinion score)
+    * **pesq**: estimated [PESQ](https://arxiv.org/pdf/2304.01448.pdf) (Perceptual Evaluation of Speech Quality)
 * **features** = *python list of selected features to be used (all others ignored)*
   * features = ['JitterPCA', 'meanF0Hz', 'hld_sylRate']
 * **no_reuse**: don't re-use already extracted features but start fresh
