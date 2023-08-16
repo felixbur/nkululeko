@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 0.58.0
+--------------
+* added dominance predict
+* added MOS predict 
+* added PESQ predict 
+
 Version 0.57.0
 --------------
 * renamed autopredict predict

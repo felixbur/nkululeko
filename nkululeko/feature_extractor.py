@@ -61,6 +61,12 @@ class FeatureExtractor:
             elif feats_type=='snr':
                 from nkululeko.feats_snr import SNRSet
                 self.featExtractor = SNRSet(f'{store_name}_{self.feats_designation}', self.data_df)
+            elif feats_type=='mos':
+                from nkululeko.feats_mos import MOSSet
+                self.featExtractor = MOSSet(f'{store_name}_{self.feats_designation}', self.data_df)
+            elif feats_type=='pesq':
+                from nkululeko.feats_pesq import PESQSet
+                self.featExtractor = PESQSet(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='clap':
                 from nkululeko.feats_clap import Clap
                 self.featExtractor = Clap(f'{store_name}_{self.feats_designation}', self.data_df)

@@ -82,7 +82,8 @@ class Experiment:
                 self.got_speaker = True
             self.datasets.update({d: data})
         self.target = self.util.config_val('DATA', 'target', 'emotion')
-        self.util.debug(f'loaded databases {self.datasets.keys()}')
+        dbs = ','.join(list(self.datasets.keys()))
+        self.util.debug(f'loaded databases {dbs}')
 
     def _import_csv(self, storage):
         # df = pd.read_csv(storage, header=0, index_col=[0,1,2])
@@ -353,6 +354,14 @@ class Experiment:
                 from nkululeko.ap_snr import SNRPredictor
                 predictor = SNRPredictor(df)
                 df = predictor.predict(sample_selection)
+            elif target == 'mos':
+                from nkululeko.ap_mos import MOSPredictor
+                predictor = MOSPredictor(df)
+                df = predictor.predict(sample_selection)
+            elif target == 'pesq':
+                from nkululeko.ap_pesq import PESQPredictor
+                predictor = PESQPredictor(df)
+                df = predictor.predict(sample_selection)
             elif target == 'arousal':
                 from nkululeko.ap_arousal import ArousalPredictor
                 predictor = ArousalPredictor(df)
@@ -361,8 +370,12 @@ class Experiment:
                 from nkululeko.ap_valence import ValencePredictor
                 predictor = ValencePredictor(df)
                 df = predictor.predict(sample_selection)
+            elif target == 'dominance':
+                from nkululeko.ap_dominance import DominancePredictor
+                predictor = DominancePredictor(df)
+                df = predictor.predict(sample_selection)
             else:
-                self.util.error(f'unkown auto predict target: {target}')
+                self.util.error(f'unknown auto predict target: {target}')
         return df
 
     def random_splice(self):

@@ -67,7 +67,6 @@ class Dataset:
         # store the dataframe
         store = self.util.get_path('store')
         store_file = f'{store}{self.name}.pkl'
-        self.util.debug(f'{self.name}: loading ...')
         self.root = self._load_db()
 #        self.got_speaker, self.got_gender = False, False 
         if not self.start_fresh and os.path.isfile(store_file):

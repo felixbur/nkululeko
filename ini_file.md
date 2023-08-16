@@ -3,13 +3,16 @@
 * Kind of all (well, most) values have defaults 
 
 ## Contents
-* [Experiment: EXP](#exp)
-* [Datasets: DATA](#data)
-* [Acoustic features: FEATS](#feats)
-* [Classifiers \& Regressors: MODEL](#model)
-* [Exploration: EXPL](#expl)
-* [Prediction: PREDICT](#pred)
-* [Visualization: PLOT](#plot)
+- [Overview on options for the nkululeko framework](#overview-on-options-for-the-nkululeko-framework)
+  - [Contents](#contents)
+  - [Sections](#sections)
+    - [EXP](#exp)
+    - [DATA](#data)
+    - [FEATS](#feats)
+    - [MODEL](#model)
+    - [EXPL](#expl)
+    - [PREDICT](#predict)
+    - [PLOT](#plot)
 
 
 ## Sections
@@ -169,6 +172,8 @@
       * **size** = 500 *(codebook size, rule of thumb: should grow with datasize)*
       * **assignments** = 10 *(number of words in the bag representation where the counter is increased for each input LLD, rule of thumb: should grow/shrink with codebook size)*
     * **snr**: estimated SNR (signal to noise ratio)
+    * **mos**: estimated MOS (mean opinion score)
+    * **pesq**: estimated PESQ (Perceptual Evaluation of Speech Quality)
 * **features** = *python list of selected features to be used (all others ignored)*
   * features = ['JitterPCA', 'meanF0Hz', 'hld_sylRate']
 * **no_reuse**: don't re-use already extracted features but start fresh
@@ -270,9 +275,9 @@
 * **dist_type**: type of plot for value counts, either histogram or density estimation (kde)
   * dist_type = hist
 
-### PREDICT: 
+### [PREDICT](#predict) 
 * **targets**: Speaker/speech characteristics to be predicted by some models
-  * targets = ['gender', 'age', 'snr', 'arousal', 'valence']
+  * targets = ['gender', 'age', 'snr', 'arousal', 'valence', 'dominance', 'pesq', 'mos']
 * **sample_selection**: which split: [train, test, all]
   * sample_selection = all
 
