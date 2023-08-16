@@ -51,6 +51,10 @@ Sometimes you only want to take a look at your data:
 
 <img src="meta/images/data_plot.png" width="500px"/>
 
+### Bias checking
+In cases you might wonder if there's bias in your data. You can try to detect this with automatically estimated speech properties, by visualizing the correlation of target label and predicted labels.
+
+<img src="meta/images/emotion-pesq.png" width="500px"/>
 
 ## Documentation
 The documentation, along with extensions of installation, usage, INI file format, and examples, can be found [nkululeko.readthedocs.io](https://nkululeko.readthedocs.io).
