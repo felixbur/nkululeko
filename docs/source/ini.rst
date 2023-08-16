@@ -8,13 +8,19 @@ Overview on options for the nkululeko framework
 Contents
 --------
 
--  `Experiment: EXP <#exp>`__
--  `Datasets: DATA <#data>`__
--  `Acoustic features: FEATS <#feats>`__
--  `Classifiers & Regressors: MODEL <#model>`__
--  `Exploration: EXPL <#expl>`__
--  `Prediction: PREDICT <#pred>`__
--  `Visualization: PLOT <#plot>`__
+-  `Overview on options for the nkululeko
+   framework <#overview-on-options-for-the-nkululeko-framework>`__
+
+   -  `Contents <#contents>`__
+   -  `Sections <#sections>`__
+
+      -  `EXP <#exp>`__
+      -  `DATA <#data>`__
+      -  `FEATS <#feats>`__
+      -  `MODEL <#model>`__
+      -  `EXPL <#expl>`__
+      -  `PREDICT <#predict>`__
+      -  `PLOT <#plot>`__
 
 Sections
 --------
@@ -204,7 +210,7 @@ DATA
 
    -  emodb.filter = [[‘gender’, ‘female’]]
 
--  **target**: the task name, e.g. \ *age* or *emotion*
+-  **target**: the task name, e.g. *age* or *emotion*
 
    -  target = emotion
 
@@ -395,6 +401,9 @@ FEATS
             LLD, rule of thumb: should grow/shrink with codebook size)*
 
       -  **snr**: estimated SNR (signal to noise ratio)
+      -  **mos**: estimated MOS (mean opinion score)
+      -  **pesq**: estimated PESQ (Perceptual Evaluation of Speech
+         Quality)
 
 -  **features** = *python list of selected features to be used (all
    others ignored)*
@@ -592,13 +601,14 @@ EXPL
 
    -  dist_type = hist
 
-PREDICT:
-~~~~~~~~
+`PREDICT <#predict>`__
+~~~~~~~~~~~~~~~~~~~~~~
 
 -  **targets**: Speaker/speech characteristics to be predicted by some
    models
 
-   -  targets = [‘gender’, ‘age’, ‘snr’, ‘arousal’, ‘valence’]
+   -  targets = [‘gender’, ‘age’, ‘snr’, ‘arousal’, ‘valence’,
+      ‘dominance’, ‘pesq’, ‘mos’]
 
 -  **sample_selection**: which split: [train, test, all]
 
