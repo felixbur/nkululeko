@@ -208,7 +208,7 @@ class Plots():
         ax = plt.gca()
         ax.figure.set_size_inches(100, 60)
 #        tree.plot_tree(model, ax = ax)
-        tree.plot_tree(model, feature_names=features.columns, ax = ax)
+        tree.plot_tree(model, feature_names=list(features.columns), ax = ax)
         plt.tight_layout()
         #print(ax)
         fig_dir = self.util.get_path('fig_dir')+'../' # one up because of the runs 

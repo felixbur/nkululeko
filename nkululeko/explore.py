@@ -30,6 +30,11 @@ def main(src_dir):
     util = Util('explore')
     util.debug(f'running {expr.name} from config {config_file}, nkululeko version {VERSION}')
 
+    if util.config_val('EXP', 'no_warnings', False):
+        import warnings
+        warnings.filterwarnings("ignore")
+
+
     # load the data
     expr.load_datasets()
 

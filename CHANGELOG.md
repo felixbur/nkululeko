@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Version 0.59.1
+--------------
+* bugfix, after fresh install, it seems some libraries have changed
+* added no_warnings
+* changed print() to util.debug()
+* added progress to opensmile extract
+  
 Version 0.59.0
 --------------
 * introduced SQUIM features

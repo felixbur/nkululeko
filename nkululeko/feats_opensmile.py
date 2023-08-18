@@ -37,7 +37,8 @@ class Opensmileset(Featureset):
             smile = opensmile.Smile(
             feature_set= self.feature_set,
             feature_level=self.feature_level,
-            num_workers=5,)
+            num_workers=5,
+            verbose=True,)
             if isinstance(self.data_df.index, pd.MultiIndex):
                 self.df = smile.process_index(self.data_df.index)
                 self.df = self.df.set_index(self.data_df.index)

@@ -39,7 +39,7 @@ class Dataset_CSV(Dataset):
         if 'speaker' in df.columns:
             self.got_speaker = True
             ns = df['speaker'].nunique()
-            print(f'num of speakers: {ns}')
+            self.util.debug(f'num of speakers: {ns}')
 
         self.util.debug(f'Loaded database {self.name} with {df.shape[0]} '\
             f'samples: got targets: {self.got_target}, got speakers: {self.got_speaker}, '\
