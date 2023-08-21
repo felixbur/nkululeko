@@ -6,7 +6,7 @@ We used the version downloadable from [github](https://github.com/CheyneyCompute
 
 Download and unzip or git clone the archive.
 
-We only used the [AudioWAV subdirectory] https://www.kaggle.com/datasets/ejlok1/cremad?resource=download. 
+We only used the [AudioWAV subdirectory](https://www.kaggle.com/datasets/ejlok1/cremad?resource=download). 
 You can also download from Kaggle link above; it is smaller than the original Github repo.
 
 
