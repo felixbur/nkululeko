@@ -1,17 +1,29 @@
-This folder is to import the 
-The Ryerson Audio-Visual Database of Emotional Speech and Song (RAVDESS)
+This folder is to import the Ryerson Audio-Visual Database of Emotional Speech and Song (RAVDESS)
 database to nkululeko.
 
 I used the version downloadable from [Zenodo](https://zenodo.org/record/1188976)
 
 Download and unzip the file Audio_Speech_Actors_01-24.zip
+```bash
+$ wget https://zenodo.org/record/1188976/files/Audio_Speech_Actors_01-24.zip
+$ unzip Audio_Speech_Actors_01-24.zip
+```
 
 run the file
+```bash
+python3 process_database.py
 ```
-python process_database.py
+
+Change to Nkululeko parent directory,
+
+```bash
+cd ../..
 ```
 
 then, as a test, you might do
+
+```bash
+python3 -m nkululeko.nkululeko --config data/ravdess/exp_ravdess_os_xgb.ini 
 ```
-python -m nkululeko.nkululeko --config exp_ravdess_os_xgb.ini 
-```
+
+Check the results in the results folder under Nkululeko parent directory.

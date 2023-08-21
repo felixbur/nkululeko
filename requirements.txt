@@ -1,4 +1,5 @@
 audeer
+audobject
 audformat
 audinterface
 audiofile

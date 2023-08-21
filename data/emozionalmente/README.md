@@ -8,20 +8,30 @@ downloaded June 20th 2023
 
 Download and unzip
 
-run
+```bash
+wget https://zenodo.org/record/6569824/files/emozionalmente.zip
+unzip emozionalmente.zip
+```
+
+Then, create the database by running
 ```
 python create.py
 ```
 
+Change to parent directory and run (to enable experiments without installing Nkululeko)  
+```bash
+cd ../..
+```
+
 then, you could run
 ```
-python -m nkululeko.nkululeko --config nkulu_os_xgb.ini
+python3 -m nkululeko.nkululeko --config data/emozionalmente/nkulu_os_xgb.ini
 ```
-to test the database and
+to test and
 ```
-python -m nkululeko.explore --config nkulu_os_xgb.ini
+python3 -m nkululeko.explore --config nkulu_os_xgb.ini
 ```
-to see the data distribution
+to see the data distribution (plot distribution of gender)
 
 Should result into a confusion matrix like this
 

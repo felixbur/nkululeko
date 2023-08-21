@@ -17,7 +17,7 @@ class Dataset_CSV(Dataset):
 #        df = pd.read_csv(root, index_col='file')       
         if not os.path.isabs(root):
             exp_root = self.util.config_val('EXP', 'root', '')
-            root = exp_root + root
+            root = os.path.join(exp_root, root)
         df = audformat.utils.read_csv(root)       
         if not absolute_path:
             # add the root folder to the relative paths of the files 
