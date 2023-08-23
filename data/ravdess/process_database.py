@@ -43,6 +43,8 @@ file_gender = []
 file_path = []
 for dir in ravdess_directory_list:
     # as their are 20 different actors in our previous directory we need to extract files for each actor.
+    if not dir.startswith('Actor'):
+        continue
     if os.path.isdir(os.path.join(source_dir, dir)):
         actor = os.listdir(os.path.join(source_dir, dir))
         for file in actor:
