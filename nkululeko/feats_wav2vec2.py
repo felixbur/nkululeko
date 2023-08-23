@@ -4,13 +4,14 @@ from nkululeko.util import Util
 from nkululeko.featureset import Featureset
 import os
 import pandas as pd
-import os
+import torch
 import nkululeko.glob_conf as glob_conf
 import transformers
 from transformers.models.wav2vec2.modeling_wav2vec2 import Wav2Vec2Model
-import torch
+import torchaudio
 
-import audiofile
+# import audiofile
+# import torchaudio
 
 class Wav2vec2(Featureset):
     """Class to extract wav2vec2 embeddings (https://huggingface.co/facebook/wav2vec2-large-robust-ft-swbd-300h)"""
@@ -26,7 +27,7 @@ class Wav2vec2(Featureset):
     def init_model(self):
         # load model
         self.util.debug('loading wav2vec model...')
-        model_path = self.util.config_val('FEATS', 'wav2vec.model', 'wav2vec2-large-robust-ft-swbd-300h')
+        model_path = self.util.config_val('FEATS', 'wav2vec.model', 'facebook/wav2vec2-large-robust-ft-swbd-300h')
         self.processor = transformers.Wav2Vec2Processor.from_pretrained(model_path)
         self.model = Wav2Vec2Model.from_pretrained(model_path).to(self.device)
         print(f'intialized vec model on {self.device}')
@@ -47,7 +48,12 @@ class Wav2vec2(Featureset):
             emb_series = pd.Series(index = self.data_df.index, dtype=object)
             length = len(self.data_df.index)
             for idx, (file, start, end) in enumerate(self.data_df.index.to_list()):
-                signal, sampling_rate = audiofile.read(file, offset=start.total_seconds(), duration=(end-start).total_seconds(), always_2d=True)
+                signal, sampling_rate = torchaudio.load(file)
+                if sampling_rate != 16000:
+                    resampler = torchaudio.transforms.Resample(sampling_rate, 16000)
+                    signal = resampler(signal)
+                    sampling_rate = 16000
+                # signal, sampling_rate = audiofile.read(file, offset=start.total_seconds(), duration=(end-start).total_seconds(), always_2d=True)
                 #signal, sampling_rate = audiofile.read(audio_path, always_2d=True)
                 emb = self.get_embeddings(signal, sampling_rate)
                 emb_series[idx] = emb
@@ -76,8 +82,8 @@ class Wav2vec2(Featureset):
             # then we put it on the device
             y = self.processor(signal, sampling_rate=sampling_rate)
             y = y['input_values'][0]
-            y = torch.from_numpy(y).to(self.device)
-        
+            y = torch.from_numpy(y.reshape(1, -1)).to(self.device)
+            # print(y.shape)
             # run through model
             # first entry contains hidden state
             y = self.model(y)[0]
