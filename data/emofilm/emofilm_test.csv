@@ -1,0 +1,224 @@
+file,speaker,film,gender,language,emotion
+./EmoFilm/wav_corpus_16k/f_tri004aes_16k.wav,Pepa Castro,Anticrist,f,es,sad
+./EmoFilm/wav_corpus_16k/m_dis018ben_16k.wav,Philip Seymour Hoffman,Patch Adams,m,en,con
+./EmoFilm/wav_corpus_16k/m_rab006bit_16k.wav,Angelo Maggi,The hours,m,it,ang
+./EmoFilm/wav_corpus_16k/f_rab084aen_16k.wav,Renée Zellweger,Cinderella Man,f,en,ang
+./EmoFilm/wav_corpus_16k/m_gio132ait_16k.wav,,Will hinting,m,it,hap
+./EmoFilm/wav_corpus_16k/m_gio108ben_16k.wav,Guy Torry,American Hisotry x,m,en,hap
+./EmoFilm/wav_corpus_16k/m_rab121ben_16k.wav,Jude Law,Side Effects,m,en,ang
+./EmoFilm/wav_corpus_16k/m_gio005aes_16k.wav,Roger Pera,Good Will Hunting,m,es,hap
+./EmoFilm/wav_corpus_16k/m_gio058aes_16k.wav,Pedro Molina,Philadelphia,m,es,hap
+./EmoFilm/wav_corpus_16k/f_tri034ait_16k.wav,Roberta Greganti,Mystic River,f,it,sad
+./EmoFilm/wav_corpus_16k/m_rab071aes_16k.wav,Antonio Lara,Saw,m,es,ang
+./EmoFilm/wav_corpus_16k/m_tri005een_16k.wav,Sean Penn,Mystic River,m,en,sad
+./EmoFilm/wav_corpus_16k/f_gio034aen_16k.wav,Embeth Davidtz,Bicentennial man,f,en,hap
+./EmoFilm/wav_corpus_16k/f_dis010ait_16k.wav,Chiara Colizzi,The hours,f,it,con
+./EmoFilm/wav_corpus_16k/m_gio122ait_16k.wav,Danilo de Girolamo,the live of the others,m,it,hap
+./EmoFilm/wav_corpus_16k/m_tri011fes_16k.wav,Constantino Romero+6,Million dolar baby,m,es,sad
+./EmoFilm/wav_corpus_16k/m_rab067ait_16k.wav,Fabrizio Manfredi,Saw,m,it,ang
+./EmoFilm/wav_corpus_16k/f_ans042ait_16k.wav,Claudia Catani,Cinderella Man,f,it,fea
+./EmoFilm/wav_corpus_16k/f_dis036aes_16k.wav,Marta Barbará,Crash,f,es,con
+./EmoFilm/wav_corpus_16k/f_rab012bes_16k.wav,Mercedes Montalá,Notting Hill,f,es,ang
+./EmoFilm/wav_corpus_16k/f_dis008aes_16k.wav,Alba Sola,La mia vita senza di me,f,es,con
+./EmoFilm/wav_corpus_16k/m_dis035bit_16k.wav,Massimo Lodolo,Crash,m,it,con
+./EmoFilm/wav_corpus_16k/f_gio115bit_16k.wav,Chiara Colizzi,La vida secreta de las…,f,it,hap
+./EmoFilm/wav_corpus_16k/f_gio009aen_16k.wav,Minnie Driver,Good Will Hunting,f,en,hap
+./EmoFilm/wav_corpus_16k/m_gio003bes_16k.wav,Paco Gázquez,Notting Hill,m,es,hap
+./EmoFilm/wav_corpus_16k/m_dis044ait_16k.wav,Roberto Chevalier,Philadelphia,m,it,con
+./EmoFilm/wav_corpus_16k/f_ans045ait_16k.wav,Claudia Catani,Cinderella Man,f,it,fea
+./EmoFilm/wav_corpus_16k/f_ans048aen_16k.wav,Nicole Kidman,Ther interpreter,f,en,fea
+./EmoFilm/wav_corpus_16k/m_dis109ait_16k.wav,Pasquale Anselmo,Borkeback mountain,m,it,con
+./EmoFilm/wav_corpus_16k/m_rab102bit_16k.wav,Carlo Valli,Patch Adams,m,it,ang
+./EmoFilm/wav_corpus_16k/m_tri016ait_16k.wav,Fabrizio Pucci,A bautiful mind,m,it,sad
+./EmoFilm/wav_corpus_16k/f_tri052ait_16k.wav,Maria Pia di Meo,The devil wears Prada,f,it,sad
+./EmoFilm/wav_corpus_16k/m_ans003bit_16k.wav,Stefano de Sando,Mystic River,m,it,fea
+./EmoFilm/wav_corpus_16k/f_tri014ait_16k.wav,Valentina Carnelutti,La mia vita senza di me,f,it,sad
+./EmoFilm/wav_corpus_16k/f_tri091bes_16k.wav,Victória Pagés,Neverland,f,es,sad
+./EmoFilm/wav_corpus_16k/f_rab070bit_16k.wav,Pinella Dragani,Bicentennial man,f,it,ang
+./EmoFilm/wav_corpus_16k/m_ans020cit_16k.wav,Fabrizio Manfredi,Saw,m,it,fea
+./EmoFilm/wav_corpus_16k/f_tri094aes_16k.wav,Victória Pagés,Neverland,f,es,sad
+./EmoFilm/wav_corpus_16k/m_ans003aes_16k.wav,Paco Gázquez,Mystic River,m,es,fea
+./EmoFilm/wav_corpus_16k/m_tri040aen_16k.wav,Billy Crudup,Big fish,m,en,sad
+./EmoFilm/wav_corpus_16k/f_gio012ait_16k.wav,Maria Pia Di Meo,Philadelphia,f,it,hap
+./EmoFilm/wav_corpus_16k/f_ans901ben_16k.wav,Nicole Kidman,Mystic river,f,en,fea
+./EmoFilm/wav_corpus_16k/f_gio120aes_16k.wav,Marta Angelat,Falling Down,f,es,hap
+./EmoFilm/wav_corpus_16k/f_tri049aes_16k.wav,Rosa Guiñón,The devil wears Prada,f,es,sad
+./EmoFilm/wav_corpus_16k/m_ans011aes_16k.wav,Xavier Fernández,Saw,m,es,fea
+./EmoFilm/wav_corpus_16k/m_gio140aen_16k.wav,Robert Duval,Falling down,m,en,hap
+./EmoFilm/wav_corpus_16k/m_gio046aen_16k.wav,Russell Crowe,Cinderella Man,m,en,hap
+./EmoFilm/wav_corpus_16k/m_ans013aen_16k.wav,Leigh Whannell,Saw,m,en,fea
+./EmoFilm/wav_corpus_16k/m_dis008cit_16k.wav,Marco Mete,Meet Joe Black,m,it,con
+./EmoFilm/wav_corpus_16k/f_tri033ait_16k.wav,Roberta Greganti,Mystic River,f,it,sad
+./EmoFilm/wav_corpus_16k/f_ans030aen_16k.wav,Meryl Streep,The hours,f,en,fea
+./EmoFilm/wav_corpus_16k/m_tri028ben_16k.wav,Bruce Willis,The sixth sense,m,en,sad
+./EmoFilm/wav_corpus_16k/f_tri097bes_16k.wav,Nuria Mediavilla,Neverland,f,es,sad
+./EmoFilm/wav_corpus_16k/m_gio003bit_16k.wav,Roberto Draghetti,Notting Hill,m,it,hap
+./EmoFilm/wav_corpus_16k/f_rab003aen_16k.wav,Charlotte Gainsbourg,Anticrist,f,en,ang
+./EmoFilm/wav_corpus_16k/m_rab050aen_16k.wav,Robin Williams,Good Will Hunting,m,en,ang
+./EmoFilm/wav_corpus_16k/m_gio022ait_16k.wav,Roberto Chevalier,Philadelphia,m,it,hap
+./EmoFilm/wav_corpus_16k/m_gio034aes_16k.wav,Manolo García,Bicentennial man,m,es,hap
+./EmoFilm/wav_corpus_16k/m_gio134ait_16k.wav,Stefano Crescentini,American history x,m,it,hap
+./EmoFilm/wav_corpus_16k/m_tri025ben_16k.wav,Bruce Willis,The sixth sense,m,en,sad
+./EmoFilm/wav_corpus_16k/m_tri001ait_16k.wav,Stefano de Sando,Mystic River,m,it,sad
+./EmoFilm/wav_corpus_16k/f_gio203aes_16k.wav,????,Atonement,f,es,hap
+./EmoFilm/wav_corpus_16k/f_ans044aen_16k.wav,Rosemarie DeWitt,Cinderella Man,f,en,fea
+./EmoFilm/wav_corpus_16k/m_ans124ait_16k.wav,Fabrizio Manfredi,SAW,m,it,fea
+./EmoFilm/wav_corpus_16k/m_rab029bes_16k.wav,Manuel Gimeno,The reader,m,es,ang
+./EmoFilm/wav_corpus_16k/f_gio123aes_16k.wav,Maria Jesus Lleonart,Falling Down,f,es,hap
+./EmoFilm/wav_corpus_16k/f_ans902fen_16k.wav,Conchi Lopez,Mystic river,f,en,fea
+./EmoFilm/wav_corpus_16k/m_rab055ces_16k.wav,Jordi Brau,Good Will Hunting,m,es,ang
+./EmoFilm/wav_corpus_16k/f_gio999ben_16k.wav,Meryl Streep,The Hours,f,en,hap
+./EmoFilm/wav_corpus_16k/f_tri006aen_16k.wav,Charlotte Gainsbourg,Anticrist,f,en,sad
+./EmoFilm/wav_corpus_16k/f_tri032bit_16k.wav,Roberta Greganti,Mystic River,f,it,sad
+./EmoFilm/wav_corpus_16k/f_ans200ait_16k.wav,Anna Cesareni,Mystic river,f,it,fea
+./EmoFilm/wav_corpus_16k/m_gio056ait_16k.wav,Francesco Pannofino,Philadelphia,m,it,hap
+./EmoFilm/wav_corpus_16k/f_ans901ces_16k.wav,Conchi Lopez,Mystic river,f,es,fea
+./EmoFilm/wav_corpus_16k/m_dis002aen_16k.wav,Michael Douglas,Falling down,m,en,con
+./EmoFilm/wav_corpus_16k/f_ans010bit_16k.wav,Germana Dominici,Falling Down,f,it,fea
+./EmoFilm/wav_corpus_16k/m_dis008cen_16k.wav,Jake Weber,Meet Joe Black,m,en,con
+./EmoFilm/wav_corpus_16k/f_rab092ben_16k.wav,Thandie Newton,Crash,f,en,ang
+./EmoFilm/wav_corpus_16k/f_dis037aes_16k.wav,Eva Lluch,Side effects,f,es,con
+./EmoFilm/wav_corpus_16k/m_tri011aen_16k.wav,Clint Easwood,Million dolar baby,m,en,sad
+./EmoFilm/wav_corpus_16k/f_dis219ait_16k.wav,Chiara Colizzi,Titanic,f,it,con
+./EmoFilm/wav_corpus_16k/f_tri023ait_16k.wav,Francesca Fiorentini,The hours,f,it,sad
+./EmoFilm/wav_corpus_16k/m_ans002aen_16k.wav,Tim Robbins,Mystic River,m,en,fea
+./EmoFilm/wav_corpus_16k/f_rab012ben_16k.wav,Julia Roberts,Notting Hill,f,en,ang
+./EmoFilm/wav_corpus_16k/m_gio125ait_16k.wav,Cesare Barbetti,l'uomo che sussurrava,m,it,hap
+./EmoFilm/wav_corpus_16k/m_rab070aen_16k.wav,Cary Elwes,Saw,m,en,ang
+./EmoFilm/wav_corpus_16k/m_ans003ben_16k.wav,Tim Robbins,Mystic River,m,en,fea
+./EmoFilm/wav_corpus_16k/m_rab089bes_16k.wav,Sergio Gutierrez Coto,The interpreter,m,es,ang
+./EmoFilm/wav_corpus_16k/f_tri043ait_16k.wav,Giuppy Izzo,A beautiful mind,f,it,sad
+./EmoFilm/wav_corpus_16k/m_gio117ait_16k.wav,Fabrizio Vidale,Brokeback,m,it,hap
+./EmoFilm/wav_corpus_16k/f_rab092bes_16k.wav,Ana Pallejà,Crash,f,es,ang
+./EmoFilm/wav_corpus_16k/m_rab067aes_16k.wav,Xavier Fernández,Saw,m,es,ang
+./EmoFilm/wav_corpus_16k/f_rab089cit_16k.wav,Laura Boccanera,Crash,f,it,ang
+./EmoFilm/wav_corpus_16k/f_tri044ait_16k.wav,Giuppy Izzo,A beautiful mind,f,it,sad
+./EmoFilm/wav_corpus_16k/m_rab030des_16k.wav,Manuel Gimeno,The reader,m,es,ang
+./EmoFilm/wav_corpus_16k/m_tri012ben_16k.wav,Morgan Freeman,Million dolar baby,m,en,sad
+./EmoFilm/wav_corpus_16k/m_gio034aen_16k.wav,Sam Neill,Bicentennial man,m,en,hap
+./EmoFilm/wav_corpus_16k/m_rab022aen_16k.wav,Volker Bruch,The reader,m,en,ang
+./EmoFilm/wav_corpus_16k/f_rab090bes_16k.wav,Alba Sola,Crash,f,es,ang
+./EmoFilm/wav_corpus_16k/m_rab006cen_16k.wav,Stephen Dillane,The hours,m,en,ang
+./EmoFilm/wav_corpus_16k/m_dis043aes_16k.wav,Jordi Brau,Philadelphia,m,es,con
+./EmoFilm/wav_corpus_16k/f_ans043aen_16k.wav,Rosemarie DeWitt,Cinderella Man,f,en,fea
+./EmoFilm/wav_corpus_16k/m_dis110ait_16k.wav,Angelo Maggi,Notting Hill,m,it,con
+./EmoFilm/wav_corpus_16k/m_tri011fit_16k.wav,Adalberto Maria Merli+6 ,Million dolar baby,m,it,sad
+./EmoFilm/wav_corpus_16k/m_gio054aes_16k.wav,Pedro Molina,Philadelphia,m,es,hap
+./EmoFilm/wav_corpus_16k/m_tri014cit_16k.wav,Fabrizio Pucci,A bautiful mind,m,it,sad
+./EmoFilm/wav_corpus_16k/m_tri011ges_16k.wav,Constantino Romero+6,Million dolar baby,m,es,sad
+./EmoFilm/wav_corpus_16k/m_ans014aes_16k.wav,Xavier Fernández,Saw,m,es,fea
+./EmoFilm/wav_corpus_16k/m_tri014ben_16k.wav,Russell Crowe,A bautiful mind,m,en,sad
+./EmoFilm/wav_corpus_16k/m_ans017ait_16k.wav,Fabrizio Manfredi,Saw,m,it,fea
+./EmoFilm/wav_corpus_16k/m_dis044aen_16k.wav,Tom Hanks,Philadelphia,m,en,con
+./EmoFilm/wav_corpus_16k/m_gio100ait_16k.wav,Simone Mori,American Hisotry x,m,it,hap
+./EmoFilm/wav_corpus_16k/m_rab093aes_16k.wav,Sergio Gutierrez Coto,The interpreter,m,es,ang
+./EmoFilm/wav_corpus_16k/f_rab037aes_16k.wav,Nuria Trifol,Atonement,f,es,ang
+./EmoFilm/wav_corpus_16k/m_gio044ait_16k.wav,Luca Ward,Cinderella Man,m,it,hap
+./EmoFilm/wav_corpus_16k/m_tri029ben_16k.wav,Bruce Willis,The sixth sense,m,en,sad
+./EmoFilm/wav_corpus_16k/m_dis031ben_16k.wav,Paul Giamatti,Cinderella Man,m,en,con
+./EmoFilm/wav_corpus_16k/m_ans024bit_16k.wav,Fabrizio Pucci,A bautiful mind,m,it,fea
+./EmoFilm/wav_corpus_16k/m_gio016aes_16k.wav,Sergio Zamora,A beautiful mind,m,es,hap
+./EmoFilm/wav_corpus_16k/f_rab015bes_16k.wav,Mercedes Montalá,Notting Hill,f,es,ang
+./EmoFilm/wav_corpus_16k/f_gio110ait_16k.wav,Stefanella Marrama,Hook,f,it,hap
+./EmoFilm/wav_corpus_16k/f_tri003aes_16k.wav,Pepa Castro,Anticrist,f,es,sad
+./EmoFilm/wav_corpus_16k/f_ans044ben_16k.wav,Rosemarie DeWitt,Cinderella Man,f,en,fea
+./EmoFilm/wav_corpus_16k/f_tri009aen_16k.wav,Charlotte Gainsbourg,Anticrist,f,en,sad
+./EmoFilm/wav_corpus_16k/m_tri005ees_16k.wav,Jordi Brau,Mystic River,m,es,sad
+./EmoFilm/wav_corpus_16k/m_dis005aen_16k.wav,Leigh Whannell,Saw,m,en,con
+./EmoFilm/wav_corpus_16k/f_ans009ait_16k.wav,Germana Dominici,Falling Down,f,it,fea
+./EmoFilm/wav_corpus_16k/f_gio014ait_16k.wav,Connie Bismuto,The devil wears Prada,f,it,hap
+./EmoFilm/wav_corpus_16k/f_rab010bit_16k.wav,Chiara Colizzi,The hours,f,it,ang
+./EmoFilm/wav_corpus_16k/f_rab047ces_16k.wav,Nuria Trifol,The devil wears Prada,f,es,ang
+./EmoFilm/wav_corpus_16k/f_rab084bit_16k.wav,Giuppi Izzo,Cinderella Man,f,it,ang
+./EmoFilm/wav_corpus_16k/m_rab002ben_16k.wav,Stephen Dillane,The hours,m,en,ang
+./EmoFilm/wav_corpus_16k/m_gio023aen_16k.wav,Stanley Tucci,The devil wears Prada,m,en,hap
+./EmoFilm/wav_corpus_16k/f_gio189aes_16k.wav,???????,American history x,f,es,hap
+./EmoFilm/wav_corpus_16k/f_rab029bes_16k.wav,Montse Moreno,Good Will Hunting,f,es,ang
+./EmoFilm/wav_corpus_16k/m_ans003cit_16k.wav,Stefano de Sando,Mystic River,m,it,fea
+./EmoFilm/wav_corpus_16k/m_tri009cit_16k.wav,,Mystic River,m,it,sad
+./EmoFilm/wav_corpus_16k/f_tri044aes_16k.wav,Nuria Mediavilla,A beautiful mind,f,es,sad
+./EmoFilm/wav_corpus_16k/m_tri002ait_16k.wav,Stefano de Sando,Mystic River,m,it,sad
+./EmoFilm/wav_corpus_16k/f_tri096aen_16k.wav,Radha Mitchell,Neverland,f,en,sad
+./EmoFilm/wav_corpus_16k/f_rab034aes_16k.wav,Juana Beuter,Million dolar baby,f,es,ang
+./EmoFilm/wav_corpus_16k/m_rab089ben_16k.wav,Sean Penn,The interpreter,m,en,ang
+./EmoFilm/wav_corpus_16k/m_dis101ait_16k.wav,Alessio Cigliano,Borkeback mountain,m,it,con
+./EmoFilm/wav_corpus_16k/f_ans009bit_16k.wav,Germana Dominici,Falling Down,f,it,fea
+./EmoFilm/wav_corpus_16k/m_ans007bes_16k.wav,Paco Gázquez,Mystic River,m,es,fea
+./EmoFilm/wav_corpus_16k/f_rab064aen_16k.wav,Embeth Davidtz,Bicentennial man,f,en,ang
+./EmoFilm/wav_corpus_16k/m_tri011een_16k.wav,Clint Easwood,Million dolar baby,m,en,sad
+./EmoFilm/wav_corpus_16k/m_rab096ben_16k.wav,Philip Seymour Hoffman,Patch Adams,m,en,ang
+./EmoFilm/wav_corpus_16k/f_dis039ait_16k.wav,Francesca Fiorentini,Side effects,f,it,con
+./EmoFilm/wav_corpus_16k/m_ans007aes_16k.wav,Paco Gázquez,Mystic River,m,es,fea
+./EmoFilm/wav_corpus_16k/f_dis049aes_16k.wav,Lourdes Morán,Ther interpreter,f,es,con
+./EmoFilm/wav_corpus_16k/m_tri016bit_16k.wav,Fabrizio Pucci,A bautiful mind,m,it,sad
+./EmoFilm/wav_corpus_16k/m_gio106aes_16k.wav,Francisco Javier Martinez,American Hisotry x,m,es,hap
+./EmoFilm/wav_corpus_16k/m_tri020bes_16k.wav,Juan Carlos Gustmens,Patch Adams,m,es,sad
+./EmoFilm/wav_corpus_16k/m_tri005bes_16k.wav,Jordi Brau,Mystic River,m,es,sad
+./EmoFilm/wav_corpus_16k/m_dis003ben_16k.wav,Leigh Whannell,Saw,m,en,con
+./EmoFilm/wav_corpus_16k/m_gio049bes_16k.wav,Rafael Calvo,Crash,m,es,hap
+./EmoFilm/wav_corpus_16k/f_tri009aes_16k.wav,Pepa Castro,Anticrist,f,es,sad
+./EmoFilm/wav_corpus_16k/f_dis028aes_16k.wav,Mercedes Diemand-Hartz,Crash,f,es,con
+./EmoFilm/wav_corpus_16k/m_ans105aen_16k.wav,Whannel Leigh,SAW,m,en,fea
+./EmoFilm/wav_corpus_16k/f_tri005bes_16k.wav,Pepa Castro,Anticrist,f,es,sad
+./EmoFilm/wav_corpus_16k/f_dis038ait_16k.wav,Francesca Fiorentini,Side effects,f,it,con
+./EmoFilm/wav_corpus_16k/f_ans901aes_16k.wav,Conchi Lopez,Mystic river,f,es,fea
+./EmoFilm/wav_corpus_16k/f_ans108ait_16k.wav,Laura Boccanera,Fligthplan,f,it,fea
+./EmoFilm/wav_corpus_16k/m_rab097aes_16k.wav,Juan Carlos Gustmens,Patch Adams,m,es,ang
+./EmoFilm/wav_corpus_16k/m_gio140bes_16k.wav,Camilo Garcia,Falling down,m,es,hap
+./EmoFilm/wav_corpus_16k/m_ans016aes_16k.wav,Xavier Fernández,Saw,m,es,fea
+./EmoFilm/wav_corpus_16k/m_rab070ait_16k.wav,Vittorio de Angelis,Saw,m,it,ang
+./EmoFilm/wav_corpus_16k/m_tri021aen_16k.wav,Philip Seymour Hoffman,Patch Adams,m,en,sad
+./EmoFilm/wav_corpus_16k/f_gio019ait_16k.wav,Connie Bismuto,The devil wears Prada,f,it,hap
+./EmoFilm/wav_corpus_16k/m_tri028aes_16k.wav,Ramón Langa,The sixth sense,m,es,sad
+./EmoFilm/wav_corpus_16k/f_gio210aen_16k.wav,Hilary Swank,million dollar baby,f,en,hap
+./EmoFilm/wav_corpus_16k/m_ans107ait_16k.wav,Fabrizio Manfredi,SAW,m,it,fea
+./EmoFilm/wav_corpus_16k/f_dis016aes_16k.wav,Joël Mulachs ,The devil wears Prada,f,es,con
+./EmoFilm/wav_corpus_16k/f_gio125ait_16k.wav,Claudia Catani,Joe Black,f,it,hap
+./EmoFilm/wav_corpus_16k/m_dis035aen_16k.wav,Brendan Fraser,Crash,m,en,con
+./EmoFilm/wav_corpus_16k/f_tri057ait_16k.wav,Perla Liberatori,Lost in translation,f,it,sad
+./EmoFilm/wav_corpus_16k/f_rab084aes_16k.wav,María Moscardó,Cinderella Man,f,es,ang
+./EmoFilm/wav_corpus_16k/f_tri040cen_16k.wav,Romola Garai,Atonement,f,en,sad
+./EmoFilm/wav_corpus_16k/f_tri085aes_16k.wav,Eva Lluch,Side effects,f,es,sad
+./EmoFilm/wav_corpus_16k/f_gio122ait_16k.wav,Angiola Baggi,titanic,f,it,hap
+./EmoFilm/wav_corpus_16k/m_gio049bit_16k.wav,Roberto Pedicini,Crash,m,it,hap
+./EmoFilm/wav_corpus_16k/m_dis016aes_16k.wav,José Posada,Bicentennial man,m,es,con
+./EmoFilm/wav_corpus_16k/m_dis023ces_16k.wav,Jordi Brau,Patch Adams,m,es,con
+./EmoFilm/wav_corpus_16k/f_ans125ait_16k.wav,Monica Ward,Dancer in the dark,f,it,fea
+./EmoFilm/wav_corpus_16k/m_ans003aen_16k.wav,Tim Robbins,Mystic River,m,en,fea
+./EmoFilm/wav_corpus_16k/m_dis016ait_16k.wav,Roberto Gammino,Bicentennial man,m,it,con
+./EmoFilm/wav_corpus_16k/m_dis014aes_16k.wav,Paco Gázquez,Meet Joe Black,m,es,con
+./EmoFilm/wav_corpus_16k/f_dis014bes_16k.wav,Joël Mulachs ,The devil wears Prada,f,es,con
+./EmoFilm/wav_corpus_16k/f_gio002aes_16k.wav,Pepa Castro,Anticrist,f,es,hap
+./EmoFilm/wav_corpus_16k/f_rab102aen_16k.wav,Laila Robins,Side effects,f,en,ang
+./EmoFilm/wav_corpus_16k/m_gio136ait_16k.wav,Christian Iansante,Beautiful mind,m,it,hap
+./EmoFilm/wav_corpus_16k/f_rab042aen_16k.wav,Tuesday Weld,Falling Down,f,en,ang
+./EmoFilm/wav_corpus_16k/m_rab087bes_16k.wav,Camilo García,Meet Joe Black,m,es,ang
+./EmoFilm/wav_corpus_16k/f_rab090ben_16k.wav,Sandra Bullock,Crash,f,en,ang
+./EmoFilm/wav_corpus_16k/m_ans106ait_16k.wav,Fabrizio Manfredi,SAW,m,it,fea
+./EmoFilm/wav_corpus_16k/f_dis029aes_16k.wav,Ana Pallejà,Crash,f,es,con
+./EmoFilm/wav_corpus_16k/m_dis003aen_16k.wav,Leigh Whannell,Saw,m,en,con
+./EmoFilm/wav_corpus_16k/m_ans014ait_16k.wav,Fabrizio Manfredi,Saw,m,it,fea
+./EmoFilm/wav_corpus_16k/m_dis011ait_16k.wav,Marco Mete,Meet Joe Black,m,it,con
+./EmoFilm/wav_corpus_16k/m_gio129aes_16k.wav,Juan Logar,Atonement,m,es,hap
+./EmoFilm/wav_corpus_16k/m_rab021den_16k.wav,Sean Penn,Mystic River,m,en,ang
+./EmoFilm/wav_corpus_16k/f_gio017aen_16k.wav,Anne Hathaway,The devil wears Prada,f,en,hap
+./EmoFilm/wav_corpus_16k/m_ans014bes_16k.wav,Xavier Fernández,Saw,m,es,fea
+./EmoFilm/wav_corpus_16k/f_gio113ait_16k.wav,Angiola Baggi,titanic,f,it,hap
+./EmoFilm/wav_corpus_16k/f_tri005ait_16k.wav,Valentina Carnelutti,Anticrist,f,it,sad
+./EmoFilm/wav_corpus_16k/m_gio002bit_16k.wav,Roberto Draghetti,Notting Hill,m,it,hap
+./EmoFilm/wav_corpus_16k/f_tri032ait_16k.wav,Roberta Greganti,Mystic River,f,it,sad
+./EmoFilm/wav_corpus_16k/m_dis021bit_16k.wav,Danilo De Girolamo,Patch Adams,m,it,con
+./EmoFilm/wav_corpus_16k/m_tri026aen_16k.wav,Bruce Willis,The sixth sense,m,en,sad
+./EmoFilm/wav_corpus_16k/f_rab082ait_16k.wav,Giuppi Izzo,Cinderella Man,f,it,ang
+./EmoFilm/wav_corpus_16k/m_tri041ait_16k.wav,Vittorio de Angelis,Big fish,m,it,sad
+./EmoFilm/wav_corpus_16k/f_ans100ait_16k.wav,Barbara de Bortoli,the imposible,f,it,fea
+./EmoFilm/wav_corpus_16k/m_rab055aen_16k.wav,Robin Williams,Good Will Hunting,m,en,ang
+./EmoFilm/wav_corpus_16k/m_ans007ait_16k.wav,Stefano de Sando,Mystic River,m,it,fea
+./EmoFilm/wav_corpus_16k/f_ans001aen_16k.wav,Meryl Streep,The hours,f,en,fea
+./EmoFilm/wav_corpus_16k/m_gio041aes_16k.wav,Alberto Mieza,Cinderella Man,m,es,hap
+./EmoFilm/wav_corpus_16k/m_tri027aen_16k.wav,Bruce Willis,The sixth sense,m,en,sad
+./EmoFilm/wav_corpus_16k/m_gio049aen_16k.wav,Terrence Howard,Crash,m,en,hap
+./EmoFilm/wav_corpus_16k/f_ans010bes_16k.wav,Rosa Guiñón,Falling Down,f,es,fea
+./EmoFilm/wav_corpus_16k/m_rab119ces_16k.wav,José Posada,Crash,m,es,ang
+./EmoFilm/wav_corpus_16k/f_ans007aes_16k.wav,Nuria Mediavilla,The reader,f,es,fea
+./EmoFilm/wav_corpus_16k/f_ans902ben_16k.wav,Nicole Kidman,Mystic river,f,en,fea

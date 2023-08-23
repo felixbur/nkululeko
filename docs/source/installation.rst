@@ -23,6 +23,11 @@ For development version, you install directly from the source: ::
     $ pip install -e .  
     # or add the path to your PYTHONPATH
     $ export PYTHONPATH=$PYTHONPATH:/path/to/nkululeko
+    # You can also work from Nkululeko root directory to enable importing 
+    # Nkululeko without installing it
+    $ cd nkululeko
+    # pwd
+    # /path/to/nkululeko
 
 Check the installation: ::
 

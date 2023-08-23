@@ -18,3 +18,6 @@ python -m nkululeko.augment --config tests/exp_emodb_random_splice_os_xgb.ini
 python -m nkululeko.nkululeko --config tests/exp_emodb_rs_os_xgb.ini
 python -m nkululeko.nkululeko --config tests/exp_androids_os_svm.ini
 python -m nkululeko.predict --config tests/exp_emodb_predict.ini
+python -m nkululeko.nkululeko --config data/ravdess/exp_ravdess_os_xgb.ini 
+python -m nkululeko.nkululeko --config data/crema-d/exp_crema_audmodel_xgb.ini
+python -m nkululeko.nkululeko --config data/emozionalmente/nkulu_os_xgb.ini 

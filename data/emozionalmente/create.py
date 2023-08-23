@@ -70,8 +70,10 @@ def main():
 
     user_df = pd.read_csv(user_path)
     user_df.set_index('username', inplace=True)
-    samples_df = pd.read_csv(samples_path)
-    evaluations_df = pd.read_csv(evaluations_path)
+    samples_df = pd.read_csv(samples_path, 
+        converters={'file_name': lambda x: os.path.join(audio_dir_name, x)})
+    evaluations_df = pd.read_csv(evaluations_path,
+        converters={'file_name': lambda x: os.path.join(audio_dir_name, x)})
     samples_df['emotion_expressed'] = samples_df['emotion_expressed'].map(emotion_mapping)
     evaluations_df['emotion_recognized'] = evaluations_df['emotion_recognized'].map(emotion_mapping)
 
@@ -211,7 +213,7 @@ def main():
         if not os.path.exists(os.path.join(build_dir, audio_dir_name)):
             shutil.copytree(
                 audio_path,
-                os.path.join(build_dir, audio_dir_name)
+                os.path.join(current_dir, build_dir, audio_dir_name)
             )
         db.save(build_dir)
 
