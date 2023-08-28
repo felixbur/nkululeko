@@ -6,7 +6,7 @@ Helper class to encapsulate feature extraction methods
 """
 import pandas as pd
 from nkululeko.util import Util 
-from nkululeko.feats_opensmile import Opensmileset
+from nkululeko.feat_extract.feats_opensmile import Opensmileset
 
 
 class FeatureExtractor:
@@ -41,43 +41,43 @@ class FeatureExtractor:
             if feats_type=='os':
                 self.featExtractor = Opensmileset(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='trill':
-                from nkululeko.feats_trill import TRILLset
+                from nkululeko.feat_extract.feats_trill import TRILLset
                 self.featExtractor = TRILLset(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='wav2vec':
-                from nkululeko.feats_wav2vec2 import Wav2vec2
+                from nkululeko.feat_extract.feats_wav2vec2 import Wav2vec2
                 self.featExtractor = Wav2vec2(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='audmodel':
-                from nkululeko.feats_audmodel import AudModelSet
+                from nkululeko.feat_extract.feats_audmodel import AudModelSet
                 self.featExtractor = AudModelSet(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='auddim':
-                from nkululeko.feats_audmodel_dim import AudModelDimSet
+                from nkululeko.feat_extract.feats_audmodel_dim import AudModelDimSet
                 self.featExtractor = AudModelDimSet(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='agender':
-                from nkululeko.feats_agender import AudModelAgenderSet
+                from nkululeko.feat_extract.feats_agender import AudModelAgenderSet
                 self.featExtractor = AudModelAgenderSet(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='agender_agender':
-                from nkululeko.feats_agender_agender import AgenderAgenderSet
+                from nkululeko.feat_extract.feats_agender_agender import AgenderAgenderSet
                 self.featExtractor = AgenderAgenderSet(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='snr':
-                from nkululeko.feats_snr import SNRSet
+                from nkululeko.feat_extract.feats_snr import SNRSet
                 self.featExtractor = SNRSet(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='mos':
-                from nkululeko.feats_mos import MOSSet
+                from nkululeko.feat_extract.feats_mos import MOSSet
                 self.featExtractor = MOSSet(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='squim':
-                from nkululeko.feats_squim import SQUIMSet
+                from nkululeko.feat_extract.feats_squim import SQUIMSet
                 self.featExtractor = SQUIMSet(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='clap':
-                from nkululeko.feats_clap import Clap
+                from nkululeko.feat_extract.feats_clap import Clap
                 self.featExtractor = Clap(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='praat':
-                from nkululeko.feats_praat import Praatset
+                from nkululeko.feat_extract.feats_praat import Praatset
                 self.featExtractor = Praatset(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='mld':
-                from nkululeko.feats_mld import MLD_set
+                from nkululeko.feat_extract.feats_mld import MLD_set
                 self.featExtractor = MLD_set(f'{store_name}_{self.feats_designation}', self.data_df)
             elif feats_type=='import':
-                from nkululeko.feats_import import Importset
+                from nkululeko.feat_extract.feats_import import Importset
                 self.featExtractor = Importset(f'{store_name}_{self.feats_designation}', self.data_df)
             else:
                 self.util.error(f'unknown feats_type: {feats_type}')

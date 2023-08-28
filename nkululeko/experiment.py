@@ -2,13 +2,13 @@ import random
 import os
 import time
 import numpy as np
-from nkululeko.dataset import Dataset
-from nkululeko.dataset_csv import Dataset_CSV
-from nkululeko.dataset_ravdess import Ravdess
+from nkululeko.data.dataset import Dataset
+from nkululeko.data.dataset_csv import Dataset_CSV
+from nkululeko.data.dataset_ravdess import Ravdess
 from nkululeko.filter_data import filter_min_dur
 from nkululeko.runmanager import Runmanager
 from nkululeko.test_predictor import Test_predictor
-from nkululeko.feats_analyser import FeatureAnalyser
+from nkululeko.feat_extract.feats_analyser import FeatureAnalyser
 from nkululeko.util import Util
 from nkululeko.feature_extractor import FeatureExtractor
 from nkululeko.plots import Plots
@@ -148,32 +148,32 @@ class Experiment:
             self.df_train = self._import_csv(storage_train)
         else:
             self.df_train, self.df_test = pd.DataFrame(), pd.DataFrame()
-            strategy = self.util.config_val('DATA', 'strategy', 'traintest')
-            # some datasets against others in their entierty
-            if strategy == 'cross_data':
-                train_dbs = ast.literal_eval(glob_conf.config['DATA']['trains'])
-                test_dbs = ast.literal_eval(glob_conf.config['DATA']['tests'])
-                for dn in train_dbs:
-                    d = self.datasets[dn]
-                    d.prepare_labels()
-                    self.df_train = self.df_train.append(self.util.make_segmented_index(d.df))
-                    self.util.copy_flags(d, self.df_train)
-                for dn in test_dbs:
-                    d = self.datasets[dn]
-                    d.prepare_labels()
-                    self.df_test = self.df_test.append(self.util.make_segmented_index(d.df))
-                    self.util.copy_flags(d, self.df_test)
-            elif strategy == 'traintest':
+            # strategy = self.util.config_val('DATA', 'strategy', 'traintest')
+            # # some datasets against others in their entierty
+            # if strategy == 'cross_data':
+            #     train_dbs = ast.literal_eval(glob_conf.config['DATA']['trains'])
+            #     test_dbs = ast.literal_eval(glob_conf.config['DATA']['tests'])
+            #     for dn in train_dbs:
+            #         d = self.datasets[dn]
+            #         d.prepare_labels()
+            #         self.df_train = self.df_train.append(self.util.make_segmented_index(d.df))
+            #         self.util.copy_flags(d, self.df_train)
+            #     for dn in test_dbs:
+            #         d = self.datasets[dn]
+            #         d.prepare_labels()
+            #         self.df_test = self.df_test.append(self.util.make_segmented_index(d.df))
+            #         self.util.copy_flags(d, self.df_test)
+            # elif strategy == 'traintest':
                 # default: train vs. test combined from all datasets
-                for d in self.datasets.values():
-                    d.split()
-                    d.prepare_labels()
-                    self.df_train = pd.concat([self.df_train, d.df_train])
-                    self.util.copy_flags(d, self.df_train)
-                    self.df_test = pd.concat([self.df_test, d.df_test])
-                    self.util.copy_flags(d, self.df_test)
-            else:
-                self.util.error(f'unknown strategy: {strategy}')
+            for d in self.datasets.values():
+                d.split()
+                d.prepare_labels()
+                self.df_train = pd.concat([self.df_train, d.df_train])
+                self.util.copy_flags(d, self.df_train)
+                self.df_test = pd.concat([self.df_test, d.df_test])
+                self.util.copy_flags(d, self.df_test)
+            # else:
+            #     self.util.error(f'unknown strategy: {strategy}')
             # save the file lists to disk for later reuse
             store = self.util.get_path('store')
             storage_test = f'{store}testdf.csv'
@@ -313,7 +313,7 @@ class Experiment:
         """
         Augment the selected samples
         """
-        from nkululeko.augmenter import Augmenter
+        from nkululeko.augmenting.augmenter import Augmenter
         sample_selection = self.util.config_val('DATA', 'augment', 'train')
         if sample_selection=='all':
             df = pd.concat([self.df_train, self.df_test])
@@ -343,43 +343,43 @@ class Experiment:
         targets = self.util.config_val_list('PREDICT', 'targets', ['gender'])
         for target in targets:
             if target == 'gender':
-                from nkululeko.ap_gender import GenderPredictor
+                from nkululeko.autopredict.ap_gender import GenderPredictor
                 predictor = GenderPredictor(df)
                 df = predictor.predict(sample_selection)
             elif target == 'age':
-                from nkululeko.ap_age import AgePredictor
+                from nkululeko.autopredict.ap_age import AgePredictor
                 predictor = AgePredictor(df)
                 df = predictor.predict(sample_selection)
             elif target == 'snr':
-                from nkululeko.ap_sdr import SNRPredictor
+                from nkululeko.autopredict.ap_sdr import SNRPredictor
                 predictor = SNRPredictor(df)
                 df = predictor.predict(sample_selection)
             elif target == 'mos':
-                from nkululeko.ap_mos import MOSPredictor
+                from nkululeko.autopredict.ap_mos import MOSPredictor
                 predictor = MOSPredictor(df)
                 df = predictor.predict(sample_selection)
             elif target == 'pesq':
-                from nkululeko.ap_pesq import PESQPredictor
+                from nkululeko.autopredict.ap_pesq import PESQPredictor
                 predictor = PESQPredictor(df)
                 df = predictor.predict(sample_selection)
             elif target == 'sdr':
-                from nkululeko.ap_sdr import SDRPredictor
+                from nkululeko.autopredict.ap_sdr import SDRPredictor
                 predictor = SDRPredictor(df)
                 df = predictor.predict(sample_selection)
             elif target == 'stoi':
-                from nkululeko.ap_stoi import STOIPredictor
+                from nkululeko.autopredict.ap_stoi import STOIPredictor
                 predictor = STOIPredictor(df)
                 df = predictor.predict(sample_selection)
             elif target == 'arousal':
-                from nkululeko.ap_arousal import ArousalPredictor
+                from nkululeko.autopredict.ap_arousal import ArousalPredictor
                 predictor = ArousalPredictor(df)
                 df = predictor.predict(sample_selection)
             elif target == 'valence':
-                from nkululeko.ap_valence import ValencePredictor
+                from nkululeko.autopredict.ap_valence import ValencePredictor
                 predictor = ValencePredictor(df)
                 df = predictor.predict(sample_selection)
             elif target == 'dominance':
-                from nkululeko.ap_dominance import DominancePredictor
+                from nkululeko.autopredict.ap_dominance import DominancePredictor
                 predictor = DominancePredictor(df)
                 df = predictor.predict(sample_selection)
             else:
@@ -390,7 +390,7 @@ class Experiment:
         """
         Random-splice the selected samples
         """
-        from nkululeko.randomsplicer import Randomsplicer
+        from nkululeko.augmenting.randomsplicer import Randomsplicer
         sample_selection = self.util.config_val('DATA', 'random_splice', 'train')
         if sample_selection=='all':
             df = pd.concat([self.df_train, self.df_test])
@@ -552,5 +552,5 @@ class Experiment:
             f = open(filename, 'wb')
             pickle.dump(self.__dict__, f)
             f.close()
-        except (AttributeError, TypeError) as error: 
-            self.util.debug(f'Save experiment: Can\'t pickle local object: {error}')
+        except (AttributeError, TypeError, RuntimeError) as error: 
+            self.util.warn(f'Save experiment: Can\'t pickle local object: {error}')

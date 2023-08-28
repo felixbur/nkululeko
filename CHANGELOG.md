@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version 0.60.0
+--------------
+* some bugfixes
+* new package structure
+* fixed wav2vec2 bugs
+* removed "cross_data" strategy 
+
+
 Version 0.59.1
 --------------
 * bugfix, after fresh install, it seems some libraries have changed

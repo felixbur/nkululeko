@@ -59,44 +59,44 @@ class Modelrunner:
 
     def _select_model(self, model_type):
         if model_type=='svm':
-            from nkululeko.model_svm import SVM_model
+            from nkululeko.models.model_svm import SVM_model
             self.model = SVM_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
         elif model_type=='svr':
-            from nkululeko.model_svr import SVR_model
+            from nkululeko.models.model_svr import SVR_model
             self.model = SVR_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
         elif model_type=='xgb':
-            from nkululeko.model_xgb import XGB_model
+            from nkululeko.models.model_xgb import XGB_model
             self.model = XGB_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
         elif model_type=='xgr':
-            from nkululeko.model_xgr import XGR_model
+            from nkululeko.models.model_xgr import XGR_model
             self.model = XGR_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
         elif model_type=='bayes':
-            from nkululeko.model_bayes import Bayes_model
+            from nkululeko.models.model_bayes import Bayes_model
             self.model = Bayes_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
         elif model_type=='gmm':
-            from nkululeko.model_gmm import GMM_model
+            from nkululeko.models.model_gmm import GMM_model
             self.model = GMM_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
         elif model_type=='knn':
-            from nkululeko.model_knn import KNN_model
+            from nkululeko.models.model_knn import KNN_model
             self.model = KNN_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
         elif model_type=='knn_reg':
-            from nkululeko.model_knn_reg import KNN_reg_model
+            from nkululeko.models.model_knn_reg import KNN_reg_model
             self.model = KNN_reg_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
         elif model_type=='tree':
-            from nkululeko.model_tree import Tree_model
+            from nkululeko.models.model_tree import Tree_model
             self.model = Tree_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
         elif model_type=='tree_reg':
-            from nkululeko.model_tree_reg import Tree_reg_model
+            from nkululeko.models.model_tree_reg import Tree_reg_model
             self.model = Tree_reg_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
         elif model_type=='cnn':
-            from nkululeko.model_cnn import CNN_model
-            from nkululeko.model_cnn import CNN_model
+            from nkululeko.models.model_cnn import CNN_model
+            from nkululeko.models.model_cnn import CNN_model
             self.model = CNN_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
         elif model_type=='mlp':
-            from nkululeko.model_mlp import MLP_model
+            from nkululeko.models.model_mlp import MLP_model
             self.model = MLP_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
         elif model_type=='mlp_reg':
-            from nkululeko.model_mlp_regression import MLP_Reg_model
+            from nkululeko.models.model_mlp_regression import MLP_Reg_model
             self.model = MLP_Reg_model(self.df_train, self.df_test, self.feats_train, self.feats_test)
         else:
             self.util.error(f'unknown model type: \'{model_type}\'')
