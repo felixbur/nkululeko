@@ -7,24 +7,7 @@ from nkululeko.util import Util
 from  nkululeko.constants import VERSION
 import argparse
 import os
-import torch
-import audformat
-from audformat.utils import to_filewise_index
-from audformat import segmented_index
 import pandas as pd 
-
-# initialize the VAD model
-SAMPLING_RATE = 16000
-torch.set_num_threads(1)
-vad_model, vad_utils = torch.hub.load(repo_or_dir='snakers4/silero-vad',
-                    model='silero_vad',
-                    force_reload=False,
-                    onnx=False)
-(get_speech_timestamps,
-save_audio,
-read_audio,
-VADIterator,
-collect_chunks) = vad_utils
 
 def main(src_dir):
     parser = argparse.ArgumentParser(description='Call the nkululeko framework.')
@@ -60,7 +43,7 @@ def main(src_dir):
     util.debug(f'train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}')
 
     # segment
-    segment_target = util.config_val('DATA', 'segment_target', '_seg')
+    segment_target = util.config_val('SEGMENT', 'target', '_seg')
     # this if a specific dataset is to be segmented
     # segment_db = util.config_val('DATA', 'segment', False)
     # if segment_db:
@@ -72,7 +55,8 @@ def main(src_dir):
     #             name = f'{dataset}{segment_target}'
     #             df_seg.to_csv(f'{expr.data_dir}/{name}.csv')
 
-    sample_selection = util.config_val('DATA', 'segment', 'all')
+    segmenter = util.config_val('SEGMENT', 'method', 'silero')
+    sample_selection = util.config_val('SEGMENT', 'sample_selection', 'all')
     if sample_selection=='all':
         df = pd.concat([expr.df_train, expr.df_test])
     elif sample_selection=='train':
@@ -81,25 +65,37 @@ def main(src_dir):
         df = expr.df_test
     else:
         util.error(f'unknown segmentation selection specifier {sample_selection}, should be [all | train | test]')
+    # if "duration" not in df.columns:
+    #     df = df.drop(columns=['duration'], inplace=True)
+    util.debug(f'segmenting {sample_selection}: {df.shape[0]} samples with {segmenter}') 
+    if segmenter=='silero':
+        from nkululeko.segmenting.seg_silero import Silero_segmenter
+        segmenter = Silero_segmenter()
+        df_seg = segmenter.segment_dataframe(df)
 
-    if "duration" not in df.columns:
-        df = df.drop(columns=['duration'], inplace=True)
-    util.debug(f'segmenting train and test set: {df.shape[0]} samples') 
-    df_seg = segment_dataframe(df) 
+    else:
+        util.error(f'unkown segmenter: {segmenter}')
+
     def calc_dur(x):
+        from datetime import datetime
         starts = x[1]
         ends = x[2]
         return (ends - starts).total_seconds()
     df_seg['duration'] = df_seg.index.to_series().map(lambda x:calc_dur(x)) 
+    if "duration" not in df.columns:
+        df['duration'] = df.index.to_series().map(lambda x:calc_dur(x)) 
+    num_before = df.shape[0]
+    num_after = df_seg.shape[0]
     dataname = '_'.join(expr.datasets.keys())
     name = f'{dataname}{segment_target}'
     df_seg.to_csv(f'{expr.data_dir}/{name}.csv')
+    from nkululeko.plots import Plots
+    plots = Plots()
+    plots.plot_durations(df, 'original_durations', sample_selection)
+    plots.plot_durations(df_seg, 'segmented_durations', sample_selection)
     print('')
-    util.debug(f'saved {name}.csv to {expr.data_dir}, {df_seg.shape[0]} samples')
+    util.debug(f'saved {name}.csv to {expr.data_dir}, {num_after} samples (was {num_before})')
     print('DONE')
-
-
-
 
 def get_segmentation(file):
 #    print(f'segmenting {file[0]}')

@@ -95,6 +95,17 @@ class Plots():
             else:
                 self.util.error(f'plot value counts: the plot distribution descriptor for {att} has more than 2 values')
 
+    def plot_durations(self, df, filename, sample_selection):
+        fig_dir = self.util.get_path('fig_dir')+'../' # one up because of the runs 
+        ax = sns.histplot(df, x='duration', hue='class_label', kde=True)
+        ax.set_title(f'{sample_selection} {df.shape[0]}')
+        ax.set_xlabel(f'duration')
+        ax.set_ylabel(f'number of samples')
+        fig = ax.figure
+        plt.tight_layout()
+        plt.savefig(f'{fig_dir}{filename}_{sample_selection}.{self.format}')
+        plt.close(fig)
+        fig.clear()   
 
     def describe_df(self, name, df, target, filename):
         """Make a stacked barplot of samples and speakers per sex and target values. speaker, gender and target columns must be present"""
