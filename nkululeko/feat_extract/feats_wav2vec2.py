@@ -1,14 +1,14 @@
 # feats_wav2vec2.py
 
-from nkululeko.util import Util
-from nkululeko.feat_extract.featureset import Featureset
 import os
+
+import nkululeko.glob_conf as glob_conf
 import pandas as pd
 import torch
-import nkululeko.glob_conf as glob_conf
-import transformers
-from transformers.models.wav2vec2.modeling_wav2vec2 import Wav2Vec2Model
 import torchaudio
+from nkululeko.feat_extract.featureset import Featureset
+from transformers import Wav2Vec2FeatureExtractor
+from transformers.models.wav2vec2.modeling_wav2vec2 import Wav2Vec2Model
 
 # import audiofile
 # import torchaudio
@@ -28,7 +28,7 @@ class Wav2vec2(Featureset):
         # load model
         self.util.debug('loading wav2vec model...')
         model_path = self.util.config_val('FEATS', 'wav2vec.model', 'facebook/wav2vec2-large-robust-ft-swbd-300h')
-        self.processor = transformers.Wav2Vec2Processor.from_pretrained(model_path)
+        self.processor = Wav2Vec2FeatureExtractor.from_pretrained(model_path)
         self.model = Wav2Vec2Model.from_pretrained(model_path).to(self.device)
         print(f'intialized vec model on {self.device}')
         self.model.eval()
