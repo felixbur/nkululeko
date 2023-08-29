@@ -56,7 +56,7 @@ class FeatureExtractor:
                     f"{store_name}_{self.feats_designation}", self.data_df
                 )
             elif feats_type in ("hubert", "hubert_ft", "hubert_large", 
-                                "hubert_large", "hubert_xlarge", "hubert_xlarge_ft"):
+                                "hubert_xlarge", "hubert_xlarge_ft"):
                 from nkululeko.feat_extract.feats_hubert import Hubert
                 self.featExtractor = Hubert(
                     f"{store_name}_{self.feats_designation}", self.data_df,

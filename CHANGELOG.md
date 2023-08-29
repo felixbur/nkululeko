@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.61.0
+--------------
+* added HUBERT embeddings
+  
 Version 0.60.0
 --------------
 * some bugfixes
