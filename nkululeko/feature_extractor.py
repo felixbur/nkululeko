@@ -50,13 +50,13 @@ class FeatureExtractor:
                 self.featExtractor = TRILLset(
                     f"{store_name}_{self.feats_designation}", self.data_df
                 )
-            elif feats_type == "wav2vec":
+            elif feats_type.startswith("wav2vec2"):
                 from nkululeko.feat_extract.feats_wav2vec2 import Wav2vec2
                 self.featExtractor = Wav2vec2(
-                    f"{store_name}_{self.feats_designation}", self.data_df
+                    f"{store_name}_{self.feats_designation}", self.data_df,
+                    feats_type
                 )
-            elif feats_type in ("hubert", "hubert_ft", "hubert_large", 
-                                "hubert_xlarge", "hubert_xlarge_ft"):
+            elif feats_type.startswith("hubert"):
                 from nkululeko.feat_extract.feats_hubert import Hubert
                 self.featExtractor = Hubert(
                     f"{store_name}_{self.feats_designation}", self.data_df,

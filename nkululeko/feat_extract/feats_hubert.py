@@ -10,8 +10,7 @@ import pandas as pd
 import torch
 import torchaudio
 from nkululeko.feat_extract.featureset import Featureset
-from nkululeko.util import Util as util
-from transformers import AutoProcessor, HubertModel, Wav2Vec2FeatureExtractor
+from transformers import HubertModel, Wav2Vec2FeatureExtractor
 
 
 class Hubert(Featureset): 
@@ -21,7 +20,9 @@ class Hubert(Featureset):
         """Constructor. is_train is needed to distinguish from test/dev sets,
         because they use the codebook from the training"""
         super().__init__(name, data_df)
-        self.device = self.util.config_val("MODEL", "device", "cpu")
+        # check if device is not set, use cuda if available
+        cuda = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = self.util.config_val('MODEL', 'device', cuda)
         self.model_initialized = False
         self.feat_type = feat_type
 
@@ -30,20 +31,21 @@ class Hubert(Featureset):
         self.util.debug("loading Hubert model...")
         
         # extract ckpt based on feat_type
-        if self.feat_type == "hubert":
-            ckpt = "facebook/hubert-base-ls960"
-        elif self.feat_type == "hubert_ft":
-            ckpt = "facebook/hubert-large-ls960-ft"
-        elif self.feat_type == "hubert_large":
-            ckpt = "facebook/hubert-large-ll60k"
-        elif self.feat_type == "hubert_xlarge":
-            ckpt = "facebook/hubert-xlarge-ll60k"
-        elif self.feat_type == "hubert_xlarge_ft":
-            ckpt = "facebook/hubert-xlarge-ls960-ft"
-        else:
-            raise ValueError(f"feat_type {self.feat_type} not supported")
+        # if self.feat_type == "hubert":
+        #     ckpt = "facebook/hubert-base-ls960"
+        # elif self.feat_type == "hubert_ft":
+        #     ckpt = "facebook/hubert-large-ls960-ft"
+        # elif self.feat_type == "hubert_large":
+        #     ckpt = "facebook/hubert-large-ll60k"
+        # elif self.feat_type == "hubert_xlarge":
+        #     ckpt = "facebook/hubert-xlarge-ll60k"
+        # elif self.feat_type == "hubert_xlarge_ft":
+        #     ckpt = "facebook/hubert-xlarge-ls960-ft"
+        # else:
+        #     raise ValueError(f"feat_type {self.feat_type} not supported")
 
-        model_path = self.util.config_val("FEATS", "Hubert.model", ckpt)
+        model_path = self.util.config_val("FEATS", "Hubert.model", 
+            self.feat_type)
         self.processor = Wav2Vec2FeatureExtractor.from_pretrained(model_path)
         self.model = HubertModel.from_pretrained(model_path).to(self.device)
         print(f"intialized Hubert model on {self.device}")
