@@ -8,6 +8,7 @@
   - [Sections](#sections)
     - [EXP](#exp)
     - [DATA](#data)
+    - [SEGMENT](#segment)
     - [FEATS](#feats)
     - [MODEL](#model)
     - [EXPL](#expl)
@@ -135,10 +136,14 @@
   * check_size = 1000
 * **check_vad**: check if the files contain speech, using [silero VAD](https://github.com/snakers4/silero-vad)
   * check_vad = True
-* **segment**: select the samples to segment: either *train*, *test*, or *all*
+
+### SEGMENT
+* **sample_selection**: select the samples to segment: either *train*, *test*, or *all*
   * segment = all
-* **segment_target**: name of the extension that is added to the dataset names when storing the segemented data table with the *segment* module
+* **segment_target**: name of the extension that is added to the dataset names when storing the segmented data table with the *segment* module
   * segment_target = _seg
+* **method**: select the model 
+  * method = [silero](https://github.com/snakers4/silero-vad)
 
 ### FEATS
 * **type**: a comma separated list of types of features, they will be columnwise concatenated

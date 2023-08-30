@@ -3,6 +3,10 @@ Changelog
 
 Version 0.62.0
 --------------
+* added min and max_length for silero segmenatation
+
+Version 0.62.0
+--------------
 * fixed segment silero bug
 * added all Wav2vec2 models
 * added resampler module
