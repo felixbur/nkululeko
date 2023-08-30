@@ -44,16 +44,6 @@ def main(src_dir):
 
     # segment
     segment_target = util.config_val('SEGMENT', 'target', '_seg')
-    # this if a specific dataset is to be segmented
-    # segment_db = util.config_val('DATA', 'segment', False)
-    # if segment_db:
-    #     for dataset in expr.datasets.keys:
-    #         if segment_db == dataset:
-    #             df = expr.datasets[dataset].df
-    #             util.debug(f'segmenting {dataset}') 
-    #             df_seg = segment_dataframe(df) 
-    #             name = f'{dataset}{segment_target}'
-    #             df_seg.to_csv(f'{expr.data_dir}/{name}.csv')
 
     segmenter = util.config_val('SEGMENT', 'method', 'silero')
     sample_selection = util.config_val('SEGMENT', 'sample_selection', 'all')
@@ -65,8 +55,6 @@ def main(src_dir):
         df = expr.df_test
     else:
         util.error(f'unknown segmentation selection specifier {sample_selection}, should be [all | train | test]')
-    # if "duration" not in df.columns:
-    #     df = df.drop(columns=['duration'], inplace=True)
     util.debug(f'segmenting {sample_selection}: {df.shape[0]} samples with {segmenter}') 
     if segmenter=='silero':
         from nkululeko.segmenting.seg_silero import Silero_segmenter
@@ -86,14 +74,21 @@ def main(src_dir):
         df['duration'] = df.index.to_series().map(lambda x:calc_dur(x)) 
     num_before = df.shape[0]
     num_after = df_seg.shape[0]
-    dataname = '_'.join(expr.datasets.keys())
-    name = f'{dataname}{segment_target}'
-    df_seg.to_csv(f'{expr.data_dir}/{name}.csv')
+    # plot distributions
     from nkululeko.plots import Plots
     plots = Plots()
     plots.plot_durations(df, 'original_durations', sample_selection)
     plots.plot_durations(df_seg, 'segmented_durations', sample_selection)
     print('')
+    # remove encoded labels
+    target = util.config_val('DATA', 'target', 'emotion')
+    if 'class_label' in df_seg.columns:
+        df_seg = df_seg.drop(columns=[target])
+        df_seg = df_seg.rename(columns={'class_label':target})
+    # save file
+    dataname = '_'.join(expr.datasets.keys())
+    name = f'{dataname}{segment_target}'
+    df_seg.to_csv(f'{expr.data_dir}/{name}.csv')
     util.debug(f'saved {name}.csv to {expr.data_dir}, {num_after} samples (was {num_before})')
     print('DONE')
 

@@ -2,7 +2,6 @@
 import audeer
 import ast 
 import sys
-import nkululeko.glob_conf as glob_conf
 import numpy as np
 import os.path
 import configparser
@@ -11,16 +10,20 @@ import pandas as pd
 
 class Util:
 
+    # a list of words that need not to be warned upon if default values are used
     stopvals = [False, 'False', 'classification', 'png']
 
-    def __init__(self, caller=None):
-        self.got_data_roots = self.config_val('DATA', 'root_folders', False)
-        if self.got_data_roots:
-            # if there is a global data rootfolder file, read from there
-            if not os.path.isfile(self.got_data_roots):
-                self.error(f'no such file: {self.got_data_roots}')
-            self.data_roots = configparser.ConfigParser()
-            self.data_roots.read(self.got_data_roots)
+    def __init__(self, caller=None, has_config=True):
+        if has_config:
+            import nkululeko.glob_conf as glob_conf
+            self.config = glob_conf.config
+            self.got_data_roots = self.config_val('DATA', 'root_folders', False)
+            if self.got_data_roots:
+                # if there is a global data rootfolder file, read from there
+                if not os.path.isfile(self.got_data_roots):
+                    self.error(f'no such file: {self.got_data_roots}')
+                self.data_roots = configparser.ConfigParser()
+                self.data_roots.read(self.got_data_roots)
         if caller is not None:
             self.caller = caller
         else:  
@@ -30,10 +33,10 @@ class Util:
         """
         This method allows the user to get the directory path for the given argument.
         """
-        root = glob_conf.config['EXP']['root']
-        name = glob_conf.config['EXP']['name']
+        root = self.config['EXP']['root']
+        name = self.config['EXP']['name']
         try:
-            entryn = glob_conf.config['EXP'][entry]
+            entryn = self.config['EXP'][entry]
         except KeyError:
             # some default values
             if entry == 'fig_dir':
@@ -61,7 +64,7 @@ class Util:
         If the value is present in the experiment configuration it will be used, else 
         we look in a global file specified by the root_folders value.
         """
-        configuration = glob_conf.config
+        configuration = self.config
         try:
             if len(key)>0:
                 return configuration['DATA'][dataset+'.'+key]
@@ -95,8 +98,8 @@ class Util:
         """
             Get the experiment directory
         """
-        root = glob_conf.config['EXP']['root']
-        name = glob_conf.config['EXP']['name']
+        root = self.config['EXP']['root']
+        name = self.config['EXP']['name']
         dir_name = f'{root}{name}'
         audeer.mkdir(dir_name)
         return dir_name
@@ -124,19 +127,19 @@ class Util:
         """
             Get a string as name from all databases that are useed
         """
-        return '_'.join(ast.literal_eval(glob_conf.config['DATA']['databases']))
+        return '_'.join(ast.literal_eval(self.config['DATA']['databases']))
     
     def get_exp_name(self, only_train = False, only_data = False):
         trains_val = self.config_val('DATA', 'trains', False)
         if only_train and trains_val:
             # try to get only the train tables
-            ds = '_'.join(ast.literal_eval(glob_conf.config['DATA']['trains']))
+            ds = '_'.join(ast.literal_eval(self.config['DATA']['trains']))
         else:
-            ds = '_'.join(ast.literal_eval(glob_conf.config['DATA']['databases']))
+            ds = '_'.join(ast.literal_eval(self.config['DATA']['databases']))
         mt = ''
         if not only_data:
-            mt = f'_{glob_conf.config["MODEL"]["type"]}'
-        ft = '_'.join(ast.literal_eval(glob_conf.config['FEATS']['type']))
+            mt = f'_{self.config["MODEL"]["type"]}'
+        ft = '_'.join(ast.literal_eval(self.config['FEATS']['type']))
         ft += '_'
         set = self.config_val('FEATS', 'set', False)
         set_string = ''
@@ -159,7 +162,7 @@ class Util:
 
     def get_plot_name(self):
         try:
-            plot_name = glob_conf.config['PLOT']['name']
+            plot_name = self.config['PLOT']['name']
         except KeyError:
             plot_name = self.get_exp_name()
         return plot_name
@@ -183,10 +186,10 @@ class Util:
     def set_config_val(self, section, key, value):
         try:
             # does the section already exists?
-            glob_conf.config[section][key] = str(value)
+            self.config[section][key] = str(value)
         except KeyError:
-            glob_conf.config.add_section(section)
-            glob_conf.config[section][key] = str(value)
+            self.config.add_section(section)
+            self.config[section][key] = str(value)
     
     def check_df(self, i, df):
         """Check a dataframe"""
@@ -195,7 +198,7 @@ class Util:
         )
     def config_val(self, section, key, default):
         try:
-            return glob_conf.config[section][key]
+            return self.config[section][key]
         except KeyError:
             if not default in self.stopvals:
                 self.debug(f'value for {key} not found, using default: {default}')
@@ -203,7 +206,7 @@ class Util:
             
     def config_val_list(self, section, key, default):
         try:
-            return ast.literal_eval(glob_conf.config[section][key])
+            return ast.literal_eval(self.config[section][key])
         except KeyError:
             if not default in self.stopvals:
                 self.debug(f'value for {key} not found, using default: {default}')
@@ -213,11 +216,11 @@ class Util:
         # try:
         #     labels = glob_conf.label_encoder.classes_
         # except AttributeError:
-        labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
+        labels = ast.literal_eval(self.config['DATA']['labels'])
         return labels
 
     def continuous_to_categorical(self, array):
-        bins = ast.literal_eval(glob_conf.config['DATA']['bins'])
+        bins = ast.literal_eval(self.config['DATA']['bins'])
         result =  np.digitize(array, bins)-1
         return result
 

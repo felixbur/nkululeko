@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Version 0.62.0
+--------------
+* fixed segment silero bug
+* added all Wav2vec2 models
+* added resampler module
+* added error on file for embeddings
+
 Version 0.61.0
 --------------
 * added HUBERT embeddings
