@@ -164,12 +164,41 @@ class Experiment:
             #         self.df_test = self.df_test.append(self.util.make_segmented_index(d.df))
             #         self.util.copy_flags(d, self.df_test)
             # elif strategy == 'traintest':
+            # strategy = self.util.config_val('DATA', 'strategy', 'traintest')
+            # some datasets against others in their entierty
+            # if strategy == 'cross_data':
+            #     train_dbs = ast.literal_eval(glob_conf.config['DATA']['trains'])
+            #     test_dbs = ast.literal_eval(glob_conf.config['DATA']['tests'])
+            #     for dn in train_dbs:
+            #         d = self.datasets[dn]
+            #         d.prepare_labels()
+            #         self.df_train = self.df_train.append(self.util.make_segmented_index(d.df))
+            #         self.util.copy_flags(d, self.df_train)
+            #     for dn in test_dbs:
+            #         d = self.datasets[dn]
+            #         d.prepare_labels()
+            #         self.df_test = self.df_test.append(self.util.make_segmented_index(d.df))
+            #         self.util.copy_flags(d, self.df_test)
+            # elif strategy == 'traintest':
                 # default: train vs. test combined from all datasets
             for d in self.datasets.values():
                 d.split()
                 d.prepare_labels()
                 self.df_train = pd.concat([self.df_train, d.df_train])
                 self.util.copy_flags(d, self.df_train)
+                self.df_test = pd.concat([self.df_test, d.df_test])
+                self.util.copy_flags(d, self.df_test)
+            # else:
+            #     self.util.error(f'unknown strategy: {strategy}')
+            for d in self.datasets.values():
+                d.split()
+                d.prepare_labels()
+                if d.df_train.shape[0] == 0:
+                    self.util.debug(f'warn: {d.name} train empty')
+                self.df_train = pd.concat([self.df_train, d.df_train])
+                self.util.copy_flags(d, self.df_train)
+                if d.df_test.shape[0] == 0:
+                    self.util.debug(f'warn: {d.name} test empty')
                 self.df_test = pd.concat([self.df_test, d.df_test])
                 self.util.copy_flags(d, self.df_test)
             # else:
@@ -352,6 +381,7 @@ class Experiment:
                 df = predictor.predict(sample_selection)
             elif target == 'snr':
                 from nkululeko.autopredict.ap_sdr import SNRPredictor
+                from nkululeko.ap_snr import SNRPredictor
                 predictor = SNRPredictor(df)
                 df = predictor.predict(sample_selection)
             elif target == 'mos':

@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.63.2
+--------------
+* re-introduced min and max_length for silero segmenatation
+
 Version 0.63.1
 --------------
 * fixed bug in resample
@@ -10,7 +14,7 @@ Version 0.63.0
 * added wavlm model
 * added error on filename for models
 
-Version 0.62.0
+Version 0.62.1
 --------------
 * added min and max_length for silero segmenatation
 

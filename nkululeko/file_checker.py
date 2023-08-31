@@ -82,9 +82,3 @@ class FileChecker:
             return df
         else:
             return self.df  
-
-
-        model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad',
-                              model='silero_vad',
-                              force_reload=False,
-                              onnx=USE_ONNX)

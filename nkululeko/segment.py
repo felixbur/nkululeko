@@ -1,5 +1,5 @@
 # segment.py
-# segment a database
+# segment data splits
 
 from nkululeko.experiment import Experiment
 import configparser
