@@ -57,7 +57,7 @@ class MOSSet(Featureset):
             length = len(self.data_df.index)
             for idx, (file, start, end) in enumerate(self.data_df.index.to_list()):
                 signal, sampling_rate = audiofile.read(file, offset=start.total_seconds(), duration=(end-start).total_seconds(), always_2d=True)
-                emb = self.get_embeddings(signal, sampling_rate)
+                emb = self.get_embeddings(signal, sampling_rate, file)
                 emb_series[idx] = emb
                 if idx%10==0:
                     self.util.debug(f'MOS: {idx} of {length} done')
@@ -77,16 +77,20 @@ class MOSSet(Featureset):
                 self.util.error(f'got nan: {self.df.shape} {self.df.isnull().sum().sum()}')
 
 
-    def get_embeddings(self, signal, sampling_rate):
+    def get_embeddings(self, signal, sampling_rate, file):
         tmp_audio_name = 'mos_audio_tmp.wav'
-        audiofile.write(tmp_audio_name, signal, sampling_rate)
-        WAVEFORM_SPEECH, SAMPLE_RATE_SPEECH = torchaudio.load(tmp_audio_name)
-        with torch.no_grad():
-            mos = self.subjective_model(WAVEFORM_SPEECH, self.WAVEFORM_NMR)
+        try:
+            audiofile.write(tmp_audio_name, signal, sampling_rate)
+            WAVEFORM_SPEECH, SAMPLE_RATE_SPEECH = torchaudio.load(tmp_audio_name)
+            with torch.no_grad():
+                mos = self.subjective_model(WAVEFORM_SPEECH, self.WAVEFORM_NMR)
+        except RuntimeError as re:
+            print(str(re))
+            self.util.error(f'couldn\'t extract file: {file}')
         return float(mos[0].numpy())
     
     
     def extract_sample(self, signal, sr):
         self.init_model()
-        feats = self.get_embeddings(signal, sr)
+        feats = self.get_embeddings(signal, sr, 'no file')
         return feats

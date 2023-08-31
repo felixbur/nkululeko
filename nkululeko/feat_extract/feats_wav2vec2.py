@@ -62,7 +62,7 @@ class Wav2vec2(Featureset):
                     sampling_rate = 16000
                 # signal, sampling_rate = audiofile.read(file, offset=start.total_seconds(), duration=(end-start).total_seconds(), always_2d=True)
                 # signal, sampling_rate = audiofile.read(audio_path, always_2d=True)
-                emb = self.get_embeddings(signal, sampling_rate)
+                emb = self.get_embeddings(signal, sampling_rate, file)
                 emb_series[idx] = emb
                 if idx % 10 == 0:
                     self.util.debug(f'Wav2vec2: {idx} of {length} done')
@@ -82,27 +82,31 @@ class Wav2vec2(Featureset):
                 self.util.error(
                     f'got nan: {self.df.shape} {self.df.isnull().sum().sum()}')
 
-    def get_embeddings(self, signal, sampling_rate):
+    def get_embeddings(self, signal, sampling_rate, file):
         r"""Extract embeddings from raw audio signal."""
-        with torch.no_grad():
-            # run through processor to normalize signal
-            # always returns a batch, so we just get the first entry
-            # then we put it on the device
-            y = self.processor(signal, sampling_rate=sampling_rate)
-            y = y['input_values'][0]
-            y = torch.from_numpy(y.reshape(1, -1)).to(self.device)
-            # print(y.shape)
-            # run through model
-            # first entry contains hidden state
-            y = self.model(y)[0]
+        try:
+            with torch.no_grad():
+                # run through processor to normalize signal
+                # always returns a batch, so we just get the first entry
+                # then we put it on the device
+                y = self.processor(signal, sampling_rate=sampling_rate)
+                y = y['input_values'][0]
+                y = torch.from_numpy(y.reshape(1, -1)).to(self.device)
+                # print(y.shape)
+                # run through model
+                # first entry contains hidden state
+                y = self.model(y)[0]
 
-            # pool result and convert to numpy
-            y = torch.mean(y, dim=1)
-            y = y.detach().cpu().numpy()
+                # pool result and convert to numpy
+                y = torch.mean(y, dim=1)
+                y = y.detach().cpu().numpy()
+        except RuntimeError as re:
+            print(str(re))
+            self.util.error(f'couldn\'t extract file: {file}')
 
         return y.flatten()
 
     def extract_sample(self, signal, sr):
         self.init_model()
-        feats = self.get_embeddings(signal, sr)
+        feats = self.get_embeddings(signal, sr, 'no file')
         return feats
