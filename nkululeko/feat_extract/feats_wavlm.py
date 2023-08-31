@@ -1,4 +1,5 @@
-# feats_wav2vec2.py
+# feats_wavlm.py
+# HuBERT feature extractor for Nkululeko
 
 import os
 
@@ -7,18 +8,17 @@ import pandas as pd
 import torch
 import torchaudio
 from nkululeko.feat_extract.featureset import Featureset
-from transformers import Wav2Vec2FeatureExtractor, Wav2Vec2Model
-
-# import audiofile
-# import torchaudio
+from transformers import Wav2Vec2FeatureExtractor, WavLMModel
 
 
-class Wav2vec2(Featureset):
-    """Class to extract wav2vec2 embeddings """
+class Wavlm(Featureset): 
+    """Class to extract WavLM embedding)"""
 
     def __init__(self, name, data_df, feat_type):
-        """Constructor. is_train is needed to distinguish from test/dev sets, because they use the codebook from the training"""
+        """Constructor. is_train is needed to distinguish from test/dev sets,
+        because they use the codebook from the training"""
         super().__init__(name, data_df)
+        # check if device is not set, use cuda if available
         cuda = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.device = self.util.config_val('MODEL', 'device', cuda)
         self.model_initialized = False
@@ -26,30 +26,33 @@ class Wav2vec2(Featureset):
 
     def init_model(self):
         # load model
-        self.util.debug('loading wav2vec model...')
-        model_path = self.util.config_val(
-            'FEATS', 'wav2vec.model', f'facebook/{self.feat_type}')
+        self.util.debug("loading WavLM model...")
+        
+        model_path = self.util.config_val("FEATS", "WavLM.model", 
+            f"microsoft/{self.feat_type}")
         self.processor = Wav2Vec2FeatureExtractor.from_pretrained(model_path)
-        self.model = Wav2Vec2Model.from_pretrained(model_path).to(self.device)
-        print(f'intialized Wav2vec model on {self.device}')
+        self.model = WavLMModel.from_pretrained(model_path).to(self.device)
+        print(f"intialized WavLM model on {self.device}")
         self.model.eval()
         self.model_initialized = True
 
     def extract(self):
         """Extract the features or load them from disk if present."""
-        store = self.util.get_path('store')
-        storage = f'{store}{self.name}.pkl'
-        extract = self.util.config_val(
-            'FEATS', 'needs_feature_extraction', False)
-        no_reuse = eval(self.util.config_val('FEATS', 'no_reuse', 'False'))
+        store = self.util.get_path("store")
+        storage = f"{store}{self.name}.pkl"
+        extract = self.util.config_val("FEATS", 
+            "needs_feature_extraction", False)
+        no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             if not self.model_initialized:
                 self.init_model()
             self.util.debug(
-                'extracting wav2vec2 embeddings, this might take a while...')
+                "extracting wavlm embeddings, this might take a while..."
+            )
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
             length = len(self.data_df.index)
-            for idx, (file, start, end) in enumerate(self.data_df.index.to_list()):
+            for idx, (file, start, end) in enumerate(
+                    self.data_df.index.to_list()):
                 signal, sampling_rate = torchaudio.load(file)
                 if sampling_rate != 16000:
                     if idx == 0:
@@ -60,27 +63,26 @@ class Wav2vec2(Featureset):
                         sampling_rate, 16000)
                     signal = resampler(signal)
                     sampling_rate = 16000
-                # signal, sampling_rate = audiofile.read(file, offset=start.total_seconds(), duration=(end-start).total_seconds(), always_2d=True)
-                # signal, sampling_rate = audiofile.read(audio_path, always_2d=True)
                 emb = self.get_embeddings(signal, sampling_rate)
                 emb_series[idx] = emb
                 if idx % 10 == 0:
-                    self.util.debug(f'Wav2vec2: {idx} of {length} done')
+                    self.util.debug(f"{self.feat_type}: {idx} of {length} done")
             self.df = pd.DataFrame(
                 emb_series.values.tolist(), index=self.data_df.index)
             self.df.to_pickle(storage)
             try:
-                glob_conf.config['DATA']['needs_feature_extraction'] = 'false'
+                glob_conf.config["DATA"]["needs_feature_extraction"] = "false"
             except KeyError:
                 pass
         else:
-            self.util.debug('reusing extracted wav2vec2 embeddings')
+            self.util.debug(f"reusing extracted {self.feat_type} embeddings")
             self.df = pd.read_pickle(storage)
             if self.df.isnull().values.any():
                 nanrows = self.df.columns[self.df.isna().any()].tolist()
                 print(nanrows)
                 self.util.error(
-                    f'got nan: {self.df.shape} {self.df.isnull().sum().sum()}')
+                    f"got nan: {self.df.shape} {self.df.isnull().sum().sum()}"
+                )
 
     def get_embeddings(self, signal, sampling_rate):
         r"""Extract embeddings from raw audio signal."""
@@ -89,7 +91,7 @@ class Wav2vec2(Featureset):
             # always returns a batch, so we just get the first entry
             # then we put it on the device
             y = self.processor(signal, sampling_rate=sampling_rate)
-            y = y['input_values'][0]
+            y = y["input_values"][0]
             y = torch.from_numpy(y.reshape(1, -1)).to(self.device)
             # print(y.shape)
             # run through model
