@@ -62,6 +62,14 @@ class FeatureExtractor:
                     f"{store_name}_{self.feats_designation}", self.data_df,
                     feats_type
                 )
+
+            elif feats_type.startswith("wavlm"):
+                from nkululeko.feat_extract.feats_wavlm import Wavlm 
+                self.featExtractor = Wavlm(
+                    f"{store_name}_{self.feats_designation}", self.data_df,
+                    feats_type
+                )
+ 
  
             elif feats_type == "audmodel":
                 from nkululeko.feat_extract.feats_audmodel import AudModelSet

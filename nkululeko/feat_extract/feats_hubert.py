@@ -1,10 +1,9 @@
 # feats_hubert.py
 # HuBERT feature extractor for Nkululeko
 
+
 import os
 
-# import audiofile
-# import torchaudio
 import nkululeko.glob_conf as glob_conf
 import pandas as pd
 import torch
@@ -45,7 +44,7 @@ class Hubert(Featureset):
         #     raise ValueError(f"feat_type {self.feat_type} not supported")
 
         model_path = self.util.config_val("FEATS", "Hubert.model", 
-            self.feat_type)
+            f"facebook/{self.feat_type}")
         self.processor = Wav2Vec2FeatureExtractor.from_pretrained(model_path)
         self.model = HubertModel.from_pretrained(model_path).to(self.device)
         print(f"intialized Hubert model on {self.device}")
@@ -71,6 +70,10 @@ class Hubert(Featureset):
                     self.data_df.index.to_list()):
                 signal, sampling_rate = torchaudio.load(file)
                 if sampling_rate != 16000:
+                    if idx == 0:
+                        self.util.debug(
+                            f"resampling {self.feat_type} to 16kHz. Will slow down the process."
+                        )
                     resampler = torchaudio.transforms.Resample(
                         sampling_rate, 16000)
                     signal = resampler(signal)
