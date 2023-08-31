@@ -8,7 +8,7 @@ from  nkululeko.constants import VERSION
 import argparse
 import os
 import pandas as pd
-from nkululeko.augmenting .resampler import Resampler
+from nkululeko.augmenting.resampler import Resampler
 
 def main(src_dir):
     parser = argparse.ArgumentParser(description='Call the nkululeko framework.')

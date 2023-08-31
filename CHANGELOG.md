@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.63.1
+--------------
+* fixed bug in resample
+
 Version 0.63.0
 --------------
 * added wavlm model
