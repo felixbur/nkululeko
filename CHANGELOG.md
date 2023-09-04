@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.63.4
+--------------
+* fixed bug in split selection
+
 Version 0.63.3
 --------------
 * Introduced data.audio_path
