@@ -82,7 +82,6 @@ class Model:
         self.util.debug(f'KFOLD: {self.xfoldx} folds: mean {results.mean():.3f}, std: {results.std():.3f}')
     def _do_logo(self):
         # ignore train and test sets and do a "leave one speaker group out"  evaluation
-        self.util.debug(f'ignoring splits and doing LOGO with {self.logo} groups')
         logo = int(self.logo)
         feats = pd.concat([self.feats_train, self.feats_test])
         annos = pd.concat([self.df_train, self.df_test])
@@ -103,10 +102,12 @@ class Model:
                 sdict[s] = folds[i % len(folds)]    
             # add this to the annotations  
             annos['fold'] = annos['speaker'].apply(lambda x: str(sdict[x]))
+            fold_count = self.logo
         else:
             fold_count = annos['fold'].nunique()
             self.util.debug(f'using existing folds for {fold_count} groups')  
         g_index = 0
+        self.util.debug(f'ignoring splits and doing LOGO with {fold_count} groups')
         # leave-one-group loop    
         for train_index, test_index in _logo.split(
             feats, 

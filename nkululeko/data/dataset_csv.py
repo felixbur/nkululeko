@@ -10,23 +10,24 @@ class Dataset_CSV(Dataset):
 
     def load(self):
         """Load the dataframe with files, speakers and task labels"""
-        self.got_target, self.got_speaker, self.got_gender = False, False, False
-        root = self.util.config_val_data(self.name, '', '')
-        absolute_path = eval(self.util.config_val_data(self.name, 'absolute_path', True))
         self.util.debug(f'loading {self.name}')
-#        df = pd.read_csv(root, index_col='file')       
-        if not os.path.isabs(root):
+        self.got_target, self.got_speaker, self.got_gender = False, False, False
+        data_file = self.util.config_val_data(self.name, '', '')
+        if not os.path.isabs(data_file):
             exp_root = self.util.config_val('EXP', 'root', '')
-            root = os.path.join(exp_root, root)
-        df = audformat.utils.read_csv(root)       
+            data_file = os.path.join(exp_root, data_file)
+        root = os.path.dirname(data_file)
+        audio_path = self.util.config_val_data(self.name, 'audio_path', '')
+        df = audformat.utils.read_csv(data_file)       
+        absolute_path = eval(self.util.config_val_data(self.name, 'absolute_path', True))
         if not absolute_path:
             # add the root folder to the relative paths of the files 
             if audformat.index_type(df.index) == 'segmented':
-                file_index = df.index.levels[0].map(lambda x: os.path.dirname(root)+'/'+x).values
+                file_index = df.index.levels[0].map(lambda x: root+'/'+audio_path+'/'+x).values
                 df.index.set_levels(file_index, level='file')
                 # df = df.set_index()
             else:
-                df = df.set_index(df.index.to_series().apply(lambda x: os.path.dirname(root)+'/'+x)) 
+                df = df.set_index(df.index.to_series().apply(lambda x: root+'/'+audio_path+'/'+x)) 
         self.df = df
         self.db = None
         self.got_target = True

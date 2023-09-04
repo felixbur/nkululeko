@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.63.3
+--------------
+* Introduced data.audio_path
+
+
 Version 0.63.2
 --------------
 * re-introduced min and max_length for silero segmenatation

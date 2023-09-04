@@ -54,12 +54,14 @@
   * tests = ['emovo']
 * **root_folders**: specify an additional configuration specifically for all entries starting with a dataset name, acting as global defaults. 
   * root_folders = data_roots.ini
-* **db_name**: path with audformatted repository for each database listed in 'databases*
+* **db_name**: path with audformatted repository for each database listed in 'databases*. If this path is not absolute, it will be treated relative to the experiment folder.
   * emodb = /home/data/audformat/emodb/
 * **db_name.type**: type of storage, e.g. audformat database or 'csv' (needs header: file,speaker,task)
   * emodb.type = audformat
-* **db_name.absolute_path**: only for 'csv' databases: are the audio file pathes relative or absolute?
+* **db_name.absolute_path**: only for 'csv' databases: are the audio file pathes relative or absolute? if not absolute, they will be treated relative to the database parent folder. NOT the experiment root folder.
   * my_data.absolute_path = True
+* **db_name.audio_path**: only for 'csv' databases: are the audio files in a special common folder?
+  * my_data.audio_path = wav_files/
 * **db_name.mapping**: mapping python dictionary to map between categories for cross-database experiments
   * emodb.mapping = {'anger':'angry', 'happiness':'happy', 'sadness':'sad', 'neutral':'neutral'}
 * **db_name.split_strategy**: How to identify sets for train/development data splits within one database

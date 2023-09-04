@@ -11,7 +11,7 @@ import pandas as pd
 class Util:
 
     # a list of words that need not to be warned upon if default values are used
-    stopvals = [False, 'False', 'classification', 'png']
+    stopvals = [False, 'False', 'classification', 'png', 'audio_path']
 
     def __init__(self, caller=None, has_config=True):
         if has_config:
