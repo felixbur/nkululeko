@@ -3,9 +3,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
 from nkululeko.util import Util
+import nkululeko.utils.stats as su
 import seaborn as sns
 import numpy as np
 import ast
+from scipy import stats
 
 class Plots():
     
@@ -52,23 +54,35 @@ class Plots():
         fig_dir = self.util.get_path('fig_dir')+'../' # one up because of the runs 
         attributes = ast.literal_eval(self.util.config_val('EXPL', 'value_counts', False))
         dist_type = self.util.config_val('EXPL', 'dist_type', 'hist')
+        bin_reals = eval(self.util.config_val('EXPL', 'bin_reals', 'True'))
         for att in attributes:
             if len(att) == 1:
                 self.util.debug(f'plotting {att[0]}')
                 filename = f'{self.target}-{att[0]}'
                 if self.util.is_categorical(df[att[0]]):
-                    ax = df.groupby('class_label')[att[0]].value_counts().unstack().plot(kind='bar', stacked=True, title=f'{type} {df.shape[0]}', rot=0)
+                    crosstab = pd.crosstab(index=df['class_label'], columns=df[att[0]])
+                    res_pval = stats.chi2_contingency(crosstab)
+                    res_pval = int(res_pval[1]*1000)/1000
+                    title = f'{type} {df.shape[0]}. P-val chi2: {res_pval}'
+                    ax = df.groupby('class_label')[att[0]].value_counts().unstack().plot(kind='bar', stacked=True, title=title, rot=0)
                     ax.set_ylabel(f'number of {type}')
                     ax.set_xlabel(self.target)
                 else:
-                    if dist_type == 'hist':
-                        ax = sns.histplot(df, x=att[0], hue='class_label', kde=True)
-                        ax.set_title(f'{type} {df.shape[0]}')
-                        ax.set_xlabel(f'value of {att[0]}')
-                        ax.set_ylabel(f'number of {type}')
+                    if self.util.is_categorical(df[self.target]) or bin_reals:
+                        cats, es = su.get_effect_size(df, 'class_label', att[0])
+                        if dist_type == 'hist':
+                            ax = sns.histplot(df, x=att[0], hue='class_label', kde=True)
+                            ax.set_title(f'{type} {df.shape[0]}. Effect size ({cats}): {es}')
+                            ax.set_xlabel(f'value of {att[0]}')
+                            ax.set_ylabel(f'number of {type}')
+                        else:
+                            ax = sns.displot(df, x=att[0], hue='class_label', kind="kde", fill=True)
+                            ax.fig.suptitle(f'{type} {df.shape[0]}. Effect size ({cats}): {es}') 
                     else:
-                        ax = sns.displot(df, x=att[0], hue='class_label', kind="kde", fill=True)
-                        ax.fig.suptitle(f'{type} {df.shape[0]}') 
+                        pearson = stats.pearsonr(df[self.target], df[att[0]])
+                        pearson = int(pearson[0]*1000)/1000
+                        pearson_string = f'PCC: {pearson}'
+                        ax = sns.scatterplot(data=df, x=self.target, y=att[0])                        
                 fig = ax.figure
                 plt.tight_layout()
                 plt.savefig(f'{fig_dir}{filename}_{type}.{self.format}')
@@ -78,16 +92,20 @@ class Plots():
                 self.util.debug(f'plotting {att}')
                 att1 = att[0]
                 att2 = att[1]
-                filename = f'{att[0]}-{att[1]}'
+                filename = f'{att1}-{att2}'
                 filename = f'{self.target}-{filename}'
+                pearson_string = ''
                 if self.util.is_categorical(df[att1]):
                     ax = sns.scatterplot(data=df, x=self.target, y=att2, hue=att1)                                
                 elif self.util.is_categorical(df[att2]):
                     ax = sns.scatterplot(data=df, x=self.target, y=att1, hue=att2)                
                 else:
+                    pearson = stats.pearsonr(df[att1], df[att2])
+                    pearson = int(pearson[0]*1000)/1000
+                    pearson_string = f'PCC: {pearson}'
                     ax = sns.scatterplot(data=df, x=att1, y=att2, hue='class_label')
                 fig = ax.figure
-                ax.set_title(f'{type} {df.shape[0]}')
+                ax.set_title(f'{type} {df.shape[0]}. {pearson_string}')
                 plt.tight_layout()
                 plt.savefig(f'{fig_dir}{filename}_{type}.{self.format}')   
                 plt.close(fig)
