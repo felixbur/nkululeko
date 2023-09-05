@@ -26,7 +26,7 @@ emotion_map = {
 
 def main():
     input_dir = Path(args.data_dir)
-    paths = list(input_dir.glob('*.wav'))
+    paths = list(input_dir.glob('**/*.wav'))
     if len(paths) == 0:
         raise FileNotFoundError("No audio files found.")
     
