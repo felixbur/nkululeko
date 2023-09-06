@@ -92,7 +92,7 @@ class Util:
 
     def is_categorical(self, pd_series):
         """Check if a dataframe column is categorical"""
-        return pd_series.dtype.name == 'object'
+        return pd_series.dtype.name == 'object' or isinstance(pd_series.dtype, pd.CategoricalDtype)
 
     def get_dir(self):
         """

@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.64.1
+--------------
+* fix error on csv
+
 Version 0.64.0
 --------------
 * added bin_reals
