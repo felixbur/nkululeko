@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.64.2
+--------------
+* added __init__.py for submodules
+
 Version 0.64.1
 --------------
 * fix error on csv
