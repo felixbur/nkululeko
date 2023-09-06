@@ -82,7 +82,8 @@ class Plots():
                         pearson = stats.pearsonr(df[self.target], df[att[0]])
                         pearson = int(pearson[0]*1000)/1000
                         pearson_string = f'PCC: {pearson}'
-                        ax = sns.scatterplot(data=df, x=self.target, y=att[0])                        
+                        ax = sns.scatterplot(data=df, x=self.target, y=att[0]) 
+                        ax.set_title(f'{type} {df.shape[0]}. {pearson_string}')
                 fig = ax.figure
                 plt.tight_layout()
                 plt.savefig(f'{fig_dir}{filename}_{type}.{self.format}')
