@@ -1,9 +1,11 @@
 # dataset_csv.py
-import pandas as pd
 import os
-from nkululeko.data.dataset import Dataset
 import os.path
+
 import audformat.utils
+import pandas as pd
+from nkululeko.data.dataset import Dataset
+
 
 class Dataset_CSV(Dataset):
     """ Class to represent datasets stored as a csv file"""
@@ -27,6 +29,8 @@ class Dataset_CSV(Dataset):
                 df.index.set_levels(file_index, level='file')
                 # df = df.set_index()
             else:
+                if not isinstance(df, pd.DataFrame):
+                    df = pd.DataFrame(df)
                 df = df.set_index(df.index.to_series().apply(lambda x: root+'/'+audio_path+'/'+x)) 
         self.df = df
         self.db = None
