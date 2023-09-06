@@ -181,13 +181,13 @@ class Experiment:
             #         self.util.copy_flags(d, self.df_test)
             # elif strategy == 'traintest':
                 # default: train vs. test combined from all datasets
-            for d in self.datasets.values():
-                d.split()
-                d.prepare_labels()
-                self.df_train = pd.concat([self.df_train, d.df_train])
-                self.util.copy_flags(d, self.df_train)
-                self.df_test = pd.concat([self.df_test, d.df_test])
-                self.util.copy_flags(d, self.df_test)
+            # for d in self.datasets.values():
+            #     d.split()
+            #     d.prepare_labels()
+            #     self.df_train = pd.concat([self.df_train, d.df_train])
+            #     self.util.copy_flags(d, self.df_train)
+            #     self.df_test = pd.concat([self.df_test, d.df_test])
+            #     self.util.copy_flags(d, self.df_test)
             # else:
             #     self.util.error(f'unknown strategy: {strategy}')
             for d in self.datasets.values():
