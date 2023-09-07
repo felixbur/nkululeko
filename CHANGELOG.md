@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.65.0
+--------------
+* introduced export module
+
 Version 0.64.4
 --------------
 * added num_speakers for reloaded data
