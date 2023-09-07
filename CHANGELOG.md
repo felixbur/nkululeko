@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.64.4
+--------------
+* added num_speakers for reloaded data
+* re-formatted all with black
+
 Version 0.64.3
 --------------
 * added number of speakers shown after data load
