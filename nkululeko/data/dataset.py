@@ -77,8 +77,11 @@ class Dataset:
             self.got_age = 'age' in self.df
             self.got_speaker = 'speaker' in self.df
             self.util.copy_flags(self, self.df)
+            speaker_num = 0
+            if self.got_speaker:
+                speaker_num = self.df.speaker.nunique()
             self.util.debug(f'{self.name}: loaded with {self.df.shape[0]} '\
-                f'samples: got targets: {self.is_labeled}, got speakers: {self.got_speaker}, '\
+                f'samples: got targets: {self.is_labeled}, got speakers: {self.got_speaker} ({speaker_num}), '\
                 f'got sexes: {self.got_gender}')        
             return
         tables = self._get_tables()

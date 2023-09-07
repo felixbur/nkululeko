@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.64.3
+--------------
+* added number of speakers shown after data load
+
 Version 0.64.2
 --------------
 * added __init__.py for submodules
