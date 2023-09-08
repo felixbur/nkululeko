@@ -65,7 +65,6 @@ class Hubert(Featureset):
             self.util.debug("extracting Hubert embeddings, this might take a while...")
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
             length = len(self.data_df.index)
-<<<<<<< HEAD
             for idx, (file, start, end) in enumerate(
                     self.data_df.index.to_list()):
                 signal, sampling_rate = torchaudio.load(file,
@@ -81,18 +80,6 @@ class Hubert(Featureset):
                 #         sampling_rate, 16000)
                 #     signal = resampler(signal)
                 #     sampling_rate = 16000
-=======
-            for idx, (file, start, end) in enumerate(self.data_df.index.to_list()):
-                signal, sampling_rate = torchaudio.load(file)
-                if sampling_rate != 16000:
-                    if idx == 0:
-                        self.util.debug(
-                            f"resampling {self.feat_type} to 16kHz. Will slow down the process."
-                        )
-                    resampler = torchaudio.transforms.Resample(sampling_rate, 16000)
-                    signal = resampler(signal)
-                    sampling_rate = 16000
->>>>>>> 466658a330ac8b6dd86fcecf36f7827de64ff45c
                 emb = self.get_embeddings(signal, sampling_rate, file)
                 emb_series[idx] = emb
                 if idx % 10 == 0:

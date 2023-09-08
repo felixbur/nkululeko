@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # copied from librosa.util.files.py
 
@@ -25,22 +25,22 @@ def find_files(
     Examples
     --------
     >>> # Get all audio files in a directory sub-tree
-    >>> files = nkululeko.utils.find_files('~/Music')
+    >>> files = nkululeko.files.find_files('~/Music')
 
     >>> # Look only within a specific directory, not the sub-tree
-    >>> files = nkululeko.utils.find_files('~/Music', recurse=False)
+    >>> files = nkululeko.files.find_files('~/Music', recurse=False)
 
     >>> # Only look for mp3 files
-    >>> files = nkululeko.utils.find_files('~/Music', ext='mp3')
+    >>> files = nkululeko.files.find_files('~/Music', ext='mp3')
 
     >>> # Or just mp3 and ogg
-    >>> files = nkululeko.utils.find_files('~/Music', ext=['mp3', 'ogg'])
+    >>> files = nkululeko.files.find_files('~/Music', ext=['mp3', 'ogg'])
 
     >>> # Only get the first 10 files
-    >>> files = nkululeko.utils.find_files('~/Music', limit=10)
+    >>> files = nkululeko.files.find_files('~/Music', limit=10)
 
     >>> # Or last 10 files
-    >>> files = nkululeko.utils.find_files('~/Music', offset=-10)
+    >>> files = nkululeko.files.find_files('~/Music', offset=-10)
 
     >>> # Avoid including search patterns in the path string
     >>> import glob
