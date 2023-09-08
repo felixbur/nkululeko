@@ -50,16 +50,19 @@ class Wav2vec2(Featureset):
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
             length = len(self.data_df.index)
             for idx, (file, start, end) in enumerate(self.data_df.index.to_list()):
-                signal, sampling_rate = torchaudio.load(file)
-                if sampling_rate != 16000:
-                    if idx == 0:
-                        self.util.debug(
-                            f"resampling {self.feat_type} to 16kHz. Will slow down the process."
-                        )
-                    resampler = torchaudio.transforms.Resample(
-                        sampling_rate, 16000)
-                    signal = resampler(signal)
-                    sampling_rate = 16000
+                signal, sampling_rate = torchaudio.load(file,
+                    frame_offset=start.total_seconds()*16000,
+                    num_frames=(end - start).total_seconds()*16000)
+                assert sampling_rate == 16000
+                # if sampling_rate != 16000:
+                #     if idx == 0:
+                #         self.util.debug(
+                #             f"resampling {self.feat_type} to 16kHz. Will slow down the process."
+                #         )
+                #     resampler = torchaudio.transforms.Resample(
+                #         sampling_rate, 16000)
+                #     signal = resampler(signal)
+                #     sampling_rate = 16000
                 # signal, sampling_rate = audiofile.read(file, offset=start.total_seconds(), duration=(end-start).total_seconds(), always_2d=True)
                 # signal, sampling_rate = audiofile.read(audio_path, always_2d=True)
                 emb = self.get_embeddings(signal, sampling_rate, file)

@@ -1,5 +1,6 @@
 # feats_wavlm.py
 # HuBERT feature extractor for Nkululeko
+# supported feat_types: 'wavlm-base', 'wavlm-base-plus', 'wavlm-large'
 
 import os
 
@@ -53,16 +54,19 @@ class Wavlm(Featureset):
             length = len(self.data_df.index)
             for idx, (file, start, end) in enumerate(
                     self.data_df.index.to_list()):
-                signal, sampling_rate = torchaudio.load(file)
-                if sampling_rate != 16000:
-                    if idx == 0:
-                        self.util.debug(
-                            f"resampling {self.feat_type} to 16kHz. Will slow down the process."
-                        )
-                    resampler = torchaudio.transforms.Resample(
-                        sampling_rate, 16000)
-                    signal = resampler(signal)
-                    sampling_rate = 16000
+                signal, sampling_rate = torchaudio.load(file, 
+                        frame_offset=start.total_seconds()*16000,
+                        num_frames=(end - start).total_seconds()*16000)
+                # if sampling_rate != 16000:
+                #     if idx == 0:
+                #         self.util.debug(
+                #             f"resampling {self.feat_type} to 16kHz. Will slow down the process."
+                #         )
+                #     resampler = torchaudio.transforms.Resample(
+                #         sampling_rate, 16000)
+                #     signal = resampler(signal)
+                #     sampling_rate = 16000
+                assert sampling_rate == 16000
                 emb = self.get_embeddings(signal, sampling_rate, file)
                 emb_series[idx] = emb
                 if idx % 10 == 0:
