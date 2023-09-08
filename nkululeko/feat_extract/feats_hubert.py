@@ -12,7 +12,7 @@ from nkululeko.feat_extract.featureset import Featureset
 from transformers import HubertModel, Wav2Vec2FeatureExtractor
 
 
-class Hubert(Featureset): 
+class Hubert(Featureset):
     """Class to extract HuBERT embedding)"""
 
     def __init__(self, name, data_df, feat_type):
@@ -21,14 +21,14 @@ class Hubert(Featureset):
         super().__init__(name, data_df)
         # check if device is not set, use cuda if available
         cuda = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.device = self.util.config_val('MODEL', 'device', cuda)
+        self.device = self.util.config_val("MODEL", "device", cuda)
         self.model_initialized = False
         self.feat_type = feat_type
 
     def init_model(self):
         # load model
         self.util.debug("loading Hubert model...")
-        
+
         # extract ckpt based on feat_type
         # if self.feat_type == "hubert":
         #     ckpt = "facebook/hubert-base-ls960"
@@ -43,8 +43,9 @@ class Hubert(Featureset):
         # else:
         #     raise ValueError(f"feat_type {self.feat_type} not supported")
 
-        model_path = self.util.config_val("FEATS", "Hubert.model", 
-            f"facebook/{self.feat_type}")
+        model_path = self.util.config_val(
+            "FEATS", "Hubert.model", f"facebook/{self.feat_type}"
+        )
         self.processor = Wav2Vec2FeatureExtractor.from_pretrained(model_path)
         self.model = HubertModel.from_pretrained(model_path).to(self.device)
         print(f"intialized Hubert model on {self.device}")
@@ -55,35 +56,29 @@ class Hubert(Featureset):
         """Extract the features or load them from disk if present."""
         store = self.util.get_path("store")
         storage = f"{store}{self.name}.pkl"
-        extract = self.util.config_val("FEATS", 
-            "needs_feature_extraction", False)
+        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             if not self.model_initialized:
                 self.init_model()
-            self.util.debug(
-                "extracting Hubert embeddings, this might take a while..."
-            )
+            self.util.debug("extracting Hubert embeddings, this might take a while...")
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
             length = len(self.data_df.index)
-            for idx, (file, start, end) in enumerate(
-                    self.data_df.index.to_list()):
+            for idx, (file, start, end) in enumerate(self.data_df.index.to_list()):
                 signal, sampling_rate = torchaudio.load(file)
                 if sampling_rate != 16000:
                     if idx == 0:
                         self.util.debug(
                             f"resampling {self.feat_type} to 16kHz. Will slow down the process."
                         )
-                    resampler = torchaudio.transforms.Resample(
-                        sampling_rate, 16000)
+                    resampler = torchaudio.transforms.Resample(sampling_rate, 16000)
                     signal = resampler(signal)
                     sampling_rate = 16000
                 emb = self.get_embeddings(signal, sampling_rate, file)
                 emb_series[idx] = emb
                 if idx % 10 == 0:
                     self.util.debug(f"{self.feat_type}: {idx} of {length} done")
-            self.df = pd.DataFrame(
-                emb_series.values.tolist(), index=self.data_df.index)
+            self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
             self.df.to_pickle(storage)
             try:
                 glob_conf.config["DATA"]["needs_feature_extraction"] = "false"
@@ -119,11 +114,11 @@ class Hubert(Featureset):
                 y = y.detach().cpu().numpy()
         except RuntimeError as re:
             print(str(re))
-            self.util.error(f'couldn\'t extract file: {file}')
+            self.util.error(f"couldn't extract file: {file}")
 
         return y.flatten()
 
     def extract_sample(self, signal, sr):
         self.init_model()
-        feats = self.get_embeddings(signal, sr, 'no file')
+        feats = self.get_embeddings(signal, sr, "no file")
         return feats

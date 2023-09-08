@@ -1,6 +1,19 @@
 Changelog
 =========
 
+Version 0.65.0
+--------------
+* introduced export module
+
+Version 0.64.4
+--------------
+* added num_speakers for reloaded data
+* re-formatted all with black
+
+Version 0.64.3
+--------------
+* added number of speakers shown after data load
+
 Version 0.64.2
 --------------
 * added __init__.py for submodules

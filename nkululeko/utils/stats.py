@@ -3,6 +3,7 @@ import math
 import numpy as np
 import pandas as pd
 
+
 def cohen_d(d1, d2):
     """
     Compute Cohen's d from two distributions of real valued arrays
@@ -23,8 +24,8 @@ def cohen_d(d1, d2):
     # calculate the effect size
     if math.isnan(s):
         return 0
-    return (int(1000*np.abs((u1 - u2)) / s))/1000
- 
+    return (int(1000 * np.abs((u1 - u2)) / s)) / 1000
+
 
 def all_combinations(items_list):
     result = []
@@ -33,6 +34,7 @@ def all_combinations(items_list):
             if len(combo) == 2:
                 result.append(list(combo))
     return result
+
 
 def get_effect_size(df, target, variable):
     """
@@ -48,12 +50,12 @@ def get_effect_size(df, target, variable):
     categories = df[target].unique()
     cats = {}
     for c in categories:
-        cats[c] = df[df[target]==c][variable].values
+        cats[c] = df[df[target] == c][variable].values
     combos = all_combinations(categories)
     results = {}
     for combo in combos:
         one = combo[0]
         other = combo[1]
-        results[f'{one}-{other}'] = cohen_d(cats[one], cats[other])
+        results[f"{one}-{other}"] = cohen_d(cats[one], cats[other])
     max_cat = max(results, key=results.get)
     return max_cat, results[max_cat]

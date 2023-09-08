@@ -11,7 +11,7 @@ from nkululeko.feat_extract.featureset import Featureset
 from transformers import Wav2Vec2FeatureExtractor, WavLMModel
 
 
-class Wavlm(Featureset): 
+class Wavlm(Featureset):
     """Class to extract WavLM embedding)"""
 
     def __init__(self, name, data_df, feat_type):
@@ -20,16 +20,17 @@ class Wavlm(Featureset):
         super().__init__(name, data_df)
         # check if device is not set, use cuda if available
         cuda = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.device = self.util.config_val('MODEL', 'device', cuda)
+        self.device = self.util.config_val("MODEL", "device", cuda)
         self.model_initialized = False
         self.feat_type = feat_type
 
     def init_model(self):
         # load model
         self.util.debug("loading WavLM model...")
-        
-        model_path = self.util.config_val("FEATS", "WavLM.model", 
-            f"microsoft/{self.feat_type}")
+
+        model_path = self.util.config_val(
+            "FEATS", "WavLM.model", f"microsoft/{self.feat_type}"
+        )
         self.processor = Wav2Vec2FeatureExtractor.from_pretrained(model_path)
         self.model = WavLMModel.from_pretrained(model_path).to(self.device)
         print(f"intialized WavLM model on {self.device}")
@@ -40,35 +41,29 @@ class Wavlm(Featureset):
         """Extract the features or load them from disk if present."""
         store = self.util.get_path("store")
         storage = f"{store}{self.name}.pkl"
-        extract = self.util.config_val("FEATS", 
-            "needs_feature_extraction", False)
+        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             if not self.model_initialized:
                 self.init_model()
-            self.util.debug(
-                "extracting wavlm embeddings, this might take a while..."
-            )
+            self.util.debug("extracting wavlm embeddings, this might take a while...")
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
             length = len(self.data_df.index)
-            for idx, (file, start, end) in enumerate(
-                    self.data_df.index.to_list()):
+            for idx, (file, start, end) in enumerate(self.data_df.index.to_list()):
                 signal, sampling_rate = torchaudio.load(file)
                 if sampling_rate != 16000:
                     if idx == 0:
                         self.util.debug(
                             f"resampling {self.feat_type} to 16kHz. Will slow down the process."
                         )
-                    resampler = torchaudio.transforms.Resample(
-                        sampling_rate, 16000)
+                    resampler = torchaudio.transforms.Resample(sampling_rate, 16000)
                     signal = resampler(signal)
                     sampling_rate = 16000
                 emb = self.get_embeddings(signal, sampling_rate, file)
                 emb_series[idx] = emb
                 if idx % 10 == 0:
                     self.util.debug(f"{self.feat_type}: {idx} of {length} done")
-            self.df = pd.DataFrame(
-                emb_series.values.tolist(), index=self.data_df.index)
+            self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
             self.df.to_pickle(storage)
             try:
                 glob_conf.config["DATA"]["needs_feature_extraction"] = "false"
@@ -104,11 +99,11 @@ class Wavlm(Featureset):
                 y = y.detach().cpu().numpy()
         except RuntimeError as re:
             print(str(re))
-            self.util.error(f'couldn\'t extract file: {file}')
+            self.util.error(f"couldn't extract file: {file}")
 
         return y.flatten()
 
     def extract_sample(self, signal, sr):
         self.init_model()
-        feats = self.get_embeddings(signal, sr, 'no file')
+        feats = self.get_embeddings(signal, sr, "no file")
         return feats

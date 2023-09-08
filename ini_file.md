@@ -13,6 +13,7 @@
     - [MODEL](#model)
     - [EXPL](#expl)
     - [PREDICT](#predict)
+    - [EXPORT](#export)
     - [PLOT](#plot)
 
 
@@ -296,6 +297,16 @@
   * targets = ['gender', 'age', 'snr', 'arousal', 'valence', 'dominance', 'pesq', 'mos']
 * **sample_selection**: which split: [train, test, all]
   * sample_selection = all
+
+### [EXPORT](#export)
+* **target_root**: New root directory for the database, will be created
+  * target_root = ./exported_data/
+* **orig_root**: Path to folder that is parent to the original audio files
+  * orig_root = ../data/emodb/wav
+* **data_name**: Name for the CSV file
+  * data_name = exported_database
+* **segments_as_files**: Wether original files should be used, or segments split (resulting potentially in many new files).
+  * segments_as_files = False
 
 ### PLOT
 * **name**: special name as a prefix for all plots (stored in *img_dir*).
