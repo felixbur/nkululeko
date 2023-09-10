@@ -7,6 +7,13 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+emotion_map = {
+    'Neutral' : "neutral", 
+    'Sad': "sadness",
+    'Surprise': "surprise", 
+    'Angry': "anger",
+    'Happy': "happiness"
+}
 
 def main():
     parser = argparse.ArgumentParser()
