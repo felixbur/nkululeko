@@ -32,8 +32,7 @@ class Dataset_CSV(Dataset):
                     .map(lambda x: root + "/" + audio_path + "/" + x)
                     .values
                 )
-                df.index.set_levels(file_index, level="file")
-                # df = df.set_index()
+                df = df.set_index(df.index.set_levels(file_index, level="file"))
             else:
                 if not isinstance(df, pd.DataFrame):
                     df = pd.DataFrame(df)

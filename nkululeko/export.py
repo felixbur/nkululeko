@@ -73,7 +73,7 @@ def main(src_dir):
                 f"{target_root}/{os.path.basename(os.path.normpath(orig_root))}"
             )
             audeer.mkdir(wav_folder)
-            new_rel_path = os.path.relpath(orig_root, file_dir)
+            new_rel_path = file_dir[file_dir.index(orig_root)+1+len(orig_root):]
             new_file_path = f"{wav_folder}/{new_rel_path}"
             audeer.mkdir(new_file_path)
             new_file_name = f"{new_file_path}/{file_name}"
@@ -83,6 +83,12 @@ def main(src_dir):
         df = df.set_index(df.index.set_levels(files, level="file"))
         df["split"] = split
         df_all = pd.concat([df_all, df])
+    # remove encoded labels
+    target = util.config_val('DATA', 'target', 'emotion')
+    if 'class_label' in df_all.columns:
+        df_all = df_all.drop(columns=[target])
+        df_all = df_all.rename(columns={'class_label':target})
+
     df_all.to_csv(f"{target_root}/{data_name}.csv")
     util.debug(f"saved {data_name}.csv to {target_root}, {df.shape[0]} samples.")
 

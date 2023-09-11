@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.65.2
+--------------
+* fixed bug in dataset.csv that prevented correct paths for relative files
+* fixed bug in export module concerning new file directory
+
 Version 0.65.1
 --------------
 * small enhancements with transformer features
