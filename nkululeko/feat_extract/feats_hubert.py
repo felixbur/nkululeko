@@ -21,7 +21,7 @@ class Hubert(Featureset):
         because they use the codebook from the training"""
         super().__init__(name, data_df)
         # check if device is not set, use cuda if available
-        cuda = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
         self.model_initialized = False
         self.feat_type = feat_type
@@ -68,8 +68,8 @@ class Hubert(Featureset):
             for idx, (file, start, end) in enumerate(
                     self.data_df.index.to_list()):
                 signal, sampling_rate = torchaudio.load(file,
-                    frame_offset=start.total_seconds()*16000,
-                    num_frames=(end - start).total_seconds()*16000)
+                    frame_offset=int(start.total_seconds()*16000),
+                    num_frames=int((end - start).total_seconds()*16000))
                 assert sampling_rate == 16000
                 # if sampling_rate != 16000:
                 #     if idx == 0:

@@ -1,5 +1,5 @@
 # feats_wav2vec2.py
-
+# feat_types example = wav2vec2-large-robust-ft-swbd-300h
 import os
 
 import nkululeko.glob_conf as glob_conf
@@ -19,7 +19,7 @@ class Wav2vec2(Featureset):
     def __init__(self, name, data_df, feat_type):
         """Constructor. is_train is needed to distinguish from test/dev sets, because they use the codebook from the training"""
         super().__init__(name, data_df)
-        cuda = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
         self.model_initialized = False
         self.feat_type = feat_type
@@ -51,10 +51,9 @@ class Wav2vec2(Featureset):
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
             length = len(self.data_df.index)
             for idx, (file, start, end) in enumerate(self.data_df.index.to_list()):
-<<<<<<< HEAD
                 signal, sampling_rate = torchaudio.load(file,
-                    frame_offset=start.total_seconds()*16000,
-                    num_frames=(end - start).total_seconds()*16000)
+                    frame_offset=int(start.total_seconds()*16000),
+                    num_frames=int((end - start).total_seconds()*16000))
                 assert sampling_rate == 16000
                 # if sampling_rate != 16000:
                 #     if idx == 0:
@@ -65,17 +64,6 @@ class Wav2vec2(Featureset):
                 #         sampling_rate, 16000)
                 #     signal = resampler(signal)
                 #     sampling_rate = 16000
-=======
-                signal, sampling_rate = torchaudio.load(file)
-                if sampling_rate != 16000:
-                    if idx == 0:
-                        self.util.debug(
-                            f"resampling {self.feat_type} to 16kHz. Will slow down the process."
-                        )
-                    resampler = torchaudio.transforms.Resample(sampling_rate, 16000)
-                    signal = resampler(signal)
-                    sampling_rate = 16000
->>>>>>> 466658a330ac8b6dd86fcecf36f7827de64ff45c
                 # signal, sampling_rate = audiofile.read(file, offset=start.total_seconds(), duration=(end-start).total_seconds(), always_2d=True)
                 # signal, sampling_rate = audiofile.read(audio_path, always_2d=True)
                 emb = self.get_embeddings(signal, sampling_rate, file)
