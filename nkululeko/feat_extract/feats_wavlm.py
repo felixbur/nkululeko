@@ -55,15 +55,6 @@ class Wavlm(Featureset):
                 signal, sampling_rate = torchaudio.load(file, 
                         frame_offset=int(start.total_seconds()*16000),
                         num_frames=int((end - start).total_seconds()*16000))
-                # if sampling_rate != 16000:
-                #     if idx == 0:
-                #         self.util.debug(
-                #             f"resampling {self.feat_type} to 16kHz. Will slow down the process."
-                #         )
-                #     resampler = torchaudio.transforms.Resample(
-                #         sampling_rate, 16000)
-                #     signal = resampler(signal)
-                #     sampling_rate = 16000
                 assert sampling_rate == 16000
                 emb = self.get_embeddings(signal, sampling_rate, file)
                 emb_series[idx] = emb
@@ -95,7 +86,6 @@ class Wavlm(Featureset):
                 y = self.processor(signal, sampling_rate=sampling_rate)
                 y = y["input_values"][0]
                 y = torch.from_numpy(y.reshape(1, -1)).to(self.device)
-                # print(y.shape)
                 # run through model
                 # first entry contains hidden state
                 y = self.model(y)[0]

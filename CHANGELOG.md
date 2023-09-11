@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.65.1
+--------------
+* small enhancements with transformer features
+
 Version 0.65.0
 --------------
 * introduced export module
