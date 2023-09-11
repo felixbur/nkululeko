@@ -1,5 +1,6 @@
 # feats_wavlm.py
 # HuBERT feature extractor for Nkululeko
+# supported feat_types: 'wavlm-base', 'wavlm-base-plus', 'wavlm-large'
 
 import os
 
@@ -19,7 +20,7 @@ class Wavlm(Featureset):
         because they use the codebook from the training"""
         super().__init__(name, data_df)
         # check if device is not set, use cuda if available
-        cuda = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
         self.model_initialized = False
         self.feat_type = feat_type
@@ -49,16 +50,21 @@ class Wavlm(Featureset):
             self.util.debug("extracting wavlm embeddings, this might take a while...")
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
             length = len(self.data_df.index)
-            for idx, (file, start, end) in enumerate(self.data_df.index.to_list()):
-                signal, sampling_rate = torchaudio.load(file)
-                if sampling_rate != 16000:
-                    if idx == 0:
-                        self.util.debug(
-                            f"resampling {self.feat_type} to 16kHz. Will slow down the process."
-                        )
-                    resampler = torchaudio.transforms.Resample(sampling_rate, 16000)
-                    signal = resampler(signal)
-                    sampling_rate = 16000
+            for idx, (file, start, end) in enumerate(
+                    self.data_df.index.to_list()):
+                signal, sampling_rate = torchaudio.load(file, 
+                        frame_offset=int(start.total_seconds()*16000),
+                        num_frames=int((end - start).total_seconds()*16000))
+                # if sampling_rate != 16000:
+                #     if idx == 0:
+                #         self.util.debug(
+                #             f"resampling {self.feat_type} to 16kHz. Will slow down the process."
+                #         )
+                #     resampler = torchaudio.transforms.Resample(
+                #         sampling_rate, 16000)
+                #     signal = resampler(signal)
+                #     sampling_rate = 16000
+                assert sampling_rate == 16000
                 emb = self.get_embeddings(signal, sampling_rate, file)
                 emb_series[idx] = emb
                 if idx % 10 == 0:

@@ -1,12 +1,14 @@
 # feats_audmodel.py
-from nkululeko.feat_extract.featureset import Featureset
 import os
-import pandas as pd
+
 import audeer
-import nkululeko.glob_conf as glob_conf
-import audonnx
-import numpy as np
 import audinterface
+import audonnx
+import nkululeko.glob_conf as glob_conf
+import numpy as np
+import pandas as pd
+import torch
+from nkululeko.feat_extract.featureset import Featureset
 
 
 class AudModelSet(Featureset):
@@ -25,7 +27,8 @@ class AudModelSet(Featureset):
             model_root = audeer.mkdir(model_root)
             archive_path = audeer.download_url(model_url, cache_root, verbose=True)
             audeer.extract_archive(archive_path, model_root)
-        device = self.util.config_val("MODEL", "device", "cpu")
+        cuda = "cuda" if torch.cuda.is_available() else "cpu"
+        device = self.util.config_val("MODEL", "device", cuda)
         self.model = audonnx.load(model_root, device=device)
 
     def extract(self):
