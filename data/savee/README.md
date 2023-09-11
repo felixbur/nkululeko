@@ -16,3 +16,6 @@ $ python3 nkululeko.resample --config data data/savee/exp.ini
 $ python3 nkululeko.nkululeko --config data data/savee/exp.ini
 
 ```
+
+References:  
+[1] Vlasenko, B., Schuller, B., Wendemuth, A., & Rigoll, G. (2007). Combining frame and turn-level information for robust recognition ofemotions within speech. Proc. Interspeech 2007, 4, 2712–2715.
