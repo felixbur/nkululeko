@@ -6,7 +6,7 @@ import pandas as pd
 def check_na(a):
     if np.isnan(a).any():
         count = np.count_nonzero(np.isnan(a))
-        print(f'WARNING: got {count} Nans, setting to 0')
+        print(f'WARNING: got {count} Nans (of {len(a)}), setting to 0')
         a[np.isnan(a)] = 0
         return a 
     else:
