@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.65.5
+--------------
+* added fill_na in plot effect size
+
 Version 0.65.4
 --------------
 * added datasets to distribution
