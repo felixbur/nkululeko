@@ -22,7 +22,7 @@ def cohen_d(d1, d2):
     # calculate the means of the samples
     u1, u2 = np.mean(d1), np.mean(d2)
     # calculate the effect size
-    if math.isnan(s):
+    if math.isnan(s) or s == 0:
         return 0
     return (int(1000 * np.abs((u1 - u2)) / s)) / 1000
 

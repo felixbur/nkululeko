@@ -10,7 +10,7 @@ import audiofile
 from nkululeko.experiment import Experiment
 from nkululeko.util import Util
 from nkululeko.constants import VERSION
-
+import shutil
 
 def main(src_dir):
     parser = argparse.ArgumentParser(description="Call the nkululeko framework.")
@@ -54,6 +54,7 @@ def main(src_dir):
     target_root = util.config_val("EXPORT", "root", "./exported_data/")
     orig_root = util.config_val("EXPORT", "orig_root", None)
     data_name = util.config_val("EXPORT", "data_name", "export")
+    segments_as_files = eval(util.config_val("EXPORT", "segments_as_files", "False"))
     audeer.mkdir(target_root)
     splits = {"train": df_train, "test": df_test}
     df_all = pd.DataFrame()
@@ -61,25 +62,40 @@ def main(src_dir):
         files = []
         df = splits[split]
         for idx, (file, start, end) in enumerate(df.index.to_list()):
-            signal, sampling_rate = audiofile.read(
-                file,
-                offset=start.total_seconds(),
-                duration=(end - start).total_seconds(),
-                always_2d=True,
-            )
             file_dir = os.path.dirname(file)
-            file_name = os.path.basename(file)
-            wav_folder = (
-                f"{target_root}/{os.path.basename(os.path.normpath(orig_root))}"
-            )
-            audeer.mkdir(wav_folder)
-            new_rel_path = file_dir[file_dir.index(orig_root)+1+len(orig_root):]
-            new_file_path = f"{wav_folder}/{new_rel_path}"
-            audeer.mkdir(new_file_path)
-            new_file_name = f"{new_file_path}/{file_name}"
-            audiofile.write(new_file_name, signal, sampling_rate)
-            new_file_name = os.path.relpath(new_file_name, target_root)
-            files.append(new_file_name)
+            if segments_as_files:
+                signal, sampling_rate = audiofile.read(
+                    file,
+                    offset=start.total_seconds(),
+                    duration=(end - start).total_seconds(),
+                    always_2d=True,
+                )
+                file_name = os.path.basename(file)[:-3]+'_'+start.total_seconds()+'.wav'
+                wav_folder = (
+                    f"{target_root}/{os.path.basename(os.path.normpath(orig_root))}"
+                )
+                audeer.mkdir(wav_folder)
+                new_rel_path = file_dir[file_dir.index(orig_root)+1+len(orig_root):]
+                new_file_path = f"{wav_folder}/{new_rel_path}"
+                audeer.mkdir(new_file_path)
+                new_file_name = f"{new_file_path}/{file_name}"
+                audiofile.write(new_file_name, signal, sampling_rate)
+                new_file_name = os.path.relpath(new_file_name, target_root)
+                files.append(new_file_name)
+            else:
+                file_name = os.path.basename(file)[:-4]+'_'+str(start.total_seconds())+'.wav'
+                wav_folder = (
+                    f"{target_root}/{os.path.basename(os.path.normpath(orig_root))}"
+                )
+                audeer.mkdir(wav_folder)
+                new_rel_path = file_dir[file_dir.index(orig_root)+1+len(orig_root):]
+                new_file_path = f"{wav_folder}/{new_rel_path}"
+                audeer.mkdir(new_file_path)
+                new_file_name = f"{new_file_path}/{file_name}"
+                if not os.path.exists(new_file_name):
+                    shutil.copyfile(file, new_file_name)
+                new_file_name = os.path.relpath(new_file_name, target_root)
+                files.append(new_file_name)
         df = df.set_index(df.index.set_levels(files, level="file"))
         df["split"] = split
         df_all = pd.concat([df_all, df])
