@@ -63,7 +63,7 @@
   * my_data.absolute_path = True
 * **db_name.audio_path**: only for 'csv' databases: are the audio files in a special common folder?
   * my_data.audio_path = wav_files/
-* **db_name.mapping**: mapping python dictionary to map between categories for cross-database experiments
+* **db_name.mapping**: mapping python dictionary to map between categories for cross-database experiments (format: {'target_emo':'source_emo'})
   * emodb.mapping = {'anger':'angry', 'happiness':'happy', 'sadness':'sad', 'neutral':'neutral'}
 * **db_name.split_strategy**: How to identify sets for train/development data splits within one database
   * emodb.split_strategy = reuse
@@ -325,3 +325,7 @@
   * combine_per_speaker = mode
 * **format**: format for plots, either *png* or *eps* (for scalable graphics)
   * format = png
+
+### RESAMPLE
+* **sample_selection** = which split: [train, test, all]
+  * sample_selection = all
