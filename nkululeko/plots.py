@@ -57,6 +57,8 @@ class Plots():
         bin_reals = eval(self.util.config_val('EXPL', 'bin_reals', 'True'))
         for att in attributes:
             if len(att) == 1:
+                if att[0] not in df:
+                    self.util.error(f'unknown feature: {att[0]}')
                 self.util.debug(f'plotting {att[0]}')
                 filename = f'{self.target}-{att[0]}'
                 if self.util.is_categorical(df[att[0]]):
@@ -90,6 +92,10 @@ class Plots():
                 plt.close(fig)
                 # fig.clear()           # avoid error
             elif len(att) == 2:
+                if att[0] not in df:
+                    self.util.error(f'unknown feature: {att[0]}')
+                if att[1] not in df:
+                    self.util.error(f'unknown feature: {att[1]}')
                 self.util.debug(f'plotting {att}')
                 att1 = att[0]
                 att2 = att[1]
