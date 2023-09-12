@@ -54,7 +54,7 @@ class Wav2vec2(Featureset):
                 signal, sampling_rate = torchaudio.load(file,
                     frame_offset=int(start.total_seconds()*16000),
                     num_frames=int((end - start).total_seconds()*16000))
-                assert sampling_rate == 16000
+                assert sampling_rate == 16000, f"got {sampling_rate} instead of 16000"
                 emb = self.get_embeddings(signal, sampling_rate, file)
                 emb_series[idx] = emb
                 if idx % 10 == 0:
