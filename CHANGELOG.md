@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.65.4
+--------------
+* added datasets to distribution
+* changes in wav2vec2
+
 Version 0.65.3
 --------------
 * various bugfixes
