@@ -3,6 +3,14 @@ import math
 import numpy as np
 import pandas as pd
 
+def check_na(a):
+    if np.isnan(a).any():
+        count = np.count_nonzero(np.isnan(a))
+        print(f'WARNING: got {count} Nans (of {len(a)}), setting to 0')
+        a[np.isnan(a)] = 0
+        return a 
+    else:
+        return a
 
 def cohen_d(d1, d2):
     """
@@ -13,6 +21,9 @@ def cohen_d(d1, d2):
     Returns:
         Cohen's d with precision 3
     """
+    # Checks:
+    d1 = check_na(d1)
+    d2 = check_na(d2)
     # calculate the size of samples
     n1, n2 = len(d1), len(d2)
     # calculate the variance of the samples
@@ -22,8 +33,8 @@ def cohen_d(d1, d2):
     # calculate the means of the samples
     u1, u2 = np.mean(d1), np.mean(d2)
     # calculate the effect size
-    if math.isnan(s):
-        return 0
+    if math.isnan(s) or s == 0:
+        return -1
     return (int(1000 * np.abs((u1 - u2)) / s)) / 1000
 
 

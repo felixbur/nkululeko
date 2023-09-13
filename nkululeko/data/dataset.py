@@ -159,7 +159,7 @@ class Dataset:
             self.df["duration"] = (end - start).total_seconds()
 
         # Perform some filtering if desired
-        required = eval(self.util.config_val_data(self.name, "required", "False"))
+        required = self.util.config_val_data(self.name, "required", False)
         if required:
             pre = self.df.shape[0]
             self.df = self.df[self.df[required].notna()]
@@ -204,7 +204,10 @@ class Dataset:
                 pass
             try:
                 # try to get the gender values
-                df_local["gender"] = source_df["gender"]
+                if "gender" in source_df:
+                    df_local["gender"] = source_df["gender"]
+                else:
+                    df_local["gender"] = source_df["sex"]
                 got_gender = True
             except (KeyError, ValueError, audformat.errors.BadKeyError) as e:
                 pass

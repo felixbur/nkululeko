@@ -48,21 +48,23 @@ class Dataset_CSV(Dataset):
         self.start_fresh = eval(self.util.config_val("DATA", "no_reuse", "False"))
         if self.is_labeled and not "class_label" in self.df.columns:
             self.df["class_label"] = self.df[self.target]
-        if "gender" in df.columns:
+        if "gender" in self.df.columns:
             self.got_gender = True
-        if "age" in df.columns:
+        elif "sex" in self.df.columns:
+            self.df = self.df.rename(columns={'sex':'gender'})            
+            self.got_gender = True
+        if "age" in self.df.columns:
             self.got_age = True
-        if "speaker" in df.columns:
+        if "speaker" in self.df.columns:
             self.got_speaker = True
-            ns = df["speaker"].nunique()
-            self.util.debug(f"num of speakers: {ns}")
         speaker_num = 0
         if self.got_speaker:
             speaker_num = self.df.speaker.nunique()
         self.util.debug(
             f"Loaded database {self.name} with {df.shape[0]} "
             f"samples: got targets: {self.got_target}, got speakers: {self.got_speaker} ({speaker_num}), "
-            f"got sexes: {self.got_gender}"
+            f"got sexes: {self.got_gender}, "
+            f"got age: {self.got_age}"
         )
 
     def prepare(self):

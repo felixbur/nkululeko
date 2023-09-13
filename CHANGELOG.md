@@ -1,6 +1,19 @@
 Changelog
 =========
 
+Version 0.65.5
+--------------
+* added fill_na in plot effect size
+
+Version 0.65.4
+--------------
+* added datasets to distribution
+* changes in wav2vec2
+
+Version 0.65.3
+--------------
+* various bugfixes
+
 Version 0.65.2
 --------------
 * fixed bug in dataset.csv that prevented correct paths for relative files
