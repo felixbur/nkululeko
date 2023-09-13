@@ -2,11 +2,12 @@
 resample a data frame
 
 """
-from nkululeko.util import Util
-import torchaudio
+import shutil
+
 import audformat
 import pandas as pd
-import shutil
+import torchaudio
+from nkululeko.util import Util
 
 
 class Resampler:
@@ -14,7 +15,7 @@ class Resampler:
         self.SAMPLING_RATE = 16000
         self.df = df
         self.util = Util("resampler", has_config=not_testing)
-        self.util.warn(f"all files might be resampled to {self .SAMPLING_RATE}")
+        self.util.warn(f"all files might be resampled to {self.SAMPLING_RATE}")
         self.not_testing = not_testing
 
     def resample(self):
@@ -30,7 +31,7 @@ class Resampler:
                 self.util.debug(f"resampling {f} (sr = {org_sr})")
                 resampler = torchaudio.transforms.Resample(org_sr, self.SAMPLING_RATE)
                 signal = resampler(signal)
-                torchaudio.save(f, signal, self.SAMPLING_RATE)
+                torchaudio.save(f[:-4] + '.wav', signal, self.SAMPLING_RATE)
 
 
 def main():
