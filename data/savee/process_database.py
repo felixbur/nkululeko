@@ -48,5 +48,6 @@ def main():
     train_df.to_csv(out_dir / "savee_train.csv", index=False)
     test_df.to_csv(out_dir / "savee_test.csv", index=False)
 
+    print(f"Total: {len(df)}, Train: {len(train_df)}, Test: {len(test_df)}")
 if __name__ == "__main__":
     main()

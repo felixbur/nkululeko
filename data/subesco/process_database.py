@@ -65,11 +65,14 @@ def main():
     df = pd.DataFrame({"file": file, "emotion": emotion, "gender": gender, 
                        "speaker": speaker, "speaker_idx": speaker_idx, 
                        "language": language})
+    
     # allocate speaker 9 and 10 from each male and female gender to test set
     test_df = df[df["speaker_idx"].isin(["09", "10"])]
     train_df = df.drop(test_df.index)
     train_df.to_csv('subesco_train.csv', index=False)
     test_df.to_csv('subesco_test.csv', index=False)
 
+    print(f"Total: {len(df)}, Train: {len(train_df)}, Test: {len(test_df)}")
+    
 if __name__ == "__main__":
     main()

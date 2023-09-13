@@ -30,6 +30,8 @@ def main():
     
     df.index.name = "file"
 
+    # add extension .wav to file
+    df.index = df.index + ".wav"
     # allocate speaker > 200 for test
     train_df = df[df["speaker"].astype(int) <= 120]
     test_df = df.drop(train_df.index)
@@ -39,6 +41,7 @@ def main():
     train_df.to_csv(output_dir / "mlendsnd_train.csv")
     test_df.to_csv(output_dir / "mlendsnd_test.csv")
 
+    print(f"Total: {len(df)}, Train: {len(train_df)}, Test: {len(test_df)}")
 
 if __name__ == "__main__":
     main()
