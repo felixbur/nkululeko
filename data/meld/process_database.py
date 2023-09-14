@@ -94,7 +94,7 @@ def main():
     df.index.name = "file"
 
     # add .mp4 extension to file name
-    df.index = df.index + ".mp4"
+    df.index = df.index + ".wav"
 
     # save train, dev, test splits to separate csv
     df.to_csv(output_dir / f"{DATASET}.csv")
