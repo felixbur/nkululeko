@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.65.6
+--------------
+* minor catch for seaborn in plots
+
 Version 0.65.5
 --------------
 * added fill_na in plot effect size

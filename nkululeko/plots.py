@@ -122,7 +122,11 @@ class Plots():
 
     def plot_durations(self, df, filename, sample_selection):
         fig_dir = self.util.get_path('fig_dir')+'../' # one up because of the runs 
-        ax = sns.histplot(df, x='duration', hue='class_label', kde=True)
+        try:
+            ax = sns.histplot(df, x='duration', hue='class_label', kde=True)
+        except AttributeError as ae:
+            self.util.warn(ae)
+            ax = sns.histplot(df, x='duration', kde=True)
         ax.set_title(f'{sample_selection} {df.shape[0]}')
         ax.set_xlabel(f'duration')
         ax.set_ylabel(f'number of samples')
