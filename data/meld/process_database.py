@@ -104,6 +104,7 @@ def main():
 
     print(f"Total: {len(df)}, Train: {len(df[df['split'] == 'train'])}, Dev: {len(df[df['split'] == 'dev'])}, Test: {len(df[df['split'] == 'test'])}")
 
+    # print(f"emotion: {df['emotion'].unique()}, number of emotions: {len(df['emotion'].unique())}")
     # print column and index attributes
     # print(df.columns)   
 
