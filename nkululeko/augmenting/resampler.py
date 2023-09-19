@@ -2,6 +2,7 @@
 resample a data frame
 
 """
+import os
 import shutil
 
 import audformat
@@ -25,13 +26,22 @@ class Resampler:
         else:
             store = "./"
         tmp_audio = "tmp_resample.wav"
+        succes, error = 0, 0
         for i, f in enumerate(files):
             signal, org_sr = torchaudio.load(f'{f}')   # handle spaces
+            # if f cannot be loaded, give warning and skip
+            if signal.shape[0] == 0:
+                self.util.warn(f"cannot load {f}")
+                error += 1
+                continue
             if org_sr != self.SAMPLING_RATE:
                 self.util.debug(f"resampling {f} (sr = {org_sr})")
-                resampler = torchaudio.transforms.Resample(org_sr, self.SAMPLING_RATE)
+                resampler = torchaudio.transforms.Resample(org_sr, 
+                    self.SAMPLING_RATE)
                 signal = resampler(signal)
-                torchaudio.save(f[:-4] + '.wav', signal, self.SAMPLING_RATE)
+                torchaudio.save(os.path.splitext(f)[0] + '.wav', signal, self.SAMPLING_RATE)
+                succes += 1
+        self.util.debug(f"resampled {succes} files, {error} errors")
 
 
 def main():
