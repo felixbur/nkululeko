@@ -10,7 +10,7 @@ Each database should be in its own subfolder and contain a Readme how to import 
 | name | target | descr. |
 | ---- | ------ | ------ |
 | aesdd | | |
-| androids | | |
+| androids | depression | |
 | ased | | |
 | asvp-esd | | |
 | baved | | |
@@ -20,7 +20,7 @@ Each database should be in its own subfolder and contain a Readme how to import 
 | demos | | |
 | ekorpus | | |
 | emns | | |
-| emodb | | |
+| emodb | emotion | |
 | emofilm | | |
 | EmoFilm | | |
 | emov-db | | |
@@ -44,7 +44,7 @@ Each database should be in its own subfolder and contain a Readme how to import 
 | savee | | |
 | shemo | | |
 | subesco | | |
-| syntact | | |
+| syntact | emotion | |
 | tess | | |
 | thorsten-emotional | | |
 | urdu | | |
