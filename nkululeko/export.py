@@ -70,7 +70,7 @@ def main(src_dir):
                     duration=(end - start).total_seconds(),
                     always_2d=True,
                 )
-                file_name = os.path.basename(file)[:-3]+'_'+start.total_seconds()+'.wav'
+                file_name = os.path.splitext(file)[0]+'_'+start.total_seconds()+'.wav'
                 wav_folder = (
                     f"{target_root}/{os.path.basename(os.path.normpath(orig_root))}"
                 )
@@ -83,7 +83,7 @@ def main(src_dir):
                 new_file_name = os.path.relpath(new_file_name, target_root)
                 files.append(new_file_name)
             else:
-                file_name = os.path.basename(file)[:-4]+'_'+str(start.total_seconds())+'.wav'
+                file_name = os.path.basename(file)
                 wav_folder = (
                     f"{target_root}/{os.path.basename(os.path.normpath(orig_root))}"
                 )

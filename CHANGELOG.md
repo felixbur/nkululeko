@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.65.8
+--------------
+* changed default behaviour of resampler to "keep original files"
+
 Version 0.65.7
 --------------
 * more databases and force wav while resampling

@@ -21,12 +21,15 @@ class Resampler:
 
     def resample(self):
         files = self.df.index.get_level_values(0).values
+        replace = eval(self.util.config_val("RESAMPLE", "replace", "False"))
         if self.not_testing:
             store = self.util.get_path("store")
         else:
             store = "./"
         tmp_audio = "tmp_resample.wav"
         succes, error = 0, 0
+        if not replace:
+            new_files = []
         for i, f in enumerate(files):
             signal, org_sr = torchaudio.load(f'{f}')   # handle spaces
             # if f cannot be loaded, give warning and skip
@@ -39,8 +42,24 @@ class Resampler:
                 resampler = torchaudio.transforms.Resample(org_sr, 
                     self.SAMPLING_RATE)
                 signal = resampler(signal)
-                torchaudio.save(os.path.splitext(f)[0] + '.wav', signal, self.SAMPLING_RATE)
+                if replace:
+                    torchaudio.save(os.path.splitext(f)[0] + '.wav', signal, self.SAMPLING_RATE)
+                else:
+                    new_file_name = os.path.splitext(f)[0]+'_16kHz.wav'
+                    torchaudio.save(new_file_name, signal, self.SAMPLING_RATE)
+                    new_files.append(new_file_name)
                 succes += 1
+        if not replace:
+            self.df = self.df.set_index(self.df.index.set_levels(new_files, level="file"))
+            target_file = self.util.config_val('RESAMPLE', 'target', 'resampled.csv')
+            # remove encoded labels
+            target = self.util.config_val('DATA', 'target', 'emotion')
+            if 'class_label' in self.df.columns:
+                self.df = self.df.drop(columns=[target])
+                self.df = self.df.rename(columns={'class_label':target})
+            # save file
+            self.df.to_csv(target_file)
+            self.util.debug(f'saved resampled list of files to {os.path.abspath(target_file)}')            
         self.util.debug(f"resampled {succes} files, {error} errors")
 
 
