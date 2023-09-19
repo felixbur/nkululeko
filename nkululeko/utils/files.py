@@ -10,6 +10,11 @@ import os
 from pathlib import Path
 from typing import Any, List, Optional, Set, Union
 
+# add new function here
+__all__ = [
+    "find_files",
+]
+
 
 def find_files(
     directory: Union[str, os.PathLike[Any]],
@@ -17,6 +22,8 @@ def find_files(
     ext: Optional[Union[str, List[str]]] = None,
     recurse: bool = True,
     case_sensitive: bool = False,
+    relative: bool = False,
+    path_object: bool = False,
     limit: Optional[int] = None,
     offset: int = 0,
 ) -> List[str]:
@@ -24,29 +31,30 @@ def find_files(
 
     Examples
     --------
+    >>> from nkululeko.utils import files
     >>> # Get all audio files in a directory sub-tree
-    >>> files = nkululeko.files.find_files('~/Music')
+    >>> files = files.find_files('~/Music')
 
     >>> # Look only within a specific directory, not the sub-tree
-    >>> files = nkululeko.files.find_files('~/Music', recurse=False)
+    >>> files = files.find_files('~/Music', recurse=False)
 
-    >>> # Only look for mp3 files
-    >>> files = nkululeko.files.find_files('~/Music', ext='mp3')
+    >>> # Only look for mp3 files and return a list of pathlib.Path objects
+    >>> files = files.find_files('~/Music', ext='mp3', path_object=True)
 
     >>> # Or just mp3 and ogg
-    >>> files = nkululeko.files.find_files('~/Music', ext=['mp3', 'ogg'])
+    >>> files = files.find_files('~/Music', ext=['mp3', 'ogg'])
 
-    >>> # Only get the first 10 files
-    >>> files = nkululeko.files.find_files('~/Music', limit=10)
+    >>> # Only get the first 10 files and relative paths
+    >>> files = files.find_files('~/Music', limit=10, relative=True)
 
     >>> # Or last 10 files
-    >>> files = nkululeko.files.find_files('~/Music', offset=-10)
+    >>> files = files.find_files('~/Music', offset=-10)
 
     >>> # Avoid including search patterns in the path string
     >>> import glob
     >>> directory = '~/[202206] Music'
     >>> directory = glob.escape(directory)  # Escape the special characters
-    >>> files = nkululeko.utils.find_files(directory)
+    >>> files = files.find_files(directory)
 
     Parameters
     ----------
@@ -66,6 +74,10 @@ def find_files(
     case_sensitive : boolean
         If ``False``, files matching upper-case version of
         extensions will be included.
+
+    path_object : boolean
+        If ``True``, then return a list of ``pathlib.Path`` objects.
+        Otherwise, return a list of strings. Default: ``False``
 
     limit : int > 0 or None
         Return at most ``limit`` files. If ``None``, all files are returned.
@@ -109,6 +121,12 @@ def find_files(
     files = files[offset:]
     if limit is not None:
         files = files[:limit]
+
+    if relative:
+        files = [os.path.relpath(f, directory) for f in files]
+
+    if path_object:
+        files = [Path(f) for f in files]
 
     return files
 

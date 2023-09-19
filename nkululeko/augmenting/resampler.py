@@ -2,11 +2,13 @@
 resample a data frame
 
 """
-from nkululeko.util import Util
-import torchaudio
+import os
+import shutil
+
 import audformat
 import pandas as pd
-import shutil
+import torchaudio
+from nkululeko.util import Util
 
 
 class Resampler:
@@ -14,7 +16,7 @@ class Resampler:
         self.SAMPLING_RATE = 16000
         self.df = df
         self.util = Util("resampler", has_config=not_testing)
-        self.util.warn(f"all files might be resampled to {self .SAMPLING_RATE}")
+        self.util.warn(f"all files might be resampled to {self.SAMPLING_RATE}")
         self.not_testing = not_testing
 
     def resample(self):
@@ -24,13 +26,22 @@ class Resampler:
         else:
             store = "./"
         tmp_audio = "tmp_resample.wav"
+        succes, error = 0, 0
         for i, f in enumerate(files):
-            signal, org_sr = torchaudio.load(f)
+            signal, org_sr = torchaudio.load(f'{f}')   # handle spaces
+            # if f cannot be loaded, give warning and skip
+            if signal.shape[0] == 0:
+                self.util.warn(f"cannot load {f}")
+                error += 1
+                continue
             if org_sr != self.SAMPLING_RATE:
                 self.util.debug(f"resampling {f} (sr = {org_sr})")
-                resampler = torchaudio.transforms.Resample(org_sr, self.SAMPLING_RATE)
+                resampler = torchaudio.transforms.Resample(org_sr, 
+                    self.SAMPLING_RATE)
                 signal = resampler(signal)
-                torchaudio.save(f, signal, self.SAMPLING_RATE)
+                torchaudio.save(os.path.splitext(f)[0] + '.wav', signal, self.SAMPLING_RATE)
+                succes += 1
+        self.util.debug(f"resampled {succes} files, {error} errors")
 
 
 def main():
