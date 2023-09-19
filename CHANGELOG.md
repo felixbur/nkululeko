@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.65.7
+--------------
+* more databases and force wav while resampling
+
 Version 0.65.6
 --------------
 * minor catch for seaborn in plots
