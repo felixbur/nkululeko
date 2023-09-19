@@ -26,7 +26,7 @@ class Resampler:
             store = "./"
         tmp_audio = "tmp_resample.wav"
         for i, f in enumerate(files):
-            signal, org_sr = torchaudio.load(f)
+            signal, org_sr = torchaudio.load(f'{f}')   # handle spaces
             if org_sr != self.SAMPLING_RATE:
                 self.util.debug(f"resampling {f} (sr = {org_sr})")
                 resampler = torchaudio.transforms.Resample(org_sr, self.SAMPLING_RATE)
