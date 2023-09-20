@@ -4,10 +4,12 @@ The Mexican Emotional Speech Database (MESD) provides single-word utterances for
 The dataset is also available at [2].
 
 ```bash
-
+$ python3 process_database.py
+$ cd ../..
+$ python3 -m nkululeko.nkululeko --config data/mesd/exp.ini
 ```
 
 
 References: 
-[1] M. M. Duville, L. M. Alonso-Valerdi, and D. Ibarra-Zarate, “The Mexican Emotional Speech Database (MESD): elaboration and assessment based on machine learning,” 43rd Annual International Conference of the IEEE Engineering in Medicine and Biology Society, p. 4, 2021.
-[2] https://github.com/bagustris/multilingual_speech_emotion_dataset
+[1] M. M. Duville, L. M. Alonso-Valerdi, and D. Ibarra-Zarate, “The Mexican Emotional Speech Database (MESD): elaboration and assessment based on machine learning,” 43rd Annual International Conference of the IEEE Engineering in Medicine and Biology Society, p. 4, 2021.  
+[2] https://github.com/bagustris/multilingual_speech_emotion_dataset  

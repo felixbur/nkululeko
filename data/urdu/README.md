@@ -7,6 +7,9 @@ Download ZIP from [1]; it is also available at [3].
 
 
 ```bash
+$ python3 process_database.py
+$ cd ../..
+$ python3 -m nkululeko.nkululeko --config data/urdu/exp.ini
 ```
 
 
