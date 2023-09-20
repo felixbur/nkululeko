@@ -17,41 +17,41 @@ The column `acess` in the table below indicates the accessability of the databas
 | --|---- | ------ | ----- | -------|
 | 1 | aesdd | emotion | public | amharic language |
 | 2 | androids | depression | public | |
-| 3 | ased | emotion | public |
-| 4 | asvp-esd | emotion | public |
-| 5 | baved | emotion | public |
-| 6 | cafe | emotion | public |
-| 7 | cmu-mosei | sentiment, emotion| public |
-| 8 | crema-d | emotion | public |
+| 3 | ased | emotion | public | Greek |
+| 4 | asvp-esd | emotion | public | Multilingual, also contain vocal bursts |
+| 5 | baved | emotion | public | Arabic |
+| 6 | cafe | emotion | public | Children speech|
+| 7 | cmu-mosei | sentiment, emotion| public | original link dead|
+| 8 | crema-d | emotion | public | adopted from tfds|
 | 9 | demos | emotion | restricted | Italian |
 |10 | ekorpus | emotion | public | Estonian |
-|11 | emns | emotion | public | Estonian |
-|12 | emodb | emotion | public | German   UAR=0.479 |
+|11 | emns | emotion, intensity | public | British, single speaker, UAR=0.479 |
+|12 | emodb | emotion | public | German |
 |13 | emofilm | emotion | restricted | English, Spanish, Italian |
-|14 | emorynlp | emotion | public |  |   
-|15 | emov-db | emotion | public |
+|14 | emorynlp | emotion | public | From Friends TV |   
+|15 | emov-db | emotion | public | English|
 |16 | emovo | emotion | restricted | Italian |
 |17 | emozionalmente | emotion | public | Italian |
 |18 | enterface | emotion | public | |
 |19 | esd | emotion| public | English, Chinese|
 |20 | iemocap | emotion, VAD | restriced | English |
-|21 | jl | emotion | public |
+|21 | jl | emotion | public | |
 |22 | jtes | emotion | private | Japanese |
 |23 | laughter-types | laughter | public | |
-|24 | meld | emotion | public | |
+|24 | meld | emotion | public | From Friends TV|
 |25 | mesd | emotion | public | |
 |26 | mess | emotion | public | |
 |27 | mlendsnd | emotion | public |
 |28 | msp-improv | emotion, VAD, naturalness | restricted |
 |29 | msp-podcast | emotion, VAD | restricted |
-|30 | oreau2 | emotion | public | |
+|30 | oreau2 | emotion | public | French |
 |31 | portuguese | emotion | public |  Portuguese |
 |32 | ravdess | emotion | public | English |
-|33 | savee | emotion | restricted | |
-|34 | shemo | emotion | public | |
+|33 | savee | emotion | restricted | from tfds |
+|34 | shemo | emotion | public | Persian |
 |35 | subesco | emotion | public | Bangla |
 |36 | syntact | emotion | public | Synthesized German speech |
-|37 | tess | emotion | public | |
-|38 | thorsten-emotional | emotion | public |
-|29 | urdu | emotion | public | |
-|40 | vivae | emotion | public | |
+|37 | tess | emotion | public | British (Toronto) |
+|38 | thorsten-emotional | emotion | public | German |
+|29 | urdu | emotion | public | Urdu |
+|40 | vivae | emotion | public | vocal bursts|
