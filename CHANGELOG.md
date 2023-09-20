@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.65.9
+--------------
+* added a filter that ensures that the labels have the same size as the features
+
 Version 0.65.8
 --------------
 * changed default behaviour of resampler to "keep original files"

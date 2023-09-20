@@ -318,6 +318,14 @@ class Experiment:
         self.util.debug(
             f"All features: train shape : {self.feats_train.shape}, test shape:{self.feats_test.shape}"
         )
+        if self.feats_train.shape[0] < self.df_train.shape[0]:
+            self.util.warn(f'train feats ({self.feats_train.shape[0]}) != train labels ({self.df_train.shape[0]})')
+            self.df_train = self.df_train[self.df_train.index.isin(self.feats_train.index)]
+            self.util.warn(f'mew train labels shape: {self.df_train.shape[0]}')
+        if self.feats_test.shape[0] < self.df_test.shape[0]:
+            self.util.warn(f'test feats ({self.feats_test.shape[0]}) != test labels ({self.df_test.shape[0]})')
+            self.df_test = self.df_test[self.df_test.index.isin(self.feats_test.index)]
+            self.util.warn(f'mew test labels shape: {self.df_test.shape[0]}')
 
         self._check_scale()
 
