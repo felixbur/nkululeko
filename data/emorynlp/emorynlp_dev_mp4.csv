@@ -1,0 +1,955 @@
+file,Utterance,speaker,emotion,Scene_ID,Utterance_ID,Season,Episode,Start_Time,End_Time,split
+sea1_ep15_sc1_utt1.mp4,Coffee.,['Rachel Green'],neutral,1,1,1,15,00:00:03.795,00:00:05.004,dev
+sea1_ep15_sc1_utt2.mp4,Thank you.,['Joey Tribbiani'],neutral,1,2,1,15,00:00:05.171,00:00:07.423,dev
+sea1_ep15_sc1_utt3.mp4,Cappuccino.,['Rachel Green'],neutral,1,3,1,15,00:00:07.590,00:00:08.757,dev
+sea1_ep15_sc1_utt4.mp4,Grazie.,['Ross Geller'],neutral,1,4,1,15,00:00:08.925,00:00:11.677,dev
+sea1_ep15_sc1_utt5.mp4,And a nice hot cider for Monica.,['Rachel Green'],neutral,1,5,1,15,00:01:27.253,00:01:33.383,dev
+sea1_ep15_sc1_utt6.mp4,"Aww, thank you. Uh Rach?",['Monica Geller'],fear,1,6,1,15,00:01:29.798,00:01:33.383,dev
+sea1_ep15_sc1_utt7.mp4,Yeah?,['Rachel Green'],neutral,1,7,1,15,00:01:34.177,00:01:35.219,dev
+sea1_ep15_sc1_utt8.mp4,Why does my cinamon stick have an eraser?,['Monica Geller'],neutral,1,8,1,15,00:04:11.209,00:04:15.879,dev
+sea1_ep15_sc1_utt9.mp4,Oh! That's why. I'm sorry!,['Rachel Green'],neutral,1,9,1,15,00:04:12.877,00:04:15.879,dev
+sea1_ep15_sc6_utt1.mp4,"OK, try this salmon mousse.",['Monica Geller'],happiness,6,1,1,15,00:04:16.047,00:04:21.218,dev
+sea1_ep15_sc6_utt2.mp4,Mmmm. Good.,['Joey Tribbiani'],happiness,6,2,1,15,00:04:19.550,00:04:21.218,dev
+sea1_ep15_sc6_utt3.mp4,Is it better than the other salmon mousse?,['Monica Geller'],happiness,6,3,1,15,00:05:51.851,00:05:54.811,dev
+sea1_ep15_sc6_utt4.mp4,It's creamier.,['Joey Tribbiani'],peace,6,4,1,15,00:05:54.979,00:05:57.606,dev
+sea1_ep15_sc6_utt5.mp4,"Yeah, well, is that better?",['Monica Geller'],anger,6,5,1,15,00:05:59.609,00:06:01.526,dev
+sea1_ep15_sc6_utt6.mp4,"I don't know. We're talking about whipped fish, Monica. I'm just happy I'm keeping it down, y'know?",['Joey Tribbiani'],happiness,6,6,1,15,00:07:14.142,00:07:24.818,dev
+sea1_ep15_sc6_utt8.mp4,My God! What happened to you?,['Rachel Green'],fear,6,8,1,15,00:07:15.852,00:07:21.606,dev
+sea1_ep15_sc6_utt9.mp4,"Eight and a half hours of aptitude tests, intelligence tests, personality tests... and what do I learn? ""You are ideally suited for a career in data processing for a large multinational corporation.""",['Chandler Bing'],anger,6,9,1,15,00:07:30.950,00:07:45.714,dev
+sea1_ep15_sc6_utt10.mp4,That's so great! 'Cause you already know how to do that!,['Phoebe Buffay'],happiness,6,10,1,15,00:07:43.337,00:07:50.385,dev
+sea1_ep15_sc6_utt12.mp4,"Oh Chandler, I know, I know... oh, hey! You can see your nipples through this shirt!",['Rachel Green'],happiness,6,12,1,15,00:08:00.855,00:08:09.154,dev
+sea1_ep15_sc6_utt13.mp4,"Here you go, maybe this'll cheer you up.",['Monica Geller'],peace,6,13,1,15,00:08:10.781,00:08:15.577,dev
+sea1_ep15_sc6_utt14.mp4,"Ooh, you know, I had a grape about five hours ago, so I'd better split this with you.",['Chandler Bing'],anger,6,14,1,15,00:08:16.496,00:08:20.832,dev
+sea1_ep15_sc6_utt15.mp4,It's supposed to be that small. It's a pre-appetizer. The French call it an amouz-bouche.,['Monica Geller'],happiness,6,15,1,15,00:08:19.415,00:08:24.920,dev
+sea1_ep15_sc6_utt16.mp4,Well.... it is amouz-ing...,['Chandler Bing'],happiness,6,16,1,15,00:08:22.168,00:08:24.920,dev
+sea1_ep15_sc6_utt18.mp4,"Hello? Oh, hi Wendy! Yeah, eight o'clock. What did we say? Ten dollars an hour?... OK, great. All right, I'll see you then. Bye.",['Monica Geller'],happiness,6,18,1,15,00:08:31.427,00:08:52.155,dev
+sea1_ep15_sc6_utt19.mp4,Ten dollars an hour for what?,['Phoebe Buffay'],neutral,6,19,1,15,00:08:35.473,00:08:43.188,dev
+sea1_ep15_sc6_utt21.mp4,Waitressing?,['Rachel Green'],anger,6,21,1,15,00:08:40.353,00:08:43.188,dev
+sea1_ep15_sc6_utt22.mp4,Uh-oh.,['Joey Tribbiani'],neutral,6,22,1,15,00:08:43.356,00:08:45.190,dev
+sea1_ep15_sc6_utt23.mp4,Well... of course I thought of you! But... but...,['Monica Geller'],sadness,6,23,1,15,00:08:57.161,00:09:04.751,dev
+sea1_ep15_sc6_utt24.mp4,"But, but?",['Rachel Green'],anger,6,24,1,15,00:08:58.871,00:09:04.751,dev
+sea1_ep15_sc6_utt25.mp4,"But, you see, it's just... this night has to go just perfect, you know? And, well, Wendy's more of a... professional waitress.",['Monica Geller'],anger,6,25,1,15,00:09:04.919,00:09:19.349,dev
+sea1_ep15_sc6_utt26.mp4,Oh! I see. And I've sort of been maintaining my amateur status so that I can waitress in the Olympics.,['Rachel Green'],anger,6,26,1,15,00:09:19.892,00:09:26.565,dev
+sea1_ep15_sc6_utt27.mp4,"You know, I don't mean to brag, but I waited tables at Innsbruck in '76. Amouz-bouche?",['Chandler Bing'],happiness,6,27,1,15,00:09:24.564,00:09:34.823,dev
+sea1_ep15_sc7_utt1.mp4,Talk to me.,['Celia'],neutral,7,1,1,15,00:09:30.403,00:09:34.823,dev
+sea1_ep15_sc7_utt2.mp4,"OK.... um, a weird thing happened to me on the train this morning...",['Ross Geller'],fear,7,2,1,15,00:09:39.036,00:10:05.687,dev
+sea1_ep15_sc7_utt3.mp4,No no no. Talk... dirty.,['Celia'],happiness,7,3,1,15,00:09:58.055,00:10:05.687,dev
+sea1_ep15_sc7_utt4.mp4,"Wha... what, here?",['Ross Geller'],fear,7,4,1,15,00:10:01.767,00:10:05.687,dev
+sea1_ep15_sc7_utt5.mp4,Yes...,['Celia'],neutral,7,5,1,15,00:10:05.855,00:10:09.608,dev
+sea1_ep15_sc7_utt6.mp4,Ah....,['Ross Geller'],neutral,7,6,1,15,00:10:13.029,00:10:16.239,dev
+sea1_ep15_sc7_utt7.mp4,Say something..... hot.,['Celia'],neutral,7,7,1,15,00:10:16.407,00:10:19.701,dev
+sea1_ep15_sc7_utt8.mp4,Er.... um.....,['Ross Geller'],fear,7,8,1,15,00:10:18.034,00:10:19.701,dev
+sea1_ep15_sc7_utt9.mp4,What?,['Celia'],neutral,7,9,1,15,00:10:19.869,00:10:21.286,dev
+sea1_ep15_sc7_utt10.mp4,Um... uh.... vulva.,['Ross Geller'],happiness,7,10,1,15,00:10:22.830,00:10:27.083,dev
+sea1_ep15_sc9_utt1.mp4,Well?,['Chandler Bing'],neutral,9,1,1,15,00:10:24.749,00:10:27.083,dev
+sea1_ep15_sc9_utt2.mp4,"Wow! It's huge! It's so much bigger than the cubicle. Oh, this is a cube.",['Phoebe Buffay'],happiness,9,2,1,15,00:14:42.464,00:15:02.650,dev
+sea1_ep15_sc9_utt3.mp4,Look at this!,['Chandler Bing'],happiness,9,3,1,15,00:14:47.553,00:15:00.106,dev
+sea1_ep15_sc9_utt4.mp4,Oh! You have a window!,['Phoebe Buffay'],happiness,9,4,1,15,00:14:56.061,00:15:02.650,dev
+sea1_ep15_sc9_utt5.mp4,Yes indeedy! With a beautiful view of...,['Chandler Bing'],happiness,9,5,1,15,00:15:02.818,00:15:07.780,dev
+sea1_ep15_sc9_utt6.mp4,Oh look! That guy's peeing!,['Phoebe Buffay'],happiness,9,6,1,15,00:15:06.113,00:15:13.661,dev
+sea1_ep15_sc9_utt7.mp4,"OK, that's enough of the view. Check this out, look at this. Sit down, sit down.",['Chandler Bing'],happiness,9,7,1,15,00:15:21.712,00:15:27.675,dev
+sea1_ep15_sc9_utt8.mp4,OK.,['Phoebe Buffay'],neutral,9,8,1,15,00:15:25.090,00:15:27.675,dev
+sea1_ep15_sc9_utt9.mp4,"This is great! Helen, could you come in here for a moment?",['Chandler Bing'],power,9,9,1,15,00:15:27.843,00:15:35.350,dev
+sea1_ep15_sc9_utt11.mp4,"Thank you Helen, that'll be all.",['Chandler Bing'],neutral,9,11,1,15,00:15:30.137,00:15:35.350,dev
+sea1_ep15_sc9_utt13.mp4,"Last time I do that, I promise.",['Chandler Bing'],anger,9,13,1,15,00:15:40.898,00:15:46.819,dev
+sea1_ep15_sc10_utt1.mp4,"Wendy, we had a deal! Yeah, you promised! Wendy! Wendy! Wendy!",['Monica Geller'],anger,10,1,1,15,00:15:44.860,00:15:54.202,dev
+sea1_ep15_sc10_utt2.mp4,Who was that?,['Rachel Green'],neutral,10,2,1,15,00:15:52.368,00:15:54.202,dev
+sea1_ep15_sc10_utt3.mp4,Wendy bailed. I have no waitress.,['Monica Geller'],anger,10,3,1,15,00:15:54.370,00:15:59.290,dev
+sea1_ep15_sc10_utt4.mp4,Oh... that's too bad. Bye bye.,['Rachel Green'],neutral,10,4,1,15,00:15:56.664,00:16:05.213,dev
+sea1_ep15_sc10_utt5.mp4,Ten dollars an hour.,['Monica Geller'],neutral,10,5,1,15,00:15:59.458,00:16:05.213,dev
+sea1_ep15_sc10_utt6.mp4,No.,['Rachel Green'],neutral,10,6,1,15,00:16:03.587,00:16:05.213,dev
+sea1_ep15_sc10_utt7.mp4,Twelve dollars an hour.,['Monica Geller'],neutral,10,7,1,15,00:16:07.049,00:16:10.218,dev
+sea1_ep15_sc10_utt8.mp4,"Mon. I wish I could, but I've made plans to walk around.",['Rachel Green'],neutral,10,8,1,15,00:16:14.390,00:16:23.856,dev
+sea1_ep15_sc10_utt9.mp4,"You know, Rachel, when you ran out of your wedding, I was there for you. I put a roof over your head, and if that means nothing to you... twenty dollars an hour.",['Monica Geller'],fear,10,9,1,15,00:16:18.936,00:16:32.407,dev
+sea1_ep15_sc10_utt10.mp4,Done.,['Rachel Green'],neutral,10,10,1,15,00:16:20.521,00:16:23.856,dev
+sea1_ep15_sc12_utt1.mp4,What a tool!,['Joey Tribbiani'],anger,12,1,1,15,00:16:25.192,00:16:28.319,dev
+sea1_ep15_sc12_utt2.mp4,You don't want to work for a guy like that.,['Rachel Green'],power,12,2,1,15,00:19:16.029,00:19:18.656,dev
+sea1_ep15_sc12_utt3.mp4,Yeah!,['Ross Geller'],power,12,3,1,15,00:19:18.824,00:19:21.159,dev
+sea1_ep15_sc12_utt4.mp4,"I know... it's just... I thought this was, you know... it.",['Monica Geller'],sadness,12,4,1,15,00:20:41.949,00:20:48.621,dev
+sea1_ep15_sc12_utt5.mp4,"Look, you'll get there. You're an amazing chef.",['Ross Geller'],power,12,5,1,15,00:20:48.789,00:20:50.748,dev
+sea1_ep15_sc12_utt6.mp4,Yeah! You know all those yummy noises? I wasn't faking.,['Phoebe Buffay'],happiness,12,6,1,15,00:20:50.916,00:20:53.709,dev
+sea1_ep15_sc12_utt8.mp4,"So, er... how did it go with Celia?",['Joey Tribbiani'],fear,12,8,1,15,00:20:57.297,00:21:04.387,dev
+sea1_ep15_sc12_utt9.mp4,"Oh, I was unbelievable.",['Ross Geller'],power,12,9,1,15,00:21:02.052,00:21:04.387,dev
+sea1_ep15_sc12_utt10.mp4,"All right, Ross!",['Joey Tribbiani'],power,12,10,1,15,00:21:04.554,00:21:07.848,dev
+sea1_ep15_sc12_utt11.mp4,"I was the James Michener of dirty talk. It was the most elaborate filth you have ever heard. I mean, there were characters, plot lines, themes, a motif... at one point there were villagers.",['Ross Geller'],happiness,12,11,1,15,00:21:08.016,00:21:24.240,dev
+sea1_ep15_sc12_utt12.mp4,Whoa! And the... huh-huh?,['Joey Tribbiani'],happiness,12,12,1,15,00:21:10.143,00:21:13.187,dev
+sea1_ep15_sc12_utt13.mp4,"Well, ahem... you know, by the time we'd finished with all the dirty talk, it was kinda late... and we were both kind of exhausted, so uh...",['Ross Geller'],fear,12,13,1,15,00:21:19.695,00:21:34.875,dev
+sea1_ep15_sc12_utt14.mp4,You cuddled.,['Joey Tribbiani'],happiness,12,14,1,15,00:21:21.488,00:21:24.240,dev
+sea1_ep15_sc12_utt15.mp4,"Yeah, which was nice.",['Ross Geller'],happiness,12,15,1,15,00:21:25.993,00:21:32.123,dev
+sea1_ep15_sc12_utt16.mp4,You guys wanna try and catch a late movie or something?,['Phoebe Buffay'],neutral,12,16,1,15,00:21:35.043,00:21:40.840,dev
+sea1_ep15_sc12_utt17.mp4,"Maybe, but shouldn't we wait for Chandler?",['Rachel Green'],neutral,12,17,1,15,00:21:41.174,00:21:43.134,dev
+sea1_ep15_sc12_utt18.mp4,"Yeah, where the hell is he?",['Joey Tribbiani'],fear,12,18,1,15,00:21:43.844,00:21:45.678,dev
+sea1_ep15_sc14_utt1.mp4,How's this?,['Phoebe Buffay'],neutral,14,1,1,15,00:21:46.138,00:21:48.180,dev
+sea1_ep15_sc14_utt2.mp4,Eeeee!,['Steve (drug addict)'],happiness,14,2,1,15,00:21:48.348,00:21:51.475,dev
+sea1_ep15_sc14_utt3.mp4,Sorry. How about over here?,['Phoebe Buffay'],neutral,14,3,1,15,00:21:52.728,00:21:54.854,dev
+sea1_ep15_sc14_utt4.mp4,Aaaaah!,['Steve (drug addict)'],happiness,14,4,1,15,00:21:55.022,00:21:59.608,dev
+sea1_ep15_sc14_utt5.mp4,"See, that just means it's working. Does this hurt?",['Phoebe Buffay'],neutral,14,5,1,15,00:22:17.252,00:22:21.589,dev
+sea1_ep15_sc14_utt6.mp4,No.,['Steve (drug addict)'],neutral,14,6,1,15,00:22:19.629,00:22:21.589,dev
+sea1_ep15_sc14_utt7.mp4,What about this?,['Phoebe Buffay'],neutral,14,7,1,15,00:22:21.757,00:22:23.924,dev
+sea1_ep15_sc14_utt8.mp4,Aaaaahhh!!,['Steve (drug addict)'],anger,14,8,1,15,00:22:24.092,00:22:26.594,dev
+sea1_ep15_sc14_utt9.mp4,There you go!,['Phoebe Buffay'],neutral,14,9,1,15,00:22:26.762,00:22:27.970,dev
+sea1_ep20_sc1_utt1.mp4,I can't believe you would actually say that. I would much rather be Mr. Peanut than Mr. Salty.,['Chandler Bing'],anger,1,1,1,20,00:00:03.461,00:00:09.842,dev
+sea1_ep20_sc1_utt2.mp4,"No way! Mr.Salty is a sailor, all right, he's got to be, like, thetoughest snack there is.",['Joey Tribbiani'],peace,1,2,1,20,00:00:10.010,00:00:15.848,dev
+sea1_ep20_sc1_utt3.mp4,"I don't know, you don't wanna mess with corn nuts. They're craaazy.",['Ross Geller'],peace,1,3,1,20,00:00:13.221,00:00:20.769,dev
+sea1_ep20_sc1_utt4.mp4,Oh my God. You guys! You gotta come see this! There's some creep out there with a telescope!,['Monica Geller'],happiness,1,4,1,20,00:00:21.396,00:00:29.778,dev
+sea1_ep20_sc1_utt5.mp4,I can't believe it! He's looking right at us!,['Ross Geller'],anger,1,5,1,20,00:00:29.946,00:00:34.992,dev
+sea1_ep20_sc1_utt6.mp4,"Oh, that is so sick.",['Rachel Green'],fear,1,6,1,20,00:00:32.657,00:00:34.992,dev
+sea1_ep20_sc1_utt7.mp4,I feel violated. And not in a good way.,['Chandler Bing'],fear,1,7,1,20,00:00:35.160,00:00:41.290,dev
+sea1_ep20_sc1_utt8.mp4,"How can people do that?... Oh, you guys, look! Ugly Naked Guy got gravity boots!",['Phoebe Buffay'],anger,1,8,1,20,00:00:41.458,00:00:48.505,dev
+sea1_ep20_sc3_utt1.mp4,Wow... Wow!,['Rachel Green'],happiness,3,1,1,20,00:00:43.251,00:00:45.044,dev
+sea1_ep20_sc3_utt2.mp4,Yeah.,['Barry Farber'],neutral,3,2,1,20,00:00:45.837,00:00:48.505,dev
+sea1_ep20_sc3_utt3.mp4,"I'm not crazy, right? I mean, it was never like that.",['Rachel Green'],fear,3,3,1,20,00:04:45.493,00:04:55.544,dev
+sea1_ep20_sc3_utt4.mp4,"Nooo, it wasn't.",['Barry Farber'],neutral,3,4,1,20,00:04:48.204,00:04:50.455,dev
+sea1_ep20_sc3_utt5.mp4,"Ooh, and it's so nice having this little sink here...",['Rachel Green'],peace,3,5,1,20,00:04:56.212,00:05:04.678,dev
+sea1_ep20_sc4_utt1.mp4,"Oh, Danielle! I wasn't expecting the machine... Give me a call when you get a chance. Bye-bye. Oh God!",['Chandler Bing'],fear,4,1,1,20,00:05:00.800,00:05:17.274,dev
+sea1_ep20_sc4_utt2.mp4,That's what you've been working on for the past two hours?!,['Monica Geller'],neutral,4,2,1,20,00:05:19.819,00:05:28.535,dev
+sea1_ep20_sc4_utt3.mp4,"Hey, I've been honing!",['Chandler Bing'],neutral,4,3,1,20,00:05:21.904,00:05:28.535,dev
+sea1_ep20_sc4_utt4.mp4,What was with the dishes?,['Ross Geller'],neutral,4,4,1,20,00:05:25.116,00:05:28.535,dev
+sea1_ep20_sc4_utt5.mp4,"Oh, uh.. I want her to think I might be in a restaurant.. y'know? I might have some kind of life, like I haven't been sitting around here honing for the past few hours.",['Chandler Bing'],neutral,4,5,1,20,00:05:29.162,00:05:42.966,dev
+sea1_ep20_sc4_utt6.mp4,"Look look! He's doing it again, the guy with the telescope!",['Monica Geller'],neutral,4,6,1,20,00:05:43.301,00:05:47.429,dev
+sea1_ep20_sc4_utt7.mp4,Oh my God! Go away! Stop looking in here!,['Phoebe Buffay'],anger,4,7,1,20,00:05:45.720,00:05:52.934,dev
+sea1_ep20_sc4_utt8.mp4,"Great, now he's waving back.",['Monica Geller'],neutral,4,8,1,20,00:05:48.264,00:05:52.934,dev
+sea1_ep20_sc4_utt9.mp4,"Man, we gotta do something about that guy. This morning, I caught him looking into our apartment. It creeps me out! I feel like I can't do stuff!",['Joey Tribbiani'],fear,4,9,1,20,00:05:53.102,00:06:04.112,dev
+sea1_ep20_sc4_utt10.mp4,What kinda stuff?,['Monica Geller'],neutral,4,10,1,20,00:05:57.148,00:05:58.815,dev
+sea1_ep20_sc4_utt11.mp4,"Will you grow up? I'm not talking about sexy stuff, but, like, when I'm cooking naked.",['Joey Tribbiani'],neutral,4,11,1,20,00:06:01.486,00:06:11.870,dev
+sea1_ep20_sc4_utt12.mp4,You cook naked?,['Phoebe Buffay'],neutral,4,12,1,20,00:06:05.031,00:06:07.240,dev
+sea1_ep20_sc4_utt13.mp4,"Yeah, toast, oatmeal... nothing that spatters.",['Joey Tribbiani'],neutral,4,13,1,20,00:06:08.993,00:06:11.870,dev
+sea1_ep20_sc4_utt15.mp4,What are you looking at me for? I didn't know that.,['Chandler Bing'],neutral,4,15,1,20,00:06:17.043,00:06:27.719,dev
+sea1_ep20_sc5_utt1.mp4,What's the matter?,['Barry Farber'],fear,5,1,1,20,00:06:18.544,00:06:21.713,dev
+sea1_ep20_sc5_utt2.mp4,"Oh, it's just... Oh, Barry, this was not good.",['Rachel Green'],sadness,5,2,1,20,00:06:30.139,00:06:35.060,dev
+sea1_ep20_sc5_utt3.mp4,"No, it was. It was very very good.",['Barry Farber'],happiness,5,3,1,20,00:06:31.808,00:06:35.060,dev
+sea1_ep20_sc5_utt4.mp4,"Well, what about Mindy?",['Rachel Green'],neutral,5,4,1,20,00:06:35.228,00:06:38.188,dev
+sea1_ep20_sc5_utt5.mp4,"Oh, way, way better than Mindy.",['Barry Farber'],peace,5,5,1,20,00:06:38.856,00:06:41.942,dev
+sea1_ep20_sc5_utt6.mp4,"No, not that, I mean, what about you and Mindy?",['Rachel Green'],happiness,5,6,1,20,00:06:43.277,00:06:46.947,dev
+sea1_ep20_sc5_utt7.mp4,"Well, if you want, I'll justI'll just break it off with her.",['Barry Farber'],fear,5,7,1,20,00:06:47.573,00:06:51.993,dev
+sea1_ep20_sc5_utt8.mp4,"No. No-no-no-no, no. I mean, don't do that. Not, I mean not for me.",['Rachel Green'],fear,5,8,1,20,00:06:50.660,00:06:58.375,dev
+sea1_ep20_sc5_utt9.mp4,"Dr. Farber, Bobby Rush is here for his adjustment.",['Bernice'],neutral,5,9,1,20,00:06:52.161,00:06:58.375,dev
+sea1_ep20_sc5_utt10.mp4,"Thanks, Bernice. Let's go away this weekend.",['Barry Farber'],power,5,10,1,20,00:06:54.789,00:06:58.375,dev
+sea1_ep20_sc5_utt11.mp4,"Oh, Barry..! Come on, this is all way too..",['Rachel Green'],fear,5,11,1,20,00:06:58.543,00:07:05.340,dev
+sea1_ep20_sc5_utt12.mp4,"We can, we can go to Aruba! When I went there on what would have been our honeymoon, it was, uh... it was really nice. You would've liked it.",['Barry Farber'],happiness,5,12,1,20,00:07:03.047,00:07:14.266,dev
+sea1_ep20_sc5_utt14.mp4,I had a bra.,['Rachel Green'],neutral,5,14,1,20,00:07:05.508,00:07:07.134,dev
+sea1_ep20_sc5_utt16.mp4,"Hey, Dr. Farber.",['Bobby Rush'],neutral,5,16,1,20,00:07:07.969,00:07:11.096,dev
+sea1_ep20_sc5_utt18.mp4,"All right Miss Green, everything looks fine... Yep, I think we're starting to see some real progress here.",['Barry Farber'],neutral,5,18,1,20,00:07:16.602,00:07:37.956,dev
+sea1_ep20_sc5_utt20.mp4,What?!,['Rachel Green'],neutral,5,20,1,20,00:07:29.991,00:07:30.991,dev
+sea1_ep20_sc5_utt21.mp4,"I'm twelve, I'm not stupid.",['Bobby Rush'],anger,5,21,1,20,00:07:31.159,00:07:34.411,dev
+sea1_ep20_sc7_utt1.mp4,Brrrrrrr!,['Monica Geller'],neutral,7,1,1,20,00:07:34.579,00:07:37.956,dev
+sea1_ep20_sc7_utt3.mp4,Hell is filled with people like you.,['Chandler Bing'],anger,7,3,1,20,00:08:11.866,00:08:16.995,dev
+sea1_ep20_sc7_utt4.mp4,He's back! The peeper's back!,['Joey Tribbiani'],fear,7,4,1,20,00:08:13.534,00:08:16.995,dev
+sea1_ep20_sc7_utt6.mp4,Get down!,['Joey Tribbiani'],fear,7,6,1,20,00:08:17.163,00:08:19.998,dev
+sea1_ep20_sc7_utt7.mp4,Get down?,['Rachel Green'],fear,7,7,1,20,00:08:20.166,00:08:23.960,dev
+sea1_ep20_sc7_utt8.mp4,...And boogie!,['Chandler Bing'],fear,7,8,1,20,00:08:24.921,00:08:27.422,dev
+sea1_ep20_sc7_utt9.mp4,"Thanks, but I gotta go to work and get my eyes scratched out by Mindy.",['Rachel Green'],neutral,7,9,1,20,00:11:49.417,00:12:01.344,dev
+sea1_ep20_sc7_utt10.mp4,"Relax. Y'know, she may not even know.",['Monica Geller'],fear,7,10,1,20,00:12:01.512,00:12:06.850,dev
+sea1_ep20_sc7_utt11.mp4,"Please. I haven't heard from her in seven months, and now she calls me? I mean, what else is it about? Oh! She was my best friend, you guys! We went to camp together... she taught me how to kiss..",['Rachel Green'],happiness,7,11,1,20,00:12:03.389,00:12:16.651,dev
+sea1_ep20_sc7_utt12.mp4,Yeah?,['Joey Tribbiani'],neutral,7,12,1,20,00:12:07.017,00:12:09.102,dev
+sea1_ep20_sc7_utt13.mp4,"And now, y'know, I'm like... I'm like the other woman! I feel so..",['Rachel Green'],sadness,7,13,1,20,00:12:18.195,00:12:24.284,dev
+sea1_ep20_sc7_utt14.mp4,..Naughty!,['Joey Tribbiani'],happiness,7,14,1,20,00:12:21.365,00:12:24.284,dev
+sea1_ep20_sc7_utt15.mp4,"Right, I'll see you guys later...",['Rachel Green'],neutral,7,15,1,20,00:12:26.328,00:12:28.788,dev
+sea1_ep20_sc7_utt18.mp4,"Okay, I'm gonna go to the bathroom. Will you watch my phone?",['Chandler Bing'],neutral,7,18,1,20,00:12:36.630,00:12:42.343,dev
+sea1_ep20_sc7_utt19.mp4,Why don't you just take it with you?,['Monica Geller'],neutral,7,19,1,20,00:12:42.511,00:12:44.471,dev
+sea1_ep20_sc7_utt20.mp4,"Hey, we haven't been on a second date, she needs to hear me pee?",['Chandler Bing'],fear,7,20,1,20,00:12:44.638,00:12:49.517,dev
+sea1_ep20_sc7_utt21.mp4,Why don't you just call her?,['Monica Geller'],neutral,7,21,1,20,00:12:47.850,00:12:49.517,dev
+sea1_ep20_sc7_utt22.mp4,"I can't call her, I left a message! I have some pride.",['Chandler Bing'],fear,7,22,1,20,00:12:49.685,00:12:52.896,dev
+sea1_ep20_sc7_utt23.mp4,Do you?,['Monica Geller'],neutral,7,23,1,20,00:12:53.063,00:12:54.898,dev
+sea1_ep20_sc7_utt25.mp4,Don't you have to pee?,['Monica Geller'],neutral,7,25,1,20,00:13:01.447,00:13:05.158,dev
+sea1_ep20_sc7_utt26.mp4,'S'why I'm dancing...,['Chandler Bing'],happiness,7,26,1,20,00:13:03.115,00:13:05.158,dev
+sea1_ep20_sc9_utt1.mp4,"Four letters: ""Circle or hoop"".",['Ross Geller'],neutral,9,1,1,20,00:13:05.326,00:13:09.370,dev
+sea1_ep20_sc9_utt2.mp4,"Ring dammit, ring!",['Chandler Bing'],happiness,9,2,1,20,00:13:07.787,00:13:13.249,dev
+sea1_ep20_sc9_utt3.mp4,Thanks.,['Ross Geller'],neutral,9,3,1,20,00:13:09.580,00:13:13.249,dev
+sea1_ep20_sc9_utt4.mp4,"Hey, you know our phone's not working?",['Joey Tribbiani'],fear,9,4,1,20,00:13:30.935,00:13:33.228,dev
+sea1_ep20_sc9_utt5.mp4,What?!,['Chandler Bing'],fear,9,5,1,20,00:13:38.818,00:13:40.819,dev
+sea1_ep20_sc9_utt6.mp4,"I tried to call you from the coffee shop, and there was no answer.",['Joey Tribbiani'],neutral,9,6,1,20,00:16:31.156,00:16:44.419,dev
+sea1_ep20_sc9_utt7.mp4,"I turned it off. Mother of God, I turned it off!",['Chandler Bing'],anger,9,7,1,20,00:16:44.586,00:16:48.965,dev
+sea1_ep20_sc9_utt8.mp4,Just like you told her you did! ... Just pointing out the irony.,['Monica Geller'],happiness,9,8,1,20,00:16:46.380,00:16:50.633,dev
+sea1_ep20_sc9_utt9.mp4,"Hey, so listen, I went across the street and talked to the doorman- I got the peeper's name! Can I use the phone?",['Joey Tribbiani'],neutral,9,9,1,20,00:16:52.761,00:17:01.394,dev
+sea1_ep20_sc9_utt10.mp4,Nngghhh!!!!!!!,['Chandler Bing'],anger,9,10,1,20,00:16:55.681,00:16:58.433,dev
+sea1_ep20_sc9_utt11.mp4,"Can I use your phone? Yeah, the number for a Sidney Marks, please.",['Joey Tribbiani'],neutral,9,11,1,20,00:17:01.562,00:17:11.904,dev
+sea1_ep20_sc9_utt12.mp4,"""Heating device.""",['Ross Geller'],neutral,9,12,1,20,00:17:03.814,00:17:05.481,dev
+sea1_ep20_sc9_utt13.mp4,Radiator.,['Phoebe Buffay'],neutral,9,13,1,20,00:17:09.236,00:17:11.904,dev
+sea1_ep20_sc9_utt14.mp4,Five letters.,['Ross Geller'],neutral,9,14,1,20,00:17:12.281,00:17:13.823,dev
+sea1_ep20_sc9_utt15.mp4,Rdtor.,['Phoebe Buffay'],neutral,9,15,1,20,00:17:14.992,00:17:16.200,dev
+sea1_ep20_sc9_utt16.mp4,"Yeah, is Sidney there? Oh, this is? Sidney's a woman.",['Joey Tribbiani'],neutral,9,16,1,20,00:17:16.368,00:17:28.880,dev
+sea1_ep20_sc9_utt17.mp4,So she's a woman! So what?,['Monica Geller'],neutral,9,17,1,20,00:17:18.162,00:17:28.880,dev
+sea1_ep20_sc9_utt19.mp4,Joey!!,['Monica Geller'],anger,9,19,1,20,00:17:24.376,00:17:26.627,dev
+sea1_ep20_sc9_utt20.mp4,"Yeah, my neighbor... Yeah, the brunette... She says you looked very pretty the other day in the green dress.",['Joey Tribbiani'],neutral,9,20,1,20,00:17:55.240,00:18:08.753,dev
+sea1_ep20_sc9_utt21.mp4,The green dress? Really?,['Monica Geller'],happiness,9,21,1,20,00:17:57.034,00:17:59.911,dev
+sea1_ep20_sc9_utt22.mp4,"Yeah, she said you looked like Ingrid Bergman that day.",['Joey Tribbiani'],neutral,9,22,1,20,00:18:01.997,00:18:08.753,dev
+sea1_ep20_sc9_utt23.mp4,Nooo!,['Monica Geller'],happiness,9,23,1,20,00:18:06.168,00:18:08.753,dev
+sea1_ep20_sc11_utt1.mp4,You okay?,['Monica Geller'],neutral,11,1,1,20,00:18:10.130,00:18:12.507,dev
+sea1_ep20_sc11_utt2.mp4,Yeah.,['Rachel Green'],neutral,11,2,1,20,00:18:12.674,00:18:15.343,dev
+sea1_ep20_sc11_utt3.mp4,Really?,['Monica Geller'],neutral,11,3,1,20,00:18:15.719,00:18:18.054,dev
+sea1_ep20_sc11_utt4.mp4,"Yeah! Y'know, ever since I ran out on Barry at the wedding, I have wondered whether I made the right choice. And now I know.",['Rachel Green'],sadness,11,4,1,20,00:20:54.002,00:21:07.640,dev
+sea1_ep20_sc11_utt5.mp4,Aww...,['Monica Geller'],peace,11,5,1,20,00:20:55.963,00:20:57.296,dev
+sea1_ep20_sc11_utt7.mp4,Big day.,['Joey Tribbiani'],neutral,11,7,1,20,00:20:58.090,00:21:01.592,dev
+sea1_ep20_sc12_utt1.mp4,"All right, I'll give you this, Mr. Peanut is a better dresser. I mean he's got the monocle, he's got the top hat...",['Joey Tribbiani'],happiness,12,1,1,20,00:21:11.144,00:21:33.833,dev
+sea1_ep20_sc12_utt2.mp4,You know he's gay?,['Phoebe Buffay'],happiness,12,2,1,20,00:21:16.942,00:21:30.621,dev
+sea1_ep20_sc12_utt3.mp4,I just wanna clarify this: are you outing Mr. Peanut?,['Ross Geller'],happiness,12,3,1,20,00:21:34.001,00:21:43.092,dev
+sea1_ep20_sc12_utt4.mp4,Chandler?,['Danielle'],neutral,12,4,1,20,00:21:38.964,00:21:43.092,dev
+sea1_ep20_sc12_utt5.mp4,"Danielle! Hi! Uh- everybody, this is Danielle, Danielle, everybody.",['Chandler Bing'],happiness,12,5,1,20,00:21:44.303,00:21:49.765,dev
+sea1_ep20_sc12_utt6.mp4,Hi. Hi.,['#ALL#'],neutral,12,6,1,20,00:21:47.222,00:21:49.765,dev
+sea1_ep20_sc12_utt7.mp4,What are you doing here?,['Chandler Bing'],neutral,12,7,1,20,00:21:49.933,00:21:53.728,dev
+sea1_ep20_sc12_utt8.mp4,"Well, I've been calling you, but it turns out I had your number wrong. And when I finally got the right one from Information, there was no answer. So I thought I'd just come down here, and make sure you were okay.",['Danielle'],neutral,12,8,1,20,00:21:51.310,00:22:02.611,dev
+sea1_ep20_sc12_utt9.mp4,"...I'm, I'm okay.",['Chandler Bing'],neutral,12,9,1,20,00:21:53.895,00:21:55.938,dev
+sea1_ep20_sc12_utt10.mp4,"Listen uh, maybe we could get together later?",['Danielle'],neutral,12,10,1,20,00:22:02.779,00:22:08.117,dev
+sea1_ep20_sc12_utt11.mp4,"That sounds good. I'll call you- or you call me, whatever...",['Chandler Bing'],neutral,12,11,1,20,00:22:05.574,00:22:11.620,dev
+sea1_ep20_sc12_utt12.mp4,You got it.,['Danielle'],neutral,12,12,1,20,00:22:08.618,00:22:11.620,dev
+sea1_ep20_sc12_utt13.mp4,Okay.,['Chandler Bing'],neutral,12,13,1,20,00:22:11.788,00:22:12.955,dev
+sea1_ep20_sc12_utt14.mp4,"G'bye, everybody.",['Danielle'],neutral,12,14,1,20,00:22:13.123,00:22:14.498,dev
+sea1_ep20_sc12_utt15.mp4,Bye.,['#ALL#'],neutral,12,15,1,20,00:22:14.666,00:22:16.584,dev
+sea1_ep20_sc12_utt16.mp4,Whoo-hoo!,['Phoebe Buffay'],happiness,12,16,1,20,00:22:18.420,00:22:20.046,dev
+sea1_ep20_sc12_utt17.mp4,"Yeah, there you go!",['Monica Geller'],happiness,12,17,1,20,00:22:20.213,00:22:23.924,dev
+sea1_ep20_sc12_utt18.mp4,Second date!,['Ross Geller'],happiness,12,18,1,20,00:22:22.174,00:22:23.924,dev
+sea1_ep20_sc12_utt19.mp4,...I dunno.,['Chandler Bing'],fear,12,19,1,20,00:22:24.092,00:22:25.301,dev
+sea1_ep20_sc12_utt20.mp4,You don't know?!,['Rachel Green'],anger,12,20,1,20,00:22:25.469,00:22:29.221,dev
+sea2_ep10_sc3_utt2.mp4,"Stop saying you're not talented, you're very talented. It's just with the bird dead and all, there's very little act left. Oh, honey, give me a break, will ya? Oooh, ooh, I'll talk to you later.",['Estelle Leonard'],neutral,3,2,2,10,00:08:11.699,00:08:42.562,dev
+sea2_ep10_sc3_utt3.mp4,"Well, there's my favorite client. So tell me darling, how was the audition?",['Estelle Leonard'],happiness,3,3,2,10,00:08:42.772,00:08:47.442,dev
+sea2_ep10_sc3_utt4.mp4,"Well, I think it went pretty well. I.. I got a callback for Thursday.",['Joey Tribbiani'],happiness,3,4,2,10,00:08:44.815,00:08:51.655,dev
+sea2_ep10_sc3_utt5.mp4,"Joey, have you ever seen me ecstatic?",['Estelle Leonard'],neutral,3,5,2,10,00:08:51.864,00:08:54.950,dev
+sea2_ep10_sc3_utt6.mp4,No.,['Joey Tribbiani'],neutral,3,6,2,10,00:08:55.243,00:08:58.662,dev
+sea2_ep10_sc3_utt7.mp4,"Well, here it is.",['Estelle Leonard'],happiness,3,7,2,10,00:09:02.250,00:09:06.127,dev
+sea2_ep10_sc3_utt9.mp4,"Oh, isn't Lori a doll?",['Estelle Leonard'],peace,3,9,2,10,00:09:06.337,00:09:09.673,dev
+sea2_ep10_sc3_utt11.mp4,"Oh, I see. Well, I'm just gonna put in a call here and we'll find out what's goin' on and straighten it out. Yeah, hi, Lori please. Hi darling. So how 'bout Joey Tribbiani for the part of the cab driver, isn't he terrific? Uh-huuuuh. Uh-huuuuh. OK, doll. Talk to you later. Yeah, you're gonna have to sleep with her.",['Estelle Leonard'],neutral,3,11,2,10,00:09:30.820,00:10:05.103,dev
+sea2_ep10_sc5_utt2.mp4,Hey.,['Chandler Bing'],neutral,5,2,2,10,00:09:34.824,00:09:37.659,dev
+sea2_ep10_sc5_utt3.mp4,Hey.,['Joey Tribbiani'],neutral,5,3,2,10,00:09:37.827,00:09:40.954,dev
+sea2_ep10_sc5_utt4.mp4,"Whoa, whoa, so I'm guessing you didn't get the part, or... uh, Italy called and said it was hungry.",['Chandler Bing'],sadness,5,4,2,10,00:14:53.100,00:15:13.536,dev
+sea2_ep10_sc5_utt5.mp4,"Well, the part's mine if I want it.",['Joey Tribbiani'],happiness,5,5,2,10,00:15:09.199,00:15:13.536,dev
+sea2_ep10_sc5_utt6.mp4,Oh my God!,['Chandler Bing'],happiness,5,6,2,10,00:15:10.910,00:15:13.536,dev
+sea2_ep10_sc5_utt7.mp4,"Yeah, if I'm willing to sleep with the casting lady.",['Joey Tribbiani'],neutral,5,7,2,10,00:15:16.832,00:15:20.835,dev
+sea2_ep10_sc5_utt8.mp4,Oh my... God?,['Chandler Bing'],fear,5,8,2,10,00:15:18.083,00:15:20.835,dev
+sea2_ep10_sc5_utt9.mp4,"Ten years I've been waiting for a break like this Chandler, ten years! I mean, Days of Our Lives. That's actually on television.",['Joey Tribbiani'],sadness,5,9,2,10,00:15:21.086,00:15:32.513,dev
+sea2_ep10_sc5_utt10.mp4,"So, what're you gonna do?",['Chandler Bing'],neutral,5,10,2,10,00:15:22.463,00:15:28.593,dev
+sea2_ep10_sc5_utt11.mp4,"Well, I guess I could sleep with her... I mean, how could I do that?",['Joey Tribbiani'],sadness,5,11,2,10,00:15:33.432,00:15:37.560,dev
+sea2_ep10_sc5_utt13.mp4,I've never slept with someone for a part.,['Joey Tribbiani'],sadness,5,13,2,10,00:15:37.811,00:15:43.232,dev
+sea2_ep10_sc5_utt14.mp4,Well is she...,['Chandler Bing'],neutral,5,14,2,10,00:15:39.438,00:15:43.232,dev
+sea2_ep10_sc5_utt15.mp4,Sorry.,['Joey Tribbiani'],neutral,5,15,2,10,00:15:44.026,00:15:46.194,dev
+sea2_ep10_sc5_utt16.mp4,It's alright. Is she good-looking?,['Chandler Bing'],peace,5,16,2,10,00:15:46.403,00:15:54.202,dev
+sea2_ep10_sc5_utt17.mp4,"Yeah, she's totally good looking. I mean, if I met her in a bar, or something, I'd be buying her breakfast. You know, after having slept with her.",['Joey Tribbiani'],happiness,5,17,2,10,00:15:49.823,00:16:03.795,dev
+sea2_ep10_sc5_utt18.mp4,"Y'know, maybe this isn't such a big deal. Y'know, I mean, the way that I see it is you get a great job and you get to have sex. Y'know, I mean, throw in a tree and a fat guy and you've got Christmas.",['Chandler Bing'],happiness,5,18,2,10,00:15:57.790,00:16:20.561,dev
+sea2_ep10_sc5_utt19.mp4,"I just... I just don't think that I want it that way though, y'know? I mean, let's say I do make it, alright? I'm always gonna look back and wonder if it was because of my talent or because of.. y'know, the Little General.",['Joey Tribbiani'],fear,5,19,2,10,00:16:24.024,00:16:37.370,dev
+sea2_ep10_sc5_utt20.mp4,Didn't you used to call it the Little Major?,['Chandler Bing'],peace,5,20,2,10,00:16:34.451,00:16:42.750,dev
+sea2_ep10_sc5_utt21.mp4,"Yeah, but after Denise DeMarco, I had to promote it.",['Joey Tribbiani'],peace,5,21,2,10,00:16:40.124,00:16:45.753,dev
+sea2_ep10_sc6_utt2.mp4,Can I get you something from the bar?,['Waiter'],neutral,6,2,2,10,00:16:51.719,00:16:53.261,dev
+sea2_ep10_sc6_utt3.mp4,"Yes, I would like something. No, no thank you.",['Monica Geller'],sadness,6,3,2,10,00:16:53.470,00:16:58.307,dev
+sea2_ep10_sc6_utt5.mp4,"No, no really. I.. I wouldn't feel right about it. Just some water.",['Monica Geller'],sadness,6,5,2,10,00:17:02.479,00:17:06.983,dev
+sea2_ep10_sc6_utt6.mp4,So the light went out in my refrigerator...,['Bobby Rush'],neutral,6,6,2,10,00:17:05.566,00:17:11.237,dev
+sea2_ep10_sc9_utt2.mp4,Hi.,['Russ'],neutral,9,2,2,10,00:17:07.651,00:17:11.237,dev
+sea2_ep10_sc9_utt3.mp4,"Oh, hey.",['Chandler Bing'],neutral,9,3,2,10,00:17:12.948,00:17:13.990,dev
+sea2_ep10_sc9_utt4.mp4,Hi.,['Phoebe Buffay'],neutral,9,4,2,10,00:17:14.241,00:17:16.576,dev
+sea2_ep10_sc9_utt5.mp4,"I guess you guys heard, Rachel dumped me.",['Russ'],sadness,9,5,2,10,00:18:21.475,00:18:24.227,dev
+sea2_ep10_sc9_utt6.mp4,"Yeah, I'm sorry man.",['Chandler Bing'],neutral,9,6,2,10,00:18:24.394,00:18:29.982,dev
+sea2_ep10_sc9_utt7.mp4,"Oh, all she said was that I remind her too much of somebody. You have any idea who she's talking about?",['Russ'],neutral,9,7,2,10,00:21:59.109,00:22:05.614,dev
+sea2_ep10_sc9_utt8.mp4,"Oh I do, it's.... it's Bob Saget. She hates him.",['Phoebe Buffay'],neutral,9,8,2,10,00:22:03.780,00:22:10.244,dev
+sea2_ep10_sc9_utt9.mp4,Oh.,['Russ'],neutral,9,9,2,10,00:22:07.534,00:22:10.244,dev
+sea2_ep10_sc9_utt10.mp4,Hey.,['Julie'],neutral,9,10,2,10,00:22:12.205,00:22:14.040,dev
+sea2_ep10_sc9_utt11.mp4,Hey!,['Chandler Bing'],neutral,9,11,2,10,00:22:14.207,00:22:16.500,dev
+sea2_ep10_sc9_utt12.mp4,"Hey, Julie! Hey, how are you doing?",['Phoebe Buffay'],peace,9,12,2,10,00:22:16.668,00:22:21.714,dev
+sea2_ep20_sc1_utt2.mp4,Hey. Watcha guys doin?,['Phoebe Buffay'],happiness,1,2,2,20,00:00:07.132,00:00:11.844,dev
+sea2_ep20_sc1_utt3.mp4,Monica's making us watch Old Yeller.,['Richard Burke'],sadness,1,3,2,20,00:00:08.508,00:00:11.844,dev
+sea2_ep20_sc1_utt4.mp4,"Why are you guys so upset? It's Old Yeller, it's a happy movie.",['Phoebe Buffay'],fear,1,4,2,20,00:00:13.972,00:00:20.310,dev
+sea2_ep20_sc1_utt5.mp4,What?,['Rachel Green'],neutral,1,5,2,20,00:00:18.643,00:00:20.310,dev
+sea2_ep20_sc1_utt6.mp4,What're you talkin' about?,['Ross Geller'],neutral,1,6,2,20,00:00:20.478,00:00:22.771,dev
+sea2_ep20_sc1_utt7.mp4,"C'mon, happy family gets a dog, frontier fun.",['Phoebe Buffay'],happiness,1,7,2,20,00:05:45.887,00:05:50.974,dev
+sea2_ep20_sc1_utt8.mp4,"Yeah but Phoebs, what about the end?",['Ross Geller'],neutral,1,8,2,20,00:06:00.860,00:06:08.325,dev
+sea2_ep20_sc1_utt10.mp4,That's not the end.,['Rachel Green'],neutral,1,10,2,20,00:06:05.990,00:06:08.325,dev
+sea2_ep20_sc1_utt12.mp4,What about the part where he has rabies?,['Monica Geller'],fear,1,12,2,20,00:06:19.420,00:06:22.464,dev
+sea2_ep20_sc2_utt5.mp4,"Well, how do you find clothes that fit?",['Chandler Bing'],happiness,2,5,2,20,00:07:58.186,00:08:11.656,dev
+sea2_ep20_sc2_utt6.mp4,"Oh, hey, Monica, we've got a question.",['Joey Tribbiani'],neutral,2,6,2,20,00:08:45.399,00:08:48.527,dev
+sea2_ep20_sc2_utt10.mp4,"Ok. Hey, why don't you ask Richard?",['Monica Geller'],neutral,2,10,2,20,00:08:54.033,00:08:58.203,dev
+sea2_ep20_sc2_utt13.mp4,"Ok, that's Eric.",['Chandler Bing'],neutral,2,13,2,20,00:08:55.576,00:08:58.203,dev
+sea2_ep20_sc2_utt14.mp4,Glad to be of help. Matches.,['Richard Burke'],happiness,2,14,2,20,00:08:58.871,00:09:01.540,dev
+sea2_ep20_sc2_utt16.mp4,I don't know.,['Joey Tribbiani'],fear,2,16,2,20,00:09:01.707,00:09:02.791,dev
+sea2_ep20_sc2_utt21.mp4,"Ok, this could be tough.",['Chandler Bing'],neutral,2,21,2,20,00:09:02.959,00:09:04.668,dev
+sea2_ep20_sc2_utt23.mp4,"Ooh, you almost had it.",['Chandler Bing'],happiness,2,23,2,20,00:09:04.835,00:09:08.213,dev
+sea2_ep20_sc3_utt2.mp4,"No no, you're fine, you're fine.",['Ross Geller'],peace,3,2,2,20,00:09:08.381,00:09:12.759,dev
+sea2_ep20_sc3_utt3.mp4,Hello,['Carol Willick'],neutral,3,3,2,20,00:09:09.840,00:09:12.759,dev
+sea2_ep20_sc3_utt4.mp4,Hi.,['Ross Geller'],neutral,3,4,2,20,00:09:12.927,00:09:15.512,dev
+sea2_ep20_sc3_utt5.mp4,Hey.,['Susan Bunch'],neutral,3,5,2,20,00:09:15.763,00:09:17.013,dev
+sea2_ep20_sc3_utt6.mp4,Hi honey.,['Carol Willick'],happiness,3,6,2,20,00:09:26.065,00:09:28.567,dev
+sea2_ep20_sc3_utt8.mp4,What?,['Carol Willick'],fear,3,8,2,20,00:09:28.734,00:09:31.778,dev
+sea2_ep20_sc3_utt9.mp4,What?,['Susan Bunch'],happiness,3,9,2,20,00:09:32.154,00:09:34.114,dev
+sea2_ep20_sc3_utt11.mp4,"Uhh, we know, he already did it last week.",['Carol Willick'],happiness,3,11,2,20,00:19:31.003,00:19:39.886,dev
+sea2_ep20_sc3_utt12.mp4,You can watch our tape if you want.,['Susan Bunch'],power,3,12,2,20,00:19:46.185,00:19:56.485,dev
+sea2_ep20_sc3_utt16.mp4,Great. That would be fine.,"['Carol Willick', 'Susan Bunch']",power,3,16,2,20,00:19:52.900,00:19:56.485,dev
+sea2_ep20_sc3_utt18.mp4,"Oh shout, that would have been fun.",['Susan Bunch'],happiness,3,18,2,20,00:19:56.695,00:19:59.530,dev
+sea2_ep20_sc4_utt2.mp4,Hey.,['Phoebe Buffay'],neutral,4,2,2,20,00:19:59.698,00:20:01.073,dev
+sea2_ep20_sc4_utt3.mp4,"Hey Phoebs, whatcha got there?",['Rachel Green'],neutral,4,3,2,20,00:20:01.325,00:20:04.785,dev
+sea2_ep20_sc4_utt7.mp4,Hey.,['Chandler Bing'],neutral,4,7,2,20,00:20:02.951,00:20:04.785,dev
+sea2_ep20_sc4_utt8.mp4,Hey.,['Joey Tribbiani'],neutral,4,8,2,20,00:20:05.913,00:20:08.748,dev
+sea2_ep20_sc4_utt9.mp4,Hey.,['Rachel Green'],neutral,4,9,2,20,00:20:08.999,00:20:12.043,dev
+sea2_ep20_sc4_utt10.mp4,"Hey. Where is he, where's Richard? Did you ditch him?",['Monica Geller'],neutral,4,10,2,20,00:20:12.211,00:20:19.634,dev
+sea2_ep20_sc4_utt12.mp4,So'd you guys have fun?,['Monica Geller'],neutral,4,12,2,20,00:20:14.046,00:20:15.880,dev
+sea2_ep20_sc4_utt13.mp4,Your boyfriend is so cool.,['Chandler Bing'],happiness,4,13,2,20,00:20:16.131,00:20:19.634,dev
+sea2_ep20_sc4_utt14.mp4,Really?,['Monica Geller'],neutral,4,14,2,20,00:20:19.801,00:20:22.303,dev
+sea2_ep20_sc4_utt16.mp4,"Wow, he must like you the best.",['Rachel Green'],happiness,4,16,2,20,00:20:22.512,00:20:24.347,dev
+sea2_ep20_sc4_utt19.mp4,No problem. Hey Chandler,['Joey Tribbiani'],neutral,4,19,2,20,00:20:24.514,00:20:27.350,dev
+sea2_ep20_sc4_utt20.mp4,I think they get it.,['Chandler Bing'],neutral,4,20,2,20,00:20:26.266,00:20:30.603,dev
+sea2_ep20_sc4_utt21.mp4,Ok.,['Joey Tribbiani'],neutral,4,21,2,20,00:20:27.517,00:20:30.603,dev
+sea2_ep20_sc4_utt22.mp4,There's the man.,['Chandler Bing'],neutral,4,22,2,20,00:20:30.771,00:20:35.316,dev
+sea2_ep20_sc4_utt23.mp4,He-he-eyy.,['Joey Tribbiani'],happiness,4,23,2,20,00:20:33.190,00:20:35.316,dev
+sea2_ep20_sc4_utt25.mp4,Ok. He kept my dollar.,['Joey Tribbiani'],sadness,4,25,2,20,00:20:35.943,00:20:42.698,dev
+sea2_ep20_sc8_utt3.mp4,Did you like it?,['Monica Geller'],neutral,8,3,2,20,00:20:38.070,00:20:42.698,dev
+sea3_ep1_sc2_utt2.mp4,I have to say Tupolo Honey by Van Morrison.,['Ross Geller'],peace,2,2,3,1,00:00:05.880,00:01:14.448,dev
+sea3_ep1_sc2_utt3.mp4,Nooo Way! The most romantic song ever is The Way We Were.,['Rachel Green'],peace,2,3,3,1,00:00:14.848,00:01:18.994,dev
+sea3_ep1_sc2_utt5.mp4,"What song was that, Pheebs?",['Rachel Green'],neutral,2,5,3,1,00:01:11.946,00:01:14.448,dev
+sea3_ep1_sc2_utt6.mp4,"Hold me close, young Tony Dan-za.",['Phoebe Buffay'],neutral,2,6,3,1,00:01:14.616,00:01:18.994,dev
+sea3_ep1_sc2_utt8.mp4,Hi Monica!,['Phoebe Buffay'],happiness,2,8,3,1,00:01:16.159,00:01:18.994,dev
+sea3_ep1_sc2_utt9.mp4,Hey Mon!,['Ross Geller'],happiness,2,9,3,1,00:01:19.162,00:01:24.333,dev
+sea3_ep1_sc2_utt10.mp4,Hey Mon!,['Rachel Green'],happiness,2,10,3,1,00:01:26.336,00:01:28.295,dev
+sea3_ep1_sc2_utt12.mp4,"Oh my God, has she slept at all?",['Phoebe Buffay'],anger,2,12,3,1,00:01:38.014,00:01:44.978,dev
+sea3_ep1_sc2_utt13.mp4,Nope.,['Ross Geller'],neutral,2,13,3,1,00:01:41.559,00:01:42.976,dev
+sea3_ep1_sc2_utt14.mp4,"No, it's been three nights in a row.",['Rachel Green'],neutral,2,14,3,1,00:01:43.144,00:01:47.064,dev
+sea3_ep1_sc2_utt15.mp4,"Yeah, she finally stopped crying yesterday, but then she found one of Richard's cigar butts out on the terrace, so.",['Ross Geller'],peace,2,15,3,1,00:01:45.146,00:01:52.361,dev
+sea3_ep1_sc3_utt2.mp4,Morning.,['Chandler Bing'],neutral,3,2,3,1,00:01:47.232,00:01:49.066,dev
+sea3_ep1_sc3_utt3.mp4,"Morning, hey, you made pancakes?",['Joey Tribbiani'],happiness,3,3,3,1,00:01:49.234,00:01:52.361,dev
+sea3_ep1_sc3_utt4.mp4,"Yeah, like there's any way I could ever do that.",['Chandler Bing'],fear,3,4,3,1,00:02:14.217,00:02:22.307,dev
+sea3_ep1_sc3_utt5.mp4,"Monica and Rachel had syrup, now I can get my man to cheer up. Good morning Joey.",['Janice Litman Goralnik'],happiness,3,5,3,1,00:02:20.056,00:02:29.439,dev
+sea3_ep1_sc3_utt6.mp4,Good morning.,['Joey Tribbiani'],happiness,3,6,3,1,00:02:22.934,00:02:26.019,dev
+sea3_ep1_sc3_utt8.mp4,"Oh, I wish. Look, honey, you have that report to finish, and I gotta go see my lawyer.",['Janice Litman Goralnik'],peace,3,8,3,1,00:02:37.198,00:02:44.705,dev
+sea3_ep1_sc3_utt10.mp4,"I-I-I gotta go, I gotta go. Okay, not without a kiss.",['Janice Litman Goralnik'],happiness,3,10,3,1,00:02:48.209,00:02:52.546,dev
+sea3_ep1_sc3_utt11.mp4,"Well, maybe I won't kiss you, and then you'll have to stay.",['Chandler Bing'],power,3,11,3,1,00:02:50.837,00:02:56.383,dev
+sea3_ep1_sc3_utt12.mp4,Kiss her! Kiss her!,['Joey Tribbiani'],happiness,3,12,3,1,00:02:52.714,00:02:54.089,dev
+sea3_ep1_sc3_utt13.mp4,"I'll see you later, sweetie. Bye Joey.",['Janice Litman Goralnik'],happiness,3,13,3,1,00:02:54.257,00:02:56.383,dev
+sea3_ep1_sc3_utt14.mp4,B-bye Janice. So when ya' dumpin' her.,['Joey Tribbiani'],neutral,3,14,3,1,00:02:56.551,00:03:03.223,dev
+sea3_ep1_sc3_utt15.mp4,"Nope, not this time.",['Chandler Bing'],neutral,3,15,3,1,00:02:59.304,00:03:03.223,dev
+sea3_ep1_sc3_utt16.mp4,"Come on, quite yankin' me.",['Joey Tribbiani'],happiness,3,16,3,1,00:03:00.638,00:03:03.223,dev
+sea3_ep1_sc3_utt17.mp4,I'm not yanking you.,['Chandler Bing'],neutral,3,17,3,1,00:03:03.391,00:03:05.434,dev
+sea3_ep1_sc3_utt18.mp4,This is Janice.,['Joey Tribbiani'],neutral,3,18,3,1,00:03:07.604,00:03:09.146,dev
+sea3_ep1_sc3_utt19.mp4,"Yeah, I know. She makes me happy.",['Chandler Bing'],peace,3,19,3,1,00:03:09.314,00:03:14.318,dev
+sea3_ep1_sc3_utt20.mp4,"Okay. All right. You look me in the eye and tell me, without blinking, that you're not breaking up with her. No blinking.",['Joey Tribbiani'],neutral,3,20,3,1,00:03:23.203,00:03:34.755,dev
+sea3_ep1_sc3_utt21.mp4,I'm not breaking up with her!,['Chandler Bing'],peace,3,21,3,1,00:03:24.954,00:03:31.752,dev
+sea3_ep1_sc4_utt2.mp4,"God, look what I found in the drain.",['Monica Geller'],fear,4,2,3,1,00:03:26.206,00:03:31.752,dev
+sea3_ep1_sc4_utt3.mp4,What?!,['Rachel Green'],fear,4,3,3,1,00:03:28.249,00:03:31.752,dev
+sea3_ep1_sc4_utt4.mp4,It's some of Richard's hair! What do I do with this?,['Monica Geller'],fear,4,4,3,1,00:03:48.019,00:03:55.525,dev
+sea3_ep1_sc4_utt5.mp4,Getting it away from me would be job one.,['Ross Geller'],neutral,4,5,3,1,00:03:55.693,00:04:00.405,dev
+sea3_ep1_sc4_utt7.mp4,"Ooh. Oh. It looks like, like a tiny little person drowning in your cereal.",['Phoebe Buffay'],neutral,4,7,3,1,00:04:04.827,00:04:22.261,dev
+sea3_ep1_sc4_utt8.mp4,"God, what is wrong with me.",['Monica Geller'],sadness,4,8,3,1,00:04:07.038,00:04:22.261,dev
+sea3_ep1_sc4_utt9.mp4,You need to get some sleep.,['Ross Geller'],neutral,4,9,3,1,00:04:09.374,00:04:22.261,dev
+sea3_ep1_sc4_utt10.mp4,I need to get some Richard.,['Monica Geller'],sadness,4,10,3,1,00:04:10.792,00:04:22.261,dev
+sea3_ep1_sc4_utt11.mp4,"Monica, you broke up with him for a reason.",['Rachel Green'],neutral,4,11,3,1,00:04:27.976,00:04:35.065,dev
+sea3_ep1_sc4_utt13.mp4,"Maybe, because you told him not to.",['Phoebe Buffay'],neutral,4,13,3,1,00:04:32.855,00:04:35.065,dev
+sea3_ep1_sc4_utt14.mp4,What are you the memory woman?,['Monica Geller'],anger,4,14,3,1,00:04:35.233,00:04:39.236,dev
+sea3_ep1_sc4_utt15.mp4,Their not breaking up. Chandler and Janice. Their not breaking up. He didn't blink or anything.,['Joey Tribbiani'],neutral,4,15,3,1,00:04:45.660,00:04:54.584,dev
+sea3_ep1_sc4_utt17.mp4,Cute! This is Janice! You remember Janice?,['Joey Tribbiani'],anger,4,17,3,1,00:04:49.706,00:04:51.915,dev
+sea3_ep1_sc4_utt18.mp4,"Yes, Joey, I remember, she's annoying, but you know what she's-she's his girlfriend now. I mean what can we do?",['Rachel Green'],neutral,4,18,3,1,00:04:58.673,00:05:10.183,dev
+sea3_ep1_sc4_utt19.mp4,There you go! That's the spirit I'm looking for! What can we do? Huh? All right who's first? Huh? Ross?,['Joey Tribbiani'],happiness,4,19,3,1,00:05:10.351,00:05:18.567,dev
+sea3_ep1_sc4_utt20.mp4,"Well I'm thinking that Chandler's our friend and Janice makes him happy, so I say we just all be adult about it and accept her.",['Ross Geller'],neutral,4,20,3,1,00:05:14.772,00:05:24.364,dev
+sea3_ep1_sc4_utt21.mp4,"Yeah, we'll call that Plan B. All right?",['Joey Tribbiani'],neutral,4,21,3,1,00:05:16.024,00:05:21.403,dev
+sea3_ep1_sc5_utt2.mp4,"Honey, I was wondering....",['Rachel Green'],peace,5,2,3,1,00:05:18.735,00:05:21.403,dev
+sea3_ep1_sc5_utt3.mp4,Hmm?,['Ross Geller'],peace,5,3,3,1,00:05:21.571,00:05:24.364,dev
+sea3_ep1_sc5_utt4.mp4,"Do you still have that, um, Navy uniform?",['Rachel Green'],happiness,5,4,3,1,00:05:48.765,00:05:56.438,dev
+sea3_ep1_sc5_utt5.mp4,"Nooo, I had to return it to the costume place.",['Ross Geller'],sadness,5,5,3,1,00:05:52.602,00:06:00.609,dev
+sea3_ep1_sc5_utt6.mp4,Hmm.,['Rachel Green'],peace,5,6,3,1,00:05:57.857,00:06:00.609,dev
+sea3_ep1_sc5_utt7.mp4,I think I have an old band uniform from high school.,['Ross Geller'],neutral,5,7,3,1,00:06:00.777,00:06:04.196,dev
+sea3_ep1_sc5_utt8.mp4,"You remember not having sex in high school, right?",['Rachel Green'],happiness,5,8,3,1,00:06:05.114,00:06:07.324,dev
+sea3_ep1_sc5_utt9.mp4,Yeah.,['Ross Geller'],sadness,5,9,3,1,00:06:07.492,00:06:09.368,dev
+sea3_ep1_sc5_utt10.mp4,"Well honey, what about you?",['Rachel Green'],sadness,5,10,3,1,00:06:13.206,00:06:14.623,dev
+sea3_ep1_sc5_utt11.mp4,What?,['Ross Geller'],neutral,5,11,3,1,00:06:14.791,00:06:15.874,dev
+sea3_ep1_sc5_utt12.mp4,"I mean do you have any fun, you know, fantasy type things?",['Rachel Green'],peace,5,12,3,1,00:06:16.084,00:06:28.178,dev
+sea3_ep1_sc5_utt13.mp4,No.,['Ross Geller'],neutral,5,13,3,1,00:06:17.293,00:06:22.297,dev
+sea3_ep1_sc5_utt14.mp4,Come on you gotta have one!,['Rachel Green'],happiness,5,14,3,1,00:06:23.299,00:06:28.178,dev
+sea3_ep1_sc5_utt15.mp4,Nope.,['Ross Geller'],neutral,5,15,3,1,00:06:26.302,00:06:28.178,dev
+sea3_ep1_sc5_utt16.mp4,"Ross, you know what...",['Rachel Green'],happiness,5,16,3,1,00:06:29.138,00:06:32.849,dev
+sea3_ep1_sc5_utt17.mp4,What?,['Ross Geller'],fear,5,17,3,1,00:06:31.224,00:06:32.849,dev
+sea3_ep1_sc5_utt18.mp4,"...if you tell me, I might do it.",['Rachel Green'],happiness,5,18,3,1,00:06:33.017,00:06:36.728,dev
+sea3_ep1_sc5_utt19.mp4,"Okay, umm. Did you ever see, um, Return Of The Jedi?",['Ross Geller'],fear,5,19,3,1,00:06:43.152,00:06:52.160,dev
+sea3_ep1_sc5_utt20.mp4,Yeah.,['Rachel Green'],neutral,5,20,3,1,00:06:44.404,00:06:46.154,dev
+sea3_ep1_sc5_utt21.mp4,"Do you remember the scene with, um, Jabba the Hut? Well Jabba had as, as his prisoner, um, Princess Leia.",['Ross Geller'],peace,5,21,3,1,00:06:58.167,00:07:20.856,dev
+sea3_ep1_sc5_utt22.mp4,Oooh!,['Rachel Green'],happiness,5,22,3,1,00:07:01.170,00:07:03.839,dev
+sea3_ep1_sc5_utt23.mp4,"Princess Leia, was wearing this, um, gold bikini thing. It was pretty cool.",['Ross Geller'],happiness,5,23,3,1,00:07:09.720,00:07:25.694,dev
+sea3_ep1_sc7_utt3.mp4,Hey!,['Chandler Bing'],happiness,7,3,3,1,00:07:13.683,00:07:14.891,dev
+sea3_ep1_sc7_utt4.mp4,Wheel!,['Joey Tribbiani'],happiness,7,4,3,1,00:07:16.310,00:07:18.687,dev
+sea3_ep1_sc7_utt5.mp4,Of!,['Chandler Bing'],happiness,7,5,3,1,00:07:19.188,00:07:20.856,dev
+sea3_ep1_sc7_utt6.mp4,Fortune! This guy is so stupid. It's Count Rushmore!!,['Joey Tribbiani'],anger,7,6,3,1,00:08:52.198,00:09:10.590,dev
+sea3_ep1_sc7_utt8.mp4,"I say, 'I am there!' Cool! Aw, is Ross going to?",['Joey Tribbiani'],neutral,7,8,3,1,00:09:24.188,00:09:29.359,dev
+sea3_ep1_sc7_utt9.mp4,"No, Janice.",['Chandler Bing'],neutral,7,9,3,1,00:09:26.399,00:09:28.108,dev
+sea3_ep1_sc7_utt10.mp4,"Jan-ice. 'Cause I, just, I feel bad for Ross, you know, we-we always go together, we're like the three hocke-teers.",['Joey Tribbiani'],sadness,7,10,3,1,00:09:28.276,00:09:42.163,dev
+sea3_ep1_sc7_utt11.mp4,"You know, I may be way out on a limb here, but do you, do you, have a problem with Janice?",['Chandler Bing'],neutral,7,11,3,1,00:09:33.864,00:09:47.210,dev
+sea3_ep1_sc7_utt12.mp4,"No, Yeeees. God, how do I say this. . Oh, hi, you know that girl from the Greek restaurant with the hair ?",['Joey Tribbiani'],anger,7,12,3,1,00:09:47.378,00:10:00.140,dev
+sea3_ep1_sc7_utt13.mp4,"Ooh, that girl that I hate, eww, drives me crazy, eww, eww, oh!",['Chandler Bing'],anger,7,13,3,1,00:09:55.011,00:10:03.351,dev
+sea3_ep1_sc7_utt14.mp4,"Look, I don't hate Janice, she's-she's just a lot to take, you know.",['Joey Tribbiani'],neutral,7,14,3,1,00:10:03.519,00:10:09.774,dev
+sea3_ep1_sc7_utt15.mp4,"Well, there you go.",['Chandler Bing'],neutral,7,15,3,1,00:10:05.521,00:10:09.774,dev
+sea3_ep1_sc7_utt17.mp4,"Well, I'm crazy about her now. I think this could be the real thing. Capital 'R'! Capital 'T'! Don't worry, those are the right letters.",['Chandler Bing'],anger,7,17,3,1,00:10:16.866,00:10:29.711,dev
+sea3_ep1_sc7_utt18.mp4,"Look, what do you want me to say?",['Joey Tribbiani'],neutral,7,18,3,1,00:10:27.043,00:10:33.632,dev
+sea3_ep1_sc7_utt19.mp4,I want you to say that you like her!,['Chandler Bing'],anger,7,19,3,1,00:10:30.463,00:10:36.217,dev
+sea3_ep1_sc7_utt20.mp4,"I can't. It's like this chemical thing, you know. Every time she starts laughing, I just wanna pull my arm off just so that I can have something to throw at her.",['Joey Tribbiani'],anger,7,20,3,1,00:10:34.425,00:10:48.396,dev
+sea3_ep1_sc7_utt21.mp4,"Thanks for trying. Oh, and by the way there is no Count Rushmore!",['Chandler Bing'],anger,7,21,3,1,00:10:50.691,00:10:57.489,dev
+sea3_ep1_sc7_utt22.mp4,"Yeah, then-then who's the guy that painted the faces on the mountain?",['Joey Tribbiani'],anger,7,22,3,1,00:10:52.234,00:11:00.909,dev
+sea3_ep1_sc8_utt2.mp4,How could you have told her?,['Ross Geller'],fear,8,2,3,1,00:10:53.486,00:10:57.489,dev
+sea3_ep1_sc8_utt3.mp4,"Ross, I didn't think it would that big of a deal.",['Rachel Green'],anger,8,3,3,1,00:11:06.749,00:11:11.461,dev
+sea3_ep1_sc8_utt4.mp4,"Oh, she didn't think it would be that big of deal.",['Ross Geller'],anger,8,4,3,1,00:11:08.584,00:11:13.505,dev
+sea3_ep1_sc8_utt5.mp4,"Okay, who are you talking to when you do that?",['Rachel Green'],fear,8,5,3,1,00:11:13.673,00:11:21.596,dev
+sea3_ep1_sc8_utt6.mp4,"Look, that was supposed to be like a private, personal thing between us.",['Ross Geller'],anger,8,6,3,1,00:11:17.259,00:11:26.017,dev
+sea3_ep1_sc8_utt8.mp4,"That's different, okay. That's like, uh 'Who dated a stripper?' or 'Who did it on the back of the Staton Island Ferry?'.",['Ross Geller'],anger,8,8,3,1,00:11:28.187,00:11:37.821,dev
+sea3_ep1_sc8_utt9.mp4,Were both of those Joey?,['Rachel Green'],neutral,8,9,3,1,00:11:31.273,00:11:34.150,dev
+sea3_ep1_sc8_utt11.mp4,Not even with your best friend.,['Rachel Green'],neutral,8,11,3,1,00:11:34.318,00:11:37.821,dev
+sea3_ep1_sc8_utt12.mp4,Noo!,['Ross Geller'],anger,8,12,3,1,00:11:38.698,00:11:39.781,dev
+sea3_ep1_sc8_utt14.mp4,"Hmph. So what you, you tell each other everything?",['Ross Geller'],fear,8,14,3,1,00:12:03.139,00:12:09.561,dev
+sea3_ep1_sc8_utt15.mp4,Pretty much.,['Rachel Green'],happiness,8,15,3,1,00:12:08.477,00:12:09.561,dev
+sea3_ep1_sc8_utt16.mp4,Did you talk about the night of five times? Do you tell people about the night of five times?,['Ross Geller'],neutral,8,16,3,1,00:12:13.065,00:12:22.157,dev
+sea3_ep1_sc8_utt17.mp4,"Uh, honey, yeah that was with Carol.",['Rachel Green'],happiness,8,17,3,1,00:12:22.324,00:12:28.079,dev
+sea3_ep1_sc8_utt18.mp4,"I know, but it's still worth mentioning, I think.",['Ross Geller'],fear,8,18,3,1,00:12:24.827,00:12:28.079,dev
+sea3_ep1_sc9_utt2.mp4,"Relax every muscle in your body. Listen to the plinky-plunky music. Okay, now close you eyes, and think of a happy place. Okay, tell me your happy place.",['Phoebe Buffay'],power,9,2,3,1,00:12:29.707,00:12:48.057,dev
+sea3_ep1_sc9_utt3.mp4,"Richard's living room, drinking wine.",['Monica Geller'],happiness,9,3,3,1,00:12:33.377,00:12:34.878,dev
+sea3_ep1_sc9_utt4.mp4,"All right. No, no, no, not a Richard thing, just put down the glass. And get out!",['Phoebe Buffay'],fear,9,4,3,1,00:12:43.012,00:12:56.065,dev
+sea3_ep1_sc9_utt5.mp4,"I'm sorry, but that's my happy place.",['Monica Geller'],power,9,5,3,1,00:12:46.390,00:12:50.685,dev
+sea3_ep1_sc9_utt7.mp4,"All right, I'll try not to.",['Monica Geller'],fear,9,7,3,1,00:12:48.225,00:12:56.065,dev
+sea3_ep1_sc9_utt8.mp4,"Okay, all right, so, your in a meadow, millions of stars in the sky....",['Phoebe Buffay'],peace,9,8,3,1,00:13:05.534,00:13:13.917,dev
+sea3_ep1_sc9_utt9.mp4,Do you think breaking up with him was a huge mistake?,['Monica Geller'],fear,9,9,3,1,00:13:11.040,00:13:16.127,dev
+sea3_ep1_sc9_utt10.mp4,"All right, there are no questions in the happy place. Okay, just, the warm breeze, and the moonlight flowing through the trees....",['Phoebe Buffay'],peace,9,10,3,1,00:13:14.084,00:13:26.387,dev
+sea3_ep1_sc9_utt11.mp4,"I'll bet he's totally over me, I'll bet he's fine.",['Monica Geller'],power,9,11,3,1,00:13:26.555,00:13:32.769,dev
+sea3_ep1_sc9_utt13.mp4,"Okay, this isn't working. I'm still awake and now I have to pee.",['Monica Geller'],power,9,13,3,1,00:13:45.908,00:13:49.452,dev
+sea3_ep1_sc10_utt2.mp4,"So, I hear, you hate me!",['Janice Litman Goralnik'],anger,10,2,3,1,00:13:47.910,00:13:49.452,dev
+sea3_ep1_sc10_utt3.mp4,"I, ah, I never said hate, I was very careful about that.",['Joey Tribbiani'],fear,10,3,3,1,00:13:49.620,00:14:00.421,dev
+sea3_ep1_sc10_utt4.mp4,A little birdie told me something about you wanting to rip your arm off and throw it at me.,['Janice Litman Goralnik'],anger,10,4,3,1,00:13:51.664,00:14:05.844,dev
+sea3_ep1_sc10_utt5.mp4,And you got a 'hate' from that?! Your taking a big leap there...,['Joey Tribbiani'],fear,10,5,3,1,00:14:07.304,00:14:11.558,dev
+sea3_ep1_sc10_utt6.mp4,"All right, fine, fine, fine, fine, fine, We've got to do something about our little situation here Joey. So, this is my idea you and me spending some quality time together.",['Janice Litman Goralnik'],sadness,10,6,3,1,00:14:11.725,00:14:26.030,dev
+sea3_ep1_sc10_utt7.mp4,But what does that gonna do...,['Joey Tribbiani'],peace,10,7,3,1,00:14:13.769,00:14:17.605,dev
+sea3_ep1_sc10_utt8.mp4,For Chandler!,['Janice Litman Goralnik'],power,10,8,3,1,00:14:17.773,00:14:19.399,dev
+sea3_ep1_sc10_utt9.mp4,Okay. I'm in.,['Joey Tribbiani'],happiness,10,9,3,1,00:14:19.567,00:14:23.486,dev
+sea3_ep1_sc10_utt10.mp4,Okay. All right. This is what we're gonna call it 'Joey and Janice's DAY OF FUN!',['Janice Litman Goralnik'],happiness,10,10,3,1,00:14:24.697,00:14:36.749,dev
+sea3_ep1_sc10_utt11.mp4,Does it have to be a whole day?,['Joey Tribbiani'],power,10,11,3,1,00:14:26.198,00:14:36.749,dev
+sea3_ep1_sc10_utt12.mp4,"Yes, because that's how long it takes to love me.",['Janice Litman Goralnik'],peace,10,12,3,1,00:14:37.626,00:14:43.631,dev
+sea3_ep1_sc10_utt13.mp4,"Yeah, I know, I sleep in the next room.",['Joey Tribbiani'],peace,10,13,3,1,00:14:44.174,00:14:48.303,dev
+sea3_ep1_sc12_utt2.mp4,We're baack!,['Janice Litman Goralnik'],happiness,12,2,3,1,00:14:52.558,00:14:54.559,dev
+sea3_ep1_sc12_utt3.mp4,Hey!,['Joey Tribbiani'],happiness,12,3,3,1,00:14:54.727,00:14:57.645,dev
+sea3_ep1_sc12_utt4.mp4,What are you guys doing together?,['Chandler Bing'],neutral,12,4,3,1,00:14:57.813,00:15:00.815,dev
+sea3_ep1_sc12_utt5.mp4,Joey and Janice's DAY OF FUN!!!,['Janice Litman Goralnik'],happiness,12,5,3,1,00:15:00.983,00:15:04.527,dev
+sea3_ep1_sc12_utt6.mp4,Really.,['Chandler Bing'],neutral,12,6,3,1,00:15:03.319,00:15:04.527,dev
+sea3_ep1_sc12_utt7.mp4,"Yeah, yeah. We went to a Mets game, we got Chinese food, and you know, I love this woman. You have got competition buddy.",['Joey Tribbiani'],peace,12,7,3,1,00:17:35.345,00:17:48.232,dev
+sea3_ep1_sc12_utt8.mp4,"I just came by to give you a kiss, I have to go pick up the baby, so. I'll see you later sweetheart, you too Chandler.",['Janice Litman Goralnik'],happiness,12,8,3,1,00:17:48.400,00:18:02.997,dev
+sea3_ep1_sc12_utt9.mp4,You still can't stand her can you?,['Chandler Bing'],neutral,12,9,3,1,00:17:49.735,00:17:52.528,dev
+sea3_ep1_sc12_utt10.mp4,"I'm sorry man, I tired, I really did.",['Joey Tribbiani'],sadness,12,10,3,1,00:18:03.165,00:18:18.429,dev
+sea3_ep1_sc12_utt12.mp4,"But, hey, look, you know the good thing is, is that we spent the whole day together and I survived, and what's even more amazing, so did she. It was bat day at Shea Stadium.",['Joey Tribbiani'],happiness,12,12,3,1,00:18:20.557,00:18:34.278,dev
+sea3_ep1_sc12_utt13.mp4,"Well, I guess that's something.",['Chandler Bing'],peace,12,13,3,1,00:18:22.768,00:18:25.103,dev
+sea3_ep1_sc12_utt14.mp4,"No man, that's huge! Now, I know I can stand to be around her, which means I get to hang out with you, which is kinda the whole point, anyway.",['Joey Tribbiani'],neutral,12,14,3,1,00:18:36.448,00:18:48.167,dev
+sea3_ep1_sc12_utt15.mp4,Okay.,['Chandler Bing'],neutral,12,15,3,1,00:18:37.825,00:18:39.659,dev
+sea3_ep1_sc12_utt16.mp4,"Oh, hey, Chandler, we, ah, we stopped by the coffee shop and ran into Ross.",['Joey Tribbiani'],neutral,12,16,3,1,00:18:45.290,00:18:57.552,dev
+sea3_ep1_sc12_utt17.mp4,Oh God!,['Chandler Bing'],fear,12,17,3,1,00:18:48.794,00:18:57.552,dev
+sea3_ep1_sc12_utt18.mp4,"Hey, if it makes you feel any better, I do it too.",['Joey Tribbiani'],neutral,12,18,3,1,00:19:02.099,00:19:07.103,dev
+sea3_ep1_sc12_utt19.mp4,Really?,['Chandler Bing'],neutral,12,19,3,1,00:19:04.560,00:19:07.103,dev
+sea3_ep1_sc12_utt20.mp4,"Oh yeah, I always picture your Mom when I'm having sex.",['Joey Tribbiani'],happiness,12,20,3,1,00:19:08.188,00:19:14.569,dev
+sea3_ep1_sc13_utt4.mp4,"Hi, Dad, what are you doing here?",['Monica Geller'],happiness,13,4,3,1,00:19:32.421,00:19:45.391,dev
+sea3_ep1_sc13_utt6.mp4,"I don't, I just, I just like the smell of them. So, uh, what are you really doing here Dad?",['Monica Geller'],neutral,13,6,3,1,00:19:49.855,00:20:04.827,dev
+sea3_ep1_sc13_utt7.mp4,"Well, I just wanted to make sure you were okay.",['Jack Geller'],peace,13,7,3,1,00:20:01.742,00:20:07.205,dev
+sea3_ep1_sc13_utt9.mp4,I saw Richard.,['Jack Geller'],power,13,9,3,1,00:20:04.995,00:20:07.205,dev
+sea3_ep1_sc13_utt10.mp4,Oh.,['Monica Geller'],fear,13,10,3,1,00:20:08.832,00:20:10.625,dev
+sea3_ep1_sc13_utt11.mp4,"So, how are you doing?",['Jack Geller'],neutral,13,11,3,1,00:20:10.792,00:20:17.215,dev
+sea3_ep1_sc13_utt12.mp4,"I'm fine, just a little tired, I'm okay. How's Richard doing?",['Monica Geller'],sadness,13,12,3,1,00:20:13.629,00:20:22.094,dev
+sea3_ep1_sc13_utt13.mp4,You don't wanna know.,['Jack Geller'],neutral,13,13,3,1,00:20:15.464,00:20:17.215,dev
+sea3_ep1_sc13_utt14.mp4,"No, I really, really do.",['Monica Geller'],peace,13,14,3,1,00:20:17.466,00:20:22.094,dev
+sea3_ep1_sc13_utt15.mp4,"Well, he's doing terrible!",['Jack Geller'],power,13,15,3,1,00:20:18.967,00:20:22.094,dev
+sea3_ep1_sc13_utt16.mp4,Really!,['Monica Geller'],happiness,13,16,3,1,00:20:22.262,00:20:25.097,dev
+sea3_ep1_sc13_utt17.mp4,Worse than when he broke up with Barbara.,['Jack Geller'],sadness,13,17,3,1,00:20:28.185,00:20:37.485,dev
+sea3_ep1_sc13_utt18.mp4,You're not just saying that are you?,['Monica Geller'],neutral,13,18,3,1,00:20:38.654,00:20:43.199,dev
+sea3_ep1_sc13_utt19.mp4,"No, the man is a mess.",['Jack Geller'],power,13,19,3,1,00:20:44.076,00:20:50.539,dev
+sea3_ep1_sc13_utt20.mp4,Was he crying?,['Monica Geller'],neutral,13,20,3,1,00:20:46.954,00:20:50.539,dev
+sea3_ep1_sc13_utt21.mp4,No.,['Jack Geller'],neutral,13,21,3,1,00:20:50.707,00:20:52.416,dev
+sea3_ep1_sc13_utt23.mp4,Maybe.,['Jack Geller'],neutral,13,23,3,1,00:20:53.961,00:20:55.544,dev
+sea3_ep1_sc13_utt24.mp4,I think so.,['Monica Geller'],happiness,13,24,3,1,00:20:55.712,00:20:58.923,dev
+sea3_ep9_sc1_utt2.mp4,Yes! Yes! Yes! Yes! Awww!,['The Guys'],happiness,1,2,3,9,00:00:02.293,00:00:06.672,dev
+sea3_ep9_sc1_utt3.mp4,"Hey, it's your Thanksgiving too, y'know, instead of watching football, you could help.",['Phoebe Buffay'],neutral,1,3,3,9,00:00:03.795,00:00:11.301,dev
+sea3_ep9_sc1_utt4.mp4,We will.,['The Guys'],peace,1,4,3,9,00:00:06.840,00:00:08.757,dev
+sea3_ep9_sc1_utt5.mp4,"Okay, Rachel, you wanna put the marshmellows in concentric circles.",['Monica Geller'],neutral,1,5,3,9,00:00:11.469,00:00:17.975,dev
+sea3_ep9_sc1_utt6.mp4,"No Mon, you want to put them in concentric circles. I want to do this.",['Rachel Green'],neutral,1,6,3,9,00:00:14.305,00:00:22.438,dev
+sea3_ep9_sc1_utt8.mp4,Every year.,['Monica Geller'],neutral,1,8,3,9,00:00:19.436,00:00:22.438,dev
+sea3_ep9_sc5_utt2.mp4,We should defiantly play football more often. Maybe there's a like league we could join or something.,['Rachel Green'],happiness,5,2,3,9,00:21:41.383,00:21:52.935,dev
+sea3_ep9_sc5_utt3.mp4,Isn't there a national football league.,['Phoebe Buffay'],neutral,5,3,3,9,00:21:44.886,00:21:46.971,dev
+sea3_ep9_sc5_utt4.mp4,"Yes. Yes, there is, they play on Sundays and Monday nights.",['Chandler Bing'],neutral,5,4,3,9,00:21:49.891,00:21:56.605,dev
+sea3_ep9_sc5_utt5.mp4,Oh shoot! I work Monday nights.,['Rachel Green'],sadness,5,5,3,9,00:21:53.854,00:21:56.605,dev
+sea3_ep9_sc5_utt6.mp4,"Umm, this stuffing is amazing. Do you think we should bring them some?",['Phoebe Buffay'],happiness,5,6,3,9,00:21:56.773,00:22:05.948,dev
+sea3_ep9_sc5_utt7.mp4,"When they're hungry enough, they'll come in.",['Joey Tribbiani'],neutral,5,7,3,9,00:22:06.116,00:22:11.245,dev
+sea3_ep9_sc6_utt2.mp4,Let go!,['Monica Geller'],anger,6,2,3,9,00:22:08.368,00:22:11.245,dev
+sea3_ep9_sc6_utt3.mp4,No! You let go!,['Ross Geller'],anger,6,3,3,9,00:22:13.206,00:22:16.250,dev
+sea3_ep9_sc6_utt4.mp4,No!,['Monica Geller'],anger,6,4,3,9,00:22:16.418,00:22:20.254,dev
+sea3_ep9_sc6_utt8.mp4,Hey! It's starting to snow.,['Ross Geller'],happiness,6,8,3,9,00:22:21.340,00:22:28.804,dev
+sea3_ep9_sc6_utt10.mp4,Gimme the this!,['Ross Geller'],anger,6,10,3,9,00:22:25.927,00:22:28.804,dev
+sea3_ep9_sc6_utt11.mp4,Let go!,['Monica Geller'],anger,6,11,3,9,00:22:33.060,00:22:36.228,dev
+sea3_ep21_sc1_utt2.mp4,So who's idea was it to put everybody in the diner on skates?,['Rachel Green'],neutral,1,2,3,21,00:00:02.711,00:00:05.713,dev
+sea3_ep21_sc1_utt3.mp4,"Oh, some idiot customer put a suggestion in the suggestion box.",['Monica Geller'],anger,1,3,3,21,00:04:57.714,00:05:02.926,dev
+sea3_ep21_sc1_utt4.mp4,"Oh my God, they took my idea!",['Phoebe Buffay'],happiness,1,4,3,21,00:05:35.668,00:05:43.800,dev
+sea3_ep21_sc1_utt5.mp4,That was you?!,['Monica Geller'],neutral,1,5,3,21,00:05:38.004,00:05:43.800,dev
+sea3_ep21_sc1_utt6.mp4,"Yeah! Okay, here you go.",['Phoebe Buffay'],neutral,1,6,3,21,00:05:41.507,00:05:43.800,dev
+sea3_ep21_sc1_utt7.mp4,"Rachel, I made you a cocoa.",['Gunther'],neutral,1,7,3,21,00:05:43.968,00:05:46.970,dev
+sea3_ep21_sc1_utt9.mp4,"Oh my God, are you guys okay?",['Phoebe Buffay'],fear,1,9,3,21,00:05:50.224,00:05:59.566,dev
+sea3_ep21_sc1_utt10.mp4,Are you all right?,['Gunther'],neutral,1,10,3,21,00:05:53.686,00:06:07.407,dev
+sea3_ep21_sc1_utt11.mp4,Oh my.,['Joey Tribbiani'],sadness,1,11,3,21,00:05:58.566,00:05:59.566,dev
+sea3_ep21_sc2_utt2.mp4,Hey.,['Chandler Bing'],happiness,2,2,3,21,00:06:04.614,00:06:07.407,dev
+sea3_ep21_sc2_utt6.mp4,Hey!,['Ross Geller'],happiness,2,6,3,21,00:06:07.575,00:06:08.950,dev
+sea3_ep21_sc2_utt7.mp4,Hey.,['Chandler Bing'],happiness,2,7,3,21,00:06:09.118,00:06:11.995,dev
+sea3_ep21_sc2_utt8.mp4,I'm gonna be on TV!!,['Ross Geller'],happiness,2,8,3,21,00:06:12.163,00:06:16.458,dev
+sea3_ep21_sc2_utt9.mp4,No way!,['Chandler Bing'],happiness,2,9,3,21,00:06:15.166,00:06:16.458,dev
+sea3_ep21_sc2_utt11.mp4,Oh my God! Who's gonna watch that?!,['Chandler Bing'],power,2,11,3,21,00:06:26.386,00:06:31.681,dev
+sea3_ep21_sc2_utt12.mp4,Thanks. You ready to go?,['Ross Geller'],happiness,2,12,3,21,00:06:27.845,00:06:31.681,dev
+sea3_ep21_sc2_utt13.mp4,Yeah.,['Chandler Bing'],happiness,2,13,3,21,00:06:31.849,00:06:33.058,dev
+sea3_ep21_sc2_utt14.mp4,Saw a girl with that vest.,['Joey Tribbiani'],peace,2,14,3,21,00:06:33.267,00:06:36.144,dev
+sea3_ep21_sc2_utt15.mp4,Thanks.,['Chandler Bing'],power,2,15,3,21,00:06:36.312,00:06:38.146,dev
+sea3_ep21_sc3_utt2.mp4,Hi!,['Peter Becker'],happiness,3,2,3,21,00:06:38.314,00:06:41.024,dev
+sea3_ep21_sc3_utt4.mp4,Wow! Skates!,['Peter Becker'],happiness,3,4,3,21,00:06:43.861,00:06:46.113,dev
+sea3_ep21_sc3_utt7.mp4,Well...,['Peter Becker'],neutral,3,7,3,21,00:06:46.280,00:06:51.827,dev
+sea3_ep21_sc3_utt9.mp4,"Yeah, sure, that'd be great.",['Peter Becker'],happiness,3,9,3,21,00:06:51.994,00:06:54.037,dev
+sea3_ep21_sc3_utt11.mp4,Regular or decaf?,['Monica Geller'],neutral,3,11,3,21,00:06:54.205,00:06:58.625,dev
+sea3_ep21_sc3_utt12.mp4,"Ah, which ever is closest.",['Peter Becker'],peace,3,12,3,21,00:06:59.127,00:07:02.921,dev
+sea3_ep21_sc3_utt13.mp4,Okay.,['Monica Geller'],peace,3,13,3,21,00:07:03.089,00:07:04.714,dev
+sea3_ep21_sc3_utt14.mp4,So ask me what I did today.,['Peter Becker'],neutral,3,14,3,21,00:07:04.882,00:07:07.300,dev
+sea3_ep21_sc3_utt15.mp4,So what did you do today Pete?,['Monica Geller'],neutral,3,15,3,21,00:07:12.140,00:07:23.567,dev
+sea3_ep21_sc3_utt17.mp4,What?! Oh.,['Monica Geller'],happiness,3,17,3,21,00:07:14.142,00:07:16.476,dev
+sea3_ep21_sc4_utt2.mp4,Can you believe he just offered me a restaurant?,['Monica Geller'],happiness,4,2,3,21,00:07:47.133,00:07:53.054,dev
+sea3_ep21_sc4_utt5.mp4,And you're still not attracted to him at all?,['Rachel Green'],neutral,4,5,3,21,00:10:50.691,00:10:53.818,dev
+sea3_ep21_sc4_utt8.mp4,"Oh, please.",['Monica Geller'],sadness,4,8,3,21,00:10:53.986,00:10:56.154,dev
+sea3_ep21_sc4_utt10.mp4,What? Honey.,['Monica Geller'],fear,4,10,3,21,00:10:56.322,00:10:59.449,dev
+sea3_ep21_sc4_utt12.mp4,"Oh God, I'm so sorry.",['Monica Geller'],sadness,4,12,3,21,00:10:59.617,00:11:01.493,dev
+sea3_ep21_sc4_utt13.mp4,I know.,['Rachel Green'],neutral,4,13,3,21,00:11:02.870,00:11:04.537,dev
+sea3_ep21_sc4_utt15.mp4,Ow!!,['Rachel Green'],anger,4,15,3,21,00:11:04.705,00:11:08.166,dev
+sea3_ep21_sc4_utt16.mp4,Oh God!,['Monica Geller'],sadness,4,16,3,21,00:11:08.376,00:11:10.543,dev
+sea3_ep21_sc4_utt17.mp4,"Hey, you guys! Guess what?",['Ross Geller'],happiness,4,17,3,21,00:11:10.711,00:11:12.796,dev
+sea3_ep21_sc4_utt18.mp4,Got a job on a river boat?,['Rachel Green'],happiness,4,18,3,21,00:11:24.809,00:11:28.770,dev
+sea3_ep21_sc4_utt21.mp4,Right.,['Ross Geller'],power,4,21,3,21,00:11:26.435,00:11:28.770,dev
+sea3_ep21_sc4_utt23.mp4,You like it right?,['Ross Geller'],power,4,23,3,21,00:11:38.197,00:11:42.617,dev
+sea3_ep21_sc4_utt25.mp4,"Yeah, come here!",['Rachel Green'],happiness,4,25,3,21,00:11:42.868,00:11:45.328,dev
+sea3_ep21_sc4_utt26.mp4,What-what was it you were gonna tell us?,['Monica Geller'],happiness,4,26,3,21,00:12:35.129,00:12:41.843,dev
+sea3_ep21_sc4_utt27.mp4,Yeah. Oh! Was how you invented the cotton gin?!,['Rachel Green'],happiness,4,27,3,21,00:14:17.606,00:14:24.946,dev
+sea3_ep21_sc4_utt28.mp4,"Okay, good bye!",['Ross Geller'],anger,4,28,3,21,00:14:22.236,00:14:24.946,dev
+sea3_ep21_sc5_utt3.mp4,"Umm, oh, about three months.",['Phoebe Buffay'],neutral,5,3,3,21,00:14:25.114,00:14:30.535,dev
+sea3_ep21_sc5_utt5.mp4,Hey!!,['Joey Tribbiani'],happiness,5,5,3,21,00:14:26.907,00:14:30.535,dev
+sea3_ep21_sc5_utt6.mp4,Hey!,['Chandler Bing'],happiness,5,6,3,21,00:14:31.203,00:14:32.620,dev
+sea3_ep21_sc5_utt7.mp4,I got you something! Open it! Open it!,['Joey Tribbiani'],happiness,5,7,3,21,00:14:40.462,00:14:46.634,dev
+sea3_ep21_sc5_utt8.mp4,Okay. It's a chicken.,['Chandler Bing'],anger,5,8,3,21,00:14:43.716,00:14:46.634,dev
+sea3_ep21_sc5_utt9.mp4,"It's cute, huh?",['Joey Tribbiani'],happiness,5,9,3,21,00:14:46.802,00:14:48.761,dev
+sea3_ep21_sc5_utt10.mp4,"Whoa-whoa-whoa, you guys, do you know anything about chicks?",['Phoebe Buffay'],happiness,5,10,3,21,00:16:30.447,00:16:37.120,dev
+sea3_ep21_sc5_utt11.mp4,Fowl? No. Women? Nooo.,['Chandler Bing'],sadness,5,11,3,21,00:16:34.118,00:16:37.120,dev
+sea3_ep21_sc5_utt13.mp4,"Oh, well no problem there.",['Joey Tribbiani'],happiness,5,13,3,21,00:16:37.371,00:16:39.247,dev
+sea3_ep21_sc5_utt14.mp4,Easy Lenny.,['Chandler Bing'],power,5,14,3,21,00:16:39.415,00:16:40.999,dev
+sea3_ep21_sc8_utt2.mp4,Oww!,['Rachel Green'],fear,8,2,3,21,00:16:46.130,00:16:48.089,dev
+sea3_ep21_sc8_utt3.mp4,Wow! That aspirin dance really works!,['Ross Geller'],happiness,8,3,3,21,00:16:50.718,00:16:55.847,dev
+sea3_ep21_sc8_utt4.mp4,Oww!,['Rachel Green'],sadness,8,4,3,21,00:16:53.721,00:16:55.847,dev
+sea3_ep21_sc8_utt5.mp4,"Oh my God, is that still...",['Ross Geller'],neutral,8,5,3,21,00:16:56.098,00:16:58.850,dev
+sea3_ep21_sc8_utt6.mp4,"I'm fine, I'm fine.",['Rachel Green'],fear,8,6,3,21,00:17:02.896,00:17:04.814,dev
+sea3_ep21_sc8_utt7.mp4,No you're not.,['Ross Geller'],anger,8,7,3,21,00:17:06.025,00:17:08.484,dev
+sea3_ep21_sc8_utt8.mp4,Yes I am!,['Rachel Green'],neutral,8,8,3,21,00:17:09.361,00:17:13.406,dev
+sea3_ep21_sc8_utt9.mp4,Rach!,['Ross Geller'],neutral,8,9,3,21,00:17:11.655,00:17:13.406,dev
+sea3_ep21_sc8_utt10.mp4,"Look, I'm fine. Watch. Look at that. Whoa-whoa!",['Rachel Green'],fear,8,10,3,21,00:17:31.884,00:17:34.135,dev
+sea3_ep21_sc8_utt15.mp4,Rach...,['Ross Geller'],neutral,8,15,3,21,00:17:36.555,00:17:37.805,dev
+sea3_ep21_sc8_utt17.mp4,Rachel...,['Ross Geller'],neutral,8,17,3,21,00:17:37.973,00:17:40.391,dev
+sea3_ep21_sc8_utt18.mp4,"Look, either help me or go.",['Rachel Green'],anger,8,18,3,21,00:17:40.559,00:17:44.479,dev
+sea3_ep21_sc8_utt19.mp4,Fine. I'll go.,['Ross Geller'],fear,8,19,3,21,00:17:44.646,00:17:47.315,dev
+sea3_ep21_sc8_utt21.mp4,Sure. I'll help you.,['Ross Geller'],neutral,8,21,3,21,00:17:47.483,00:17:49.442,dev
+sea3_ep21_sc9_utt3.mp4,Ohh.,['Ross Geller'],neutral,9,3,3,21,00:17:49.610,00:17:51.402,dev
+sea3_ep21_sc9_utt4.mp4,Okay. Let's use this brush.,['Rachel Green'],neutral,9,4,3,21,00:18:01.622,00:18:08.169,dev
+sea3_ep21_sc9_utt5.mp4,Okay. This stuff?,['Ross Geller'],neutral,9,5,3,21,00:18:06.335,00:18:08.169,dev
+sea3_ep21_sc9_utt6.mp4,Yeah.,['Rachel Green'],neutral,9,6,3,21,00:18:08.337,00:18:11.923,dev
+sea3_ep21_sc9_utt7.mp4,All right.,['Ross Geller'],neutral,9,7,3,21,00:18:12.091,00:18:15.885,dev
+sea3_ep21_sc9_utt9.mp4,Oke-dokey.,['Ross Geller'],neutral,9,9,3,21,00:18:17.638,00:18:21.099,dev
+sea3_ep21_sc9_utt10.mp4,Oh-ho!,['Rachel Green'],neutral,9,10,3,21,00:18:21.266,00:18:22.517,dev
+sea3_ep21_sc9_utt11.mp4,Sorry.,['Ross Geller'],peace,9,11,3,21,00:18:22.684,00:18:26.938,dev
+sea3_ep21_sc9_utt12.mp4,Hey! That's just poking me in the eye!,['Rachel Green'],anger,9,12,3,21,00:19:49.855,00:19:59.280,dev
+sea3_ep21_sc9_utt13.mp4,"Sorry, I'm sorry. Close, close, close...",['Ross Geller'],sadness,9,13,3,21,00:19:57.779,00:19:59.280,dev
+sea3_ep21_sc9_utt14.mp4,"Okay, just sweep it.",['Rachel Green'],power,9,14,3,21,00:19:59.448,00:20:03.201,dev
+sea3_ep21_sc9_utt15.mp4,I'm sweeping...,['Ross Geller'],neutral,9,15,3,21,00:20:04.077,00:20:09.248,dev
+sea3_ep21_sc9_utt16.mp4,Right.,['Rachel Green'],neutral,9,16,3,21,00:20:11.043,00:20:13.628,dev
+sea3_ep21_sc9_utt17.mp4,"Sweep, sweep....",['Ross Geller'],neutral,9,17,3,21,00:20:16.548,00:20:20.218,dev
+sea3_ep21_sc9_utt18.mp4,"Okay, now make it even, 'cause we don't...",['Rachel Green'],power,9,18,3,21,00:20:25.265,00:20:32.480,dev
+sea3_ep21_sc9_utt19.mp4,What? What?,['Ross Geller'],fear,9,19,3,21,00:20:28.060,00:20:29.518,dev
+sea3_ep21_sc9_utt25.mp4,Blow it.,['Rachel Green'],anger,9,25,3,21,00:20:29.686,00:20:32.480,dev
+sea3_ep21_sc9_utt27.mp4,Sophisticated like a hooker?,['Rachel Green'],anger,9,27,3,21,00:20:32.648,00:20:38.277,dev
+sea3_ep21_sc10_utt2.mp4,Hey!,['Monica Geller'],happiness,10,2,3,21,00:20:36.735,00:20:38.277,dev
+sea3_ep21_sc10_utt3.mp4,Hey!,['Phoebe Buffay'],happiness,10,3,3,21,00:20:38.445,00:20:43.157,dev
+sea3_ep21_sc10_utt4.mp4,"Hey, guess what I'm doing tonight.",['Monica Geller'],happiness,10,4,3,21,00:20:43.742,00:20:47.578,dev
+sea3_ep21_sc10_utt5.mp4,What?,['Phoebe Buffay'],sadness,10,5,3,21,00:20:45.827,00:20:47.578,dev
+sea3_ep21_sc10_utt6.mp4,I'm checking out the restaurant with Pete.,['Monica Geller'],happiness,10,6,3,21,00:20:50.707,00:20:54.835,dev
+sea3_ep21_sc10_utt7.mp4,"Ohh, Monica, I am so excited for you.",['Phoebe Buffay'],happiness,10,7,3,21,00:20:55.003,00:21:00.967,dev
+sea3_ep21_sc10_utt8.mp4,I know.,['Monica Geller'],neutral,10,8,3,21,00:20:57.381,00:21:00.967,dev
+sea3_ep21_sc10_utt9.mp4,"Ooh, I have to tell you something.",['Phoebe Buffay'],neutral,10,9,3,21,00:21:11.603,00:21:17.775,dev
+sea3_ep21_sc10_utt10.mp4,What?,['Monica Geller'],neutral,10,10,3,21,00:21:13.689,00:21:15.147,dev
+sea3_ep21_sc10_utt11.mp4,But I can't tell you.,['Phoebe Buffay'],power,10,11,3,21,00:21:15.357,00:21:17.775,dev
+sea3_ep21_sc10_utt15.mp4,No.,['Phoebe Buffay'],neutral,10,15,3,21,00:21:17.943,00:21:20.361,dev
+sea3_ep21_sc10_utt16.mp4,Does it have to do with Joey?,['Monica Geller'],fear,10,16,3,21,00:21:23.657,00:21:47.930,dev
+sea3_ep21_sc10_utt17.mp4,No.,['Phoebe Buffay'],neutral,10,17,3,21,00:21:32.666,00:21:33.874,dev
+sea3_ep21_sc12_utt2.mp4,Does it involve travel?,['Monica Geller'],neutral,12,2,3,21,00:21:46.638,00:21:47.930,dev
+sea3_ep21_sc12_utt3.mp4,Noo!,['Phoebe Buffay'],neutral,12,3,3,21,00:21:58.317,00:21:59.525,dev
+sea3_ep21_sc12_utt4.mp4,Does it involve clogs?,['Monica Geller'],neutral,12,4,3,21,00:21:59.693,00:22:03.904,dev
+sea3_ep21_sc12_utt5.mp4,"Oh, wait, wait. Clogs, or claws?",['Phoebe Buffay'],neutral,12,5,3,21,00:22:01.903,00:22:05.906,dev
+sea3_ep21_sc12_utt6.mp4,Clogs.,['Monica Geller'],neutral,12,6,3,21,00:22:04.364,00:22:05.906,dev
+sea3_ep21_sc12_utt7.mp4,No.,['Phoebe Buffay'],neutral,12,7,3,21,00:22:06.074,00:22:07.700,dev
+sea3_ep21_sc12_utt8.mp4,Claws?!,['Monica Geller'],fear,12,8,3,21,00:22:09.453,00:22:11.078,dev
+sea3_ep21_sc12_utt9.mp4,No.,['Phoebe Buffay'],peace,12,9,3,21,00:22:12.456,00:22:14.915,dev
+sea3_ep21_sc12_utt11.mp4,No!,['Phoebe Buffay'],happiness,12,11,3,21,00:22:22.424,00:22:24.800,dev
+sea3_ep21_sc12_utt12.mp4,What is it?! What about Pete?,['Monica Geller'],neutral,12,12,3,21,00:22:25.552,00:22:28.304,dev
+sea3_ep21_sc12_utt13.mp4,I don't know!,['Phoebe Buffay'],neutral,12,13,3,21,00:22:29.306,00:22:33.059,dev
+sea3_ep21_sc12_utt15.mp4,I can't!!,['Phoebe Buffay'],neutral,12,15,3,21,00:22:33.769,00:22:35.770,dev
+sea3_ep21_sc12_utt16.mp4,"Okay, I gotta go.",['Monica Geller'],neutral,12,16,3,21,00:22:41.026,00:22:43.027,dev
+sea4_ep1_sc1_utt2.mp4,Hi!,['Ross Geller'],happiness,1,2,4,1,00:00:02.252,00:00:05.546,dev
+sea4_ep1_sc1_utt3.mp4,Hi!,"['Bonnie', 'Rachel Green']",happiness,1,3,4,1,00:00:05.714,00:00:06.922,dev
+sea4_ep1_sc1_utt4.mp4,Rachel was just helping me out. My head got all sunburned.,['Bonnie'],neutral,1,4,4,1,00:00:45.670,00:00:52.718,dev
+sea4_ep1_sc1_utt5.mp4,Awww.,['Ross Geller'],peace,1,5,4,1,00:00:46.963,00:00:48.464,dev
+sea4_ep1_sc1_utt6.mp4,Thanks a million.,['Bonnie'],neutral,1,6,4,1,00:00:50.258,00:00:52.718,dev
+sea4_ep1_sc1_utt7.mp4,"Oh, you're welcome a million.",['Rachel Green'],peace,1,7,4,1,00:00:53.094,00:00:58.724,dev
+sea4_ep1_sc1_utt8.mp4,"Okay, I'll see you in our room.",['Bonnie'],neutral,1,8,4,1,00:00:59.059,00:01:01.643,dev
+sea4_ep1_sc1_utt9.mp4,Yeah.,['Ross Geller'],peace,1,9,4,1,00:01:14.449,00:01:15.532,dev
+sea4_ep1_sc1_utt10.mp4,Oh my God.,['Rachel Green'],fear,1,10,4,1,00:01:15.700,00:01:23.874,dev
+sea4_ep1_sc1_utt11.mp4,I know.,['Ross Geller'],neutral,1,11,4,1,00:01:21.206,00:01:23.874,dev
+sea4_ep1_sc1_utt13.mp4,"Okay, I gotta go.",['Ross Geller'],fear,1,13,4,1,00:01:24.042,00:01:26.919,dev
+sea4_ep1_sc1_utt14.mp4,Whoa! What?! Why?!,['Rachel Green'],fear,1,14,4,1,00:01:27.629,00:01:31.465,dev
+sea4_ep1_sc1_utt15.mp4,"Well, I-I gotta go break up with Bonnie.",['Ross Geller'],power,1,15,4,1,00:01:45.105,00:01:47.356,dev
+sea4_ep1_sc1_utt16.mp4,Here?! Now?!,['Rachel Green'],fear,1,16,4,1,00:01:47.524,00:01:49.024,dev
+sea4_ep1_sc1_utt20.mp4,Whoa-ho.,['Rachel Green'],fear,1,20,4,1,00:01:49.192,00:01:54.279,dev
+sea4_ep1_sc1_utt21.mp4,"Whoa-oh, okay! Yeah, why am I telling you that?",['Ross Geller'],fear,1,21,4,1,00:04:20.969,00:04:24.388,dev
+sea4_ep1_sc1_utt22.mp4,I don't know.,['Rachel Green'],neutral,1,22,4,1,00:04:26.557,00:04:30.102,dev
+sea4_ep1_sc1_utt24.mp4,"Yeah, yeah. It wasn't every morning.",['Ross Geller'],neutral,1,24,4,1,00:04:28.351,00:04:34.273,dev
+sea4_ep1_sc1_utt25.mp4,"Oh, making it worse!",['Rachel Green'],anger,1,25,4,1,00:04:32.188,00:04:34.273,dev
+sea4_ep1_sc1_utt26.mp4,Okay.,['Ross Geller'],neutral,1,26,4,1,00:04:34.440,00:04:36.191,dev
+sea4_ep1_sc2_utt5.mp4,How close?,['Phoebe Buffay'],fear,2,5,4,1,00:04:36.359,00:04:39.278,dev
+sea4_ep1_sc2_utt7.mp4,I don't even know how that would work!,['Phoebe Buffay'],power,2,7,4,1,00:05:30.580,00:05:32.331,dev
+sea4_ep1_sc2_utt8.mp4,"Well, we were...",['Phoebe Abbott'],happiness,2,8,4,1,00:05:32.498,00:05:35.042,dev
+sea4_ep1_sc2_utt9.mp4,I'm not asking!,['Phoebe Buffay'],peace,2,9,4,1,00:05:35.209,00:05:45.385,dev
+sea4_ep1_sc2_utt14.mp4,Wait!,['Phoebe Abbott'],sadness,2,14,4,1,00:05:41.382,00:05:45.385,dev
+sea4_ep1_sc2_utt15.mp4,I don't ever want to see you again!,['Phoebe Buffay'],sadness,2,15,4,1,00:05:45.928,00:05:57.689,dev
+sea4_ep1_sc2_utt17.mp4,"Umm, where's my purse?",['Phoebe Buffay'],fear,2,17,4,1,00:05:53.102,00:05:54.644,dev
+sea4_ep1_sc3_utt2.mp4,Shoot! We're out of soda.,['Monica Geller'],anger,3,2,4,1,00:05:54.812,00:05:57.689,dev
+sea4_ep1_sc3_utt3.mp4,"Oh, I'll go out and get you some.",['Chandler Bing'],happiness,3,3,4,1,00:06:36.270,00:06:39.481,dev
+sea4_ep1_sc3_utt4.mp4,Really?!,['Monica Geller'],fear,3,4,4,1,00:06:39.649,00:06:42.651,dev
+sea4_ep1_sc3_utt8.mp4,I found a dried up seashores.,['Chandler Bing'],neutral,3,8,4,1,00:06:43.486,00:06:48.365,dev
+sea4_ep1_sc3_utt9.mp4,"Sweety, what are you talking about?",['Monica Geller'],fear,3,9,4,1,00:06:47.156,00:07:11.221,dev
+sea4_ep1_sc3_utt12.mp4,"No. I'm just, I wanna, I need to be alone.",['Phoebe Buffay'],power,3,12,4,1,00:07:21.357,00:07:27.446,dev
+sea4_ep1_sc3_utt14.mp4,Monica!,['Phoebe Buffay'],happiness,3,14,4,1,00:07:24.235,00:07:27.446,dev
+sea4_ep1_sc3_utt15.mp4,Oh.,['Monica Geller'],neutral,3,15,4,1,00:07:28.114,00:07:33.243,dev
+sea4_ep1_sc4_utt2.mp4,It's over.,['Ross Geller'],anger,4,2,4,1,00:07:33.411,00:07:37.247,dev
+sea4_ep1_sc4_utt3.mp4,"Oh, was it awful?",['Rachel Green'],happiness,4,3,4,1,00:07:37.415,00:07:44.296,dev
+sea4_ep1_sc4_utt6.mp4,I wrote you a letter.,['Rachel Green'],neutral,4,6,4,1,00:07:40.376,00:07:51.970,dev
+sea4_ep1_sc4_utt7.mp4,Ohh! Thank you! I like mail.,['Ross Geller'],happiness,4,7,4,1,00:07:43.171,00:07:59.769,dev
+sea4_ep1_sc5_utt2.mp4,Oh. Oh-oh.,['Ross Geller'],neutral,5,2,4,1,00:07:50.595,00:07:51.970,dev
+sea4_ep1_sc5_utt3.mp4,Hey! What happened to you? Why didn't you come up?,['Rachel Green'],power,5,3,4,1,00:17:43.395,00:17:49.442,dev
+sea4_ep1_sc5_utt4.mp4,Done!,['Ross Geller'],fear,5,4,4,1,00:17:45.647,00:17:49.442,dev
+sea4_ep1_sc5_utt5.mp4,You just finished?,['Rachel Green'],anger,5,5,4,1,00:17:49.818,00:17:54.614,dev
+sea4_ep1_sc5_utt7.mp4,"So umm, does it?",['Rachel Green'],fear,5,7,4,1,00:17:53.155,00:17:54.614,dev
+sea4_ep1_sc5_utt8.mp4,I'm sorry.,['Ross Geller'],fear,5,8,4,1,00:17:54.782,00:17:58.242,dev
+sea4_ep1_sc5_utt9.mp4,Does it?,['Rachel Green'],fear,5,9,4,1,00:17:58.410,00:18:00.495,dev
+sea4_ep1_sc5_utt14.mp4,Are you sure?,['Rachel Green'],happiness,5,14,4,1,00:18:00.662,00:18:04.082,dev
+sea4_ep1_sc5_utt15.mp4,"Oh, sure! I'm sure.",['Ross Geller'],fear,5,15,4,1,00:18:04.249,00:18:07.543,dev
+sea4_ep1_sc5_utt16.mp4,I know.,['Rachel Green'],happiness,5,16,4,1,00:18:09.379,00:18:15.426,dev
+sea4_ep1_sc6_utt3.mp4,Ennnh.,['Monica Geller'],neutral,6,3,4,1,00:18:14.009,00:18:15.426,dev
+sea4_ep1_sc6_utt4.mp4,I've got canned goods.,['Chandler Bing'],neutral,6,4,4,1,00:18:16.178,00:18:21.307,dev
+sea4_ep1_sc6_utt6.mp4,"Excellent hole, Joe.",['Chandler Bing'],neutral,6,6,4,1,00:18:19.973,00:18:21.307,dev
+sea4_ep1_sc6_utt8.mp4,Oh no! No!! My hole!!,['Joey Tribbiani'],power,6,8,4,1,00:18:22.476,00:18:25.186,dev
+sea4_ep1_sc6_utt9.mp4,Ow!! Ow!!!,['Monica Geller'],power,6,9,4,1,00:18:26.480,00:18:28.189,dev
+sea4_ep1_sc6_utt10.mp4,What?! What?!! What is it?!,['Joey Tribbiani'],fear,6,10,4,1,00:18:28.357,00:18:35.613,dev
+sea4_ep1_sc6_utt13.mp4,It's like two miles!,['Monica Geller'],peace,6,13,4,1,00:18:29.608,00:18:35.613,dev
+sea4_ep1_sc6_utt14.mp4,"Yeah, and I'm a little tired from digging the hole.",['Joey Tribbiani'],peace,6,14,4,1,00:20:44.701,00:20:49.580,dev
+sea4_ep1_sc6_utt15.mp4,Oh damn the jellyfish. Damn all the jellyfish!,['Monica Geller'],neutral,6,15,4,1,00:21:09.393,00:21:14.438,dev
+sea4_ep1_sc6_utt16.mp4,We've got to do something!,['Chandler Bing'],peace,6,16,4,1,00:21:11.561,00:21:14.438,dev
+sea4_ep1_sc6_utt18.mp4,What?! What is it?!,['Monica Geller'],peace,6,18,4,1,00:21:12.813,00:21:14.438,dev
+sea4_ep1_sc6_utt19.mp4,You're gonna have to pee on it.,['Joey Tribbiani'],neutral,6,19,4,1,00:21:30.539,00:21:35.167,dev
+sea4_ep1_sc6_utt20.mp4,What?!! Gross!!,['Monica Geller'],neutral,6,20,4,1,00:21:31.957,00:21:35.167,dev
+sea4_ep1_sc6_utt23.mp4,Well forget it! It doesn't hurt that baaad!!!!,['Monica Geller'],neutral,6,23,4,1,00:21:53.895,00:21:57.815,dev
+sea4_ep1_sc7_utt4.mp4,Hey!,['Ross Geller'],peace,7,4,4,1,00:21:58.734,00:22:00.818,dev
+sea4_ep1_sc7_utt5.mp4,How was the beach?,['Rachel Green'],peace,7,5,4,1,00:22:06.074,00:22:10.244,dev
+sea4_ep1_sc7_utt6.mp4,"Nothing, I don't know.",['Monica Geller'],sadness,7,6,4,1,00:22:08.368,00:22:10.244,dev
+sea4_ep1_sc7_utt7.mp4,What happened?,['Ross Geller'],neutral,7,7,4,1,00:22:12.456,00:22:15.249,dev
+sea4_ep1_sc7_utt8.mp4,Nothing. I'm gonna take a shower.,['Monica Geller'],neutral,7,8,4,1,00:22:15.417,00:22:18.085,dev
+sea4_ep1_sc7_utt9.mp4,Me too!!,['Chandler Bing'],neutral,7,9,4,1,00:22:18.253,00:22:19.754,dev
+sea4_ep1_sc7_utt10.mp4,Me too.,['Joey Tribbiani'],neutral,7,10,4,1,00:22:20.339,00:22:23.257,dev
+sea4_ep1_sc7_utt13.mp4,It does. It really and truly does.,['Ross Geller'],fear,7,13,4,1,00:22:23.425,00:22:26.635,dev
+sea4_ep1_sc7_utt15.mp4,It so does not!!!,['Ross Geller'],power,7,15,4,1,00:22:26.803,00:22:27.887,dev
+sea4_ep1_sc8_utt5.mp4,No?,['Joey Tribbiani'],neutral,8,5,4,1,00:22:29.848,00:22:32.683,dev
+sea4_ep1_sc8_utt10.mp4,"It's between us and the sea, Ross!",['Joey Tribbiani'],anger,8,10,4,1,00:22:40.984,00:22:42.985,dev
+sea4_ep6_sc1_utt2.mp4,"So, thank you for the delicious dinner.",['Cheryl'],happiness,1,2,4,6,00:00:02.502,00:00:06.588,dev
+sea4_ep6_sc1_utt3.mp4,You're welcome for a delicious dinner.,['Ross Geller'],power,1,3,4,6,00:00:06.840,00:00:08.757,dev
+sea4_ep6_sc1_utt5.mp4,Hey what are you guys looking at?,['Phoebe Buffay'],neutral,1,5,4,6,00:00:24.733,00:00:27.067,dev
+sea4_ep6_sc1_utt6.mp4,Ross and the most beautiful girl in the world.,['Chandler Bing'],fear,1,6,4,6,00:12:03.264,00:12:06.766,dev
+sea4_ep6_sc1_utt7.mp4,"Yeah, come to papa.",['Phoebe Buffay'],happiness,1,7,4,6,00:12:06.976,00:12:09.269,dev
+sea4_ep6_sc1_utt9.mp4,I know!,['Ross Geller'],power,1,9,4,6,00:12:11.564,00:12:13.815,dev
+sea4_ep6_sc1_utt14.mp4,"Okay, but that's, like, the easiest era.",['Chandler Bing'],power,1,14,4,6,00:12:29.498,00:12:31.791,dev
+sea4_ep6_sc1_utt17.mp4,Fine by me; hope she wins.,['Ross Geller'],happiness,1,17,4,6,00:12:32.501,00:12:33.918,dev
+sea4_ep6_sc3_utt2.mp4,Huh...,['Ross Geller'],happiness,3,2,4,6,00:12:34.170,00:12:36.880,dev
+sea4_ep6_sc3_utt3.mp4,"Um, would you like to come in?",['Cheryl'],peace,3,3,4,6,00:12:44.513,00:12:52.061,dev
+sea4_ep6_sc3_utt4.mp4,Did homo-erectus hunt with wooden tools?,['Ross Geller'],happiness,3,4,4,6,00:12:46.515,00:12:52.061,dev
+sea4_ep6_sc3_utt5.mp4,According to recent findings!,['Cheryl'],neutral,3,5,4,6,00:12:49.101,00:12:52.061,dev
+sea4_ep6_sc3_utt7.mp4,Here Mitzi! Here Mitzi!,['Cheryl'],fear,3,7,4,6,00:12:53.898,00:13:05.450,dev
+sea4_ep6_sc3_utt8.mp4,Mitzi is.....,['Ross Geller'],fear,3,8,4,6,00:13:01.947,00:13:05.450,dev
+sea4_ep6_sc3_utt11.mp4,What?,['Cheryl'],fear,3,11,4,6,00:13:05.701,00:13:08.495,dev
+sea4_ep6_sc3_utt13.mp4,I'd rather not.,['Cheryl'],peace,3,13,4,6,00:13:08.662,00:13:14.250,dev
+sea4_ep6_sc3_utt14.mp4,"Oh, yeah, why not?",['Ross Geller'],fear,3,14,4,6,00:13:09.830,00:13:14.250,dev
+sea4_ep6_sc4_utt2.mp4,"Oh, is everything in the car?",['Monica Geller'],neutral,4,2,4,6,00:13:14.543,00:13:17.378,dev
+sea4_ep6_sc4_utt3.mp4,Yes. Did you settle the bill?,['Phoebe Buffay'],neutral,4,3,4,6,00:13:17.713,00:13:21.216,dev
+sea4_ep6_sc4_utt4.mp4,No. I hate this part.,['Monica Geller'],power,4,4,4,6,00:13:21.425,00:13:24.219,dev
+sea4_ep6_sc4_utt5.mp4,"Oh, look what we almost left.",['Phoebe Buffay'],peace,4,5,4,6,00:13:24.428,00:13:29.766,dev
+sea4_ep6_sc4_utt6.mp4,"No, that's not mine.",['Monica Geller'],neutral,4,6,4,6,00:13:27.056,00:13:29.766,dev
+sea4_ep6_sc4_utt10.mp4,"Oh, good. Thank you.",['Mrs. Burkart'],happiness,4,10,4,6,00:13:30.392,00:13:33.061,dev
+sea4_ep6_sc4_utt12.mp4,Dear?,['Mrs. Burkart'],happiness,4,12,4,6,00:13:33.229,00:13:36.606,dev
+sea4_ep6_sc4_utt13.mp4,Just the matter of ...payment?,['Monica Geller'],neutral,4,13,4,6,00:13:36.899,00:13:38.775,dev
+sea4_ep6_sc4_utt14.mp4,Jack used to handle the finances!,['Mrs. Burkart'],sadness,4,14,4,6,00:13:38.984,00:13:42.237,dev
+sea4_ep6_sc6_utt2.mp4,"But Mon, you have to get our money!",['Phoebe Buffay'],neutral,6,2,4,6,00:14:48.804,00:14:52.974,dev
+sea4_ep6_sc6_utt5.mp4,What?,['Monica Geller'],neutral,6,5,4,6,00:14:51.265,00:14:52.974,dev
+sea4_ep6_sc6_utt7.mp4,Okay. So what do you.... you think she's faking?,['Monica Geller'],sadness,6,7,4,6,00:19:46.435,00:19:55.818,dev
+sea4_ep6_sc6_utt9.mp4,"Phoebe, she sounded pretty upset to me.",['Monica Geller'],sadness,6,9,4,6,00:20:02.826,00:20:06.370,dev
+sea4_ep6_sc6_utt12.mp4,She seems fine now.,['Phoebe Buffay'],peace,6,12,4,6,00:20:04.536,00:20:06.370,dev
+sea4_ep6_sc6_utt13.mp4,...emblem of the land I love. The home of....,['Mrs. Burkart'],happiness,6,13,4,6,00:20:32.856,00:20:40.321,dev
+sea4_ep6_sc7_utt4.mp4,Yeah.,['Joey Tribbiani'],neutral,7,4,4,6,00:20:36.652,00:20:40.321,dev
+sea4_ep6_sc7_utt6.mp4,"Wow. Thanks. So, uh, what happened?",['Joey Tribbiani'],happiness,7,6,4,6,00:20:41.823,00:20:44.700,dev
+sea4_ep6_sc7_utt10.mp4,What kind of smell?,['Joey Tribbiani'],power,7,10,4,6,00:20:43.158,00:20:47.828,dev
+sea4_ep6_sc7_utt11.mp4,I don't know. Soap?,['Ross Geller'],fear,7,11,4,6,00:20:44.910,00:20:47.828,dev
+sea4_ep6_sc7_utt13.mp4,Yeah.,['Ross Geller'],peace,7,13,4,6,00:20:48.038,00:20:49.288,dev
+sea4_ep6_sc7_utt14.mp4,"You wanna see her again, right?",['Joey Tribbiani'],sadness,7,14,4,6,00:20:49.790,00:20:51.832,dev
+sea4_ep6_sc7_utt15.mp4,Yeah.,['Ross Geller'],peace,7,15,4,6,00:20:52.042,00:20:56.587,dev
+sea4_ep6_sc7_utt17.mp4,"Yeah, okay you're right.",['Ross Geller'],happiness,7,17,4,6,00:20:59.341,00:21:01.175,dev
+sea4_ep6_sc7_utt18.mp4,Yeah.,['Joey Tribbiani'],neutral,7,18,4,6,00:21:01.426,00:21:03.386,dev
+sea4_ep6_sc7_utt20.mp4,Yeah!,['Joey Tribbiani'],peace,7,20,4,6,00:21:03.553,00:21:04.929,dev
+sea4_ep6_sc7_utt21.mp4,"It's, uh... it's endearing, really.",['Ross Geller'],peace,7,21,4,6,00:21:05.681,00:21:09.684,dev
+sea4_ep6_sc8_utt3.mp4,Any luck?,['Rachel Green'],happiness,8,3,4,6,00:21:10.435,00:21:13.729,dev
+sea4_ep6_sc8_utt7.mp4,"Aw, honey, that's so sweet.",['Rachel Green'],happiness,8,7,4,6,00:21:14.022,00:21:22.697,dev
+sea4_ep6_sc8_utt8.mp4,Yeah? You don't think it's just pathetic?,['Chandler Bing'],peace,8,8,4,6,00:21:24.616,00:21:39.422,dev
+sea4_ep6_sc8_utt9.mp4,Oh! Pathetic!,['Rachel Green'],power,8,9,4,6,00:21:36.211,00:21:39.422,dev
+sea4_ep6_sc8_utt11.mp4,Where?,['Chandler Bing'],power,8,11,4,6,00:21:46.638,00:21:48.639,dev
+sea4_ep6_sc8_utt12.mp4,"Our place, the hall! I...",['Joey Tribbiani'],happiness,8,12,4,6,00:21:50.058,00:21:53.394,dev
+sea4_ep6_sc9_utt4.mp4,"You didn't get the money, did you?",['Phoebe Buffay'],power,9,4,4,6,00:21:53.603,00:21:56.856,dev
+sea4_ep6_sc9_utt7.mp4,Come on along and listen to...,['Mrs. Burkart'],fear,9,7,4,6,00:21:57.065,00:21:59.400,dev
+sea4_ep6_sc9_utt8.mp4,"Okay, Widow!",['Phoebe Buffay'],fear,9,8,4,6,00:21:59.651,00:22:02.570,dev
+sea4_ep6_sc9_utt9.mp4,...the lullabye of...,['Mrs. Burkart'],sadness,9,9,4,6,00:22:04.448,00:22:07.825,dev
+sea4_ep6_sc9_utt11.mp4,All right. I'll get my bag.,['Mrs. Burkart'],anger,9,11,4,6,00:22:09.870,00:22:25.593,dev
+sea4_ep6_sc9_utt12.mp4,Good.,['Phoebe Buffay'],happiness,9,12,4,6,00:22:23.592,00:22:25.593,dev
+sea4_ep10_sc1_utt2.mp4,Hey!,['Ross Geller'],happiness,1,2,4,10,00:00:02.794,00:00:04.586,dev
+sea4_ep10_sc1_utt3.mp4,Hey!,"['Chandler Bing', 'Joey Tribbiani', 'Phoebe Buffay']",happiness,1,3,4,10,00:00:04.963,00:00:06.755,dev
+sea4_ep10_sc1_utt4.mp4,"I'm sorry I'm late, did I miss anything?",['Ross Geller'],neutral,1,4,4,10,00:00:44.669,00:00:50.632,dev
+sea4_ep10_sc1_utt5.mp4,Joey stuffing 15 Oreos in his mouth.,['Phoebe Buffay'],happiness,1,5,4,10,00:00:55.472,00:00:57.806,dev
+sea4_ep10_sc1_utt6.mp4,15? Your personal best!,['Ross Geller'],peace,1,6,4,10,00:00:58.808,00:01:00.726,dev
+sea4_ep10_sc1_utt7.mp4,Where were you?,['Phoebe Buffay'],power,1,7,4,10,00:01:01.561,00:01:03.437,dev
+sea4_ep10_sc1_utt10.mp4,"Oh, yeah! How did you meet her?",['Chandler Bing'],peace,1,10,4,10,00:02:09.838,00:02:12.965,dev
+sea4_ep10_sc1_utt11.mp4,"Oh, which museum?",['Phoebe Buffay'],power,1,11,4,10,00:02:13.550,00:02:15.384,dev
+sea4_ep10_sc1_utt12.mp4,"No, answer his.",['Phoebe Buffay'],peace,1,12,4,10,00:02:15.844,00:02:17.761,dev
+sea4_ep10_sc1_utt17.mp4,"Done! I did it! Heh, who's stupid now?",['Joey Tribbiani'],power,1,17,4,10,00:02:29.691,00:02:41.368,dev
+sea4_ep10_sc3_utt3.mp4,I didn't think you were gay. I do now.,['Drew'],peace,3,3,4,10,00:02:41.619,00:02:44.746,dev
+sea4_ep10_sc3_utt4.mp4,"See my friend-my friend, Rachel, she wants to be set up.",['Chandler Bing'],fear,3,4,4,10,00:05:29.370,00:05:38.420,dev
+sea4_ep10_sc3_utt5.mp4,"Ahh, I just got out of a big relationship, I'm not looking for any thing serious.",['Drew'],fear,3,5,4,10,00:05:38.796,00:05:46.970,dev
+sea4_ep10_sc3_utt7.mp4,"Whoa-whoa-whoa-whoa! Is this, hot Rachel, that you took to the Christmas party, Rachel?",['Mike'],happiness,3,7,4,10,00:05:43.634,00:05:51.558,dev
+sea4_ep10_sc3_utt8.mp4,"Oh, by the way, that is her full name.",['Chandler Bing'],neutral,3,8,4,10,00:05:51.976,00:05:56.730,dev
+sea4_ep10_sc3_utt9.mp4,Oh wow! I'm free for her!,['Mike'],happiness,3,9,4,10,00:05:55.063,00:05:59.399,dev
+sea4_ep10_sc3_utt10.mp4,"Oh, wait a second! I didn't say I wasn't free!",['Drew'],neutral,3,10,4,10,00:05:56.939,00:06:02.444,dev
+sea4_ep10_sc3_utt12.mp4,"Hold on, y'know I just got a box of Cubans, maybe I bring them by your office around uh, five?",['Drew'],power,3,12,4,10,00:06:00.401,00:06:08.533,dev
+sea4_ep10_sc3_utt15.mp4,"Well, I don't really know what that is, but let's!!",['Chandler Bing'],happiness,3,15,4,10,00:06:18.461,00:06:29.638,dev
+sea4_ep10_sc5_utt2.mp4,"Oh, wow! I should get going. I-I got a date tonight.",['Ross Geller'],happiness,5,2,4,10,00:08:57.995,00:09:10.465,dev
+sea4_ep10_sc5_utt3.mp4,Oh yeah! With who?,['Chandler Bing'],fear,5,3,4,10,00:09:00.706,00:09:10.465,dev
+sea4_ep10_sc5_utt4.mp4,You know that girl I told you about who lives up in Poughkeepsie?,['Ross Geller'],peace,5,4,4,10,00:09:08.130,00:09:15.136,dev
+sea4_ep10_sc5_utt5.mp4,Yeah.,['Chandler Bing'],power,5,5,4,10,00:09:10.716,00:09:11.841,dev
+sea4_ep10_sc5_utt7.mp4,"If she's no fun, why do you want to date her at all?",['Phoebe Buffay'],happiness,5,7,4,10,00:09:35.658,00:09:47.085,dev
+sea4_ep10_sc5_utt9.mp4,Hey!,['Joey Tribbiani'],happiness,5,9,4,10,00:09:38.077,00:09:39.828,dev
+sea4_ep10_sc5_utt10.mp4,Hey!,['Ross Geller'],happiness,5,10,4,10,00:09:40.788,00:09:42.372,dev
+sea4_ep10_sc5_utt11.mp4,"Hey, man!",['Chandler Bing'],peace,5,11,4,10,00:09:44.208,00:09:47.085,dev
+sea4_ep10_sc5_utt12.mp4,"Hey! Ooh, how was your first day working at the restaurant?",['Phoebe Buffay'],peace,5,12,4,10,00:10:07.273,00:10:13.737,dev
+sea4_ep10_sc5_utt13.mp4,Damn!,['Joey Tribbiani'],power,5,13,4,10,00:10:08.608,00:10:11.693,dev
+sea4_ep10_sc6_utt2.mp4,Hey.,['Joey Tribbiani'],neutral,6,2,4,10,00:10:11.902,00:10:13.737,dev
+sea4_ep10_sc6_utt3.mp4,Hey.,['Monica Geller'],neutral,6,3,4,10,00:10:20.703,00:10:22.078,dev
+sea4_ep10_sc6_utt4.mp4,"Hey, what happened to your fancy chef's jacket?",['Joey Tribbiani'],neutral,6,4,4,10,00:10:22.288,00:10:26.249,dev
+sea4_ep10_sc6_utt6.mp4,You got it! Oh-oh!,['Joey Tribbiani'],fear,6,6,4,10,00:10:24.582,00:10:27.792,dev
+sea4_ep10_sc6_utt7.mp4,What are you doing?!,['Monica Geller'],anger,6,7,4,10,00:10:26.667,00:10:27.792,dev
+sea4_ep10_sc6_utt8.mp4,It's still a tiny bit on fire there.,['Joey Tribbiani'],fear,6,8,4,10,00:10:31.714,00:10:35.634,dev
+sea4_ep10_sc6_utt9.mp4,Thanks. I think you got it!,['Monica Geller'],neutral,6,9,4,10,00:10:33.507,00:10:39.179,dev
+sea4_ep10_sc7_utt2.mp4,Chandler!! You have the best taste in men!,['Rachel Green'],happiness,7,2,4,10,00:10:37.303,00:10:47.145,dev
+sea4_ep10_sc7_utt3.mp4,"Well, like father, like son.",['Chandler Bing'],happiness,7,3,4,10,00:10:43.726,00:10:47.145,dev
+sea4_ep10_sc7_utt6.mp4,"Well, y'know, possibly. You didn't tell him that, though? Right?",['Rachel Green'],fear,7,6,4,10,00:11:01.369,00:11:09.793,dev
+sea4_ep10_sc7_utt7.mp4,"Ummmmmmmm, no.",['Chandler Bing'],fear,7,7,4,10,00:11:06.540,00:11:09.793,dev
+sea4_ep10_sc7_utt8.mp4,You told this guy that I was looking for a fling?! You don't tell the guy that!,['Rachel Green'],anger,7,8,4,10,00:11:09.960,00:11:20.095,dev
+sea4_ep10_sc8_utt2.mp4,"Hey, Joey, could you pass the cheese?",['Monica Geller'],happiness,8,2,4,10,00:11:14.048,00:11:17.592,dev
+sea4_ep10_sc8_utt4.mp4,"Hey, dragon! Here's your tips from Monday and Tuesday.",['A Waiter'],peace,8,4,4,10,00:11:46.080,00:11:52.377,dev
+sea4_ep10_sc8_utt5.mp4,There's like-there's like 300 bucks in this one!,['Joey Tribbiani'],happiness,8,5,4,10,00:11:49.083,00:11:55.296,dev
+sea4_ep10_sc8_utt6.mp4,"Yeah, people get pretty generous around the holidays. And it never hurts to wear tight trousers.",['The Waiter'],fear,8,6,4,10,00:11:53.504,00:12:01.594,dev
+sea4_ep10_sc8_utt8.mp4,Because we can remember them.,['The Waiter'],neutral,8,8,4,10,00:11:55.548,00:11:58.007,dev
+sea4_ep10_sc8_utt10.mp4,"Well, sure, that too.",['The Waiter'],power,8,10,4,10,00:11:58.217,00:12:01.594,dev
+sea4_ep10_sc8_utt11.mp4,"Okay, forget the specials for a minute. Umm, all right here's the thing, for the last two weeks I have umm, tried really hard to create a positive atmosphere...",['Monica Geller'],peace,8,11,4,10,00:12:19.405,00:12:38.006,dev
+sea4_ep10_sc8_utt12.mp4,Can't hear you!,['The Waiter'],power,8,12,4,10,00:12:23.534,00:12:27.912,dev
+sea4_ep10_sc8_utt14.mp4,No ma'am.,['Joey Tribbiani'],happiness,8,14,4,10,00:12:29.415,00:12:31.499,dev
+sea4_ep10_sc8_utt15.mp4,"Hey! He has a name, it's Dragon. Do you wanna know your name? Check your hat. We did the hat right?",['The Waiter'],neutral,8,15,4,10,00:13:15.294,00:13:28.431,dev
+sea4_ep10_sc9_utt2.mp4,What the hell happened?!,['Monica Geller'],fear,9,2,4,10,00:13:18.714,00:13:21.090,dev
+sea4_ep10_sc9_utt4.mp4,"Joey, we had a deal. That-that's why you're here! I've got to fire you!",['Monica Geller'],anger,9,4,4,10,00:13:45.115,00:13:56.751,dev
+sea4_ep10_sc9_utt6.mp4,What kinda things have you been saying?,['Monica Geller'],neutral,9,6,4,10,00:13:48.994,00:13:56.751,dev
+sea4_ep10_sc9_utt7.mp4,"Well nothing yet, they really hate you and I want to fit in.",['Joey Tribbiani'],neutral,9,7,4,10,00:14:11.433,00:14:16.312,dev
+sea4_ep10_sc10_utt2.mp4,"Happy, happy Chanukah, Chandler and Monica. Very merry...",['Phoebe Buffay'],happiness,10,2,4,10,00:14:17.231,00:14:20.650,dev
+sea4_ep10_sc10_utt3.mp4,"Oh, y'know, y'know what Pheebs?",['Chandler Bing'],neutral,10,3,4,10,00:14:20.901,00:14:25.905,dev
+sea4_ep10_sc10_utt4.mp4,What?,['Phoebe Buffay'],neutral,10,4,4,10,00:14:24.029,00:14:25.905,dev
+sea4_ep10_sc10_utt5.mp4,"I'm not Jewish, so...",['Chandler Bing'],neutral,10,5,4,10,00:14:26.448,00:14:29.534,dev
+sea4_ep10_sc10_utt7.mp4,Bad dream?,['Chandler Bing'],neutral,10,7,4,10,00:14:29.785,00:14:31.786,dev
+sea4_ep10_sc10_utt8.mp4,I wasn't sleeping.,['Ross Geller'],neutral,10,8,4,10,00:14:32.037,00:14:37.417,dev
+sea4_ep10_sc10_utt9.mp4,"Oh yeah, then uh, what was Phoebe's song about?",['Chandler Bing'],neutral,10,9,4,10,00:14:35.791,00:14:42.964,dev
+sea4_ep10_sc10_utt10.mp4,"The one with the cat. I gotta go, I've got another date.",['Ross Geller'],neutral,10,10,4,10,00:14:41.046,00:14:51.681,dev
+sea4_ep10_sc10_utt11.mp4,"So, did you pick one yet?",['Phoebe Buffay'],neutral,10,11,4,10,00:14:44.341,00:14:47.093,dev
+sea4_ep10_sc10_utt14.mp4,"Y'know, you're right. Thank you.",['Ross Geller'],neutral,10,14,4,10,00:14:48.679,00:14:51.681,dev
+sea4_ep10_sc10_utt15.mp4,"Umm, well I had a similar problem when I lived in Prague.",['Phoebe Buffay'],neutral,10,15,4,10,00:15:21.337,00:15:27.592,dev
+sea4_ep10_sc10_utt16.mp4,Prague?,['Chandler Bing'],neutral,10,16,4,10,00:15:24.298,00:15:27.592,dev
+sea4_ep10_sc10_utt17.mp4,There's sooo much you don't know.,['Phoebe Buffay'],neutral,10,17,4,10,00:15:28.636,00:15:31.679,dev
+sea4_ep10_sc11_utt3.mp4,I did! I absolutely did!,['Chandler Bing'],fear,11,3,4,10,00:15:45.027,00:15:48.655,dev
+sea4_ep10_sc11_utt4.mp4,You idiot!!,['Rachel Green'],anger,11,4,4,10,00:15:46.528,00:15:48.655,dev
+sea4_ep10_sc11_utt5.mp4,"I'm sure you're right, but why?",['Chandler Bing'],fear,11,5,4,10,00:15:48.864,00:15:53.952,dev
+sea4_ep10_sc11_utt7.mp4,"Oh, man. I'm sorry, I'm so-so sorry.",['Chandler Bing'],sadness,11,7,4,10,00:15:56.664,00:16:00.750,dev
+sea4_ep10_sc11_utt8.mp4,"Y'know, you should never be allowed to talk to people!",['Rachel Green'],anger,11,8,4,10,00:16:08.342,00:16:14.472,dev
+sea4_ep10_sc11_utt9.mp4,I know! I know!,['Chandler Bing'],sadness,11,9,4,10,00:16:11.428,00:16:14.472,dev
+sea4_ep10_sc11_utt10.mp4,"Oh! See just I'm right back where I started! Aww, this sucks! Being alone, sucks!",['Rachel Green'],anger,11,10,4,10,00:16:15.307,00:16:24.148,dev
+sea4_ep10_sc11_utt12.mp4,Really?,['Rachel Green'],happiness,11,12,4,10,00:16:17.184,00:16:20.144,dev
+sea4_ep10_sc11_utt13.mp4,"Yeah! You graduated Magma Ku Laude, right?",['Chandler Bing'],neutral,11,13,4,10,00:16:27.027,00:16:33.908,dev
+sea4_ep10_sc11_utt14.mp4,No.,['Rachel Green'],neutral,11,14,4,10,00:16:29.154,00:16:33.908,dev
+sea4_ep10_sc11_utt16.mp4,Cute guys in little shorts? Sure.,['Rachel Green'],happiness,11,16,4,10,00:16:35.327,00:16:40.415,dev
+sea4_ep10_sc11_utt17.mp4,"Well, actually it's a hockey team, so it's angry Canadians with no teeth.",['Chandler Bing'],happiness,11,17,4,10,00:16:52.177,00:17:02.103,dev
+sea4_ep10_sc11_utt18.mp4,Well that sounds fun too.,['Rachel Green'],happiness,11,18,4,10,00:16:54.555,00:17:02.103,dev
+sea4_ep10_sc11_utt20.mp4,Have you ever been with a woman?,['Chandler Bing'],peace,11,20,4,10,00:16:57.307,00:17:02.103,dev
+sea4_ep10_sc11_utt21.mp4,"What?! Chandler, what is the matter with you?!",['Rachel Green'],anger,11,21,4,10,00:17:13.866,00:17:21.205,dev
+sea4_ep10_sc11_utt22.mp4,So there is no good time to ask that question.,['Chandler Bing'],fear,11,22,4,10,00:17:15.159,00:17:21.205,dev
+sea4_ep10_sc13_utt2.mp4,I need more swordfish. Can you get me some more swordfish?,['Monica Geller'],power,13,2,4,10,00:17:30.549,00:17:51.402,dev
+sea4_ep10_sc13_utt3.mp4,I don't speak English.,['Kitchen Worker'],anger,13,3,4,10,00:17:34.303,00:17:41.684,dev
+sea4_ep10_sc13_utt4.mp4,You did a minute ago!,['Monica Geller'],power,13,4,4,10,00:17:38.432,00:17:46.647,dev
+sea4_ep10_sc13_utt5.mp4,"Well, I don't know what to tell ya!",['Kitchen Worker'],anger,13,5,4,10,00:17:44.938,00:17:51.402,dev
+sea4_ep10_sc13_utt6.mp4,Fine!,['Monica Geller'],anger,13,6,4,10,00:17:47.900,00:17:51.402,dev
+sea4_ep10_sc13_utt8.mp4,"Okay! Very funny! Somebody let me out please?! Come on, I'm cold! And covered in marinara sauce! Come on! Let me out!",['Monica Geller'],anger,13,8,4,10,00:17:57.451,00:18:28.981,dev
+sea4_ep10_sc13_utt9.mp4,"You found that handle, did ya?",['The Waiter'],power,13,9,4,10,00:18:08.754,00:18:13.091,dev
+sea4_ep10_sc13_utt10.mp4,That's not funny.,['Monica Geller'],anger,13,10,4,10,00:18:11.840,00:18:13.091,dev
+sea4_ep10_sc13_utt11.mp4,Well that's not true.,['The Waiter'],power,13,11,4,10,00:18:13.592,00:18:15.676,dev
+sea4_ep10_sc13_utt13.mp4,Hey! Chef Geller! Y'know that little speech you made the other day? Well I got a problem with it!,['Joey Tribbiani'],power,13,13,4,10,00:18:43.956,00:18:53.923,dev
+sea4_ep10_sc13_utt14.mp4,You do?,['Monica Geller'],anger,13,14,4,10,00:18:46.834,00:18:48.709,dev
+sea4_ep10_sc13_utt15.mp4,"You bet I do! I just ah, wasn't listening then, that's all.",['Joey Tribbiani'],power,13,15,4,10,00:18:56.593,00:19:03.432,dev
+sea4_ep10_sc13_utt16.mp4,Well if you want a problem? I'll give you a problem!,['Monica Geller'],power,13,16,4,10,00:18:59.721,00:19:08.980,dev
+sea4_ep10_sc13_utt17.mp4,What are you gonna do? You're gonna fire me?,['Joey Tribbiani'],fear,13,17,4,10,00:19:09.982,00:19:15.903,dev
+sea4_ep10_sc13_utt18.mp4,You bet your ass I'm gonna fire you! Get out of my kitchen! Get out!! All right! Anybody else got a problem? How 'bout you Chuckles? You think this is funny now?,['Monica Geller'],anger,13,18,4,10,00:19:12.401,00:19:36.841,dev
+sea4_ep10_sc13_utt19.mp4,No.,['The Waiter'],fear,13,19,4,10,00:19:16.572,00:19:18.364,dev
+sea4_ep10_sc13_utt20.mp4,How about if I dance around all covered in sauce? Huh? You think it's funny now?,['Monica Geller'],anger,13,20,4,10,00:19:25.956,00:19:36.841,dev
+sea4_ep10_sc13_utt21.mp4,"No, it's really good.",['The Waiter'],happiness,13,21,4,10,00:19:28.500,00:19:29.959,dev
+sea4_ep10_sc13_utt22.mp4,"Good! Now, take those salads to table 4, And you! Get the swordfish! And you! Get a haircut!",['Monica Geller'],power,13,22,4,10,00:19:37.885,00:19:49.187,dev
+sea4_ep10_sc14_utt2.mp4,"Last stop, Montreal. This stop is Montreal.",['The Conductor'],neutral,14,2,4,10,00:19:45.809,00:19:56.944,dev
+sea4_ep10_sc14_utt3.mp4,What?,['Ross Geller'],neutral,14,3,4,10,00:19:47.519,00:19:49.187,dev
+sea4_ep10_sc14_utt4.mp4,"I made a bet with myself that you have beautiful eyes. Now that I see them, I win.",['Woman On Train'],happiness,14,4,4,10,00:19:52.107,00:20:11.709,dev
+sea4_ep10_sc14_utt5.mp4,What?,['Ross Geller'],neutral,14,5,4,10,00:19:59.823,00:20:01.282,dev
+sea4_ep10_sc14_utt6.mp4,We're at my stop. But would you like to have coffee?,['Woman On Train'],happiness,14,6,4,10,00:20:09.291,00:20:20.426,dev
+sea4_ep10_sc14_utt7.mp4,Are we really in Montreal?!,['Ross Geller'],happiness,14,7,4,10,00:20:14.796,00:20:20.426,dev
+sea4_ep10_sc14_utt8.mp4,"Yes we are. So, coffee?",['Woman On Train'],happiness,14,8,4,10,00:20:17.174,00:20:20.426,dev
+sea4_ep10_sc14_utt9.mp4,"Coffee sounds great. Wait, so, so you live in Montreal?",['Ross Geller'],happiness,14,9,4,10,00:20:26.808,00:20:39.528,dev
+sea4_ep10_sc14_utt10.mp4,"Oh, no. But it's just a two hour ferry ride to Nova Scotia.",['Woman On Train'],neutral,14,10,4,10,00:20:28.644,00:20:43.449,dev
+sea4_ep10_sc15_utt3.mp4,Thanks.,['Monica Geller'],neutral,15,3,4,10,00:20:31.939,00:20:33.439,dev
+sea4_ep10_sc15_utt4.mp4,Yep! Looks like it's gonna be a leeeeean Christmas at the Dragon house this year.,['Joey Tribbiani'],happiness,15,4,4,10,00:20:49.748,00:20:58.965,dev
+sea4_ep10_sc15_utt5.mp4,Enough!,['Monica Geller'],anger,15,5,4,10,00:20:53.418,00:20:54.460,dev
+sea4_ep10_sc15_utt6.mp4,Lean-lean-lean!,['Joey Tribbiani'],sadness,15,6,4,10,00:20:54.670,00:20:58.965,dev
+sea4_ep21_sc2_utt2.mp4,So what did he decide? Does your Uncle Nathan get an invite or not?,['Emily Waltham'],fear,2,2,4,21,00:01:37.305,00:02:31.817,dev
+sea4_ep21_sc2_utt3.mp4,"Ohh, God, nobody likes him, and he's so cheap, he'd never fly to London in a million years. Yeah, invite him? Hey, did I do these neat enough?",['Ross Geller'],fear,2,3,4,21,00:02:32.026,00:02:43.537,dev
+sea4_ep21_sc2_utt4.mp4,"Yeah, they're fine.",['Emily Waltham'],happiness,2,4,4,21,00:02:34.237,00:02:38.323,dev
+sea4_ep21_sc2_utt5.mp4,Yeah?,['Ross Geller'],peace,2,5,4,21,00:02:38.533,00:02:39.700,dev
+sea4_ep21_sc2_utt6.mp4,"If anyone asks, we'll just say Ben addressed them. Oh! So you invited Rachel then?",['Emily Waltham'],power,2,6,4,21,00:02:44.873,00:02:53.088,dev
+sea4_ep21_sc2_utt7.mp4,Sure. Why not?,['Ross Geller'],peace,2,7,4,21,00:02:47.167,00:02:49.543,dev
+sea4_ep21_sc2_utt8.mp4,Really?,['Emily Waltham'],fear,2,8,4,21,00:02:50.837,00:02:53.088,dev
+sea4_ep21_sc2_utt9.mp4,Yeah?,['Ross Geller'],peace,2,9,4,21,00:02:53.756,00:02:54.840,dev
+sea4_ep21_sc2_utt10.mp4,I don't think I'd be comfortable with any of my old lovers there.,['Emily Waltham'],power,2,10,4,21,00:02:55.216,00:03:01.555,dev
+sea4_ep21_sc2_utt12.mp4,"Oh, no-no, y'know I absolutely adore Rachel it's just that, well it might be a awkward for you. But it's absolutely your decision. More tea?",['Emily Waltham'],sadness,2,12,4,21,00:03:05.018,00:03:14.526,dev
+sea4_ep21_sc2_utt13.mp4,Yeah sure.,['Ross Geller'],peace,2,13,4,21,00:03:08.021,00:03:11.857,dev
+sea4_ep21_sc2_utt14.mp4,Earl Grey?,['Emily Waltham'],anger,2,14,4,21,00:03:12.317,00:03:14.526,dev
+sea4_ep21_sc2_utt15.mp4,"Huh? Yeah, fine, invite whoever you want.",['Ross Geller'],peace,2,15,4,21,00:03:14.986,00:03:20.073,dev
+sea4_ep21_sc3_utt2.mp4,"I don't want to be single, okay? I just... I just- I just wanna be married again!",['Ross Geller'],anger,3,2,4,21,00:03:18.364,00:03:32.336,dev
+sea4_ep21_sc3_utt4.mp4,And I just want a million dollars!,['Chandler Bing'],peace,3,4,4,21,00:03:20.283,00:03:32.336,dev
+sea4_ep21_sc3_utt5.mp4,Rachel?!,['Monica Geller'],fear,3,5,4,21,00:03:27.207,00:03:32.336,dev
+sea4_ep21_sc3_utt8.mp4,"Okay, everybody, this is Rachel, another Lincoln High survivor. This is everybody, this is Chandler, and Phoebe, and Joey, and- you remember my brother Ross?",['Monica Geller'],power,3,8,4,21,00:03:47.310,00:03:57.194,dev
+sea4_ep21_sc3_utt9.mp4,"Hi, sure!",['Rachel Green'],peace,3,9,4,21,00:03:51.105,00:03:53.857,dev
+sea4_ep21_sc3_utt10.mp4,Hi.,['Ross Geller'],neutral,3,10,4,21,00:03:54.067,00:03:55.150,dev
+sea4_ep21_sc4_utt3.mp4,I knew.,['Rachel Green'],neutral,4,3,4,21,00:03:55.360,00:03:57.194,dev
+sea4_ep21_sc4_utt4.mp4,You did! Oh.... I always figured you just thought I was Monica's geeky older brother.,['Ross Geller'],power,4,4,4,21,00:04:03.284,00:04:14.544,dev
+sea4_ep21_sc4_utt5.mp4,I did.,['Rachel Green'],peace,4,5,4,21,00:04:07.247,00:04:10.499,dev
+sea4_ep21_sc4_utt6.mp4,"Oh. Listen, do you think- and try not to let my intense vulnerability become any kind of a factor here-but do you think it would be okay if I asked you out? Sometime? Maybe?",['Ross Geller'],power,4,6,4,21,00:04:11.626,00:04:29.518,dev
+sea4_ep21_sc4_utt7.mp4,"Yeah, maybe...",['Rachel Green'],power,4,7,4,21,00:04:15.380,00:04:17.381,dev
+sea4_ep21_sc4_utt8.mp4,"Okay... okay, maybe I will...",['Ross Geller'],power,4,8,4,21,00:04:19.008,00:04:24.554,dev
+sea4_ep21_sc5_utt2.mp4,"See, I see.... big passion in your future.",['Ross Geller'],power,5,2,4,21,00:04:30.270,00:04:42.531,dev
+sea4_ep21_sc5_utt3.mp4,Really?,['Rachel Green'],neutral,5,3,4,21,00:04:32.480,00:04:33.772,dev
+sea4_ep21_sc5_utt4.mp4,I do.,['Ross Geller'],neutral,5,4,4,21,00:04:34.482,00:04:38.235,dev
+sea4_ep21_sc5_utt5.mp4,"Oh Ross, you're so great.",['Rachel Green'],happiness,5,5,4,21,00:04:36.317,00:04:42.531,dev
+sea4_ep21_sc5_utt7.mp4,It's never gonna happen.,['Joey Tribbiani'],neutral,5,7,4,21,00:04:40.488,00:04:42.531,dev
+sea4_ep21_sc6_utt2.mp4,"Hey, I have a question. Well, actually, it's not so much a question as.. more of a general wondering... ment.",['Ross Geller'],neutral,6,2,4,21,00:04:57.046,00:05:13.478,dev
+sea4_ep21_sc6_utt3.mp4,Okay.,['Rachel Green'],neutral,6,3,4,21,00:05:00.425,00:05:02.467,dev
+sea4_ep21_sc6_utt4.mp4,"Okay. Umm, for a while now, I've been wanting to, um....",['Ross Geller'],neutral,6,4,4,21,00:05:14.314,00:05:23.905,dev
+sea4_ep21_sc6_utt5.mp4,Ohhh!!!!,['Rachel Green'],fear,6,5,4,21,00:05:16.316,00:05:17.899,dev
+sea4_ep21_sc6_utt6.mp4,"Yes, yes, that's right...",['Ross Geller'],neutral,6,6,4,21,00:05:18.067,00:05:23.905,dev
+sea4_ep21_sc6_utt7.mp4,"Oh, look at the little cat! Look at it!",['Rachel Green'],happiness,6,7,4,21,00:05:24.115,00:05:29.036,dev
+sea4_ep21_sc6_utt8.mp4,What? Ow!,['Ross Geller'],fear,6,8,4,21,00:05:26.701,00:05:29.036,dev
+sea4_ep21_sc7_utt2.mp4,"All right, listen, missy. If you want this cart, you're gonna have to take me with it!",['Rachel Green'],anger,7,2,4,21,00:05:35.668,00:05:48.055,dev
+sea4_ep21_sc7_utt4.mp4,Yes! Did you see that?,['Rachel Green'],happiness,7,4,4,21,00:05:37.462,00:05:42.924,dev
+sea4_ep21_sc7_utt5.mp4,"You were incredible! Brand new woman, ladies and gentlemen.",['Ross Geller'],happiness,7,5,4,21,00:05:52.101,00:05:58.023,dev
+sea4_ep21_sc7_utt6.mp4,I could not have done this without you.,['Rachel Green'],power,7,6,4,21,00:05:55.480,00:06:00.650,dev
+sea4_ep21_sc7_utt8.mp4,"Ok, um, uh, more clothes in the dryer? I'm fine, I'm fine.",['Ross Geller'],peace,7,8,4,21,00:06:06.991,00:06:14.664,dev
+sea4_ep21_sc8_utt2.mp4,You had no right to tell me you ever had feelings for me.,['Ross Geller'],anger,8,2,4,21,00:06:09.452,00:06:17.542,dev
+sea4_ep21_sc8_utt3.mp4,What?,['Rachel Green'],sadness,8,3,4,21,00:06:11.245,00:06:13.205,dev
+sea4_ep21_sc8_utt4.mp4,I was doing great with Julie before I found out about you.,['Ross Geller'],anger,8,4,4,21,00:06:18.086,00:06:21.463,dev
+sea4_ep21_sc8_utt5.mp4,"Hey, I was doin' great before I found out about you. You think it's easy for me to see you with Julie?",['Rachel Green'],anger,8,5,4,21,00:06:20.046,00:06:26.176,dev
+sea4_ep21_sc8_utt7.mp4,"The point is I... I don't need this right now, OK. It, it's too late, I'm with somebody else, I'm happy. This ship has sailed.",['Ross Geller'],anger,8,7,4,21,00:06:26.386,00:06:36.978,dev
+sea4_ep21_sc8_utt9.mp4,"Alright, fine, you go ahead and you do that, alright Ross.",['Rachel Green'],anger,8,9,4,21,00:06:31.349,00:06:36.978,dev
+sea4_ep21_sc8_utt10.mp4,Fine.,['Ross Geller'],anger,8,10,4,21,00:06:34.519,00:06:36.978,dev
+sea4_ep21_sc8_utt11.mp4,'Cause I don't need your stupid ship.,['Rachel Green'],anger,8,11,4,21,00:06:37.188,00:06:40.524,dev
+sea4_ep21_sc8_utt12.mp4,Good.,['Ross Geller'],anger,8,12,4,21,00:06:38.731,00:06:40.524,dev
+sea4_ep21_sc8_utt13.mp4,Good.,['Rachel Green'],anger,8,13,4,21,00:06:43.486,00:06:44.778,dev
+sea4_ep21_sc9_utt4.mp4,Well neither do I!,['Rachel Green'],peace,9,4,4,21,00:06:44.946,00:07:04.005,dev
+sea4_ep21_sc9_utt5.mp4,Is this about Mark?,['Ross Geller'],fear,9,5,4,21,00:06:47.490,00:07:32.284,dev
+sea4_ep21_sc9_utt6.mp4,Oh my God.,['Rachel Green'],fear,9,6,4,21,00:07:02.839,00:07:32.284,dev
+sea4_ep21_sc9_utt7.mp4,"Okay, it's not, it's not.",['Ross Geller'],anger,9,7,4,21,00:07:28.197,00:07:32.284,dev
+sea4_ep21_sc9_utt8.mp4,"Oh my God. I cannot keep having this same fight over and over again, Ross, no, you're, you're, you're making this too hard.",['Rachel Green'],power,9,8,4,21,00:07:49.051,00:07:58.643,dev
+sea4_ep21_sc9_utt9.mp4,"Oh I'm, I'm making this too hard. Okay, what do you want me to do.",['Ross Geller'],peace,9,9,4,21,00:07:55.975,00:08:00.979,dev
+sea4_ep21_sc9_utt10.mp4,"I don't know, I don't know. Urrrgh! Look, maybe we should take a break.",['Rachel Green'],fear,9,10,4,21,00:07:58.853,00:08:05.108,dev
+sea4_ep21_sc9_utt12.mp4,No. A break from us.,['Rachel Green'],sadness,9,12,4,21,00:08:01.189,00:08:05.108,dev
+sea4_ep21_sc10_utt2.mp4,Do I know why we're rushing?,['Chloe'],fear,10,2,4,21,00:08:05.318,00:08:08.278,dev
+sea4_ep21_sc10_utt4.mp4,That's so great for you guys!,['Chloe'],happiness,10,4,4,21,00:08:08.529,00:08:11.156,dev
+sea4_ep21_sc10_utt5.mp4,Yeah!,['Ross Geller'],fear,10,5,4,21,00:08:11.657,00:08:12.908,dev
+sea4_ep21_sc10_utt7.mp4,"Good luck, with your girlfriend.",['Chloe'],happiness,10,7,4,21,00:08:13.868,00:08:24.252,dev
+sea4_ep21_sc10_utt8.mp4,"Oh, thank you. Hey, hey. Rachel!!!!",['Ross Geller'],fear,10,8,4,21,00:08:20.333,00:08:24.252,dev
+sea4_ep21_sc10_utt9.mp4,"Hi. Ohhh, you got my message.",['Rachel Green'],happiness,10,9,4,21,00:08:24.462,00:08:27.380,dev
+sea4_ep21_sc10_utt10.mp4,"Yeah, oh hey, you are right on time.",['Ross Geller'],fear,10,10,4,21,00:08:28.841,00:08:35.388,dev
+sea4_ep21_sc10_utt11.mp4,So what do you say? Can I be your girlfriend again?,['Rachel Green'],peace,10,11,4,21,00:08:44.190,00:08:49.861,dev
+sea4_ep21_sc10_utt12.mp4,"Yes, you can, very much.",['Ross Geller'],power,10,12,4,21,00:08:47.401,00:08:49.861,dev
+sea4_ep21_sc10_utt14.mp4,Ahhhh!!,['Ross Geller'],fear,10,14,4,21,00:08:50.071,00:08:51.613,dev
+sea4_ep21_sc11_utt2.mp4,"Y'know what, I want you to leave! Get outta here!",['Rachel Green'],anger,11,2,4,21,00:08:52.573,00:08:57.327,dev
+sea4_ep21_sc11_utt3.mp4,No!!,['Ross Geller'],anger,11,3,4,21,00:08:55.451,00:08:57.327,dev
+sea4_ep21_sc11_utt4.mp4,Just get out! Now!!,['Rachel Green'],anger,11,4,4,21,00:08:57.537,00:08:59.371,dev
+sea4_ep21_sc11_utt6.mp4,Okay! All right! How was she?,['Rachel Green'],neutral,11,6,4,21,00:09:00.039,00:09:03.291,dev
+sea4_ep21_sc11_utt8.mp4,Uh-oh.,['Chandler Bing'],fear,11,8,4,21,00:09:02.250,00:09:03.291,dev
+sea4_ep21_sc11_utt10.mp4,What?,['Ross Geller'],neutral,11,10,4,21,00:09:07.421,00:09:09.005,dev
+sea4_ep21_sc11_utt11.mp4,Was she good?,['Rachel Green'],neutral,11,11,4,21,00:09:09.215,00:09:10.257,dev
+sea4_ep21_sc11_utt13.mp4,Don't answer that.,['Joey Tribbiani'],neutral,11,13,4,21,00:09:12.426,00:09:16.012,dev
+sea4_ep21_sc11_utt16.mp4,She was...,['Ross Geller'],fear,11,16,4,21,00:09:17.223,00:09:18.265,dev
+sea4_ep21_sc11_utt18.mp4,Awful! Horrible!,['Joey Tribbiani'],anger,11,18,4,21,00:09:18.474,00:09:20.183,dev
+sea4_ep21_sc11_utt19.mp4,She was not good. Not good.,['Chandler Bing'],neutral,11,19,4,21,00:09:20.351,00:09:24.020,dev
+sea4_ep21_sc11_utt20.mp4,She was nothing compared to you.,['Joey Tribbiani'],neutral,11,20,4,21,00:09:22.979,00:09:28.733,dev
+sea4_ep21_sc11_utt22.mp4,"She, she was different.",['Ross Geller'],peace,11,22,4,21,00:09:24.188,00:09:28.733,dev
+sea4_ep21_sc11_utt24.mp4,Ewwwww!,['Joey Tribbiani'],neutral,11,24,4,21,00:09:27.233,00:09:28.733,dev
+sea4_ep21_sc11_utt25.mp4,Uh-oh.,['Chandler Bing'],fear,11,25,4,21,00:09:30.236,00:09:32.070,dev
+sea4_ep21_sc11_utt27.mp4,Good different?,['Rachel Green'],neutral,11,27,4,21,00:09:32.238,00:09:34.364,dev
+sea4_ep21_sc11_utt28.mp4,Nobody likes change.,['Ross Geller'],neutral,11,28,4,21,00:09:34.532,00:09:37.951,dev
+sea4_ep21_sc11_utt30.mp4,"What? Okay, okay, okay, okay.",['Ross Geller'],neutral,11,30,4,21,00:09:35.908,00:09:37.951,dev
+sea4_ep21_sc14_utt2.mp4,You seem to really like her.,['Rachel Green'],happiness,14,2,4,21,00:09:38.202,00:09:42.539,dev
+sea4_ep21_sc14_utt4.mp4,"Ross, that girl just spent the entire evening talking to your friends, asking to hear stories about you, looking through Monica's photo albums, I mean you don't do that if you're just in it for two weeks.",['Rachel Green'],neutral,14,4,4,21,00:10:26.042,00:10:41.973,dev
+sea4_ep21_sc14_utt5.mp4,You think?,['Ross Geller'],neutral,14,5,4,21,00:10:28.002,00:10:33.131,dev
+sea4_ep21_sc14_utt6.mp4,"Yeah, you got like 14 hours until she has to be at the airport, and you're sitting here in the hallway with a 28-year-old cheerleader with a fat lip.",['Rachel Green'],neutral,14,6,4,21,00:10:42.683,00:10:54.653,dev
+sea4_ep21_sc14_utt7.mp4,"Hey, you're right.",['Ross Geller'],happiness,14,7,4,21,00:10:44.477,00:10:48.563,dev
+sea4_ep21_sc14_utt8.mp4,Yeah.,['Rachel Green'],happiness,14,8,4,21,00:10:48.856,00:10:51.107,dev
+sea4_ep21_sc16_utt2.mp4,Who's this from?,['Rachel Green'],neutral,16,2,4,21,00:10:51.317,00:10:54.653,dev
+sea4_ep21_sc16_utt3.mp4,"Oh, that's Ross's.",['Chandler Bing'],happiness,16,3,4,21,00:10:58.199,00:11:00.283,dev
+sea4_ep21_sc16_utt4.mp4,Oh... Oh my God. He remembered.,['Rachel Green'],power,16,4,4,21,00:11:11.837,00:11:16.966,dev
+sea4_ep21_sc16_utt5.mp4,Remembered what?,['Phoebe Buffay'],neutral,16,5,4,21,00:11:14.215,00:11:16.966,dev
+sea4_ep21_sc16_utt7.mp4,"Oh, it's so pretty. This must have cost him a fortune.",['Phoebe Buffay'],happiness,16,7,4,21,00:13:23.886,00:13:27.806,dev
+sea4_ep21_sc16_utt8.mp4,I can't believe he did this.,['Monica Geller'],happiness,16,8,4,21,00:13:26.347,00:13:27.806,dev
+sea4_ep21_sc16_utt9.mp4,"Come on, Ross? Remember back in college, when he fell in love with Carol and bought her that ridiculously expensive crystal duck?",['Chandler Bing'],happiness,16,9,4,21,00:13:28.015,00:13:35.396,dev
+sea4_ep21_sc16_utt11.mp4,What did you just say?,['Rachel Green'],fear,16,11,4,21,00:13:29.391,00:13:32.101,dev
+sea4_ep21_sc16_utt12.mp4,F-hah.... flennin....,['Chandler Bing'],fear,16,12,4,21,00:13:32.311,00:13:35.396,dev
+sea4_ep21_sc16_utt13.mp4,Oh.... my God.,['Rachel Green'],happiness,16,13,4,21,00:13:36.607,00:13:37.690,dev
+sea4_ep21_sc21_utt2.mp4,"Rach, I got a message from you.",['Ross Geller'],happiness,21,2,4,21,00:13:44.073,00:13:55.291,dev
+sea4_ep21_sc21_utt4.mp4,"Oh my God. Oh my God Ross, no, hang up the phone, give me the phone Ross, give me the phone, give me the phone, give me the. . .",['Rachel Green'],fear,21,4,4,21,00:15:23.213,00:15:32.138,dev
+sea4_ep21_sc21_utt5.mp4,You're over me?,['Ross Geller'],sadness,21,5,4,21,00:15:25.132,00:15:27.592,dev
+sea4_ep21_sc21_utt6.mp4,Ohhhhhhhh God.,['Rachel Green'],peace,21,6,4,21,00:15:27.760,00:15:32.138,dev
+sea4_ep21_sc21_utt7.mp4,"Wha... you're uh, you're, you're over me?",['Ross Geller'],sadness,21,7,4,21,00:15:37.853,00:15:44.150,dev
+sea4_ep21_sc21_utt8.mp4,"Ohh, ohh.",['Rachel Green'],sadness,21,8,4,21,00:15:39.980,00:15:41.731,dev
+sea4_ep21_sc21_utt9.mp4,"When, when were you... under me?",['Ross Geller'],fear,21,9,4,21,00:15:41.899,00:15:45.443,dev
+sea4_ep21_sc21_utt10.mp4,"Well, basically, lately, I've uh, I've uh, sort of had feelings for you.",['Rachel Green'],fear,21,10,4,21,00:15:50.574,00:16:03.461,dev
+sea4_ep21_sc21_utt12.mp4,"OK, I need to lie down.",['Ross Geller'],fear,21,12,4,21,00:15:55.329,00:16:03.461,dev
+sea4_ep21_sc22_utt2.mp4,"He broke up with Julie. Well, go hug her, for god's sakes.",['Joey Tribbiani'],anger,22,2,4,21,00:16:07.549,00:16:13.262,dev
+sea4_ep21_sc22_utt3.mp4,Really?,['Rachel Green'],neutral,22,3,4,21,00:16:09.093,00:16:10.134,dev
+sea4_ep21_sc22_utt4.mp4,"Really. It's always been you, Rach.",['Ross Geller'],neutral,22,4,4,21,00:16:10.511,00:16:13.262,dev
+sea4_ep21_sc22_utt5.mp4,"Oh, god.",['Rachel Green'],fear,22,5,4,21,00:16:14.974,00:16:16.975,dev
+sea4_ep21_sc22_utt7.mp4,Ohhh.,"['Chandler Bing', 'Joey Tribbiani']",sadness,22,7,4,21,00:16:18.268,00:16:20.144,dev
+sea4_ep21_sc25_utt2.mp4,"Y'know, hey! You're the one who ended it, remember?",['Ross Geller'],anger,25,2,4,21,00:17:26.045,00:17:38.097,dev
+sea4_ep21_sc25_utt3.mp4,"Yeah, because I was mad at you, not because I stopped loving you!",['Rachel Green'],fear,25,3,4,21,00:17:27.671,00:17:42.310,dev
+sea4_ep21_sc25_utt4.mp4,You still love me?,['Ross Geller'],fear,25,4,4,21,00:17:36.513,00:17:38.097,dev
+sea4_ep21_sc25_utt5.mp4,Noo.,['Rachel Green'],anger,25,5,4,21,00:17:38.307,00:17:42.310,dev
+sea4_ep21_sc25_utt7.mp4,"What does this mean? What do you, I mean do you wanna, get back together?",['Ross Geller'],fear,25,7,4,21,00:17:43.604,00:17:52.445,dev
+sea4_ep21_sc25_utt8.mp4,"Noo! Maybe! I, I don't know.",['Rachel Green'],fear,25,8,4,21,00:17:45.105,00:17:52.445,dev
+sea4_ep21_sc25_utt9.mp4,What?!,['Ross Geller'],anger,25,9,4,21,00:17:48.025,00:17:52.445,dev
+sea4_ep21_sc25_utt10.mp4,"I just, I feel, I-I just...",['Rachel Green'],neutral,25,10,4,21,00:17:52.654,00:17:57.617,dev
+sea4_ep21_sc29_utt3.mp4,It's better! You can't go to a museum in your underwear!,['Joey Tribbiani'],happiness,29,3,4,21,00:21:37.379,00:21:44.135,dev
+sea4_ep21_sc29_utt4.mp4,"Well, You could, but... probably just the one time.",['Chandler Bing'],happiness,29,4,4,21,00:21:45.220,00:21:47.555,dev
+sea4_ep21_sc29_utt5.mp4,"I bet we could get videos of all the sites, get a VCR in our hotel room... we'd never even have to go outside!",['Joey Tribbiani'],happiness,29,5,4,21,00:21:49.641,00:21:55.604,dev
+sea4_ep21_sc29_utt6.mp4,"If we do that, we gotta get Die Hard.",['Chandler Bing'],happiness,29,6,4,21,00:21:56.189,00:21:58.190,dev
+sea4_ep21_sc29_utt7.mp4,Oh-ho! I bet the British version is gooooood!,['Joey Tribbiani'],happiness,29,7,4,21,00:22:00.027,00:22:03.070,dev
