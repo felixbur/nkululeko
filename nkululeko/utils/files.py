@@ -123,7 +123,7 @@ def find_files(
         files = files[:limit]
 
     if relative:
-        files = [os.path.relpath(f, directory) for f in files]
+        files = [os.path.relpath(f) for f in files]
 
     if path_object:
         files = [Path(f) for f in files]
