@@ -98,7 +98,7 @@ combine_per_speaker = mode
 Read the [Hello World example](#hello-world-example) for initial usage with Emo-DB dataset.
 
 Here is an overview of the interfaces:
-* **nkululeko.nkululeko**: doing experiments
+* **nkululeko.nkululeko**: do machine learning experiments combining features and learners
 * **nkululeko.demo**: demo the current best model on the command line
 * **nkululeko.test**: predict a series of files with the current best model
 * **nkululeko.explore**: perform data exploration
