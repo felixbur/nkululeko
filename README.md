@@ -104,8 +104,8 @@ Here is an overview of the interfaces:
 * **nkululeko.explore**: perform data exploration
 * **nkululeko.augment**: augment the current training data
 * **nkululeko.predict**: predict a series of files with a given model
-
-Alternatively, there is a central "experiment" class that can be used by own experiments
+* **nkululeko.segment**: segment a database based on VAD (voice activity detection)
+* **nkululeko.resample**: check on all sampling rates and change to 16kHz 
 
 There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
 * [Introduction](http://blog.syntheticspeech.de/2021/08/04/machine-learning-experiment-framework/)
