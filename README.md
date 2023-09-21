@@ -187,7 +187,7 @@ Here's [an overview of the ini-file options](./ini_file.md)
     * Repeat until all error messages vanished (or fix them, or try to ignore them)...
 * Now you should have two folders in your *nkulu_work* folder:
   * *emodb* and *venv*
-* Download a copy of the file [exp_emodb.ini](demos/exp_emodb.ini) to the current working directory (```nkulu_work```)
+* Download a copy of the file [exp_emodb.ini](meta/demos/exp_emodb.ini) to the current working directory (```nkulu_work```)
 * Run the demo
   * ```python -m nkululeko.nkululeko --config exp_emodb.ini```
 * Find the results in the newly created folder exp_emodb 
