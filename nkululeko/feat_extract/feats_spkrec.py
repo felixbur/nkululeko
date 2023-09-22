@@ -1,5 +1,10 @@
-# feats_wav2vec2.py
-# feat_types example = wav2vec2-large-robust-ft-swbd-300h
+# feats_hubert.py
+# Speaker embedding feature extractor for Nkululeko
+# https://huggingface.co/speechbrain/spkrec-xvect-voxceleb
+# supported feat_type: 
+# "spkrec-xvect-voxceleb", "spkrec-ecapa-voxceleb", "spkrec-resnet-voxceleb"
+
+
 import os
 
 import nkululeko.glob_conf as glob_conf
@@ -7,58 +12,68 @@ import pandas as pd
 import torch
 import torchaudio
 from nkululeko.feat_extract.featureset import Featureset
-from transformers import Wav2Vec2FeatureExtractor, Wav2Vec2Model
+from speechbrain.pretrained import EncoderClassifier
 
-# import audiofile
-# import torchaudio
+# from transformers import HubertModel, Wav2Vec2FeatureExtractor
 
 
-class Wav2vec2(Featureset):
-    """Class to extract wav2vec2 embeddings"""
+class Spkrec(Featureset):
+    """Class to extract SpeechBrain Speaker Embedding embedding)"""
 
     def __init__(self, name, data_df, feat_type):
-        """Constructor. is_train is needed to distinguish from test/dev sets, because they use the codebook from the training"""
+        """Constructor. is_train is needed to distinguish from test/dev sets,
+        because they use the codebook from the training"""
         super().__init__(name, data_df)
+        # check if device is not set, use cuda if available
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
-        self.model_initialized = False
+        self.classifier_initialized = False
         self.feat_type = feat_type
 
     def init_model(self):
         # load model
-        self.util.debug("loading wav2vec model...")
+        self.util.debug("loading Spkrec model...")
+
         model_path = self.util.config_val(
-            "FEATS", "wav2vec.model", f"facebook/{self.feat_type}"
+            "FEATS", "Spkrec.model", f"speechbrain/{self.feat_type}"
         )
-        self.processor = Wav2Vec2FeatureExtractor.from_pretrained(model_path)
-        self.model = Wav2Vec2Model.from_pretrained(model_path).to(self.device)
-        print(f"intialized Wav2vec model on {self.device}")
-        self.model.eval()
-        self.model_initialized = True
+        self.classifier = EncoderClassifier.from_hparams(model_path)
+        print(f"intialized SB model on {self.device}")
+        # self.classifier.eval()
+        self.classifier_initialized = True
+
 
     def extract(self):
         """Extract the features or load them from disk if present."""
         store = self.util.get_path("store")
         storage = f"{store}{self.name}.pkl"
-        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
+        extract = self.util.config_val(
+            "FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
-            if not self.model_initialized:
+            if not self.classifier_initialized:
                 self.init_model()
             self.util.debug(
-                "extracting wav2vec2 embeddings, this might take a while..."
-            )
+                "extracting Spkrec embeddings, this might take a while...")
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
             length = len(self.data_df.index)
-            for idx, (file, start, end) in enumerate(self.data_df.index.to_list()):
-                signal, sampling_rate = torchaudio.load(file,
+            for idx, (file, start, end) in enumerate(
+                    self.data_df.index.to_list()):
+                signal, sampling_rate = torchaudio.load(
+                    file,
                     frame_offset=int(start.total_seconds()*16000),
-                    num_frames=int((end - start).total_seconds()*16000))
-                assert sampling_rate == 16000, f"got {sampling_rate} instead of 16000"
+                    num_frames=int((end - start).total_seconds()*16000)
+                )
+                assert sampling_rate == 16000
+                # check if signal is stereo, if so, take first channel
+                if signal.shape[0] == 2:
+                    signal = signal[0]
                 emb = self.get_embeddings(signal, sampling_rate, file)
-                emb_series[idx] = emb
+                # fill series with embeddings
+                emb_series.iloc[idx] = emb
                 if idx % 10 == 0:
-                    self.util.debug(f"Wav2vec2: {idx} of {length} done")
+                    self.util.debug(
+                        f"{self.feat_type}: {idx} of {length} done")
             print(f"emb_series shape: {emb_series.shape}")
             self.df = pd.DataFrame(emb_series.values.tolist(), 
                                    index=self.data_df.index)
@@ -69,7 +84,7 @@ class Wav2vec2(Featureset):
             except KeyError:
                 pass
         else:
-            self.util.debug("reusing extracted wav2vec2 embeddings")
+            self.util.debug(f"reusing extracted {self.feat_type} embeddings")
             self.df = pd.read_pickle(storage)
             if self.df.isnull().values.any():
                 nanrows = self.df.columns[self.df.isna().any()].tolist()
@@ -80,26 +95,18 @@ class Wav2vec2(Featureset):
 
     def get_embeddings(self, signal, sampling_rate, file):
         r"""Extract embeddings from raw audio signal."""
+        # classifier = EncoderClassifier.from_hparams("speechbrain/spkrec-ecapa-voxceleb")
         try:
             with torch.no_grad():
-                # run through processor to normalize signal
-                # always returns a batch, so we just get the first entry
-                # then we put it on the device
-                y = self.processor(signal, sampling_rate=sampling_rate)
-                y = y["input_values"][0]
-                y = torch.from_numpy(y.reshape(1, -1)).to(self.device)
-                # print(y.shape)
-                # run through model
-                # first entry contains hidden state
-                y = self.model(y)[0]
-
-                # pool result and convert to numpy
-                y = torch.mean(y, dim=1)
-                y = y.detach().cpu().numpy()
+                y = self.classifier.encode_batch(signal)
+                y = y.squeeze().detach().cpu().numpy()
         except RuntimeError as re:
             print(str(re))
             self.util.error(f"couldn't extract file: {file}")
-        print(f"y flattened shape: {y.ravel().shape}")
+        # print(f"y ravel shape: {y.ravel().shape}")
+        # if y.ravel().shape[0] != 192:
+        #     self.util.error(f"got wrong embedding size: {y.ravel().shape} from file: {file}")
+        # print(f"y: {y}")
         return y.ravel()
 
     def extract_sample(self, signal, sr):
