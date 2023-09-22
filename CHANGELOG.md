@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.66.0
+--------------
+* added speechbrain speakerID embeddings 
+  
 Version 0.65.9
 --------------
 * added a filter that ensures that the labels have the same size as the features
