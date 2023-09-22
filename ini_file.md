@@ -15,6 +15,7 @@
     - [PREDICT](#predict)
     - [EXPORT](#export)
     - [PLOT](#plot)
+    - [RESAMPLE](#resample)
 
 
 ## Sections
@@ -186,6 +187,7 @@
     * **mos**: estimated [MOS](https://arxiv.org/pdf/2304.01448.pdf) (mean opinion score)
     * **pesq**: estimated [PESQ](https://arxiv.org/pdf/2304.01448.pdf) (Perceptual Evaluation of Speech Quality)
     * **sdr**: estimated [SDR](https://arxiv.org/pdf/2304.01448.pdf) (Perceptual Evaluation of Speech Quality)
+    * **spkrec**: speaker-id: [speechbrain embeddings](https://huggingface.co/speechbrain/spkrec-xvect-voxceleb)
     * **stoi**: estimated [STOI](https://arxiv.org/pdf/2304.01448.pdf) (Perceptual Evaluation of Speech Quality)
 * **features** = *python list of selected features to be used (all others ignored)*
   * features = ['JitterPCA', 'meanF0Hz', 'hld_sylRate']
@@ -325,5 +327,9 @@
   * format = png
 
 ### RESAMPLE
-* **sample_selection** = which split: [train, test, all]
+* **sample_selection**: which split: [train, test, all]
   * sample_selection = all
+* **replace**: wether samples should be replaced right were they are, or copies done and a new dataframe given
+  * replace = False 
+* **target**: the name of the new dataframe, if replace==false
+  * target = data_resampled.csv
