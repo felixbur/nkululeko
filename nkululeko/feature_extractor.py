@@ -71,6 +71,13 @@ class FeatureExtractor:
                     f"{store_name}_{self.feats_designation}", self.data_df, feats_type
                 )
 
+            elif feats_type.startswith("spkrec"):
+                from nkululeko.feat_extract.feats_spkrec import Spkrec
+
+                self.featExtractor = Spkrec(
+                    f"{store_name}_{self.feats_designation}", self.data_df, feats_type
+                )
+
             elif feats_type == "audmodel":
                 from nkululeko.feat_extract.feats_audmodel import AudModelSet
 
@@ -78,21 +85,22 @@ class FeatureExtractor:
                     f"{store_name}_{self.feats_designation}", self.data_df
                 )
             elif feats_type == "auddim":
-                from nkululeko.feat_extract.feats_audmodel_dim import AudModelDimSet
+                from nkululeko.feat_extract.feats_audmodel_dim import \
+                    AudModelDimSet
 
                 self.featExtractor = AudModelDimSet(
                     f"{store_name}_{self.feats_designation}", self.data_df
                 )
             elif feats_type == "agender":
-                from nkululeko.feat_extract.feats_agender import AudModelAgenderSet
+                from nkululeko.feat_extract.feats_agender import \
+                    AudModelAgenderSet
 
                 self.featExtractor = AudModelAgenderSet(
                     f"{store_name}_{self.feats_designation}", self.data_df
                 )
             elif feats_type == "agender_agender":
-                from nkululeko.feat_extract.feats_agender_agender import (
-                    AgenderAgenderSet,
-                )
+                from nkululeko.feat_extract.feats_agender_agender import \
+                    AgenderAgenderSet
 
                 self.featExtractor = AgenderAgenderSet(
                     f"{store_name}_{self.feats_designation}", self.data_df
