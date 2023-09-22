@@ -98,14 +98,14 @@ combine_per_speaker = mode
 Read the [Hello World example](#hello-world-example) for initial usage with Emo-DB dataset.
 
 Here is an overview of the interfaces:
-* **nkululeko.nkululeko**: doing experiments
+* **nkululeko.nkululeko**: do machine learning experiments combining features and learners
 * **nkululeko.demo**: demo the current best model on the command line
 * **nkululeko.test**: predict a series of files with the current best model
 * **nkululeko.explore**: perform data exploration
 * **nkululeko.augment**: augment the current training data
-* **nkululeko.predict**: predict a series of files with a given model
-
-Alternatively, there is a central "experiment" class that can be used by own experiments
+* **nkululeko.predict**: predict features like SNR, MOS, arousal/valence, age/gender, with DNN models
+* **nkululeko.segment**: segment a database based on VAD (voice activity detection)
+* **nkululeko.resample**: check on all sampling rates and change to 16kHz 
 
 There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
 * [Introduction](http://blog.syntheticspeech.de/2021/08/04/machine-learning-experiment-framework/)
@@ -171,7 +171,7 @@ Here's [an overview of the ini-file options](./ini_file.md)
 * Open a terminal/commandline/console window
 * Test python by typing ```python```, python should start with version >3 (NOT 2!). You can leave the Python Interpreter by typing *exit()*
 * Create a folder on your computer for this example, let's call it `nkulu_work`
-* Get a copy of the [Berlin emodb in audformat](https://tubcloud.tu-berlin.de/s/LfkysdXJfiobiEG) and unpack the same folder (`nkulu_work`)
+* Get a copy of the [Berlin emodb in audformat](https://tubcloud.tu-berlin.de/s/LfkysdXJfiobiEG) and unpack inside the folder you just created (`nkulu_work`)
 * Make sure the folder is called "emodb" and does contain the database files directly (not box-in-a-box)
 * Also, in the `nkulu_work` folder: 
   * Create a Python environment
@@ -187,7 +187,7 @@ Here's [an overview of the ini-file options](./ini_file.md)
     * Repeat until all error messages vanished (or fix them, or try to ignore them)...
 * Now you should have two folders in your *nkulu_work* folder:
   * *emodb* and *venv*
-* Download a copy of the file [exp_emodb.ini](demos/exp_emodb.ini) to the current working directory (```nkulu_work```)
+* Download a copy of the file [exp_emodb.ini](meta/demos/exp_emodb.ini) to the current working directory (```nkulu_work```)
 * Run the demo
   * ```python -m nkululeko.nkululeko --config exp_emodb.ini```
 * Find the results in the newly created folder exp_emodb 
