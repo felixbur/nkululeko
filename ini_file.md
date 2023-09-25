@@ -16,6 +16,7 @@
     - [EXPORT](#export)
     - [PLOT](#plot)
     - [RESAMPLE](#resample)
+    - [REPORT](#report)
 
 
 ## Sections
@@ -333,3 +334,9 @@
   * replace = False 
 * **target**: the name of the new dataframe, if replace==false
   * target = data_resampled.csv
+
+### REPORT
+* **show**: print the report at the end
+  * show = True
+* **latex**: generate a latex and pdf document
+  * latex = True
