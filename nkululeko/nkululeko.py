@@ -55,6 +55,13 @@ def main(src_dir):
     # run the experiment
     expr.run()
 
+    expr.store_report()
+    
+    if eval(util.config_val('REPORT', 'show', 'False')):
+        expr.report.print()
+    if eval(util.config_val('REPORT', 'latex', 'False')):
+        expr.report.export_latex()
+
     print("DONE")
 
 

@@ -13,7 +13,7 @@ import os.path
 from audformat.utils import duration
 import nkululeko.filter_data as filter
 from nkululeko.filter_data import DataFilter
-
+from nkululeko.reporting.report_item import ReportItem
 
 class Dataset:
     """Class to represent datasets"""
@@ -73,11 +73,11 @@ class Dataset:
         speaker_num = 0
         if self.got_speaker:
             speaker_num = self.df.speaker.nunique()
-        self.util.debug(
-            f"{self.name}: loaded with {self.df.shape[0]} "
-            f"samples: got targets: {self.is_labeled}, got speakers: {self.got_speaker} ({speaker_num}), "
-            f"got sexes: {self.got_gender}"
-        )
+        r_string = f"{self.name}: loaded with {self.df.shape[0]} "
+        f"samples: got targets: {self.is_labeled}, got speakers: {self.got_speaker} ({speaker_num}), "
+        f"got sexes: {self.got_gender}"
+        self.util.debug(r_string)
+        glob_conf.report.add_item(ReportItem('data', 'Loaded data', r_string))
 
     def load(self):
         """Load the dataframe with files, speakers and task labels"""

@@ -14,6 +14,7 @@ from sklearn.metrics import r2_score
 from sklearn.metrics import classification_report
 from scipy.stats import pearsonr
 from nkululeko.result import Result
+from nkululeko.reporting.report_item import ReportItem
 import glob
 import math
 
@@ -170,6 +171,8 @@ class Reporter:
                 self.util.debug(f1_per_class)
                 rpt_str = f'{json.dumps(rpt)}\n{f1_per_class}'
                 text_file.write(rpt_str)
+                glob_conf.report.add_item(ReportItem('results', 'Result', rpt_str))
+
         else: # regression
             result = self.result.test
             r2 = r2_score(self.truths, self.preds)

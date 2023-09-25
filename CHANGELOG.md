@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.66.1
+--------------
+* start on the latex report framework
+
 Version 0.66.0
 --------------
 * added speechbrain speakerID embeddings 

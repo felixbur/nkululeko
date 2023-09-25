@@ -13,6 +13,7 @@ from nkululeko.feature_extractor import FeatureExtractor
 from nkululeko.plots import Plots
 from nkululeko.filter_data import DataFilter
 from nkululeko.file_checker import FileChecker
+from nkululeko.reporting.report import Report
 import nkululeko.glob_conf as glob_conf
 from nkululeko.demo_predictor import Demo_predictor
 import ast  # To convert strings to objects
@@ -41,10 +42,20 @@ class Experiment:
         audeer.mkdir(self.data_dir)  # create the experiment directory
         self.util = Util("experiment")
         glob_conf.set_util(self.util)
+        try:
+            with open(self.data_dir+'/report.pkl', 'rb') as handle:
+                self.report = pickle.load(handle)
+        except FileNotFoundError:
+            self.report = Report()
+        glob_conf.set_report(self.report)
         self.loso = self.util.config_val("MODEL", "loso", False)
         self.logo = self.util.config_val("MODEL", "logo", False)
         self.xfoldx = self.util.config_val("MODEL", "k_fold_cross", False)
         self.start = time.process_time()
+
+    def store_report(self):
+        with open(self.data_dir+'/report.pkl', 'wb') as handle:
+            pickle.dump(self.report, handle)
 
     def get_name(self):
         return self.util.get_exp_name()
@@ -59,9 +70,6 @@ class Experiment:
         self.datasets = {}
         self.got_speaker, self.got_gender, self.got_age = False, False, False
         for d in ds:
-            # if d == 'ravdess':
-            #     data = Ravdess()
-            # else:
             ds_type = self.util.config_val_data(d, "type", "audformat")
             if ds_type == "audformat":
                 data = Dataset(d)

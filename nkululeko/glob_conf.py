@@ -14,3 +14,7 @@ def set_label_encoder(encoder):
 def set_util(util_obj):
     global util
     util = util_obj
+
+def set_report(report_obj):
+    global report
+    report = report_obj
