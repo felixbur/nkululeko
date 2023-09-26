@@ -25,7 +25,9 @@ class AudModelAgenderSet(Featureset):
         if not os.path.isdir(model_root):
             cache_root = audeer.mkdir("cache")
             model_root = audeer.mkdir(model_root)
-            archive_path = audeer.download_url(model_url, cache_root, verbose=True)
+            archive_path = audeer.download_url(
+                model_url, cache_root, verbose=True
+            )
             audeer.extract_archive(archive_path, model_root)
         device = self.util.config_val("MODEL", "device", "cpu")
         self.model = audonnx.load(model_root, device=device)
@@ -41,7 +43,8 @@ class AudModelAgenderSet(Featureset):
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if no_reuse or extract or not os.path.isfile(storage):
             self.util.debug(
-                "extracting agender model embeddings, this might take a while..."
+                "extracting agender model embeddings, this might take a"
+                " while..."
             )
             hidden_states = audinterface.Feature(
                 self.model.labels("hidden_states"),

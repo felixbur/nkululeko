@@ -21,11 +21,15 @@ class Openxbow(Featureset):
         self.feature_set = eval(f"opensmile.FeatureSet.{self.featset}")
         store = self.util.get_path("store")
         storage = f"{store}{self.name}_{self.featset}.pkl"
-        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
+        extract = self.util.config_val(
+            "FEATS", "needs_feature_extraction", False
+        )
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             # extract smile features first
-            self.util.debug("extracting openSmile features, this might take a while...")
+            self.util.debug(
+                "extracting openSmile features, this might take a while..."
+            )
             smile = opensmile.Smile(
                 feature_set=self.feature_set,
                 feature_level=opensmile.FeatureLevel.LowLevelDescriptors,
@@ -40,11 +44,17 @@ class Openxbow(Featureset):
             smile_df.index = smile_df.index.droplevel(1)
             # compute xbow features
             # set some file names on disk
-            lld_name, xbow_name, codebook_name = "llds.csv", "xbow.csv", "xbow_codebook"
+            lld_name, xbow_name, codebook_name = (
+                "llds.csv",
+                "xbow.csv",
+                "xbow_codebook",
+            )
             # save the smile features
             smile_df.to_csv(lld_name, sep=";", header=False)
             # get the path of the xbow java jar file
-            xbow_path = self.util.config_val("FEATS", "xbow.model", "../openXBOW/")
+            xbow_path = self.util.config_val(
+                "FEATS", "xbow.model", "../openXBOW/"
+            )
             # get the size of the codebook
             size = self.util.config_val("FEATS", "size", 500)
             # get the number of assignements
@@ -53,14 +63,16 @@ class Openxbow(Featureset):
             if self.is_train:
                 # store the codebook
                 os.system(
-                    f"java -jar {xbow_path}openXBOW.jar -i {lld_name} -standardizeInput -log \
-                    -o {xbow_name} -size {size} -a {assignments} -B {codebook_name}"
+                    f"java -jar {xbow_path}openXBOW.jar -i"
+                    f" {lld_name} -standardizeInput -log                     -o"
+                    f" {xbow_name} -size {size} -a {assignments} -B"
+                    f" {codebook_name}"
                 )
             else:
                 # use the codebook
                 os.system(
-                    f"java -jar {xbow_path}openXBOW.jar -i {lld_name} \
-                    -o {xbow_name} -b {codebook_name}"
+                    f"java -jar {xbow_path}openXBOW.jar -i {lld_name}          "
+                    f"           -o {xbow_name} -b {codebook_name}"
                 )
             # read in the result from disk
             xbow_df = pd.read_csv(xbow_name, sep=";", header=None)
@@ -71,7 +83,8 @@ class Openxbow(Featureset):
             if with_os:
                 # extract smile functionals
                 self.util.debug(
-                    "extracting openSmile functionals, this might take a while..."
+                    "extracting openSmile functionals, this might take a"
+                    " while..."
                 )
                 smile = opensmile.Smile(
                     feature_set=opensmile.FeatureSet.eGeMAPSv02,  # always use eGemaps for this

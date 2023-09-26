@@ -10,8 +10,12 @@ import argparse
 
 
 def main(src_dir):
-    parser = argparse.ArgumentParser(description="Call the nkululeko framework.")
-    parser.add_argument("--config", default="exp.ini", help="The base configuration")
+    parser = argparse.ArgumentParser(
+        description="Call the nkululeko framework."
+    )
+    parser.add_argument(
+        "--config", default="exp.ini", help="The base configuration"
+    )
     args = parser.parse_args()
     if args.config is not None:
         config_file = args.config
@@ -31,7 +35,8 @@ def main(src_dir):
     expr = exp.Experiment(config)
     util = Util("nkululeko")
     util.debug(
-        f"running {expr.name} from config {config_file}, nkululeko version {VERSION}"
+        f"running {expr.name} from config {config_file}, nkululeko version"
+        f" {VERSION}"
     )
 
     if util.config_val("EXP", "no_warnings", False):
@@ -44,7 +49,9 @@ def main(src_dir):
 
     # split into train and test
     expr.fill_train_and_tests()
-    util.debug(f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}")
+    util.debug(
+        f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}"
+    )
 
     # extract features
     expr.extract_feats()
@@ -56,15 +63,12 @@ def main(src_dir):
     expr.run()
 
     expr.store_report()
-    
-    if eval(util.config_val('REPORT', 'show', 'False')):
-        expr.report.print()
-    if eval(util.config_val('REPORT', 'latex', 'False')):
-        expr.report.export_latex()
 
     print("DONE")
 
 
 if __name__ == "__main__":
     cwd = os.path.dirname(os.path.abspath(__file__))
-    main(cwd)  # use this if you want to state the config file path on command line
+    main(
+        cwd
+    )  # use this if you want to state the config file path on command line

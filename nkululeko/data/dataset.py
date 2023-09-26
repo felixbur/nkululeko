@@ -15,6 +15,7 @@ import nkululeko.filter_data as filter
 from nkululeko.filter_data import DataFilter
 from nkululeko.reporting.report_item import ReportItem
 
+
 class Dataset:
     """Class to represent datasets"""
 
@@ -32,7 +33,9 @@ class Dataset:
         self.util = Util("dataset")
         self.plot = Plots()
         self.limit = int(self.util.config_val_data(self.name, "limit", 0))
-        self.start_fresh = eval(self.util.config_val("DATA", "no_reuse", "False"))
+        self.start_fresh = eval(
+            self.util.config_val("DATA", "no_reuse", "False")
+        )
         self.is_labeled, self.got_speaker, self.got_gender, self.got_age = (
             False,
             False,
@@ -73,11 +76,13 @@ class Dataset:
         speaker_num = 0
         if self.got_speaker:
             speaker_num = self.df.speaker.nunique()
-        r_string = f"{self.name}: loaded with {self.df.shape[0]} "
-        f"samples: got targets: {self.is_labeled}, got speakers: {self.got_speaker} ({speaker_num}), "
-        f"got sexes: {self.got_gender}"
+        r_string = (
+            f"{self.name}: loaded with {self.df.shape[0]} samples: got targets:"
+            f" {self.is_labeled}, got speakers:"
+            f" {self.got_speaker} ({speaker_num}), got sexes: {self.got_gender}"
+        )
         self.util.debug(r_string)
-        glob_conf.report.add_item(ReportItem('data', 'Loaded data', r_string))
+        glob_conf.report.add_item(ReportItem("Data", "Load report", r_string))
 
     def load(self):
         """Load the dataframe with files, speakers and task labels"""
@@ -86,7 +91,9 @@ class Dataset:
         store_file = f"{store}{self.name}.pkl"
         self.root = self._load_db()
         if not self.start_fresh and os.path.isfile(store_file):
-            self.util.debug(f"{self.name}: reusing previously stored file {store_file}")
+            self.util.debug(
+                f"{self.name}: reusing previously stored file {store_file}"
+            )
             self.df = pd.read_pickle(store_file)
             self.is_labeled = self.target in self.df
             self.got_gender = "gender" in self.df
@@ -101,10 +108,14 @@ class Dataset:
         # map the audio file paths
         self.db.map_files(lambda x: os.path.join(self.root, x))
         # the dataframes (potentially more than one) with at least the file names
-        df_files = self.util.config_val_data(self.name, "files_tables", "['files']")
+        df_files = self.util.config_val_data(
+            self.name, "files_tables", "['files']"
+        )
         df_files_tables = ast.literal_eval(df_files)
         # The label for the target column
-        self.col_label = self.util.config_val_data(self.name, "label", self.target)
+        self.col_label = self.util.config_val_data(
+            self.name, "label", self.target
+        )
         (
             df,
             self.is_labeled,
@@ -112,7 +123,12 @@ class Dataset:
             self.got_gender,
             self.got_age,
         ) = self._get_df_for_lists(self.db, df_files_tables)
-        if False in {self.is_labeled, self.got_speaker, self.got_gender, self.got_age}:
+        if False in {
+            self.is_labeled,
+            self.got_speaker,
+            self.got_gender,
+            self.got_age,
+        }:
             try:
                 # There might be a separate table with the targets, e.g. emotion or age
                 df_targets = self.util.config_val_data(
@@ -165,7 +181,8 @@ class Dataset:
             self.df = self.df[self.df[required].notna()]
             post = self.df.shape[0]
             self.util.debug(
-                f"{self.name}: kept {post} samples with {required} (from {pre}, filtered {pre-post})"
+                f"{self.name}: kept {post} samples with {required} (from {pre},"
+                f" filtered {pre-post})"
             )
 
         datafilter = DataFilter(self.df)
@@ -183,7 +200,12 @@ class Dataset:
         self.df.to_pickle(store_file)
 
     def _get_df_for_lists(self, db, df_files):
-        is_labeled, got_speaker, got_gender, got_age = False, False, False, False
+        is_labeled, got_speaker, got_gender, got_age = (
+            False,
+            False,
+            False,
+            False,
+        )
         df = pd.DataFrame()
         for table in df_files:
             source_df = db.tables[table].df
@@ -231,7 +253,9 @@ class Dataset:
                 pass
             try:
                 # same for the target, e.g. "age"
-                df_local[self.target] = db[table]["speaker"].get(map=self.target)
+                df_local[self.target] = db[table]["speaker"].get(
+                    map=self.target
+                )
                 is_labeled = True
             except (ValueError, audformat.core.errors.BadKeyError) as e:
                 pass
@@ -255,25 +279,29 @@ class Dataset:
             if os.path.isfile(storage_train) and os.path.isfile(storage_test):
                 # if self.util.config_val_data(self.name, 'test_tables', False):
                 self.util.debug(
-                    f"splits: reusing previously stored test file {storage_test}"
+                    "splits: reusing previously stored test file"
+                    f" {storage_test}"
                 )
                 self.df_test = pd.read_pickle(storage_test)
                 self.util.debug(
-                    f"splits: reusing previously stored train file {storage_train}"
+                    "splits: reusing previously stored train file"
+                    f" {storage_train}"
                 )
                 self.df_train = pd.read_pickle(storage_train)
 
                 return
             elif os.path.isfile(storage_train):
                 self.util.debug(
-                    f"splits: reusing previously stored train file {storage_train}"
+                    "splits: reusing previously stored train file"
+                    f" {storage_train}"
                 )
                 self.df_train = pd.read_pickle(storage_train)
                 self.df_test = pd.DataFrame()
                 return
             elif os.path.isfile(storage_test):
                 self.util.debug(
-                    f"splits: reusing previously stored test file {storage_test}"
+                    "splits: reusing previously stored test file"
+                    f" {storage_test}"
                 )
                 self.df_test = pd.read_pickle(storage_test)
                 self.df_train = pd.DataFrame()
@@ -284,7 +312,9 @@ class Dataset:
             traindf = self.db.tables[self.target + ".train"].df
             # use only the train and test samples that were not perhaps filtered out by an earlier processing step
             self.df_test = self.df.loc[self.df.index.intersection(testdf.index)]
-            self.df_train = self.df.loc[self.df.index.intersection(traindf.index)]
+            self.df_train = self.df.loc[
+                self.df.index.intersection(traindf.index)
+            ]
         elif split_strategy == "train":
             self.df_train = self.df
             self.df_test = pd.DataFrame()
@@ -307,18 +337,26 @@ class Dataset:
             if entry_train_tables:
                 train_tables = ast.literal_eval(entry_train_tables)
                 for train_table in train_tables:
-                    traindf = pd.concat([traindf, self.db.tables[train_table].df])
+                    traindf = pd.concat(
+                        [traindf, self.db.tables[train_table].df]
+                    )
             # use only the train and test samples that were not perhaps filtered out by an earlier processing step
             # testdf.index.map(lambda x: os.path.join(self.root, x))
             #            testdf.index = testdf.index.to_series().apply(lambda x: self.root+x)
             testdf = testdf.set_index(
-                audformat.utils.to_segmented_index(testdf.index, allow_nat=False)
+                audformat.utils.to_segmented_index(
+                    testdf.index, allow_nat=False
+                )
             )
             traindf = traindf.set_index(
-                audformat.utils.to_segmented_index(traindf.index, allow_nat=False)
+                audformat.utils.to_segmented_index(
+                    traindf.index, allow_nat=False
+                )
             )
             self.df_test = self.df.loc[self.df.index.intersection(testdf.index)]
-            self.df_train = self.df.loc[self.df.index.intersection(traindf.index)]
+            self.df_train = self.df.loc[
+                self.df.index.intersection(traindf.index)
+            ]
             # it might be necessary to copy the target values
             try:
                 self.df_test[self.target] = testdf[self.target]
@@ -343,7 +381,8 @@ class Dataset:
             self.df_train = self.finish_up(self.df_train, storage_train)
 
         self.util.debug(
-            f"{self.name}: {self.df_test.shape[0]} samples in test and {self.df_train.shape[0]} samples in train"
+            f"{self.name}: {self.df_test.shape[0]} samples in test and"
+            f" {self.df_train.shape[0]} samples in train"
         )
 
     def finish_up(self, df, storage):
@@ -359,7 +398,9 @@ class Dataset:
 
     def split_speakers(self):
         """One way to split train and eval sets: Specify percentage of evaluation speakers"""
-        test_percent = int(self.util.config_val_data(self.name, "testsplit", 50))
+        test_percent = int(
+            self.util.config_val_data(self.name, "testsplit", 50)
+        )
         df = self.df
         s_num = df.speaker.nunique()
         test_num = int(s_num * (test_percent / 100))
@@ -367,14 +408,17 @@ class Dataset:
         self.df_test = df[df.speaker.isin(test_spkrs)]
         self.df_train = df[~df.index.isin(self.df_test.index)]
         self.util.debug(
-            f"{self.name}: [{self.df_train.shape[0]}/{self.df_test.shape[0]}] samples in train/test"
+            f"{self.name}: [{self.df_train.shape[0]}/{self.df_test.shape[0]}]"
+            " samples in train/test"
         )
         # because this generates new train/test sample quantaties, the feature extraction has to be done again
         glob_conf.config["FEATS"]["needs_feature_extraction"] = "True"
 
     def random_split(self):
         """One way to split train and eval sets: Specify percentage of random samples"""
-        test_percent = int(self.util.config_val_data(self.name, "testsplit", 50))
+        test_percent = int(
+            self.util.config_val_data(self.name, "testsplit", 50)
+        )
         df = self.df
         s_num = len(df)
         test_num = int(s_num * (test_percent / 100))
@@ -382,7 +426,8 @@ class Dataset:
         self.df_test = df[df.index.isin(test_smpls)]
         self.df_train = df[~df.index.isin(self.df_test.index)]
         self.util.debug(
-            f"{self.name}: [{self.df_train.shape[0]}/{self.df_test.shape[0]}] samples in train/test"
+            f"{self.name}: [{self.df_train.shape[0]}/{self.df_test.shape[0]}]"
+            " samples in train/test"
         )
         # because this generates new train/test sample quantaties, the feature extraction has to be done again
         glob_conf.config["FEATS"]["needs_feature_extraction"] = "True"
@@ -405,7 +450,8 @@ class Dataset:
             if self.util.config_val_data(self.name, "value_counts", False):
                 if not self.got_gender or not self.got_speaker:
                     self.util.error(
-                        "can't plot value counts if no speaker or gender is given"
+                        "can't plot value counts if no speaker or gender is"
+                        " given"
                     )
                 else:
                     self.plot.describe_df(
@@ -421,7 +467,8 @@ class Dataset:
             if self.util.config_val_data(self.name, "value_counts", False):
                 if not self.got_gender or not self.got_speaker:
                     self.util.error(
-                        "can't plot value counts if no speaker or gender is given"
+                        "can't plot value counts if no speaker or gender is"
+                        " given"
                     )
                 else:
                     self.plot.describe_df(
@@ -459,7 +506,7 @@ class Dataset:
             labels = ast.literal_eval(labels)
             df = df[df[target].isin(labels)]
         else:
-            labels = list(df[target].unique()) 
+            labels = list(df[target].unique())
         df["class_label"] = df[target]
         return df
 
@@ -472,7 +519,9 @@ class Dataset:
     def map_continuous_classification(self, df):
         """Map labels to bins for continuous data that should be classified"""
         if self.check_continuous_classification():
-            self.util.debug(f"{self.name}: binning continuous variable to categories")
+            self.util.debug(
+                f"{self.name}: binning continuous variable to categories"
+            )
             cat_vals = self.util.continuous_to_categorical(df[self.target])
             df[self.target] = cat_vals
             labels = ast.literal_eval(glob_conf.config["DATA"]["labels"])

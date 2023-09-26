@@ -55,27 +55,35 @@ class FeatureExtractor:
                 from nkululeko.feat_extract.feats_wav2vec2 import Wav2vec2
 
                 self.featExtractor = Wav2vec2(
-                    f"{store_name}_{self.feats_designation}", self.data_df, feats_type
+                    f"{store_name}_{self.feats_designation}",
+                    self.data_df,
+                    feats_type,
                 )
             elif feats_type.startswith("hubert"):
                 from nkululeko.feat_extract.feats_hubert import Hubert
 
                 self.featExtractor = Hubert(
-                    f"{store_name}_{self.feats_designation}", self.data_df, feats_type
+                    f"{store_name}_{self.feats_designation}",
+                    self.data_df,
+                    feats_type,
                 )
 
             elif feats_type.startswith("wavlm"):
                 from nkululeko.feat_extract.feats_wavlm import Wavlm
 
                 self.featExtractor = Wavlm(
-                    f"{store_name}_{self.feats_designation}", self.data_df, feats_type
+                    f"{store_name}_{self.feats_designation}",
+                    self.data_df,
+                    feats_type,
                 )
 
             elif feats_type.startswith("spkrec"):
                 from nkululeko.feat_extract.feats_spkrec import Spkrec
 
                 self.featExtractor = Spkrec(
-                    f"{store_name}_{self.feats_designation}", self.data_df, feats_type
+                    f"{store_name}_{self.feats_designation}",
+                    self.data_df,
+                    feats_type,
                 )
 
             elif feats_type == "audmodel":
@@ -85,22 +93,25 @@ class FeatureExtractor:
                     f"{store_name}_{self.feats_designation}", self.data_df
                 )
             elif feats_type == "auddim":
-                from nkululeko.feat_extract.feats_audmodel_dim import \
-                    AudModelDimSet
+                from nkululeko.feat_extract.feats_audmodel_dim import (
+                    AudModelDimSet,
+                )
 
                 self.featExtractor = AudModelDimSet(
                     f"{store_name}_{self.feats_designation}", self.data_df
                 )
             elif feats_type == "agender":
-                from nkululeko.feat_extract.feats_agender import \
-                    AudModelAgenderSet
+                from nkululeko.feat_extract.feats_agender import (
+                    AudModelAgenderSet,
+                )
 
                 self.featExtractor = AudModelAgenderSet(
                     f"{store_name}_{self.feats_designation}", self.data_df
                 )
             elif feats_type == "agender_agender":
-                from nkululeko.feat_extract.feats_agender_agender import \
-                    AgenderAgenderSet
+                from nkululeko.feat_extract.feats_agender_agender import (
+                    AgenderAgenderSet,
+                )
 
                 self.featExtractor = AgenderAgenderSet(
                     f"{store_name}_{self.feats_designation}", self.data_df
@@ -155,7 +166,9 @@ class FeatureExtractor:
             # remove samples that were not extracted by MLD
             # self.df_test = self.df_test.loc[self.df_test.index.intersection(featExtractor_test.df.index)]
             # self.df_train = self.df_train.loc[self.df_train.index.intersection(featExtractor_train.df.index)]
-            self.util.debug(f"{feats_type}: shape : {self.featExtractor.df.shape}")
+            self.util.debug(
+                f"{feats_type}: shape : {self.featExtractor.df.shape}"
+            )
             self.feats = pd.concat([self.feats, self.featExtractor.df], axis=1)
         return self.feats
 

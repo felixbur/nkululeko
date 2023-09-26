@@ -22,14 +22,19 @@ class MLD_set(Featureset):
             os.remove(storage)
         if not os.path.isfile(storage):
             self.util.debug(
-                "extracting midleveldescriptor features, this might take a while..."
+                "extracting midleveldescriptor features, this might take a"
+                " while..."
             )
         else:
-            self.util.debug("reusing previously extracted midleveldescriptor features")
+            self.util.debug(
+                "reusing previously extracted midleveldescriptor features"
+            )
         import midlevel_descriptors as mld
 
         fex_mld = mld.MLD()
-        self.df = fex_mld.extract_from_index(index=self.data_df, cache_path=storage)
+        self.df = fex_mld.extract_from_index(
+            index=self.data_df, cache_path=storage
+        )
         self.util.debug(f"MLD feats shape: {self.df.shape}")
         # shouldn't happen
         # replace NANa with column means values
@@ -37,7 +42,8 @@ class MLD_set(Featureset):
         for i, col in enumerate(self.df.columns):
             if self.df[col].isnull().values.any():
                 self.util.debug(
-                    f"{col} includes {self.df[col].isnull().sum()} nan, inserting mean values"
+                    f"{col} includes {self.df[col].isnull().sum()} nan,"
+                    " inserting mean values"
                 )
                 self.df[col] = self.df[col].fillna(self.df[col].mean())
 

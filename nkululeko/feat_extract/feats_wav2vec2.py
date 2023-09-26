@@ -9,6 +9,7 @@ from transformers import Wav2Vec2FeatureExtractor, Wav2Vec2Model
 from nkululeko.feat_extract.featureset import Featureset
 import nkululeko.glob_conf as glob_conf
 
+
 class Wav2vec2(Featureset):
     """Class to extract wav2vec2 embeddings"""
 
@@ -36,7 +37,9 @@ class Wav2vec2(Featureset):
         """Extract the features or load them from disk if present."""
         store = self.util.get_path("store")
         storage = f"{store}{self.name}.pkl"
-        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
+        extract = self.util.config_val(
+            "FEATS", "needs_feature_extraction", False
+        )
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             if not self.model_initialized:
@@ -46,16 +49,23 @@ class Wav2vec2(Featureset):
             )
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
             length = len(self.data_df.index)
-            for idx, (file, start, end) in enumerate(tqdm(self.data_df.index.to_list())):
-                signal, sampling_rate = torchaudio.load(file,
-                    frame_offset=int(start.total_seconds()*16000),
-                    num_frames=int((end - start).total_seconds()*16000))
-                assert sampling_rate == 16000, f"got {sampling_rate} instead of 16000"
+            for idx, (file, start, end) in enumerate(
+                tqdm(self.data_df.index.to_list())
+            ):
+                signal, sampling_rate = torchaudio.load(
+                    file,
+                    frame_offset=int(start.total_seconds() * 16000),
+                    num_frames=int((end - start).total_seconds() * 16000),
+                )
+                assert (
+                    sampling_rate == 16000
+                ), f"got {sampling_rate} instead of 16000"
                 emb = self.get_embeddings(signal, sampling_rate, file)
                 emb_series[idx] = emb
             print(f"emb_series shape: {emb_series.shape}")
-            self.df = pd.DataFrame(emb_series.values.tolist(), 
-                                   index=self.data_df.index)
+            self.df = pd.DataFrame(
+                emb_series.values.tolist(), index=self.data_df.index
+            )
             print(f"df shape: {self.df.shape}")
             self.df.to_pickle(storage)
             try:

@@ -23,7 +23,9 @@ class SNRSet(Featureset):
         store = self.util.get_path("store")
         store_format = self.util.config_val("FEATS", "store_format", "pkl")
         storage = f"{store}{self.name}.{store_format}"
-        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
+        extract = self.util.config_val(
+            "FEATS", "needs_feature_extraction", False
+        )
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             self.util.debug("estimating SNR, this might take a while...")
@@ -40,7 +42,9 @@ class SNRSet(Featureset):
                 snr = self.get_snr(signal[0], sampling_rate)
                 snr_series[idx] = snr
             print("")
-            self.df = pd.DataFrame(snr_series.values.tolist(), index=self.data_df.index)
+            self.df = pd.DataFrame(
+                snr_series.values.tolist(), index=self.data_df.index
+            )
             self.df.columns = ["snr"]
             self.util.write_store(self.df, storage, store_format)
             try:

@@ -23,7 +23,8 @@ class Demo_predictor:
             if not self.is_list:
                 sig, sr = audiofile.read(self.file)
                 print(
-                    f"predicting file: {self.file}, len: {len(sig)} bytes, sampling rate: {sr}"
+                    f"predicting file: {self.file}, len: {len(sig)} bytes,"
+                    f" sampling rate: {sr}"
                 )
                 self.predict_signal(sig, sr)
             else:

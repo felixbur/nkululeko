@@ -66,9 +66,12 @@ class Model:
             truth_x = feats.iloc[test_index].to_numpy()
             truth_y = targets[test_index]
             predict_y = self.clf.predict(truth_x)
-            report = Reporter(truth_y.astype(float), predict_y, self.run, self.epoch)
+            report = Reporter(
+                truth_y.astype(float), predict_y, self.run, self.epoch
+            )
             self.util.debug(
-                f"result for fold {g_index}: {report.get_result().get_test_result()} "
+                f"result for fold {g_index}:"
+                f" {report.get_result().get_test_result()} "
             )
             results.append(float(report.get_result().test))
             truths.append(truth_y)
@@ -87,7 +90,8 @@ class Model:
         self.preds = pred
         results = np.asarray(results)
         self.util.debug(
-            f"KFOLD: {self.xfoldx} folds: mean {results.mean():.3f}, std: {results.std():.3f}"
+            f"KFOLD: {self.xfoldx} folds: mean {results.mean():.3f}, std:"
+            f" {results.std():.3f}"
         )
 
     def _do_logo(self):
@@ -117,7 +121,9 @@ class Model:
             fold_count = annos["fold"].nunique()
             self.util.debug(f"using existing folds for {fold_count} groups")
         g_index = 0
-        self.util.debug(f"ignoring splits and doing LOGO with {fold_count} groups")
+        self.util.debug(
+            f"ignoring splits and doing LOGO with {fold_count} groups"
+        )
         # leave-one-group loop
         for train_index, test_index in _logo.split(
             feats,
@@ -131,7 +137,9 @@ class Model:
             truth_x = feats.iloc[test_index].to_numpy()
             truth_y = targets[test_index]
             predict_y = self.clf.predict(truth_x)
-            report = Reporter(truth_y.astype(float), predict_y, self.run, self.epoch)
+            report = Reporter(
+                truth_y.astype(float), predict_y, self.run, self.epoch
+            )
             result = report.get_result().get_test_result()
             self.util.debug(f"result for speaker group {g_index}: {result} ")
             results.append(float(report.get_result().test))
@@ -151,7 +159,8 @@ class Model:
         self.preds = pred
         results = np.asarray(results)
         self.util.debug(
-            f"LOGO: {self.logo} folds: mean {results.mean():.3f}, std: {results.std():.3f}"
+            f"LOGO: {self.logo} folds: mean {results.mean():.3f}, std:"
+            f" {results.std():.3f}"
         )
 
     def train(self):
@@ -175,15 +184,18 @@ class Model:
         # set up the data_loaders
         if self.feats_train.isna().to_numpy().any():
             self.util.debug(
-                f"Model, train: replacing {self.feats_train.isna().sum().sum()} NANs with 0"
+                "Model, train: replacing"
+                f" {self.feats_train.isna().sum().sum()} NANs with 0"
             )
             self.feats_train = self.feats_train.fillna(0)
         # remove labels from features
         feats = self.feats_train.to_numpy()
         # compute class weights
         if self.util.config_val("MODEL", "class_weight", False):
-            self.classes_weights = sklearn.utils.class_weight.compute_sample_weight(
-                class_weight="balanced", y=self.df_train[self.target]
+            self.classes_weights = (
+                sklearn.utils.class_weight.compute_sample_weight(
+                    class_weight="balanced", y=self.df_train[self.target]
+                )
             )
 
         tuning_params = self.util.config_val("MODEL", "tuning_params", False)
@@ -203,7 +215,9 @@ class Model:
                 self.clf, tuned_params, refit=True, verbose=3, scoring=scoring
             )
             try:
-                class_weight = self.util.config_val("MODEL", "class_weight", False)
+                class_weight = self.util.config_val(
+                    "MODEL", "class_weight", False
+                )
                 if class_weight:
                     self.util.debug("using class weight")
                     self.clf.fit(
@@ -236,7 +250,8 @@ class Model:
     def predict(self):
         if self.feats_test.isna().to_numpy().any():
             self.util.debug(
-                f"Model, test: replacing {self.feats_test.isna().sum().sum()} NANs with 0"
+                "Model, test: replacing"
+                f" {self.feats_test.isna().sum().sum()} NANs with 0"
             )
             self.feats_test = self.feats_test.fillna(0)
         if self.logo or self.xfoldx:

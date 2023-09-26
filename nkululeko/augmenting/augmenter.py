@@ -28,7 +28,9 @@ class Augmenter:
         # Define a standard transformation that randomly add augmentations to files
         self.audioment = Compose(
             [
-                AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.015, p=0.5),
+                AddGaussianNoise(
+                    min_amplitude=0.001, max_amplitude=0.015, p=0.5
+                ),
                 AddGaussianSNR(min_snr_db=10, max_snr_db=40, p=0.5),
                 TimeStretch(min_rate=0.8, max_rate=1.25, p=0.5),
                 PitchShift(min_semitones=-4, max_semitones=4, p=0.5),
@@ -60,12 +62,16 @@ class Augmenter:
             sig_aug = self.audioment(samples=signal, sample_rate=sr)
             newpath = f"{filepath}/{parent}/"
             audeer.mkdir(newpath)
-            audiofile.write(f"{newpath}{filename}", signal=sig_aug, sampling_rate=sr)
+            audiofile.write(
+                f"{newpath}{filename}", signal=sig_aug, sampling_rate=sr
+            )
         df_ret = self.df.copy()
         df_ret = df_ret.set_index(
             map_file_path(df_ret.index, lambda x: self.changepath(x, newpath))
         )
-        aug_db_filename = self.util.config_val("DATA", "augment_result", "augment.csv")
+        aug_db_filename = self.util.config_val(
+            "DATA", "augment_result", "augment.csv"
+        )
         target = self.util.config_val("DATA", "target", "emotion")
         df_ret[target] = df_ret["class_label"]
         df_ret = df_ret.drop(columns=["class_label"])

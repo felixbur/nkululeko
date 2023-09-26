@@ -31,7 +31,7 @@ class Resampler:
         if not replace:
             new_files = []
         for i, f in enumerate(files):
-            signal, org_sr = torchaudio.load(f'{f}')   # handle spaces
+            signal, org_sr = torchaudio.load(f"{f}")  # handle spaces
             # if f cannot be loaded, give warning and skip
             if signal.shape[0] == 0:
                 self.util.warn(f"cannot load {f}")
@@ -39,27 +39,39 @@ class Resampler:
                 continue
             if org_sr != self.SAMPLING_RATE:
                 self.util.debug(f"resampling {f} (sr = {org_sr})")
-                resampler = torchaudio.transforms.Resample(org_sr, 
-                    self.SAMPLING_RATE)
+                resampler = torchaudio.transforms.Resample(
+                    org_sr, self.SAMPLING_RATE
+                )
                 signal = resampler(signal)
                 if replace:
-                    torchaudio.save(os.path.splitext(f)[0] + '.wav', signal, self.SAMPLING_RATE)
+                    torchaudio.save(
+                        os.path.splitext(f)[0] + ".wav",
+                        signal,
+                        self.SAMPLING_RATE,
+                    )
                 else:
-                    new_file_name = os.path.splitext(f)[0]+'_16kHz.wav'
+                    new_file_name = os.path.splitext(f)[0] + "_16kHz.wav"
                     torchaudio.save(new_file_name, signal, self.SAMPLING_RATE)
                     new_files.append(new_file_name)
                 succes += 1
         if not replace:
-            self.df = self.df.set_index(self.df.index.set_levels(new_files, level="file"))
-            target_file = self.util.config_val('RESAMPLE', 'target', 'resampled.csv')
+            self.df = self.df.set_index(
+                self.df.index.set_levels(new_files, level="file")
+            )
+            target_file = self.util.config_val(
+                "RESAMPLE", "target", "resampled.csv"
+            )
             # remove encoded labels
-            target = self.util.config_val('DATA', 'target', 'emotion')
-            if 'class_label' in self.df.columns:
+            target = self.util.config_val("DATA", "target", "emotion")
+            if "class_label" in self.df.columns:
                 self.df = self.df.drop(columns=[target])
-                self.df = self.df.rename(columns={'class_label':target})
+                self.df = self.df.rename(columns={"class_label": target})
             # save file
             self.df.to_csv(target_file)
-            self.util.debug(f'saved resampled list of files to {os.path.abspath(target_file)}')            
+            self.util.debug(
+                "saved resampled list of files to"
+                f" {os.path.abspath(target_file)}"
+            )
         self.util.debug(f"resampled {succes} files, {error} errors")
 
 

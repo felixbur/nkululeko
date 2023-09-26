@@ -42,9 +42,9 @@ class MLP_model(Model):
         drop = self.util.config_val("MODEL", "drop", False)
         if drop:
             self.util.debug(f"init: training with dropout: {drop}")
-        self.model = self.MLP(feats_train.shape[1], layers, self.class_num, drop).to(
-            self.device
-        )
+        self.model = self.MLP(
+            feats_train.shape[1], layers, self.class_num, drop
+        ).to(self.device)
         self.learning_rate = float(
             self.util.config_val("MODEL", "learning_rate", 0.0001)
         )
@@ -58,12 +58,14 @@ class MLP_model(Model):
         self.num_workers = int(self.util.config_val("MODEL", "num_workers", 5))
         if feats_train.isna().to_numpy().any():
             self.util.debug(
-                f"Model, train: replacing {feats_train.isna().sum().sum()} NANs with 0"
+                f"Model, train: replacing {feats_train.isna().sum().sum()} NANs"
+                " with 0"
             )
             feats_train = feats_train.fillna(0)
         if feats_test.isna().to_numpy().any():
             self.util.debug(
-                f"Model, test: replacing {feats_test.isna().sum().sum()} NANs with 0"
+                f"Model, test: replacing {feats_test.isna().sum().sum()} NANs"
+                " with 0"
             )
             feats_test = feats_test.fillna(0)
         # set up the data_loaders
@@ -81,7 +83,9 @@ class MLP_model(Model):
         losses = []
         for features, labels in self.trainloader:
             logits = self.model(features.to(self.device))
-            loss = self.criterion(logits, labels.to(self.device, dtype=torch.int64))
+            loss = self.criterion(
+                logits, labels.to(self.device, dtype=torch.int64)
+            )
             losses.append(loss.item())
             self.optimizer.zero_grad()
             loss.backward()
@@ -92,11 +96,15 @@ class MLP_model(Model):
         _, truths, predictions = self.evaluate_model(
             self.model, self.testloader, self.device
         )
-        uar, _, _ = self.evaluate_model(self.model, self.trainloader, self.device)
+        uar, _, _ = self.evaluate_model(
+            self.model, self.trainloader, self.device
+        )
         report = Reporter(truths, predictions, self.run, self.epoch)
         try:
             report.result.loss = self.loss
-        except AttributeError:  # if the model was loaded from disk the loss is unknown
+        except (
+            AttributeError
+        ):  # if the model was loaded from disk the loss is unknown
             pass
         report.result.train = uar
         return report
@@ -153,7 +161,9 @@ class MLP_model(Model):
                 targets[start_index:end_index] = labels
 
         predictions = logits.argmax(dim=1)
-        uar = recall_score(targets.numpy(), predictions.numpy(), average="macro")
+        uar = recall_score(
+            targets.numpy(), predictions.numpy(), average="macro"
+        )
         return uar, targets, predictions
 
     def predict_sample(self, features):

@@ -1,10 +1,11 @@
 # dataset_csv.py
 import os
 import os.path
-
-import audformat.utils
 import pandas as pd
+import audformat.utils
 from nkululeko.data.dataset import Dataset
+import nkululeko.glob_conf as glob_conf
+from nkululeko.reporting.report_item import ReportItem
 
 
 class Dataset_CSV(Dataset):
@@ -45,13 +46,15 @@ class Dataset_CSV(Dataset):
         self.db = None
         self.got_target = True
         self.is_labeled = self.got_target
-        self.start_fresh = eval(self.util.config_val("DATA", "no_reuse", "False"))
+        self.start_fresh = eval(
+            self.util.config_val("DATA", "no_reuse", "False")
+        )
         if self.is_labeled and not "class_label" in self.df.columns:
             self.df["class_label"] = self.df[self.target]
         if "gender" in self.df.columns:
             self.got_gender = True
         elif "sex" in self.df.columns:
-            self.df = self.df.rename(columns={'sex':'gender'})            
+            self.df = self.df.rename(columns={"sex": "gender"})
             self.got_gender = True
         if "age" in self.df.columns:
             self.got_age = True
@@ -60,12 +63,14 @@ class Dataset_CSV(Dataset):
         speaker_num = 0
         if self.got_speaker:
             speaker_num = self.df.speaker.nunique()
-        self.util.debug(
-            f"Loaded database {self.name} with {df.shape[0]} "
-            f"samples: got targets: {self.got_target}, got speakers: {self.got_speaker} ({speaker_num}), "
-            f"got sexes: {self.got_gender}, "
-            f"got age: {self.got_age}"
+        r_string = (
+            f"Loaded database {self.name} with {df.shape[0]} samples: got"
+            f" targets: {self.got_target}, got speakers:"
+            f" {self.got_speaker} ({speaker_num}), got sexes:"
+            f" {self.got_gender}, got age: {self.got_age}"
         )
+        self.util.debug(r_string)
+        glob_conf.report.add_item(ReportItem("Data", "Loaded report", r_string))
 
     def prepare(self):
         super().prepare()

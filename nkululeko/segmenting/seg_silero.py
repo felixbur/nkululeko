@@ -44,7 +44,9 @@ class Silero_segmenter:
         print(".", end="", flush=True)
         if self.no_testing:
             min_length = float(self.util.config_val("SEGMENT", "min_length", 2))
-            max_length = float(self.util.config_val("SEGMENT", "max_length", 10))
+            max_length = float(
+                self.util.config_val("SEGMENT", "max_length", 10)
+            )
         else:
             min_length = 2
             max_length = 10

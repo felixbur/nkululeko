@@ -23,16 +23,21 @@ class Praatset(Featureset):
         store = self.util.get_path("store")
         store_format = self.util.config_val("FEATS", "store_format", "pkl")
         storage = f"{store}{self.name}.{store_format}"
-        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
+        extract = self.util.config_val(
+            "FEATS", "needs_feature_extraction", False
+        )
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
-            self.util.debug("extracting Praat features, this might take a while...")
+            self.util.debug(
+                "extracting Praat features, this might take a while..."
+            )
             self.df = feinberg_praat.compute_features(self.data_df.index)
             self.df = self.df.set_index(self.data_df.index)
             for i, col in enumerate(self.df.columns):
                 if self.df[col].isnull().values.any():
                     self.util.debug(
-                        f"{col} includes {self.df[col].isnull().sum()} nan, inserting mean values"
+                        f"{col} includes {self.df[col].isnull().sum()} nan,"
+                        " inserting mean values"
                     )
                     self.df[col] = self.df[col].fillna(self.df[col].mean())
 
@@ -48,7 +53,9 @@ class Praatset(Featureset):
         self.df = self.df.astype(float)
 
     def extract_sample(self, signal, sr):
-        self.util.error("feats_praat: extracting single samples not implemented yet")
+        self.util.error(
+            "feats_praat: extracting single samples not implemented yet"
+        )
         feats = None
         return feats
 
@@ -60,7 +67,9 @@ class Praatset(Featureset):
             selected_features = ast.literal_eval(
                 glob_conf.config["FEATS"]["praat.features"]
             )
-            self.util.debug(f"selecting features from Praat: {selected_features}")
+            self.util.debug(
+                f"selecting features from Praat: {selected_features}"
+            )
             sel_feats_df = pd.DataFrame()
             hit = False
             for feat in selected_features:
@@ -72,7 +81,8 @@ class Praatset(Featureset):
             if hit:
                 self.df = sel_feats_df
                 self.util.debug(
-                    f"new feats shape after selecting Praat features: {self.df.shape}"
+                    "new feats shape after selecting Praat features:"
+                    f" {self.df.shape}"
                 )
         except KeyError:
             pass

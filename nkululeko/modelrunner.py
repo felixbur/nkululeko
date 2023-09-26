@@ -46,7 +46,9 @@ class Modelrunner:
                 self.model.train()
             report = self.model.predict()
             report.set_id(self.run, epoch)
-            plot_name = self.util.get_plot_name() + f"_{self.run}_{epoch:03d}_cnf"
+            plot_name = (
+                self.util.get_plot_name() + f"_{self.run}_{epoch:03d}_cnf"
+            )
             reports.append(report)
             self.util.debug(
                 f"run: {self.run} epoch: {epoch}: result: "
@@ -151,6 +153,7 @@ class Modelrunner:
             self.util.error(f"unknown model type: '{model_type}'")
         if self.util.exp_is_classification() and not self.model.is_classifier:
             self.util.error(
-                "Experiment type set to classification but model type is not a classifier"
+                "Experiment type set to classification but model type is not a"
+                " classifier"
             )
         return self.model

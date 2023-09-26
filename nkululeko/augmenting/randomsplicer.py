@@ -52,7 +52,9 @@ class Randomsplicer:
         store = self.util.get_path("store")
         filepath = f"{store}randomspliced/"
         audeer.mkdir(filepath)
-        self.util.debug(f"random splicing {sample_selection} samples to {filepath}")
+        self.util.debug(
+            f"random splicing {sample_selection} samples to {filepath}"
+        )
         newpath = ""
         for i, f in enumerate(tqdm(files)):
             signal, sr = af.read(f)

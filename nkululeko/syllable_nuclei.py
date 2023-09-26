@@ -61,7 +61,6 @@
 # I changed all the variable names so they are human readable
 
 
-
 import math
 import pandas as pd
 import parselmouth
@@ -95,7 +94,15 @@ def speech_rate(filename):
         threshold = min_intensity
 
     # get pauses (silences) and speakingtime
-    textgrid = call(intensity, "To TextGrid (silences)", threshold3, minpause, 0.1, "silent", "sounding")
+    textgrid = call(
+        intensity,
+        "To TextGrid (silences)",
+        threshold3,
+        minpause,
+        0.1,
+        "silent",
+        "sounding",
+    )
     silencetier = call(textgrid, "Extract tier", 1)
     silencetable = call(silencetier, "Down to TableOfReal", "sounding")
     npauses = call(silencetable, "Get number of rows")
@@ -113,18 +120,32 @@ def speech_rate(filename):
     # use total duration, not end time, to find out duration of intdur (intensity_duration)
     # in order to allow nonzero starting times.
     intensity_duration = call(sound_from_intensity_matrix, "Get total duration")
-    intensity_max = call(sound_from_intensity_matrix, "Get maximum", 0, 0, "Parabolic")
-    point_process = call(sound_from_intensity_matrix, "To PointProcess (extrema)", "Left", "yes", "no", "Sinc70")
+    intensity_max = call(
+        sound_from_intensity_matrix, "Get maximum", 0, 0, "Parabolic"
+    )
+    point_process = call(
+        sound_from_intensity_matrix,
+        "To PointProcess (extrema)",
+        "Left",
+        "yes",
+        "no",
+        "Sinc70",
+    )
     # estimate peak positions (all peaks)
     numpeaks = call(point_process, "Get number of points")
-    t = [call(point_process, "Get time from index", i + 1) for i in range(numpeaks)]
+    t = [
+        call(point_process, "Get time from index", i + 1)
+        for i in range(numpeaks)
+    ]
 
     # fill array with intensity values
     timepeaks = []
     peakcount = 0
     intensities = []
     for i in range(numpeaks):
-        value = call(sound_from_intensity_matrix, "Get value at time", t[i], "Cubic")
+        value = call(
+            sound_from_intensity_matrix, "Get value at time", t[i], "Cubic"
+        )
         if value > threshold:
             peakcount += 1
             intensities.append(value)
@@ -140,16 +161,22 @@ def speech_rate(filename):
     for p in range(peakcount - 1):
         following = p + 1
         followingtime = timepeaks[p + 1]
-        dip = call(intensity, "Get minimum", currenttime, timepeaks[p + 1], "None")
+        dip = call(
+            intensity, "Get minimum", currenttime, timepeaks[p + 1], "None"
+        )
         diffint = abs(currentint - dip)
         if diffint > mindip:
             validpeakcount += 1
             validtime.append(timepeaks[p])
         currenttime = timepeaks[following]
-        currentint = call(intensity, "Get value at time", timepeaks[following], "Cubic")
+        currentint = call(
+            intensity, "Get value at time", timepeaks[following], "Cubic"
+        )
 
     # Look for only voiced parts
-    pitch = sound.to_pitch_ac(0.02, 30, 4, False, 0.03, 0.25, 0.01, 0.35, 0.25, 450)
+    pitch = sound.to_pitch_ac(
+        0.02, 30, 4, False, 0.03, 0.25, 0.01, 0.35, 0.25, 450
+    )
     voicedcount = 0
     voicedpeak = []
 
@@ -157,7 +184,7 @@ def speech_rate(filename):
         querytime = validtime[time]
         whichinterval = call(textgrid, "Get interval at time", 1, querytime)
         whichlabel = call(textgrid, "Get label of interval", 1, whichinterval)
-        value = pitch.get_value_at_time(querytime) 
+        value = pitch.get_value_at_time(querytime)
         if not math.isnan(value):
             if whichlabel == "sounding":
                 voicedcount += 1
@@ -170,7 +197,7 @@ def speech_rate(filename):
     # Insert voiced peaks in TextGrid
     call(textgrid, "Insert point tier", 1, "syllables")
     for i in range(len(voicedpeak)):
-        position = (voicedpeak[i] * timecorrection)
+        position = voicedpeak[i] * timecorrection
         call(textgrid, "Insert point", 1, position, "")
 
     # return results
@@ -181,43 +208,54 @@ def speech_rate(filename):
         asd = speakingtot / voicedcount
     except ZeroDivisionError:
         asd = 0
-        print('caught zero division')
-    speechrate_dictionary = {'file':file,
-                             'nsyll':voicedcount,
-                             'npause': npause,
-                             'dur(s)':originaldur,
-                             'phonationtime(s)':intensity_duration,
-                             'speechrate(nsyll / dur)': speakingrate,
-                             "articulation rate(nsyll / phonationtime)":articulationrate,
-                             "ASD(speakingtime / nsyll)":asd}
+        print("caught zero division")
+    speechrate_dictionary = {
+        "file": file,
+        "nsyll": voicedcount,
+        "npause": npause,
+        "dur(s)": originaldur,
+        "phonationtime(s)": intensity_duration,
+        "speechrate(nsyll / dur)": speakingrate,
+        "articulation rate(nsyll / phonationtime)": articulationrate,
+        "ASD(speakingtime / nsyll)": asd,
+    }
     return speechrate_dictionary
 
 
 def get_files():
-    audio_dir = '/home/audeering.local/fburkhardt/audb/projectsmile-speakingrate-agent/3.0.0/fe182b91/audio/'
-    files = glob(f'{audio_dir}/*.wav')
-    files.extend(glob('test_voices/*.mp3'))
-    files.extend(glob('test_voices/*.ogg'))
-    files.extend(glob('test_voices/*.aiff'))
-    files.extend(glob('test_voices/*.aifc'))
-    files.extend(glob('test_voices/*.au'))
-    files.extend(glob('test_voices/*.nist'))
-    files.extend(glob('test_voices/*.flac'))
+    audio_dir = "/home/audeering.local/fburkhardt/audb/projectsmile-speakingrate-agent/3.0.0/fe182b91/audio/"
+    files = glob(f"{audio_dir}/*.wav")
+    files.extend(glob("test_voices/*.mp3"))
+    files.extend(glob("test_voices/*.ogg"))
+    files.extend(glob("test_voices/*.aiff"))
+    files.extend(glob("test_voices/*.aifc"))
+    files.extend(glob("test_voices/*.au"))
+    files.extend(glob("test_voices/*.nist"))
+    files.extend(glob("test_voices/*.flac"))
     return files
 
 
 if __name__ == "__main__":
     files = get_files()
     import audformat
-    df_test = audformat.utils.read_csv('speechrate_tests.csv')
+
+    df_test = audformat.utils.read_csv("speechrate_tests.csv")
     files = df_test.index.values
-    cols = ['file', 'nsyll', 'npause', 'dur(s)', 'phonationtime(s)', 'speechrate(nsyll / dur)', 'articulation '
-            'rate(nsyll / phonationtime)', 'ASD(speakingtime / nsyll)']
+    cols = [
+        "file",
+        "nsyll",
+        "npause",
+        "dur(s)",
+        "phonationtime(s)",
+        "speechrate(nsyll / dur)",
+        "articulation rate(nsyll / phonationtime)",
+        "ASD(speakingtime / nsyll)",
+    ]
     datalist = []
     for index, file in enumerate(tqdm(files)):
         # print(f'processing {file}')
         speechrate_dictionary = speech_rate(file)
         datalist.append(speechrate_dictionary)
     df = pd.DataFrame(datalist)
-    print(f'processed {index} files')
-    df.to_csv('speechrate_data.csv', index=0)
+    print(f"processed {index} files")
+    df.to_csv("speechrate_data.csv", index=0)

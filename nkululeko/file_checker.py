@@ -39,9 +39,7 @@ class FileChecker:
             min = self.util.config_val_data(data_name, "check_size", False)
         if min:
             if min == "True":
-                min = (
-                    1000  # 1000 bytes would be a reasonable minimal size for 16 kHz sr
-                )
+                min = 1000  # 1000 bytes would be a reasonable minimal size for 16 kHz sr
             old_samples = self.df.shape[0]
             df = self.df.copy()
             for i in self.df.index:
@@ -50,7 +48,8 @@ class FileChecker:
                 if file_size < int(min):
                     df = df.drop(i, axis=0)
             self.util.debug(
-                f"{data_name}: checked for samples less than {min} bytes, reduced samples from {old_samples} to {df.shape[0]}"
+                f"{data_name}: checked for samples less than {min} bytes,"
+                f" reduced samples from {old_samples} to {df.shape[0]}"
             )
             self.util.copy_flags(self.df, df)
             self.df = df
@@ -67,7 +66,9 @@ class FileChecker:
         else:
             check = self.util.config_val_data(data_name, "check_vad", False)
         if check:
-            self.util.debug(f"{data_name}: checking for samples without speech.")
+            self.util.debug(
+                f"{data_name}: checking for samples without speech."
+            )
             SAMPLING_RATE = 16000
             (
                 get_speech_timestamps,
@@ -88,7 +89,8 @@ class FileChecker:
                     self.util.debug(f"{file}: no speech detected")
                     df = df.drop(i, axis=0)
             self.util.debug(
-                f"{data_name}: checked for samples without speech, reduced samples from {old_samples} to {df.shape[0]}"
+                f"{data_name}: checked for samples without speech, reduced"
+                f" samples from {old_samples} to {df.shape[0]}"
             )
             self.util.copy_flags(self.df, df)
             self.df = df

@@ -3,7 +3,6 @@ from torch.nn.functional import one_hot, softmax
 
 
 class SoftF1Loss(torch.nn.Module):
-
     """differentiable F1 loss, adapted from
     https://gist.github.com/SuperShinyEyes/dcc68a08ff8b615442e3bc6a9b55a354
 

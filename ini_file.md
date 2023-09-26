@@ -337,6 +337,8 @@
 
 ### REPORT
 * **show**: print the report at the end
-  * show = True
-* **latex**: generate a latex and pdf document
-  * latex = True
+  * show = False
+* **latex**: generate a latex and pdf document: name of document
+  * latex = False
+* **title**: title for document
+* **author**: author for document

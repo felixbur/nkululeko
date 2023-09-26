@@ -43,16 +43,24 @@ class TRILLset(Featureset):
     def extract(self):
         store = self.util.get_path("store")
         storage = f"{store}{self.name}.pkl"
-        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
+        extract = self.util.config_val(
+            "FEATS", "needs_feature_extraction", False
+        )
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
-            self.util.debug("extracting TRILL embeddings, this might take a while...")
+            self.util.debug(
+                "extracting TRILL embeddings, this might take a while..."
+            )
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
             length = len(self.data_df.index)
-            for idx, file in enumerate(tqdm(self.data_df.index.get_level_values(0))):
+            for idx, file in enumerate(
+                tqdm(self.data_df.index.get_level_values(0))
+            ):
                 emb = self.getEmbeddings(file)
                 emb_series[idx] = emb
-            self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
+            self.df = pd.DataFrame(
+                emb_series.values.tolist(), index=self.data_df.index
+            )
             self.df.to_pickle(storage)
             try:
                 glob_conf.config["DATA"]["needs_feature_extraction"] = "false"

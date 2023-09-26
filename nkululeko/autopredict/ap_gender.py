@@ -21,7 +21,9 @@ class GenderPredictor:
 
     def predict(self, split_selection):
         self.util.debug(f"predicting gender for {split_selection} samples")
-        feats_name = "_".join(ast.literal_eval(glob_conf.config["DATA"]["databases"]))
+        feats_name = "_".join(
+            ast.literal_eval(glob_conf.config["DATA"]["databases"])
+        )
         self.feature_extractor = FeatureExtractor(
             self.df, ["agender_agender"], feats_name, split_selection
         )

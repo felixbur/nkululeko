@@ -12,14 +12,21 @@ import os
 
 
 def main(src_dir):
-    parser = argparse.ArgumentParser(description="Call the nkululeko framework.")
-    parser.add_argument("--config", default="exp.ini", help="The base configuration")
+    parser = argparse.ArgumentParser(
+        description="Call the nkululeko framework."
+    )
+    parser.add_argument(
+        "--config", default="exp.ini", help="The base configuration"
+    )
     parser.add_argument(
         "--file", help="A file that should be processed (16kHz mono wav)"
     )
     parser.add_argument(
         "--list",
-        help="A file with a list of files, one per line, that should be processed (16kHz mono wav)",
+        help=(
+            "A file with a list of files, one per line, that should be"
+            " processed (16kHz mono wav)"
+        ),
     )
     args = parser.parse_args()
     if args.config is not None:
@@ -40,7 +47,8 @@ def main(src_dir):
     expr = Experiment(config)
     util = Util("demo")
     util.debug(
-        f"running {expr.name} from config {config_file}, nkululeko version {VERSION}"
+        f"running {expr.name} from config {config_file}, nkululeko version"
+        f" {VERSION}"
     )
 
     # load the experiment
@@ -58,4 +66,6 @@ def main(src_dir):
 
 if __name__ == "__main__":
     cwd = os.path.dirname(os.path.abspath(__file__))
-    main(cwd)  # use this if you want to state the config file path on command line
+    main(
+        cwd
+    )  # use this if you want to state the config file path on command line

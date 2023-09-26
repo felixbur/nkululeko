@@ -23,7 +23,9 @@ class AudModelDimSet(Featureset):
         if not os.path.isdir(model_root):
             cache_root = audeer.mkdir("cache")
             model_root = audeer.mkdir(model_root)
-            archive_path = audeer.download_url(model_url, cache_root, verbose=True)
+            archive_path = audeer.download_url(
+                model_url, cache_root, verbose=True
+            )
             audeer.extract_archive(archive_path, model_root)
         device = self.util.config_val("MODEL", "device", "cpu")
         self.model = audonnx.load(model_root, device=device)

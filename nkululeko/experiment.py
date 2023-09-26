@@ -43,7 +43,7 @@ class Experiment:
         self.util = Util("experiment")
         glob_conf.set_util(self.util)
         try:
-            with open(self.data_dir+'/report.pkl', 'rb') as handle:
+            with open(self.data_dir + "/report.pkl", "rb") as handle:
                 self.report = pickle.load(handle)
         except FileNotFoundError:
             self.report = Report()
@@ -54,8 +54,12 @@ class Experiment:
         self.start = time.process_time()
 
     def store_report(self):
-        with open(self.data_dir+'/report.pkl', 'wb') as handle:
+        with open(self.data_dir + "/report.pkl", "wb") as handle:
             pickle.dump(self.report, handle)
+        if eval(self.util.config_val("REPORT", "show", "False")):
+            self.report.print()
+        if self.util.config_val("REPORT", "latex", False):
+            self.report.export_latex() 
 
     def get_name(self):
         return self.util.get_exp_name()
@@ -92,7 +96,9 @@ class Experiment:
         if labels:
             labels = ast.literal_eval(labels)
         else:
-            labels = list(next(iter(self.datasets.values())).df[self.target].unique())
+            labels = list(
+                next(iter(self.datasets.values())).df[self.target].unique()
+            )
         glob_conf.set_labels(labels)
         self.util.debug(f"loaded databases {dbs}")
 
@@ -206,7 +212,8 @@ class Experiment:
             self.df_test = datafilter.all_filters()
         else:
             self.util.error(
-                f"unkown filter sample selection specifier {filter_sample_selection}, should be [all | train | test]"
+                "unkown filter sample selection specifier"
+                f" {filter_sample_selection}, should be [all | train | test]"
             )
 
         # encode the labels
@@ -252,22 +259,25 @@ class Experiment:
             glob_conf.set_label_encoder(self.label_encoder)
         if self.got_speaker:
             self.util.debug(
-                f"{self.df_test.speaker.nunique()} speakers in test and {self.df_train.speaker.nunique()} speakers in train"
+                f"{self.df_test.speaker.nunique()} speakers in test and"
+                f" {self.df_train.speaker.nunique()} speakers in train"
             )
 
         target_factor = self.util.config_val("DATA", "target_divide_by", False)
         if target_factor:
-            self.df_test[self.target] = self.df_test[self.target] / float(target_factor)
+            self.df_test[self.target] = self.df_test[self.target] / float(
+                target_factor
+            )
             self.df_train[self.target] = self.df_train[self.target] / float(
                 target_factor
             )
             if not self.util.exp_is_classification():
-                self.df_test["class_label"] = self.df_test["class_label"] / float(
-                    target_factor
-                )
-                self.df_train["class_label"] = self.df_train["class_label"] / float(
-                    target_factor
-                )
+                self.df_test["class_label"] = self.df_test[
+                    "class_label"
+                ] / float(target_factor)
+                self.df_train["class_label"] = self.df_train[
+                    "class_label"
+                ] / float(target_factor)
 
     def _add_random_target(self, df):
         labels = glob_conf.labels
@@ -280,7 +290,9 @@ class Experiment:
     def plot_distribution(self):
         """Plot the distribution of samples and speaker per target class and biological sex"""
         plot = Plots()
-        sample_selection = self.util.config_val("EXPL", "sample_selection", "all")
+        sample_selection = self.util.config_val(
+            "EXPL", "sample_selection", "all"
+        )
         if sample_selection == "all":
             df_labels = pd.concat([self.df_train, self.df_test])
             self.util.copy_flags(self.df_train, df_labels)
@@ -292,7 +304,8 @@ class Experiment:
             self.util.copy_flags(self.df_test, df_labels)
         else:
             self.util.error(
-                f"unkown sample selection specifier {sample_selection}, should be [all | train | test]"
+                f"unkown sample selection specifier {sample_selection}, should"
+                " be [all | train | test]"
             )
 
         plot.plot_distributions(df_labels)
@@ -301,7 +314,9 @@ class Experiment:
 
     def extract_test_feats(self):
         self.feats_test = pd.DataFrame()
-        feats_name = "_".join(ast.literal_eval(glob_conf.config["DATA"]["tests"]))
+        feats_name = "_".join(
+            ast.literal_eval(glob_conf.config["DATA"]["tests"])
+        )
         feats_types = self.util.config_val_list("FEATS", "type", ["os"])
         self.feature_extractor = FeatureExtractor(
             self.df_test, feats_types, feats_name, "test"
@@ -318,7 +333,9 @@ class Experiment:
 
         """
         df_train, df_test = self.df_train, self.df_test
-        feats_name = "_".join(ast.literal_eval(glob_conf.config["DATA"]["databases"]))
+        feats_name = "_".join(
+            ast.literal_eval(glob_conf.config["DATA"]["databases"])
+        )
         self.feats_test, self.feats_train = pd.DataFrame(), pd.DataFrame()
         feats_types = self.util.config_val_list("FEATS", "type", ["os"])
         self.feature_extractor = FeatureExtractor(
@@ -330,16 +347,27 @@ class Experiment:
         )
         self.feats_test = self.feature_extractor.extract()
         self.util.debug(
-            f"All features: train shape : {self.feats_train.shape}, test shape:{self.feats_test.shape}"
+            f"All features: train shape : {self.feats_train.shape}, test"
+            f" shape:{self.feats_test.shape}"
         )
         if self.feats_train.shape[0] < self.df_train.shape[0]:
-            self.util.warn(f'train feats ({self.feats_train.shape[0]}) != train labels ({self.df_train.shape[0]})')
-            self.df_train = self.df_train[self.df_train.index.isin(self.feats_train.index)]
-            self.util.warn(f'mew train labels shape: {self.df_train.shape[0]}')
+            self.util.warn(
+                f"train feats ({self.feats_train.shape[0]}) != train labels"
+                f" ({self.df_train.shape[0]})"
+            )
+            self.df_train = self.df_train[
+                self.df_train.index.isin(self.feats_train.index)
+            ]
+            self.util.warn(f"mew train labels shape: {self.df_train.shape[0]}")
         if self.feats_test.shape[0] < self.df_test.shape[0]:
-            self.util.warn(f'test feats ({self.feats_test.shape[0]}) != test labels ({self.df_test.shape[0]})')
-            self.df_test = self.df_test[self.df_test.index.isin(self.feats_test.index)]
-            self.util.warn(f'mew test labels shape: {self.df_test.shape[0]}')
+            self.util.warn(
+                f"test feats ({self.feats_test.shape[0]}) != test labels"
+                f" ({self.df_test.shape[0]})"
+            )
+            self.df_test = self.df_test[
+                self.df_test.index.isin(self.feats_test.index)
+            ]
+            self.util.warn(f"mew test labels shape: {self.df_test.shape[0]}")
 
         self._check_scale()
 
@@ -358,7 +386,8 @@ class Experiment:
             df = self.df_test
         else:
             self.util.error(
-                f"unknown augmentation selection specifier {sample_selection}, should be [all | train | test]"
+                f"unknown augmentation selection specifier {sample_selection},"
+                " should be [all | train | test]"
             )
 
         augmenter = Augmenter(df)
@@ -377,7 +406,8 @@ class Experiment:
             df = self.df_test
         else:
             self.util.error(
-                f"unknown augmentation selection specifier {sample_selection}, should be [all | train | test]"
+                f"unknown augmentation selection specifier {sample_selection},"
+                " should be [all | train | test]"
             )
         targets = self.util.config_val_list("PREDICT", "targets", ["gender"])
         for target in targets:
@@ -427,7 +457,9 @@ class Experiment:
                 predictor = ValencePredictor(df)
                 df = predictor.predict(sample_selection)
             elif target == "dominance":
-                from nkululeko.autopredict.ap_dominance import DominancePredictor
+                from nkululeko.autopredict.ap_dominance import (
+                    DominancePredictor,
+                )
 
                 predictor = DominancePredictor(df)
                 df = predictor.predict(sample_selection)
@@ -441,7 +473,9 @@ class Experiment:
         """
         from nkululeko.augmenting.randomsplicer import Randomsplicer
 
-        sample_selection = self.util.config_val("DATA", "random_splice", "train")
+        sample_selection = self.util.config_val(
+            "DATA", "random_splice", "train"
+        )
         if sample_selection == "all":
             df = pd.concat([self.df_train, self.df_test])
         elif sample_selection == "train":
@@ -450,7 +484,8 @@ class Experiment:
             df = self.df_test
         else:
             self.util.error(
-                f"unknown augmentation selection specifier {sample_selection}, should be [all | train | test]"
+                f"unknown augmentation selection specifier {sample_selection},"
+                " should be [all | train | test]"
             )
         randomsplicer = Randomsplicer(df)
         randomsplicer.run(sample_selection)
@@ -464,7 +499,9 @@ class Experiment:
         plot_feats = eval(
             self.util.config_val("EXPL", "feature_distributions", "False")
         )
-        sample_selection = self.util.config_val("EXPL", "sample_selection", "all")
+        sample_selection = self.util.config_val(
+            "EXPL", "sample_selection", "all"
+        )
 
         if self.util.config_val("EXPL", "value_counts", False):
             self.plot_distribution()
@@ -481,11 +518,14 @@ class Experiment:
             df_labels = self.df_test
         else:
             self.util.error(
-                f"unknown sample selection specifier {sample_selection}, should be [all | train | test]"
+                f"unknown sample selection specifier {sample_selection}, should"
+                " be [all | train | test]"
             )
 
         if plot_feats:
-            feat_analyser = FeatureAnalyser(sample_selection, df_labels, df_feats)
+            feat_analyser = FeatureAnalyser(
+                sample_selection, df_labels, df_feats
+            )
             feat_analyser.analyse()
 
         # check if a scatterplot should be done
@@ -495,7 +535,9 @@ class Experiment:
             if self.util.exp_is_classification():
                 plots = Plots()
                 for scatter in scatters:
-                    plots.scatter_plot(df_feats, df_labels["class_label"], scatter)
+                    plots.scatter_plot(
+                        df_feats, df_labels["class_label"], scatter
+                    )
             else:
                 self.util.debug("can't do scatterplot if not classification")
 
@@ -518,7 +560,11 @@ class Experiment:
         scale = self.util.config_val("FEATS", "scale", False)
         if scale:
             self.scaler = Scaler(
-                self.df_train, self.df_test, self.feats_train, self.feats_test, scale
+                self.df_train,
+                self.df_test,
+                self.feats_train,
+                self.feats_test,
+                scale,
             )
             self.feats_train, self.feats_test = self.scaler.scale()
 
@@ -568,7 +614,8 @@ class Experiment:
     def plot_confmat_per_speaker(self, function):
         if self.loso or self.logo or self.xfoldx:
             self.util.debug(
-                "plot combined speaker predictions not possible for cross validation"
+                "plot combined speaker predictions not possible for cross"
+                " validation"
             )
             return
         best = self._get_best_report(self.reports)
@@ -578,10 +625,13 @@ class Experiment:
         preds = best.preds
         speakers = self.df_test.speaker.values
         print(f"{len(truths)} {len(preds)} {len(speakers) }")
-        df = pd.DataFrame(data={"truth": truths, "pred": preds, "speaker": speakers})
+        df = pd.DataFrame(
+            data={"truth": truths, "pred": preds, "speaker": speakers}
+        )
         plot_name = "result_combined_per_speaker"
         self.util.debug(
-            f"plotting speaker combination ({function}) confusion matrix to {plot_name}"
+            f"plotting speaker combination ({function}) confusion matrix to"
+            f" {plot_name}"
         )
         best.plot_per_speaker(df, plot_name, function)
 
@@ -623,4 +673,6 @@ class Experiment:
             pickle.dump(self.__dict__, f)
             f.close()
         except (AttributeError, TypeError, RuntimeError) as error:
-            self.util.warn(f"Save experiment: Can't pickle local object: {error}")
+            self.util.warn(
+                f"Save experiment: Can't pickle local object: {error}"
+            )

@@ -31,7 +31,8 @@ class DataFilter:
             else:
                 df = self.df.sample(int(max))
                 self.util.debug(
-                    f"{data_name}: limited samples to {max}, reduced samples from {self.df.shape[0]} to {df.shape[0]}"
+                    f"{data_name}: limited samples to {max}, reduced samples"
+                    f" from {self.df.shape[0]} to {df.shape[0]}"
                 )
                 self.util.copy_flags(self.df, df)
                 self.df = df
@@ -44,7 +45,9 @@ class DataFilter:
         the samples are selected randomly
         """
         if data_name == "":
-            max = self.util.config_val("DATA", "limit_samples_per_speaker", False)
+            max = self.util.config_val(
+                "DATA", "limit_samples_per_speaker", False
+            )
         else:
             max = self.util.config_val_data(
                 data_name, "limit_samples_per_speaker", False
@@ -58,7 +61,8 @@ class DataFilter:
                 else:
                     df = pd.concat([df, s_df.sample(int(max))])
             self.util.debug(
-                f"{data_name}: limited samples to {max} per speaker, reduced samples from {self.df.shape[0]} to {df.shape[0]}"
+                f"{data_name}: limited samples to {max} per speaker, reduced"
+                f" samples from {self.df.shape[0]} to {df.shape[0]}"
             )
             self.util.copy_flags(self.df, df)
             self.df = df
@@ -69,8 +73,12 @@ class DataFilter:
     def filter_duration(self, data_name=""):
         """remove all samples less than min_dur duration"""
         if data_name == "":
-            min_dur = self.util.config_val("DATA", "min_duration_of_sample", False)
-            max_dur = self.util.config_val("DATA", "max_duration_of_sample", False)
+            min_dur = self.util.config_val(
+                "DATA", "min_duration_of_sample", False
+            )
+            max_dur = self.util.config_val(
+                "DATA", "max_duration_of_sample", False
+            )
         else:
             min_dur = self.util.config_val_data(
                 data_name, "min_duration_of_sample", False
@@ -81,7 +89,8 @@ class DataFilter:
         if min_dur or max_dur:
             if not isinstance(self.df.index, pd.MultiIndex):
                 self.util.debug(
-                    "converting file index to multi index, this might take a while..."
+                    "converting file index to multi index, this might take a"
+                    " while..."
                 )
                 self.df.index = audformat.utils.to_segmented_index(
                     self.df.index, allow_nat=False
@@ -96,7 +105,9 @@ class DataFilter:
                     if dur < float(min_dur):
                         df = df.drop(i, axis=0)
                 self.util.debug(
-                    f"{data_name}: filtered samples less than {min_dur} seconds, reduced samples from {old_samples} to {df.shape[0]}"
+                    f"{data_name}: filtered samples less than"
+                    f" {min_dur} seconds, reduced samples from {old_samples} to"
+                    f" {df.shape[0]}"
                 )
             if max_dur:
                 old_samples = self.df.shape[0]
@@ -108,7 +119,9 @@ class DataFilter:
                     if dur > float(max_dur):
                         df = df.drop(i, axis=0)
                 self.util.debug(
-                    f"{data_name}: filtered samples more than {max_dur} seconds, reduced samples from {old_samples} to {df.shape[0]}"
+                    f"{data_name}: filtered samples more than"
+                    f" {max_dur} seconds, reduced samples from {old_samples} to"
+                    f" {df.shape[0]}"
                 )
             self.util.copy_flags(self.df, df)
             self.df = df
@@ -131,7 +144,8 @@ class DataFilter:
                 df = df[df[col] == val]
                 post = df.shape[0]
                 self.util.debug(
-                    f"{data_name}: filtered {col}={val}, reduced samples from {pre} to {post}"
+                    f"{data_name}: filtered {col}={val}, reduced samples from"
+                    f" {pre} to {post}"
                 )
             self.util.copy_flags(self.df, df)
             self.df = df
@@ -161,7 +175,9 @@ def filter_min_dur(df, min_dur):
         glob_conf.util.debug(
             "converting file index to multi index, this might take a while..."
         )
-        df_ret.index = audformat.utils.to_segmented_index(df.index, allow_nat=False)
+        df_ret.index = audformat.utils.to_segmented_index(
+            df.index, allow_nat=False
+        )
     for i in df_ret.index:
         start = i[1]
         end = i[2]
@@ -181,7 +197,9 @@ def filter_max_dur(df, max_dur):
         glob_conf.util.debug(
             "converting file index to multi index, this might take a while..."
         )
-        df_ret.index = audformat.utils.to_segmented_index(df.index, allow_nat=False)
+        df_ret.index = audformat.utils.to_segmented_index(
+            df.index, allow_nat=False
+        )
     for i in df_ret.index:
         start = i[1]
         end = i[2]

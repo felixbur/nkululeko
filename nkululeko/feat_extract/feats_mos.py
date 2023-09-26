@@ -36,7 +36,9 @@ class MOSSet(Featureset):
         # load model
         self.util.debug("loading MOS model...")
         self.subjective_model = SQUIM_SUBJECTIVE.get_model()
-        NMR_SPEECH = download_asset("tutorial-assets/ctc-decoding/1688-142285-0007.wav")
+        NMR_SPEECH = download_asset(
+            "tutorial-assets/ctc-decoding/1688-142285-0007.wav"
+        )
         self.WAVEFORM_NMR, SAMPLE_RATE_NMR = torchaudio.load(NMR_SPEECH)
         self.model_initialized = True
 
@@ -45,7 +47,9 @@ class MOSSet(Featureset):
         store = self.util.get_path("store")
         store_format = self.util.config_val("FEATS", "store_format", "pkl")
         storage = f"{store}{self.name}.{store_format}"
-        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
+        extract = self.util.config_val(
+            "FEATS", "needs_feature_extraction", False
+        )
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             if not self.model_initialized:
@@ -64,7 +68,9 @@ class MOSSet(Featureset):
                 )
                 emb = self.get_embeddings(signal, sampling_rate, file)
                 emb_series[idx] = emb
-            self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
+            self.df = pd.DataFrame(
+                emb_series.values.tolist(), index=self.data_df.index
+            )
             self.df.columns = ["mos"]
             self.util.write_store(self.df, storage, store_format)
             try:
@@ -85,7 +91,9 @@ class MOSSet(Featureset):
         tmp_audio_name = "mos_audio_tmp.wav"
         try:
             audiofile.write(tmp_audio_name, signal, sampling_rate)
-            WAVEFORM_SPEECH, SAMPLE_RATE_SPEECH = torchaudio.load(tmp_audio_name)
+            WAVEFORM_SPEECH, SAMPLE_RATE_SPEECH = torchaudio.load(
+                tmp_audio_name
+            )
             with torch.no_grad():
                 mos = self.subjective_model(WAVEFORM_SPEECH, self.WAVEFORM_NMR)
         except RuntimeError as re:

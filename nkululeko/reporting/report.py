@@ -8,10 +8,11 @@ from nkululeko.util import Util
 from nkululeko.reporting.report_item import ReportItem
 from nkululeko.reporting.latex_writer import LatexWriter
 
+
 class Report:
     def __init__(self):
         self.report_items = {}
-        self.util = Util('Report')
+        self.util = Util("Report")
 
     def add_item(self, ri):
         if ri.topic in self.report_items:
@@ -21,12 +22,12 @@ class Report:
             self.report_items[ri.topic].append(ri)
 
     def print(self):
-        print('###### Nkululeko Report ######')
+        print("###### Nkululeko Report ######")
         for topic in self.report_items:
-            print(f'### {topic}')
+            print(f"### {topic}")
             for c in self.report_items[topic]:
                 print(c.caption)
-                print('\t'+c.contents)
+                print("\t" + c.contents)
 
     def export_latex(self):
         lw = LatexWriter()
