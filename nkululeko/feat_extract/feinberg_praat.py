@@ -8,6 +8,7 @@ taken June 23rd 2022
 import numpy as np
 import pandas as pd
 import math
+from tqdm import tqdm
 import parselmouth
 import statistics
 from nkululeko.util import Util
@@ -217,7 +218,7 @@ def compute_features(file_index):
     f4_median_list = []
     # Go through all the wave files in the folder and measure all the acoustics
     #    for i, wave_file in enumerate(file_list):
-    for idx, (wave_file, start, end) in enumerate(file_index.to_list()):
+    for idx, (wave_file, start, end) in enumerate(tqdm(file_index.to_list())):
         signal, sampling_rate = audiofile.read(
             wave_file,
             offset=start.total_seconds(),
@@ -225,9 +226,6 @@ def compute_features(file_index):
             always_2d=True,
         )
         sound = parselmouth.Sound(values=signal, sampling_frequency=sampling_rate)
-        if idx % 10 == 0:
-            print(f"praat: extracting file {idx} of {len(file_index.to_list())}")
-        # sound = parselmouth.Sound(wave_file)
         (
             duration,
             meanF0,
@@ -435,7 +433,7 @@ def get_speech_rate(file_index):
         "ASD(speakingtime / nsyll)",
     ]
     datalist = []
-    for idx, (wave_file, start, end) in enumerate(file_index.to_list()):
+    for idx, (wave_file, start, end) in enumerate(tqdm(file_index.to_list())):
         signal, sampling_rate = audiofile.read(
             wave_file,
             offset=start.total_seconds(),
@@ -446,8 +444,6 @@ def get_speech_rate(file_index):
         # print(f'processing {file}')
         speechrate_dictionary = speech_rate(sound)
         datalist.append(speechrate_dictionary)
-        if idx % 10 == 0:
-            print(".", end=" ")
     df = pd.DataFrame(datalist)
     return df
 

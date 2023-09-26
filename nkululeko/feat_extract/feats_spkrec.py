@@ -1,18 +1,18 @@
 # feats_hubert.py
 # Speaker embedding feature extractor for Nkululeko
 # https://huggingface.co/speechbrain/spkrec-xvect-voxceleb
-# supported feat_type: 
+# supported feat_type:
 # "spkrec-xvect-voxceleb", "spkrec-ecapa-voxceleb", "spkrec-resnet-voxceleb"
 
 
 import os
-
-import nkululeko.glob_conf as glob_conf
+from tqdm import tqdm
 import pandas as pd
 import torch
 import torchaudio
-from nkululeko.feat_extract.featureset import Featureset
 from speechbrain.pretrained import EncoderClassifier
+from nkululeko.feat_extract.featureset import Featureset
+import nkululeko.glob_conf as glob_conf
 
 # from transformers import HubertModel, Wav2Vec2FeatureExtractor
 
@@ -42,27 +42,25 @@ class Spkrec(Featureset):
         # self.classifier.eval()
         self.classifier_initialized = True
 
-
     def extract(self):
         """Extract the features or load them from disk if present."""
         store = self.util.get_path("store")
         storage = f"{store}{self.name}.pkl"
-        extract = self.util.config_val(
-            "FEATS", "needs_feature_extraction", False)
+        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             if not self.classifier_initialized:
                 self.init_model()
-            self.util.debug(
-                "extracting Spkrec embeddings, this might take a while...")
+            self.util.debug("extracting Spkrec embeddings, this might take a while...")
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
             length = len(self.data_df.index)
             for idx, (file, start, end) in enumerate(
-                    self.data_df.index.to_list()):
+                tqdm(self.data_df.index.to_list())
+            ):
                 signal, sampling_rate = torchaudio.load(
                     file,
-                    frame_offset=int(start.total_seconds()*16000),
-                    num_frames=int((end - start).total_seconds()*16000)
+                    frame_offset=int(start.total_seconds() * 16000),
+                    num_frames=int((end - start).total_seconds() * 16000),
                 )
                 assert sampling_rate == 16000
                 # check if signal is stereo, if so, take first channel
@@ -71,12 +69,8 @@ class Spkrec(Featureset):
                 emb = self.get_embeddings(signal, sampling_rate, file)
                 # fill series with embeddings
                 emb_series.iloc[idx] = emb
-                if idx % 10 == 0:
-                    self.util.debug(
-                        f"{self.feat_type}: {idx} of {length} done")
             print(f"emb_series shape: {emb_series.shape}")
-            self.df = pd.DataFrame(emb_series.values.tolist(), 
-                                   index=self.data_df.index)
+            self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
             print(f"df shape: {self.df.shape}")
             self.df.to_pickle(storage)
             try:

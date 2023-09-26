@@ -65,6 +65,7 @@
 import math
 import pandas as pd
 import parselmouth
+from tqdm import tqdm
 
 from glob import glob
 from parselmouth.praat import call
@@ -213,12 +214,10 @@ if __name__ == "__main__":
     cols = ['file', 'nsyll', 'npause', 'dur(s)', 'phonationtime(s)', 'speechrate(nsyll / dur)', 'articulation '
             'rate(nsyll / phonationtime)', 'ASD(speakingtime / nsyll)']
     datalist = []
-    for index, file in enumerate(files):
+    for index, file in enumerate(tqdm(files)):
         # print(f'processing {file}')
         speechrate_dictionary = speech_rate(file)
         datalist.append(speechrate_dictionary)
-        if index%10==0:
-            print('.', end=' ')
     df = pd.DataFrame(datalist)
     print(f'processed {index} files')
     df.to_csv('speechrate_data.csv', index=0)

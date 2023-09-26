@@ -459,7 +459,7 @@ class Dataset:
             labels = ast.literal_eval(labels)
             df = df[df[target].isin(labels)]
         else:
-            labels = df[target].unique().codes
+            labels = list(df[target].unique()) 
         df["class_label"] = df[target]
         return df
 

@@ -1,12 +1,13 @@
 # feats_trill.py
-from numpy.core.numeric import tensordot
-from nkululeko.feat_extract.featureset import Featureset
-import pandas as pd
-from nkululeko.util import Util
-import nkululeko.glob_conf as glob_conf
-import audiofile as af
 import os
 import tensorflow as tf
+from numpy.core.numeric import tensordot
+from tqdm import tqdm
+import pandas as pd
+import audiofile as af
+from nkululeko.util import Util
+import nkululeko.glob_conf as glob_conf
+from nkululeko.feat_extract.featureset import Featureset
 
 # Import TF 2.X and make sure we're running eager.
 assert tf.executing_eagerly()
@@ -48,11 +49,9 @@ class TRILLset(Featureset):
             self.util.debug("extracting TRILL embeddings, this might take a while...")
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
             length = len(self.data_df.index)
-            for idx, file in enumerate(self.data_df.index.get_level_values(0)):
+            for idx, file in enumerate(tqdm(self.data_df.index.get_level_values(0))):
                 emb = self.getEmbeddings(file)
                 emb_series[idx] = emb
-                if idx % 10 == 0:
-                    self.util.debug(f"TRILL: {idx} of {length} done")
             self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
             self.df.to_pickle(storage)
             try:

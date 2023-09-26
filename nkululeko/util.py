@@ -28,7 +28,7 @@ class Util:
             self.caller = caller
         else:  
             self.caller = ''
-
+        
     def get_path(self, entry):
         """
         This method allows the user to get the directory path for the given argument.
@@ -67,16 +67,16 @@ class Util:
         configuration = self.config
         try:
             if len(key)>0:
-                return configuration['DATA'][dataset+'.'+key]
+                return configuration['DATA'][dataset+'.'+key].strip("\'\"")
             else:
-                return configuration['DATA'][dataset]
+                return configuration['DATA'][dataset].strip("\'\"")
         except KeyError:
             if self.got_data_roots:
                 try:
                     if len(key)>0:
-                        return self.data_roots['DATA'][dataset+'.'+key]
+                        return self.data_roots['DATA'][dataset+'.'+key].strip("\'\"")
                     else:
-                        return self.data_roots['DATA'][dataset]
+                        return self.data_roots['DATA'][dataset].strip("\'\"")
                 except KeyError:
                     if not default in self.stopvals:
                         self.debug(f'value for {key} not found, using default: {default}')
@@ -212,13 +212,6 @@ class Util:
                 self.debug(f'value for {key} not found, using default: {default}')
             return default
             
-    def get_labels(self):
-        # try:
-        #     labels = glob_conf.label_encoder.classes_
-        # except AttributeError:
-        labels = ast.literal_eval(self.config['DATA']['labels'])
-        return labels
-
     def continuous_to_categorical(self, array):
         bins = ast.literal_eval(self.config['DATA']['bins'])
         result =  np.digitize(array, bins)-1

@@ -4,13 +4,15 @@
 
 
 import os
-
-import nkululeko.glob_conf as glob_conf
 import pandas as pd
+from tqdm import tqdm
+from transformers import HubertModel, Wav2Vec2FeatureExtractor
 import torch
 import torchaudio
+import audeer
+from audformat.utils import map_file_path
+import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
-from transformers import HubertModel, Wav2Vec2FeatureExtractor
 
 
 class Hubert(Featureset):
@@ -66,15 +68,16 @@ class Hubert(Featureset):
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
             length = len(self.data_df.index)
             for idx, (file, start, end) in enumerate(
-                    self.data_df.index.to_list()):
-                signal, sampling_rate = torchaudio.load(file,
-                    frame_offset=int(start.total_seconds()*16000),
-                    num_frames=int((end - start).total_seconds()*16000))
+                tqdm(self.data_df.index.to_list())
+            ):
+                signal, sampling_rate = torchaudio.load(
+                    file,
+                    frame_offset=int(start.total_seconds() * 16000),
+                    num_frames=int((end - start).total_seconds() * 16000),
+                )
                 assert sampling_rate == 16000
                 emb = self.get_embeddings(signal, sampling_rate, file)
                 emb_series[idx] = emb
-                if idx % 10 == 0:
-                    self.util.debug(f"{self.feat_type}: {idx} of {length} done")
             self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
             self.df.to_pickle(storage)
             try:

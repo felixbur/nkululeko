@@ -1,14 +1,14 @@
 """ feats_snr.py
     Estimate snr (signal to noise ratio as acoustic features)
 """
+import os
+from tqdm import tqdm
+import pandas as pd
+import audiofile
+import nkululeko.glob_conf as glob_conf
 from nkululeko.util import Util
 from nkululeko.feat_extract.featureset import Featureset
 from nkululeko.autopredict.estimate_snr import SNREstimator
-import os
-import pandas as pd
-import os
-import nkululeko.glob_conf as glob_conf
-import audiofile
 
 
 class SNRSet(Featureset):
@@ -28,7 +28,9 @@ class SNRSet(Featureset):
         if extract or no_reuse or not os.path.isfile(storage):
             self.util.debug("estimating SNR, this might take a while...")
             snr_series = pd.Series(index=self.data_df.index, dtype=object)
-            for idx, (file, start, end) in enumerate(self.data_df.index.to_list()):
+            for idx, (file, start, end) in enumerate(
+                tqdm(self.data_df.index.to_list())
+            ):
                 signal, sampling_rate = audiofile.read(
                     file,
                     offset=start.total_seconds(),
@@ -37,8 +39,6 @@ class SNRSet(Featureset):
                 )
                 snr = self.get_snr(signal[0], sampling_rate)
                 snr_series[idx] = snr
-                if idx % 10 == 0:
-                    print(".", end="")
             print("")
             self.df = pd.DataFrame(snr_series.values.tolist(), index=self.data_df.index)
             self.df.columns = ["snr"]

@@ -4,6 +4,7 @@ from nkululeko.util import Util
 from nkululeko.feat_extract.featureset import Featureset
 import os
 import pandas as pd
+from tqdm import tqdm
 import os
 import nkululeko.glob_conf as glob_conf
 import laion_clap
@@ -39,7 +40,7 @@ class Clap(Featureset):
             self.util.debug("extracting clap embeddings, this might take a while...")
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
             length = len(self.data_df.index)
-            for idx, (file, start, end) in enumerate(self.data_df.index.to_list()):
+            for idx, (file, start, end) in enumerate(tqdm(self.data_df.index.to_list())):
                 signal, sampling_rate = audiofile.read(
                     file,
                     offset=start.total_seconds(),
@@ -48,8 +49,6 @@ class Clap(Featureset):
                 )
                 emb = self.get_embeddings(signal, sampling_rate)
                 emb_series[idx] = emb
-                if idx % 10 == 0:
-                    self.util.debug(f"Clap: {idx} of {length} done")
             self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
             self.util.write_store(self.df, storage, store_format)
             try:

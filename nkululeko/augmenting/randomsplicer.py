@@ -14,13 +14,14 @@ F. Burkhardt, Anna Derington, Matthias Kahlau, Klaus Scherer, Florian Eyben and 
 """
 
 import pandas as pd
-from nkululeko.util import Util
-import nkululeko.augmenting.randomsplicing as rsp
+from tqdm import tqdm
+import os
 import numpy as np
 import audiofile as af
-import os
 from audformat.utils import map_file_path
 import audeer
+from nkululeko.util import Util
+import nkululeko.augmenting.randomsplicing as rsp
 
 
 class Randomsplicer:
@@ -53,7 +54,7 @@ class Randomsplicer:
         audeer.mkdir(filepath)
         self.util.debug(f"random splicing {sample_selection} samples to {filepath}")
         newpath = ""
-        for i, f in enumerate(files):
+        for i, f in enumerate(tqdm(files)):
             signal, sr = af.read(f)
             filename = os.path.basename(f)
             parent = os.path.dirname(f).split("/")[-1]
@@ -67,8 +68,6 @@ class Randomsplicer:
             newpath = f"{filepath}/{parent}/"
             audeer.mkdir(newpath)
             af.write(f"{newpath}{filename}", signal=sig_new, sampling_rate=sr)
-            if i % 10 == 0:
-                print(f"random spliced {i} of {len(files)}")
         df_ret = self.df.copy()
         df_ret = df_ret.set_index(
             map_file_path(df_ret.index, lambda x: self.changepath(x, newpath))

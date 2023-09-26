@@ -18,3 +18,7 @@ def set_util(util_obj):
 def set_report(report_obj):
     global report
     report = report_obj
+
+def set_labels(labels_obj):
+    global labels
+    labels = labels_obj

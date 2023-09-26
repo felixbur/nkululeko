@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 0.66.2
+--------------
+* enabled data-pathes with quotes 
+* enabled missing category labels
+* used tgdm for progress display
+
 Version 0.66.1
 --------------
 * start on the latex report framework

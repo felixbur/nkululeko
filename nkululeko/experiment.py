@@ -88,6 +88,12 @@ class Experiment:
             self.datasets.update({d: data})
         self.target = self.util.config_val("DATA", "target", "emotion")
         dbs = ",".join(list(self.datasets.keys()))
+        labels = self.util.config_val("DATA", "labels", False)
+        if labels:
+            labels = ast.literal_eval(labels)
+        else:
+            labels = list(next(iter(self.datasets.values())).df[self.target].unique())
+        glob_conf.set_labels(labels)
         self.util.debug(f"loaded databases {dbs}")
 
     def _import_csv(self, storage):
@@ -264,7 +270,7 @@ class Experiment:
                 )
 
     def _add_random_target(self, df):
-        labels = self.util.get_labels()
+        labels = glob_conf.labels
         a = [None] * len(df)
         for i in range(0, len(df)):
             a[i] = random.choice(labels)

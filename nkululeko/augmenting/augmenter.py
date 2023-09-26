@@ -1,5 +1,6 @@
 # augmenter.py
 import pandas as pd
+from tqdm import tqdm
 from nkululeko.util import Util
 from audiomentations import (
     Compose,
@@ -52,7 +53,7 @@ class Augmenter:
         audeer.mkdir(filepath)
         self.util.debug(f"augmenting {sample_selection} samples to {filepath}")
         newpath = ""
-        for i, f in enumerate(files):
+        for i, f in enumerate(tqdm(files)):
             signal, sr = audiofile.read(f)
             filename = os.path.basename(f)
             parent = os.path.dirname(f).split("/")[-1]
@@ -60,8 +61,6 @@ class Augmenter:
             newpath = f"{filepath}/{parent}/"
             audeer.mkdir(newpath)
             audiofile.write(f"{newpath}{filename}", signal=sig_aug, sampling_rate=sr)
-            if i % 10 == 0:
-                print(f"augmented {i} of {len(files)}")
         df_ret = self.df.copy()
         df_ret = df_ret.set_index(
             map_file_path(df_ret.index, lambda x: self.changepath(x, newpath))

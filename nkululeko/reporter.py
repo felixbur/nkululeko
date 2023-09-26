@@ -116,7 +116,7 @@ class Reporter:
         # print(truths)
         # print(preds)
         fig_dir = self.util.get_path('fig_dir')
-        labels = self.util.get_labels()
+        labels = glob_conf.labels
         fig = plt.figure()  # figsize=[5, 5]
         uar = recall_score(truths, preds, average='macro')
         acc = accuracy_score(truths, preds)
@@ -152,10 +152,11 @@ class Reporter:
         file_name = f'{res_dir}{self.util.get_exp_name()}_{epoch}.txt'
         if self.util.exp_is_classification():
             data_type = self.util.config_val('DATA', 'type', 'False')
-            if data_type == 'continuous' or data_type == 'continous':
-                labels = ast.literal_eval(glob_conf.config['DATA']['labels'])
-            else:
-                labels = glob_conf.label_encoder.classes_
+            labels = glob_conf.labels
+            # if data_type == 'continuous' or data_type == 'continous':
+            #     labels = glob_conf.labels
+            # else:
+            #     labels = glob_conf.label_encoder.classes_
             try:
                 rpt = classification_report(self.truths, self.preds, target_names=labels, output_dict=True)
             except ValueError as e:

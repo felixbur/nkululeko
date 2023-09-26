@@ -10,17 +10,17 @@ pip uninstall -y torch torchvision torchaudio
 pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
 
 """
-from nkululeko.util import Util
-from nkululeko.feat_extract.featureset import Featureset
 import os
 import pandas as pd
-import os
-import nkululeko.glob_conf as glob_conf
-import audiofile
+from tqdm import tqdm
 import torch
 import torchaudio
 from torchaudio.pipelines import SQUIM_SUBJECTIVE
 from torchaudio.utils import download_asset
+import audiofile
+import nkululeko.glob_conf as glob_conf
+from nkululeko.util import Util
+from nkululeko.feat_extract.featureset import Featureset
 
 
 class MOSSet(Featureset):
@@ -53,7 +53,9 @@ class MOSSet(Featureset):
             self.util.debug("predicting MOS, this might take a while...")
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
             length = len(self.data_df.index)
-            for idx, (file, start, end) in enumerate(self.data_df.index.to_list()):
+            for idx, (file, start, end) in enumerate(
+                tqdm(self.data_df.index.to_list())
+            ):
                 signal, sampling_rate = audiofile.read(
                     file,
                     offset=start.total_seconds(),
@@ -62,8 +64,6 @@ class MOSSet(Featureset):
                 )
                 emb = self.get_embeddings(signal, sampling_rate, file)
                 emb_series[idx] = emb
-                if idx % 10 == 0:
-                    self.util.debug(f"MOS: {idx} of {length} done")
             self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
             self.df.columns = ["mos"]
             self.util.write_store(self.df, storage, store_format)
