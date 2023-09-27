@@ -1,12 +1,12 @@
 # nkululeko.py
 # Entry script to do a Nkululeko experiment
 
-import nkululeko.experiment as exp
-import configparser
-from nkululeko.util import Util
 import os.path
-from nkululeko.constants import VERSION
+import configparser
 import argparse
+import nkululeko.experiment as exp
+from nkululeko.util import Util
+from nkululeko.constants import VERSION
 
 
 def main(src_dir):

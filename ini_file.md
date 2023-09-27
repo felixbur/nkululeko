@@ -147,6 +147,10 @@
   * segment_target = _seg
 * **method**: select the model 
   * method = [silero](https://github.com/snakers4/silero-vad)
+* **min_length**: the minimum lenght of rest-samples (in seconds)
+  * min_length = 2
+* **max_length**: the maximum length of segments, longer ones are cut here.  (in seconds)
+  * max_length = 10
 
 ### FEATS
 * **type**: a comma separated list of types of features, they will be columnwise concatenated

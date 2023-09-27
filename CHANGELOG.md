@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.66.3
+--------------
+* made path to PDF output relative to experiment root
+
 Version 0.66.2
 --------------
 * enabled data-pathes with quotes 

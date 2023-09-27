@@ -35,4 +35,7 @@ class LatexWriter:
         target_filename = self.util.config_val(
             "REPORT", "latex", "nkululeko_latex"
         )
-        self.doc.generate_pdf(target_filename, clean_tex=False)
+        target_dir = self.util.get_exp_dir()
+        path = '/'.join([target_dir, target_filename])
+        self.util.debug(f'Generated latex report to {path}')
+        self.doc.generate_pdf(path, clean_tex=False)

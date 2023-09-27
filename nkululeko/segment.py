@@ -1,14 +1,15 @@
 # segment.py
 # segment data splits
 
-from nkululeko.experiment import Experiment
-import configparser
-from nkululeko.util import Util
-from nkululeko.constants import VERSION
 import argparse
 import os
 import pandas as pd
-
+import configparser
+from nkululeko.experiment import Experiment
+from nkululeko.util import Util
+from nkululeko.constants import VERSION
+import nkululeko.glob_conf as glob_conf
+from nkululeko.reporting.report_item import ReportItem
 
 def main(src_dir):
     parser = argparse.ArgumentParser(
@@ -94,8 +95,8 @@ def main(src_dir):
     from nkululeko.plots import Plots
 
     plots = Plots()
-    plots.plot_durations(df, "original_durations", sample_selection)
-    plots.plot_durations(df_seg, "segmented_durations", sample_selection)
+    plots.plot_durations(df, "original_durations", sample_selection, caption='Original durations')
+    plots.plot_durations(df_seg, "segmented_durations", sample_selection, caption='Segmented durations')
     print("")
     # remove encoded labels
     target = util.config_val("DATA", "target", "emotion")
@@ -110,6 +111,14 @@ def main(src_dir):
         f"saved {name}.csv to {expr.data_dir}, {num_after} samples (was"
         f" {num_before})"
     )
+    glob_conf.report.add_item(
+        ReportItem(
+            "Data",
+            'Segmentation',
+            f'Segmented {num_before} samples to {num_after} segments',
+        )
+    )
+    expr.store_report()
     print("DONE")
 
 
