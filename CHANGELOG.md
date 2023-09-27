@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.66.4
+--------------
+* Pypi version mixup
+
+
 Version 0.66.3
 --------------
 * made path to PDF output relative to experiment root
