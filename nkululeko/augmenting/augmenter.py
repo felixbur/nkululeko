@@ -1,20 +1,15 @@
 # augmenter.py
-import pandas as pd
-from tqdm import tqdm
-from nkululeko.util import Util
-from audiomentations import (
-    Compose,
-    AddGaussianNoise,
-    AddGaussianSNR,
-    TimeStretch,
-    PitchShift,
-    Shift,
-)
-import numpy as np
-import audiofile
 import os
-from audformat.utils import map_file_path
+
 import audeer
+import audiofile
+import numpy as np
+import pandas as pd
+from audformat.utils import map_file_path
+from audiomentations import (AddGaussianNoise, AddGaussianSNR, Compose,
+                             PitchShift, Shift, TimeStretch)
+from nkululeko.util import Util
+from tqdm import tqdm
 
 
 class Augmenter:
@@ -31,7 +26,7 @@ class Augmenter:
                 AddGaussianNoise(
                     min_amplitude=0.001, max_amplitude=0.015, p=0.5
                 ),
-                AddGaussianSNR(min_snr_db=10, max_snr_db=40, p=0.5),
+                # AddGaussianSNR(min_snr_db=10, max_snr_db=40, p=0.5),
                 TimeStretch(min_rate=0.8, max_rate=1.25, p=0.5),
                 PitchShift(min_semitones=-4, max_semitones=4, p=0.5),
                 Shift(min_fraction=-0.5, max_fraction=0.5, p=0.5),
