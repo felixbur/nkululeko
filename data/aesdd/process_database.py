@@ -32,6 +32,9 @@ def main():
     # convert to df
     df = pd.DataFrame({"file": files, "speaker": speaker, "emotion": emotion, "gender": gender})
 
+    # print distribution per emotion
+    # print(df.groupby("emotion").count()['file'])
+
     # allocate speaker 5 for test set
     train_df = df[df["speaker"] != "5"]
     test_df = df.drop(train_df.index)

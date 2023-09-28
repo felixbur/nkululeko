@@ -17,7 +17,7 @@ emotion_map = {
     "sad": "sadness",
     "neutral": "neutral",
     "happy": "happiness",
-    "excited": "excitedness",
+    "excited": "happiness",   # merge excited and happy
     "anxious": "anxiety",
     "apologetic": "apologetic",
     "assertive": "assertive",
@@ -28,6 +28,7 @@ emotion_map = {
 secondary_emotions = ["anxious", "apologetic",
                       "assertive", "concerned", "encouraging"]
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_dir", type=str, default="JL")
@@ -37,7 +38,11 @@ def main():
     data_dir = Path(args.data_dir)
     output_dir = Path(args.output_dir)
 
-    paths = list(data_dir.glob("**/*.wav"))
+    paths = list(
+        data_dir.glob("Raw JL corpus (unchecked and unannotated)/JL(wav+txt)/*.wav")
+    )
+    # print p.stem with NoneType
+    pstem = [p.stem for p in paths if REGEX.match(p.stem) is None]
     emotions = [emotion_map.get(REGEX.match(p.stem).group(1)) for p in paths]
     speakers = [p.stem[: p.stem.find("_")] for p in paths]
     genders = [speaker[:-1] for speaker in speakers]
