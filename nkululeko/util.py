@@ -103,7 +103,7 @@ class Util:
             pd_series.dtype, pd.CategoricalDtype
         )
 
-    def get_dir(self):
+    def get_exp_dir(self):
         """
         Get the experiment directory
         """
@@ -114,7 +114,7 @@ class Util:
         return dir_name
 
     def get_res_dir(self):
-        home_dir = self.get_dir()
+        home_dir = self.get_exp_dir()
         dir_name = f"{home_dir}/results/"
         audeer.mkdir(dir_name)
         return dir_name

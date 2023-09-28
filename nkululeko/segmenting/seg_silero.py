@@ -6,10 +6,11 @@ segment a dataset with the Silero segmenter
 """
 
 import torch
+import pandas as pd
+from tqdm import tqdm  
 import audformat
 from audformat.utils import to_filewise_index
 from audformat import segmented_index
-import pandas as pd
 from nkululeko.util import Util
 
 # from nkululeko.constants import SAMPLING_RATE
@@ -41,7 +42,6 @@ class Silero_segmenter:
             collect_chunks,
         ) = vad_utils
         SAMPLING_RATE = 16000
-        print(".", end="", flush=True)
         if self.no_testing:
             min_length = float(self.util.config_val("SEGMENT", "min_length", 2))
             max_length = float(
@@ -78,7 +78,7 @@ class Silero_segmenter:
 
     def segment_dataframe(self, df):
         dfs = []
-        for file, values in df.iterrows():
+        for file, values in tqdm(df.iterrows()):
             index = self.get_segmentation(file)
             dfs.append(
                 pd.DataFrame(
