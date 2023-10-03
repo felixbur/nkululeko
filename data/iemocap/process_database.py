@@ -2,12 +2,15 @@
 # process IEMOCAP database to match the format of Nkululeko
 # adopted from S3PRL emotion downstream task
 
-import os
-from os.path import basename, splitext, join as path_join
-import re
-import pandas as pd
-import glob
 import argparse
+import glob
+import os
+import re
+from os.path import basename
+from os.path import join as path_join
+from os.path import splitext
+
+import pandas as pd
 
 LABEL_DIR_PATH = 'dialog/EmoEvaluation'
 WAV_DIR_PATH = 'sentences/wav'
@@ -54,6 +57,10 @@ def preprocess(data_dirs, paths, out_path):
         'labels': {'neu': 0, 'hap': 1, 'ang': 2, 'sad': 3},
         'meta_data': meta_data
     }
+
+    # print number of utterances
+    print(f"Total number of {os.path.basename(out_path)}: {len(data['meta_data'])}")
+
     # save to CSV file
     pd.DataFrame(data['meta_data']).to_csv(out_path, index=False)
 
