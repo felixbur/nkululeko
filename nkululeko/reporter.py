@@ -1,6 +1,7 @@
+import glob
+import math
 import matplotlib.pyplot as plt
 from sklearn.utils import resample
-from nkululeko.util import Util
 import ast
 import json
 import numpy as np
@@ -15,8 +16,8 @@ from sklearn.metrics import classification_report
 from scipy.stats import pearsonr
 from nkululeko.result import Result
 from nkululeko.reporting.report_item import ReportItem
-import glob
-import math
+from nkululeko.reporting.defines import Header
+from nkululeko.util import Util
 
 
 class Reporter:
@@ -55,9 +56,7 @@ class Reporter:
             else:
                 # regression experiment
                 if self.measure == "mse":
-                    self.result.test = mean_squared_error(
-                        self.truths, self.preds
-                    )
+                    self.result.test = mean_squared_error(self.truths, self.preds)
                 elif self.measure == "ccc":
                     self.result.test = self.ccc(self.truths, self.preds)
                     if math.isnan(self.result.test):
@@ -145,15 +144,24 @@ class Reporter:
             reg_res = f", {self.MEASURE}: {self.result.test:.3f}"
 
         if epoch != 0:
-            plt.title(
-                f"Confusion Matrix, UAR: {uar:.3f}{reg_res}, Epoch: {epoch}"
-            )
+            plt.title(f"Confusion Matrix, UAR: {uar:.3f}{reg_res}, Epoch: {epoch}")
         else:
             plt.title(f"Confusion Matrix, UAR: {uar:.3f}{reg_res}")
-
-        plt.savefig(f"{fig_dir}{plot_name}.{self.format}")
+        img_path = f"{fig_dir}{plot_name}.{self.format}"
+        plt.savefig(img_path)
         fig.clear()
         plt.close(fig)
+        plt.savefig(img_path)
+        plt.close(fig)
+        glob_conf.report.add_item(
+            ReportItem(
+                Header.HEADER_RESULTS,
+                self.util.get_model_description(),
+                "Confusion matrix",
+                img_path,
+            )
+        )
+
         res_dir = self.util.get_path("res_dir")
         rpt = f"epoch: {epoch}, UAR: {uar}, ACC {acc}"
         file_name = f"{res_dir}{self.util.get_exp_name()}_conf.txt"
@@ -181,8 +189,7 @@ class Reporter:
             except ValueError as e:
                 self.util.debug(
                     "Reporter: caught a ValueError when trying to get"
-                    " classification_report: "
-                    + e
+                    " classification_report: " + e
                 )
                 rpt = self.result.to_string()
             with open(file_name, "w") as text_file:
@@ -196,7 +203,11 @@ class Reporter:
                 rpt_str = f"{json.dumps(rpt)}\n{f1_per_class}"
                 text_file.write(rpt_str)
                 glob_conf.report.add_item(
-                    ReportItem("Results", "Classification result", rpt_str)
+                    ReportItem(
+                        Header.HEADER_RESULTS,
+                        f"Classification result {self.util.get_model_description()}",
+                        rpt_str,
+                    )
                 )
 
         else:  # regression
@@ -213,9 +224,7 @@ class Reporter:
         import imageio
 
         fig_dir = self.util.get_path("fig_dir")
-        filenames = glob.glob(
-            fig_dir + f"{self.util.get_plot_name()}*_?_???_cnf.png"
-        )
+        filenames = glob.glob(fig_dir + f"{self.util.get_plot_name()}*_?_???_cnf.png")
         images = []
         for filename in filenames:
             images.append(imageio.imread(filename))
@@ -269,9 +278,7 @@ class Reporter:
         var_pred = np.var(prediction, 0)
         v_pred = prediction - mean_pred
         v_gt = ground_truth - mean_gt
-        cor = sum(v_pred * v_gt) / (
-            np.sqrt(sum(v_pred**2)) * np.sqrt(sum(v_gt**2))
-        )
+        cor = sum(v_pred * v_gt) / (np.sqrt(sum(v_pred**2)) * np.sqrt(sum(v_gt**2)))
         sd_gt = np.std(ground_truth)
         sd_pred = np.std(prediction)
         numerator = 2 * cor * sd_gt * sd_pred

@@ -1,10 +1,13 @@
 Changelog
 =========
 
+Version 0.66.5
+--------------
+* Latex report now with images
+
 Version 0.66.4
 --------------
 * Pypi version mixup
-
 
 Version 0.66.3
 --------------

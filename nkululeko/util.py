@@ -131,8 +131,9 @@ class Util:
     def _get_value_descript(self, section, name):
         if self.config_val(section, name, False):
             val = self.config_val(section, name, False)
-            return f"_{name}-{str(val)}"
-        return ""
+            val = str(val).strip('.')
+            return f'_{name}-{str(val)}'
+        return ''
 
     def get_data_name(self):
         """
@@ -147,9 +148,15 @@ class Util:
             ds = "_".join(ast.literal_eval(self.config["DATA"]["trains"]))
         else:
             ds = "_".join(ast.literal_eval(self.config["DATA"]["databases"]))
-        mt = ""
+        return_string = f"{ds}"
         if not only_data:
-            mt = f'_{self.config["MODEL"]["type"]}'
+            mt = self.get_model_description()
+            return_string = return_string+'_'+mt
+        return return_string.replace("__", "_")
+
+    def get_model_description(self):
+        mt = ""
+        mt = f'{self.config["MODEL"]["type"]}'
         ft = "_".join(ast.literal_eval(self.config["FEATS"]["type"]))
         ft += "_"
         set = self.config_val("FEATS", "set", False)
@@ -158,13 +165,14 @@ class Util:
             set_string += set
         layer_string = ""
         layer_s = self.config_val("MODEL", "layers", False)
-        if layer_s and not only_data:
+        if layer_s:
             layers = ast.literal_eval(layer_s)
             sorted_layers = sorted(layers.items(), key=lambda x: x[1])
             for l in sorted_layers:
                 layer_string += f"{str(l[1])}-"
-        return_string = f"{ds}{mt}_{ft}{set_string}{layer_string[:-1]}"
+        return_string = f"{mt}_{ft}{set_string}{layer_string[:-1]}"
         options = [
+            ["MODEL", "C_val"],
             ["MODEL", "drop"],
             ["MODEL", "loss"],
             ["MODEL", "logo"],
@@ -173,7 +181,7 @@ class Util:
         ]
         for option in options:
             return_string += self._get_value_descript(option[0], option[1])
-        return return_string.replace("__", "")
+        return return_string
 
     def get_plot_name(self):
         try:
