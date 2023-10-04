@@ -75,9 +75,9 @@
       * emodb.train_tables = ['emotion.categories.train.gold_standard']
       * emodb.test_tables = ['emotion.categories.test.gold_standard']
     * **speaker_split**: split samples randomly but speaker disjunct, given a percentage of speakers for the test set.
-      * emodb.testsplit = 50
+      * emodb.test_split = 50
     * **random**: split samples randomly (but NOT speaker disjunct, e.g., no speaker info given or each sample a speaker), given a percentage of samples for the test set.
-      * emodb.testsplit = 50
+      * emodb.test_split = 50
     * **reuse**: reuse the splits after a *speaker_split* run to save time with feature extraction.
     * **train**: use the entire database for training
     * **test**: use the entire database for evaluation
@@ -147,13 +147,13 @@
   * segment_target = _seg
 * **method**: select the model 
   * method = [silero](https://github.com/snakers4/silero-vad)
-* **min_length**: the minimum length of rest-samples (in seconds)
+* **min_length**: the minimum length of rest samples (in seconds)
   * min_length = 2
 * **max_length**: the maximum length of segments; longer ones are cut here.  (in seconds)
   * max_length = 10
 
 ### FEATS
-* **type**: a comma-separated list of types of features; they will be columnwise concatenated
+* **type**: a comma-separated list of types of features; they will be column-wise concatenated
   * type = ['os']
   * possible values:
     * **import**: [already computed features](http://blog.syntheticspeech.de/2022/10/18/how-to-import-features-from-outside-the-nkululeko-software/)
@@ -273,7 +273,7 @@
   * batch_size = 8
 * **num_workers**: Number of parallel processes for neural nets
   * num_workers = 5
-* **device**: For torch/huggingface models: select you gpu if you have one
+* **device**: For torch/huggingface models: select your gpu if you have one
   * device = cpu
 
 
