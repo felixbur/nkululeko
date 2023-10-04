@@ -8,11 +8,11 @@ from nkululeko.util import Util
 from nkululeko.reporting.report_item import ReportItem
 from nkululeko.reporting.latex_writer import LatexWriter
 
-
 class Report:
     def __init__(self):
         self.report_items = {}
         self.util = Util("Report")
+        self.initial = True
 
     def add_item(self, ri):
         if ri.topic in self.report_items:

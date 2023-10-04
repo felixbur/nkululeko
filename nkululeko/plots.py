@@ -10,6 +10,7 @@ from nkululeko.util import Util
 import nkululeko.utils.stats as su
 import nkululeko.glob_conf as glob_conf
 from nkululeko.reporting.report_item import ReportItem
+from nkululeko.reporting.defines import Header
 
 
 class Plots:
@@ -26,7 +27,7 @@ class Plots:
             df_speaker = df[df.speaker == s]
             df_speaker["samplenum"] = df_speaker.shape[0]
             df_speakers = pd.concat([df_speakers, df_speaker.head(1)])
-        # plot the distrubution of samples per speaker
+        # plot the distribution of samples per speaker
         fig_dir = self.util.get_path("fig_dir") + "../"  # one up because of the runs
         self.util.debug(f"plotting samples per speaker")
         if "gender" in df_speakers:
@@ -51,7 +52,7 @@ class Plots:
             plt.close(fig)
             glob_conf.report.add_item(
                 ReportItem(
-                    "Data exploration",
+                    Header.HEADER_EXPLORE,
                     "Samples per speaker",
                     f"Samples per speaker ({df_speakers.shape[0]})",
                     img_path,
@@ -81,13 +82,12 @@ class Plots:
             fig.clear()
             glob_conf.report.add_item(
                 ReportItem(
-                    "Data exploration",
+                    Header.HEADER_EXPLORE,
                     "Sample value counts",
                     f"Samples per speaker ({df_speakers.shape[0]})",
                     img_path,
                 )
             )
-
         self.plot_distributions(df_speakers, type="speakers")
 
     def plot_distributions(self, df, type="samples"):
@@ -154,8 +154,8 @@ class Plots:
                 plt.close(fig)
                 glob_conf.report.add_item(
                     ReportItem(
-                        "Data exploration",
-                        f'Correlation of {self.target} and {att[0]}',
+                        Header.HEADER_EXPLORE,
+                        f"Correlation of {self.target} and {att[0]}",
                         caption,
                         img_path,
                     )
@@ -194,7 +194,7 @@ class Plots:
                     f" {att} has more than 2 values"
                 )
 
-    def plot_durations(self, df, filename, sample_selection, caption=''):
+    def plot_durations(self, df, filename, sample_selection, caption=""):
         fig_dir = self.util.get_path("fig_dir") + "../"  # one up because of the runs
         try:
             ax = sns.histplot(df, x="duration", hue="class_label", kde=True)
@@ -207,12 +207,12 @@ class Plots:
         ax.set_ylabel(f"number of samples")
         fig = ax.figure
         plt.tight_layout()
-        img_path = f"{fig_dir}{filename}_{sample_selection}.{self.format}" 
+        img_path = f"{fig_dir}{filename}_{sample_selection}.{self.format}"
         plt.savefig(img_path)
         plt.close(fig)
         glob_conf.report.add_item(
             ReportItem(
-                "Data exploration",
+                Header.HEADER_EXPLORE,
                 caption,
                 title,
                 img_path,

@@ -82,7 +82,9 @@ class Dataset:
             f" {self.got_speaker} ({speaker_num}), got sexes: {self.got_gender}"
         )
         self.util.debug(r_string)
-        glob_conf.report.add_item(ReportItem("Data", "Load report", r_string))
+        if glob_conf.report.initial:
+            glob_conf.report.add_item(ReportItem("Data", "Load report", r_string))
+            glob_conf.report.initial = False
 
     def load(self):
         """Load the dataframe with files, speakers and task labels"""
