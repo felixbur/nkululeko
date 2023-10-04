@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.66.6
+--------------
+* minor cosmetics
+
 Version 0.66.5
 --------------
 * Latex report now with images
