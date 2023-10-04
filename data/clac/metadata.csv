@@ -1,0 +1,1833 @@
+,speaker,country,region,worker_city,age,gender,symptoms,file
+0,spk1,United States (US),Maryland (MD),Waldorf,26,male,no,spk1.wav
+1,spk2,United States (US),North Carolina (NC),Durham,32,male,no,spk2.wav
+2,spk3,United States (US),California (CA),North Hills,44,male,no,spk3.wav
+3,spk4,United States (US),None (None),,59,female,no,spk4.wav
+4,spk5,United States (US),Oregon (OR),Eugene,22,male,no,spk5.wav
+5,spk6,United States (US),Pennsylvania (PA),Somerset,53,male,no,spk6.wav
+6,spk7,United States (US),Texas (TX),Spring,35,male,no,spk7.wav
+7,spk8,United States (US),Massachusetts (MA),Boston,18,male,no,spk8.wav
+8,spk9,United States (US),Arkansas (AR),Batesville,61,male,no,spk9.wav
+9,spk10,United States (US),Virginia (VA),Arlington,29,male,no,spk10.wav
+10,spk11,United States (US),Oklahoma (OK),Yukon,41,female,no,spk11.wav
+11,spk12,United States (US),Illinois (IL),Rock Island,21,female,no,spk12.wav
+12,spk13,United States (US),None (None),,24,female,no,spk13.wav
+13,spk14,United States (US),California (CA),Carmichael,27,male,no,spk14.wav
+14,spk15,United States (US),New York (NY),Buffalo,28,female,no,spk15.wav
+15,spk16,United States (US),Florida (FL),Jacksonville,46,female,no,spk16.wav
+16,spk17,United States (US),Indiana (IN),La Porte,26,female,no,spk17.wav
+17,spk18,United States (US),Wisconsin (WI),Two Rivers,34,female,no,spk18.wav
+18,spk19,United States (US),South Carolina (SC),Greenville,27,female,no,spk19.wav
+19,spk20,United States (US),California (CA),Sacramento,35,female,no,spk20.wav
+20,spk21,United States (US),None (None),,48,female,no,spk21.wav
+21,spk22,United States (US),Colorado (CO),Denver,28,male,no,spk22.wav
+22,spk23,United States (US),Georgia (GA),Decatur,23,female,no,spk23.wav
+23,spk24,United States (US),Florida (FL),Sarasota,59,female,no,spk24.wav
+24,spk25,United States (US),California (CA),El Dorado Hills,33,female,no,spk25.wav
+25,spk26,United States (US),Kentucky (KY),Frankfort,36,male,no,spk26.wav
+26,spk27,United States (US),Ohio (OH),Bedford,50,female,no,spk27.wav
+27,spk28,United States (US),California (CA),Riverside,31,male,no,spk28.wav
+28,spk29,United States (US),Wisconsin (WI),Madison,21,female,no,spk29.wav
+29,spk30,United States (US),Virginia (VA),Winchester,46,female,no,spk30.wav
+30,spk31,United States (US),Texas (TX),Houston,27,female,no,spk31.wav
+31,spk32,United States (US),Illinois (IL),Gurnee,40,female,no,spk32.wav
+32,spk33,United States (US),Pennsylvania (PA),Philadelphia,24,male,no,spk33.wav
+33,spk34,United States (US),None (None),,51,female,no,spk34.wav
+34,spk35,United States (US),Kentucky (KY),Mayfield,28,male,no,spk35.wav
+35,spk36,United States (US),Ohio (OH),Madison,25,male,no,spk36.wav
+36,spk37,United States (US),Georgia (GA),Dallas,40,male,no,spk37.wav
+37,spk38,United States (US),Ohio (OH),Cleveland,34,female,no,spk38.wav
+38,spk39,United States (US),North Carolina (NC),Charlotte,24,male,no,spk39.wav
+39,spk40,United States (US),Florida (FL),Palmetto,64,male,no,spk40.wav
+40,spk41,United States (US),New Jersey (NJ),Toms River,33,female,no,spk41.wav
+41,spk42,United States (US),North Carolina (NC),Charlotte,32,male,no,spk42.wav
+42,spk43,United States (US),Tennessee (TN),Nashville,37,male,no,spk43.wav
+43,spk44,United States (US),Virginia (VA),Richmond,26,female,no,spk44.wav
+44,spk45,United States (US),Washington (WA),Seattle,44,female,no,spk45.wav
+45,spk46,United States (US),Texas (TX),Cedar Park,52,female,no,spk46.wav
+46,spk47,United States (US),Illinois (IL),Saint Charles,41,male,no,spk47.wav
+47,spk48,United States (US),Georgia (GA),Valdosta,32,male,no,spk48.wav
+48,spk49,United States (US),Rhode Island (RI),Bristol,69,female,no,spk49.wav
+49,spk50,United States (US),North Carolina (NC),Hendersonville,27,female,no,spk50.wav
+50,spk51,United States (US),South Carolina (SC),Greer,42,male,no,spk51.wav
+51,spk52,United States (US),Texas (TX),Cypress,21,female,no,spk52.wav
+52,spk53,United States (US),Virginia (VA),Chesapeake,31,male,no,spk53.wav
+53,spk54,United States (US),Pennsylvania (PA),Norristown,21,male,no,spk54.wav
+54,spk55,United States (US),North Carolina (NC),Winston-Salem,21,male,no,spk55.wav
+55,spk56,United States (US),Iowa (IA),Hinton,19,female,no,spk56.wav
+56,spk57,United States (US),None (None),,31,male,no,spk57.wav
+57,spk58,United States (US),California (CA),Lancaster,35,male,no,spk58.wav
+58,spk59,United States (US),Michigan (MI),Saginaw,44,male,no,spk59.wav
+59,spk60,United States (US),Ohio (OH),Canton,27,male,no,spk60.wav
+60,spk61,United States (US),California (CA),Los Angeles,36,male,no,spk61.wav
+61,spk62,United States (US),California (CA),Santa Ana,27,female,no,spk62.wav
+62,spk63,United States (US),Hawaii (HI),Kailua,44,male,no,spk63.wav
+63,spk64,United States (US),Rhode Island (RI),Cumberland,28,male,no,spk64.wav
+64,spk65,United States (US),Texas (TX),College Station,20,male,no,spk65.wav
+65,spk66,United States (US),Texas (TX),McKinney,58,female,no,spk66.wav
+66,spk67,United States (US),California (CA),Chino,27,male,yes,spk67.wav
+67,spk68,United States (US),New Jersey (NJ),Plainfield,33,female,no,spk68.wav
+68,spk69,United States (US),California (CA),Torrance,19,male,no,spk69.wav
+69,spk70,United States (US),Colorado (CO),Denver,32,male,no,spk70.wav
+70,spk71,United States (US),None (None),,38,female,no,spk71.wav
+71,spk72,United States (US),California (CA),Sacramento,23,female,no,spk72.wav
+72,spk73,United States (US),Kentucky (KY),Louisville,18,female,no,spk73.wav
+73,spk74,United States (US),Illinois (IL),Chicago,36,male,no,spk74.wav
+74,spk75,United States (US),Pennsylvania (PA),Gettysburg,33,male,no,spk75.wav
+75,spk76,United States (US),California (CA),San Diego,64,male,no,spk76.wav
+76,spk77,United States (US),North Carolina (NC),West Jefferson,31,female,no,spk77.wav
+77,spk78,United States (US),Florida (FL),Kissimmee,38,male,no,spk78.wav
+78,spk79,United States (US),Illinois (IL),Vernon Hills,41,male,no,spk79.wav
+79,spk80,United States (US),Massachusetts (MA),Brighton,22,female,no,spk80.wav
+80,spk81,United States (US),Colorado (CO),Denver,34,male,no,spk81.wav
+81,spk82,United States (US),Montana (MT),Billings,24,female,no,spk82.wav
+82,spk83,United States (US),None (None),,30,female,no,spk83.wav
+83,spk84,United States (US),Indiana (IN),Indianapolis,45,male,no,spk84.wav
+84,spk85,United States (US),Wisconsin (WI),Baraboo,38,female,no,spk85.wav
+85,spk86,United States (US),Alabama (AL),Daleville,40,female,no,spk86.wav
+86,spk87,United States (US),Ohio (OH),Findlay,50,male,no,spk87.wav
+87,spk88,United States (US),Virginia (VA),Norfolk,23,female,no,spk88.wav
+88,spk89,United States (US),Florida (FL),Fort Lauderdale,51,female,no,spk89.wav
+89,spk90,United States (US),Maine (ME),Topsham,38,female,yes,spk90.wav
+90,spk91,United States (US),None (None),,35,female,no,spk91.wav
+91,spk92,United States (US),Connecticut (CT),Meriden,35,male,no,spk92.wav
+92,spk93,United States (US),Texas (TX),El Paso,25,male,no,spk93.wav
+93,spk94,United States (US),Pennsylvania (PA),Malvern,32,female,no,spk94.wav
+94,spk95,United States (US),Kentucky (KY),Louisville,62,female,no,spk95.wav
+95,spk96,United States (US),Ohio (OH),Columbus,35,male,no,spk96.wav
+96,spk97,United States (US),California (CA),South Pasadena,31,female,no,spk97.wav
+97,spk98,United States (US),Pennsylvania (PA),Philadelphia,33,female,no,spk98.wav
+98,spk99,United States (US),Colorado (CO),Denver,28,female,no,spk99.wav
+99,spk100,United States (US),Texas (TX),Dallas,32,female,no,spk100.wav
+100,spk101,United States (US),None (None),,25,male,no,spk101.wav
+101,spk102,United States (US),New Jersey (NJ),Wayne,24,female,no,spk102.wav
+102,spk103,United States (US),New Jersey (NJ),Riverton,36,female,no,spk103.wav
+103,spk104,United States (US),Michigan (MI),Bloomfield Hills,19,female,no,spk104.wav
+104,spk105,United States (US),Washington (WA),Allyn,35,female,no,spk105.wav
+105,spk106,United States (US),Utah (UT),Lehi,25,female,no,spk106.wav
+106,spk107,United States (US),California (CA),Los Angeles,45,male,no,spk107.wav
+107,spk108,Philippines (PH),Metro Manila (00),Quezon City,23,male,no,spk108.wav
+108,spk109,United States (US),Nevada (NV),Las Vegas,39,male,no,spk109.wav
+109,spk110,United States (US),Illinois (IL),Rockton,32,male,no,spk110.wav
+110,spk111,United States (US),California (CA),Palmdale,36,male,no,spk111.wav
+111,spk112,United States (US),Ohio (OH),Dayton,23,male,no,spk112.wav
+112,spk113,United States (US),California (CA),Monrovia,63,male,no,spk113.wav
+113,spk114,United States (US),Texas (TX),Baytown,25,male,no,spk114.wav
+114,spk115,United States (US),New York (NY),Elmhurst,32,male,no,spk115.wav
+115,spk116,United States (US),California (CA),Santa Barbara,52,male,no,spk116.wav
+116,spk117,United States (US),Massachusetts (MA),Cambridge,31,male,no,spk117.wav
+117,spk118,United States (US),California (CA),Gardena,26,female,no,spk118.wav
+118,spk119,United States (US),Pennsylvania (PA),Bethlehem,22,female,no,spk119.wav
+119,spk120,United States (US),Indiana (IN),Fort Wayne,22,male,no,spk120.wav
+120,spk121,United States (US),None (None),,35,male,no,spk121.wav
+121,spk122,United States (US),South Carolina (SC),Columbia,33,female,no,spk122.wav
+122,spk123,United States (US),Minnesota (MN),Saint Paul,24,male,no,spk123.wav
+123,spk124,United States (US),None (None),,22,other,no,spk124.wav
+124,spk125,United States (US),Indiana (IN),Muncie,18,female,no,spk125.wav
+125,spk126,United States (US),None (None),,36,male,no,spk126.wav
+126,spk127,United States (US),Florida (FL),Tampa,61,female,no,spk127.wav
+127,spk128,United States (US),Georgia (GA),Hamilton,18,male,no,spk128.wav
+128,spk129,United States (US),Nebraska (NE),Lincoln,32,female,no,spk129.wav
+129,spk130,United States (US),New York (NY),Whitestone,38,male,no,spk130.wav
+130,spk131,United States (US),Virginia (VA),Vienna,29,female,no,spk131.wav
+131,spk132,United States (US),Michigan (MI),Macomb,57,male,no,spk132.wav
+132,spk133,United States (US),Texas (TX),San Marcos,31,male,no,spk133.wav
+133,spk134,United States (US),Utah (UT),Lehi,40,male,no,spk134.wav
+134,spk135,United States (US),New Mexico (NM),Albuquerque,44,male,no,spk135.wav
+135,spk136,United States (US),New York (NY),Brooklyn,25,female,no,spk136.wav
+136,spk137,United States (US),Louisiana (LA),Baton Rouge,37,female,no,spk137.wav
+137,spk138,United States (US),Georgia (GA),Atlanta,44,female,no,spk138.wav
+138,spk139,United States (US),Ohio (OH),Tallmadge,22,male,no,spk139.wav
+139,spk140,United States (US),Ohio (OH),Akron,25,male,no,spk140.wav
+140,spk141,United States (US),Texas (TX),Seguin,23,female,no,spk141.wav
+141,spk142,United States (US),Massachusetts (MA),Lowell,32,female,no,spk142.wav
+142,spk143,United States (US),Texas (TX),Plano,26,male,no,spk143.wav
+143,spk144,United States (US),Tennessee (TN),Memphis,27,male,no,spk144.wav
+144,spk145,United States (US),Minnesota (MN),Minneapolis,31,male,no,spk145.wav
+145,spk146,United States (US),New York (NY),Watervliet,40,female,no,spk146.wav
+146,spk147,United States (US),Pennsylvania (PA),Scranton,34,female,no,spk147.wav
+147,spk148,United States (US),Nevada (NV),Las Vegas,36,male,no,spk148.wav
+148,spk149,United States (US),Illinois (IL),Bloomington,31,male,no,spk149.wav
+149,spk150,United States (US),Nevada (NV),Las Vegas,37,male,no,spk150.wav
+150,spk151,United States (US),Texas (TX),Houston,30,male,no,spk151.wav
+151,spk152,United States (US),Massachusetts (MA),Belmont,26,other,no,spk152.wav
+152,spk153,United States (US),Georgia (GA),Marietta,45,female,no,spk153.wav
+153,spk154,United States (US),Texas (TX),Houston,41,female,no,spk154.wav
+154,spk155,United States (US),Michigan (MI),Williamston,22,male,no,spk155.wav
+155,spk156,United States (US),None (None),,33,male,no,spk156.wav
+156,spk157,United States (US),Utah (UT),Tooele,39,male,no,spk157.wav
+157,spk158,United States (US),Nevada (NV),Las Vegas,33,female,no,spk158.wav
+158,spk159,United States (US),Minnesota (MN),Minneapolis,51,male,no,spk159.wav
+159,spk160,United States (US),Ohio (OH),Springfield,45,male,no,spk160.wav
+160,spk161,United States (US),New York (NY),Jamaica,21,female,yes,spk161.wav
+161,spk162,United States (US),Texas (TX),Rosharon,21,male,no,spk162.wav
+162,spk163,United States (US),Ohio (OH),Columbus,35,male,no,spk163.wav
+163,spk164,United States (US),None (None),,28,male,no,spk164.wav
+164,spk165,United States (US),Pennsylvania (PA),Fountain Hill,22,male,no,spk165.wav
+165,spk166,United States (US),Michigan (MI),Lincoln Park,26,male,no,spk166.wav
+166,spk167,United States (US),Michigan (MI),Kalamazoo,38,male,no,spk167.wav
+167,spk168,United States (US),North Carolina (NC),Durham,41,male,no,spk168.wav
+168,spk169,United States (US),Arkansas (AR),Norfork,26,female,no,spk169.wav
+169,spk170,United States (US),Ohio (OH),Orrville,40,male,no,spk170.wav
+170,spk171,United States (US),Arkansas (AR),Siloam Springs,41,female,no,spk171.wav
+171,spk172,United States (US),None (None),,32,male,no,spk172.wav
+172,spk173,United States (US),Colorado (CO),Littleton,28,female,no,spk173.wav
+173,spk174,United States (US),Georgia (GA),Fitzgerald,46,male,no,spk174.wav
+174,spk175,United States (US),Virginia (VA),Chesapeake,63,female,no,spk175.wav
+175,spk176,United States (US),None (None),,28,female,no,spk176.wav
+176,spk177,United States (US),Oklahoma (OK),Oklahoma City,46,female,no,spk177.wav
+177,spk178,United States (US),Minnesota (MN),Chatfield,46,female,no,spk178.wav
+178,spk179,United States (US),California (CA),Fremont,29,male,no,spk179.wav
+179,spk180,United States (US),Illinois (IL),Geneva,47,male,no,spk180.wav
+180,spk181,United States (US),Arizona (AZ),Scottsdale,57,female,no,spk181.wav
+181,spk182,United States (US),New Jersey (NJ),Rahway,32,male,yes,spk182.wav
+182,spk183,United States (US),Washington (WA),Auburn,22,female,no,spk183.wav
+183,spk184,United States (US),Illinois (IL),Chicago,21,female,no,spk184.wav
+184,spk185,United States (US),Georgia (GA),Hoschton,30,female,no,spk185.wav
+185,spk186,United States (US),California (CA),Chico,77,male,no,spk186.wav
+186,spk187,United States (US),Illinois (IL),Chicago,27,male,no,spk187.wav
+187,spk188,United States (US),Illinois (IL),Ina,33,female,no,spk188.wav
+188,spk189,United States (US),Florida (FL),Miami,20,female,no,spk189.wav
+189,spk190,United States (US),Illinois (IL),Chicago,32,male,no,spk190.wav
+190,spk191,United States (US),District of Columbia (DC),Washington,27,male,no,spk191.wav
+191,spk192,United States (US),Pennsylvania (PA),Pittsburgh,23,male,no,spk192.wav
+192,spk193,United States (US),Pennsylvania (PA),Philadelphia,58,female,no,spk193.wav
+193,spk194,United States (US),Arizona (AZ),Tucson,40,female,no,spk194.wav
+194,spk195,United States (US),New Mexico (NM),Albuquerque,36,female,no,spk195.wav
+195,spk196,United States (US),Massachusetts (MA),West Springfield,25,female,no,spk196.wav
+196,spk197,United States (US),Washington (WA),Olympia,65,male,no,spk197.wav
+197,spk198,United States (US),Wisconsin (WI),Delafield,37,male,no,spk198.wav
+198,spk199,United States (US),Ohio (OH),Edgerton,43,male,no,spk199.wav
+199,spk200,United States (US),Florida (FL),New Smyrna Beach,75,male,no,spk200.wav
+200,spk201,United States (US),Texas (TX),Plano,25,female,no,spk201.wav
+201,spk202,United States (US),Virginia (VA),King George,37,female,no,spk202.wav
+202,spk203,United States (US),Arkansas (AR),Springdale,39,male,no,spk203.wav
+203,spk204,United States (US),New York (NY),Schenectady,32,female,no,spk204.wav
+204,spk205,United States (US),Washington (WA),Puyallup,40,female,no,spk205.wav
+205,spk206,United States (US),Arizona (AZ),Queen Creek,32,female,no,spk206.wav
+206,spk207,United States (US),Maryland (MD),Chevy Chase,52,female,no,spk207.wav
+207,spk208,United States (US),Kentucky (KY),Columbia,39,male,no,spk208.wav
+208,spk209,United States (US),Texas (TX),Spring,40,male,no,spk209.wav
+209,spk210,United States (US),Texas (TX),San Antonio,33,female,no,spk210.wav
+210,spk211,United States (US),Ohio (OH),Cuyahoga Falls,25,female,no,spk211.wav
+211,spk212,United States (US),Virginia (VA),Virginia Beach,57,male,no,spk212.wav
+212,spk213,United States (US),Missouri (MO),St Louis,38,male,no,spk213.wav
+213,spk214,United States (US),North Carolina (NC),Matthews,45,male,no,spk214.wav
+214,spk215,United States (US),California (CA),Sylmar,29,male,no,spk215.wav
+215,spk216,United States (US),Florida (FL),Miami,37,male,no,spk216.wav
+216,spk217,United States (US),Indiana (IN),Indianapolis,24,male,no,spk217.wav
+217,spk218,United States (US),Kansas (KS),Pittsburg,30,female,no,spk218.wav
+218,spk219,United States (US),New York (NY),Fairport,38,female,no,spk219.wav
+219,spk220,United States (US),Pennsylvania (PA),Leechburg,28,male,no,spk220.wav
+220,spk221,United States (US),Washington (WA),Seattle,54,female,no,spk221.wav
+221,spk222,United States (US),Tennessee (TN),Knoxville,37,female,no,spk222.wav
+222,spk223,United States (US),Ohio (OH),Southington,35,female,no,spk223.wav
+223,spk224,United States (US),Maryland (MD),Highland,44,male,no,spk224.wav
+224,spk225,United States (US),California (CA),Calabasas,36,female,no,spk225.wav
+225,spk226,United States (US),Minnesota (MN),New Ulm,30,female,no,spk226.wav
+226,spk227,United States (US),Pennsylvania (PA),Greensburg,22,female,no,spk227.wav
+227,spk228,United States (US),South Carolina (SC),Pinewood,21,male,no,spk228.wav
+228,spk229,United States (US),Wisconsin (WI),Wautoma,58,male,no,spk229.wav
+229,spk230,United States (US),New York (NY),Ridgewood,22,female,no,spk230.wav
+230,spk231,United States (US),North Carolina (NC),Dudley,60,female,no,spk231.wav
+231,spk232,United States (US),Kansas (KS),Topeka,59,male,no,spk232.wav
+232,spk233,United States (US),Oregon (OR),Portland,50,male,no,spk233.wav
+233,spk234,United States (US),Washington (WA),Spokane,34,female,no,spk234.wav
+234,spk235,United States (US),South Carolina (SC),Summerville,36,female,no,spk235.wav
+235,spk236,United States (US),Georgia (GA),Marietta,56,male,no,spk236.wav
+236,spk237,United States (US),Nevada (NV),Las Vegas,54,male,no,spk237.wav
+237,spk238,United States (US),Illinois (IL),Park Ridge,35,female,no,spk238.wav
+238,spk239,United States (US),Florida (FL),Port Orange,34,male,no,spk239.wav
+239,spk240,United States (US),New York (NY),Brooklyn,30,male,no,spk240.wav
+240,spk241,United Kingdom (GB),None (None),,40,male,no,spk241.wav
+241,spk242,United States (US),South Carolina (SC),Greenville,30,female,no,spk242.wav
+242,spk243,United States (US),Virginia (VA),,26,male,no,spk243.wav
+243,spk244,United States (US),Texas (TX),Keene,75,female,no,spk244.wav
+244,spk245,United States (US),New York (NY),New York,58,male,no,spk245.wav
+245,spk246,United States (US),Illinois (IL),Elmwood Park,37,male,no,spk246.wav
+246,spk247,United States (US),North Carolina (NC),Charlotte,56,female,no,spk247.wav
+247,spk248,United States (US),Florida (FL),Kissimmee,28,male,no,spk248.wav
+248,spk249,United States (US),Virginia (VA),,39,female,no,spk249.wav
+249,spk250,United States (US),Indiana (IN),Jeffersonville,26,female,no,spk250.wav
+250,spk251,United States (US),None (None),,41,male,no,spk251.wav
+251,spk252,United States (US),Georgia (GA),Acworth,68,female,no,spk252.wav
+252,spk253,United States (US),Pennsylvania (PA),Jersey Shore,36,male,no,spk253.wav
+253,spk254,United States (US),Washington (WA),Puyallup,32,male,no,spk254.wav
+254,spk255,United States (US),Iowa (IA),Mount Pleasant,58,female,no,spk255.wav
+255,spk256,United States (US),Florida (FL),Haines City,55,male,no,spk256.wav
+256,spk257,United States (US),California (CA),Bakersfield,35,female,no,spk257.wav
+257,spk258,United States (US),Ohio (OH),Canal Winchester,56,male,no,spk258.wav
+258,spk259,United States (US),Arizona (AZ),Chandler,36,female,no,spk259.wav
+259,spk260,United States (US),Alabama (AL),Sylacauga,22,female,no,spk260.wav
+260,spk261,United States (US),Florida (FL),Pinellas Park,21,female,no,spk261.wav
+261,spk262,United States (US),None (None),,40,male,no,spk262.wav
+262,spk263,United States (US),Pennsylvania (PA),Havertown,35,male,no,spk263.wav
+263,spk264,United States (US),Wisconsin (WI),Fond du Lac,41,female,no,spk264.wav
+264,spk265,United States (US),Michigan (MI),Fowlerville,25,female,yes,spk265.wav
+265,spk266,United States (US),Iowa (IA),Bettendorf,31,female,no,spk266.wav
+266,spk267,United States (US),California (CA),Barstow,55,female,no,spk267.wav
+267,spk268,United States (US),Virginia (VA),Richmond,29,female,no,spk268.wav
+268,spk269,United States (US),Florida (FL),Tampa,34,male,no,spk269.wav
+269,spk270,United States (US),Wisconsin (WI),Green Bay,36,female,no,spk270.wav
+270,spk271,United States (US),Arizona (AZ),Mesa,53,female,no,spk271.wav
+271,spk272,United States (US),Colorado (CO),Aurora,49,male,no,spk272.wav
+272,spk273,United States (US),North Carolina (NC),Winston-Salem,63,male,no,spk273.wav
+273,spk274,United States (US),California (CA),Glendale,23,female,no,spk274.wav
+274,spk275,United States (US),Washington (WA),Lynnwood,22,female,no,spk275.wav
+275,spk276,United States (US),Alabama (AL),Pleasant Grove,22,female,no,spk276.wav
+276,spk277,United States (US),Colorado (CO),Aurora,21,male,no,spk277.wav
+277,spk278,United States (US),Minnesota (MN),Saint Paul,30,female,no,spk278.wav
+278,spk279,United States (US),California (CA),Covina,21,male,no,spk279.wav
+279,spk280,United States (US),Florida (FL),Fort Walton Beach,44,female,no,spk280.wav
+280,spk281,United States (US),Wisconsin (WI),La Crosse,26,male,no,spk281.wav
+281,spk282,United States (US),Missouri (MO),St Louis,23,male,no,spk282.wav
+282,spk283,United States (US),Pennsylvania (PA),Williamsport,20,female,no,spk283.wav
+283,spk284,United States (US),Texas (TX),Bryan,44,male,no,spk284.wav
+284,spk285,United States (US),Florida (FL),Ft. Pierce,33,male,no,spk285.wav
+285,spk286,United States (US),Washington (WA),Maple Valley,35,female,no,spk286.wav
+286,spk287,United States (US),Arkansas (AR),Searcy,21,female,no,spk287.wav
+287,spk288,United States (US),None (None),,20,male,no,spk288.wav
+288,spk289,United States (US),Alabama (AL),Decatur,35,male,no,spk289.wav
+289,spk290,United States (US),Washington (WA),Spokane,30,male,no,spk290.wav
+290,spk291,United States (US),Texas (TX),Grand Prairie,32,male,no,spk291.wav
+291,spk292,United States (US),California (CA),Hemet,28,female,yes,spk292.wav
+292,spk293,United States (US),Georgia (GA),Waycross,25,female,no,spk293.wav
+293,spk294,United States (US),Florida (FL),DeLand,37,male,no,spk294.wav
+294,spk295,United States (US),Colorado (CO),Grand Junction,40,female,no,spk295.wav
+295,spk296,United States (US),New York (NY),Liverpool,23,male,no,spk296.wav
+296,spk297,United States (US),North Carolina (NC),Selma,57,male,no,spk297.wav
+297,spk298,United States (US),California (CA),Orange,40,male,no,spk298.wav
+298,spk299,United States (US),Virginia (VA),Arlington,33,male,no,spk299.wav
+299,spk300,United States (US),Ohio (OH),Dublin,41,female,no,spk300.wav
+300,spk301,United States (US),South Carolina (SC),Fort Mill,21,female,no,spk301.wav
+301,spk302,United States (US),California (CA),Oceanside,35,female,no,spk302.wav
+302,spk303,United States (US),Nevada (NV),Las Vegas,33,female,no,spk303.wav
+303,spk304,United States (US),New York (NY),Holley,44,female,no,spk304.wav
+304,spk305,United States (US),North Carolina (NC),Charlotte,39,female,no,spk305.wav
+305,spk306,United States (US),North Carolina (NC),Fayetteville,33,male,no,spk306.wav
+306,spk307,United States (US),North Carolina (NC),Creedmoor,32,male,no,spk307.wav
+307,spk308,United States (US),Arizona (AZ),Tucson,29,male,no,spk308.wav
+308,spk309,United States (US),New York (NY),Syracuse,24,female,no,spk309.wav
+309,spk310,United States (US),Michigan (MI),Lake Orion,58,female,no,spk310.wav
+310,spk311,United States (US),Maryland (MD),Baltimore,48,male,no,spk311.wav
+311,spk312,United States (US),Oklahoma (OK),,29,female,no,spk312.wav
+312,spk313,United States (US),Pennsylvania (PA),Monongahela,46,female,no,spk313.wav
+313,spk314,United States (US),Florida (FL),Winter Park,36,male,no,spk314.wav
+314,spk315,United States (US),North Carolina (NC),Apex,35,male,no,spk315.wav
+315,spk316,United States (US),Florida (FL),Cantonment,27,male,no,spk316.wav
+316,spk317,United States (US),Georgia (GA),Conyers,34,male,no,spk317.wav
+317,spk318,United States (US),California (CA),Thousand Oaks,30,male,no,spk318.wav
+318,spk319,United States (US),Connecticut (CT),Madison,28,male,no,spk319.wav
+319,spk320,United States (US),New York (NY),Ridgewood,22,male,no,spk320.wav
+320,spk321,United States (US),Ohio (OH),Cleveland,37,female,no,spk321.wav
+321,spk322,United States (US),Georgia (GA),Quitman,27,male,no,spk322.wav
+322,spk323,United States (US),District of Columbia (DC),Washington,40,male,no,spk323.wav
+323,spk324,United States (US),New York (NY),North Babylon,56,male,no,spk324.wav
+324,spk325,United States (US),Texas (TX),Lancaster,23,male,no,spk325.wav
+325,spk326,United States (US),Massachusetts (MA),Brookline,29,male,no,spk326.wav
+326,spk327,United States (US),Georgia (GA),Stone Mountain,55,male,no,spk327.wav
+327,spk328,United States (US),Minnesota (MN),Duluth,36,male,no,spk328.wav
+328,spk329,United States (US),Wisconsin (WI),East Troy,37,female,no,spk329.wav
+329,spk330,United States (US),North Carolina (NC),Cary,34,female,no,spk330.wav
+330,spk331,United States (US),None (None),,35,female,no,spk331.wav
+331,spk332,United States (US),Texas (TX),Lubbock,36,male,no,spk332.wav
+332,spk333,United States (US),Iowa (IA),,58,female,no,spk333.wav
+333,spk334,United States (US),Wisconsin (WI),Eau Claire,26,female,no,spk334.wav
+334,spk335,United States (US),Oregon (OR),Portland,29,female,no,spk335.wav
+335,spk336,United States (US),California (CA),Sacramento,30,female,no,spk336.wav
+336,spk337,United States (US),Texas (TX),Houston,25,female,no,spk337.wav
+337,spk338,United States (US),California (CA),Santa Barbara,28,female,no,spk338.wav
+338,spk339,United States (US),Colorado (CO),Loveland,33,female,no,spk339.wav
+339,spk340,United States (US),Alabama (AL),Madison,32,male,no,spk340.wav
+340,spk341,United States (US),Florida (FL),Tampa,59,female,no,spk341.wav
+341,spk342,United States (US),North Carolina (NC),Washington,56,male,no,spk342.wav
+342,spk343,United States (US),North Carolina (NC),Charlotte,27,female,no,spk343.wav
+343,spk344,United States (US),Alabama (AL),Birmingham,43,male,no,spk344.wav
+344,spk345,United States (US),North Carolina (NC),Gastonia,27,female,no,spk345.wav
+345,spk346,United States (US),Colorado (CO),Littleton,62,female,no,spk346.wav
+346,spk347,United States (US),Pennsylvania (PA),Harrisburg,30,male,no,spk347.wav
+347,spk348,United States (US),Pennsylvania (PA),Export,35,female,no,spk348.wav
+348,spk349,United States (US),New York (NY),Astoria,26,female,no,spk349.wav
+349,spk350,United States (US),Arkansas (AR),Little Rock,28,female,no,spk350.wav
+350,spk351,United States (US),California (CA),Walnut,28,male,no,spk351.wav
+351,spk352,United States (US),Alabama (AL),Andalusia,28,female,no,spk352.wav
+352,spk353,United States (US),Michigan (MI),Ann Arbor,27,female,no,spk353.wav
+353,spk354,United States (US),New Jersey (NJ),Morristown,21,female,no,spk354.wav
+354,spk355,United States (US),Pennsylvania (PA),Exton,25,male,no,spk355.wav
+355,spk356,United States (US),Texas (TX),Houston,34,male,no,spk356.wav
+356,spk357,United States (US),North Carolina (NC),Fairview,72,female,no,spk357.wav
+357,spk358,United States (US),Washington (WA),Puyallup,37,female,no,spk358.wav
+358,spk359,United States (US),None (None),,37,male,no,spk359.wav
+359,spk360,United States (US),Florida (FL),Altamonte Springs,41,female,no,spk360.wav
+360,spk361,United States (US),Mississippi (MS),Picayune,40,female,no,spk361.wav
+361,spk362,United States (US),California (CA),Santa Paula,21,male,no,spk362.wav
+362,spk363,United States (US),Virginia (VA),Aldie,54,female,no,spk363.wav
+363,spk364,United States (US),Arizona (AZ),Tucson,47,male,no,spk364.wav
+364,spk365,United States (US),None (None),,24,female,no,spk365.wav
+365,spk366,United States (US),California (CA),Santa Ana,29,female,no,spk366.wav
+366,spk367,United States (US),Idaho (ID),Boise,64,female,no,spk367.wav
+367,spk368,United States (US),None (None),,38,female,no,spk368.wav
+368,spk369,United States (US),North Carolina (NC),Boone,21,male,no,spk369.wav
+369,spk370,United States (US),North Carolina (NC),Jacksonville,40,female,no,spk370.wav
+370,spk371,United States (US),Florida (FL),Miami,20,female,no,spk371.wav
+371,spk372,United States (US),Oregon (OR),Portland,30,male,no,spk372.wav
+372,spk373,United States (US),Missouri (MO),Sedalia,32,male,no,spk373.wav
+373,spk374,United States (US),Tennessee (TN),Memphis,36,female,no,spk374.wav
+374,spk375,United States (US),Georgia (GA),Atlanta,19,male,no,spk375.wav
+375,spk376,United States (US),Arkansas (AR),Benton,60,female,no,spk376.wav
+376,spk377,United States (US),California (CA),Gardena,38,female,yes,spk377.wav
+377,spk378,United States (US),Texas (TX),Corpus Christi,20,female,no,spk378.wav
+378,spk379,United States (US),None (None),,37,male,no,spk379.wav
+379,spk380,United States (US),New Jersey (NJ),Fort Lee,39,male,no,spk380.wav
+380,spk381,United States (US),California (CA),Encino,45,male,no,spk381.wav
+381,spk382,United States (US),Texas (TX),Weatherford,43,male,no,spk382.wav
+382,spk383,United States (US),Virginia (VA),Roanoke,21,female,no,spk383.wav
+383,spk384,United States (US),Arkansas (AR),Alexander,31,male,no,spk384.wav
+384,spk385,United States (US),Colorado (CO),Louisville,45,female,no,spk385.wav
+385,spk386,United States (US),Michigan (MI),Iron River,36,male,no,spk386.wav
+386,spk387,United States (US),Texas (TX),Dallas,50,female,no,spk387.wav
+387,spk388,United States (US),Texas (TX),San Antonio,32,male,no,spk388.wav
+388,spk389,United States (US),Minnesota (MN),Rochester,48,male,no,spk389.wav
+389,spk390,United States (US),Washington (WA),Walla Walla,23,male,no,spk390.wav
+390,spk391,United States (US),Washington (WA),Spokane,29,female,no,spk391.wav
+391,spk392,United States (US),New York (NY),The Bronx,36,male,no,spk392.wav
+392,spk393,United States (US),New York (NY),Brooklyn,28,male,no,spk393.wav
+393,spk394,United States (US),Wisconsin (WI),Milwaukee,31,male,no,spk394.wav
+394,spk395,United States (US),Massachusetts (MA),Attleboro,44,female,no,spk395.wav
+395,spk396,United States (US),Arizona (AZ),Tucson,36,female,no,spk396.wav
+396,spk397,United States (US),North Carolina (NC),Charlotte,37,male,no,spk397.wav
+397,spk398,United States (US),North Carolina (NC),Wilmington,21,male,no,spk398.wav
+398,spk399,United States (US),Maryland (MD),College Park,29,male,no,spk399.wav
+399,spk400,United States (US),Massachusetts (MA),Malden,43,male,no,spk400.wav
+400,spk401,United States (US),None (None),,45,male,no,spk401.wav
+401,spk402,United States (US),Florida (FL),Miami,20,female,no,spk402.wav
+402,spk403,United States (US),Texas (TX),Dallas,23,male,no,spk403.wav
+403,spk404,United States (US),Pennsylvania (PA),Ligonier,30,male,no,spk404.wav
+404,spk405,United States (US),New Hampshire (NH),Portsmouth,38,male,no,spk405.wav
+405,spk406,United States (US),Kentucky (KY),Lexington,35,male,no,spk406.wav
+406,spk407,United States (US),Iowa (IA),Ames,27,other,no,spk407.wav
+407,spk408,United States (US),Massachusetts (MA),Roslindale,29,male,no,spk408.wav
+408,spk409,United States (US),Illinois (IL),Lombard,38,female,no,spk409.wav
+409,spk410,United States (US),Nebraska (NE),Omaha,27,female,no,spk410.wav
+410,spk411,United States (US),Texas (TX),Dallas,26,female,no,spk411.wav
+411,spk412,United States (US),California (CA),San Francisco,42,male,no,spk412.wav
+412,spk413,United States (US),Pennsylvania (PA),Philadelphia,28,male,no,spk413.wav
+413,spk414,United States (US),California (CA),San Jose,33,male,no,spk414.wav
+414,spk415,United States (US),Texas (TX),Houston,20,male,no,spk415.wav
+415,spk416,United States (US),Kentucky (KY),Louisville,41,female,yes,spk416.wav
+416,spk417,United States (US),Arkansas (AR),Bentonville,24,male,no,spk417.wav
+417,spk418,United States (US),Texas (TX),Pasadena,30,male,no,spk418.wav
+418,spk419,United States (US),Virginia (VA),Ashburn,42,female,no,spk419.wav
+419,spk420,United States (US),Florida (FL),Orlando,26,female,no,spk420.wav
+420,spk421,United States (US),Texas (TX),Texas City,52,female,no,spk421.wav
+421,spk422,United States (US),South Carolina (SC),Myrtle Beach,31,female,no,spk422.wav
+422,spk423,United States (US),Texas (TX),Deer Park,33,male,no,spk423.wav
+423,spk424,United States (US),Oregon (OR),Beaverton,39,other,no,spk424.wav
+424,spk425,United States (US),New Jersey (NJ),Edison,39,male,no,spk425.wav
+425,spk426,United States (US),Michigan (MI),Detroit,22,female,no,spk426.wav
+426,spk427,United States (US),Ohio (OH),Loveland,34,male,no,spk427.wav
+427,spk428,United States (US),Pennsylvania (PA),Quakertown,32,female,no,spk428.wav
+428,spk429,United States (US),Massachusetts (MA),North Attleboro,34,male,no,spk429.wav
+429,spk430,None (None),None (None),,34,male,no,spk430.wav
+430,spk431,Pakistan (PK),Islamabad (IS),Islamabad,26,female,no,spk431.wav
+431,spk432,United States (US),Texas (TX),Houston,28,female,no,spk432.wav
+432,spk433,United States (US),Minnesota (MN),Saint Paul,36,male,no,spk433.wav
+433,spk434,United States (US),Texas (TX),Cypress,38,female,no,spk434.wav
+434,spk435,United States (US),New York (NY),Brooklyn,24,male,no,spk435.wav
+435,spk436,United States (US),California (CA),Castro Valley,46,female,no,spk436.wav
+436,spk437,United States (US),Nevada (NV),Pahrump,32,female,no,spk437.wav
+437,spk438,United States (US),Colorado (CO),Denver,31,male,no,spk438.wav
+438,spk439,United States (US),None (None),,35,female,no,spk439.wav
+439,spk440,United States (US),Connecticut (CT),Stonington,24,female,no,spk440.wav
+440,spk441,United States (US),Nevada (NV),Henderson,41,female,no,spk441.wav
+441,spk442,United States (US),Michigan (MI),Montague,30,female,no,spk442.wav
+442,spk443,United States (US),Ohio (OH),New Albany,33,male,no,spk443.wav
+443,spk444,United States (US),California (CA),San Francisco,43,male,no,spk444.wav
+444,spk445,United States (US),Virginia (VA),Fredericksburg,26,male,no,spk445.wav
+445,spk446,United States (US),Michigan (MI),Jackson,21,female,no,spk446.wav
+446,spk447,United States (US),None (None),,38,male,no,spk447.wav
+447,spk448,United States (US),Pennsylvania (PA),Elizabethtown,34,female,no,spk448.wav
+448,spk449,United States (US),Florida (FL),West Palm Beach,28,male,no,spk449.wav
+449,spk450,United States (US),Connecticut (CT),Cheshire,27,male,no,spk450.wav
+450,spk451,United States (US),Oregon (OR),Happy Valley,48,female,no,spk451.wav
+451,spk452,United States (US),Illinois (IL),Lake Zurich,60,female,no,spk452.wav
+452,spk453,United States (US),Florida (FL),Bonita Springs,18,female,no,spk453.wav
+453,spk454,United States (US),Texas (TX),Cedar Hill,31,male,no,spk454.wav
+454,spk455,United States (US),Texas (TX),Houston,22,female,no,spk455.wav
+455,spk456,United States (US),Wisconsin (WI),Pardeeville,41,female,no,spk456.wav
+456,spk457,United States (US),New Jersey (NJ),New Egypt,64,female,no,spk457.wav
+457,spk458,United States (US),Minnesota (MN),Minneapolis,71,male,no,spk458.wav
+458,spk459,United States (US),California (CA),Long Beach,22,female,no,spk459.wav
+459,spk460,United States (US),None (None),,20,female,no,spk460.wav
+460,spk461,United States (US),Alabama (AL),Opelika,49,female,no,spk461.wav
+461,spk462,United States (US),Wisconsin (WI),Milwaukee,29,female,no,spk462.wav
+462,spk463,United States (US),Pennsylvania (PA),Philadelphia,26,male,no,spk463.wav
+463,spk464,United States (US),Washington (WA),Kelso,21,female,no,spk464.wav
+464,spk465,United States (US),Nebraska (NE),Lincoln,36,male,no,spk465.wav
+465,spk466,United States (US),New York (NY),New York,38,male,no,spk466.wav
+466,spk467,United States (US),Georgia (GA),Lawrenceville,50,female,no,spk467.wav
+467,spk468,United States (US),Oregon (OR),Roseburg,38,male,no,spk468.wav
+468,spk469,United States (US),Washington (WA),Bellevue,20,male,no,spk469.wav
+469,spk470,United States (US),California (CA),San Diego,37,female,no,spk470.wav
+470,spk471,United States (US),Texas (TX),Allen,25,male,no,spk471.wav
+471,spk472,United States (US),Virginia (VA),Roanoke,39,male,no,spk472.wav
+472,spk473,United States (US),Illinois (IL),Peoria,28,male,no,spk473.wav
+473,spk474,United States (US),Utah (UT),Salt Lake City,34,female,no,spk474.wav
+474,spk475,United States (US),Indiana (IN),West Terre Haute,23,male,no,spk475.wav
+475,spk476,United States (US),Florida (FL),Panama City,57,female,no,spk476.wav
+476,spk477,United States (US),Alabama (AL),Huntsville,50,female,no,spk477.wav
+477,spk478,United States (US),North Carolina (NC),Sylva,25,male,no,spk478.wav
+478,spk479,United States (US),Wisconsin (WI),Oak Creek,40,male,no,spk479.wav
+479,spk480,United States (US),Georgia (GA),Macon,22,female,no,spk480.wav
+480,spk481,United States (US),New York (NY),West Islip,37,female,no,spk481.wav
+481,spk482,United States (US),California (CA),Santa Cruz,28,male,no,spk482.wav
+482,spk483,United States (US),Illinois (IL),Charleston,41,male,no,spk483.wav
+483,spk484,United States (US),Texas (TX),Fort Worth,39,female,no,spk484.wav
+484,spk485,United States (US),Texas (TX),Dallas,31,male,no,spk485.wav
+485,spk486,United States (US),Florida (FL),Pembroke Pines,38,male,no,spk486.wav
+486,spk487,United States (US),Illinois (IL),Willowbrook,28,female,no,spk487.wav
+487,spk488,United States (US),Florida (FL),Kissimmee,41,female,no,spk488.wav
+488,spk489,United States (US),Wisconsin (WI),De Pere,28,male,no,spk489.wav
+489,spk490,United States (US),Montana (MT),Helena,39,female,no,spk490.wav
+490,spk491,United States (US),New York (NY),New York,30,male,no,spk491.wav
+491,spk492,United States (US),Ohio (OH),Cincinnati,50,female,no,spk492.wav
+492,spk493,United States (US),Texas (TX),Midlothian,31,male,no,spk493.wav
+493,spk494,United States (US),Florida (FL),Wellington,58,female,no,spk494.wav
+494,spk495,United States (US),Minnesota (MN),Minneapolis,58,male,no,spk495.wav
+495,spk496,United States (US),Wisconsin (WI),La Crosse,40,male,no,spk496.wav
+496,spk497,United States (US),Colorado (CO),Boulder,50,female,no,spk497.wav
+497,spk498,United States (US),Michigan (MI),,36,female,no,spk498.wav
+498,spk499,United States (US),Arizona (AZ),Mesa,53,female,no,spk499.wav
+499,spk500,United States (US),Illinois (IL),Mattoon,60,male,no,spk500.wav
+500,spk501,United States (US),Wyoming (WY),Cheyenne,39,male,no,spk501.wav
+501,spk502,United States (US),Pennsylvania (PA),Bethel Park,20,male,no,spk502.wav
+502,spk503,United States (US),California (CA),San Diego,36,male,no,spk503.wav
+503,spk504,United States (US),Nevada (NV),Las Vegas,29,female,no,spk504.wav
+504,spk505,United States (US),Maryland (MD),Mount Airy,24,male,no,spk505.wav
+505,spk506,United States (US),Pennsylvania (PA),Allentown,42,female,no,spk506.wav
+506,spk507,United States (US),Pennsylvania (PA),Philadelphia,19,female,no,spk507.wav
+507,spk508,United States (US),None (None),,41,female,no,spk508.wav
+508,spk509,United States (US),New York (NY),Catskill,24,female,no,spk509.wav
+509,spk510,United States (US),Washington (WA),Spokane,35,female,no,spk510.wav
+510,spk511,United States (US),Nebraska (NE),Lincoln,25,female,no,spk511.wav
+511,spk512,United States (US),New Jersey (NJ),Secaucus,34,male,no,spk512.wav
+512,spk513,United States (US),Florida (FL),Clearwater,29,male,no,spk513.wav
+513,spk514,United States (US),Pennsylvania (PA),Ringtown,56,female,no,spk514.wav
+514,spk515,United States (US),Kansas (KS),Wichita,30,female,no,spk515.wav
+515,spk516,United States (US),California (CA),Los Angeles,30,male,no,spk516.wav
+516,spk517,United States (US),Florida (FL),North Miami Beach,45,female,no,spk517.wav
+517,spk518,United States (US),South Dakota (SD),Rapid City,40,female,no,spk518.wav
+518,spk519,United States (US),Nebraska (NE),Kearney,40,male,no,spk519.wav
+519,spk520,United States (US),Idaho (ID),Pocatello,24,female,no,spk520.wav
+520,spk521,United States (US),Delaware (DE),Bear,31,female,no,spk521.wav
+521,spk522,United States (US),Nevada (NV),Sparks,32,female,no,spk522.wav
+522,spk523,United States (US),New York (NY),Liverpool,28,male,no,spk523.wav
+523,spk524,United States (US),Florida (FL),Pompano Beach,30,female,no,spk524.wav
+524,spk525,United States (US),Nevada (NV),Sparks,27,male,no,spk525.wav
+525,spk526,United States (US),New York (NY),Hopewell Junction,64,male,no,spk526.wav
+526,spk527,United States (US),Oklahoma (OK),Arcadia,30,female,no,spk527.wav
+527,spk528,United States (US),New York (NY),Rochester,47,male,no,spk528.wav
+528,spk529,United States (US),California (CA),Oakland,49,male,no,spk529.wav
+529,spk530,United States (US),Maryland (MD),Owings Mills,44,female,no,spk530.wav
+530,spk531,United States (US),Florida (FL),Yulee,23,female,no,spk531.wav
+531,spk532,United States (US),Georgia (GA),Ringgold,39,female,no,spk532.wav
+532,spk533,United States (US),Oregon (OR),Portland,48,male,no,spk533.wav
+533,spk534,United States (US),Missouri (MO),Dittmer,23,male,no,spk534.wav
+534,spk535,United States (US),Florida (FL),Melbourne,28,male,no,spk535.wav
+535,spk536,United States (US),Wisconsin (WI),Racine,34,male,no,spk536.wav
+536,spk537,United States (US),None (None),,65,male,no,spk537.wav
+537,spk538,United States (US),Oregon (OR),Eugene,24,male,no,spk538.wav
+538,spk539,United States (US),North Carolina (NC),Greensboro,33,male,no,spk539.wav
+539,spk540,United States (US),Texas (TX),Lubbock,24,female,no,spk540.wav
+540,spk541,United States (US),Nevada (NV),Las Vegas,38,female,no,spk541.wav
+541,spk542,United States (US),Colorado (CO),Fort Collins,37,male,no,spk542.wav
+542,spk543,United States (US),Pennsylvania (PA),Indiana,60,male,no,spk543.wav
+543,spk544,United States (US),Ohio (OH),Uniontown,48,female,no,spk544.wav
+544,spk545,United States (US),California (CA),Alameda,30,male,no,spk545.wav
+545,spk546,United States (US),Texas (TX),Tolar,22,female,no,spk546.wav
+546,spk547,United States (US),Virginia (VA),Ashburn,43,female,no,spk547.wav
+547,spk548,United States (US),Virginia (VA),Lorton,43,male,no,spk548.wav
+548,spk549,United States (US),Missouri (MO),Jefferson City,25,male,no,spk549.wav
+549,spk550,United States (US),Arkansas (AR),Fort Smith,24,female,no,spk550.wav
+550,spk551,United States (US),New York (NY),Lancaster,36,male,no,spk551.wav
+551,spk552,United States (US),None (None),,50,male,no,spk552.wav
+552,spk553,United States (US),New Jersey (NJ),Franklinville,55,male,no,spk553.wav
+553,spk554,United States (US),Alabama (AL),Pleasant Grove,58,female,no,spk554.wav
+554,spk555,United States (US),Texas (TX),Lewisville,25,female,no,spk555.wav
+555,spk556,United States (US),Massachusetts (MA),Agawam,41,female,no,spk556.wav
+556,spk557,United States (US),None (None),,77,female,no,spk557.wav
+557,spk558,United States (US),California (CA),Anaheim,20,male,no,spk558.wav
+558,spk559,United States (US),Minnesota (MN),Saint Paul,34,male,no,spk559.wav
+559,spk560,United States (US),Georgia (GA),Stone Mountain,55,female,no,spk560.wav
+560,spk561,United States (US),Colorado (CO),Denver,31,male,no,spk561.wav
+561,spk562,United States (US),New York (NY),Camden,22,other,no,spk562.wav
+562,spk563,United States (US),New Jersey (NJ),Jersey City,58,male,no,spk563.wav
+563,spk564,United States (US),Florida (FL),Gulf Breeze,31,male,no,spk564.wav
+564,spk565,United States (US),Texas (TX),Houston,31,female,no,spk565.wav
+565,spk566,United States (US),New York (NY),Little Falls,37,male,no,spk566.wav
+566,spk567,United States (US),Florida (FL),Fleming Island,20,male,no,spk567.wav
+567,spk568,United States (US),Texas (TX),New Caney,28,female,no,spk568.wav
+568,spk569,United States (US),New York (NY),Brooklyn,19,male,no,spk569.wav
+569,spk570,United States (US),South Carolina (SC),Mt. Pleasant,31,male,no,spk570.wav
+570,spk571,United States (US),Pennsylvania (PA),Butler,45,female,no,spk571.wav
+571,spk572,United States (US),Virginia (VA),Blacksburg,30,male,no,spk572.wav
+572,spk573,United States (US),Michigan (MI),East Lansing,21,male,no,spk573.wav
+573,spk574,United States (US),Pennsylvania (PA),Scranton,39,male,no,spk574.wav
+574,spk575,United States (US),None (None),,54,female,no,spk575.wav
+575,spk576,United States (US),Utah (UT),Salt Lake City,39,male,no,spk576.wav
+576,spk577,United States (US),New York (NY),Saint James,42,female,no,spk577.wav
+577,spk578,Philippines (PH),Metro Manila (00),San Juan,26,male,no,spk578.wav
+578,spk579,United States (US),Alabama (AL),Phenix City,48,female,no,spk579.wav
+579,spk580,United States (US),California (CA),Los Angeles,43,male,no,spk580.wav
+580,spk581,United States (US),California (CA),San Ramon,52,female,no,spk581.wav
+581,spk582,United States (US),New Jersey (NJ),Somerdale,30,male,no,spk582.wav
+582,spk583,United States (US),None (None),,29,female,no,spk583.wav
+583,spk584,United States (US),Missouri (MO),St Louis,37,male,no,spk584.wav
+584,spk585,United States (US),Oklahoma (OK),Oklahoma City,27,female,no,spk585.wav
+585,spk586,United States (US),California (CA),El Dorado Hills,55,male,no,spk586.wav
+586,spk587,United States (US),Illinois (IL),Belleville,23,male,no,spk587.wav
+587,spk588,United States (US),New Jersey (NJ),Flemington,21,female,no,spk588.wav
+588,spk589,United States (US),Florida (FL),Spring Hill,42,male,no,spk589.wav
+589,spk590,United States (US),Oklahoma (OK),Broken Arrow,51,female,no,spk590.wav
+590,spk591,United States (US),Ohio (OH),Chillicothe,34,male,no,spk591.wav
+591,spk592,United States (US),Florida (FL),St. Petersburg,26,female,no,spk592.wav
+592,spk593,United States (US),Texas (TX),Lubbock,42,male,no,spk593.wav
+593,spk594,United States (US),Minnesota (MN),Duluth,19,male,no,spk594.wav
+594,spk595,United States (US),Kentucky (KY),Hindman,30,male,no,spk595.wav
+595,spk596,United States (US),Ohio (OH),Berea,58,female,no,spk596.wav
+596,spk597,Italy (IT),None (None),,25,female,no,spk597.wav
+597,spk598,United States (US),Ohio (OH),Marysville,36,male,no,spk598.wav
+598,spk599,United States (US),Pennsylvania (PA),Northampton,25,female,no,spk599.wav
+599,spk600,United States (US),California (CA),Van Nuys,30,male,no,spk600.wav
+600,spk601,United States (US),Hawaii (HI),Kula,34,male,no,spk601.wav
+601,spk602,United States (US),Maryland (MD),Columbia,30,male,no,spk602.wav
+602,spk603,United States (US),Florida (FL),Clearwater,41,female,no,spk603.wav
+603,spk604,United States (US),California (CA),Los Angeles,40,male,no,spk604.wav
+604,spk605,United States (US),New Hampshire (NH),Keene,41,female,no,spk605.wav
+605,spk606,United States (US),Missouri (MO),O'Fallon,38,female,no,spk606.wav
+606,spk607,United States (US),Tennessee (TN),Andersonville,68,female,no,spk607.wav
+607,spk608,United States (US),Texas (TX),Denton,30,other,no,spk608.wav
+608,spk609,United States (US),Nevada (NV),Reno,38,male,no,spk609.wav
+609,spk610,United States (US),North Carolina (NC),Charlotte,43,male,no,spk610.wav
+610,spk611,United States (US),Alaska (AK),Anchorage,58,male,no,spk611.wav
+611,spk612,United States (US),California (CA),San Francisco,39,female,no,spk612.wav
+612,spk613,United States (US),Kentucky (KY),Middlesboro,59,female,no,spk613.wav
+613,spk614,United States (US),Washington (WA),Tacoma,40,male,no,spk614.wav
+614,spk615,United States (US),North Carolina (NC),Cary,24,male,no,spk615.wav
+615,spk616,United States (US),Florida (FL),Homestead,37,female,no,spk616.wav
+616,spk617,United States (US),California (CA),Fremont,19,female,no,spk617.wav
+617,spk618,United States (US),Florida (FL),Miami,18,male,no,spk618.wav
+618,spk619,United States (US),Texas (TX),League City,44,female,no,spk619.wav
+619,spk620,United States (US),Texas (TX),Lewisville,19,female,no,spk620.wav
+620,spk621,United States (US),None (None),,40,female,no,spk621.wav
+621,spk622,United States (US),Illinois (IL),Oswego,42,female,no,spk622.wav
+622,spk623,United States (US),Virginia (VA),Alexandria,45,female,no,spk623.wav
+623,spk624,United States (US),New York (NY),Lindenhurst,33,female,no,spk624.wav
+624,spk625,United States (US),North Carolina (NC),Raleigh,68,female,no,spk625.wav
+625,spk626,United States (US),Ohio (OH),Lorain,36,male,no,spk626.wav
+626,spk627,United States (US),North Carolina (NC),Buxton,33,male,no,spk627.wav
+627,spk628,United States (US),Utah (UT),Salt Lake City,39,female,no,spk628.wav
+628,spk629,United States (US),Florida (FL),Jacksonville,26,male,no,spk629.wav
+629,spk630,United States (US),Georgia (GA),Savannah,20,female,no,spk630.wav
+630,spk631,United States (US),Louisiana (LA),Houma,48,female,no,spk631.wav
+631,spk632,United States (US),Oklahoma (OK),Tulsa,28,female,no,spk632.wav
+632,spk633,United States (US),Texas (TX),Kingsville,24,male,no,spk633.wav
+633,spk634,United States (US),California (CA),Fullerton,23,female,no,spk634.wav
+634,spk635,United States (US),Florida (FL),Homestead,33,female,no,spk635.wav
+635,spk636,United States (US),Illinois (IL),Champaign,21,female,no,spk636.wav
+636,spk637,United States (US),Georgia (GA),Lawrenceville,50,male,no,spk637.wav
+637,spk638,United States (US),Utah (UT),Springville,23,male,no,spk638.wav
+638,spk639,United States (US),Texas (TX),Houston,29,female,yes,spk639.wav
+639,spk640,United States (US),Pennsylvania (PA),Mount Joy,39,female,no,spk640.wav
+640,spk641,United States (US),Michigan (MI),Marquette,20,male,no,spk641.wav
+641,spk642,United States (US),California (CA),San Francisco,46,female,no,spk642.wav
+642,spk643,United States (US),Minnesota (MN),Kasota,33,female,no,spk643.wav
+643,spk644,United States (US),Michigan (MI),Jenison,70,male,no,spk644.wav
+644,spk645,United States (US),Rhode Island (RI),Pawtucket,28,female,no,spk645.wav
+645,spk646,United States (US),New York (NY),Rochester,23,female,no,spk646.wav
+646,spk647,United States (US),Rhode Island (RI),Woonsocket,20,male,no,spk647.wav
+647,spk648,United States (US),Nebraska (NE),Lincoln,35,female,no,spk648.wav
+648,spk649,United States (US),Georgia (GA),Dallas,38,female,no,spk649.wav
+649,spk650,United States (US),Illinois (IL),Joliet,18,male,no,spk650.wav
+650,spk651,United States (US),Florida (FL),Cape Coral,26,female,no,spk651.wav
+651,spk652,United States (US),New Jersey (NJ),Wyckoff,57,female,no,spk652.wav
+652,spk653,United States (US),Kansas (KS),Ellsworth,38,male,no,spk653.wav
+653,spk654,United States (US),California (CA),Bakersfield,37,female,no,spk654.wav
+654,spk655,United States (US),California (CA),Oakland,36,male,no,spk655.wav
+655,spk656,United States (US),Arkansas (AR),Little Rock,51,female,no,spk656.wav
+656,spk657,United States (US),None (None),,23,male,no,spk657.wav
+657,spk658,United States (US),Florida (FL),Port Richey,69,female,no,spk658.wav
+658,spk659,United States (US),Texas (TX),Austin,19,male,no,spk659.wav
+659,spk660,United States (US),None (None),,39,female,no,spk660.wav
+660,spk661,United States (US),New York (NY),Buffalo,35,female,no,spk661.wav
+661,spk662,United States (US),Virginia (VA),Front Royal,33,male,no,spk662.wav
+662,spk663,United States (US),None (None),,36,male,no,spk663.wav
+663,spk664,United States (US),Missouri (MO),Independence,36,male,no,spk664.wav
+664,spk665,United States (US),Florida (FL),Inverness,54,male,no,spk665.wav
+665,spk666,United States (US),Florida (FL),Spring Hill,24,female,no,spk666.wav
+666,spk667,United States (US),Pennsylvania (PA),Pottsville,36,female,no,spk667.wav
+667,spk668,United States (US),Indiana (IN),Bloomington,23,male,no,spk668.wav
+668,spk669,United States (US),Wisconsin (WI),West Bend,56,female,no,spk669.wav
+669,spk670,United States (US),New York (NY),Rochester,29,male,no,spk670.wav
+670,spk671,United States (US),Florida (FL),Oviedo,51,male,no,spk671.wav
+671,spk672,United States (US),Florida (FL),New Smyrna Beach,69,female,no,spk672.wav
+672,spk673,United States (US),Florida (FL),Miami Beach,26,male,no,spk673.wav
+673,spk674,United States (US),New York (NY),Peekskill,54,female,no,spk674.wav
+674,spk675,United States (US),Virginia (VA),Stafford,58,male,no,spk675.wav
+675,spk676,United States (US),New Mexico (NM),Albuquerque,45,female,no,spk676.wav
+676,spk677,United States (US),Washington (WA),Spokane,25,female,no,spk677.wav
+677,spk678,United States (US),Indiana (IN),Columbus,42,female,no,spk678.wav
+678,spk679,United States (US),District of Columbia (DC),Washington,30,female,no,spk679.wav
+679,spk680,United States (US),California (CA),Stockton,23,male,no,spk680.wav
+680,spk681,United States (US),Alabama (AL),Birmingham,39,female,no,spk681.wav
+681,spk682,United States (US),New Mexico (NM),Las Cruces,33,female,no,spk682.wav
+682,spk683,United States (US),North Carolina (NC),Wake Forest,29,female,no,spk683.wav
+683,spk684,United States (US),North Carolina (NC),Durham,45,female,no,spk684.wav
+684,spk685,United States (US),Iowa (IA),Newton,32,male,no,spk685.wav
+685,spk686,United States (US),North Carolina (NC),Banner Elk,57,male,no,spk686.wav
+686,spk687,United States (US),Texas (TX),Spring,24,female,no,spk687.wav
+687,spk688,United States (US),North Carolina (NC),Mount Airy,40,female,no,spk688.wav
+688,spk689,United States (US),Pennsylvania (PA),Pittsburgh,34,male,no,spk689.wav
+689,spk690,United States (US),North Carolina (NC),Thomasville,20,female,no,spk690.wav
+690,spk691,United States (US),North Carolina (NC),Apex,43,female,no,spk691.wav
+691,spk692,United States (US),Rhode Island (RI),Cumberland,30,male,no,spk692.wav
+692,spk693,United States (US),Maryland (MD),Saint Michaels,38,female,no,spk693.wav
+693,spk694,United States (US),Nebraska (NE),Hastings,31,male,no,spk694.wav
+694,spk695,United States (US),Virginia (VA),Smithfield,43,male,no,spk695.wav
+695,spk696,United States (US),Arizona (AZ),Peoria,35,female,no,spk696.wav
+696,spk697,United States (US),Missouri (MO),Columbia,56,female,no,spk697.wav
+697,spk698,United States (US),Georgia (GA),Atlanta,25,male,no,spk698.wav
+698,spk699,United States (US),Georgia (GA),Smyrna,23,female,no,spk699.wav
+699,spk700,United States (US),Georgia (GA),Brunswick,46,female,no,spk700.wav
+700,spk701,United States (US),Florida (FL),Jacksonville,57,female,no,spk701.wav
+701,spk702,United States (US),Illinois (IL),Chicago,45,male,no,spk702.wav
+702,spk703,United States (US),North Carolina (NC),Charlotte,27,male,no,spk703.wav
+703,spk704,United States (US),Florida (FL),Hudson,64,male,no,spk704.wav
+704,spk705,United States (US),Minnesota (MN),Saint Michael,57,male,no,spk705.wav
+705,spk706,United States (US),Maryland (MD),Bladensburg,26,male,no,spk706.wav
+706,spk707,United States (US),Texas (TX),Austin,20,male,no,spk707.wav
+707,spk708,United States (US),North Carolina (NC),Asheville,48,male,no,spk708.wav
+708,spk709,United States (US),Georgia (GA),Dallas,44,female,no,spk709.wav
+709,spk710,United States (US),North Carolina (NC),Boone,23,female,no,spk710.wav
+710,spk711,United States (US),Florida (FL),Belle Glade,38,female,no,spk711.wav
+711,spk712,United States (US),California (CA),Walnut,37,male,no,spk712.wav
+712,spk713,United States (US),Pennsylvania (PA),West Chester,26,male,no,spk713.wav
+713,spk714,United States (US),New Jersey (NJ),Toms River,34,female,no,spk714.wav
+714,spk715,United States (US),None (None),,51,female,no,spk715.wav
+715,spk716,United States (US),Maryland (MD),Frederick,38,male,no,spk716.wav
+716,spk717,Hong Kong (HK),None (None),,44,female,no,spk717.wav
+717,spk718,United States (US),Missouri (MO),St Louis,29,female,no,spk718.wav
+718,spk719,United States (US),California (CA),Roseville,26,male,no,spk719.wav
+719,spk720,United States (US),Pennsylvania (PA),Reading,26,male,no,spk720.wav
+720,spk721,United States (US),Virginia (VA),Richmond,51,female,no,spk721.wav
+721,spk722,United States (US),Michigan (MI),Ishpeming,25,female,no,spk722.wav
+722,spk723,United States (US),Wyoming (WY),Cheyenne,43,male,no,spk723.wav
+723,spk724,United States (US),District of Columbia (DC),Washington,25,female,no,spk724.wav
+724,spk725,United States (US),California (CA),Palmdale,18,male,no,spk725.wav
+725,spk726,United States (US),Connecticut (CT),Stamford,21,female,no,spk726.wav
+726,spk727,United States (US),California (CA),Los Angeles,40,female,no,spk727.wav
+727,spk728,United States (US),Texas (TX),Dallas,28,male,no,spk728.wav
+728,spk729,United States (US),Michigan (MI),Monroe,25,male,no,spk729.wav
+729,spk730,United States (US),Pennsylvania (PA),Philadelphia,22,male,no,spk730.wav
+730,spk731,United States (US),Georgia (GA),Appling,55,female,no,spk731.wav
+731,spk732,United States (US),Alaska (AK),Anchorage,36,male,no,spk732.wav
+732,spk733,United States (US),Texas (TX),San Antonio,31,female,no,spk733.wav
+733,spk734,United States (US),Georgia (GA),Savannah,52,male,no,spk734.wav
+734,spk735,United States (US),Louisiana (LA),Breaux Bridge,37,female,no,spk735.wav
+735,spk736,United States (US),New York (NY),New York,25,female,no,spk736.wav
+736,spk737,United States (US),Texas (TX),Fort Worth,45,male,no,spk737.wav
+737,spk738,United States (US),Virginia (VA),Roanoke,39,female,no,spk738.wav
+738,spk739,Bangladesh (BD),None (None),,24,male,yes,spk739.wav
+739,spk740,United States (US),North Carolina (NC),High Point,40,female,no,spk740.wav
+740,spk741,United States (US),Virginia (VA),Portsmouth,25,male,no,spk741.wav
+741,spk742,United States (US),Pennsylvania (PA),Pittsburgh,33,male,no,spk742.wav
+742,spk743,United States (US),California (CA),Santa Barbara,28,male,no,spk743.wav
+743,spk744,United States (US),Utah (UT),Orem,20,female,no,spk744.wav
+744,spk745,United States (US),New Jersey (NJ),Metuchen,28,male,no,spk745.wav
+745,spk746,United States (US),Illinois (IL),Glenview,31,male,no,spk746.wav
+746,spk747,United States (US),Florida (FL),Delray Beach,26,female,no,spk747.wav
+747,spk748,United States (US),Georgia (GA),Lawrenceville,22,male,no,spk748.wav
+748,spk749,United States (US),Georgia (GA),Athens,29,female,no,spk749.wav
+749,spk750,United States (US),Virginia (VA),Virginia Beach,60,female,no,spk750.wav
+750,spk751,United States (US),Pennsylvania (PA),Pottstown,66,female,no,spk751.wav
+751,spk752,United States (US),Nevada (NV),Las Vegas,23,male,no,spk752.wav
+752,spk753,United States (US),South Carolina (SC),Columbia,31,male,no,spk753.wav
+753,spk754,United States (US),None (None),,30,female,no,spk754.wav
+754,spk755,United States (US),Michigan (MI),Ann Arbor,19,female,no,spk755.wav
+755,spk756,United States (US),Washington (WA),Everett,51,male,no,spk756.wav
+756,spk757,United States (US),Oregon (OR),Salem,32,male,no,spk757.wav
+757,spk758,United States (US),None (None),,34,male,no,spk758.wav
+758,spk759,United States (US),Texas (TX),Brenham,33,female,no,spk759.wav
+759,spk760,United States (US),Georgia (GA),Columbus,27,female,no,spk760.wav
+760,spk761,United States (US),Mississippi (MS),Yazoo City,22,female,no,spk761.wav
+761,spk762,United States (US),Ohio (OH),Holland,35,female,no,spk762.wav
+762,spk763,United States (US),Georgia (GA),Morven,65,female,yes,spk763.wav
+763,spk764,United States (US),New York (NY),Middletown,49,male,no,spk764.wav
+764,spk765,United States (US),Illinois (IL),Lansing,29,male,no,spk765.wav
+765,spk766,United States (US),Georgia (GA),Americus,39,male,no,spk766.wav
+766,spk767,United States (US),Illinois (IL),Arlington Heights,44,female,no,spk767.wav
+767,spk768,United States (US),Maryland (MD),Rockville,22,female,no,spk768.wav
+768,spk769,United States (US),Florida (FL),St. Petersburg,48,male,no,spk769.wav
+769,spk770,United States (US),Kansas (KS),Manhattan,19,female,no,spk770.wav
+770,spk771,United States (US),Illinois (IL),Chicago,42,female,no,spk771.wav
+771,spk772,United States (US),Kentucky (KY),Mayfield,24,female,no,spk772.wav
+772,spk773,United States (US),Washington (WA),Spokane,28,male,no,spk773.wav
+773,spk774,United States (US),Indiana (IN),Bloomington,32,female,no,spk774.wav
+774,spk775,United States (US),Pennsylvania (PA),Irwin,24,female,no,spk775.wav
+775,spk776,United States (US),Kentucky (KY),Louisville,25,male,no,spk776.wav
+776,spk777,United States (US),California (CA),Los Angeles,42,male,no,spk777.wav
+777,spk778,Romania (RO),None (None),,36,male,no,spk778.wav
+778,spk779,United States (US),New York (NY),Elmhurst,31,male,no,spk779.wav
+779,spk780,United States (US),Texas (TX),Dallas,39,female,no,spk780.wav
+780,spk781,United States (US),New Jersey (NJ),Mount Laurel,45,male,no,spk781.wav
+781,spk782,United States (US),California (CA),Los Angeles,27,female,no,spk782.wav
+782,spk783,United States (US),Florida (FL),Saint Augustine,47,female,no,spk783.wav
+783,spk784,United States (US),California (CA),Fontana,24,male,no,spk784.wav
+784,spk785,United States (US),New York (NY),New York,25,male,yes,spk785.wav
+785,spk786,United States (US),Virginia (VA),Charlottesville,40,male,no,spk786.wav
+786,spk787,United States (US),Louisiana (LA),New Orleans,31,female,no,spk787.wav
+787,spk788,United States (US),Maryland (MD),Easton,20,female,no,spk788.wav
+788,spk789,United States (US),Kentucky (KY),Mount Sterling,31,female,no,spk789.wav
+789,spk790,United States (US),None (None),,29,male,no,spk790.wav
+790,spk791,United States (US),Virginia (VA),Richmond,34,male,no,spk791.wav
+791,spk792,United States (US),Rhode Island (RI),Pawtucket,32,male,no,spk792.wav
+792,spk793,United States (US),Texas (TX),Garland,25,male,no,spk793.wav
+793,spk794,United States (US),Mississippi (MS),Starkville,34,male,no,spk794.wav
+794,spk795,United States (US),None (None),,27,male,no,spk795.wav
+795,spk796,United States (US),None (None),,60,female,no,spk796.wav
+796,spk797,United States (US),New Jersey (NJ),Bridgeton,34,male,no,spk797.wav
+797,spk798,United States (US),New York (NY),New York,32,female,no,spk798.wav
+798,spk799,United States (US),New York (NY),Medford,54,male,no,spk799.wav
+799,spk800,United States (US),New Hampshire (NH),Goffstown,43,male,no,spk800.wav
+800,spk801,United States (US),Maryland (MD),Silver Spring,61,female,no,spk801.wav
+801,spk802,United States (US),Michigan (MI),Saint Johns,60,female,no,spk802.wav
+802,spk803,United States (US),Georgia (GA),Valdosta,34,female,no,spk803.wav
+803,spk804,United States (US),North Carolina (NC),Kinston,40,male,no,spk804.wav
+804,spk805,United States (US),None (None),,38,female,no,spk805.wav
+805,spk806,United States (US),California (CA),San Bernardino,22,female,no,spk806.wav
+806,spk807,United States (US),Washington (WA),Seattle,27,male,no,spk807.wav
+807,spk808,United States (US),Tennessee (TN),Memphis,30,male,no,spk808.wav
+808,spk809,United States (US),Arizona (AZ),Chandler,40,male,no,spk809.wav
+809,spk810,Mexico (MX),None (None),,29,male,no,spk810.wav
+810,spk811,United States (US),Ohio (OH),South Point,38,female,no,spk811.wav
+811,spk812,United States (US),Virginia (VA),Arlington,34,male,no,spk812.wav
+812,spk813,United States (US),Texas (TX),Round Rock,25,male,no,spk813.wav
+813,spk814,United States (US),New York (NY),Hopewell Junction,51,male,no,spk814.wav
+814,spk815,United States (US),None (None),,39,female,no,spk815.wav
+815,spk816,United States (US),Texas (TX),San Marcos,24,male,no,spk816.wav
+816,spk817,United States (US),Rhode Island (RI),Cranston,27,male,no,spk817.wav
+817,spk818,United States (US),None (None),,30,female,no,spk818.wav
+818,spk819,United States (US),New Jersey (NJ),Lakewood,43,female,no,spk819.wav
+819,spk820,United Kingdom (GB),None (None),,40,male,no,spk820.wav
+820,spk821,United States (US),South Carolina (SC),Charleston,29,male,no,spk821.wav
+821,spk822,United States (US),Oklahoma (OK),Elk City,57,male,no,spk822.wav
+822,spk823,United States (US),West Virginia (WV),Martinsburg,34,female,no,spk823.wav
+823,spk824,United Kingdom (GB),None (None),,22,female,no,spk824.wav
+824,spk825,United States (US),Florida (FL),Panacea,30,male,no,spk825.wav
+825,spk826,United States (US),Ohio (OH),Defiance,36,male,no,spk826.wav
+826,spk827,United States (US),Delaware (DE),Smyrna,32,female,no,spk827.wav
+827,spk828,United States (US),Illinois (IL),Berwyn,31,male,no,spk828.wav
+828,spk829,United States (US),Tennessee (TN),Hixson,22,male,no,spk829.wav
+829,spk830,United States (US),Georgia (GA),Stockbridge,23,female,no,spk830.wav
+830,spk831,United States (US),Nevada (NV),Las Vegas,30,male,no,spk831.wav
+831,spk832,United States (US),North Carolina (NC),Mebane,22,male,no,spk832.wav
+832,spk833,United States (US),Alabama (AL),Montevallo,39,female,no,spk833.wav
+833,spk834,United States (US),California (CA),Sacramento,72,male,no,spk834.wav
+834,spk835,United States (US),Rhode Island (RI),Middletown,25,male,no,spk835.wav
+835,spk836,United States (US),Illinois (IL),Charleston,52,female,no,spk836.wav
+836,spk837,United States (US),Pennsylvania (PA),Lehighton,34,male,no,spk837.wav
+837,spk838,United States (US),South Carolina (SC),Mauldin,36,male,no,spk838.wav
+838,spk839,United States (US),Colorado (CO),Loveland,44,female,no,spk839.wav
+839,spk840,United States (US),Alabama (AL),Madison,66,male,no,spk840.wav
+840,spk841,Switzerland (CH),None (None),,45,male,no,spk841.wav
+841,spk842,United States (US),Kentucky (KY),Covington,26,male,no,spk842.wav
+842,spk843,United States (US),Michigan (MI),Grand Rapids,29,female,no,spk843.wav
+843,spk844,United States (US),Virginia (VA),Aldie,23,male,no,spk844.wav
+844,spk845,United States (US),None (None),,43,male,no,spk845.wav
+845,spk846,United States (US),Indiana (IN),Syracuse,23,female,no,spk846.wav
+846,spk847,United States (US),Illinois (IL),Chicago,55,female,no,spk847.wav
+847,spk848,United States (US),California (CA),Lincoln,45,female,no,spk848.wav
+848,spk849,United States (US),Illinois (IL),Northbrook,19,male,no,spk849.wav
+849,spk850,United States (US),None (None),,32,female,no,spk850.wav
+850,spk851,United States (US),Florida (FL),Beverly Hills,24,female,no,spk851.wav
+851,spk852,United States (US),None (None),,50,female,no,spk852.wav
+852,spk853,United States (US),Florida (FL),Fernandina Beach,39,female,no,spk853.wav
+853,spk854,United States (US),Michigan (MI),Ann Arbor,49,female,no,spk854.wav
+854,spk855,United States (US),None (None),,56,female,no,spk855.wav
+855,spk856,United States (US),Pennsylvania (PA),McKeesport,44,female,no,spk856.wav
+856,spk857,United States (US),Massachusetts (MA),North Andover,24,male,no,spk857.wav
+857,spk858,United States (US),None (None),,32,male,no,spk858.wav
+858,spk859,United States (US),Florida (FL),Winter Garden,45,male,no,spk859.wav
+859,spk860,United States (US),Arizona (AZ),Gilbert,41,male,no,spk860.wav
+860,spk861,United States (US),Virginia (VA),Chester,47,female,no,spk861.wav
+861,spk862,United States (US),Illinois (IL),Lyons,21,female,no,spk862.wav
+862,spk863,United States (US),Arizona (AZ),Chino Valley,54,female,no,spk863.wav
+863,spk864,United States (US),New York (NY),Buffalo,23,female,no,spk864.wav
+864,spk865,United States (US),California (CA),Victorville,23,female,no,spk865.wav
+865,spk866,United States (US),California (CA),Antelope,20,female,no,spk866.wav
+866,spk867,United States (US),Minnesota (MN),Elk River,48,female,no,spk867.wav
+867,spk868,United States (US),Pennsylvania (PA),Norristown,22,female,no,spk868.wav
+868,spk869,United States (US),New York (NY),Buffalo,60,female,no,spk869.wav
+869,spk870,United States (US),New Jersey (NJ),Montclair,24,female,no,spk870.wav
+870,spk871,United States (US),None (None),,28,female,no,spk871.wav
+871,spk872,United States (US),Texas (TX),Carrollton,30,female,no,spk872.wav
+872,spk873,United States (US),New York (NY),Angola,37,male,no,spk873.wav
+873,spk874,United States (US),Washington (WA),Spokane,23,other,no,spk874.wav
+874,spk875,United States (US),Arizona (AZ),Queen Creek,33,male,no,spk875.wav
+875,spk876,United States (US),North Carolina (NC),Concord,33,female,no,spk876.wav
+876,spk877,United States (US),Washington (WA),Olympia,61,female,no,spk877.wav
+877,spk878,United States (US),New York (NY),Brewster,24,female,no,spk878.wav
+878,spk879,United States (US),Massachusetts (MA),Brockton,21,male,no,spk879.wav
+879,spk880,United States (US),Massachusetts (MA),Charlestown,25,female,no,spk880.wav
+880,spk881,United States (US),Georgia (GA),St. Marys,33,male,yes,spk881.wav
+881,spk882,United States (US),Arizona (AZ),Glendale,45,female,no,spk882.wav
+882,spk883,United States (US),Michigan (MI),New Buffalo,47,male,no,spk883.wav
+883,spk884,United States (US),Georgia (GA),Atlanta,30,male,no,spk884.wav
+884,spk885,United States (US),Virginia (VA),Martinsville,73,male,no,spk885.wav
+885,spk886,United States (US),North Carolina (NC),Huntersville,27,female,no,spk886.wav
+886,spk887,United States (US),Florida (FL),Fort Lauderdale,55,male,no,spk887.wav
+887,spk888,United States (US),Virginia (VA),Stafford,37,male,no,spk888.wav
+888,spk889,United States (US),Indiana (IN),Muncie,32,male,no,spk889.wav
+889,spk890,United States (US),Florida (FL),Spring Hill,33,female,no,spk890.wav
+890,spk891,United States (US),Massachusetts (MA),Methuen,28,male,no,spk891.wav
+891,spk892,United States (US),Texas (TX),Sugar Land,31,male,no,spk892.wav
+892,spk893,United States (US),Pennsylvania (PA),Harrisburg,29,male,no,spk893.wav
+893,spk894,United States (US),North Carolina (NC),Charlotte,21,male,no,spk894.wav
+894,spk895,United States (US),Maryland (MD),Hyattsville,23,male,no,spk895.wav
+895,spk896,United States (US),Nevada (NV),Las Vegas,43,male,no,spk896.wav
+896,spk897,United States (US),Louisiana (LA),New Orleans,70,male,no,spk897.wav
+897,spk898,United States (US),Texas (TX),Houston,53,female,no,spk898.wav
+898,spk899,United States (US),Arkansas (AR),Fayetteville,45,male,no,spk899.wav
+899,spk900,United States (US),Colorado (CO),Aurora,32,female,no,spk900.wav
+900,spk901,United States (US),South Carolina (SC),Sumter,61,male,no,spk901.wav
+901,spk902,United States (US),California (CA),Marina,23,female,no,spk902.wav
+902,spk903,United States (US),Texas (TX),El Paso,26,female,no,spk903.wav
+903,spk904,United States (US),Virginia (VA),Harrisonburg,20,female,no,spk904.wav
+904,spk905,United States (US),Texas (TX),Houston,28,female,no,spk905.wav
+905,spk906,United States (US),North Dakota (ND),Grand Forks,45,female,no,spk906.wav
+906,spk907,United States (US),None (None),,37,female,no,spk907.wav
+907,spk908,United States (US),None (None),,36,male,no,spk908.wav
+908,spk909,United States (US),Oregon (OR),Bandon,50,female,yes,spk909.wav
+909,spk910,United States (US),Indiana (IN),Indianapolis,33,male,no,spk910.wav
+910,spk911,United States (US),Florida (FL),Winter Park,21,male,no,spk911.wav
+911,spk912,United States (US),California (CA),San Diego,19,female,no,spk912.wav
+912,spk913,United States (US),California (CA),Sherman Oaks,57,female,no,spk913.wav
+913,spk914,United States (US),Texas (TX),Magnolia,34,female,no,spk914.wav
+914,spk915,United States (US),California (CA),Pleasant Hill,44,female,no,spk915.wav
+915,spk916,United States (US),Pennsylvania (PA),Scranton,39,male,no,spk916.wav
+916,spk917,United States (US),Idaho (ID),Twin Falls,26,female,no,spk917.wav
+917,spk918,United States (US),California (CA),Encino,25,male,yes,spk918.wav
+918,spk919,United States (US),Connecticut (CT),Milford,20,male,no,spk919.wav
+919,spk920,United States (US),Maine (ME),Bridgton,26,male,no,spk920.wav
+920,spk921,United States (US),California (CA),Santa Maria,25,female,no,spk921.wav
+921,spk922,United States (US),Ohio (OH),Youngstown,42,male,no,spk922.wav
+922,spk923,United States (US),Massachusetts (MA),Andover,45,male,no,spk923.wav
+923,spk924,United States (US),Massachusetts (MA),Worcester,38,female,no,spk924.wav
+924,spk925,United States (US),Georgia (GA),Augusta,42,female,no,spk925.wav
+925,spk926,United States (US),Virginia (VA),Springfield,24,male,no,spk926.wav
+926,spk927,United States (US),California (CA),Long Beach,37,female,no,spk927.wav
+927,spk928,United States (US),Missouri (MO),Kansas City,37,male,no,spk928.wav
+928,spk929,United States (US),Colorado (CO),Parker,32,female,no,spk929.wav
+929,spk930,United States (US),None (None),,31,male,no,spk930.wav
+930,spk931,United States (US),Washington (WA),Vancouver,32,male,no,spk931.wav
+931,spk932,United States (US),Florida (FL),Dunedin,45,female,no,spk932.wav
+932,spk933,United States (US),Massachusetts (MA),Franklin,37,male,no,spk933.wav
+933,spk934,United States (US),Texas (TX),Arlington,35,male,no,spk934.wav
+934,spk935,United States (US),None (None),,28,female,no,spk935.wav
+935,spk936,United States (US),Ohio (OH),Milford,44,male,no,spk936.wav
+936,spk937,United States (US),Illinois (IL),O'Fallon,37,female,no,spk937.wav
+937,spk938,United States (US),California (CA),Long Beach,34,female,no,spk938.wav
+938,spk939,United States (US),Texas (TX),Austin,31,female,no,spk939.wav
+939,spk940,United States (US),California (CA),Sherman Oaks,25,female,no,spk940.wav
+940,spk941,United States (US),North Carolina (NC),Charlotte,43,female,no,spk941.wav
+941,spk942,United States (US),Pennsylvania (PA),Morrisville,38,male,no,spk942.wav
+942,spk943,United States (US),Arizona (AZ),Tucson,25,female,no,spk943.wav
+943,spk944,United States (US),Minnesota (MN),Minneapolis,48,male,no,spk944.wav
+944,spk945,United States (US),Texas (TX),Houston,23,male,no,spk945.wav
+945,spk946,United States (US),Maryland (MD),Chevy Chase,34,male,no,spk946.wav
+946,spk947,United States (US),Delaware (DE),New Castle,37,female,no,spk947.wav
+947,spk948,United States (US),New York (NY),Horseheads,54,female,no,spk948.wav
+948,spk949,United States (US),Iowa (IA),Pella,49,male,no,spk949.wav
+949,spk950,United States (US),Utah (UT),Orem,24,male,no,spk950.wav
+950,spk951,United States (US),Texas (TX),Spring,20,male,no,spk951.wav
+951,spk952,United States (US),Pennsylvania (PA),Reading,46,female,no,spk952.wav
+952,spk953,United States (US),West Virginia (WV),Cairo,24,female,no,spk953.wav
+953,spk954,United States (US),New York (NY),New York,34,male,no,spk954.wav
+954,spk955,United States (US),Minnesota (MN),Saint Paul,27,male,no,spk955.wav
+955,spk956,United States (US),Montana (MT),Bozeman,47,male,no,spk956.wav
+956,spk957,United States (US),California (CA),Bellflower,25,male,no,spk957.wav
+957,spk958,United States (US),Mississippi (MS),Jackson,46,female,no,spk958.wav
+958,spk959,United States (US),Maine (ME),Skowhegan,37,male,no,spk959.wav
+959,spk960,United States (US),Oklahoma (OK),Yukon,59,female,no,spk960.wav
+960,spk961,United States (US),Michigan (MI),Grand Rapids,35,female,no,spk961.wav
+961,spk962,United States (US),Illinois (IL),Round Lake,48,female,no,spk962.wav
+962,spk963,United States (US),Texas (TX),Keller,23,female,no,spk963.wav
+963,spk964,United States (US),New Jersey (NJ),Hammonton,32,male,no,spk964.wav
+964,spk965,United States (US),Nevada (NV),Las Vegas,35,male,yes,spk965.wav
+965,spk966,United States (US),Texas (TX),Grand Prairie,32,male,no,spk966.wav
+966,spk967,United States (US),Alaska (AK),Anchorage,20,female,no,spk967.wav
+967,spk968,United States (US),South Carolina (SC),Lexington,20,female,no,spk968.wav
+968,spk969,United States (US),Nevada (NV),Las Vegas,29,male,no,spk969.wav
+969,spk970,United States (US),New Jersey (NJ),Linden,48,female,no,spk970.wav
+970,spk971,United States (US),Ohio (OH),Lakewood,27,male,no,spk971.wav
+971,spk972,United States (US),Michigan (MI),Roscommon,58,male,no,spk972.wav
+972,spk973,United States (US),Florida (FL),Pensacola,33,female,no,spk973.wav
+973,spk974,United States (US),Tennessee (TN),Kodak,45,female,no,spk974.wav
+974,spk975,United States (US),Arizona (AZ),Phoenix,29,male,no,spk975.wav
+975,spk976,United States (US),Illinois (IL),Peoria,31,male,no,spk976.wav
+976,spk977,United States (US),Minnesota (MN),Minneapolis,31,male,no,spk977.wav
+977,spk978,United States (US),Maryland (MD),District Heights,22,male,no,spk978.wav
+978,spk979,United States (US),Minnesota (MN),Saint Paul,29,female,no,spk979.wav
+979,spk980,United States (US),Texas (TX),Cypress,37,male,no,spk980.wav
+980,spk981,United States (US),Missouri (MO),Kansas City,33,male,no,spk981.wav
+981,spk982,United States (US),Oregon (OR),Portland,30,female,no,spk982.wav
+982,spk983,United States (US),Ohio (OH),New Albany,27,male,no,spk983.wav
+983,spk984,United States (US),Oregon (OR),Corvallis,59,male,no,spk984.wav
+984,spk985,United States (US),Texas (TX),Houston,47,male,no,spk985.wav
+985,spk986,United States (US),Florida (FL),New Port Richey,31,male,no,spk986.wav
+986,spk987,United States (US),Pennsylvania (PA),Reading,24,male,no,spk987.wav
+987,spk988,United States (US),Nevada (NV),Reno,65,female,no,spk988.wav
+988,spk989,United States (US),Pennsylvania (PA),Ford City,31,female,no,spk989.wav
+989,spk990,United States (US),New York (NY),Brooklyn,38,female,no,spk990.wav
+990,spk991,United States (US),Mississippi (MS),Bude,57,female,no,spk991.wav
+991,spk992,United States (US),Florida (FL),Miami,32,female,no,spk992.wav
+992,spk993,United States (US),Florida (FL),Jacksonville,27,female,no,spk993.wav
+993,spk994,United States (US),Nebraska (NE),Lincoln,23,female,no,spk994.wav
+994,spk995,United States (US),Georgia (GA),Waycross,49,male,no,spk995.wav
+995,spk996,United States (US),Pennsylvania (PA),Bethlehem,42,male,no,spk996.wav
+996,spk997,United States (US),Indiana (IN),New Pekin,47,female,no,spk997.wav
+997,spk998,United States (US),Texas (TX),Katy,45,male,yes,spk998.wav
+998,spk999,United States (US),New York (NY),New York,28,male,no,spk999.wav
+999,spk1000,United States (US),Texas (TX),Houston,22,female,no,spk1000.wav
+1000,spk1001,United States (US),California (CA),Mission Viejo,43,female,no,spk1001.wav
+1001,spk1002,United States (US),Texas (TX),La Porte,32,female,no,spk1002.wav
+1002,spk1003,United States (US),Ohio (OH),Cincinnati,57,female,no,spk1003.wav
+1003,spk1004,United States (US),California (CA),Brea,34,female,no,spk1004.wav
+1004,spk1005,United States (US),Connecticut (CT),Stafford,25,female,no,spk1005.wav
+1005,spk1006,United States (US),Texas (TX),College Station,57,male,no,spk1006.wav
+1006,spk1007,United States (US),Arkansas (AR),Fairfield Bay,53,male,no,spk1007.wav
+1007,spk1008,United States (US),California (CA),San Mateo,31,male,no,spk1008.wav
+1008,spk1009,United States (US),Rhode Island (RI),Narragansett,21,male,no,spk1009.wav
+1009,spk1010,United States (US),Kentucky (KY),Liberty,33,male,no,spk1010.wav
+1010,spk1011,United States (US),California (CA),Los Angeles,25,female,no,spk1011.wav
+1011,spk1012,United States (US),California (CA),McKinleyville,49,male,no,spk1012.wav
+1012,spk1013,United States (US),Florida (FL),Boca Raton,29,male,no,spk1013.wav
+1013,spk1014,United States (US),Virginia (VA),Arlington,45,male,no,spk1014.wav
+1014,spk1015,United States (US),Indiana (IN),Whiteland,41,male,no,spk1015.wav
+1015,spk1016,United States (US),Texas (TX),Houston,30,male,no,spk1016.wav
+1016,spk1017,United States (US),Arizona (AZ),Goodyear,32,female,no,spk1017.wav
+1017,spk1018,United States (US),California (CA),Yorba Linda,33,male,no,spk1018.wav
+1018,spk1019,United States (US),New York (NY),Penfield,37,female,no,spk1019.wav
+1019,spk1020,United States (US),North Carolina (NC),Erwin,22,female,no,spk1020.wav
+1020,spk1021,United States (US),Texas (TX),Plano,63,female,no,spk1021.wav
+1021,spk1022,United States (US),Texas (TX),Cypress,32,male,no,spk1022.wav
+1022,spk1023,United States (US),Florida (FL),Lakeland,31,female,no,spk1023.wav
+1023,spk1024,United States (US),Minnesota (MN),Cloquet,50,female,no,spk1024.wav
+1024,spk1025,United States (US),Massachusetts (MA),Norwood,39,male,no,spk1025.wav
+1025,spk1026,United States (US),Texas (TX),Irving,36,female,no,spk1026.wav
+1026,spk1027,United States (US),Oregon (OR),Albany,33,male,no,spk1027.wav
+1027,spk1028,United States (US),Texas (TX),Porter,33,other,no,spk1028.wav
+1028,spk1029,United States (US),Colorado (CO),Denver,29,female,yes,spk1029.wav
+1029,spk1030,United States (US),New York (NY),Glen Cove,33,female,no,spk1030.wav
+1030,spk1031,United States (US),Colorado (CO),Windsor,27,female,no,spk1031.wav
+1031,spk1032,United States (US),Michigan (MI),Detroit,36,female,no,spk1032.wav
+1032,spk1033,United States (US),Massachusetts (MA),Arlington,27,male,no,spk1033.wav
+1033,spk1034,United States (US),California (CA),Chula Vista,45,female,no,spk1034.wav
+1034,spk1035,United States (US),Delaware (DE),Smyrna,69,male,no,spk1035.wav
+1035,spk1036,United States (US),Florida (FL),Jacksonville Beach,26,male,no,spk1036.wav
+1036,spk1037,United States (US),Arkansas (AR),Magnolia,41,female,no,spk1037.wav
+1037,spk1038,United States (US),California (CA),,46,female,no,spk1038.wav
+1038,spk1039,United States (US),Wisconsin (WI),Pulaski,21,female,no,spk1039.wav
+1039,spk1040,United States (US),None (None),,46,female,no,spk1040.wav
+1040,spk1041,United States (US),Florida (FL),Davenport,29,male,no,spk1041.wav
+1041,spk1042,United States (US),Tennessee (TN),Knoxville,28,female,no,spk1042.wav
+1042,spk1043,United States (US),Tennessee (TN),Smyrna,22,male,no,spk1043.wav
+1043,spk1044,United States (US),Florida (FL),Orlando,19,male,no,spk1044.wav
+1044,spk1045,United States (US),Washington (WA),Vancouver,32,female,no,spk1045.wav
+1045,spk1046,United States (US),Oregon (OR),Portland,32,female,no,spk1046.wav
+1046,spk1047,United States (US),New Jersey (NJ),Jersey City,28,female,no,spk1047.wav
+1047,spk1048,United States (US),None (None),,27,female,no,spk1048.wav
+1048,spk1049,United States (US),California (CA),Santa Cruz,20,other,no,spk1049.wav
+1049,spk1050,United States (US),Arizona (AZ),Gilbert,57,female,no,spk1050.wav
+1050,spk1051,United States (US),Ohio (OH),Cleveland,35,male,no,spk1051.wav
+1051,spk1052,United States (US),Utah (UT),Salt Lake City,33,male,no,spk1052.wav
+1052,spk1053,United States (US),Georgia (GA),Peachtree Corners,22,female,no,spk1053.wav
+1053,spk1054,United States (US),California (CA),Danville,41,male,no,spk1054.wav
+1054,spk1055,United States (US),Florida (FL),Ocala,22,male,no,spk1055.wav
+1055,spk1056,United States (US),Illinois (IL),Carbondale,36,male,no,spk1056.wav
+1056,spk1057,United States (US),Florida (FL),Sarasota,24,female,no,spk1057.wav
+1057,spk1058,United States (US),Massachusetts (MA),Wilmington,35,male,no,spk1058.wav
+1058,spk1059,United States (US),New York (NY),Tonawanda,45,female,no,spk1059.wav
+1059,spk1060,United States (US),Indiana (IN),Indianapolis,63,female,no,spk1060.wav
+1060,spk1061,United States (US),Indiana (IN),Portage,25,female,no,spk1061.wav
+1061,spk1062,United States (US),Georgia (GA),Alpharetta,24,male,no,spk1062.wav
+1062,spk1063,United States (US),Utah (UT),Salt Lake City,32,male,no,spk1063.wav
+1063,spk1064,United States (US),New York (NY),Sunnyside,21,female,no,spk1064.wav
+1064,spk1065,United States (US),Ohio (OH),Columbus,24,male,no,spk1065.wav
+1065,spk1066,United States (US),Arizona (AZ),Chandler,48,female,no,spk1066.wav
+1066,spk1067,United States (US),Oregon (OR),Portland,29,male,no,spk1067.wav
+1067,spk1068,United States (US),California (CA),Los Angeles,25,female,no,spk1068.wav
+1068,spk1069,United States (US),Florida (FL),Sarasota,40,female,no,spk1069.wav
+1069,spk1070,United States (US),Florida (FL),Miami,22,male,no,spk1070.wav
+1070,spk1071,United States (US),Kansas (KS),Atchison,21,male,no,spk1071.wav
+1071,spk1072,United States (US),Connecticut (CT),Killingworth,22,female,no,spk1072.wav
+1072,spk1073,United States (US),Pennsylvania (PA),Mount Joy,29,female,no,spk1073.wav
+1073,spk1074,United States (US),North Carolina (NC),Charlotte,68,female,no,spk1074.wav
+1074,spk1075,United States (US),Kentucky (KY),Nicholasville,23,male,no,spk1075.wav
+1075,spk1076,United States (US),Kentucky (KY),Richmond,25,female,no,spk1076.wav
+1076,spk1077,United States (US),Florida (FL),Port Richey,37,female,no,spk1077.wav
+1077,spk1078,United States (US),Pennsylvania (PA),Norristown,46,female,no,spk1078.wav
+1078,spk1079,United States (US),Washington (WA),Spokane,28,female,no,spk1079.wav
+1079,spk1080,United States (US),North Carolina (NC),Mount Airy,19,male,no,spk1080.wav
+1080,spk1081,United States (US),Colorado (CO),Denver,47,female,no,spk1081.wav
+1081,spk1082,United States (US),Utah (UT),Woods Cross,35,female,no,spk1082.wav
+1082,spk1083,United States (US),Washington (WA),Spokane,41,female,no,spk1083.wav
+1083,spk1084,United States (US),California (CA),Canoga Park,25,female,no,spk1084.wav
+1084,spk1085,United States (US),Washington (WA),Spokane,31,male,no,spk1085.wav
+1085,spk1086,United States (US),Ohio (OH),Northfield,41,male,no,spk1086.wav
+1086,spk1087,United States (US),Ohio (OH),Columbus,40,female,no,spk1087.wav
+1087,spk1088,United States (US),Pennsylvania (PA),Carlisle,28,female,no,spk1088.wav
+1088,spk1089,United States (US),None (None),,54,male,no,spk1089.wav
+1089,spk1090,United States (US),New York (NY),Westhampton,58,male,no,spk1090.wav
+1090,spk1091,United States (US),Virginia (VA),Manassas,48,male,no,spk1091.wav
+1091,spk1092,United States (US),Texas (TX),Dallas,27,male,no,spk1092.wav
+1092,spk1093,United States (US),Connecticut (CT),Old Greenwich,33,male,no,spk1093.wav
+1093,spk1094,United States (US),Iowa (IA),Ankeny,63,male,no,spk1094.wav
+1094,spk1095,United States (US),Massachusetts (MA),East Falmouth,53,male,no,spk1095.wav
+1095,spk1096,United States (US),Maryland (MD),Baltimore,26,male,no,spk1096.wav
+1096,spk1097,United States (US),California (CA),Fresno,24,female,no,spk1097.wav
+1097,spk1098,United States (US),Michigan (MI),Lansing,38,female,no,spk1098.wav
+1098,spk1099,United States (US),Pennsylvania (PA),Clearfield,54,male,no,spk1099.wav
+1099,spk1100,United States (US),West Virginia (WV),Morgantown,28,female,no,spk1100.wav
+1100,spk1101,United States (US),Missouri (MO),Kansas City,46,female,no,spk1101.wav
+1101,spk1102,United States (US),Georgia (GA),Atlanta,27,male,no,spk1102.wav
+1102,spk1103,United States (US),Massachusetts (MA),Haverhill,25,female,no,spk1103.wav
+1103,spk1104,United States (US),Massachusetts (MA),Weymouth,65,male,no,spk1104.wav
+1104,spk1105,United States (US),California (CA),Hemet,33,male,no,spk1105.wav
+1105,spk1106,United States (US),Texas (TX),Fort Worth,28,female,no,spk1106.wav
+1106,spk1107,United States (US),West Virginia (WV),Charleston,24,female,no,spk1107.wav
+1107,spk1108,United States (US),None (None),,39,female,no,spk1108.wav
+1108,spk1109,United States (US),Florida (FL),Orlando,60,male,no,spk1109.wav
+1109,spk1110,United States (US),Florida (FL),Brandon,24,male,no,spk1110.wav
+1110,spk1111,United States (US),Michigan (MI),Holland,62,female,no,spk1111.wav
+1111,spk1112,United States (US),None (None),,34,male,no,spk1112.wav
+1112,spk1113,United States (US),Washington (WA),Seattle,32,male,no,spk1113.wav
+1113,spk1114,United States (US),Maryland (MD),Edgewater,67,male,no,spk1114.wav
+1114,spk1115,United States (US),Minnesota (MN),Roseau,33,female,no,spk1115.wav
+1115,spk1116,United States (US),Oregon (OR),Portland,35,male,no,spk1116.wav
+1116,spk1117,United States (US),None (None),,25,male,no,spk1117.wav
+1117,spk1118,United States (US),Virginia (VA),Stafford,35,male,no,spk1118.wav
+1118,spk1119,United States (US),Massachusetts (MA),Cambridge,24,female,no,spk1119.wav
+1119,spk1120,United States (US),Michigan (MI),Rochester,32,female,no,spk1120.wav
+1120,spk1121,United States (US),Washington (WA),Seattle,35,male,no,spk1121.wav
+1121,spk1122,United States (US),Iowa (IA),Bettendorf,45,male,no,spk1122.wav
+1122,spk1123,United States (US),Mississippi (MS),Columbus,44,female,no,spk1123.wav
+1123,spk1124,United States (US),Illinois (IL),Chicago,26,female,no,spk1124.wav
+1124,spk1125,United Kingdom (GB),None (None),,28,male,no,spk1125.wav
+1125,spk1126,United States (US),Wyoming (WY),Sheridan,21,male,no,spk1126.wav
+1126,spk1127,United States (US),Wyoming (WY),Cody,34,male,no,spk1127.wav
+1127,spk1128,United States (US),Texas (TX),Boerne,64,female,no,spk1128.wav
+1128,spk1129,United States (US),Indiana (IN),South Bend,21,male,no,spk1129.wav
+1129,spk1130,United States (US),North Carolina (NC),Lenoir,25,female,no,spk1130.wav
+1130,spk1131,United States (US),Hawaii (HI),‘Aiea,56,male,no,spk1131.wav
+1131,spk1132,United States (US),West Virginia (WV),Charleston,39,male,no,spk1132.wav
+1132,spk1133,United States (US),Louisiana (LA),New Orleans,53,female,yes,spk1133.wav
+1133,spk1134,United States (US),Georgia (GA),Gainesville,48,female,no,spk1134.wav
+1134,spk1135,United States (US),Illinois (IL),Chicago,23,female,no,spk1135.wav
+1135,spk1136,United States (US),Illinois (IL),Edwardsville,72,female,no,spk1136.wav
+1136,spk1137,United States (US),California (CA),North Hollywood,27,female,no,spk1137.wav
+1137,spk1138,United States (US),Florida (FL),Beverly Hills,34,female,no,spk1138.wav
+1138,spk1139,United States (US),Nevada (NV),Las Vegas,34,female,no,spk1139.wav
+1139,spk1140,United States (US),Arkansas (AR),Alexander,51,female,no,spk1140.wav
+1140,spk1141,United States (US),North Carolina (NC),Thomasville,37,female,no,spk1141.wav
+1141,spk1142,United States (US),Texas (TX),Houston,42,female,no,spk1142.wav
+1142,spk1143,United States (US),New York (NY),South Richmond Hill,37,female,no,spk1143.wav
+1143,spk1144,United States (US),Maryland (MD),Germantown,33,female,no,spk1144.wav
+1144,spk1145,United States (US),Washington (WA),Seattle,20,female,no,spk1145.wav
+1145,spk1146,United States (US),Texas (TX),McKinney,25,female,no,spk1146.wav
+1146,spk1147,United States (US),Iowa (IA),Keosauqua,42,female,no,spk1147.wav
+1147,spk1148,United States (US),Arkansas (AR),Batesville,31,male,no,spk1148.wav
+1148,spk1149,United States (US),Arizona (AZ),Phoenix,31,male,no,spk1149.wav
+1149,spk1150,United States (US),Florida (FL),St. Petersburg,30,female,no,spk1150.wav
+1150,spk1151,United States (US),California (CA),Los Angeles,39,male,no,spk1151.wav
+1151,spk1152,United States (US),Massachusetts (MA),Medford,22,female,no,spk1152.wav
+1152,spk1153,United States (US),Connecticut (CT),Hartford,21,female,no,spk1153.wav
+1153,spk1154,United States (US),Florida (FL),Naples,45,female,no,spk1154.wav
+1154,spk1155,United States (US),New Jersey (NJ),Browns Mills,28,male,no,spk1155.wav
+1155,spk1156,United States (US),Illinois (IL),Hoffman Estates,24,female,no,spk1156.wav
+1156,spk1157,United States (US),Indiana (IN),Granger,49,female,no,spk1157.wav
+1157,spk1158,United States (US),Pennsylvania (PA),Newtown,56,female,no,spk1158.wav
+1158,spk1159,United States (US),Texas (TX),Houston,44,female,no,spk1159.wav
+1159,spk1160,United States (US),Illinois (IL),Peoria,28,female,no,spk1160.wav
+1160,spk1161,United States (US),Alabama (AL),Auburn,24,male,no,spk1161.wav
+1161,spk1162,United States (US),Texas (TX),Fort Worth,34,male,no,spk1162.wav
+1162,spk1163,United States (US),South Carolina (SC),Manning,67,female,no,spk1163.wav
+1163,spk1164,United States (US),Missouri (MO),Kansas City,48,male,no,spk1164.wav
+1164,spk1165,United States (US),Tennessee (TN),Crossville,44,male,no,spk1165.wav
+1165,spk1166,United States (US),Connecticut (CT),Manchester,26,male,no,spk1166.wav
+1166,spk1167,United States (US),Michigan (MI),Taylor,41,female,no,spk1167.wav
+1167,spk1168,United States (US),Florida (FL),Tampa,23,female,no,spk1168.wav
+1168,spk1169,United States (US),Louisiana (LA),Lake Arthur,29,female,no,spk1169.wav
+1169,spk1170,United States (US),Texas (TX),Dallas,48,male,no,spk1170.wav
+1170,spk1171,United States (US),Massachusetts (MA),Cambridge,33,male,no,spk1171.wav
+1171,spk1172,United States (US),Ohio (OH),Columbus,32,male,no,spk1172.wav
+1172,spk1173,United States (US),Wisconsin (WI),Brookfield,22,male,no,spk1173.wav
+1173,spk1174,United States (US),Texas (TX),Denton,28,female,no,spk1174.wav
+1174,spk1175,United States (US),Ohio (OH),Rossford,56,female,no,spk1175.wav
+1175,spk1176,United States (US),Wisconsin (WI),Madison,58,female,no,spk1176.wav
+1176,spk1177,United States (US),Ohio (OH),Athens,24,female,no,spk1177.wav
+1177,spk1178,United States (US),North Carolina (NC),Raleigh,49,female,no,spk1178.wav
+1178,spk1179,United States (US),North Carolina (NC),Lawndale,50,male,no,spk1179.wav
+1179,spk1180,United States (US),Georgia (GA),Jonesboro,56,male,no,spk1180.wav
+1180,spk1181,United States (US),South Carolina (SC),Charleston,30,male,no,spk1181.wav
+1181,spk1182,United States (US),Maryland (MD),Rockville,24,male,no,spk1182.wav
+1182,spk1183,United States (US),California (CA),Northridge,51,male,no,spk1183.wav
+1183,spk1184,United States (US),Massachusetts (MA),Chelmsford,31,female,no,spk1184.wav
+1184,spk1185,United States (US),New York (NY),Buffalo,52,female,no,spk1185.wav
+1185,spk1186,United States (US),California (CA),Fresno,23,male,no,spk1186.wav
+1186,spk1187,United States (US),Florida (FL),Miami,32,male,no,spk1187.wav
+1187,spk1188,United States (US),District of Columbia (DC),Washington,29,female,yes,spk1188.wav
+1188,spk1189,United States (US),Florida (FL),Jacksonville,38,male,no,spk1189.wav
+1189,spk1190,United States (US),Ohio (OH),Chagrin Falls,27,female,no,spk1190.wav
+1190,spk1191,United States (US),Kansas (KS),Hays,24,male,no,spk1191.wav
+1191,spk1192,United States (US),Kansas (KS),Wichita,36,female,no,spk1192.wav
+1192,spk1193,United States (US),Minnesota (MN),Minneapolis,39,female,no,spk1193.wav
+1193,spk1194,United States (US),Ohio (OH),Avon,35,male,no,spk1194.wav
+1194,spk1195,United States (US),Virginia (VA),Woodstock,32,male,no,spk1195.wav
+1195,spk1196,United States (US),Kentucky (KY),Union,31,female,no,spk1196.wav
+1196,spk1197,United States (US),Texas (TX),Austin,28,female,no,spk1197.wav
+1197,spk1198,United States (US),None (None),,54,female,no,spk1198.wav
+1198,spk1199,United States (US),Kentucky (KY),Somerset,29,female,no,spk1199.wav
+1199,spk1200,United States (US),Oklahoma (OK),Weatherford,38,male,no,spk1200.wav
+1200,spk1201,United States (US),Texas (TX),Round Rock,28,male,no,spk1201.wav
+1201,spk1202,United States (US),Virginia (VA),Richmond,30,male,yes,spk1202.wav
+1202,spk1203,United States (US),None (None),,39,female,no,spk1203.wav
+1203,spk1204,United States (US),Minnesota (MN),Zimmerman,28,male,no,spk1204.wav
+1204,spk1205,United States (US),Illinois (IL),Chicago,49,male,no,spk1205.wav
+1205,spk1206,United States (US),Georgia (GA),Toccoa,37,female,no,spk1206.wav
+1206,spk1207,United States (US),California (CA),Sylmar,28,male,no,spk1207.wav
+1207,spk1208,United States (US),Connecticut (CT),Wallingford,23,female,no,spk1208.wav
+1208,spk1209,United States (US),None (None),,31,female,no,spk1209.wav
+1209,spk1210,United States (US),California (CA),Redondo Beach,32,male,no,spk1210.wav
+1210,spk1211,United States (US),None (None),,37,female,no,spk1211.wav
+1211,spk1212,United States (US),Minnesota (MN),Saint Paul,28,female,no,spk1212.wav
+1212,spk1213,United States (US),California (CA),Torrance,24,female,no,spk1213.wav
+1213,spk1214,United States (US),Minnesota (MN),Minneapolis,34,female,no,spk1214.wav
+1214,spk1215,United States (US),Nebraska (NE),Lincoln,52,male,no,spk1215.wav
+1215,spk1216,United States (US),North Carolina (NC),Greensboro,53,female,no,spk1216.wav
+1216,spk1217,United States (US),California (CA),San Clemente,39,male,no,spk1217.wav
+1217,spk1218,United States (US),Pennsylvania (PA),Wrightsville,66,female,no,spk1218.wav
+1218,spk1219,United States (US),Texas (TX),Wichita Falls,27,male,no,spk1219.wav
+1219,spk1220,United States (US),New York (NY),Hempstead,31,female,no,spk1220.wav
+1220,spk1221,United States (US),Ohio (OH),Cleveland,59,male,no,spk1221.wav
+1221,spk1222,United States (US),North Carolina (NC),Wake Forest,36,female,no,spk1222.wav
+1222,spk1223,United States (US),Georgia (GA),LaFayette,60,male,no,spk1223.wav
+1223,spk1224,United States (US),Alabama (AL),Birmingham,22,male,no,spk1224.wav
+1224,spk1225,United States (US),New York (NY),The Bronx,32,female,no,spk1225.wav
+1225,spk1226,United States (US),Virginia (VA),Richmond,28,female,no,spk1226.wav
+1226,spk1227,United States (US),Florida (FL),New Port Richey,47,male,no,spk1227.wav
+1227,spk1228,United States (US),Ohio (OH),Massillon,69,female,no,spk1228.wav
+1228,spk1229,United States (US),California (CA),South Lake Tahoe,29,male,no,spk1229.wav
+1229,spk1230,United States (US),Virginia (VA),Manassas,36,female,no,spk1230.wav
+1230,spk1231,United States (US),Ohio (OH),North Canton,30,male,no,spk1231.wav
+1231,spk1232,United States (US),South Carolina (SC),Inman,47,female,no,spk1232.wav
+1232,spk1233,United States (US),Maryland (MD),Columbia,42,male,no,spk1233.wav
+1233,spk1234,United States (US),North Carolina (NC),Shelby,28,female,no,spk1234.wav
+1234,spk1235,United States (US),Connecticut (CT),Groton,24,female,no,spk1235.wav
+1235,spk1236,United States (US),New York (NY),Ithaca,18,male,no,spk1236.wav
+1236,spk1237,United States (US),Alabama (AL),Birmingham,39,female,no,spk1237.wav
+1237,spk1238,United States (US),Arkansas (AR),Marion,24,female,no,spk1238.wav
+1238,spk1239,United States (US),Arizona (AZ),Chandler,51,female,no,spk1239.wav
+1239,spk1240,United States (US),Virginia (VA),Fairfax,30,female,no,spk1240.wav
+1240,spk1241,United States (US),Mississippi (MS),Picayune,50,female,no,spk1241.wav
+1241,spk1242,United States (US),Arkansas (AR),Little Rock,31,male,no,spk1242.wav
+1242,spk1243,United States (US),Nebraska (NE),Lincoln,43,male,no,spk1243.wav
+1243,spk1244,United States (US),Georgia (GA),Lawrenceville,36,female,no,spk1244.wav
+1244,spk1245,United States (US),Florida (FL),Miami,26,female,no,spk1245.wav
+1245,spk1246,United States (US),Kansas (KS),Topeka,34,female,no,spk1246.wav
+1246,spk1247,United States (US),California (CA),Sacramento,29,female,no,spk1247.wav
+1247,spk1248,United States (US),Alaska (AK),North Pole,40,female,no,spk1248.wav
+1248,spk1249,United States (US),Oregon (OR),Portland,34,female,no,spk1249.wav
+1249,spk1250,United States (US),Virginia (VA),Burke,58,female,no,spk1250.wav
+1250,spk1251,United States (US),Nevada (NV),Las Vegas,34,female,no,spk1251.wav
+1251,spk1252,United States (US),Texas (TX),Arlington,35,female,no,spk1252.wav
+1252,spk1253,United States (US),Minnesota (MN),Farmington,50,male,no,spk1253.wav
+1253,spk1254,United States (US),Texas (TX),Azle,32,male,no,spk1254.wav
+1254,spk1255,United States (US),Illinois (IL),Palatine,35,female,no,spk1255.wav
+1255,spk1256,United States (US),New Jersey (NJ),Iselin,25,female,no,spk1256.wav
+1256,spk1257,United States (US),Massachusetts (MA),Marblehead,37,male,no,spk1257.wav
+1257,spk1258,United States (US),None (None),,21,male,no,spk1258.wav
+1258,spk1259,United States (US),Minnesota (MN),Albert Lea,23,male,no,spk1259.wav
+1259,spk1260,United States (US),Colorado (CO),Pueblo,25,female,no,spk1260.wav
+1260,spk1261,United States (US),North Carolina (NC),High Point,40,female,no,spk1261.wav
+1261,spk1262,Venezuela (VE),Mérida (L),Mérida,39,male,no,spk1262.wav
+1262,spk1263,United States (US),Oregon (OR),Portland,35,female,no,spk1263.wav
+1263,spk1264,United States (US),Hawaii (HI),‘Aiea,43,male,no,spk1264.wav
+1264,spk1265,United States (US),California (CA),Oakland,36,female,no,spk1265.wav
+1265,spk1266,United States (US),Washington (WA),Bellevue,44,male,no,spk1266.wav
+1266,spk1267,United States (US),New York (NY),Westbury,35,female,no,spk1267.wav
+1267,spk1268,United States (US),Virginia (VA),Arlington,34,female,no,spk1268.wav
+1268,spk1269,United States (US),New York (NY),Kingston,46,male,no,spk1269.wav
+1269,spk1270,United States (US),Michigan (MI),Mason,57,female,no,spk1270.wav
+1270,spk1271,United States (US),Indiana (IN),Indianapolis,28,male,no,spk1271.wav
+1271,spk1272,United States (US),None (None),,36,female,no,spk1272.wav
+1272,spk1273,United States (US),New Jersey (NJ),Ridgewood,22,male,no,spk1273.wav
+1273,spk1274,United States (US),New York (NY),Rochester,33,female,no,spk1274.wav
+1274,spk1275,United States (US),Florida (FL),Davenport,26,female,yes,spk1275.wav
+1275,spk1276,United States (US),Louisiana (LA),West Monroe,36,female,yes,spk1276.wav
+1276,spk1277,United States (US),Indiana (IN),Clay City,23,female,no,spk1277.wav
+1277,spk1278,United States (US),None (None),,23,male,no,spk1278.wav
+1278,spk1279,United States (US),Ohio (OH),Maple Heights,32,female,no,spk1279.wav
+1279,spk1280,United States (US),Florida (FL),Miami,25,male,no,spk1280.wav
+1280,spk1281,United States (US),California (CA),Los Angeles,23,male,no,spk1281.wav
+1281,spk1282,United States (US),Texas (TX),Weatherford,38,female,no,spk1282.wav
+1282,spk1283,United States (US),Florida (FL),Winter Park,37,male,no,spk1283.wav
+1283,spk1284,United States (US),California (CA),Temecula,44,male,no,spk1284.wav
+1284,spk1285,United States (US),Oklahoma (OK),Cushing,46,female,no,spk1285.wav
+1285,spk1286,United States (US),Florida (FL),Orlando,25,male,no,spk1286.wav
+1286,spk1287,United States (US),Tennessee (TN),Lynchburg,42,female,no,spk1287.wav
+1287,spk1288,United States (US),California (CA),Turlock,35,other,no,spk1288.wav
+1288,spk1289,United States (US),California (CA),Chula Vista,61,male,no,spk1289.wav
+1289,spk1290,United States (US),Indiana (IN),Arcadia,58,female,no,spk1290.wav
+1290,spk1291,United States (US),Indiana (IN),Indianapolis,24,female,no,spk1291.wav
+1291,spk1292,United States (US),Georgia (GA),Atlanta,52,male,no,spk1292.wav
+1292,spk1293,United States (US),None (None),,30,female,no,spk1293.wav
+1293,spk1294,United States (US),New York (NY),Amityville,29,male,no,spk1294.wav
+1294,spk1295,United States (US),New Hampshire (NH),Pembroke,37,male,no,spk1295.wav
+1295,spk1296,United States (US),Florida (FL),Tampa,57,male,no,spk1296.wav
+1296,spk1297,United States (US),Pennsylvania (PA),Philadelphia,32,female,no,spk1297.wav
+1297,spk1298,United States (US),Texas (TX),Brownsville,36,female,no,spk1298.wav
+1298,spk1299,United States (US),Pennsylvania (PA),Drexel Hill,28,male,no,spk1299.wav
+1299,spk1300,United States (US),Massachusetts (MA),Beverly,55,female,no,spk1300.wav
+1300,spk1301,United States (US),Washington (WA),Poulsbo,33,male,no,spk1301.wav
+1301,spk1302,United States (US),Nevada (NV),Reno,57,female,no,spk1302.wav
+1302,spk1303,United States (US),Georgia (GA),Cumming,30,female,no,spk1303.wav
+1303,spk1304,United States (US),New Jersey (NJ),Egg Harbor,58,male,no,spk1304.wav
+1304,spk1305,United States (US),Michigan (MI),Oscoda,30,female,no,spk1305.wav
+1305,spk1306,United States (US),None (None),,25,female,no,spk1306.wav
+1306,spk1307,United States (US),California (CA),Stanford,31,female,no,spk1307.wav
+1307,spk1308,United States (US),Florida (FL),West Palm Beach,42,female,no,spk1308.wav
+1308,spk1309,United States (US),Pennsylvania (PA),Williamsport,29,male,no,spk1309.wav
+1309,spk1310,United States (US),Virginia (VA),Penn Laird,33,female,no,spk1310.wav
+1310,spk1311,United States (US),California (CA),Whittier,44,male,no,spk1311.wav
+1311,spk1312,United States (US),California (CA),Carlsbad,26,female,no,spk1312.wav
+1312,spk1313,United States (US),New Jersey (NJ),Bound Brook,43,male,no,spk1313.wav
+1313,spk1314,United States (US),Alabama (AL),Birmingham,61,female,no,spk1314.wav
+1314,spk1315,United States (US),Nebraska (NE),Omaha,34,male,no,spk1315.wav
+1315,spk1316,United States (US),Arizona (AZ),Peoria,20,male,no,spk1316.wav
+1316,spk1317,United States (US),Georgia (GA),Hiram,39,male,no,spk1317.wav
+1317,spk1318,United States (US),None (None),,36,female,no,spk1318.wav
+1318,spk1319,United States (US),Texas (TX),New Braunfels,28,male,no,spk1319.wav
+1319,spk1320,United States (US),Missouri (MO),Farmington,47,female,no,spk1320.wav
+1320,spk1321,United States (US),Ohio (OH),Richfield,56,female,no,spk1321.wav
+1321,spk1322,United States (US),Wisconsin (WI),Fond du Lac,80,female,no,spk1322.wav
+1322,spk1323,United States (US),None (None),,22,male,no,spk1323.wav
+1323,spk1324,United States (US),Michigan (MI),Lansing,47,male,no,spk1324.wav
+1324,spk1325,United States (US),Pennsylvania (PA),Bristol,26,male,no,spk1325.wav
+1325,spk1326,United States (US),Connecticut (CT),Winsted,32,male,no,spk1326.wav
+1326,spk1327,United States (US),California (CA),Santa Clara,30,female,no,spk1327.wav
+1327,spk1328,United States (US),North Carolina (NC),Sanford,36,female,no,spk1328.wav
+1328,spk1329,United States (US),Michigan (MI),Standish,40,male,no,spk1329.wav
+1329,spk1330,United States (US),New Jersey (NJ),Swedesboro,35,female,no,spk1330.wav
+1330,spk1331,United States (US),South Carolina (SC),Florence,27,male,no,spk1331.wav
+1331,spk1332,United States (US),None (None),,35,female,no,spk1332.wav
+1332,spk1333,United States (US),Texas (TX),Plano,42,female,no,spk1333.wav
+1333,spk1334,United States (US),West Virginia (WV),Berkeley Springs,37,female,no,spk1334.wav
+1334,spk1335,United States (US),Illinois (IL),Crystal Lake,50,female,no,spk1335.wav
+1335,spk1336,United States (US),None (None),,30,male,no,spk1336.wav
+1336,spk1337,United States (US),Indiana (IN),Columbia City,24,male,no,spk1337.wav
+1337,spk1338,United States (US),North Carolina (NC),New Bern,46,male,no,spk1338.wav
+1338,spk1339,United States (US),Massachusetts (MA),Springfield,26,male,no,spk1339.wav
+1339,spk1340,United States (US),Colorado (CO),Denver,52,male,no,spk1340.wav
+1340,spk1341,United States (US),Pennsylvania (PA),Philadelphia,33,female,no,spk1341.wav
+1341,spk1342,United States (US),Illinois (IL),Homewood,20,female,no,spk1342.wav
+1342,spk1343,United States (US),Idaho (ID),Idaho Falls,44,female,no,spk1343.wav
+1343,spk1344,United States (US),North Carolina (NC),Calabash,47,female,no,spk1344.wav
+1344,spk1345,United States (US),Georgia (GA),Decatur,38,male,no,spk1345.wav
+1345,spk1346,United States (US),Alabama (AL),Montgomery,28,female,no,spk1346.wav
+1346,spk1347,United States (US),New Jersey (NJ),Bridgeton,31,male,no,spk1347.wav
+1347,spk1348,United States (US),Florida (FL),Satellite Beach,21,female,no,spk1348.wav
+1348,spk1349,United States (US),California (CA),San Jose,22,female,no,spk1349.wav
+1349,spk1350,United States (US),New York (NY),Brooklyn,32,female,no,spk1350.wav
+1350,spk1351,United States (US),Illinois (IL),Park Ridge,42,male,no,spk1351.wav
+1351,spk1352,United States (US),New York (NY),Ridgewood,33,male,no,spk1352.wav
+1352,spk1353,United States (US),Michigan (MI),Redford,41,female,no,spk1353.wav
+1353,spk1354,United States (US),California (CA),Lancaster,32,male,no,spk1354.wav
+1354,spk1355,United States (US),Florida (FL),Tarpon Springs,33,male,no,spk1355.wav
+1355,spk1356,United States (US),Illinois (IL),Chicago,24,male,no,spk1356.wav
+1356,spk1357,United States (US),Washington (WA),Olympia,45,male,no,spk1357.wav
+1357,spk1358,United States (US),None (None),,19,male,no,spk1358.wav
+1358,spk1359,United States (US),Georgia (GA),Lawrenceville,58,male,no,spk1359.wav
+1359,spk1360,United States (US),Kentucky (KY),Lexington,19,male,no,spk1360.wav
+1360,spk1361,United States (US),Illinois (IL),Normal,29,male,no,spk1361.wav
+1361,spk1362,United States (US),North Carolina (NC),Cameron,44,male,no,spk1362.wav
+1362,spk1363,United States (US),Ohio (OH),Hudson,19,other,no,spk1363.wav
+1363,spk1364,United States (US),Florida (FL),Plant City,34,male,no,spk1364.wav
+1364,spk1365,United States (US),Minnesota (MN),Minneapolis,23,male,no,spk1365.wav
+1365,spk1366,United States (US),New Jersey (NJ),Manahawkin,26,male,no,spk1366.wav
+1366,spk1367,United States (US),Indiana (IN),Bloomington,21,male,no,spk1367.wav
+1367,spk1368,United States (US),Wisconsin (WI),West Bend,25,male,no,spk1368.wav
+1368,spk1369,United States (US),Alabama (AL),Gadsden,22,female,no,spk1369.wav
+1369,spk1370,United States (US),Louisiana (LA),Gretna,28,female,no,spk1370.wav
+1370,spk1371,United States (US),Arizona (AZ),Page,54,female,no,spk1371.wav
+1371,spk1372,United States (US),Kansas (KS),Haysville,35,female,no,spk1372.wav
+1372,spk1373,United States (US),Florida (FL),Fernandina Beach,47,female,no,spk1373.wav
+1373,spk1374,United States (US),New Mexico (NM),Las Cruces,68,male,no,spk1374.wav
+1374,spk1375,United States (US),California (CA),San Jose,33,male,no,spk1375.wav
+1375,spk1376,United States (US),Missouri (MO),Hannibal,36,female,no,spk1376.wav
+1376,spk1377,United States (US),Maryland (MD),Owings Mills,36,female,no,spk1377.wav
+1377,spk1378,United States (US),Virginia (VA),Leesburg,23,male,no,spk1378.wav
+1378,spk1379,United States (US),Kentucky (KY),Leitchfield,19,female,no,spk1379.wav
+1379,spk1380,United States (US),Kentucky (KY),Pembroke,44,male,no,spk1380.wav
+1380,spk1381,United States (US),Florida (FL),Windermere,24,male,no,spk1381.wav
+1381,spk1382,United States (US),Florida (FL),Miami,30,female,no,spk1382.wav
+1382,spk1383,United States (US),Florida (FL),Plant City,22,male,no,spk1383.wav
+1383,spk1384,United States (US),Illinois (IL),Chicago,19,male,no,spk1384.wav
+1384,spk1385,United States (US),New Jersey (NJ),Somerset,30,male,no,spk1385.wav
+1385,spk1386,United States (US),Minnesota (MN),Minneapolis,29,female,no,spk1386.wav
+1386,spk1387,United States (US),North Carolina (NC),Concord,21,female,no,spk1387.wav
+1387,spk1388,United States (US),New York (NY),Mastic,40,female,no,spk1388.wav
+1388,spk1389,United States (US),Illinois (IL),,26,female,no,spk1389.wav
+1389,spk1390,United States (US),None (None),,39,male,no,spk1390.wav
+1390,spk1391,United States (US),Illinois (IL),McHenry,33,female,no,spk1391.wav
+1391,spk1392,United States (US),California (CA),Fresno,69,male,no,spk1392.wav
+1392,spk1393,United States (US),Ohio (OH),Troy,55,male,no,spk1393.wav
+1393,spk1394,United States (US),California (CA),Carlsbad,21,female,no,spk1394.wav
+1394,spk1395,United States (US),Virginia (VA),Woodstock,25,female,no,spk1395.wav
+1395,spk1396,United States (US),Texas (TX),Humble,22,female,no,spk1396.wav
+1396,spk1397,United States (US),Texas (TX),El Paso,20,female,no,spk1397.wav
+1397,spk1398,United States (US),Alabama (AL),Huntsville,42,male,no,spk1398.wav
+1398,spk1399,United States (US),Florida (FL),Fort Lauderdale,31,male,no,spk1399.wav
+1399,spk1400,United States (US),Ohio (OH),Columbus,26,female,no,spk1400.wav
+1400,spk1401,United States (US),New York (NY),North Babylon,32,male,no,spk1401.wav
+1401,spk1402,United States (US),California (CA),Hesperia,48,female,no,spk1402.wav
+1402,spk1403,United States (US),Ohio (OH),Columbus,35,female,no,spk1403.wav
+1403,spk1404,United States (US),New Jersey (NJ),Monmouth Junction,39,female,no,spk1404.wav
+1404,spk1405,United States (US),New Hampshire (NH),Dover,23,male,no,spk1405.wav
+1405,spk1406,United States (US),Texas (TX),Spring,39,female,no,spk1406.wav
+1406,spk1407,United States (US),Virginia (VA),Newport News,29,male,no,spk1407.wav
+1407,spk1408,United States (US),California (CA),San Francisco,48,female,no,spk1408.wav
+1408,spk1409,United States (US),Ohio (OH),Chagrin Falls,35,male,no,spk1409.wav
+1409,spk1410,United States (US),Alabama (AL),Pleasant Grove,40,female,no,spk1410.wav
+1410,spk1411,United States (US),Texas (TX),Dallas,27,female,no,spk1411.wav
+1411,spk1412,United States (US),New York (NY),Long Beach,28,female,no,spk1412.wav
+1412,spk1413,United States (US),Virginia (VA),Vienna,39,male,no,spk1413.wav
+1413,spk1414,United States (US),Arizona (AZ),Mesa,48,female,no,spk1414.wav
+1414,spk1415,United States (US),Maryland (MD),Glen Burnie,41,male,no,spk1415.wav
+1415,spk1416,United States (US),North Carolina (NC),Raleigh,22,female,no,spk1416.wav
+1416,spk1417,United States (US),Texas (TX),Houston,33,female,no,spk1417.wav
+1417,spk1418,United States (US),Rhode Island (RI),Providence,32,male,no,spk1418.wav
+1418,spk1419,United States (US),Georgia (GA),Macon,34,female,no,spk1419.wav
+1419,spk1420,United States (US),Florida (FL),Riverview,36,female,no,spk1420.wav
+1420,spk1421,United States (US),Missouri (MO),St Louis,30,female,no,spk1421.wav
+1421,spk1422,United States (US),Ohio (OH),Westerville,32,female,no,spk1422.wav
+1422,spk1423,United States (US),None (None),,33,male,no,spk1423.wav
+1423,spk1424,United States (US),Michigan (MI),Portage,39,female,no,spk1424.wav
+1424,spk1425,United States (US),Illinois (IL),Chicago,35,male,no,spk1425.wav
+1425,spk1426,United States (US),Illinois (IL),Chicago,59,male,no,spk1426.wav
+1426,spk1427,United States (US),Florida (FL),Immokalee,19,male,no,spk1427.wav
+1427,spk1428,United States (US),New Mexico (NM),Albuquerque,55,male,no,spk1428.wav
+1428,spk1429,United States (US),Virginia (VA),Reston,32,male,no,spk1429.wav
+1429,spk1430,United States (US),Kentucky (KY),Berea,44,male,no,spk1430.wav
+1430,spk1431,United States (US),Virginia (VA),Herndon,22,male,no,spk1431.wav
+1431,spk1432,United States (US),Massachusetts (MA),Charlestown,29,female,no,spk1432.wav
+1432,spk1433,United States (US),New York (NY),Flushing,44,male,no,spk1433.wav
+1433,spk1434,United States (US),Ohio (OH),Cleveland,48,male,no,spk1434.wav
+1434,spk1435,United States (US),Michigan (MI),Rochester,48,female,no,spk1435.wav
+1435,spk1436,United States (US),Arizona (AZ),Gilbert,26,male,no,spk1436.wav
+1436,spk1437,United States (US),Illinois (IL),Aurora,19,female,no,spk1437.wav
+1437,spk1438,United States (US),Michigan (MI),Saline,27,male,no,spk1438.wav
+1438,spk1439,United States (US),Florida (FL),Ponte Vedra Beach,70,male,no,spk1439.wav
+1439,spk1440,United States (US),New Hampshire (NH),Amherst,55,male,no,spk1440.wav
+1440,spk1441,United States (US),Pennsylvania (PA),York,34,female,no,spk1441.wav
+1441,spk1442,United States (US),New York (NY),Brooklyn,40,male,no,spk1442.wav
+1442,spk1443,United States (US),Colorado (CO),Fort Collins,29,female,no,spk1443.wav
+1443,spk1444,United States (US),Nevada (NV),Las Vegas,24,male,no,spk1444.wav
+1444,spk1445,United States (US),Massachusetts (MA),Mansfield,40,male,no,spk1445.wav
+1445,spk1446,United States (US),Virginia (VA),Fairfax,24,male,no,spk1446.wav
+1446,spk1447,United States (US),Pennsylvania (PA),Pittsburgh,30,female,no,spk1447.wav
+1447,spk1448,United States (US),Washington (WA),Seattle,24,female,no,spk1448.wav
+1448,spk1449,United States (US),Virginia (VA),Arlington,60,male,no,spk1449.wav
+1449,spk1450,United States (US),Kansas (KS),Emporia,36,male,no,spk1450.wav
+1450,spk1451,United States (US),Massachusetts (MA),Medford,39,male,no,spk1451.wav
+1451,spk1452,United States (US),Virginia (VA),Midlothian,33,male,no,spk1452.wav
+1452,spk1453,United States (US),New York (NY),Syosset,28,male,no,spk1453.wav
+1453,spk1454,United States (US),Pennsylvania (PA),Elizabethtown,38,female,no,spk1454.wav
+1454,spk1455,United States (US),South Carolina (SC),Hilton Head Island,30,female,no,spk1455.wav
+1455,spk1456,United States (US),California (CA),Thousand Oaks,33,male,no,spk1456.wav
+1456,spk1457,United States (US),None (None),,62,female,no,spk1457.wav
+1457,spk1458,United States (US),California (CA),Los Angeles,25,male,no,spk1458.wav
+1458,spk1459,United States (US),Arizona (AZ),Scottsdale,49,male,no,spk1459.wav
+1459,spk1460,United States (US),New York (NY),Brooklyn,22,female,no,spk1460.wav
+1460,spk1461,United States (US),Ohio (OH),Warren,38,female,no,spk1461.wav
+1461,spk1462,United States (US),Illinois (IL),Palatine,20,female,no,spk1462.wav
+1462,spk1463,United States (US),New Mexico (NM),Las Cruces,32,male,no,spk1463.wav
+1463,spk1464,United States (US),Texas (TX),Huntsville,34,female,no,spk1464.wav
+1464,spk1465,United States (US),Texas (TX),Lumberton,38,female,no,spk1465.wav
+1465,spk1466,United States (US),California (CA),North Hollywood,56,female,no,spk1466.wav
+1466,spk1467,United States (US),Massachusetts (MA),East Falmouth,31,female,no,spk1467.wav
+1467,spk1468,United States (US),Oklahoma (OK),Oklahoma City,22,female,no,spk1468.wav
+1468,spk1469,United States (US),Nebraska (NE),Papillion,34,female,no,spk1469.wav
+1469,spk1470,United States (US),Missouri (MO),Rolla,50,male,no,spk1470.wav
+1470,spk1471,United States (US),Iowa (IA),Newton,30,female,no,spk1471.wav
+1471,spk1472,United States (US),California (CA),San Diego,23,male,no,spk1472.wav
+1472,spk1473,United States (US),Minnesota (MN),Hibbing,40,male,no,spk1473.wav
+1473,spk1474,India (IN),Tamil Nadu (TN),Chennai,32,male,no,spk1474.wav
+1474,spk1475,United States (US),Florida (FL),Ocala,29,female,no,spk1475.wav
+1475,spk1476,United States (US),North Carolina (NC),Chapel Hill,44,male,no,spk1476.wav
+1476,spk1477,India (IN),Maharashtra (MH),Mumbai,24,female,no,spk1477.wav
+1477,spk1478,United States (US),Virginia (VA),Arlington,33,female,no,spk1478.wav
+1478,spk1479,United States (US),Virginia (VA),,23,female,no,spk1479.wav
+1479,spk1480,United States (US),Pennsylvania (PA),Oil City,48,male,no,spk1480.wav
+1480,spk1481,United States (US),Tennessee (TN),Knoxville,30,male,no,spk1481.wav
+1481,spk1482,United States (US),California (CA),San Diego,25,male,no,spk1482.wav
+1482,spk1483,United States (US),Massachusetts (MA),Boston,28,female,no,spk1483.wav
+1483,spk1484,United States (US),Louisiana (LA),Chalmette,40,male,no,spk1484.wav
+1484,spk1485,United States (US),Ohio (OH),,20,female,no,spk1485.wav
+1485,spk1486,United States (US),Mississippi (MS),Gulfport,57,male,no,spk1486.wav
+1486,spk1487,United States (US),Florida (FL),,47,male,no,spk1487.wav
+1487,spk1488,United States (US),Virginia (VA),Waynesboro,30,female,no,spk1488.wav
+1488,spk1489,United States (US),Michigan (MI),Lansing,21,male,no,spk1489.wav
+1489,spk1490,United States (US),Texas (TX),Spring,26,female,no,spk1490.wav
+1490,spk1491,United States (US),Oregon (OR),Ashland,33,male,no,spk1491.wav
+1491,spk1492,United States (US),Ohio (OH),Cincinnati,27,female,no,spk1492.wav
+1492,spk1493,United States (US),Iowa (IA),Des Moines,27,male,no,spk1493.wav
+1493,spk1494,United States (US),None (None),,33,female,no,spk1494.wav
+1494,spk1495,United States (US),Texas (TX),Montgomery,34,female,no,spk1495.wav
+1495,spk1496,United States (US),Indiana (IN),Nappanee,37,female,no,spk1496.wav
+1496,spk1497,United States (US),Pennsylvania (PA),Pottstown,63,male,no,spk1497.wav
+1497,spk1498,United States (US),California (CA),Long Beach,27,female,no,spk1498.wav
+1498,spk1499,United States (US),Maryland (MD),Germantown,31,female,no,spk1499.wav
+1499,spk1500,United States (US),New York (NY),Buffalo,38,female,no,spk1500.wav
+1500,spk1501,United States (US),Illinois (IL),Naperville,47,female,no,spk1501.wav
+1501,spk1502,United States (US),Georgia (GA),Athens,33,male,no,spk1502.wav
+1502,spk1503,United States (US),Arizona (AZ),Flagstaff,31,female,no,spk1503.wav
+1503,spk1504,United States (US),Wisconsin (WI),Reeseville,31,male,no,spk1504.wav
+1504,spk1505,United States (US),Michigan (MI),Escanaba,36,male,no,spk1505.wav
+1505,spk1506,United States (US),Florida (FL),Hollywood,26,male,no,spk1506.wav
+1506,spk1507,United States (US),California (CA),Santa Monica,64,male,no,spk1507.wav
+1507,spk1508,United States (US),Utah (UT),Layton,46,female,no,spk1508.wav
+1508,spk1509,United States (US),Indiana (IN),Portage,29,female,no,spk1509.wav
+1509,spk1510,United States (US),None (None),,31,female,no,spk1510.wav
+1510,spk1511,United States (US),Pennsylvania (PA),Sellersville,63,male,no,spk1511.wav
+1511,spk1512,United States (US),Illinois (IL),Morton,43,female,no,spk1512.wav
+1512,spk1513,United States (US),Massachusetts (MA),Boston,25,male,no,spk1513.wav
+1513,spk1514,United States (US),Arizona (AZ),Page,34,male,no,spk1514.wav
+1514,spk1515,United States (US),California (CA),El Dorado Hills,41,female,no,spk1515.wav
+1515,spk1516,United States (US),Ohio (OH),Cincinnati,36,female,no,spk1516.wav
+1516,spk1517,United States (US),Oklahoma (OK),Stillwater,29,male,no,spk1517.wav
+1517,spk1518,United States (US),Iowa (IA),Waukee,40,male,no,spk1518.wav
+1518,spk1519,United States (US),Texas (TX),Pearland,49,male,no,spk1519.wav
+1519,spk1520,United States (US),Alabama (AL),Attalla,41,male,no,spk1520.wav
+1520,spk1521,United States (US),West Virginia (WV),Shepherdstown,24,male,no,spk1521.wav
+1521,spk1522,United States (US),New Jersey (NJ),Hightstown,36,female,no,spk1522.wav
+1522,spk1523,United States (US),North Carolina (NC),Raleigh,29,female,no,spk1523.wav
+1523,spk1524,United States (US),Hawaii (HI),Honolulu,41,female,no,spk1524.wav
+1524,spk1525,United States (US),Florida (FL),Belleview,28,female,no,spk1525.wav
+1525,spk1526,United States (US),Florida (FL),Loxahatchee Groves,27,male,no,spk1526.wav
+1526,spk1527,United States (US),Washington (WA),Concrete,64,male,no,spk1527.wav
+1527,spk1528,United States (US),None (None),,53,female,no,spk1528.wav
+1528,spk1529,United States (US),Wisconsin (WI),Osceola,36,male,no,spk1529.wav
+1529,spk1530,United States (US),Texas (TX),Houston,19,female,no,spk1530.wav
+1530,spk1531,United States (US),New Jersey (NJ),Belleville,28,male,no,spk1531.wav
+1531,spk1532,United States (US),California (CA),Ventura,19,female,no,spk1532.wav
+1532,spk1533,United States (US),Washington (WA),Bremerton,24,male,no,spk1533.wav
+1533,spk1534,United States (US),Georgia (GA),Alpharetta,33,male,no,spk1534.wav
+1534,spk1535,United States (US),Texas (TX),San Angelo,45,female,no,spk1535.wav
+1535,spk1536,United States (US),New York (NY),New York,45,male,no,spk1536.wav
+1536,spk1537,United States (US),Maine (ME),Bangor,20,female,no,spk1537.wav
+1537,spk1538,United States (US),Utah (UT),South Jordan,34,male,no,spk1538.wav
+1538,spk1539,United States (US),North Carolina (NC),Charlotte,37,male,no,spk1539.wav
+1539,spk1540,United States (US),None (None),,29,male,no,spk1540.wav
+1540,spk1541,United States (US),Minnesota (MN),Clearwater,32,male,no,spk1541.wav
+1541,spk1542,United States (US),Georgia (GA),McDonough,26,female,no,spk1542.wav
+1542,spk1543,United States (US),North Carolina (NC),Charlotte,63,female,no,spk1543.wav
+1543,spk1544,United States (US),Arkansas (AR),Little Rock,46,male,no,spk1544.wav
+1544,spk1545,United States (US),Texas (TX),Katy,39,female,no,spk1545.wav
+1545,spk1546,United States (US),Oregon (OR),Bend,31,female,no,spk1546.wav
+1546,spk1547,United States (US),Texas (TX),Cedar Hill,41,female,no,spk1547.wav
+1547,spk1548,United States (US),Pennsylvania (PA),Philadelphia,37,male,no,spk1548.wav
+1548,spk1549,United States (US),North Dakota (ND),Bismarck,21,female,no,spk1549.wav
+1549,spk1550,United States (US),New Hampshire (NH),Manchester,21,male,no,spk1550.wav
+1550,spk1551,United States (US),Virginia (VA),Alexandria,32,male,no,spk1551.wav
+1551,spk1552,United States (US),New York (NY),Wallkill,37,male,no,spk1552.wav
+1552,spk1553,United States (US),Ohio (OH),Washington Court House,40,female,no,spk1553.wav
+1553,spk1554,United States (US),Texas (TX),Austin,30,male,no,spk1554.wav
+1554,spk1555,United States (US),California (CA),Arroyo Grande,48,male,no,spk1555.wav
+1555,spk1556,United States (US),None (None),,36,female,yes,spk1556.wav
+1556,spk1557,United States (US),North Carolina (NC),Mebane,25,female,no,spk1557.wav
+1557,spk1558,United States (US),Ohio (OH),Cincinnati,64,female,no,spk1558.wav
+1558,spk1559,United States (US),Ohio (OH),Dublin,35,male,no,spk1559.wav
+1559,spk1560,United States (US),Michigan (MI),Lansing,46,female,no,spk1560.wav
+1560,spk1561,United States (US),Indiana (IN),Frankfort,29,female,no,spk1561.wav
+1561,spk1562,United States (US),North Carolina (NC),Greensboro,23,female,no,spk1562.wav
+1562,spk1563,United States (US),Missouri (MO),Columbia,19,male,no,spk1563.wav
+1563,spk1564,United States (US),California (CA),Los Angeles,35,female,no,spk1564.wav
+1564,spk1565,United States (US),None (None),,29,female,no,spk1565.wav
+1565,spk1566,United States (US),Texas (TX),Dallas,27,male,no,spk1566.wav
+1566,spk1567,United States (US),Tennessee (TN),Knoxville,32,male,no,spk1567.wav
+1567,spk1568,United States (US),Connecticut (CT),Colchester,43,female,no,spk1568.wav
+1568,spk1569,United States (US),None (None),,32,female,no,spk1569.wav
+1569,spk1570,United States (US),Wisconsin (WI),Madison,30,female,no,spk1570.wav
+1570,spk1571,United States (US),New Jersey (NJ),Laurelton,24,male,no,spk1571.wav
+1571,spk1572,United States (US),None (None),,25,female,no,spk1572.wav
+1572,spk1573,United States (US),Illinois (IL),Rockford,41,female,no,spk1573.wav
+1573,spk1574,United States (US),Tennessee (TN),Knoxville,35,male,no,spk1574.wav
+1574,spk1575,United States (US),None (None),,27,female,no,spk1575.wav
+1575,spk1576,United States (US),Florida (FL),St. Petersburg,33,female,no,spk1576.wav
+1576,spk1577,United States (US),Florida (FL),Fort Lauderdale,30,male,no,spk1577.wav
+1577,spk1578,United States (US),Texas (TX),Weatherford,37,male,no,spk1578.wav
+1578,spk1579,United States (US),Louisiana (LA),New Orleans,36,female,no,spk1579.wav
+1579,spk1580,United States (US),New York (NY),Brooklyn,39,male,no,spk1580.wav
+1580,spk1581,United States (US),Arkansas (AR),Ash Flat,25,female,no,spk1581.wav
+1581,spk1582,United States (US),Wisconsin (WI),Edgerton,41,female,no,spk1582.wav
+1582,spk1583,United States (US),New York (NY),New York,31,male,no,spk1583.wav
+1583,spk1584,United States (US),California (CA),Los Angeles,31,male,no,spk1584.wav
+1584,spk1585,United States (US),Washington (WA),Tacoma,67,female,no,spk1585.wav
+1585,spk1586,United States (US),Connecticut (CT),Stamford,27,female,no,spk1586.wav
+1586,spk1587,United States (US),None (None),,34,female,no,spk1587.wav
+1587,spk1588,United States (US),West Virginia (WV),Winfield,46,male,no,spk1588.wav
+1588,spk1589,United States (US),New York (NY),Ilion,18,male,no,spk1589.wav
+1589,spk1590,United States (US),Washington (WA),Bonney Lake,29,male,no,spk1590.wav
+1590,spk1591,United States (US),None (None),,20,male,no,spk1591.wav
+1591,spk1592,United States (US),California (CA),Fullerton,42,male,no,spk1592.wav
+1592,spk1593,United States (US),Virginia (VA),Ashburn,27,male,no,spk1593.wav
+1593,spk1594,United States (US),Colorado (CO),Denver,24,female,no,spk1594.wav
+1594,spk1595,United States (US),Tennessee (TN),Vonore,46,female,no,spk1595.wav
+1595,spk1596,United States (US),Kansas (KS),Fort Scott,47,female,no,spk1596.wav
+1596,spk1597,United States (US),None (None),,34,female,no,spk1597.wav
+1597,spk1598,United States (US),California (CA),Benicia,38,female,no,spk1598.wav
+1598,spk1599,United States (US),District of Columbia (DC),Washington,32,male,no,spk1599.wav
+1599,spk1600,United States (US),None (None),,24,male,no,spk1600.wav
+1600,spk1601,United States (US),Texas (TX),Dallas,29,female,no,spk1601.wav
+1601,spk1602,United States (US),New York (NY),Shirley,28,male,no,spk1602.wav
+1602,spk1603,United States (US),California (CA),Mill Valley,18,male,no,spk1603.wav
+1603,spk1604,United States (US),Ohio (OH),Vermilion,25,male,no,spk1604.wav
+1604,spk1605,United States (US),Florida (FL),Wellington,44,male,no,spk1605.wav
+1605,spk1606,United States (US),Massachusetts (MA),Taunton,52,male,no,spk1606.wav
+1606,spk1607,United States (US),None (None),,26,male,no,spk1607.wav
+1607,spk1608,United States (US),Missouri (MO),Fort Leonard Wood,52,male,no,spk1608.wav
+1608,spk1609,United States (US),South Carolina (SC),Charleston,77,female,no,spk1609.wav
+1609,spk1610,United States (US),New York (NY),New Rochelle,24,female,no,spk1610.wav
+1610,spk1611,United States (US),North Carolina (NC),Apex,18,male,no,spk1611.wav
+1611,spk1612,United States (US),New Mexico (NM),Albuquerque,45,female,no,spk1612.wav
+1612,spk1613,United States (US),Texas (TX),Fort Worth,61,female,no,spk1613.wav
+1613,spk1614,United States (US),Alabama (AL),Prattville,44,male,no,spk1614.wav
+1614,spk1615,United States (US),Michigan (MI),Howell,50,male,no,spk1615.wav
+1615,spk1616,United States (US),North Carolina (NC),Henderson,23,male,no,spk1616.wav
+1616,spk1617,United States (US),Alabama (AL),Decatur,28,male,no,spk1617.wav
+1617,spk1618,United States (US),California (CA),Cool,26,female,no,spk1618.wav
+1618,spk1619,United States (US),Virginia (VA),Charlottesville,41,male,no,spk1619.wav
+1619,spk1620,United States (US),Florida (FL),Jacksonville,26,male,no,spk1620.wav
+1620,spk1621,United States (US),Florida (FL),Miami,27,female,no,spk1621.wav
+1621,spk1622,United States (US),Texas (TX),Houston,32,female,no,spk1622.wav
+1622,spk1623,United States (US),California (CA),Mission Viejo,39,male,no,spk1623.wav
+1623,spk1624,United States (US),Florida (FL),Clermont,33,male,no,spk1624.wav
+1624,spk1625,United States (US),Minnesota (MN),Warren,42,male,no,spk1625.wav
+1625,spk1626,United States (US),Illinois (IL),Chicago,22,female,no,spk1626.wav
+1626,spk1627,United States (US),Utah (UT),Bountiful,54,female,no,spk1627.wav
+1627,spk1628,United States (US),Colorado (CO),Denver,55,female,no,spk1628.wav
+1628,spk1629,United States (US),Indiana (IN),South Bend,70,male,no,spk1629.wav
+1629,spk1630,United States (US),Maine (ME),Orono,22,female,no,spk1630.wav
+1630,spk1631,United States (US),Nevada (NV),Las Vegas,53,male,no,spk1631.wav
+1631,spk1632,United States (US),Massachusetts (MA),Charlestown,58,male,no,spk1632.wav
+1632,spk1633,United States (US),Texas (TX),Dallas,32,male,no,spk1633.wav
+1633,spk1634,United States (US),Texas (TX),Austin,24,female,no,spk1634.wav
+1634,spk1635,United States (US),Virginia (VA),Woodbridge,32,male,no,spk1635.wav
+1635,spk1636,United States (US),Oklahoma (OK),Tulsa,50,female,no,spk1636.wav
+1636,spk1637,United States (US),New York (NY),Staten Island,27,female,no,spk1637.wav
+1637,spk1638,United States (US),Pennsylvania (PA),Canonsburg,39,male,no,spk1638.wav
+1638,spk1639,United States (US),South Carolina (SC),Cheraw,23,male,no,spk1639.wav
+1639,spk1640,United States (US),Florida (FL),Pompano Beach,41,male,no,spk1640.wav
+1640,spk1641,United States (US),Illinois (IL),Peoria,60,male,no,spk1641.wav
+1641,spk1642,United States (US),Maine (ME),Millinocket,34,male,no,spk1642.wav
+1642,spk1643,United States (US),Georgia (GA),Atlanta,34,female,no,spk1643.wav
+1643,spk1644,United States (US),Texas (TX),Tyler,22,female,no,spk1644.wav
+1644,spk1645,United States (US),Georgia (GA),Acworth,42,male,no,spk1645.wav
+1645,spk1646,United States (US),None (None),,31,male,no,spk1646.wav
+1646,spk1647,United States (US),Pennsylvania (PA),Doylestown,42,female,no,spk1647.wav
+1647,spk1648,United States (US),California (CA),Indio,22,female,no,spk1648.wav
+1648,spk1649,United States (US),Virginia (VA),Centreville,35,male,no,spk1649.wav
+1649,spk1650,United States (US),California (CA),Los Angeles,29,female,no,spk1650.wav
+1650,spk1651,United States (US),Florida (FL),Lehigh Acres,52,female,no,spk1651.wav
+1651,spk1652,United States (US),Alabama (AL),Killen,31,female,no,spk1652.wav
+1652,spk1653,United States (US),Oklahoma (OK),Oklahoma City,44,female,no,spk1653.wav
+1653,spk1654,United States (US),Rhode Island (RI),Warwick,33,male,no,spk1654.wav
+1654,spk1655,United States (US),Florida (FL),Fort Myers,18,male,no,spk1655.wav
+1655,spk1656,United States (US),Nebraska (NE),Lincoln,33,female,no,spk1656.wav
+1656,spk1657,United States (US),None (None),,61,female,no,spk1657.wav
+1657,spk1658,United States (US),Texas (TX),North Richland Hills,24,female,no,spk1658.wav
+1658,spk1659,United States (US),Texas (TX),New Braunfels,66,female,no,spk1659.wav
+1659,spk1660,United States (US),North Carolina (NC),Durham,27,female,no,spk1660.wav
+1660,spk1661,United States (US),Florida (FL),Tallahassee,22,male,no,spk1661.wav
+1661,spk1662,United States (US),New Jersey (NJ),Randolph Township,24,female,no,spk1662.wav
+1662,spk1663,United States (US),Indiana (IN),Indianapolis,25,female,no,spk1663.wav
+1663,spk1664,United States (US),Tennessee (TN),Brighton,31,female,no,spk1664.wav
+1664,spk1665,United States (US),Florida (FL),Saint Augustine,22,female,no,spk1665.wav
+1665,spk1666,United States (US),North Carolina (NC),New Bern,37,female,no,spk1666.wav
+1666,spk1667,United States (US),Florida (FL),Orlando,64,male,no,spk1667.wav
+1667,spk1668,United States (US),Virginia (VA),Richmond,29,male,no,spk1668.wav
+1668,spk1669,United States (US),Illinois (IL),Paris,52,female,no,spk1669.wav
+1669,spk1670,United States (US),Illinois (IL),Oak Lawn,33,female,no,spk1670.wav
+1670,spk1671,United States (US),Tennessee (TN),McMinnville,30,female,no,spk1671.wav
+1671,spk1672,United States (US),Michigan (MI),Traverse City,49,female,no,spk1672.wav
+1672,spk1673,United States (US),None (None),,29,male,no,spk1673.wav
+1673,spk1674,United States (US),Wisconsin (WI),Madison,52,female,no,spk1674.wav
+1674,spk1675,United States (US),Oregon (OR),Salem,48,female,no,spk1675.wav
+1675,spk1676,United States (US),Illinois (IL),Park Ridge,19,female,no,spk1676.wav
+1676,spk1677,United States (US),Delaware (DE),Millsboro,55,female,no,spk1677.wav
+1677,spk1678,United States (US),Arkansas (AR),Hot Springs Village,30,male,no,spk1678.wav
+1678,spk1679,United States (US),Illinois (IL),Chicago,30,male,no,spk1679.wav
+1679,spk1680,United States (US),California (CA),Stockton,30,female,no,spk1680.wav
+1680,spk1681,United States (US),Georgia (GA),Augusta,33,female,no,spk1681.wav
+1681,spk1682,United States (US),Texas (TX),Colleyville,25,female,no,spk1682.wav
+1682,spk1683,United States (US),Nevada (NV),Henderson,38,female,no,spk1683.wav
+1683,spk1684,United States (US),Massachusetts (MA),Mattapoisett,28,male,no,spk1684.wav
+1684,spk1685,United States (US),Colorado (CO),Fort Morgan,44,male,no,spk1685.wav
+1685,spk1686,United States (US),Colorado (CO),Norwood,38,female,no,spk1686.wav
+1686,spk1687,United States (US),Washington (WA),Seattle,42,male,no,spk1687.wav
+1687,spk1688,United States (US),California (CA),San Jose,29,female,no,spk1688.wav
+1688,spk1689,United States (US),Arkansas (AR),Benton,51,female,no,spk1689.wav
+1689,spk1690,United States (US),Texas (TX),Fort Worth,62,female,no,spk1690.wav
+1690,spk1691,United States (US),Florida (FL),Delray Beach,30,male,no,spk1691.wav
+1691,spk1692,United States (US),Texas (TX),Little Elm,25,female,no,spk1692.wav
+1692,spk1693,United States (US),Washington (WA),Olympia,32,female,yes,spk1693.wav
+1693,spk1694,United States (US),California (CA),Bakersfield,34,male,no,spk1694.wav
+1694,spk1695,United States (US),Missouri (MO),Festus,35,male,no,spk1695.wav
+1695,spk1696,United States (US),Pennsylvania (PA),State College,54,female,no,spk1696.wav
+1696,spk1697,United States (US),Texas (TX),Houston,48,male,no,spk1697.wav
+1697,spk1698,United States (US),Hawaii (HI),Hilo,36,male,no,spk1698.wav
+1698,spk1699,United States (US),California (CA),Lancaster,18,male,no,spk1699.wav
+1699,spk1700,United States (US),Missouri (MO),Lebanon,38,female,no,spk1700.wav
+1700,spk1701,United States (US),Kansas (KS),McPherson,37,female,no,spk1701.wav
+1701,spk1702,United States (US),New York (NY),New York,24,male,no,spk1702.wav
+1702,spk1703,United States (US),Ohio (OH),Dublin,26,male,no,spk1703.wav
+1703,spk1704,United States (US),New York (NY),Cohoes,32,female,no,spk1704.wav
+1704,spk1705,United States (US),Pennsylvania (PA),Venetia,22,female,no,spk1705.wav
+1705,spk1706,United States (US),Florida (FL),Orlando,21,male,no,spk1706.wav
+1706,spk1707,United States (US),District of Columbia (DC),Washington,27,male,no,spk1707.wav
+1707,spk1708,United States (US),New York (NY),Corona,23,male,no,spk1708.wav
+1708,spk1709,United States (US),Florida (FL),Lake Mary,21,female,no,spk1709.wav
+1709,spk1710,United States (US),Pennsylvania (PA),Carlisle,31,female,no,spk1710.wav
+1710,spk1711,United States (US),California (CA),Atascadero,35,male,no,spk1711.wav
+1711,spk1712,United States (US),New Jersey (NJ),Dunellen,31,male,no,spk1712.wav
+1712,spk1713,United States (US),Oregon (OR),Salem,25,female,no,spk1713.wav
+1713,spk1714,United States (US),None (None),,35,male,no,spk1714.wav
+1714,spk1715,United States (US),Texas (TX),Austin,73,female,no,spk1715.wav
+1715,spk1716,United States (US),California (CA),Yorba Linda,28,male,no,spk1716.wav
+1716,spk1717,United States (US),Kentucky (KY),Lexington,56,male,no,spk1717.wav
+1717,spk1718,United States (US),New Jersey (NJ),Piscataway,49,male,no,spk1718.wav
+1718,spk1719,United States (US),Michigan (MI),East Lansing,27,female,no,spk1719.wav
+1719,spk1720,United States (US),New York (NY),Ronkonkoma,23,male,no,spk1720.wav
+1720,spk1721,United States (US),Florida (FL),Ocala,23,male,no,spk1721.wav
+1721,spk1722,United States (US),Arizona (AZ),Phoenix,32,male,no,spk1722.wav
+1722,spk1723,United States (US),None (None),,32,male,no,spk1723.wav
+1723,spk1724,United States (US),Florida (FL),Ft. Pierce,38,male,no,spk1724.wav
+1724,spk1725,United States (US),Georgia (GA),Marietta,23,male,no,spk1725.wav
+1725,spk1726,United States (US),Iowa (IA),West Des Moines,29,male,no,spk1726.wav
+1726,spk1727,United States (US),California (CA),Pacific Palisades,35,male,no,spk1727.wav
+1727,spk1728,United States (US),None (None),,45,male,no,spk1728.wav
+1728,spk1729,United States (US),Indiana (IN),Indianapolis,29,male,no,spk1729.wav
+1729,spk1730,United States (US),California (CA),Bell Gardens,28,female,no,spk1730.wav
+1730,spk1731,United States (US),Michigan (MI),Jackson,45,male,no,spk1731.wav
+1731,spk1732,United States (US),New York (NY),Queensbury,29,female,no,spk1732.wav
+1732,spk1733,United States (US),Washington (WA),Kent,57,female,no,spk1733.wav
+1733,spk1734,United States (US),Texas (TX),Irving,25,female,no,spk1734.wav
+1734,spk1735,United States (US),Georgia (GA),Atlanta,18,male,no,spk1735.wav
+1735,spk1736,United States (US),Kentucky (KY),Owensboro,34,male,no,spk1736.wav
+1736,spk1737,United States (US),Texas (TX),McAllen,32,female,no,spk1737.wav
+1737,spk1738,United States (US),Illinois (IL),Homer Glen,32,female,no,spk1738.wav
+1738,spk1739,United States (US),Connecticut (CT),Ellington,39,female,no,spk1739.wav
+1739,spk1740,United States (US),North Carolina (NC),Goldsboro,46,female,no,spk1740.wav
+1740,spk1741,United States (US),Ohio (OH),Newark,31,male,no,spk1741.wav
+1741,spk1742,United States (US),Texas (TX),Pflugerville,45,female,no,spk1742.wav
+1742,spk1743,United States (US),Louisiana (LA),Baker,48,female,no,spk1743.wav
+1743,spk1744,United States (US),Virginia (VA),,32,female,no,spk1744.wav
+1744,spk1745,United States (US),Washington (WA),Puyallup,65,female,no,spk1745.wav
+1745,spk1746,United States (US),None (None),,33,male,no,spk1746.wav
+1746,spk1747,United States (US),Ohio (OH),Cincinnati,42,female,no,spk1747.wav
+1747,spk1748,United States (US),Florida (FL),Daytona Beach,19,female,no,spk1748.wav
+1748,spk1749,United States (US),Minnesota (MN),Minneapolis,31,male,no,spk1749.wav
+1749,spk1750,United States (US),New York (NY),Huntington Station,22,male,no,spk1750.wav
+1750,spk1751,United States (US),Ohio (OH),Beachwood,37,female,no,spk1751.wav
+1751,spk1752,United States (US),Texas (TX),Missouri City,28,male,no,spk1752.wav
+1752,spk1753,United States (US),Georgia (GA),Lawrenceville,38,male,no,spk1753.wav
+1753,spk1754,United States (US),California (CA),Menlo Park,46,female,no,spk1754.wav
+1754,spk1755,United States (US),California (CA),Modesto,34,male,no,spk1755.wav
+1755,spk1756,United States (US),Kansas (KS),Wichita,32,male,no,spk1756.wav
+1756,spk1757,United States (US),Missouri (MO),St Louis,24,male,no,spk1757.wav
+1757,spk1758,United States (US),New York (NY),New York,21,female,no,spk1758.wav
+1758,spk1759,United States (US),North Carolina (NC),Durham,24,male,no,spk1759.wav
+1759,spk1760,United States (US),Ohio (OH),Lima,60,female,no,spk1760.wav
+1760,spk1761,United States (US),Indiana (IN),Franklin,24,female,no,spk1761.wav
+1761,spk1762,United States (US),New Jersey (NJ),Montclair,24,male,no,spk1762.wav
+1762,spk1763,United States (US),California (CA),Huntington Beach,24,male,no,spk1763.wav
+1763,spk1764,United States (US),North Carolina (NC),Raleigh,28,other,no,spk1764.wav
+1764,spk1765,United States (US),Colorado (CO),Colorado Springs,27,male,no,spk1765.wav
+1765,spk1766,United States (US),Illinois (IL),Westchester,42,female,no,spk1766.wav
+1766,spk1767,United States (US),Florida (FL),Hollywood,20,male,no,spk1767.wav
+1767,spk1768,United States (US),Georgia (GA),Atlanta,54,female,no,spk1768.wav
+1768,spk1769,United States (US),Texas (TX),Dallas,41,male,no,spk1769.wav
+1769,spk1770,United States (US),Colorado (CO),,24,female,no,spk1770.wav
+1770,spk1771,United States (US),California (CA),Sacramento,48,male,no,spk1771.wav
+1771,spk1772,United States (US),Indiana (IN),Bloomington,44,female,no,spk1772.wav
+1772,spk1773,United States (US),Missouri (MO),Bolivar,32,male,no,spk1773.wav
+1773,spk1774,United States (US),South Dakota (SD),Pierre,38,male,no,spk1774.wav
+1774,spk1775,United States (US),Georgia (GA),Savannah,35,female,no,spk1775.wav
+1775,spk1776,United States (US),Texas (TX),Kyle,33,female,no,spk1776.wav
+1776,spk1777,United States (US),Nebraska (NE),Coleridge,38,female,no,spk1777.wav
+1777,spk1778,United States (US),Texas (TX),Fort Worth,27,female,no,spk1778.wav
+1778,spk1779,United States (US),Wisconsin (WI),Milwaukee,31,male,no,spk1779.wav
+1779,spk1780,United States (US),California (CA),San Diego,34,male,no,spk1780.wav
+1780,spk1781,United States (US),Kentucky (KY),Hebron,31,male,no,spk1781.wav
+1781,spk1782,United States (US),Oregon (OR),Portland,41,male,no,spk1782.wav
+1782,spk1783,United States (US),Georgia (GA),Brunswick,36,female,no,spk1783.wav
+1783,spk1784,United States (US),Georgia (GA),Atlanta,30,male,no,spk1784.wav
+1784,spk1785,United States (US),Indiana (IN),Indianapolis,18,female,no,spk1785.wav
+1785,spk1786,United States (US),Illinois (IL),Chicago,29,male,no,spk1786.wav
+1786,spk1787,United States (US),New York (NY),Brooklyn,36,male,no,spk1787.wav
+1787,spk1788,United States (US),Indiana (IN),Fishers,37,female,no,spk1788.wav
+1788,spk1789,United States (US),California (CA),Moreno Valley,45,male,no,spk1789.wav
+1789,spk1790,United States (US),Maryland (MD),Lutherville,32,male,no,spk1790.wav
+1790,spk1791,United States (US),None (None),,58,female,no,spk1791.wav
+1791,spk1792,United States (US),Massachusetts (MA),Lynn,20,male,no,spk1792.wav
+1792,spk1793,United States (US),Arizona (AZ),Tucson,42,male,no,spk1793.wav
+1793,spk1794,United States (US),Michigan (MI),Rochester,20,male,no,spk1794.wav
+1794,spk1795,United States (US),Mississippi (MS),Clinton,40,male,no,spk1795.wav
+1795,spk1796,United States (US),Arizona (AZ),Chandler,41,female,no,spk1796.wav
+1796,spk1797,United States (US),Maryland (MD),Baltimore,25,male,no,spk1797.wav
+1797,spk1798,United States (US),None (None),,43,female,no,spk1798.wav
+1798,spk1799,United States (US),Wisconsin (WI),Oak Creek,55,female,no,spk1799.wav
+1799,spk1800,United States (US),Missouri (MO),Kansas City,48,female,no,spk1800.wav
+1800,spk1801,United States (US),Virginia (VA),Virginia Beach,34,female,no,spk1801.wav
+1801,spk1802,United States (US),Georgia (GA),Atlanta,56,female,no,spk1802.wav
+1802,spk1803,United States (US),New York (NY),Little Falls,28,female,no,spk1803.wav
+1803,spk1804,United States (US),Texas (TX),Fort Worth,38,male,no,spk1804.wav
+1804,spk1805,United States (US),Indiana (IN),Vincennes,20,male,no,spk1805.wav
+1805,spk1806,United States (US),Wisconsin (WI),Kenosha,27,female,no,spk1806.wav
+1806,spk1807,United States (US),Texas (TX),Pearland,24,male,no,spk1807.wav
+1807,spk1808,United States (US),Massachusetts (MA),West Springfield,37,female,no,spk1808.wav
+1808,spk1809,United States (US),None (None),,33,male,no,spk1809.wav
+1809,spk1810,United States (US),None (None),,36,male,no,spk1810.wav
+1810,spk1811,United States (US),Kansas (KS),Gardner,32,other,no,spk1811.wav
+1811,spk1812,United States (US),Texas (TX),Frisco,43,female,no,spk1812.wav
+1812,spk1813,United States (US),South Dakota (SD),Beresford,42,male,no,spk1813.wav
+1813,spk1814,United States (US),New York (NY),The Bronx,35,female,no,spk1814.wav
+1814,spk1815,United States (US),South Carolina (SC),Sumter,56,female,no,spk1815.wav
+1815,spk1816,United States (US),Missouri (MO),City of Saint Peters,22,male,no,spk1816.wav
+1816,spk1817,United States (US),Georgia (GA),Jonesboro,49,female,no,spk1817.wav
+1817,spk1818,United States (US),Minnesota (MN),Browerville,39,female,no,spk1818.wav
+1818,spk1819,United States (US),New Jersey (NJ),Hackettstown,34,male,no,spk1819.wav
+1819,spk1820,United States (US),New Jersey (NJ),Sicklerville,43,female,no,spk1820.wav
+1820,spk1821,United States (US),North Carolina (NC),Huntersville,35,female,no,spk1821.wav
+1821,spk1822,United States (US),Texas (TX),Houston,24,male,no,spk1822.wav
+1822,spk1823,United States (US),Georgia (GA),Buford,23,male,no,spk1823.wav
+1823,spk1824,United States (US),Mississippi (MS),Pearl,28,female,no,spk1824.wav
+1824,spk1825,United States (US),North Carolina (NC),Greensboro,37,male,no,spk1825.wav
+1825,spk1826,United States (US),North Carolina (NC),Raleigh,43,male,no,spk1826.wav
+1826,spk1827,United States (US),District of Columbia (DC),Washington,32,male,no,spk1827.wav
+1827,spk1828,United States (US),Massachusetts (MA),Chicopee,43,male,no,spk1828.wav
+1828,spk1829,United States (US),Illinois (IL),Chicago,30,female,no,spk1829.wav
+1829,spk1830,United States (US),Texas (TX),Houston,23,male,no,spk1830.wav
+1830,spk1831,United States (US),Nebraska (NE),Omaha,48,male,no,spk1831.wav
+1831,spk1832,United States (US),South Dakota (SD),Sioux Falls,37,female,no,spk1832.wav

@@ -32,6 +32,9 @@ class Resampler:
             new_files = []
         for i, f in enumerate(files):
             signal, org_sr = torchaudio.load(f"{f}")  # handle spaces
+            # convert to mono if stereo
+            if signal.shape[0] > 1:
+                signal = signal.mean(dim=0, keepdim=True)
             # if f cannot be loaded, give warning and skip
             if signal.shape[0] == 0:
                 self.util.warn(f"cannot load {f}")

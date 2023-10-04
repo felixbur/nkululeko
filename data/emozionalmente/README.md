@@ -9,8 +9,8 @@ downloaded June 20th 2023
 Download and unzip
 
 ```bash
-wget https://zenodo.org/record/6569824/files/emozionalmente.zip
-unzip emozionalmente.zip
+wget https://zenodo.org/record/6569824/files/emozionalmente_dataset.zip
+unzip emozionalmente_dataset.zip
 ```
 
 Then, create the database by running

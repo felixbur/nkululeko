@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
+import argparse
 import glob
 import os
+
 import pandas as pd
-import argparse
+
 
 def main(data_dir):
     files = glob.glob(os.path.join(data_dir + 'wav/*/*/', '*.wav'))
@@ -43,9 +45,9 @@ def main(data_dir):
     print(f"Lenghth train, dev, test: {len(data_train)}, {len(data_dev)}, {len(data_test)}")
 
     # save as csv
-    pd.DataFrame(data_train).to_csv(f"jtes_si_train.csv", index=False)
-    pd.DataFrame(data_dev).to_csv(f"jtes_si_dev.csv", index=False)
-    pd.DataFrame(data_test).to_csv(f"jtes_si_test.csv", index=False)
+    pd.DataFrame(data_train).to_csv(f"jtes_ti_train.csv", index=False)
+    pd.DataFrame(data_dev).to_csv(f"jtes_ti_dev.csv", index=False)
+    pd.DataFrame(data_test).to_csv(f"jtes_ti_test.csv", index=False)
 
 
 if __name__ == '__main__':

@@ -26,8 +26,11 @@ Download link [2].
 
 
 ```bash
+$ python3 process_database.py
+$ cd ../..
+$ python3 -m nkululeko.nkululeko --config data/ase/exp.ini
 ```
 
 Reference:  
-[1] Retta, Ephrem Afele, Eiad Almekhlafi, Richard Sutcliffe, Mustafa Mhamed, Haider Ali, and Jun Feng. "A new Amharic speech emotion dataset and classification benchmark." ACM Transactions on Asian and Low-Resource Language Information Processing 22, no. 1 (2023): 1-22.
+[1] Retta, Ephrem Afele, Eiad Almekhlafi, Richard Sutcliffe, Mustafa Mhamed, Haider Ali, and Jun Feng. "A new Amharic speech emotion dataset and classification benchmark." ACM Transactions on Asian and Low-Resource Language Information Processing 22, no. 1 (2023): 1-22.  
 [2] https://github.com/Ethio2021/ASED_V1

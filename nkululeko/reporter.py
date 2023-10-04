@@ -1,21 +1,18 @@
+import ast
 import glob
+import json
 import math
 import matplotlib.pyplot as plt
-from sklearn.utils import resample
-import ast
-import json
 import numpy as np
-import nkululeko.glob_conf as glob_conf
-from sklearn.metrics import ConfusionMatrixDisplay
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import recall_score
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import mean_squared_error
-from sklearn.metrics import r2_score
-from sklearn.metrics import classification_report
 from scipy.stats import pearsonr
-from nkululeko.result import Result
+from sklearn.metrics import (ConfusionMatrixDisplay, accuracy_score,
+                             classification_report, confusion_matrix,
+                             mean_squared_error, r2_score, recall_score)
+from sklearn.utils import resample
+
+import nkululeko.glob_conf as glob_conf
 from nkululeko.reporting.report_item import ReportItem
+from nkululeko.result import Result
 from nkululeko.reporting.defines import Header
 from nkululeko.util import Util
 
@@ -163,7 +160,9 @@ class Reporter:
         )
 
         res_dir = self.util.get_path("res_dir")
-        rpt = f"epoch: {epoch}, UAR: {uar}, ACC {acc}"
+        rpt = f"epoch: {epoch}, UAR: {uar}, ACC: {acc}"
+        # print(rpt)
+        self.util.debug(rpt)
         file_name = f"{res_dir}{self.util.get_exp_name()}_conf.txt"
         with open(file_name, "w") as text_file:
             text_file.write(rpt)
