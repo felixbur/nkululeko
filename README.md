@@ -11,7 +11,7 @@ A project to detect speaker characteristics by machine learning experiments with
 
 The idea is to have a framework (based on e.g. sklearn and torch) that can be used to rapidly and automatically analyse and investigate audio data automatically.
 
-* NEW: Nkululeko now automatically generates PDF reports [sample for EmoDB]](meta/images/emodb_report.pdf)
+* NEW: Nkululeko now automatically generates PDF reports [sample for EmoDB](meta/images/emodb_report.pdf)
 * The latest features can be seen in [the ini-file](./ini_file.md) options that are used to control Nkululeko
 * Below is a [Hello World example](#helloworld) that should set you up fastly, also on [Google Colab](https://colab.research.google.com/drive/1GYNBd5cdZQ1QC3Jm58qoeMaJg3UuPhjw?usp=sharing#scrollTo=4G_SjuF9xeQf), and [with Kaggle](https://www.kaggle.com/felixburk/nkululeko-hello-world-example)
 * [Here's a blog post on how to set up nkululeko on your computer.](http://blog.syntheticspeech.de/2021/08/30/how-to-set-up-your-first-nkululeko-project/)
