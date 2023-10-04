@@ -1,19 +1,19 @@
 # dataset.py
-import audformat
-
-# import audb
-import pandas as pd
 import ast
 import os
-from random import sample
-from nkululeko.util import Util
-from nkululeko.plots import Plots
-import nkululeko.glob_conf as glob_conf
 import os.path
-from audformat.utils import duration
+from random import sample
+
+import audformat
 import nkululeko.filter_data as filter
+import nkululeko.glob_conf as glob_conf
+# import audb
+import pandas as pd
+from audformat.utils import duration
 from nkululeko.filter_data import DataFilter
+from nkululeko.plots import Plots
 from nkululeko.reporting.report_item import ReportItem
+from nkululeko.util import Util
 
 
 class Dataset:
@@ -399,7 +399,7 @@ class Dataset:
     def split_speakers(self):
         """One way to split train and eval sets: Specify percentage of evaluation speakers"""
         test_percent = int(
-            self.util.config_val_data(self.name, "testsplit", 50)
+            self.util.config_val_data(self.name, "test_size", 20)
         )
         df = self.df
         s_num = df.speaker.nunique()
@@ -417,7 +417,7 @@ class Dataset:
     def random_split(self):
         """One way to split train and eval sets: Specify percentage of random samples"""
         test_percent = int(
-            self.util.config_val_data(self.name, "testsplit", 50)
+            self.util.config_val_data(self.name, "test_size", 20)
         )
         df = self.df
         s_num = len(df)

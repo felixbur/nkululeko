@@ -75,9 +75,9 @@
       * emodb.train_tables = ['emotion.categories.train.gold_standard']
       * emodb.test_tables = ['emotion.categories.test.gold_standard']
     * **speaker_split**: split samples randomly but speaker disjunct, given a percentage of speakers for the test set.
-      * emodb.testsplit = 50
+      * emodb.test_size = 50 (default:20)
     * **random**: split samples randomly (but NOT speaker disjunct, e.g. no speaker info given or each sample a speaker), given a percentage of samples for the test set.
-      * emodb.testsplit = 50
+      * emodb.tests_size = 50 (default:20)
     * **reuse**: reuse the splits after a *speaker_split* run to save time with feature extraction.
     * **train**: use the entire database for training
     * **test**: use the entire database for evaluation
