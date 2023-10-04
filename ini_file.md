@@ -39,7 +39,7 @@
   * res_dir = ./results/
 * **models_dir**: (relative to *root*) folder to save models
   * models_dir = ./models/
-* **runs**: number of runs (e.g. to average over random initializations)
+* **runs**: number of runs (e.g., to average over random initializations)
   * runs = 1
 * **epochs**: number of epochs for ANN training
   * epochs = 1
@@ -75,15 +75,9 @@
       * emodb.train_tables = ['emotion.categories.train.gold_standard']
       * emodb.test_tables = ['emotion.categories.test.gold_standard']
     * **speaker_split**: split samples randomly but speaker disjunct, given a percentage of speakers for the test set.
-<<<<<<< HEAD
       * emodb.test_size = 50 (default:20)
-    * **random**: split samples randomly (but NOT speaker disjunct, e.g. no speaker info given or each sample a speaker), given a percentage of samples for the test set.
-      * emodb.tests_size = 50 (default:20)
-=======
-      * emodb.test_split = 50
     * **random**: split samples randomly (but NOT speaker disjunct, e.g., no speaker info given or each sample a speaker), given a percentage of samples for the test set.
-      * emodb.test_split = 50
->>>>>>> 6364379a2d58219800ceb99f327e43c65f0ad412
+      * emodb.tests_size = 50 (default:20)
     * **reuse**: reuse the splits after a *speaker_split* run to save time with feature extraction.
     * **train**: use the entire database for training
     * **test**: use the entire database for evaluation
@@ -209,9 +203,9 @@
 * **scale**: scale the features
   * scale=standard
   * possible values:
-    * **standard**: z-transformation (mean of 0 and std of 1) based on training set
+    * **standard**: z-transformation (mean of 0 and std of 1) based on the training set
     * **robust**: robust scaler
-    * **speaker**: like *standard* but based on individual speaker sets (also for test)
+    * **speaker**: like *standard* but based on individual speaker sets (also for the test)
 * **set**: name of opensmile feature set, e.g. eGeMAPSv02, ComParE_2016, GeMAPSv01a, eGeMAPSv01a
   * set = eGeMAPSv02
 * **level**: level of opensmile features
@@ -275,11 +269,11 @@
   * learning_rate = 0.0001
 * **drop**: Adding dropout (after each hidden layer). Value states dropout probability
   * drop = .5
-* **batch_size**: Size of batch before backpropagation for neural nets
+* **batch_size**: Size of the batch before backpropagation for neural nets
   * batch_size = 8
 * **num_workers**: Number of parallel processes for neural nets
   * num_workers = 5
-* **device**: For torch/huggingface models: select your gpu if you have one
+* **device**: For torch/huggingface models: select your GPU if you have one
   * device = cpu
 
 
