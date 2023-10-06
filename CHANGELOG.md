@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.66.7
+--------------
+* minor changes to experiment class
+
 Version 0.66.6
 --------------
 * minor cosmetics
