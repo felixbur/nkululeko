@@ -86,5 +86,3 @@ test_df.to_csv(f'{database_name}_speaker_test.csv', index=False)
 # print length of train and test set and total
 print(f"Total length: {len(result_df)}, Train set: {len(train_df)}, Test set: {len(test_df)}")
 
-# print type data of speaker labels
-print(f"Data type of speaker: {type(train_df['speaker'][0])}")

@@ -46,7 +46,7 @@ The column `acess` in the table below indicates the accessability of the databas
 |29 | msp-podcast | emotion, VAD | restricted | English |
 |30 | oreau2 | emotion | public | French |
 |31 | portuguese | emotion | public |  Portuguese |
-|32 | ravdess | emotion | public | English |
+|32 | ravdess | emotion, speaker | public | English |
 |33 | savee | emotion | restricted | English, from tfds |
 |34 | shemo | emotion | public | Persian |
 |35 | subesco | emotion | public | Bangla |
@@ -55,6 +55,8 @@ The column `acess` in the table below indicates the accessability of the databas
 |38 | thorsten-emotional | emotion | public | German |
 |29 | urdu | emotion | public | Urdu |
 |40 | vivae | emotion | public | English vocal bursts|
+|41 | clac | healthy speech, age, gender | public | English |
+|42 | gerparas | valence, arousal, dominance | restricted | German |
 
 # Performance 
 <!-- include performance from images directory -->

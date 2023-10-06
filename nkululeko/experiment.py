@@ -1,8 +1,9 @@
-import ast  # To convert strings to objects
+import ast
 import os
 import pickle
 import random
 import time
+from cgi import print_environ  # To convert strings to objects
 
 import audeer
 import audformat
@@ -94,6 +95,7 @@ class Experiment:
         self.target = self.util.config_val("DATA", "target", "emotion")
         # print target via debug
         self.util.debug(f"target: {self.target}")
+        # print keys/column
         dbs = ",".join(list(self.datasets.keys()))
         labels = self.util.config_val("DATA", "labels", False)
         if labels:
@@ -102,6 +104,8 @@ class Experiment:
             labels = list(
                 next(iter(self.datasets.values())).df[self.target].unique()
             )
+        # print labels via debug
+        self.util.debug(f"Target labels (user defined): {labels}")
         glob_conf.set_labels(labels)
         self.util.debug(f"loaded databases {dbs}")
 
@@ -111,6 +115,7 @@ class Experiment:
         # df.index.set_levels(pd.to_timedelta(df.index.levels[2]), level=2)
         df = audformat.utils.read_csv(storage)
         df.is_labeled = True if self.target in df else False
+        # print(df.head())
         return df
 
     def fill_tests(self):
@@ -170,7 +175,9 @@ class Experiment:
                 f"reusing previously stored {storage_test} and {storage_train}"
             )
             self.df_test = self._import_csv(storage_test)
+            # print(f"df_test: {self.df_test}")
             self.df_train = self._import_csv(storage_train)
+            # print(f"df_train: {self.df_train}")
         else:
             self.df_train, self.df_test = pd.DataFrame(), pd.DataFrame()
             for d in self.datasets.values():
@@ -179,6 +186,7 @@ class Experiment:
                 if d.df_train.shape[0] == 0:
                     self.util.debug(f"warn: {d.name} train empty")
                 self.df_train = pd.concat([self.df_train, d.df_train])
+                # print(f"df_train: {self.df_train}")
                 self.util.copy_flags(d, self.df_train)
                 if d.df_test.shape[0] == 0:
                     self.util.debug(f"warn: {d.name} test empty")
