@@ -17,11 +17,20 @@ def main():
     data_dir = args.data_dir
 
     val_df = pd.read_csv(data_dir + "df_valence.csv").rename(columns={
-        "Media File": "file", "orig": "valence", 'scrambled': 'val_scrambled'})
+        "Media File": "file", "orig": "valence", 'scrambled': 'valence_scrambled'})
     aro_df = pd.read_csv(data_dir + "df_arousal.csv").rename(columns={
-        "Media File": "file", "orig": "arousal", 'scrambled': 'aro_scrambled'})
+        "Media File": "file", "orig": "arousal", 'scrambled': 'arousal_scrambled'})
     dom_df = pd.read_csv(data_dir + "df_dominance.csv").rename(columns={
-        "Media File": "file", "orig": "dominance", 'scrambled': 'dom_scrambled'})
+        "Media File": "file", "orig": "dominance", 'scrambled': 'dominance_scrambled'})
+
+    # standardize original score and scrambled score from [-6, 6] to [0, 1]
+    val_df["valence"] = val_df["valence"].apply(lambda x: (x + 6) / 12)
+    aro_df["arousal"] = aro_df["arousal"].apply(lambda x: (x + 6) / 12)
+    dom_df["dominance"] = dom_df["dominance"].apply(lambda x: (x + 6) / 12)
+
+    val_df["valence_scrambled"] = val_df["valence_scrambled"].apply(lambda x: (x + 6) / 12) 
+    aro_df["arousal_scrambled"] = aro_df["arousal_scrambled"].apply(lambda x: (x + 6) / 12)
+    dom_df["dominance_scrambled"] = dom_df["dominance_scrambled"].apply(lambda x: (x + 6) / 12)
 
     # Merge the three dataframes, use `orig` as value for `valence`, `arousal`, and `dominance`
     # so that a file has values of val, aro, and dom for original only

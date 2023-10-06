@@ -36,7 +36,7 @@ if not os.path.exists(os.path.join(source_dir, "Actor_01")):
     raise FileNotFoundError
 
 ravdess_directory_list = os.listdir(source_dir)
-print(ravdess_directory_list)
+# print(ravdess_directory_list)
 
 file_emotion = []
 file_speaker = []
@@ -60,9 +60,15 @@ for dir in ravdess_directory_list:
 # put all in one dataframe
 result_df = pd.DataFrame(list(zip(file_path, file_emotion,file_speaker,file_gender)), columns=['file','emotion', 'speaker', 'gender'])
 
+# change speaker labels to string
+# result_df['speaker'] = result_df['speaker'].astype('str')
+
+# add `spk` to speaker id
+result_df['speaker'] = 'spk' + result_df['speaker'].astype('str')
 
 # changing integers to actual emotions.
 result_df.emotion.replace({1:'neutral', 2:'calm', 3:'happy', 4:'sad', 5:'angry', 6:'fear', 7:'disgust', 8:'surprise'}, inplace=True)
+
 # changing numbers to gender designations
 def get_gender(x):
     if x%2==0:
@@ -76,3 +82,9 @@ train_df, test_df = result_df.groupby('speaker').apply(lambda x: x.sample(frac=0
 # save to csv
 train_df.to_csv(f'{database_name}_speaker_train.csv', index=False)
 test_df.to_csv(f'{database_name}_speaker_test.csv', index=False)
+
+# print length of train and test set and total
+print(f"Total length: {len(result_df)}, Train set: {len(train_df)}, Test set: {len(test_df)}")
+
+# print type data of speaker labels
+print(f"Data type of speaker: {type(train_df['speaker'][0])}")
