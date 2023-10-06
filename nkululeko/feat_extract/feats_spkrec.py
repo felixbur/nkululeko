@@ -6,13 +6,14 @@
 
 
 import os
-from tqdm import tqdm
+
+import nkululeko.glob_conf as glob_conf
 import pandas as pd
 import torch
 import torchaudio
-from speechbrain.pretrained import EncoderClassifier
 from nkululeko.feat_extract.featureset import Featureset
-import nkululeko.glob_conf as glob_conf
+from speechbrain.pretrained import EncoderClassifier
+from tqdm import tqdm
 
 # from transformers import HubertModel, Wav2Vec2FeatureExtractor
 
@@ -28,6 +29,8 @@ class Spkrec(Featureset):
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
         self.classifier_initialized = False
+        if feat_type == None:
+            self.feat_type = "spkrec-ecapa-voxceleb"
         self.feat_type = feat_type
 
     def init_model(self):
@@ -73,7 +76,7 @@ class Spkrec(Featureset):
                 emb = self.get_embeddings(signal, sampling_rate, file)
                 # fill series with embeddings
                 emb_series.iloc[idx] = emb
-            print(f"emb_series shape: {emb_series.shape}")
+            # print(f"emb_series shape: {emb_series.shape}")
             self.df = pd.DataFrame(
                 emb_series.values.tolist(), index=self.data_df.index
             )
@@ -97,9 +100,9 @@ class Spkrec(Featureset):
         r"""Extract embeddings from raw audio signal."""
         # classifier = EncoderClassifier.from_hparams("speechbrain/spkrec-ecapa-voxceleb")
         try:
-            with torch.no_grad():
-                y = self.classifier.encode_batch(signal)
-                y = y.squeeze().detach().cpu().numpy()
+            # with torch.no_grad():
+            y = self.classifier.encode_batch(signal)
+            y = y.squeeze().detach().cpu().numpy()
         except RuntimeError as re:
             print(str(re))
             self.util.error(f"couldn't extract file: {file}")

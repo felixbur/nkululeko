@@ -1,28 +1,30 @@
-import random
+import ast
 import os
+import pickle
+import random
 import time
+from cgi import print_environ  # To convert strings to objects
+
+import audeer
+import audformat
 import numpy as np
-from nkululeko.data.dataset import Dataset
-from nkululeko.data.dataset_csv import Dataset_CSV
-from nkululeko.filter_data import filter_min_dur
-from nkululeko.runmanager import Runmanager
-from nkululeko.test_predictor import Test_predictor
-from nkululeko.feat_extract.feats_analyser import FeatureAnalyser
-from nkululeko.util import Util
-from nkululeko.feature_extractor import FeatureExtractor
-from nkululeko.plots import Plots
-from nkululeko.filter_data import DataFilter
-from nkululeko.file_checker import FileChecker
-from nkululeko.reporting.report import Report
-import nkululeko.glob_conf as glob_conf
-from nkululeko.demo_predictor import Demo_predictor
-import ast  # To convert strings to objects
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
+
+import nkululeko.glob_conf as glob_conf
+from nkululeko.data.dataset import Dataset
+from nkululeko.data.dataset_csv import Dataset_CSV
+from nkululeko.demo_predictor import Demo_predictor
+from nkululeko.feat_extract.feats_analyser import FeatureAnalyser
+from nkululeko.feature_extractor import FeatureExtractor
+from nkululeko.file_checker import FileChecker
+from nkululeko.filter_data import DataFilter, filter_min_dur
+from nkululeko.plots import Plots
+from nkululeko.reporting.report import Report
+from nkululeko.runmanager import Runmanager
 from nkululeko.scaler import Scaler
-import pickle
-import audformat
-import audeer
+from nkululeko.test_predictor import Test_predictor
+from nkululeko.util import Util
 
 
 class Experiment:
@@ -91,6 +93,9 @@ class Experiment:
                 self.got_speaker = True
             self.datasets.update({d: data})
         self.target = self.util.config_val("DATA", "target", "emotion")
+        # print target via debug
+        self.util.debug(f"target: {self.target}")
+        # print keys/column
         dbs = ",".join(list(self.datasets.keys()))
         labels = self.util.config_val("DATA", "labels", False)
         if labels:
@@ -99,6 +104,8 @@ class Experiment:
             labels = list(
                 next(iter(self.datasets.values())).df[self.target].unique()
             )
+        # print labels via debug
+        self.util.debug(f"Target labels (user defined): {labels}")
         glob_conf.set_labels(labels)
         self.util.debug(f"loaded databases {dbs}")
 
@@ -108,6 +115,7 @@ class Experiment:
         # df.index.set_levels(pd.to_timedelta(df.index.levels[2]), level=2)
         df = audformat.utils.read_csv(storage)
         df.is_labeled = True if self.target in df else False
+        # print(df.head())
         return df
 
     def fill_tests(self):
@@ -167,7 +175,9 @@ class Experiment:
                 f"reusing previously stored {storage_test} and {storage_train}"
             )
             self.df_test = self._import_csv(storage_test)
+            # print(f"df_test: {self.df_test}")
             self.df_train = self._import_csv(storage_train)
+            # print(f"df_train: {self.df_train}")
         else:
             self.df_train, self.df_test = pd.DataFrame(), pd.DataFrame()
             for d in self.datasets.values():
@@ -176,6 +186,7 @@ class Experiment:
                 if d.df_train.shape[0] == 0:
                     self.util.debug(f"warn: {d.name} train empty")
                 self.df_train = pd.concat([self.df_train, d.df_train])
+                # print(f"df_train: {self.df_train}")
                 self.util.copy_flags(d, self.df_train)
                 if d.df_test.shape[0] == 0:
                     self.util.debug(f"warn: {d.name} test empty")
@@ -223,30 +234,36 @@ class Experiment:
                 if self.df_test.is_labeled:
                     # remember the target in case they get labelencoded later
                     self.df_test["class_label"] = self.df_test[self.target]
-                    test_cats = self.df_test["class_label"].unique()
+                    test_cats = self.df_test["class_label"].unique().astype(
+                        'str')
                 else:
                     # if there is no target, copy a dummy label
                     self.df_test = self._add_random_target(self.df_test)
                 if self.df_train.is_labeled:
                     # remember the target in case they get labelencoded later
                     self.df_train["class_label"] = self.df_train[self.target]
-                    train_cats = self.df_train["class_label"].unique()
+                    train_cats = self.df_train["class_label"].unique().astype(
+                        'str')
             else:
                 if self.df_test.is_labeled:
-                    test_cats = self.df_test[self.target].unique()
+                    test_cats = self.df_test[self.target].unique().astype(
+                        'str')
                 else:
                     # if there is no target, copy a dummy label
-                    self.df_test = self._add_random_target(self.df_test)
-                train_cats = self.df_train[self.target].unique()
+                    self.df_test = self._add_random_target(
+                        self.df_test).astype('str')
+                train_cats = self.df_train[self.target].unique().astype('str')
+                # print(f"df_train: {pd.DataFrame(self.df_train[self.target])}")
+                # print(f"train_cats with target {self.target}: {train_cats}")
             if self.df_test.is_labeled:
                 if type(test_cats) == np.ndarray:
-                    self.util.debug(f"Categories test: {test_cats}")
+                    self.util.debug(f"Categories test (nd.array): {test_cats}")
                 else:
-                    self.util.debug(f"Categories test: {test_cats.to_list()}")
+                    self.util.debug(f"Categories test (list): {test_cats.to_list()}")
             if type(train_cats) == np.ndarray:
-                self.util.debug(f"Categories train: {train_cats}")
+                self.util.debug(f"Categories train (nd.array): {train_cats}")
             else:
-                self.util.debug(f"Categories train: {train_cats.to_list()}")
+                self.util.debug(f"Categories train (list): {train_cats.to_list()}")
 
             # encode the labels as numbers
             self.label_encoder = LabelEncoder()
@@ -457,9 +474,8 @@ class Experiment:
                 predictor = ValencePredictor(df)
                 df = predictor.predict(sample_selection)
             elif target == "dominance":
-                from nkululeko.autopredict.ap_dominance import (
-                    DominancePredictor,
-                )
+                from nkululeko.autopredict.ap_dominance import \
+                    DominancePredictor
 
                 predictor = DominancePredictor(df)
                 df = predictor.predict(sample_selection)
