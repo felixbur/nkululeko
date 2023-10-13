@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.66.8
+--------------
+* forgot __init__.py in reporting module
+
 Version 0.66.7
 --------------
 * minor changes to experiment class
