@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.66.9
+--------------
+* Version that should install without requiring opensmile which seems not to be supported by all Apple processors
+
 Version 0.66.8
 --------------
 * forgot __init__.py in reporting module

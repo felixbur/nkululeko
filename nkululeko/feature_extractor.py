@@ -6,7 +6,6 @@ Helper class to encapsulate feature extraction methods
 """
 import pandas as pd
 
-from nkululeko.feat_extract.feats_opensmile import Opensmileset
 from nkululeko.util import Util
 
 
@@ -42,6 +41,7 @@ class FeatureExtractor:
         for feats_type in self.feats_types:
             store_name = f"{self.data_name}_{feats_type}"
             if feats_type == "os":
+                from nkululeko.feat_extract.feats_opensmile import Opensmileset
                 self.featExtractor = Opensmileset(
                     f"{store_name}_{self.feats_designation}", self.data_df
                 )
