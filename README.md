@@ -79,7 +79,6 @@ If you don't have a GPU (which is probably true if you don't know what that is),
 ```
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 ```
-for a version compiled for CPU use.
 else, you can use the default:
 ```
 pip install torch torchvision torchaudio
