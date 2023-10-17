@@ -1,12 +1,16 @@
 Changelog
 =========
 
+Version 0.66.12
+---------------
+* fixed bug that prevented Praat features to be selected 
+  
 Version 0.66.11
---------------
+---------------
 * removed torch from automatic install. depends on cpu/gpu machine
 
 Version 0.66.10
---------------
+---------------
 * Removed print statements from feats_wav2vec2
 
 Version 0.66.9
