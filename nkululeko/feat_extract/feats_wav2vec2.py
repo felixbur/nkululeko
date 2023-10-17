@@ -62,11 +62,11 @@ class Wav2vec2(Featureset):
                 ), f"got {sampling_rate} instead of 16000"
                 emb = self.get_embeddings(signal, sampling_rate, file)
                 emb_series[idx] = emb
-            print(f"emb_series shape: {emb_series.shape}")
+            # print(f"emb_series shape: {emb_series.shape}")
             self.df = pd.DataFrame(
                 emb_series.values.tolist(), index=self.data_df.index
             )
-            print(f"df shape: {self.df.shape}")
+            # print(f"df shape: {self.df.shape}")
             self.df.to_pickle(storage)
             try:
                 glob_conf.config["DATA"]["needs_feature_extraction"] = "false"
@@ -77,7 +77,7 @@ class Wav2vec2(Featureset):
             self.df = pd.read_pickle(storage)
             if self.df.isnull().values.any():
                 nanrows = self.df.columns[self.df.isna().any()].tolist()
-                print(nanrows)
+                # print(nanrows)
                 self.util.error(
                     f"got nan: {self.df.shape} {self.df.isnull().sum().sum()}"
                 )
@@ -103,7 +103,7 @@ class Wav2vec2(Featureset):
         except RuntimeError as re:
             print(str(re))
             self.util.error(f"couldn't extract file: {file}")
-        print(f"y flattened shape: {y.ravel().shape}")
+        # print(f"y flattened shape: {y.ravel().shape}")
         return y.ravel()
 
     def extract_sample(self, signal, sr):

@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.66.10
+--------------
+* Removed print statements from feats_wav2vec2
+
 Version 0.66.9
 --------------
 * Version that should install without requiring opensmile which seems not to be supported by all Apple processors (arm CPU (Apple M1))
