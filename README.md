@@ -160,7 +160,8 @@ There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
 * [Predict new labels for your data from public models and check bias](http://blog.syntheticspeech.de/2023/08/16/nkululeko-how-to-predict-labels-for-your-data-from-existing-models-and-check-them/)
 * [Resample](http://blog.syntheticspeech.de/2023/08/31/how-to-fix-different-sampling-rates-in-a-dataset-with-nkululeko/)
 * [Get some statistics on correlation and effect-size](http://blog.syntheticspeech.de/2023/09/05/nkululeko-get-some-statistics-on-correlation-and-effect-size/)
-
+* [Generate a latex / pdf report](http://blog.syntheticspeech.de/2023/09/26/nkululeko-generate-a-latex-pdf-report/) 
+  
 The framework is targeted at the speech domain and supports experiments where different classifiers are combined with different feature extractors.
 
 Here's a rough UML-like sketch of the framework (and [here's the real one done with pyreverse](meta/images/classes.png)).
