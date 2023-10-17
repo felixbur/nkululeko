@@ -66,6 +66,24 @@ Create and activate a virtual Python environment and simply run
 ```
 pip install nkululeko
 ```
+We excluded some packages from the automatic installation because they might depend on your computer and some of them are only needed in special cases. So if the error
+```
+module x not found
+```
+appears, please try
+```
+pip install x
+```
+For many packages you will need the missing torch package.
+If you don't have a GPU (which is probably true if you don't know what that is), please use
+```
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+```
+for a version compiled for CPU use.
+else, you can use the default:
+```
+pip install torch torchvision torchaudio
+```
 
 Some examples for *ini*-files (which you use to control nkululeko) are in the [tests folder](https://github.com/felixbur/nkululeko/tree/main/tests).
 
