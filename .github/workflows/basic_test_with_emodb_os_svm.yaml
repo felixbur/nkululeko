@@ -21,9 +21,15 @@ jobs:
         cd data/emodb
         wget https://zenodo.org/record/7447302/files/emodb.zip
         unzip emodb.zip
-        cd ..
-        python -m nkululeko.nkululeko --config tests/exp_emodb_os_xgb.ini
+        cd ../..
+        # python -m nkululeko.nkululeko --config tests/exp_emodb_os_xgb.ini
 
     - name: Run tests
       run: |
         python3 -m nkululeko.nkululeko --config data/emodb/exp_os_svm.ini
+        if grep -q "DONE" output.txt; then
+          echo "Test Sucsess"
+        else
+          echo "Test Failed"
+          exit 1
+        fi

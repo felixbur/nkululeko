@@ -36,12 +36,12 @@ class Dataset:
         self.start_fresh = eval(
             self.util.config_val("DATA", "no_reuse", "False")
         )
-        # self.is_labeled, self.got_speaker, self.got_gender, self.got_age = (
-        #     False,
-        #     False,
-        #     False,
-        #     False,
-        # )
+        self.is_labeled, self.got_speaker, self.got_gender, self.got_age = (
+            False,
+            False,
+            False,
+            False,
+        )
 
     def _get_tables(self):
         tables = []
