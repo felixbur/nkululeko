@@ -21,7 +21,7 @@ jobs:
         cd data/emodb
         wget https://zenodo.org/record/7447302/files/emodb.zip
         unzip emodb.zip
-        cd ..
+        cd ../..
         # python -m nkululeko.nkululeko --config tests/exp_emodb_os_xgb.ini
 
     - name: Run tests
