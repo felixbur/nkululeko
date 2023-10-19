@@ -1,3 +1,4 @@
+# experiment.py: Main class for an experiment (nkululeko.nkululeko)
 import ast
 import os
 import pickle
@@ -40,12 +41,12 @@ class Experiment:
         self.set_globals(config_obj)
         self.name = glob_conf.config["EXP"]["name"]
         self.root = glob_conf.config["EXP"]["root"]
-        self.data_dir = self.root + self.name
+        self.data_dir = os.path.join(self.root, self.name)
         audeer.mkdir(self.data_dir)  # create the experiment directory
         self.util = Util("experiment")
         glob_conf.set_util(self.util)
         try:
-            with open(self.data_dir + "/report.pkl", "rb") as handle:
+            with open(os.path.join(self.data_dir, "report.pkl"), "rb") as handle:
                 self.report = pickle.load(handle)
         except FileNotFoundError:
             self.report = Report()
@@ -56,7 +57,7 @@ class Experiment:
         self.start = time.process_time()
 
     def store_report(self):
-        with open(self.data_dir + "/report.pkl", "wb") as handle:
+        with open(os.path.join(self.data_dir, "report.pkl"), "wb") as handle:
             pickle.dump(self.report, handle)
         if eval(self.util.config_val("REPORT", "show", "False")):
             self.report.print()
