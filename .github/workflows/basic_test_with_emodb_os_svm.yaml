@@ -16,7 +16,7 @@ jobs:
         sudo apt-get -y install libsndfile1 sox libportaudio2
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+        # pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
         pip install --editable .
         cd data/emodb
         wget https://zenodo.org/record/7447302/files/emodb.zip
@@ -26,7 +26,7 @@ jobs:
 
     - name: Run tests
       run: |
-        python3 -m nkululeko.nkululeko --config data/emodb/exp_os_svm.ini
+        python3 -m nkululeko.nkululeko --config data/emodb/exp_os_svm.ini > output.txt
         if grep -q "DONE" output.txt; then
           echo "Test Sucsess"
         else
