@@ -27,3 +27,9 @@ jobs:
     - name: Run tests
       run: |
         python3 -m nkululeko.nkululeko --config data/emodb/exp_os_svm.ini
+        if grep -q "DONE" output.txt; then
+          echo "Test Sucsess"
+        else
+          echo "Test Failed"
+          exit 1
+        fi
