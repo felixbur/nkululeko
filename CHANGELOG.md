@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.66.13
+---------------
+* small changes related to github worker
+
 Version 0.66.12
 ---------------
 * fixed bug that prevented Praat features to be selected 
