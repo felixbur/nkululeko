@@ -1,0 +1,27 @@
+name: Run nkululeko tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+        cd data/emodb
+        wget https://zenodo.org/record/7447302/files/emodb.zip
+        unzip emodb.zip
+        cd ..
+        python -m nkululeko.nkululeko --config tests/exp_emodb_os_xgb.ini
+
+    - name: Run tests
+      run: |
+        python3 -m nkululeko.nkululeko --config data/emodb/exp_os_svm.ini
