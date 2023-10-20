@@ -1,10 +1,19 @@
-# Nkululeko
-* [Overview](#overview)
-* [Installation](#installation)
-* [Documentation](https://nkululeko.readthedocs.io)
-* [Usage](#usage)
-* [Hello World](#hello-world-example)
-* [Licence](#licence)
+- [Overview](#overview)
+  - [Confusion matrix](#confusion-matrix)
+  - [Epoch progression](#epoch-progression)
+  - [Feature importance](#feature-importance)
+  - [Feature distribution](#feature-distribution)
+  - [t-SNE plots](#t-sne-plots)
+  - [Data distribution](#data-distribution)
+  - [Bias checking](#bias-checking)
+- [Documentation](#documentation)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Initialization file](#initialization-file)
+  - [Hello World example](#hello-world-example)
+  - [Features](#features)
+- [License](#license)
+
  
 ## Overview
 A project to detect speaker characteristics by machine learning experiments with a high-level interface.
@@ -223,11 +232,7 @@ Here's [an overview of the ini-file options](./ini_file.md)
 * Binning (continuous to categorical)
 * Online demo interface for trained models 
 
-### Outlook
-* Classifiers: CNN
-* Feature extractors: mid-level descriptors, Mel-spectra
-
-## <a name='license' id='license'>License</a> 
+## License
 Nkululeko can be used under the [MIT license](https://choosealicense.com/licenses/mit/)
 If you use it, please mention the Nkululeko paper
 
