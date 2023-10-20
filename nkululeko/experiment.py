@@ -116,7 +116,7 @@ class Experiment:
         # df.index.set_levels(pd.to_timedelta(df.index.levels[2]), level=2)
         df = audformat.utils.read_csv(storage)
         df.is_labeled = True if self.target in df else False
-        # print(df.head())
+        print(df.head())
         return df
 
     def fill_tests(self):
@@ -235,25 +235,22 @@ class Experiment:
                 if self.df_test.is_labeled:
                     # remember the target in case they get labelencoded later
                     self.df_test["class_label"] = self.df_test[self.target]
-                    test_cats = self.df_test["class_label"].unique().astype(
-                        'str')
+                    test_cats = self.df_test["class_label"].unique()
                 else:
                     # if there is no target, copy a dummy label
                     self.df_test = self._add_random_target(self.df_test)
                 if self.df_train.is_labeled:
                     # remember the target in case they get labelencoded later
                     self.df_train["class_label"] = self.df_train[self.target]
-                    train_cats = self.df_train["class_label"].unique().astype(
-                        'str')
+                    train_cats = self.df_train["class_label"].unique()
             else:
                 if self.df_test.is_labeled:
-                    test_cats = self.df_test[self.target].unique().astype(
-                        'str')
+                    test_cats = self.df_test[self.target].unique()
                 else:
                     # if there is no target, copy a dummy label
                     self.df_test = self._add_random_target(
                         self.df_test).astype('str')
-                train_cats = self.df_train[self.target].unique().astype('str')
+                train_cats = self.df_train[self.target].unique()
                 # print(f"df_train: {pd.DataFrame(self.df_train[self.target])}")
                 # print(f"train_cats with target {self.target}: {train_cats}")
             if self.df_test.is_labeled:
@@ -575,6 +572,8 @@ class Experiment:
 
     def _check_scale(self):
         scale = self.util.config_val("FEATS", "scale", False)
+        # print the scale
+        self.util.debug(f"scaler: {scale}")
         if scale:
             self.scaler = Scaler(
                 self.df_train,

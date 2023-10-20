@@ -4,7 +4,9 @@
 
 ```bash
 # process the dataset
+$ unzip CMU_MOSEI.zip
+$ mv Raw CMU-MOSEI
 $ python3 process_database.py
 $ cd ../..
-$ python3 -m nkululeko.nkululeko --config data/cmu-mosei/exp_mosei_audmodel_xgb.ini
+$ python3 -m nkululeko.nkululeko --config data/cmu-mosei/exp.ini
 ```
