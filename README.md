@@ -227,5 +227,22 @@ Here's [an overview of the ini-file options](./ini_file.md)
 * Classifiers: CNN
 * Feature extractors: mid-level descriptors, Mel-spectra
 
-## License
+## License <a name='License'>
 Nkululeko can be used under the [MIT license](https://choosealicense.com/licenses/mit/)
+If you use it, please mention the Nkululeko paper
+
+F. Burkhardt, Johannes Wagner, Hagen Wierstorf, Florian Eyben and Björn Schuller: Nkululeko: A Tool For Rapid Speaker Characteristics Detection, Proc. Proc. LREC, 2022
+
+
+```
+@inproceedings{Burkhardt:lrec2022,
+   title = {Nkululeko: A Tool For Rapid Speaker Characteristics Detection},
+   author = {Felix Burkhardt and Johannes Wagner and Hagen Wierstorf and Florian Eyben and Björn Schuller},
+   isbn = {9791095546726},
+   journal = {2022 Language Resources and Evaluation Conference, LREC 2022},
+   keywords = {machine learning,speaker characteristics,tools},
+   pages = {1925-1932},
+   publisher = {European Language Resources Association (ELRA)},
+   year = {2022},
+}
+```
