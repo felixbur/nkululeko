@@ -1,3 +1,4 @@
+# experiment.py: Main class for an experiment (nkululeko.nkululeko)
 import ast
 import os
 import pickle
@@ -40,12 +41,12 @@ class Experiment:
         self.set_globals(config_obj)
         self.name = glob_conf.config["EXP"]["name"]
         self.root = glob_conf.config["EXP"]["root"]
-        self.data_dir = self.root + self.name
+        self.data_dir = os.path.join(self.root, self.name)
         audeer.mkdir(self.data_dir)  # create the experiment directory
         self.util = Util("experiment")
         glob_conf.set_util(self.util)
         try:
-            with open(self.data_dir + "/report.pkl", "rb") as handle:
+            with open(os.path.join(self.data_dir, "report.pkl"), "rb") as handle:
                 self.report = pickle.load(handle)
         except FileNotFoundError:
             self.report = Report()
@@ -56,7 +57,7 @@ class Experiment:
         self.start = time.process_time()
 
     def store_report(self):
-        with open(self.data_dir + "/report.pkl", "wb") as handle:
+        with open(os.path.join(self.data_dir, "report.pkl"), "wb") as handle:
             pickle.dump(self.report, handle)
         if eval(self.util.config_val("REPORT", "show", "False")):
             self.report.print()
@@ -234,25 +235,22 @@ class Experiment:
                 if self.df_test.is_labeled:
                     # remember the target in case they get labelencoded later
                     self.df_test["class_label"] = self.df_test[self.target]
-                    test_cats = self.df_test["class_label"].unique().astype(
-                        'str')
+                    test_cats = self.df_test["class_label"].unique()
                 else:
                     # if there is no target, copy a dummy label
                     self.df_test = self._add_random_target(self.df_test)
                 if self.df_train.is_labeled:
                     # remember the target in case they get labelencoded later
                     self.df_train["class_label"] = self.df_train[self.target]
-                    train_cats = self.df_train["class_label"].unique().astype(
-                        'str')
+                    train_cats = self.df_train["class_label"].unique()
             else:
                 if self.df_test.is_labeled:
-                    test_cats = self.df_test[self.target].unique().astype(
-                        'str')
+                    test_cats = self.df_test[self.target].unique()
                 else:
                     # if there is no target, copy a dummy label
                     self.df_test = self._add_random_target(
                         self.df_test).astype('str')
-                train_cats = self.df_train[self.target].unique().astype('str')
+                train_cats = self.df_train[self.target].unique()
                 # print(f"df_train: {pd.DataFrame(self.df_train[self.target])}")
                 # print(f"train_cats with target {self.target}: {train_cats}")
             if self.df_test.is_labeled:
@@ -574,6 +572,8 @@ class Experiment:
 
     def _check_scale(self):
         scale = self.util.config_val("FEATS", "scale", False)
+        # print the scale
+        self.util.debug(f"scaler: {scale}")
         if scale:
             self.scaler = Scaler(
                 self.df_train,

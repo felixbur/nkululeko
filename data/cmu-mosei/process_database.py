@@ -3,9 +3,11 @@
 # - label_paths: CMU_MOSEI_Labels.csv
 # - db_paths: CMU-MOSEI
 
-import os
-import pandas as pd
 import argparse
+import os
+
+import pandas as pd
+
 
 def preprocess(data_dirs, name, split_df, out_path):
     meta_data = []
@@ -13,7 +15,7 @@ def preprocess(data_dirs, name, split_df, out_path):
         # get wav file path
         # print(row['file'])
         filename = row['file'] + '_' + str(row['index']) + '.wav'
-        file = os.path.join(data_dirs, 'Raw', 'Audio', 'Segmented_Audio',
+        file = os.path.join(data_dirs, 'Audio', 'Segmented_Audio',
                             name, filename)
         
         sentiment = str(row['label2a'])
@@ -33,7 +35,7 @@ def preprocess(data_dirs, name, split_df, out_path):
         # write to csv
     meta_data_df = pd.DataFrame(meta_data)
     meta_data_df.to_csv(out_path, index=False)    
-    print(f'Wrote {name} partition to {out_path}.')
+    print(f'Wrote {name} partition with {len(meta_data)} samples to {out_path}.')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
