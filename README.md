@@ -227,7 +227,7 @@ Here's [an overview of the ini-file options](./ini_file.md)
 * Classifiers: CNN
 * Feature extractors: mid-level descriptors, Mel-spectra
 
-## <a name='license'>License</a> 
+## <a name='license' id='license'>License</a> 
 Nkululeko can be used under the [MIT license](https://choosealicense.com/licenses/mit/)
 If you use it, please mention the Nkululeko paper
 
