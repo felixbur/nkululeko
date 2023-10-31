@@ -1,10 +1,19 @@
-# Nkululeko
-* [Overview](#overview)
-* [Installation](#installation)
-* [Documentation](https://nkululeko.readthedocs.io)
-* [Usage](#usage)
-* [Hello World](#hello-world-example)
-* [Licence](#licence)
+- [Overview](#overview)
+  - [Confusion matrix](#confusion-matrix)
+  - [Epoch progression](#epoch-progression)
+  - [Feature importance](#feature-importance)
+  - [Feature distribution](#feature-distribution)
+  - [t-SNE plots](#t-sne-plots)
+  - [Data distribution](#data-distribution)
+  - [Bias checking](#bias-checking)
+- [Documentation](#documentation)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Initialization file](#initialization-file)
+  - [Hello World example](#hello-world-example)
+  - [Features](#features)
+- [License](#license)
+
  
 ## Overview
 A project to detect speaker characteristics by machine learning experiments with a high-level interface.
@@ -84,8 +93,19 @@ else, you can use the default:
 pip install torch torchvision torchaudio
 ```
 
-Some examples for *ini*-files (which you use to control nkululeko) are in the [tests folder](https://github.com/felixbur/nkululeko/tree/main/tests).
+Some functionalities require extra packages to be installed, which we didn't include automatically:
+* the SQUIM model needs a special torch version:
+  ```
+  pip uninstall -y torch torchvision torchaudio
+  pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+  ```
+* the spotlight adapter needs spotlight:
+  ```
+  pip install renumics-spotlight sliceguard 
+  ```
 
+
+Some examples for *ini*-files (which you use to control nkululeko) are in the [tests folder](https://github.com/felixbur/nkululeko/tree/main/tests).
 
 
 ## Usage
@@ -186,7 +206,7 @@ Here's [an overview of the ini-file options](./ini_file.md)
 ### <a name="helloworld">Hello World example</a>
 * NEW: [Here's a Google colab that runs this example out-of-the-box](https://colab.research.google.com/drive/1GYNBd5cdZQ1QC3Jm58qoeMaJg3UuPhjw?usp=sharing#scrollTo=4G_SjuF9xeQf), and here is the same [with Kaggle](https://www.kaggle.com/felixburk/nkululeko-hello-world-example)
 * [I made a video to show you how to do this on Windows](https://www.youtube.com/playlist?list=PLRceVavtxLg0y2jiLmpnUfiMtfvkK912D)
-* Set up Python on your computer, version >= 3.6
+* Set up Python on your computer, version >= 3.8
 * Open a terminal/commandline/console window
 * Test python by typing ```python```, python should start with version >3 (NOT 2!). You can leave the Python Interpreter by typing *exit()*
 * Create a folder on your computer for this example, let's call it `nkulu_work`
@@ -212,7 +232,7 @@ Here's [an overview of the ini-file options](./ini_file.md)
 * Find the results in the newly created folder exp_emodb 
   * Inspect ```exp_emodb/images/run_0/emodb_xgb_os_0_000_cnf.png```
   * This is the main result of you experiment: a confusion matrix for the emodb emotional categories
-* Inspect and play around with the [demo configuration file](demos/exp_emodb.ini) that defined your experiment, then re-run.
+* Inspect and play around with the [demo configuration file](meta/demos/exp_emodb.ini) that defined your experiment, then re-run.
 * There are many ways to experiment with different classifiers and acoustic features sets, [all described here](https://github.com/felixbur/nkululeko/blob/main/ini_file.md)
   
 ### Features
@@ -223,9 +243,22 @@ Here's [an overview of the ini-file options](./ini_file.md)
 * Binning (continuous to categorical)
 * Online demo interface for trained models 
 
-### Outlook
-* Classifiers: CNN
-* Feature extractors: mid-level descriptors, Mel-spectra
-
 ## License
 Nkululeko can be used under the [MIT license](https://choosealicense.com/licenses/mit/)
+If you use it, please mention the Nkululeko paper
+
+F. Burkhardt, Johannes Wagner, Hagen Wierstorf, Florian Eyben and Björn Schuller: Nkululeko: A Tool For Rapid Speaker Characteristics Detection, Proc. Proc. LREC, 2022
+
+
+```
+@inproceedings{Burkhardt:lrec2022,
+   title = {Nkululeko: A Tool For Rapid Speaker Characteristics Detection},
+   author = {Felix Burkhardt and Johannes Wagner and Hagen Wierstorf and Florian Eyben and Björn Schuller},
+   isbn = {9791095546726},
+   journal = {2022 Language Resources and Evaluation Conference, LREC 2022},
+   keywords = {machine learning,speaker characteristics,tools},
+   pages = {1925-1932},
+   publisher = {European Language Resources Association (ELRA)},
+   year = {2022},
+}
+```

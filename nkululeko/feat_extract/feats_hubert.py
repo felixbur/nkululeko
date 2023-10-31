@@ -4,15 +4,16 @@
 
 
 import os
+
+import audeer
+import nkululeko.glob_conf as glob_conf
 import pandas as pd
-from tqdm import tqdm
-from transformers import HubertModel, Wav2Vec2FeatureExtractor
 import torch
 import torchaudio
-import audeer
 from audformat.utils import map_file_path
-import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
+from tqdm import tqdm
+from transformers import HubertModel, Wav2Vec2FeatureExtractor
 
 
 class Hubert(Featureset):
@@ -81,7 +82,7 @@ class Hubert(Featureset):
                 )
                 assert sampling_rate == 16000
                 emb = self.get_embeddings(signal, sampling_rate, file)
-                emb_series[idx] = emb
+                emb_series.iloc[idx] = emb
             self.df = pd.DataFrame(
                 emb_series.values.tolist(), index=self.data_df.index
             )

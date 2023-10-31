@@ -3,13 +3,14 @@
 # supported feat_types: 'wavlm-base', 'wavlm-base-plus', 'wavlm-large'
 
 import os
-from tqdm import tqdm
+
+import nkululeko.glob_conf as glob_conf
 import pandas as pd
 import torch
 import torchaudio
-from transformers import Wav2Vec2FeatureExtractor, WavLMModel
 from nkululeko.feat_extract.featureset import Featureset
-import nkululeko.glob_conf as glob_conf
+from tqdm import tqdm
+from transformers import Wav2Vec2FeatureExtractor, WavLMModel
 
 
 class Wavlm(Featureset):
@@ -64,7 +65,7 @@ class Wavlm(Featureset):
                 )
                 assert sampling_rate == 16000
                 emb = self.get_embeddings(signal, sampling_rate, file)
-                emb_series[idx] = emb
+                emb_series.iloc[idx] = emb
             self.df = pd.DataFrame(
                 emb_series.values.tolist(), index=self.data_df.index
             )

@@ -3,7 +3,7 @@
 * Kind of all (well, most) values have defaults 
 
 ## Contents
-- [Overview on options for the nkululeko framework](#overview-on-options-for-the-nkululeko-framework)
+- [Overview of options for the nkululeko framework](#overview-of-options-for-the-nkululeko-framework)
   - [Contents](#contents)
   - [Sections](#sections)
     - [EXP](#exp)
@@ -282,7 +282,7 @@
   * model = log_reg # can be log_reg, lin_reg or tree
 * **max_feats**: Maximal number of important features 
   * max_feats = 10
-* **sample_selection**: Which sample set to use for feature importance, sample distribution and feature distributions
+* **sample_selection**: Which sample set/split to use for feature importance, sample distribution, spotlight and feature distributions
   * sample_selection = all # either all, train or test
 * **feature_distributions** plot distributions for all features per category 
   * feature_distributions = True
@@ -296,7 +296,8 @@
   * bin_reals = True
 * **dist_type**: type of plot for value counts, either histogram or density estimation (kde)
   * dist_type = hist
-
+* **spotlight**: open a web-browser window to inspect the data with the [spotlight software](https://github.com/Renumics/spotlight). Needs package *renumics-spotlight* to be installed!
+  * spotlight = False 
 ### [PREDICT](#predict) 
 * **targets**: Speaker/speech characteristics to be predicted by some models
   * targets = ['gender', 'age', 'snr', 'arousal', 'valence', 'dominance', 'pesq', 'mos']
