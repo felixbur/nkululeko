@@ -13,6 +13,7 @@ If you would like further information about the ASVP-ESD, when; facing any issue
 ```
 $ wget https://zenodo.org/record/7132783/files/ASVP-ESD-Update.zip
 $ unzip ASVP-ESD-Update.zip
+$ python process_database.py
 $ cd ../..
 $ python3 -m nkululeko.nkululeko --config data/asvp-esd/exp.ini
 ```
