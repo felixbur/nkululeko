@@ -93,8 +93,19 @@ else, you can use the default:
 pip install torch torchvision torchaudio
 ```
 
-Some examples for *ini*-files (which you use to control nkululeko) are in the [tests folder](https://github.com/felixbur/nkululeko/tree/main/tests).
+Some functionalities require extra packages to be installed, which we didn't include automatically:
+* the SQUIM model needs a special torch version:
+  ```
+  pip uninstall -y torch torchvision torchaudio
+  pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+  ```
+* the spotlight adapter needs spotlight:
+  ```
+  pip install renumics-spotlight sliceguard 
+  ```
 
+
+Some examples for *ini*-files (which you use to control nkululeko) are in the [tests folder](https://github.com/felixbur/nkululeko/tree/main/tests).
 
 
 ## Usage
