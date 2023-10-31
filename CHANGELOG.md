@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.67.0
+---------------
+* added first version of spotlight integration
+
 Version 0.66.13
 ---------------
 * small changes related to github worker

@@ -302,27 +302,12 @@ class Experiment:
         df[self.target] = a
         return df
 
-    def plot_distribution(self):
+    def plot_distribution(self, df_labels):
         """Plot the distribution of samples and speaker per target class and biological sex"""
         plot = Plots()
         sample_selection = self.util.config_val(
             "EXPL", "sample_selection", "all"
         )
-        if sample_selection == "all":
-            df_labels = pd.concat([self.df_train, self.df_test])
-            self.util.copy_flags(self.df_train, df_labels)
-        elif sample_selection == "train":
-            df_labels = self.df_train
-            self.util.copy_flags(self.df_train, df_labels)
-        elif sample_selection == "test":
-            df_labels = self.df_test
-            self.util.copy_flags(self.df_test, df_labels)
-        else:
-            self.util.error(
-                f"unkown sample selection specifier {sample_selection}, should"
-                " be [all | train | test]"
-            )
-
         plot.plot_distributions(df_labels)
         if self.got_speaker:
             plot.plot_distributions_speaker(df_labels)
@@ -516,20 +501,41 @@ class Experiment:
         sample_selection = self.util.config_val(
             "EXPL", "sample_selection", "all"
         )
+        # get the data labels
+        if sample_selection == "all":
+            df_labels = pd.concat([self.df_train, self.df_test])
+            self.util.copy_flags(self.df_train, df_labels)
+        elif sample_selection == "train":
+            df_labels = self.df_train
+            self.util.copy_flags(self.df_train, df_labels)
+        elif sample_selection == "test":
+            df_labels = self.df_test
+            self.util.copy_flags(self.df_test, df_labels)
+        else:
+            self.util.error(
+                f"unknown sample selection specifier {sample_selection}, should"
+                " be [all | train | test]"
+            )
 
         if self.util.config_val("EXPL", "value_counts", False):
-            self.plot_distribution()
+            self.plot_distribution(df_labels)
+
+        # check if data should be shown with the spotlight data visualizer
+        spotlight = eval(self.util.config_val("EXPL", "spotlight", "False"))
+        if spotlight:
+            self.util.debug('opening spotlight tab in web browser')
+            from renumics import spotlight
+            spotlight.show(df_labels.reset_index())
+
         if not needs_feats:
             return
+        # get the feature values
         if sample_selection == "all":
             df_feats = pd.concat([self.feats_train, self.feats_test])
-            df_labels = pd.concat([self.df_train, self.df_test])
         elif sample_selection == "train":
             df_feats = self.feats_train
-            df_labels = self.df_train
         elif sample_selection == "test":
             df_feats = self.feats_test
-            df_labels = self.df_test
         else:
             self.util.error(
                 f"unknown sample selection specifier {sample_selection}, should"

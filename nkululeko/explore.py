@@ -8,7 +8,6 @@ from nkululeko.constants import VERSION
 import argparse
 import os
 
-
 def main(src_dir):
     parser = argparse.ArgumentParser(
         description="Call the nkululeko framework."
@@ -55,6 +54,7 @@ def main(src_dir):
     plot_feats = eval(util.config_val("EXPL", "feature_distributions", "False"))
     tsne = eval(util.config_val("EXPL", "tsne", "False"))
     scatter = eval(util.config_val("EXPL", "scatter", "False"))
+    spotlight = eval(util.config_val("EXPL", "spotlight", "False"))
     model_type = util.config_val("EXPL", "model", False)
     plot_tree = eval(util.config_val("EXPL", "plot_tree", "False"))
     needs_feats = False
