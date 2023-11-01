@@ -211,7 +211,7 @@ Here's [an overview of the ini-file options](./ini_file.md)
 * Open a terminal/commandline/console window
 * Test python by typing ```python```, python should start with version >3 (NOT 2!). You can leave the Python Interpreter by typing *exit()*
 * Create a folder on your computer for this example, let's call it `nkulu_work`
-* Get a copy of the [Berlin emodb in audformat](https://tubcloud.tu-berlin.de/s/LfkysdXJfiobiEG) and unpack inside the folder you just created (`nkulu_work`)
+* Get a copy of the [Berlin emodb in audformat](https://zenodo.org/records/7447302/files/emodb.zip?download=1) and unpack inside the folder you just created (`nkulu_work`)
 * Make sure the folder is called "emodb" and does contain the database files directly (not box-in-a-box)
 * Also, in the `nkulu_work` folder: 
   * Create a Python environment
