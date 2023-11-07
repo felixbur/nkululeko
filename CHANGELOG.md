@@ -1,8 +1,12 @@
 Changelog
 =========
 
+Version 0.68.0
+--------------
+* added stratification framework for split balancing
+
 Version 0.67.0
----------------
+--------------
 * added first version of spotlight integration
 
 Version 0.66.13
