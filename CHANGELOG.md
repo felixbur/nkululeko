@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.68.1
+--------------
+* added error message on file to praat extraction
+
 Version 0.68.0
 --------------
 * added stratification framework for split balancing
