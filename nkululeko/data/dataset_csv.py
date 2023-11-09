@@ -1,4 +1,5 @@
 # dataset_csv.py
+import ast
 import os
 import os.path
 import pandas as pd
@@ -22,6 +23,10 @@ class Dataset_CSV(Dataset):
         root = os.path.dirname(data_file)
         audio_path = self.util.config_val_data(self.name, "audio_path", "")
         df = audformat.utils.read_csv(data_file)
+        rename_cols = self.util.config_val_data(self.name, "colnames", False)
+        if rename_cols:
+            col_dict = ast.literal_eval(rename_cols)
+            df = df.rename(columns=col_dict)
         absolute_path = eval(
             self.util.config_val_data(self.name, "absolute_path", True)
         )
@@ -42,19 +47,15 @@ class Dataset_CSV(Dataset):
                         lambda x: root + "/" + audio_path + "/" + x
                     )
                 )
+
         self.df = df
         self.db = None
         self.got_target = True
         self.is_labeled = self.got_target
-        self.start_fresh = eval(
-            self.util.config_val("DATA", "no_reuse", "False")
-        )
+        self.start_fresh = eval(self.util.config_val("DATA", "no_reuse", "False"))
         if self.is_labeled and not "class_label" in self.df.columns:
             self.df["class_label"] = self.df[self.target]
         if "gender" in self.df.columns:
-            self.got_gender = True
-        elif "sex" in self.df.columns:
-            self.df = self.df.rename(columns={"sex": "gender"})
             self.got_gender = True
         if "age" in self.df.columns:
             self.got_age = True

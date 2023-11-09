@@ -72,6 +72,13 @@ class Dataset:
             self.util.error(f"{self.name}: no database found at {root}")
         return root
 
+    def _check_cols(self, df):
+        rename_cols = self.util.config_val_data(self.name, "colnames", False)
+        if rename_cols:
+            col_dict = ast.literal_eval(rename_cols)
+            df = df.rename(columns=col_dict)
+        return df
+
     def _report_load(self):
         speaker_num = 0
         if self.got_speaker:
@@ -205,6 +212,7 @@ class Dataset:
         df = pd.DataFrame()
         for table in df_files:
             source_df = db.tables[table].df
+            source_df = self._check_cols(source_df)
             # create a dataframe with the index (the filenames)
             df_local = pd.DataFrame(index=source_df.index)
             # try to get the targets from this dataframe
@@ -224,8 +232,6 @@ class Dataset:
                 # try to get the gender values
                 if "gender" in source_df:
                     df_local["gender"] = source_df["gender"]
-                else:
-                    df_local["gender"] = source_df["sex"]
                 got_gender = True
             except (KeyError, ValueError, audformat.errors.BadKeyError) as e:
                 pass

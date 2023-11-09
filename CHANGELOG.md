@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.68.2
+--------------
+* column names in datasets are now configurable
+
 Version 0.68.1
 --------------
 * added error message on file to praat extraction
