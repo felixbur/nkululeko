@@ -25,9 +25,7 @@ from sklearn.preprocessing import StandardScaler
 def measurePitch(voiceID, f0min, f0max, unit):
     sound = parselmouth.Sound(voiceID)  # read the sound
     duration = call(sound, "Get total duration")  # duration
-    pitch = call(
-        sound, "To Pitch", 0.0, f0min, f0max
-    )  # create a praat pitch object
+    pitch = call(sound, "To Pitch", 0.0, f0min, f0max)  # create a praat pitch object
     meanF0 = call(pitch, "Get mean", 0, 0, unit)  # get mean pitch
     stdevF0 = call(
         pitch, "Get standard deviation", 0, 0, unit
@@ -35,16 +33,12 @@ def measurePitch(voiceID, f0min, f0max, unit):
     harmonicity = call(sound, "To Harmonicity (cc)", 0.01, f0min, 0.1, 1.0)
     hnr = call(harmonicity, "Get mean", 0, 0)
     pointProcess = call(sound, "To PointProcess (periodic, cc)", f0min, f0max)
-    localJitter = call(
-        pointProcess, "Get jitter (local)", 0, 0, 0.0001, 0.02, 1.3
-    )
+    localJitter = call(pointProcess, "Get jitter (local)", 0, 0, 0.0001, 0.02, 1.3)
     localabsoluteJitter = call(
         pointProcess, "Get jitter (local, absolute)", 0, 0, 0.0001, 0.02, 1.3
     )
     rapJitter = call(pointProcess, "Get jitter (rap)", 0, 0, 0.0001, 0.02, 1.3)
-    ppq5Jitter = call(
-        pointProcess, "Get jitter (ppq5)", 0, 0, 0.0001, 0.02, 1.3
-    )
+    ppq5Jitter = call(pointProcess, "Get jitter (ppq5)", 0, 0, 0.0001, 0.02, 1.3)
     ddpJitter = call(pointProcess, "Get jitter (ddp)", 0, 0, 0.0001, 0.02, 1.3)
     localShimmer = call(
         [sound, pointProcess],
@@ -208,8 +202,7 @@ def runPCA(df):
     x = StandardScaler().fit_transform(x)
     if np.any(np.isnan(x)):
         print(
-            f"Warning: {np.count_nonzero(np.isnan(x))} Nans in x, replacing"
-            " with 0"
+            f"Warning: {np.count_nonzero(np.isnan(x))} Nans in x, replacing" " with 0"
         )
         x[np.isnan(x)] = 0
     if np.any(np.isfinite(x)):
@@ -269,37 +262,39 @@ def compute_features(file_index):
             duration=(end - start).total_seconds(),
             always_2d=True,
         )
-        sound = parselmouth.Sound(
-            values=signal, sampling_frequency=sampling_rate
-        )
-        (
-            duration,
-            meanF0,
-            stdevF0,
-            hnr,
-            localJitter,
-            localabsoluteJitter,
-            rapJitter,
-            ppq5Jitter,
-            ddpJitter,
-            localShimmer,
-            localdbShimmer,
-            apq3Shimmer,
-            aqpq5Shimmer,
-            apq11Shimmer,
-            ddaShimmer,
-        ) = measurePitch(sound, 75, 300, "Hertz")
-        (
-            f1_mean,
-            f2_mean,
-            f3_mean,
-            f4_mean,
-            f1_median,
-            f2_median,
-            f3_median,
-            f4_median,
-        ) = measureFormants(sound, 75, 300)
-        #        file_list.append(wave_file) # make an ID list
+        try:
+            sound = parselmouth.Sound(values=signal, sampling_frequency=sampling_rate)
+            (
+                duration,
+                meanF0,
+                stdevF0,
+                hnr,
+                localJitter,
+                localabsoluteJitter,
+                rapJitter,
+                ppq5Jitter,
+                ddpJitter,
+                localShimmer,
+                localdbShimmer,
+                apq3Shimmer,
+                aqpq5Shimmer,
+                apq11Shimmer,
+                ddaShimmer,
+            ) = measurePitch(sound, 75, 300, "Hertz")
+            (
+                f1_mean,
+                f2_mean,
+                f3_mean,
+                f4_mean,
+                f1_median,
+                f2_median,
+                f3_median,
+                f4_median,
+            ) = measureFormants(sound, 75, 300)
+            #        file_list.append(wave_file) # make an ID list
+        except statistics.StatisticsError as se:
+            print(f"error on file {wave_file}: {se}")
+
         duration_list.append(duration)  # make duration list
         mean_F0_list.append(meanF0)  # make a mean F0 list
         sd_F0_list.append(stdevF0)  # make a sd F0 list
@@ -327,7 +322,6 @@ def compute_features(file_index):
         f2_median_list.append(f2_median)
         f3_median_list.append(f3_median)
         f4_median_list.append(f4_median)
-
     # ## This block of code adds all of that data we just generated to a Pandas data frame
     # Add the data to Pandas
     df = pd.DataFrame(
@@ -486,9 +480,7 @@ def get_speech_rate(file_index):
             duration=(end - start).total_seconds(),
             always_2d=True,
         )
-        sound = parselmouth.Sound(
-            values=signal, sampling_frequency=sampling_rate
-        )
+        sound = parselmouth.Sound(values=signal, sampling_frequency=sampling_rate)
         # print(f'processing {file}')
         speechrate_dictionary = speech_rate(sound)
         datalist.append(speechrate_dictionary)
@@ -545,9 +537,7 @@ def speech_rate(sound):
     # use total duration, not end time, to find out duration of intdur (intensity_duration)
     # in order to allow nonzero starting times.
     intensity_duration = call(sound_from_intensity_matrix, "Get total duration")
-    intensity_max = call(
-        sound_from_intensity_matrix, "Get maximum", 0, 0, "Parabolic"
-    )
+    intensity_max = call(sound_from_intensity_matrix, "Get maximum", 0, 0, "Parabolic")
     point_process = call(
         sound_from_intensity_matrix,
         "To PointProcess (extrema)",
@@ -558,19 +548,14 @@ def speech_rate(sound):
     )
     # estimate peak positions (all peaks)
     numpeaks = call(point_process, "Get number of points")
-    t = [
-        call(point_process, "Get time from index", i + 1)
-        for i in range(numpeaks)
-    ]
+    t = [call(point_process, "Get time from index", i + 1) for i in range(numpeaks)]
 
     # fill array with intensity values
     timepeaks = []
     peakcount = 0
     intensities = []
     for i in range(numpeaks):
-        value = call(
-            sound_from_intensity_matrix, "Get value at time", t[i], "Cubic"
-        )
+        value = call(sound_from_intensity_matrix, "Get value at time", t[i], "Cubic")
         if value > threshold:
             peakcount += 1
             intensities.append(value)
@@ -586,22 +571,16 @@ def speech_rate(sound):
     for p in range(peakcount - 1):
         following = p + 1
         followingtime = timepeaks[p + 1]
-        dip = call(
-            intensity, "Get minimum", currenttime, timepeaks[p + 1], "None"
-        )
+        dip = call(intensity, "Get minimum", currenttime, timepeaks[p + 1], "None")
         diffint = abs(currentint - dip)
         if diffint > mindip:
             validpeakcount += 1
             validtime.append(timepeaks[p])
         currenttime = timepeaks[following]
-        currentint = call(
-            intensity, "Get value at time", timepeaks[following], "Cubic"
-        )
+        currentint = call(intensity, "Get value at time", timepeaks[following], "Cubic")
 
     # Look for only voiced parts
-    pitch = sound.to_pitch_ac(
-        0.02, 30, 4, False, 0.03, 0.25, 0.01, 0.35, 0.25, 450
-    )
+    pitch = sound.to_pitch_ac(0.02, 30, 4, False, 0.03, 0.25, 0.01, 0.35, 0.25, 450)
     voicedcount = 0
     voicedpeak = []
 
