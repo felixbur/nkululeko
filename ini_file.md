@@ -67,6 +67,8 @@
   * my_data.audio_path = wav_files/
 * **db_name.mapping**: mapping python dictionary to map between categories for cross-database experiments (format: {'target_emo':'source_emo'})
   * emodb.mapping = {'anger':'angry', 'happiness':'happy', 'sadness':'sad', 'neutral':'neutral'}
+* **db_name.colnames**: mapping to rename columns to standard names
+  * my_data.colnames = {'speaker':'Participant ID', 'sex':'gender, 'Age': 'age'}
 * **db_name.split_strategy**: How to identify sets for train/development data splits within one database
   * emodb.split_strategy = reuse
   * Possible values:
