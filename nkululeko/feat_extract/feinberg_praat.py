@@ -480,10 +480,15 @@ def get_speech_rate(file_index):
             duration=(end - start).total_seconds(),
             always_2d=True,
         )
-        sound = parselmouth.Sound(values=signal, sampling_frequency=sampling_rate)
-        # print(f'processing {file}')
-        speechrate_dictionary = speech_rate(sound)
-        datalist.append(speechrate_dictionary)
+        try:
+            sound = parselmouth.Sound(values=signal, sampling_frequency=sampling_rate)
+            # print(f'processing {file}')
+            speechrate_dictionary = speech_rate(sound)
+            datalist.append(speechrate_dictionary)
+        except IndexError as ie:
+            print(f"error extracting speech-rate on file {wave_file}: {ie}")
+        except parselmouth.PraatError as pe:
+            print(f"error extracting speech-rate on file {wave_file}: {pe}")
     df = pd.DataFrame(datalist)
     return df
 
