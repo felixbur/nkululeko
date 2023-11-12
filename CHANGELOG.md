@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.68.3
+--------------
+* Feinberg Praat scripts ignore error and log filename
+
 Version 0.68.2
 --------------
 * column names in datasets are now configurable
