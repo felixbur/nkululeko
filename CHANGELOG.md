@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.68.4
+--------------
+* bugfix: got_gender was uncorrectly set
+
 Version 0.68.3
 --------------
 * Feinberg Praat scripts ignore error and log filename

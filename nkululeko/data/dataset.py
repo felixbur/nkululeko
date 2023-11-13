@@ -232,7 +232,7 @@ class Dataset:
                 # try to get the gender values
                 if "gender" in source_df:
                     df_local["gender"] = source_df["gender"]
-                got_gender = True
+                    got_gender = True
             except (KeyError, ValueError, audformat.errors.BadKeyError) as e:
                 pass
             try:
