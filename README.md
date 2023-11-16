@@ -192,8 +192,8 @@ Here's a rough UML-like sketch of the framework (and [here's the real one done w
 
 Currently, the following linear classifiers are implemented (integrated from sklearn):
 * SVM, SVR, XGB, XGR, Tree, Tree_regressor, KNN, KNN_regressor, NaiveBayes, GMM
-  and the following ANNs
-* MLP, CNN (tbd)
+  and the following ANNs (artificial neural networks)
+* MLP (multi-layer perceptron), CNN (convolutional neural network)
 
 Here's [an animation that shows the progress of classification done with nkululeko](https://youtu.be/6Y0M382GjvM)
 
