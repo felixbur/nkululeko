@@ -202,9 +202,7 @@ class CNN_model(Model):
         drop = self.util.config_val("MODEL", "drop", False)
         if drop:
             self.util.debug(f"loading: dropout set to: {drop}")
-        self.model = self.MLP(
-            self.feats_train.shape[1], layers, self.class_num, drop
-        ).to(self.device)
+        self.model = myCNN(layers, self.class_num).to(self.device)
         self.model.load_state_dict(torch.load(self.store_path))
         self.model.eval()
 
