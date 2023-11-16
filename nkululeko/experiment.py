@@ -62,7 +62,7 @@ class Experiment:
         if eval(self.util.config_val("REPORT", "show", "False")):
             self.report.print()
         if self.util.config_val("REPORT", "latex", False):
-            self.report.export_latex() 
+            self.report.export_latex()
 
     def get_name(self):
         return self.util.get_exp_name()
@@ -102,9 +102,7 @@ class Experiment:
         if labels:
             labels = ast.literal_eval(labels)
         else:
-            labels = list(
-                next(iter(self.datasets.values())).df[self.target].unique()
-            )
+            labels = list(next(iter(self.datasets.values())).df[self.target].unique())
         # print labels via debug
         self.util.debug(f"Target labels (user defined): {labels}")
         glob_conf.set_labels(labels)
@@ -248,8 +246,7 @@ class Experiment:
                     test_cats = self.df_test[self.target].unique()
                 else:
                     # if there is no target, copy a dummy label
-                    self.df_test = self._add_random_target(
-                        self.df_test).astype('str')
+                    self.df_test = self._add_random_target(self.df_test).astype("str")
                 train_cats = self.df_train[self.target].unique()
                 # print(f"df_train: {pd.DataFrame(self.df_train[self.target])}")
                 # print(f"train_cats with target {self.target}: {train_cats}")
@@ -280,19 +277,17 @@ class Experiment:
 
         target_factor = self.util.config_val("DATA", "target_divide_by", False)
         if target_factor:
-            self.df_test[self.target] = self.df_test[self.target] / float(
-                target_factor
-            )
+            self.df_test[self.target] = self.df_test[self.target] / float(target_factor)
             self.df_train[self.target] = self.df_train[self.target] / float(
                 target_factor
             )
             if not self.util.exp_is_classification():
-                self.df_test["class_label"] = self.df_test[
-                    "class_label"
-                ] / float(target_factor)
-                self.df_train["class_label"] = self.df_train[
-                    "class_label"
-                ] / float(target_factor)
+                self.df_test["class_label"] = self.df_test["class_label"] / float(
+                    target_factor
+                )
+                self.df_train["class_label"] = self.df_train["class_label"] / float(
+                    target_factor
+                )
 
     def _add_random_target(self, df):
         labels = glob_conf.labels
@@ -305,18 +300,14 @@ class Experiment:
     def plot_distribution(self, df_labels):
         """Plot the distribution of samples and speaker per target class and biological sex"""
         plot = Plots()
-        sample_selection = self.util.config_val(
-            "EXPL", "sample_selection", "all"
-        )
+        sample_selection = self.util.config_val("EXPL", "sample_selection", "all")
         plot.plot_distributions(df_labels)
         if self.got_speaker:
             plot.plot_distributions_speaker(df_labels)
 
     def extract_test_feats(self):
         self.feats_test = pd.DataFrame()
-        feats_name = "_".join(
-            ast.literal_eval(glob_conf.config["DATA"]["tests"])
-        )
+        feats_name = "_".join(ast.literal_eval(glob_conf.config["DATA"]["tests"]))
         feats_types = self.util.config_val_list("FEATS", "type", ["os"])
         self.feature_extractor = FeatureExtractor(
             self.df_test, feats_types, feats_name, "test"
@@ -333,9 +324,7 @@ class Experiment:
 
         """
         df_train, df_test = self.df_train, self.df_test
-        feats_name = "_".join(
-            ast.literal_eval(glob_conf.config["DATA"]["databases"])
-        )
+        feats_name = "_".join(ast.literal_eval(glob_conf.config["DATA"]["databases"]))
         self.feats_test, self.feats_train = pd.DataFrame(), pd.DataFrame()
         feats_types = self.util.config_val_list("FEATS", "type", ["os"])
         self.feature_extractor = FeatureExtractor(
@@ -364,9 +353,7 @@ class Experiment:
                 f"test feats ({self.feats_test.shape[0]}) != test labels"
                 f" ({self.df_test.shape[0]})"
             )
-            self.df_test = self.df_test[
-                self.df_test.index.isin(self.feats_test.index)
-            ]
+            self.df_test = self.df_test[self.df_test.index.isin(self.feats_test.index)]
             self.util.warn(f"mew test labels shape: {self.df_test.shape[0]}")
 
         self._check_scale()
@@ -457,8 +444,7 @@ class Experiment:
                 predictor = ValencePredictor(df)
                 df = predictor.predict(sample_selection)
             elif target == "dominance":
-                from nkululeko.autopredict.ap_dominance import \
-                    DominancePredictor
+                from nkululeko.autopredict.ap_dominance import DominancePredictor
 
                 predictor = DominancePredictor(df)
                 df = predictor.predict(sample_selection)
@@ -472,9 +458,7 @@ class Experiment:
         """
         from nkululeko.augmenting.randomsplicer import Randomsplicer
 
-        sample_selection = self.util.config_val(
-            "DATA", "random_splice", "train"
-        )
+        sample_selection = self.util.config_val("DATA", "random_splice", "train")
         if sample_selection == "all":
             df = pd.concat([self.df_train, self.df_test])
         elif sample_selection == "train":
@@ -498,9 +482,7 @@ class Experiment:
         plot_feats = eval(
             self.util.config_val("EXPL", "feature_distributions", "False")
         )
-        sample_selection = self.util.config_val(
-            "EXPL", "sample_selection", "all"
-        )
+        sample_selection = self.util.config_val("EXPL", "sample_selection", "all")
         # get the data labels
         if sample_selection == "all":
             df_labels = pd.concat([self.df_train, self.df_test])
@@ -523,8 +505,9 @@ class Experiment:
         # check if data should be shown with the spotlight data visualizer
         spotlight = eval(self.util.config_val("EXPL", "spotlight", "False"))
         if spotlight:
-            self.util.debug('opening spotlight tab in web browser')
+            self.util.debug("opening spotlight tab in web browser")
             from renumics import spotlight
+
             spotlight.show(df_labels.reset_index())
 
         if not needs_feats:
@@ -543,9 +526,7 @@ class Experiment:
             )
 
         if plot_feats:
-            feat_analyser = FeatureAnalyser(
-                sample_selection, df_labels, df_feats
-            )
+            feat_analyser = FeatureAnalyser(sample_selection, df_labels, df_feats)
             feat_analyser.analyse()
 
         # check if a scatterplot should be done
@@ -555,9 +536,7 @@ class Experiment:
             if self.util.exp_is_classification():
                 plots = Plots()
                 for scatter in scatters:
-                    plots.scatter_plot(
-                        df_feats, df_labels["class_label"], scatter
-                    )
+                    plots.scatter_plot(df_feats, df_labels["class_label"], scatter)
             else:
                 self.util.debug("can't do scatterplot if not classification")
 
@@ -636,8 +615,7 @@ class Experiment:
     def plot_confmat_per_speaker(self, function):
         if self.loso or self.logo or self.xfoldx:
             self.util.debug(
-                "plot combined speaker predictions not possible for cross"
-                " validation"
+                "plot combined speaker predictions not possible for cross" " validation"
             )
             return
         best = self._get_best_report(self.reports)
@@ -647,9 +625,7 @@ class Experiment:
         preds = best.preds
         speakers = self.df_test.speaker.values
         print(f"{len(truths)} {len(preds)} {len(speakers) }")
-        df = pd.DataFrame(
-            data={"truth": truths, "pred": preds, "speaker": speakers}
-        )
+        df = pd.DataFrame(data={"truth": truths, "pred": preds, "speaker": speakers})
         plot_name = "result_combined_per_speaker"
         self.util.debug(
             f"plotting speaker combination ({function}) confusion matrix to"
@@ -695,6 +671,4 @@ class Experiment:
             pickle.dump(self.__dict__, f)
             f.close()
         except (AttributeError, TypeError, RuntimeError) as error:
-            self.util.warn(
-                f"Save experiment: Can't pickle local object: {error}"
-            )
+            self.util.warn(f"Save experiment: Can't pickle local object: {error}")

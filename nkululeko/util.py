@@ -74,22 +74,17 @@ class Util:
             if self.got_data_roots:
                 try:
                     if len(key) > 0:
-                        return self.data_roots["DATA"][
-                            dataset + "." + key
-                        ].strip("'\"")
+                        return self.data_roots["DATA"][dataset + "." + key].strip("'\"")
                     else:
                         return self.data_roots["DATA"][dataset].strip("'\"")
                 except KeyError:
                     if not default in self.stopvals:
                         self.debug(
-                            f"value for {key} not found, using default:"
-                            f" {default}"
+                            f"value for {key} not found, using default:" f" {default}"
                         )
                     return default
             if not default in self.stopvals:
-                self.debug(
-                    f"value for {key} not found, using default: {default}"
-                )
+                self.debug(f"value for {key} not found, using default: {default}")
             return default
 
     def get_save_name(self):
@@ -123,17 +118,15 @@ class Util:
         if len(df) == 0:
             return df
         if not isinstance(df.index, pd.MultiIndex):
-            df.index = audformat.utils.to_segmented_index(
-                df.index, allow_nat=False
-            )
+            df.index = audformat.utils.to_segmented_index(df.index, allow_nat=False)
         return df
 
     def _get_value_descript(self, section, name):
         if self.config_val(section, name, False):
             val = self.config_val(section, name, False)
-            val = str(val).strip('.')
-            return f'_{name}-{str(val)}'
-        return ''
+            val = str(val).strip(".")
+            return f"_{name}-{str(val)}"
+        return ""
 
     def get_data_name(self):
         """
@@ -151,7 +144,7 @@ class Util:
         return_string = f"{ds}"
         if not only_data:
             mt = self.get_model_description()
-            return_string = return_string+'_'+mt
+            return_string = return_string + "_" + mt
         return return_string.replace("__", "_")
 
     def get_model_description(self):
@@ -178,6 +171,7 @@ class Util:
             ["MODEL", "logo"],
             ["MODEL", "learning_rate"],
             ["MODEL", "k_fold_cross"],
+            ["FEATS", "balancing"],
         ]
         for option in options:
             return_string += self._get_value_descript(option[0], option[1])
@@ -224,9 +218,7 @@ class Util:
             return self.config[section][key]
         except KeyError:
             if not default in self.stopvals:
-                self.debug(
-                    f"value for {key} not found, using default: {default}"
-                )
+                self.debug(f"value for {key} not found, using default: {default}")
             return default
 
     def config_val_list(self, section, key, default):
@@ -234,9 +226,7 @@ class Util:
             return ast.literal_eval(self.config[section][key])
         except KeyError:
             if not default in self.stopvals:
-                self.debug(
-                    f"value for {key} not found, using default: {default}"
-                )
+                self.debug(f"value for {key} not found, using default: {default}")
             return default
 
     def continuous_to_categorical(self, array):

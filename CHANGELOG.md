@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.70.0
+--------------
+* added imb_learn balancing of training set
+
 Version 0.69.0
 --------------
 * added CNN model and melspec extractor

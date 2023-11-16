@@ -1,7 +1,10 @@
 # modelrunner.py
 
+import pandas as pd
+
 from nkululeko.util import Util
 from nkululeko import glob_conf
+import nkululeko.glob_conf as glob_conf
 
 
 class Modelrunner:
@@ -68,6 +71,8 @@ class Modelrunner:
         return reports
 
     def _select_model(self, model_type):
+        self._check_balancing()
+
         if model_type == "svm":
             from nkululeko.models.model_svm import SVM_model
 
@@ -154,3 +159,46 @@ class Modelrunner:
                 " classifier"
             )
         return self.model
+
+    def _check_balancing(self):
+        balancing = self.util.config_val("FEATS", "balancing", False)
+        if balancing:
+            orig_size = self.feats_train.shape[0]
+            self.util.debug(f"balancing the training features with: {balancing}")
+            if balancing == "ros":
+                from imblearn.over_sampling import RandomOverSampler
+
+                sampler = RandomOverSampler()
+                X_res, y_res = sampler.fit_resample(
+                    self.feats_train, self.df_train[self.target]
+                )
+            elif balancing == "smote":
+                from imblearn.over_sampling import SMOTE
+
+                sampler = SMOTE()
+                X_res, y_res = sampler.fit_resample(
+                    self.feats_train, self.df_train[self.target]
+                )
+            elif balancing == "adasyn":
+                from imblearn.over_sampling import ADASYN
+
+                sampler = ADASYN()
+                X_res, y_res = sampler.fit_resample(
+                    self.feats_train, self.df_train[self.target]
+                )
+            else:
+                self.util.error(
+                    f"unknown balancing algorithm: {balancing} (should be [ros|smote|adasyn])"
+                )
+
+            self.feats_train = X_res
+            self.df_train = pd.DataFrame({self.target: y_res}, index=X_res.index)
+            self.util.debug(
+                f"balanced with: {balancing}, new size: {X_res.shape[0]} (was {orig_size})"
+            )
+            le = glob_conf.label_encoder
+            res = y_res.value_counts()
+            resd = {}
+            for i, e in enumerate(le.inverse_transform(res.index.values)):
+                resd[e] = res.values[i]
+            self.util.debug(f"{resd})")
