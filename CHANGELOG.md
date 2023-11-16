@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.69.0
+--------------
+* added CNN model and melspec extractor
+
 Version 0.68.4
 --------------
 * bugfix: got_gender was uncorrectly set
