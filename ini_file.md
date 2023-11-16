@@ -170,6 +170,9 @@
     * **praat**: Praat selected features thanks to [David R. Feinberg scripts](https://github.com/drfeinberg/PraatScripts)
       * **praat.features**: list of selected features (disregard others)
     * **spectra**: Melspecs for convolutional networks
+      * **fft_win_dur** = 25 *(msec analysis frame/window length)*
+      * **fft_hop_dur** = 10 *(msec hop duration)*
+      * **fft_nbands** = 64 *(number of frequency bands)*
     * **trill**: [TRILL embeddings](https://ai.googleblog.com/2020/06/improving-speech-representations-and.html) from Google
       * **trill.model** = *path to the TRILL model folder, optional*
     * **wav2vec variants**: [wav2vec2 embeddings](https://huggingface.co/facebook/wav2vec2-large-robust-ft-swbd-300h) from facebook
