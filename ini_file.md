@@ -237,7 +237,7 @@
     * **xgr**: XG-Boost Regression
     * **mlp**: Multi-Layer-Perceptron for classification
     * **mlp_reg**: Multi-Layer-Perceptron for regression
-    * **cnn**: Convolutional neural network (tbd)
+    * **cnn**: Convolutional neural network (only works with feature type=spectra)
 * **tuning_params**: possible tuning parameters for x-fold optimization (for Bayes, KNN, KNN_reg, Tree, Tree_reg, SVM, SVR, XGB and XGR)
   * tuning_params = ['subsample', 'n_estimators', 'max_depth']
     * subsample = [.5, .7]

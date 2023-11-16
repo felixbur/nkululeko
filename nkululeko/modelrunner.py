@@ -46,9 +46,7 @@ class Modelrunner:
                 self.model.train()
             report = self.model.predict()
             report.set_id(self.run, epoch)
-            plot_name = (
-                self.util.get_plot_name() + f"_{self.run}_{epoch:03d}_cnf"
-            )
+            plot_name = self.util.get_plot_name() + f"_{self.run}_{epoch:03d}_cnf"
             reports.append(report)
             self.util.debug(
                 f"run: {self.run} epoch: {epoch}: result: "
@@ -131,7 +129,6 @@ class Modelrunner:
                 self.df_train, self.df_test, self.feats_train, self.feats_test
             )
         elif model_type == "cnn":
-            from nkululeko.models.model_cnn import CNN_model
             from nkululeko.models.model_cnn import CNN_model
 
             self.model = CNN_model(

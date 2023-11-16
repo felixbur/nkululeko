@@ -1,65 +1,141 @@
-# cnnmodel.py
+""" 
+model_cnn.py
 
-from sklearn.utils import resample
-from nkululeko.models.model import Model
+Inspired by code from Su Lei
+
+"""
 import torch
-from sklearn.metrics import mean_squared_error
-import nkululeko.glob_conf as glob_conf
-from nkululeko.reporter import Reporter
+import torch.nn as nn
+import torch.nn.functional as F
+import torchvision
+import torchvision.transforms as transforms
+from torch.utils.data import Dataset
+import ast
 import numpy as np
-from nkululeko.losses.loss_ccc import ConcordanceCorCoeff
+from sklearn.metrics import recall_score
+from collections import OrderedDict
+from PIL import Image
+
+from nkululeko.util import Util
+import nkululeko.glob_conf as glob_conf
+from nkululeko.models.model import Model
+from nkululeko.reporter import Reporter
+from nkululeko.losses.loss_softf1loss import SoftF1Loss
 
 
 class CNN_model(Model):
-    """A CNN (convolutional neural net) model"""
+    """CNN = convolutional neural net"""
 
     is_classifier = True
 
     def __init__(self, df_train, df_test, feats_train, feats_test):
         """Constructor taking the configuration and all dataframes"""
-        Model.__init__(self, df_train, df_test, feats_train, feats_test)
-        self.util.debug(f"initializing model")
-        self.device = glob_conf.config["MODEL"]["device"]
-        pretrained_state = self.util.config_val(
-            "MODEL", "pre_train", "gender_state.pth.tar"
-        )
-        state = torch.load(pretrained_state)
-        state.pop("out.gender.weight")
-        state.pop("out.gender.bias")
-        state["fc1.weight"] = state.pop("fc1.gender.weight")
-        state["fc1.bias"] = state.pop("fc1.gender.bias")
-        model = audpann.Cnn10(sampling_rate=16000, output_dim=1)
-        model.load_state_dict(state, strict=False)
-        self.model = model.to(self.device)
-        self.loss_func = self.util.config_val("MODEL", "loss", "mse")
-        if self.loss_func == "mse":
-            self.criterion = torch.nn.MSELoss()
-        elif self.loss_func == "1-ccc":
-            self.criterion = ConcordanceCorCoeff()
+        super().__init__(df_train, df_test, feats_train, feats_test)
+        self.target = glob_conf.config["DATA"]["target"]
+        labels = glob_conf.labels
+        self.class_num = len(labels)
+        # set up loss criterion
+        criterion = self.util.config_val("MODEL", "loss", "cross")
+        if criterion == "cross":
+            self.criterion = torch.nn.CrossEntropyLoss()
+        elif criterion == "f1":
+            self.criterion = SoftF1Loss(
+                num_classes=self.class_num, weight=None, epsilon=1e-7
+            )
         else:
-            self.util.error(f"unknown loss function: {self.loss_func}")
-        self.util.debug(f"training model with {self.loss_func} loss function")
+            self.util.error(f"unknown loss function: {criterion}")
+        self.util.debug(f"using model with cross entropy loss function")
+        # set up the model
+        self.device = self.util.config_val("MODEL", "device", "cpu")
+        try:
+            layers_string = glob_conf.config["MODEL"]["layers"]
+        except KeyError as ke:
+            self.util.error(f"Please provide MODEL layers: {ke}")
+        self.util.debug(f"using layers {layers_string}")
+        layers = ast.literal_eval(layers_string)
+        # with dropout?
+        drop = self.util.config_val("MODEL", "drop", False)
+        if drop:
+            self.util.debug(f"init: training with dropout: {drop}")
+        self.model = myCNN(layers, self.class_num).to(self.device)
         self.learning_rate = float(
             self.util.config_val("MODEL", "learning_rate", 0.0001)
         )
+        # set up regularization
         self.optimizer = torch.optim.Adam(
             self.model.parameters(), lr=self.learning_rate
         )
+        # batch size
+        self.batch_size = int(self.util.config_val("MODEL", "batch_size", 8))
+        # number of parallel processes
+        self.num_workers = int(self.util.config_val("MODEL", "num_workers", 5))
+
+        # set up the data_loaders
+
+        # Define transformations
+        transformations = transforms.Compose(
+            [
+                transforms.ToTensor()
+                # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            ]
+        )
+        train_set = self.Dataset_image(
+            feats_train, df_train, self.target, transformations
+        )
+        test_set = self.Dataset_image(feats_test, df_test, self.target, transformations)
+        # Define data loaders
+        self.trainloader = torch.utils.data.DataLoader(
+            train_set,
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=self.num_workers,
+        )
+        self.testloader = torch.utils.data.DataLoader(
+            test_set,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+        )
+
+    class Dataset_image(Dataset):
+        def __init__(self, df_feats, df_labels, target, transform=None):
+            self.df_feats = df_feats
+            self.df_labels = df_labels
+            self.transform = transform
+            self.target = target
+
+        def __len__(self):
+            return len(self.df_feats)
+
+        def __getitem__(self, idx):
+            # Load the image file
+            img_path = self.df_feats.iloc[idx, 0]
+            image = Image.open(img_path)
+            # Get emotion label
+            label = self.df_labels[self.target][idx]
+            if self.transform:
+                image = self.transform(image)
+            return image, label
+
+    def set_testdata(self, data_df, feats_df):
+        test_set = self.Dataset_image(feats_df, data_df)
+        # Define data loaders
+        self.testloader = torch.utils.data.DataLoader(
+            test_set,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+        )
+
+    def reset_test(self, df_test, feats_test):
+        self.set_testdata(df_test, feats_test)
 
     def train(self):
-        """Train the model one epoch"""
-        losses = []
-        # first check if the model already has been trained
-        # if os.path.isfile(self.store_path):
-        #     self.load(self.run, self.epoch)
-        #     self.util.debug(f'reusing model: {self.store_path}')
-        #     return
-
         self.model.train()
-
-        for features, labels in self.feats_train:
-            logits = self.model(features.to(self.device).float()).squeeze(1)
-            loss = self.criterion(logits, labels.float().to(self.device))
+        losses = []
+        for images, labels in self.trainloader:
+            logits = self.model(images.to(self.device))
+            loss = self.criterion(logits, labels.to(self.device, dtype=torch.int64))
             losses.append(loss.item())
             self.optimizer.zero_grad()
             loss.backward()
@@ -67,67 +143,106 @@ class CNN_model(Model):
         self.loss = (np.asarray(losses)).mean()
 
     def predict(self):
-        """Predict the whole eval feature set"""
-        # evaluate on dev set
-        _, truths, predictions = self.evaluate_model(False)
-        # evaluate on train set, if there is one
-        result = 0
-        if self.feats_train != None:
-            result, _, _ = self.evaluate_model(True)
-        report = Reporter(
-            truths.numpy(), predictions.numpy(), self.run, self.epoch
+        _, truths, predictions = self.evaluate_model(
+            self.model, self.testloader, self.device
         )
+        uar, _, _ = self.evaluate_model(self.model, self.trainloader, self.device)
+        report = Reporter(truths, predictions, self.run, self.epoch)
         try:
             report.result.loss = self.loss
-        except (
-            AttributeError
-        ):  # if the model was loaded from disk the loss is unknown
+        except AttributeError:  # if the model was loaded from disk the loss is unknown
             pass
-        report.result.train = result
+        report.result.train = uar
         return report
 
-    def evaluate_model(self, on_train=False):
-        if on_train:
-            loader = self.feats_train
-        else:
-            loader = self.feats_test
-        logits = torch.zeros(len(loader.dataset))
+    def get_predictions(self):
+        _, truths, predictions = self.evaluate_model(
+            self.model, self.testloader, self.device
+        )
+        return predictions.numpy()
+
+    def evaluate_model(self, model, loader, device):
+        logits = torch.zeros(len(loader.dataset), self.class_num)
         targets = torch.zeros(len(loader.dataset))
-        self.model.eval()
+        model.eval()
         with torch.no_grad():
-            for index, (features, labels) in enumerate(loader):
+            for index, (images, labels) in enumerate(loader):
                 start_index = index * loader.batch_size
                 end_index = (index + 1) * loader.batch_size
                 if end_index > len(loader.dataset):
                     end_index = len(loader.dataset)
-                logits[start_index:end_index] = self.model(
-                    features.to(self.device).float()
-                ).squeeze(1)
+                logits[start_index:end_index, :] = model(images.to(device))
                 targets[start_index:end_index] = labels
 
-        measure = self.util.config_val("MODEL", "measure", "mse")
-        if measure == "mse":
-            result = mean_squared_error(targets.numpy(), logits.numpy())
-        elif measure == "ccc":
-            result = Reporter.ccc(targets.numpy(), logits.numpy())
-        else:
-            self.util.error(f"unknown measure: {measure}")
-        return result, targets, logits
+        predictions = logits.argmax(dim=1)
+        uar = recall_score(targets.numpy(), predictions.numpy(), average="macro")
+        return uar, targets, predictions
+
+    def predict_sample(self, features):
+        """Predict one sample"""
+        with torch.no_grad():
+            logits = self.model(torch.from_numpy(features).to(self.device))
+        a = logits.numpy()
+        res = {}
+        for i in range(len(a[0])):
+            res[i] = a[0][i]
+        return res
 
     def store(self):
         torch.save(self.model.state_dict(), self.store_path)
-        self.device = self.util.config_val("MODEL", "device", "cpu")
-        # self.model.to(self.device)
 
     def load(self, run, epoch):
         self.set_id(run, epoch)
         dir = self.util.get_path("model_dir")
-        name = (
-            f"{self.util.get_exp_name(only_train=True)}_{run}_{epoch:03d}.model"
-        )
+        # name = f'{self.util.get_exp_name()}_{run}_{epoch:03d}.model'
+        name = f"{self.util.get_exp_name(only_train=True)}_{self.run}_{self.epoch:03d}.model"
         self.device = self.util.config_val("MODEL", "device", "cpu")
+        layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])
         self.store_path = dir + name
-        self.model = audpann.Cnn10(sampling_rate=16000, output_dim=1)
-        state_dict = torch.load(dir + name, map_location="cpu")
-        self.model.load_state_dict(state_dict, strict=False)
-        self.model.to(self.device)
+        drop = self.util.config_val("MODEL", "drop", False)
+        if drop:
+            self.util.debug(f"loading: dropout set to: {drop}")
+        self.model = self.MLP(
+            self.feats_train.shape[1], layers, self.class_num, drop
+        ).to(self.device)
+        self.model.load_state_dict(torch.load(self.store_path))
+        self.model.eval()
+
+    def load_path(self, path, run, epoch):
+        self.set_id(run, epoch)
+        with open(path, "rb") as handle:
+            self.device = self.util.config_val("MODEL", "device", "cpu")
+            layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])
+            self.store_path = path
+            drop = self.util.config_val("MODEL", "drop", False)
+            if drop:
+                self.util.debug(f"dropout set to: {drop}")
+            self.model = self.MLP(
+                self.feats_train.shape[1], layers, self.class_num, drop
+            ).to(self.device)
+            self.model.load_state_dict(torch.load(self.store_path))
+            self.model.eval()
+
+
+class myCNN(torch.nn.Module):
+    def __init__(self, layers, class_num):
+        sorted_layers = sorted(layers.items(), key=lambda x: x[1])
+        l1 = sorted_layers[0][1]
+        l2 = sorted_layers[1][1]
+        super(myCNN, self).__init__()
+        self.conv1 = nn.Conv2d(3, 6, 5)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.conv2 = nn.Conv2d(6, 16, 5)
+        self.fc1 = nn.Linear(16 * 61 * 61, l1)
+        self.fc2 = nn.Linear(l1, l2)
+        self.fc3 = nn.Linear(l2, class_num)
+
+    def forward(self, x):
+        # -> n, 3, 256, 256
+        x = self.pool(F.relu(self.conv1(x)))  # -> n, 6, 126, 126
+        x = self.pool(F.relu(self.conv2(x)))  # -> n, 16, 61, 61
+        x = x.view(-1, 16 * 61 * 61)  # -> n, 59536
+        x = F.relu(self.fc1(x))  # -> n, 120
+        x = F.relu(self.fc2(x))  # -> n, 84
+        x = self.fc3(x)  # -> n, 7
+        return x

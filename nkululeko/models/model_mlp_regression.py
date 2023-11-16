@@ -36,13 +36,14 @@ class MLP_Reg_model(Model):
         self.device = self.util.config_val("MODEL", "device", "cpu")
         layers_string = glob_conf.config["MODEL"]["layers"]
         self.util.debug(f"using layers {layers_string}")
-        layers = ast.literal_eval(layers_string)
+        try:
+            layers = ast.literal_eval(layers_string)
+        except KeyError as ke:
+            self.util.error(f"Please provide MODEL layers: {ke}")
         drop = self.util.config_val("MODEL", "drop", False)
         if drop:
             self.util.debug(f"training with dropout: {drop}")
-        self.model = self.MLP(feats_train.shape[1], layers, 1, drop).to(
-            self.device
-        )
+        self.model = self.MLP(feats_train.shape[1], layers, 1, drop).to(self.device)
         self.learning_rate = float(
             self.util.config_val("MODEL", "learning_rate", 0.0001)
         )
@@ -63,8 +64,7 @@ class MLP_Reg_model(Model):
             feats_train = feats_train.fillna(0)
         if feats_test.isna().to_numpy().any():
             self.util.debug(
-                f"Model, test: replacing {feats_test.isna().sum().sum()} NANs"
-                " with 0"
+                f"Model, test: replacing {feats_test.isna().sum().sum()} NANs" " with 0"
             )
             feats_test = feats_test.fillna(0)
         self.trainloader = self.get_loader(feats_train, df_train, True)
@@ -87,17 +87,11 @@ class MLP_Reg_model(Model):
         _, truths, predictions = self.evaluate_model(
             self.model, self.testloader, self.device
         )
-        result, _, _ = self.evaluate_model(
-            self.model, self.trainloader, self.device
-        )
-        report = Reporter(
-            truths.numpy(), predictions.numpy(), self.run, self.epoch
-        )
+        result, _, _ = self.evaluate_model(self.model, self.trainloader, self.device)
+        report = Reporter(truths.numpy(), predictions.numpy(), self.run, self.epoch)
         try:
             report.result.loss = self.loss
-        except (
-            AttributeError
-        ):  # if the model was loaded from disk the loss is unknown
+        except AttributeError:  # if the model was loaded from disk the loss is unknown
             pass
         report.result.train = result
         return report
@@ -124,15 +118,9 @@ class MLP_Reg_model(Model):
 
         def __getitem__(self, item):
             index = self.df.index[item]
-            features = (
-                self.df_features.loc[index, :]
-                .values.astype("float32")
-                .squeeze()
-            )
+            features = self.df_features.loc[index, :].values.astype("float32").squeeze()
             labels = (
-                np.array([self.df.loc[index, self.label]])
-                .astype("float32")
-                .squeeze()
+                np.array([self.df.loc[index, self.label]]).astype("float32").squeeze()
             )
             return features, labels
 
@@ -188,9 +176,7 @@ class MLP_Reg_model(Model):
                 end_index = (index + 1) * loader.batch_size
                 if end_index > len(loader.dataset):
                     end_index = len(loader.dataset)
-                logits[start_index:end_index] = model(
-                    features.to(device)
-                ).reshape(-1)
+                logits[start_index:end_index] = model(features.to(device)).reshape(-1)
                 targets[start_index:end_index] = labels
 
         predictions = logits
@@ -209,9 +195,7 @@ class MLP_Reg_model(Model):
     def load(self, run, epoch):
         self.set_id(run, epoch)
         dir = self.util.get_path("model_dir")
-        name = (
-            f"{self.util.get_exp_name(only_train=True)}_{run}_{epoch:03d}.model"
-        )
+        name = f"{self.util.get_exp_name(only_train=True)}_{run}_{epoch:03d}.model"
         self.store_path = dir + name
         self.device = self.util.config_val("MODEL", "device", "cpu")
         layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])

@@ -42,7 +42,14 @@ class FeatureExtractor:
             store_name = f"{self.data_name}_{feats_type}"
             if feats_type == "os":
                 from nkululeko.feat_extract.feats_opensmile import Opensmileset
+
                 self.featExtractor = Opensmileset(
+                    f"{store_name}_{self.feats_designation}", self.data_df
+                )
+            elif feats_type == "spectra":
+                from nkululeko.feat_extract.feats_spectra import Spectraloader
+
+                self.featExtractor = Spectraloader(
                     f"{store_name}_{self.feats_designation}", self.data_df
                 )
             elif feats_type == "trill":
@@ -85,7 +92,6 @@ class FeatureExtractor:
                     self.data_df,
                     feats_type,
                 )
-
             elif feats_type == "audmodel":
                 from nkululeko.feat_extract.feats_audmodel import AudModelSet
 
@@ -166,9 +172,7 @@ class FeatureExtractor:
             # remove samples that were not extracted by MLD
             # self.df_test = self.df_test.loc[self.df_test.index.intersection(featExtractor_test.df.index)]
             # self.df_train = self.df_train.loc[self.df_train.index.intersection(featExtractor_train.df.index)]
-            self.util.debug(
-                f"{feats_type}: shape : {self.featExtractor.df.shape}"
-            )
+            self.util.debug(f"{feats_type}: shape : {self.featExtractor.df.shape}")
             self.feats = pd.concat([self.feats, self.featExtractor.df], axis=1)
         return self.feats
 
