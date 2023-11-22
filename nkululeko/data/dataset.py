@@ -157,6 +157,10 @@ class Dataset:
                     df["gender"] = df_target["gender"]
                 if got_age2:
                     df["age"] = df_target["age"]
+                # copy other column
+                for column in df_target.columns:
+                    if column not in [self.target, "age", "speaker", "gender"]:
+                        df[column] = df_target[column]
             except audformat.core.errors.BadKeyError:
                 pass
 
@@ -259,6 +263,10 @@ class Dataset:
                 is_labeled = True
             except (ValueError, audformat.core.errors.BadKeyError) as e:
                 pass
+            # copy other column
+            for column in source_df.columns:
+                if column not in [self.target, "age", "speaker", "gender"]:
+                    df_local[column] = source_df[column]
             df = pd.concat([df, df_local])
         return df, is_labeled, got_speaker, got_gender, got_age
 

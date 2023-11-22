@@ -71,4 +71,17 @@ def get_effect_size(df, target, variable):
         other = combo[1]
         results[f"{one}-{other}"] = cohen_d(cats[one], cats[other])
     max_cat = max(results, key=results.get)
-    return max_cat, results[max_cat]
+    cat_s = cohens_D_to_string(float(results[max_cat]))
+    return max_cat, cat_s, results[max_cat]
+
+
+def cohens_D_to_string(val):
+    if val < 0.2:
+        rval = "no effect"
+    elif val < 0.2:
+        rval = "small effect"
+    elif val < 0.5:
+        rval = "middle effect"
+    else:
+        rval = "large effect"
+    return f"Cohen's d: {rval}"

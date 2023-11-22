@@ -95,7 +95,7 @@ class Plots:
         attributes = ast.literal_eval(
             self.util.config_val("EXPL", "value_counts", False)
         )
-        dist_type = self.util.config_val("EXPL", "dist_type", "hist")
+        dist_type = self.util.config_val("EXPL", "dist_type", "kde")
         bin_reals = eval(self.util.config_val("EXPL", "bin_reals", "True"))
         for att in attributes:
             if len(att) == 1:
@@ -105,25 +105,50 @@ class Plots:
                 self.util.debug(f"plotting {att[0]}")
                 filename = f"{self.target}-{att[0]}"
                 if self.util.is_categorical(df[att[0]]):
-                    crosstab = pd.crosstab(index=df["class_label"], columns=df[att[0]])
-                    res_pval = stats.chi2_contingency(crosstab)
-                    res_pval = int(res_pval[1] * 1000) / 1000
-                    caption = f"{type} {df.shape[0]}. P-val chi2: {res_pval}"
-                    ax = (
-                        df.groupby("class_label")[att[0]]
-                        .value_counts()
-                        .unstack()
-                        .plot(kind="bar", stacked=True, title=caption, rot=0)
-                    )
-                    ax.set_ylabel(f"number of {type}")
-                    ax.set_xlabel(self.target)
+                    if self.util.is_categorical(df["class_label"]):
+                        crosstab = pd.crosstab(
+                            index=df["class_label"], columns=df[att[0]]
+                        )
+                        res_pval = stats.chi2_contingency(crosstab)
+                        res_pval = int(res_pval[1] * 1000) / 1000
+                        caption = f"{type} {df.shape[0]}. P-val chi2: {res_pval}"
+                        ax = (
+                            df.groupby("class_label")[att[0]]
+                            .value_counts()
+                            .unstack()
+                            .plot(kind="bar", stacked=True, title=caption, rot=0)
+                        )
+                        ax.set_ylabel(f"number of {type}")
+                        ax.set_xlabel(self.target)
+                    else:
+                        cats, cat_str, es = su.get_effect_size(
+                            df, att[0], "class_label"
+                        )
+                        if dist_type == "hist":
+                            ax = sns.histplot(df, x="class_label", hue=att[0], kde=True)
+                            caption = (
+                                f"{type} {df.shape[0]}. {cat_str} ({cats}):" f" {es}"
+                            )
+                            ax.set_title(caption)
+                            ax.set_xlabel(f"value of {att[0]}")
+                            ax.set_ylabel(f"number of {type}")
+                        else:
+                            ax = sns.displot(
+                                df, x="class_label", hue=att[0], kind="kde", fill=True
+                            )
+                            caption = (
+                                f"{type} {df.shape[0]}. {cat_str} ({cats}):" f" {es}"
+                            )
+                            ax.fig.suptitle(caption)
                 else:
                     if self.util.is_categorical(df[self.target]) or bin_reals:
-                        cats, es = su.get_effect_size(df, "class_label", att[0])
+                        cats, cat_str, es = su.get_effect_size(
+                            df, "class_label", att[0]
+                        )
                         if dist_type == "hist":
                             ax = sns.histplot(df, x=att[0], hue="class_label", kde=True)
                             caption = (
-                                f"{type} {df.shape[0]}. Effect size ({cats}):" f" {es}"
+                                f"{type} {df.shape[0]}. {cat_str} ({cats}):" f" {es}"
                             )
                             ax.set_title(caption)
                             ax.set_xlabel(f"value of {att[0]}")
@@ -137,7 +162,7 @@ class Plots:
                                 fill=True,
                             )
                             caption = (
-                                f"{type} {df.shape[0]}. Effect size ({cats}):" f" {es}"
+                                f"{type} {df.shape[0]}. {cat_str} ({cats}):" f" {es}"
                             )
                             ax.fig.suptitle(caption)
                     else:
@@ -148,7 +173,7 @@ class Plots:
                         caption = f"{type} {df.shape[0]}. {pearson_string}"
                         ax.set_title(caption)
                 fig = ax.figure
-                plt.tight_layout()
+                # plt.tight_layout()
                 img_path = f"{fig_dir}{filename}_{type}.{self.format}"
                 plt.savefig(img_path)
                 plt.close(fig)
