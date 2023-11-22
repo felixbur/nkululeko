@@ -9,7 +9,6 @@
 - [Documentation](#documentation)
 - [Installation](#installation)
 - [Usage](#usage)
-  - [Initialization file](#initialization-file)
   - [Hello World example](#hello-world-example)
   - [Features](#features)
 - [License](#license)
@@ -186,27 +185,6 @@ There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
 * [re-name data column names](http://blog.syntheticspeech.de/2023/11/16/nkululeko-re-name-data-column-names/)
 * [Oversample the training set](http://blog.syntheticspeech.de/2023/11/16/nkululeko-oversample-the-training-set/)  
 
-The framework is targeted at the speech domain and supports experiments where different classifiers are combined with different feature extractors.
-
-Here's a rough UML-like sketch of the framework (and [here's the real one done with pyreverse](meta/images/classes.png)).
-![sketch](meta/images/class_diagram.png)
-
-
-Currently, the following linear classifiers are implemented (integrated from sklearn):
-* SVM, SVR, XGB, XGR, Tree, Tree_regressor, KNN, KNN_regressor, NaiveBayes, GMM
-  and the following ANNs (artificial neural networks)
-* MLP (multi-layer perceptron), CNN (convolutional neural network)
-
-Here's [an animation that shows the progress of classification done with nkululeko](https://youtu.be/6Y0M382GjvM)
-
-### Initialization file
-You could 
-* use a generic main python file (like my_experiment.py), 
-* adapt the path to your nkululeko src 
-* and then adapt an .ini file (again fitting at least the paths to src and data)
-  
-Here's [an overview of the ini-file options](./ini_file.md)
-
 ### <a name="helloworld">Hello World example</a>
 * NEW: [Here's a Google colab that runs this example out-of-the-box](https://colab.research.google.com/drive/1GYNBd5cdZQ1QC3Jm58qoeMaJg3UuPhjw?usp=sharing#scrollTo=4G_SjuF9xeQf), and here is the same [with Kaggle](https://www.kaggle.com/felixburk/nkululeko-hello-world-example)
 * [I made a video to show you how to do this on Windows](https://www.youtube.com/playlist?list=PLRceVavtxLg0y2jiLmpnUfiMtfvkK912D)
@@ -240,12 +218,25 @@ Here's [an overview of the ini-file options](./ini_file.md)
 * There are many ways to experiment with different classifiers and acoustic features sets, [all described here](https://github.com/felixbur/nkululeko/blob/main/ini_file.md)
   
 ### Features
+The framework is targeted at the speech domain and supports experiments where different classifiers are combined with different feature extractors.
+
 * Classifiers: Naive Bayes, KNN, Tree, XGBoost, SVM, MLP
 * Feature extractors: Praat, Opensmile, openXBOW BoAW, TRILL embeddings, Wav2vec2 embeddings, audModel embeddings, ...
 * Feature scaling
 * Label encoding
 * Binning (continuous to categorical)
 * Online demo interface for trained models 
+
+Here's a rough UML-like sketch of the framework (and [here's the real one done with pyreverse](meta/images/classes.png)).
+![sketch](meta/images/class_diagram.png)
+
+Currently, the following linear classifiers are implemented (integrated from sklearn):
+* SVM, SVR, XGB, XGR, Tree, Tree_regressor, KNN, KNN_regressor, NaiveBayes, GMM
+  and the following ANNs (artificial neural networks)
+* MLP (multi-layer perceptron), CNN (convolutional neural network)
+
+Here's [an animation that shows the progress of classification done with nkululeko](https://youtu.be/6Y0M382GjvM)
+
 
 ## License
 Nkululeko can be used under the [MIT license](https://choosealicense.com/licenses/mit/)
