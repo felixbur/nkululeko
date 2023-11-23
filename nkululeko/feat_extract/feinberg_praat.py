@@ -466,11 +466,11 @@ def get_speech_rate(file_index):
     cols = [
         "nsyll",
         "npause",
-        "dur(s)",
-        "phonationtime(s)",
-        "speechrate(nsyll / dur)",
-        "articulation rate(nsyll / phonationtime)",
-        "ASD(speakingtime / nsyll)",
+        "dur_s",
+        "phonationtime_s",
+        "speechrate_nsyll_dur",
+        "articulation_rate_nsyll_phonationtime",
+        "ASD_speakingtime_nsyll",
     ]
     datalist = []
     for idx, (wave_file, start, end) in enumerate(tqdm(file_index.to_list())):
@@ -621,10 +621,10 @@ def speech_rate(sound):
     speechrate_dictionary = {
         "nsyll": voicedcount,
         "npause": npause,
-        "dur(s)": originaldur,
-        "phonationtime(s)": intensity_duration,
-        "speechrate(nsyll / dur)": speakingrate,
-        "articulation rate(nsyll / phonationtime)": articulationrate,
-        "ASD(speakingtime / nsyll)": asd,
+        "dur_s": originaldur,
+        "phonationtime_s": intensity_duration,
+        "speechrate_nsyll_dur": speakingrate,
+        "articulation_rate_nsyll_phonationtime": articulationrate,
+        "ASD_speakingtime_nsyll": asd,
     }
     return speechrate_dictionary

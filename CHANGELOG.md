@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Version 0.71.1
+--------------
+* made a wav2vec default 
+* renamed praat features, ommiting spaces
+* fixed plot distribution bugs
+* added feature plots for continuous targets
+
 Version 0.71.0
 --------------
 * added explore visuals. 

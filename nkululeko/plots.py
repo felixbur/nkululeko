@@ -88,93 +88,57 @@ class Plots:
                     img_path,
                 )
             )
-        self.plot_distributions(df_speakers, type="speakers")
+        self.plot_distributions(df_speakers, type_s="speakers")
 
-    def plot_distributions(self, df, type="samples"):
+    def plot_distributions(self, df, type_s="samples"):
         fig_dir = self.util.get_path("fig_dir") + "../"  # one up because of the runs
         attributes = ast.literal_eval(
             self.util.config_val("EXPL", "value_counts", False)
         )
-        dist_type = self.util.config_val("EXPL", "dist_type", "kde")
-        bin_reals = eval(self.util.config_val("EXPL", "bin_reals", "True"))
+        bin_reals = eval(self.util.config_val("EXPL", "bin_reals", "False"))
         for att in attributes:
             if len(att) == 1:
-                caption, title = "", ""
                 if att[0] not in df:
                     self.util.error(f"unknown feature: {att[0]}")
                 self.util.debug(f"plotting {att[0]}")
                 filename = f"{self.target}-{att[0]}"
                 if self.util.is_categorical(df[att[0]]):
                     if self.util.is_categorical(df["class_label"]):
-                        crosstab = pd.crosstab(
-                            index=df["class_label"], columns=df[att[0]]
+                        ax, caption = self._plot2cat(
+                            df, "class_label", att[0], self.target, type_s
                         )
-                        res_pval = stats.chi2_contingency(crosstab)
-                        res_pval = int(res_pval[1] * 1000) / 1000
-                        caption = f"{type} {df.shape[0]}. P-val chi2: {res_pval}"
-                        ax = (
-                            df.groupby("class_label")[att[0]]
-                            .value_counts()
-                            .unstack()
-                            .plot(kind="bar", stacked=True, title=caption, rot=0)
-                        )
-                        ax.set_ylabel(f"number of {type}")
-                        ax.set_xlabel(self.target)
                     else:
-                        cats, cat_str, es = su.get_effect_size(
-                            df, att[0], "class_label"
+                        ax, caption = self._plotcatcont(
+                            df, "class_label", att[0], self.target, type_s
                         )
-                        if dist_type == "hist":
-                            ax = sns.histplot(df, x="class_label", hue=att[0], kde=True)
-                            caption = (
-                                f"{type} {df.shape[0]}. {cat_str} ({cats}):" f" {es}"
-                            )
-                            ax.set_title(caption)
-                            ax.set_xlabel(f"value of {att[0]}")
-                            ax.set_ylabel(f"number of {type}")
-                        else:
-                            ax = sns.displot(
-                                df, x="class_label", hue=att[0], kind="kde", fill=True
-                            )
-                            caption = (
-                                f"{type} {df.shape[0]}. {cat_str} ({cats}):" f" {es}"
-                            )
-                            ax.fig.suptitle(caption)
                 else:
-                    if self.util.is_categorical(df[self.target]) or bin_reals:
-                        cats, cat_str, es = su.get_effect_size(
-                            df, "class_label", att[0]
-                        )
-                        if dist_type == "hist":
-                            ax = sns.histplot(df, x=att[0], hue="class_label", kde=True)
-                            caption = (
-                                f"{type} {df.shape[0]}. {cat_str} ({cats}):" f" {es}"
+                    if self.util.is_categorical(df["class_label"]) or bin_reals:
+                        if bin_reals:
+                            self.util.debug(
+                                f"{self.name}: binning continuous variable to categories"
                             )
-                            ax.set_title(caption)
-                            ax.set_xlabel(f"value of {att[0]}")
-                            ax.set_ylabel(f"number of {type}")
-                        else:
-                            ax = sns.displot(
+                            cat_vals = self.util.continuous_to_categorical(
+                                df[self.target]
+                            )
+                            df[f"{self.target}_binned"] = cat_vals
+                            ax, caption = self._plotcatcont(
                                 df,
-                                x=att[0],
-                                hue="class_label",
-                                kind="kde",
-                                fill=True,
+                                f"{self.target}_binned",
+                                att[0],
+                                self.target,
+                                type_s,
                             )
-                            caption = (
-                                f"{type} {df.shape[0]}. {cat_str} ({cats}):" f" {es}"
+                        else:
+                            ax, caption = self._plotcatcont(
+                                df, att[0], "class_label", att[0], type_s
                             )
-                            ax.fig.suptitle(caption)
                     else:
-                        pearson = stats.pearsonr(df[self.target], df[att[0]])
-                        pearson = int(pearson[0] * 1000) / 1000
-                        pearson_string = f"PCC: {pearson}"
-                        ax = sns.scatterplot(data=df, x=self.target, y=att[0])
-                        caption = f"{type} {df.shape[0]}. {pearson_string}"
-                        ax.set_title(caption)
+                        ax, caption = self._plot2cont(
+                            df, self.target, att[0], self.target, type_s
+                        )
                 fig = ax.figure
                 # plt.tight_layout()
-                img_path = f"{fig_dir}{filename}_{type}.{self.format}"
+                img_path = f"{fig_dir}{filename}_{type_s}.{self.format}"
                 plt.savefig(img_path)
                 plt.close(fig)
                 glob_conf.report.add_item(
@@ -208,7 +172,7 @@ class Plots:
                     pearson_string = f"PCC: {pearson}"
                     ax = sns.scatterplot(data=df, x=att1, y=att2, hue="class_label")
                 fig = ax.figure
-                ax.set_title(f"{type} {df.shape[0]}. {pearson_string}")
+                ax.set_title(f"{type_s} {df.shape[0]}. {pearson_string}")
                 plt.tight_layout()
                 plt.savefig(f"{fig_dir}{filename}_{type}.{self.format}")
                 plt.close(fig)
@@ -218,6 +182,56 @@ class Plots:
                     "plot value counts: the plot distribution descriptor for"
                     f" {att} has more than 2 values"
                 )
+
+    def _plot2cont(self, df, col1, col2, xlab, ylab):
+        """
+        plot relation of two continuous distributions
+        """
+        pearson = stats.pearsonr(df[col1], df[col2])
+        # trunc to three digits
+        pearson = int(pearson[0] * 1000) / 1000
+        pearson_string = f"PCC: {pearson}"
+        ax = sns.scatterplot(data=df, x=col1, y=col2)
+        caption = f"{ylab} {df.shape[0]}. {pearson_string}"
+        ax.set_title(caption)
+        return ax, caption
+
+    def _plotcatcont(self, df, cat_col, cont_col, xlab, ylab):
+        """
+        plot relation of categorical distribution with continuous
+        """
+        dist_type = self.util.config_val("EXPL", "dist_type", "kde")
+        cats, cat_str, es = su.get_effect_size(df, cont_col, cat_col)
+        if dist_type == "hist":
+            ax = sns.histplot(df, x=cat_col, hue=cont_col, kde=True)
+            caption = f"{ylab} {df.shape[0]}. {cat_str} ({cats}):" f" {es}"
+            ax.set_title(caption)
+            ax.set_xlabel(f"{xlab}")
+            ax.set_ylabel(f"number of {ylab}")
+        else:
+            ax = sns.displot(df, x=cat_col, hue=cont_col, kind="kde", fill=True)
+            ax.set(xlabel=f"{xlab}")
+            caption = f"{ylab} {df.shape[0]}. {cat_str} ({cats}):" f" {es}"
+            ax.fig.suptitle(caption)
+        return ax, caption
+
+    def _plot2cat(self, df, col1, col2, xlab, ylab):
+        """
+        plot relation of 2 categorical distributions
+        """
+        crosstab = pd.crosstab(index=df[col1], columns=df[col2])
+        res_pval = stats.chi2_contingency(crosstab)
+        res_pval = int(res_pval[1] * 1000) / 1000
+        caption = f"{ylab} {df.shape[0]}. P-val chi2: {res_pval}"
+        ax = (
+            df.groupby(col1)[col2]
+            .value_counts()
+            .unstack()
+            .plot(kind="bar", stacked=True, title=caption, rot=0)
+        )
+        ax.set_ylabel(f"number of {ylab}")
+        ax.set_xlabel(xlab)
+        return ax, caption
 
     def plot_durations(self, df, filename, sample_selection, caption=""):
         fig_dir = self.util.get_path("fig_dir") + "../"  # one up because of the runs
@@ -369,10 +383,18 @@ class Plots:
     def plot_feature(self, title, feature, label, df_labels, df_features):
         fig_dir = self.util.get_path("fig_dir") + "../"  # one up because of the runs
         filename = f"{fig_dir}feat_dist_{title}_{feature}.{self.format}"
-        df_plot = pd.DataFrame({label: df_labels[label], feature: df_features[feature]})
-        ax = sns.violinplot(data=df_plot, x=label, y=feature)
-        label = self.util.config_val("DATA", "target", "class_label")
-        ax.set(title=f"{title} samples", xlabel=label)
+        if self.util.is_categorical(df_labels[label]):
+            df_plot = pd.DataFrame(
+                {label: df_labels[label], feature: df_features[feature]}
+            )
+            ax = sns.violinplot(data=df_plot, x=label, y=feature)
+            label = self.util.config_val("DATA", "target", "class_label")
+            ax.set(title=f"{title} samples", xlabel=label)
+        else:
+            plot_df = pd.concat([df_labels, df_features], axis=1)
+            ax, caption = self._plot2cont(plot_df, label, feature, label, feature)
+        # def _plot2cont(self, df, col1, col2, xlab, ylab):
+
         fig = ax.figure
         plt.tight_layout()
         plt.savefig(filename)

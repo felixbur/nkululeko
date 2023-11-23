@@ -19,7 +19,10 @@ class Wav2vec2(Featureset):
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
         self.model_initialized = False
-        self.feat_type = feat_type
+        if feat_type == "wav2vec":
+            self.feat_type = "wav2vec2-large-robust-ft-swbd-300h"
+        else:
+            self.feat_type = feat_type
 
     def init_model(self):
         # load model
@@ -37,9 +40,7 @@ class Wav2vec2(Featureset):
         """Extract the features or load them from disk if present."""
         store = self.util.get_path("store")
         storage = f"{store}{self.name}.pkl"
-        extract = self.util.config_val(
-            "FEATS", "needs_feature_extraction", False
-        )
+        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             if not self.model_initialized:
@@ -57,15 +58,11 @@ class Wav2vec2(Featureset):
                     frame_offset=int(start.total_seconds() * 16000),
                     num_frames=int((end - start).total_seconds() * 16000),
                 )
-                assert (
-                    sampling_rate == 16000
-                ), f"got {sampling_rate} instead of 16000"
+                assert sampling_rate == 16000, f"got {sampling_rate} instead of 16000"
                 emb = self.get_embeddings(signal, sampling_rate, file)
                 emb_series[idx] = emb
             # print(f"emb_series shape: {emb_series.shape}")
-            self.df = pd.DataFrame(
-                emb_series.values.tolist(), index=self.data_df.index
-            )
+            self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
             # print(f"df shape: {self.df.shape}")
             self.df.to_pickle(storage)
             try:
