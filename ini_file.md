@@ -218,7 +218,12 @@
   * possible values:
     * **functional**: aggregated over the whole utterance
     * **lld**: low-level descriptor: framewise
-
+* **balancing**: balance the features with respect to [class distribution](https://imbalanced-learn.org/stable/) 
+  * balancing=smote
+  * possible values:
+    * **ros**: simply repeat random samples from the minority classes
+    * **smote**: *invent* new minority samples by little changes from the existing ones
+    * **adasyn**: similar to smote, but resulting in uneven class distributions 
 ### MODEL
 * **type**: type of classifier
   * type = svm
