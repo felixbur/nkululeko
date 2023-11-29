@@ -101,10 +101,10 @@ class Experiment:
         labels = self.util.config_val("DATA", "labels", False)
         if labels:
             labels = ast.literal_eval(labels)
+            self.util.debug(f"Target labels (from config): {labels}")
         else:
             labels = list(next(iter(self.datasets.values())).df[self.target].unique())
-        # print labels via debug
-        self.util.debug(f"Target labels (user defined): {labels}")
+            self.util.debug(f"Target labels (from database): {labels}")
         glob_conf.set_labels(labels)
         self.util.debug(f"loaded databases {dbs}")
 
@@ -539,22 +539,32 @@ class Experiment:
                 for scatter in scatters:
                     plots.scatter_plot(df_feats, df_labels["class_label"], scatter)
             else:
-                self.util.debug("can't do scatterplot if not classification")
+                self.util.debug(
+                    f"{self.name}: binning continuous variable to categories"
+                )
+                cat_vals = self.util.continuous_to_categorical(df_labels[self.target])
+                df_labels[f"{self.target}_binned"] = cat_vals
+                plots = Plots()
+                for scatter in scatters:
+                    plots.scatter_plot(
+                        df_feats, df_labels[f"{self.target}_binned"], scatter
+                    )
+                # self.util.debug("can't do scatterplot if not classification")
 
         # check if a tsne should be plotted
-        tsne = eval(self.util.config_val("EXPL", "tsne", "False"))
-        if tsne:
-            if self.util.exp_is_classification():
-                plots = Plots()
-                all_feats = self.feats_train.append(self.feats_test)
-                all_labels = self.df_train["class_label"].append(
-                    self.df_test["class_label"]
-                )
-                plots.plotTsne(
-                    all_feats, all_labels, self.util.get_exp_name() + "_tsne"
-                )
-            else:
-                self.util.debug("can't plot tsne if not classification")
+        # tsne = eval(self.util.config_val("EXPL", "tsne", "False"))
+        # if tsne:
+        #     if self.util.exp_is_classification():
+        #         plots = Plots()
+        #         all_feats = self.feats_train.append(self.feats_test)
+        #         all_labels = self.df_train["class_label"].append(
+        #             self.df_test["class_label"]
+        #         )
+        #         plots.plotTsne(
+        #             all_feats, all_labels, self.util.get_exp_name() + "_tsne"
+        #         )
+        #     else:
+        #         self.util.debug("can't plot tsne if not classification")
 
     def _check_scale(self):
         scale = self.util.config_val("FEATS", "scale", False)

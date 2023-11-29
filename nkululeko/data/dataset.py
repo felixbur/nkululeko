@@ -276,7 +276,7 @@ class Dataset:
         storage_test = f"{store}{self.name}_testdf.pkl"
         storage_train = f"{store}{self.name}_traindf.pkl"
         split_strategy = self.util.config_val_data(
-            self.name, "split_strategy", "database"
+            self.name, "split_strategy", "speaker_split"
         )
         self.util.debug(
             f"splitting database {self.name} with strategy {split_strategy}"

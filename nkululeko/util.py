@@ -1,12 +1,12 @@
 # util.py
-import audeer
+import pandas as pd
 import ast
 import sys
 import numpy as np
 import os.path
 import configparser
+import audeer
 import audformat
-import pandas as pd
 
 
 class Util:
@@ -133,6 +133,12 @@ class Util:
         Get a string as name from all databases that are useed
         """
         return "_".join(ast.literal_eval(self.config["DATA"]["databases"]))
+
+    def get_feattype_name(self):
+        """
+        Get a string as name from all feature sets that are useed
+        """
+        return "_".join(ast.literal_eval(self.config["FEATS"]["type"]))
 
     def get_exp_name(self, only_train=False, only_data=False):
         trains_val = self.config_val("DATA", "trains", False)

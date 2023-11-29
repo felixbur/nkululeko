@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.71.2
+--------------
+* enabled scatter plots for continuous labels
+
 Version 0.71.1
 --------------
 * made a wav2vec default 

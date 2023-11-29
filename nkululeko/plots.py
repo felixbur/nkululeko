@@ -299,7 +299,7 @@ class Plots:
     def scatter_plot(self, feats, labels, dimred_type):
         fig_dir = self.util.get_path("fig_dir") + "../"  # one up because of the runs
         sample_selection = self.util.config_val("EXPL", "sample_selection", "all")
-        filename = self.util.get_exp_name() + sample_selection + "_" + dimred_type
+        filename = f"{self.util.get_feattype_name()}_{sample_selection}_{dimred_type}"
         filename = f"{fig_dir}{filename}.{self.format}"
         self.util.debug(f"computing {dimred_type}, this might take a while...")
         data = None
@@ -330,7 +330,7 @@ class Plots:
                 columns=["Dim_1", "Dim_2"],
             )
         else:
-            self.util.error(f"no such dimensionaity reduction functin: {dimred_type}")
+            self.util.error(f"no such dimensionality reduction function: {dimred_type}")
         plot_data = np.vstack((data.T, labels)).T
         plot_df = pd.DataFrame(data=plot_data, columns=("Dim_1", "Dim_2", "label"))
         plt.tight_layout()
