@@ -298,6 +298,8 @@
   * feature_distributions = True
 * **scatter**: make a scatter plot of combined train and test data, colored by label.
   * scatter = ['tsne', 'umap', 'pca']
+* **scatter.target**: target for the scatter plot (defaults to *target* value).
+  * scatter = ['age', 'gender', 'likability]
 * **plot_tree**: Plot a decision tree for classification (Requires model = tree)
   * plot_tree = False
 * **value_counts**: plot distributions of target for the samples and speakers (in the *image_dir*)

@@ -296,13 +296,16 @@ class Plots:
             fig.clear()
             plt.close(fig)
 
-    def scatter_plot(self, feats, labels, dimred_type):
+    def scatter_plot(self, feats, label_df, label, dimred_type):
         fig_dir = self.util.get_path("fig_dir") + "../"  # one up because of the runs
         sample_selection = self.util.config_val("EXPL", "sample_selection", "all")
-        filename = f"{self.util.get_feattype_name()}_{sample_selection}_{dimred_type}"
+        filename = (
+            f"{label}_{self.util.get_feattype_name()}_{sample_selection}_{dimred_type}"
+        )
         filename = f"{fig_dir}{filename}.{self.format}"
         self.util.debug(f"computing {dimred_type}, this might take a while...")
         data = None
+        labels = label_df[label]
         if dimred_type == "tsne":
             data = self.getTsne(feats)
         elif dimred_type == "umap":

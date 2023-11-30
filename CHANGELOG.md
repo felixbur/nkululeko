@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.71.3
+--------------
+* enabled scatter plots for all variables
+
 Version 0.71.2
 --------------
 * enabled scatter plots for continuous labels

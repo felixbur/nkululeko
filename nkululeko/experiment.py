@@ -532,39 +532,29 @@ class Experiment:
 
         # check if a scatterplot should be done
         scatter_var = eval(self.util.config_val("EXPL", "scatter", "False"))
+        scatter_target = self.util.config_val(
+            "EXPL", "scatter.target", "['class_label']"
+        )
         if scatter_var:
             scatters = ast.literal_eval(glob_conf.config["EXPL"]["scatter"])
-            if self.util.exp_is_classification():
-                plots = Plots()
-                for scatter in scatters:
-                    plots.scatter_plot(df_feats, df_labels["class_label"], scatter)
-            else:
-                self.util.debug(
-                    f"{self.name}: binning continuous variable to categories"
-                )
-                cat_vals = self.util.continuous_to_categorical(df_labels[self.target])
-                df_labels[f"{self.target}_binned"] = cat_vals
-                plots = Plots()
-                for scatter in scatters:
-                    plots.scatter_plot(
-                        df_feats, df_labels[f"{self.target}_binned"], scatter
+            scat_targets = ast.literal_eval(scatter_target)
+            plots = Plots()
+            for scat_target in scat_targets:
+                if self.util.is_categorical(df_labels[scat_target]):
+                    for scatter in scatters:
+                        plots.scatter_plot(df_feats, df_labels, scat_target, scatter)
+                else:
+                    self.util.debug(
+                        f"{self.name}: binning continuous variable to categories"
                     )
-                # self.util.debug("can't do scatterplot if not classification")
-
-        # check if a tsne should be plotted
-        # tsne = eval(self.util.config_val("EXPL", "tsne", "False"))
-        # if tsne:
-        #     if self.util.exp_is_classification():
-        #         plots = Plots()
-        #         all_feats = self.feats_train.append(self.feats_test)
-        #         all_labels = self.df_train["class_label"].append(
-        #             self.df_test["class_label"]
-        #         )
-        #         plots.plotTsne(
-        #             all_feats, all_labels, self.util.get_exp_name() + "_tsne"
-        #         )
-        #     else:
-        #         self.util.debug("can't plot tsne if not classification")
+                    cat_vals = self.util.continuous_to_categorical(
+                        df_labels[scat_target]
+                    )
+                    df_labels[f"{scat_target}_bins"] = cat_vals
+                    for scatter in scatters:
+                        plots.scatter_plot(
+                            df_feats, df_labels, f"{scat_target}_bins", scatter
+                        )
 
     def _check_scale(self):
         scale = self.util.config_val("FEATS", "scale", False)
