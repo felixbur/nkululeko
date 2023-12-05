@@ -163,16 +163,16 @@ class Plots:
                 filename = f"{self.target}-{filename}"
                 pearson_string = ""
                 if self.util.is_categorical(df[att1]):
-                    ax = sns.scatterplot(data=df, x=self.target, y=att2, hue=att1)
+                    ax = sns.lmplot(data=df, x=self.target, y=att2, hue=att1)
                 elif self.util.is_categorical(df[att2]):
-                    ax = sns.scatterplot(data=df, x=self.target, y=att1, hue=att2)
+                    ax = sns.lmplot(data=df, x=self.target, y=att1, hue=att2)
                 else:
                     pearson = stats.pearsonr(df[att1], df[att2])
                     pearson = int(pearson[0] * 1000) / 1000
                     pearson_string = f"PCC: {pearson}"
-                    ax = sns.scatterplot(data=df, x=att1, y=att2, hue="class_label")
+                    ax = sns.lmplot(data=df, x=att1, y=att2, hue="class_label")
                 fig = ax.figure
-                ax.set_title(f"{type_s} {df.shape[0]}. {pearson_string}")
+                ax.fig.suptitle(f"{type_s} {df.shape[0]}. {pearson_string}")
                 plt.tight_layout()
                 plt.savefig(f"{fig_dir}{filename}_{type}.{self.format}")
                 plt.close(fig)
@@ -191,9 +191,9 @@ class Plots:
         # trunc to three digits
         pearson = int(pearson[0] * 1000) / 1000
         pearson_string = f"PCC: {pearson}"
-        ax = sns.scatterplot(data=df, x=col1, y=col2)
+        ax = sns.lmplot(data=df, x=col1, y=col2)
         caption = f"{ylab} {df.shape[0]}. {pearson_string}"
-        ax.set_title(caption)
+        ax.fig.suptitle(caption)
         return ax, caption
 
     def _plotcatcont(self, df, cat_col, cont_col, xlab, ylab):

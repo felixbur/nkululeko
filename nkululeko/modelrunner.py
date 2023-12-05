@@ -38,8 +38,12 @@ class Modelrunner:
         reports = []
         plot_epochs = self.util.config_val("PLOT", "epochs", False)
         only_test = self.util.config_val("MODEL", "only_test", False)
+        epoch_num = int(self.util.config_val("EXP", "epochs", 1))
+        if not self.model.is_ANN() and epoch_num > 1:
+            self.util.warn(f"setting epoch num to 1 (was {epoch_num}) if model not ANN")
+            epoch_num = 1
         # for all epochs
-        for epoch in range(int(self.util.config_val("EXP", "epochs", 1))):
+        for epoch in range(epoch_num):
             if only_test:
                 self.model.load(self.run, epoch)
                 self.util.debug(f"reusing model: {self.model.store_path}")

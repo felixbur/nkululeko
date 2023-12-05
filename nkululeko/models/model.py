@@ -24,12 +24,22 @@ class Model:
             feats_train,
             feats_test,
         )
+        self.model_type = "classic"
         self.util = Util("model")
         self.target = self.util.config_val("DATA", "target", "emotion")
         self.run = 0
         self.epoch = 0
         self.logo = self.util.config_val("MODEL", "logo", False)
         self.xfoldx = self.util.config_val("MODEL", "k_fold_cross", False)
+
+    def set_model_type(self, type):
+        self.model_type = type
+
+    def is_ANN(self):
+        if self.model_type == "ann":
+            return True
+        else:
+            return False
 
     def set_testdata(self, data_df, feats_df):
         self.df_test, self.feats_test = data_df, feats_df
@@ -66,9 +76,7 @@ class Model:
             truth_x = feats.iloc[test_index].to_numpy()
             truth_y = targets[test_index]
             predict_y = self.clf.predict(truth_x)
-            report = Reporter(
-                truth_y.astype(float), predict_y, self.run, self.epoch
-            )
+            report = Reporter(truth_y.astype(float), predict_y, self.run, self.epoch)
             self.util.debug(
                 f"result for fold {g_index}:"
                 f" {report.get_result().get_test_result()} "
@@ -121,9 +129,7 @@ class Model:
             fold_count = annos["fold"].nunique()
             self.util.debug(f"using existing folds for {fold_count} groups")
         g_index = 0
-        self.util.debug(
-            f"ignoring splits and doing LOGO with {fold_count} groups"
-        )
+        self.util.debug(f"ignoring splits and doing LOGO with {fold_count} groups")
         # leave-one-group loop
         for train_index, test_index in _logo.split(
             feats,
@@ -137,9 +143,7 @@ class Model:
             truth_x = feats.iloc[test_index].to_numpy()
             truth_y = targets[test_index]
             predict_y = self.clf.predict(truth_x)
-            report = Reporter(
-                truth_y.astype(float), predict_y, self.run, self.epoch
-            )
+            report = Reporter(truth_y.astype(float), predict_y, self.run, self.epoch)
             result = report.get_result().get_test_result()
             self.util.debug(f"result for speaker group {g_index}: {result} ")
             results.append(float(report.get_result().test))
@@ -192,10 +196,8 @@ class Model:
         feats = self.feats_train.to_numpy()
         # compute class weights
         if self.util.config_val("MODEL", "class_weight", False):
-            self.classes_weights = (
-                sklearn.utils.class_weight.compute_sample_weight(
-                    class_weight="balanced", y=self.df_train[self.target]
-                )
+            self.classes_weights = sklearn.utils.class_weight.compute_sample_weight(
+                class_weight="balanced", y=self.df_train[self.target]
             )
 
         tuning_params = self.util.config_val("MODEL", "tuning_params", False)
@@ -215,9 +217,7 @@ class Model:
                 self.clf, tuned_params, refit=True, verbose=3, scoring=scoring
             )
             try:
-                class_weight = self.util.config_val(
-                    "MODEL", "class_weight", False
-                )
+                class_weight = self.util.config_val("MODEL", "class_weight", False)
                 if class_weight:
                     self.util.debug("using class weight")
                     self.clf.fit(

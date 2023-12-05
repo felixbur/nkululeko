@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.71.4
+--------------
+* automatic epoch reset if not ANN
+* scatter plots now show a regression line
+
 Version 0.71.3
 --------------
 * enabled scatter plots for all variables
