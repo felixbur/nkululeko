@@ -235,9 +235,21 @@ class Util:
                 self.debug(f"value for {key} not found, using default: {default}")
             return default
 
-    def continuous_to_categorical(self, array):
-        bins = ast.literal_eval(self.config["DATA"]["bins"])
-        result = np.digitize(array, bins) - 1
+    def continuous_to_categorical(self, series):
+        try:
+            bins = ast.literal_eval(self.config["DATA"]["bins"])
+            labels = ast.literal_eval(self.config["DATA"]["labels"])
+        except KeyError:
+            # if no binning is given, simply take three bins
+            b1 = np.quantile(series, 0.33)
+            b2 = np.quantile(series, 0.66)
+            bins = [-1000000, b1, b2, 1000000]
+            labels = ["0_low", "1_middle", "2_high"]
+        result = np.digitize(series, bins) - 1
+        result = pd.Series(result)
+        for i, l in enumerate(labels):
+            result = result.replace(i, str(l))
+        result = result.astype("category")
         return result
 
     def print_best_results(self, best_reports):

@@ -156,7 +156,7 @@ class Dataset:
                 if got_gender2:
                     df["gender"] = df_target["gender"]
                 if got_age2:
-                    df["age"] = df_target["age"]
+                    df["age"] = df_target["age"].astype(int)
                 # copy other column
                 for column in df_target.columns:
                     if column not in [self.target, "age", "speaker", "gender"]:
@@ -180,7 +180,8 @@ class Dataset:
             start = self.df.index.get_level_values(1)
             end = self.df.index.get_level_values(2)
             self.df["duration"] = (end - start).total_seconds()
-
+        elif self.df.duration.dtype == "timedelta64[ns]":
+            self.df["duration"] = self.df["duration"].map(lambda x: x.total_seconds())
         # Perform some filtering if desired
         required = self.util.config_val_data(self.name, "required", False)
         if required:
@@ -241,7 +242,7 @@ class Dataset:
                 pass
             try:
                 # try to get the age values
-                df_local["age"] = source_df["age"]
+                df_local["age"] = source_df["age"].astype(int)
                 got_age = True
             except (KeyError, ValueError, audformat.errors.BadKeyError) as e:
                 pass
@@ -253,7 +254,7 @@ class Dataset:
                 pass
             try:
                 # also it might be possible that the age is part of the speaker description
-                df_local["age"] = db[table]["speaker"].get(map="age")
+                df_local["age"] = db[table]["speaker"].get(map="age").astype(int)
                 got_age = True
             except (ValueError, audformat.errors.BadKeyError) as e:
                 pass

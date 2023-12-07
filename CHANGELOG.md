@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.72.0
+--------------
+* worked over explore value counts section
+* added bin_reals for all columns
+
 Version 0.71.4
 --------------
 * automatic epoch reset if not ANN

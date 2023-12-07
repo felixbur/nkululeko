@@ -304,8 +304,8 @@
   * plot_tree = False
 * **value_counts**: plot distributions of target for the samples and speakers (in the *image_dir*)
   * value_counts = [['gender'], ['age'], ['age', 'duration']] 
-* **bin_reals**: If the target variable is real numbers (instead of categories), should it be binned?
-  * bin_reals = True
+* **column.bin_reals**: If the column variable is real numbers (instead of categories), should it be binned? for any value in *value_counts* as well as the target variable
+  * age.bin_reals = True
 * **dist_type**: type of plot for value counts, either histogram or density estimation (kde)
   * dist_type = hist
 * **spotlight**: open a web-browser window to inspect the data with the [spotlight software](https://github.com/Renumics/spotlight). Needs package *renumics-spotlight* to be installed!

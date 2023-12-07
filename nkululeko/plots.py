@@ -46,7 +46,7 @@ class Plots:
             ax.set_ylabel(f"number of speakers")
             ax.set_xlabel("number of samples")
             fig = ax.figure
-            plt.tight_layout()
+            # plt.tight_layout()
             img_path = f"{fig_dir}{filename}.{self.format}"
             plt.savefig(img_path)
             plt.close(fig)
@@ -75,7 +75,7 @@ class Plots:
             ax.set_ylabel(f"number of speakers")
             ax.set_xlabel("number of samples")
             fig = ax.figure
-            plt.tight_layout()
+            # plt.tight_layout()
             img_path = f"{fig_dir}{filename}.{self.format}"
             plt.savefig(img_path)
             plt.close(fig)
@@ -95,47 +95,34 @@ class Plots:
         attributes = ast.literal_eval(
             self.util.config_val("EXPL", "value_counts", False)
         )
-        bin_reals = eval(self.util.config_val("EXPL", "bin_reals", "False"))
         for att in attributes:
             if len(att) == 1:
-                if att[0] not in df:
-                    self.util.error(f"unknown feature: {att[0]}")
-                self.util.debug(f"plotting {att[0]}")
-                filename = f"{self.target}-{att[0]}"
-                if self.util.is_categorical(df[att[0]]):
-                    if self.util.is_categorical(df["class_label"]):
+                att1 = att[0]
+                if att1 == self.target:
+                    self.util.debug(f"no need to correlate {att1} with itself")
+                    return
+                if att1 not in df:
+                    self.util.error(f"unknown feature: {att1}")
+                att1, df = self._check_binning(att1, df)
+                class_label, df = self._check_binning("class_label", df)
+                self.util.debug(f"plotting {att1}")
+                filename = f"{self.target}-{att1}"
+                if self.util.is_categorical(df[class_label]):
+                    if self.util.is_categorical(df[att1]):
                         ax, caption = self._plot2cat(
-                            df, "class_label", att[0], self.target, type_s
+                            df, class_label, att1, self.target, type_s
                         )
                     else:
                         ax, caption = self._plotcatcont(
-                            df, "class_label", att[0], self.target, type_s
+                            df, class_label, att1, att1, type_s
                         )
                 else:
-                    if self.util.is_categorical(df["class_label"]) or bin_reals:
-                        if bin_reals:
-                            self.util.debug(
-                                f"{self.name}: binning continuous variable to categories"
-                            )
-                            cat_vals = self.util.continuous_to_categorical(
-                                df[self.target]
-                            )
-                            df[f"{self.target}_binned"] = cat_vals
-                            ax, caption = self._plotcatcont(
-                                df,
-                                f"{self.target}_binned",
-                                att[0],
-                                self.target,
-                                type_s,
-                            )
-                        else:
-                            ax, caption = self._plotcatcont(
-                                df, att[0], "class_label", att[0], type_s
-                            )
-                    else:
-                        ax, caption = self._plot2cont(
-                            df, self.target, att[0], self.target, type_s
+                    if self.util.is_categorical(df[att1]):
+                        ax, caption = self._plotcatcont(
+                            df, att1, class_label, att1, type_s
                         )
+                    else:
+                        ax, caption = self._plot2cont(df, class_label, att1, type_s)
                 fig = ax.figure
                 # plt.tight_layout()
                 img_path = f"{fig_dir}{filename}_{type_s}.{self.format}"
@@ -149,41 +136,107 @@ class Plots:
                         img_path,
                     )
                 )
-
                 # fig.clear()           # avoid error
             elif len(att) == 2:
-                if att[0] not in df:
-                    self.util.error(f"unknown feature: {att[0]}")
-                if att[1] not in df:
-                    self.util.error(f"unknown feature: {att[1]}")
-                self.util.debug(f"plotting {att}")
                 att1 = att[0]
                 att2 = att[1]
+                if att1 == self.target or att2 == self.target:
+                    self.util.debug(f"no need to correlate {self.target} with itself")
+                    return
+                if att1 not in df:
+                    self.util.error(f"unknown feature: {att1}")
+                if att2 not in df:
+                    self.util.error(f"unknown feature: {att2}")
+                att1, df = self._check_binning(att1, df)
+                att2, df = self._check_binning(att2, df)
+                self.util.debug(f"plotting {att}")
                 filename = f"{att1}-{att2}"
                 filename = f"{self.target}-{filename}"
-                pearson_string = ""
-                if self.util.is_categorical(df[att1]):
-                    ax = sns.lmplot(data=df, x=self.target, y=att2, hue=att1)
-                elif self.util.is_categorical(df[att2]):
-                    ax = sns.lmplot(data=df, x=self.target, y=att1, hue=att2)
-                else:
-                    pearson = stats.pearsonr(df[att1], df[att2])
-                    pearson = int(pearson[0] * 1000) / 1000
-                    pearson_string = f"PCC: {pearson}"
-                    ax = sns.lmplot(data=df, x=att1, y=att2, hue="class_label")
+                if self.util.is_categorical(df["class_label"]):
+                    if self.util.is_categorical(df[att1]):
+                        if self.util.is_categorical(df[att2]):
+                            # class_label = cat, att1 = cat, att2 = cat
+                            ax, caption = self._plot2cat(df, att1, att2, att1, type_s)
+                        else:
+                            # class_label = cat, att1 = cat, att2 = cont
+                            ax, caption = self._plotcatcont(
+                                df, att1, att2, att1, type_s
+                            )
+                    else:
+                        if self.util.is_categorical(df[att2]):
+                            # class_label = cat, att1 = cont, att2 = cat
+                            ax, caption = self._plotcatcont(
+                                df, att2, att1, att2, type_s
+                            )
+                        else:
+                            # class_label = cat, att1 = cont, att2 = cont
+                            ax, caption = self._plot2cont_cat(
+                                df, att1, att2, "class_label", type_s
+                            )
+                else:  # class_label is continuous
+                    if self.util.is_categorical(df[att1]):
+                        if self.util.is_categorical(df[att2]):
+                            # class_label = cont, att1 = cat, att2 = cat
+                            ax, caption = self._plot2cat(df, att1, att2, att1, type_s)
+                        else:
+                            # class_label = cont, att1 = cat, att2 = cont
+                            ax, caption = self._plot2cont_cat(
+                                df, att2, "class_label", att1, type_s
+                            )
+                    else:
+                        if self.util.is_categorical(df[att2]):
+                            # class_label = cont, att1 = cont, att2 = cat
+                            ax, caption = self._plot2cont_cat(
+                                df, att1, "class_label", att2, type_s
+                            )
+                        else:
+                            # class_label = cont, att1 = cont, att2 = cont
+                            ax, caption = self._plot2cont(df, att1, att2, type_s)
+
                 fig = ax.figure
-                ax.fig.suptitle(f"{type_s} {df.shape[0]}. {pearson_string}")
-                plt.tight_layout()
-                plt.savefig(f"{fig_dir}{filename}_{type}.{self.format}")
+                # avoid warning
+                # plt.tight_layout()
+                img_path = f"{fig_dir}{filename}_{type_s}.{self.format}"
+                plt.savefig(img_path)
                 plt.close(fig)
                 # fig.clear()   # avoid error
+                glob_conf.report.add_item(
+                    ReportItem(
+                        Header.HEADER_EXPLORE,
+                        f"Correlation of {att1} and {att2}",
+                        caption,
+                        img_path,
+                    )
+                )
             else:
                 self.util.error(
                     "plot value counts: the plot distribution descriptor for"
                     f" {att} has more than 2 values"
                 )
 
-    def _plot2cont(self, df, col1, col2, xlab, ylab):
+    def _check_binning(self, att, df):
+        bin_reals_att = eval(self.util.config_val("EXPL", f"{att}.bin_reals", "False"))
+        if bin_reals_att:
+            self.util.debug(f"binning continuous variable {att} to categories")
+            att_new = f"{att}_binned"
+            df[att_new] = self.util.continuous_to_categorical(df[att]).values
+            att = att_new
+        return att, df
+
+    def _plot2cont_cat(self, df, cont1, cont2, cat, ylab):
+        """
+        plot relation of two continuous distributions with one categorical
+        """
+        pearson = stats.pearsonr(df[cont1], df[cont2])
+        # trunc to three digits
+        pearson = int(pearson[0] * 1000) / 1000
+        pearson_string = f"PCC: {pearson}"
+        ax = sns.lmplot(data=df, x=cont1, y=cont2, hue=cat)
+        caption = f"{ylab} {df.shape[0]}. {pearson_string}"
+        ax.fig.suptitle(caption)
+        return ax, caption
+
+    def _plot2cont(self, df, col1, col2, ylab):
         """
         plot relation of two continuous distributions
         """
@@ -201,16 +254,16 @@ class Plots:
         plot relation of categorical distribution with continuous
         """
         dist_type = self.util.config_val("EXPL", "dist_type", "kde")
-        cats, cat_str, es = su.get_effect_size(df, cont_col, cat_col)
+        cats, cat_str, es = su.get_effect_size(df, cat_col, cont_col)
         if dist_type == "hist":
-            ax = sns.histplot(df, x=cat_col, hue=cont_col, kde=True)
+            ax = sns.histplot(df, x=cont_col, hue=cat_col, kde=True)
             caption = f"{ylab} {df.shape[0]}. {cat_str} ({cats}):" f" {es}"
             ax.set_title(caption)
-            ax.set_xlabel(f"{xlab}")
+            ax.set_xlabel(f"{cont_col}")
             ax.set_ylabel(f"number of {ylab}")
         else:
-            ax = sns.displot(df, x=cat_col, hue=cont_col, kind="kde", fill=True)
-            ax.set(xlabel=f"{xlab}")
+            ax = sns.displot(df, x=cont_col, hue=cat_col, kind="kde", fill=True)
+            ax.set(xlabel=f"{cont_col}")
             caption = f"{ylab} {df.shape[0]}. {cat_str} ({cats}):" f" {es}"
             ax.fig.suptitle(caption)
         return ax, caption
@@ -245,7 +298,7 @@ class Plots:
         ax.set_xlabel(f"duration")
         ax.set_ylabel(f"number of samples")
         fig = ax.figure
-        plt.tight_layout()
+        # plt.tight_layout()
         img_path = f"{fig_dir}{filename}_{sample_selection}.{self.format}"
         plt.savefig(img_path)
         plt.close(fig)
@@ -291,7 +344,7 @@ class Plots:
                 df[target].value_counts().plot(
                     kind="bar", ax=axes, title=f"samples ({sampl_num})"
                 )
-            plt.tight_layout()
+            # plt.tight_layout()
             plt.savefig(f"{fig_dir}{filename}.{self.format}")
             fig.clear()
             plt.close(fig)
@@ -336,7 +389,7 @@ class Plots:
             self.util.error(f"no such dimensionality reduction function: {dimred_type}")
         plot_data = np.vstack((data.T, labels)).T
         plot_df = pd.DataFrame(data=plot_data, columns=("Dim_1", "Dim_2", "label"))
-        plt.tight_layout()
+        # plt.tight_layout()
         ax = (
             sns.FacetGrid(plot_df, hue="label", height=6)
             .map(plt.scatter, "Dim_1", "Dim_2")
@@ -361,7 +414,7 @@ class Plots:
         tsne_data = model.fit_transform(feats)
         tsne_data_labs = np.vstack((tsne_data.T, labels)).T
         tsne_df = pd.DataFrame(data=tsne_data_labs, columns=("Dim_1", "Dim_2", "label"))
-        plt.tight_layout()
+        # plt.tight_layout()
         ax = (
             sns.FacetGrid(tsne_df, hue="label", height=6)
             .map(plt.scatter, "Dim_1", "Dim_2")
@@ -395,11 +448,11 @@ class Plots:
             ax.set(title=f"{title} samples", xlabel=label)
         else:
             plot_df = pd.concat([df_labels, df_features], axis=1)
-            ax, caption = self._plot2cont(plot_df, label, feature, label, feature)
+            ax, caption = self._plot2cont(plot_df, label, feature, feature)
         # def _plot2cont(self, df, col1, col2, xlab, ylab):
 
         fig = ax.figure
-        plt.tight_layout()
+        # plt.tight_layout()
         plt.savefig(filename)
         fig.clear()
         plt.close(fig)
@@ -411,7 +464,7 @@ class Plots:
         ax.figure.set_size_inches(100, 60)
         #        tree.plot_tree(model, ax = ax)
         tree.plot_tree(model, feature_names=list(features.columns), ax=ax)
-        plt.tight_layout()
+        # plt.tight_layout()
         # print(ax)
         fig_dir = self.util.get_path("fig_dir") + "../"  # one up because of the runs
         exp_name = self.util.get_exp_name(only_data=True)
