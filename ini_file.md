@@ -105,6 +105,8 @@
   * emodb.rename_speakers = False
 * **db_name.filter**: don't use all the data but only selected values from columns: [col, val]*
   * emodb.filter = [['gender', 'female']]
+* **db_name.scale**: scale (standard normalize) the target variable (if numeric)
+* **db_name.reverse**: reverse the target variable (if numeric). I.e. f(x) = abs(x-max)
 * **target**: the task name, e.g. *age* or *emotion*
   * target = emotion
 * **labels**: for classification experiments: the names of the categories (is also used for regression when binning the values)
