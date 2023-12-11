@@ -3,14 +3,14 @@ import ast
 import os
 import os.path
 from random import sample
+import numpy as np
+import pandas as pd
 
 import audformat
+from audformat.utils import duration
+
 import nkululeko.filter_data as filter
 import nkululeko.glob_conf as glob_conf
-
-# import audb
-import pandas as pd
-from audformat.utils import duration
 from nkululeko.filter_data import DataFilter
 from nkululeko.plots import Plots
 from nkululeko.reporting.report_item import ReportItem
@@ -97,11 +97,12 @@ class Dataset:
         """Load the dataframe with files, speakers and task labels"""
         # store the dataframe
         store = self.util.get_path("store")
-        store_file = f"{store}{self.name}.pkl"
+        store_file = f"{store}{self.name}"
+        store_format = self.util.config_val("FEATS", "store_format", "pkl")
         self.root = self._load_db()
         if not self.start_fresh and os.path.isfile(store_file):
             self.util.debug(f"{self.name}: reusing previously stored file {store_file}")
-            self.df = pd.read_pickle(store_file)
+            self.df = self.util.get_store(store_file, store_format)
             self.is_labeled = self.target in self.df
             self.got_gender = "gender" in self.df
             self.got_age = "age" in self.df
@@ -175,6 +176,9 @@ class Dataset:
         # ensure segmented index
         self.df = self.util.make_segmented_index(self.df)
         self.util.copy_flags(self, self.df)
+        # check the type of numeric targets
+        if not self.util.exp_is_classification():
+            self.df[self.target] = self.df[self.target].astype(float)
         # add duration
         if "duration" not in self.df:
             start = self.df.index.get_level_values(1)
@@ -202,10 +206,36 @@ class Dataset:
             # we might need to append the database name to all speakers in case other databases have the same speaker names
             self.df.speaker = self.df.speaker.apply(lambda x: self.name + x)
 
+        # check if the target variable should be reversed
+        def reverse_array(d):
+            d = np.array(d)
+            max = d.max()
+            res = []
+            for n in d:
+                res.append(abs(n - max))
+            return res
+
+        reverse = self.util.config_val_data(self.name, "reverse", False)
+        if reverse:
+            self.util.debug("reversing target numbers")
+            self.df[self.target] = reverse_array(self.df[self.target].values)
+
+        # check if the target variable should be scaled (z-transformed)
+        scale = self.util.config_val_data(self.name, "scale", False)
+        if scale:
+            from sklearn.preprocessing import StandardScaler
+
+            self.util.debug("scaling target variable to normal distribution")
+            scaler = StandardScaler()
+            self.df[self.target] = scaler.fit_transform(
+                self.df[self.target].values.reshape(-1, 1)
+            )
+
         # store the dataframe
         store = self.util.get_path("store")
-        store_file = f"{store}{self.name}.pkl"
-        self.df.to_pickle(store_file)
+        store_format = self.util.config_val("FEATS", "store_format", "pkl")
+        store_file = f"{store}{self.name}"
+        self.util.write_store(self.df, store_file, store_format)
 
     def _get_df_for_lists(self, db, df_files):
         is_labeled, got_speaker, got_gender, got_age = (

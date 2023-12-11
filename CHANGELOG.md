@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.73.0
+--------------
+* added reverse and scale arguments to target variable
+* also, the data store can now be csv
+
 Version 0.72.0
 --------------
 * worked over explore value counts section

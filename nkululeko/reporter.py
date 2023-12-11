@@ -5,9 +5,15 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import pearsonr
-from sklearn.metrics import (ConfusionMatrixDisplay, accuracy_score,
-                             classification_report, confusion_matrix,
-                             mean_squared_error, r2_score, recall_score)
+from sklearn.metrics import (
+    ConfusionMatrixDisplay,
+    accuracy_score,
+    classification_report,
+    confusion_matrix,
+    mean_squared_error,
+    r2_score,
+    recall_score,
+)
 from sklearn.utils import resample
 
 import nkululeko.glob_conf as glob_conf
@@ -160,6 +166,8 @@ class Reporter:
         )
 
         res_dir = self.util.get_path("res_dir")
+        uar = int(uar * 1000) / 1000.0
+        acc = int(acc * 1000) / 1000.0
         rpt = f"epoch: {epoch}, UAR: {uar}, ACC: {acc}"
         # print(rpt)
         self.util.debug(rpt)

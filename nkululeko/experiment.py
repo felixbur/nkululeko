@@ -557,18 +557,18 @@ class Experiment:
                         )
 
     def _check_scale(self):
-        scale = self.util.config_val("FEATS", "scale", False)
+        scale_feats = self.util.config_val("FEATS", "scale", False)
         # print the scale
-        self.util.debug(f"scaler: {scale}")
-        if scale:
-            self.scaler = Scaler(
+        self.util.debug(f"scaler: {scale_feats}")
+        if scale_feats:
+            self.scaler_feats = Scaler(
                 self.df_train,
                 self.df_test,
                 self.feats_train,
                 self.feats_test,
-                scale,
+                scale_feats,
             )
-            self.feats_train, self.feats_test = self.scaler.scale()
+            self.feats_train, self.feats_test = self.scaler_feats.scale()
 
     def init_runmanager(self):
         """Initialize the manager object for the runs."""

@@ -8,7 +8,7 @@ from nkululeko.util import Util
 
 class Scaler:
     """
-    class to normalize speech parameters
+    class to normalize speech features
     """
 
     def __init__(
@@ -68,13 +68,9 @@ class Scaler:
         return df
 
     def speaker_scale(self):
-        self.feats_train = self.speaker_scale_df(
-            self.data_train, self.feats_train
-        )
+        self.feats_train = self.speaker_scale_df(self.data_train, self.feats_train)
         if self.feats_test is not None:
-            self.feats_test = self.speaker_scale_df(
-                self.data_test, self.feats_test
-            )
+            self.feats_test = self.speaker_scale_df(self.data_test, self.feats_test)
         return [self.feats_train, self.feats_test]
 
     def speaker_scale_df(self, df, feats_df):
