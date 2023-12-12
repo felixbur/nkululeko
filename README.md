@@ -9,6 +9,7 @@
 - [Documentation](#documentation)
 - [Installation](#installation)
 - [Usage](#usage)
+  - [ini-file values](#ini-file-values)
   - [Hello World example](#hello-world-example)
   - [Features](#features)
 - [License](#license)
@@ -108,7 +109,10 @@ Some examples for *ini*-files (which you use to control nkululeko) are in the [t
 
 
 ## Usage
-Basically, you specify your experiment in an "ini" file (e.g. *experiment.ini*) and then call one of the Nkululeko interfaces to run the experiment like this:
+
+### [ini-file values](./ini_file.md)
+
+Basically, you specify your experiment in an ["ini" file](./ini_file.md) (e.g. *experiment.ini*) and then call one of the Nkululeko interfaces to run the experiment like this:
   * ```python -m nkululeko.nkululeko --config experiment.ini```
 
 A basic configuration looks like this:
