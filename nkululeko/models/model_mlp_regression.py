@@ -6,7 +6,7 @@ from nkululeko.reporter import Reporter
 import torch
 import ast
 import numpy as np
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, mean_absolute_error
 from collections import OrderedDict
 from nkululeko.losses.loss_ccc import ConcordanceCorCoeff
 import os
@@ -28,6 +28,8 @@ class MLP_Reg_model(Model):
         criterion = self.util.config_val("MODEL", "loss", "mse")
         if criterion == "mse":
             self.criterion = torch.nn.MSELoss()
+        elif criterion == "mae":
+            self.criterion = torch.nn.L1Loss()
         elif criterion == "1-ccc":
             self.criterion = ConcordanceCorCoeff()
         else:
@@ -184,6 +186,8 @@ class MLP_Reg_model(Model):
         measure = self.util.config_val("MODEL", "measure", "mse")
         if measure == "mse":
             result = mean_squared_error(targets.numpy(), predictions.numpy())
+        elif measure == "mae":
+            result = mean_absolute_error(targets.numpy(), predictions.numpy())
         elif measure == "ccc":
             result = Reporter.ccc(targets.numpy(), predictions.numpy())
         else:

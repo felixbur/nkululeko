@@ -299,3 +299,16 @@ class Util:
             df_target.got_age = df_source.got_age
         if hasattr(df_source, "got_speaker"):
             df_target.got_speaker = df_source.got_speaker
+
+    def high_is_good(self):
+        """check how to interpret results"""
+        if self.exp_is_classification():
+            return True
+        else:
+            measure = self.config_val("MODEL", "measure", "mse")
+            if measure == "mse" or measure == "mae":
+                return False
+            elif measure == "ccc":
+                return True
+            else:
+                self.error(f"unknown measure: {measure}")

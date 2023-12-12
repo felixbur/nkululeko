@@ -8,6 +8,9 @@ class Result:
         self.loss = loss
         self.measure = measure
 
+    def get_result(self):
+        return self.test
+
     def get_test_result(self):
         return f"test: {self.test:.3f} {self.measure}"
 

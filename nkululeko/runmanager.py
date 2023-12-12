@@ -58,9 +58,7 @@ class Runmanager:
             )
             self.reports = self.modelrunner.do_epochs()
             # wrap up the run
-            plot_anim_progression = self.util.config_val(
-                "PLOT", "anim_progression", 0
-            )
+            plot_anim_progression = self.util.config_val("PLOT", "anim_progression", 0)
             if plot_anim_progression:
                 plot_name_suggest = self.util.get_exp_name()
                 plot_name = (
@@ -165,15 +163,10 @@ class Runmanager:
 
     def get_best_result(self, reports):
         best_r = Reporter([], [], 0, 0)
-        if self.util.exp_is_classification():
-            measure = self.util.config_val("MODEL", "measure", "uar")
+        if self.util.high_is_good():
             best_r = self.search_best_result(reports, "ascending")
         else:
-            measure = self.util.config_val("MODEL", "measure", "mse")
-            if measure == "mse":
-                best_r = self.search_best_result(reports, "descending")
-            elif measure == "ccc":
-                best_r = self.search_best_result(reports, "ascending")
+            best_r = self.search_best_result(reports, "descending")
         return best_r
 
     def search_best_result(self, reports, order):

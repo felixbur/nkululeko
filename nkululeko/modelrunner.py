@@ -42,6 +42,12 @@ class Modelrunner:
         if not self.model.is_ANN() and epoch_num > 1:
             self.util.warn(f"setting epoch num to 1 (was {epoch_num}) if model not ANN")
             epoch_num = 1
+        patience = self.util.config_val("MODEL", "patience", False)
+        patience_counter = -1
+        if self.util.high_is_good():
+            highest = 0
+        else:
+            highest = 100000
         # for all epochs
         for epoch in range(epoch_num):
             if only_test:
@@ -68,6 +74,27 @@ class Modelrunner:
                 not only_test
             ):  # in any case the model needs to be stored to disk.
                 self.model.store()
+            if patience:
+                patience = int(patience)
+                result = report.result.get_result()
+                if self.util.high_is_good():
+                    if result > highest:
+                        highest = result
+                        patience_counter = 0
+                    else:
+                        patience_counter += 1
+                else:
+                    if result < highest:
+                        highest = result
+                        patience_counter = 0
+                    else:
+                        patience_counter += 1
+                if patience_counter >= patience:
+                    self.util.debug(
+                        f"reached patience ({str(patience)}): early stopping"
+                    )
+                    break
+
         if not plot_epochs:
             # Do at least one confusion matrix plot
             self.util.debug(f"plotting confusion matrix to {plot_name}")

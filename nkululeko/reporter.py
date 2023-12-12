@@ -11,6 +11,7 @@ from sklearn.metrics import (
     classification_report,
     confusion_matrix,
     mean_squared_error,
+    mean_absolute_error,
     r2_score,
     recall_score,
 )
@@ -34,6 +35,9 @@ class Reporter:
             self.measure = self.util.config_val("MODEL", "measure", "mse")
             if self.measure == "mse":
                 self.MEASURE = "MSE"
+                self.result.measure = self.MEASURE
+            elif self.measure == "mae":
+                self.MEASURE = "MAE"
                 self.result.measure = self.MEASURE
             elif self.measure == "ccc":
                 self.MEASURE = "CCC"
@@ -60,6 +64,8 @@ class Reporter:
                 # regression experiment
                 if self.measure == "mse":
                     self.result.test = mean_squared_error(self.truths, self.preds)
+                elif self.measure == "mae":
+                    self.result.test = mean_absolute_error(self.truths, self.preds)
                 elif self.measure == "ccc":
                     self.result.test = self.ccc(self.truths, self.preds)
                     if math.isnan(self.result.test):

@@ -276,6 +276,7 @@
   * measure = mse
   * possible values:
     * **mse**: mean squared error
+    * **mae**: mean absolute error
     * **ccc**: concordance correlation coefficient
 * **learning_rate**: The learning rate for ANN models
   * learning_rate = 0.0001
@@ -287,7 +288,8 @@
   * num_workers = 5
 * **device**: For torch/huggingface models: select your GPU if you have one
   * device = cpu
-
+* **patience**: Number of epochs to wait if the result gets better (for early stopping)
+  * patience = 5
 
 ### EXPL
 * **model**: Which model to use to estimate feature importance.

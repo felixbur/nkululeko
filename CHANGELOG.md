@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.74.0 
+--------------
+* added patience (early stopping)
+* added MAE loss and measure
+
 Version 0.73.0
 --------------
 * added reverse and scale arguments to target variable
