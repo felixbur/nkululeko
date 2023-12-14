@@ -33,10 +33,6 @@ class Randomsplicer:
         self.df = df
         self.util = Util("randomsplicer")
 
-    def changepath(self, fp, np):
-        fullpath = os.path.dirname(fp)
-        return fp.replace(fullpath, np)
-
     def run(self, sample_selection):
         """
         random splice the selected samples and return a dataframe with new files index.
@@ -52,10 +48,9 @@ class Randomsplicer:
         store = self.util.get_path("store")
         filepath = f"{store}randomspliced/"
         audeer.mkdir(filepath)
-        self.util.debug(
-            f"random splicing {sample_selection} samples to {filepath}"
-        )
+        self.util.debug(f"random splicing {sample_selection} samples to {filepath}")
         newpath = ""
+        index_map = {}
         for i, f in enumerate(tqdm(files)):
             signal, sr = af.read(f)
             filename = os.path.basename(f)
@@ -66,19 +61,13 @@ class Randomsplicer:
                 p_reverse=p_reverse,
                 top_db=top_db,
             )
-
             newpath = f"{filepath}/{parent}/"
             audeer.mkdir(newpath)
-            af.write(f"{newpath}{filename}", signal=sig_new, sampling_rate=sr)
+            new_full_name = newpath + filename
+            af.write(new_full_name, signal=sig_new, sampling_rate=sr)
+            index_map[f] = new_full_name
+
         df_ret = self.df.copy()
-        df_ret = df_ret.set_index(
-            map_file_path(df_ret.index, lambda x: self.changepath(x, newpath))
-        )
-        db_filename = self.util.config_val(
-            "DATA", "random_splice_result", "random_spliced.csv"
-        )
-        target = self.util.config_val("DATA", "target", "emotion")
-        df_ret[target] = df_ret["class_label"]
-        df_ret = df_ret.drop(columns=["class_label"])
-        df_ret.to_csv(db_filename)
+        file_index = df_ret.index.levels[0].map(lambda x: index_map[x]).values
+        df_ret = df_ret.set_index(df_ret.index.set_levels(file_index, level="file"))
         return df_ret

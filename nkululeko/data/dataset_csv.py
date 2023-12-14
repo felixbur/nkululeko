@@ -17,9 +17,9 @@ class Dataset_CSV(Dataset):
         self.util.debug(f"loading {self.name}")
         self.got_target, self.got_speaker, self.got_gender = False, False, False
         data_file = self.util.config_val_data(self.name, "", "")
-        if not os.path.isabs(data_file):
-            exp_root = self.util.config_val("EXP", "root", "")
-            data_file = os.path.join(exp_root, data_file)
+        # if not os.path.isabs(data_file):
+        #     exp_root = self.util.config_val("EXP", "root", "")
+        #     data_file = os.path.join(exp_root, data_file)
         root = os.path.dirname(data_file)
         audio_path = self.util.config_val_data(self.name, "audio_path", "")
         df = audformat.utils.read_csv(data_file)
@@ -28,7 +28,7 @@ class Dataset_CSV(Dataset):
             col_dict = ast.literal_eval(rename_cols)
             df = df.rename(columns=col_dict)
         absolute_path = eval(
-            self.util.config_val_data(self.name, "absolute_path", True)
+            self.util.config_val_data(self.name, "absolute_path", "True")
         )
         if not absolute_path:
             # add the root folder to the relative paths of the files

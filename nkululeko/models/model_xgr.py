@@ -9,4 +9,4 @@ class XGR_model(Model):
 
     is_classifier = False
 
-    clf = XGBRegressor(use_label_encoder=False)  # set up the regressor
+    clf = XGBRegressor()  # set up the regressor

@@ -10,12 +10,8 @@ import os
 
 
 def main(src_dir):
-    parser = argparse.ArgumentParser(
-        description="Call the nkululeko framework."
-    )
-    parser.add_argument(
-        "--config", default="exp.ini", help="The base configuration"
-    )
+    parser = argparse.ArgumentParser(description="Call the nkululeko framework.")
+    parser.add_argument("--config", default="exp.ini", help="The base configuration")
     args = parser.parse_args()
     if args.config is not None:
         config_file = args.config
@@ -48,24 +44,33 @@ def main(src_dir):
 
     # split into train and test
     expr.fill_train_and_tests()
-    util.debug(
-        f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}"
-    )
+    util.debug(f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}")
 
     # augment
-    augmenting = util.config_val("DATA", "augment", False)
+    augmenting = util.config_val("AUGMENT", "augment", False)
     if augmenting:
-        expr.augment()
+        df_ret = expr.augment()
 
-    random_splicing = util.config_val("DATA", "random_splice", False)
+    random_splicing = util.config_val("AUGMENT", "random_splice", False)
     if random_splicing:
-        expr.random_splice()
+        df_ret = expr.random_splice()
 
+    if (not augmenting) and (not random_splicing):
+        util.error("no augmentation selected")
+
+    # remove encoded labels
+    target = util.config_val("DATA", "target", "emotion")
+    if "class_label" in df_ret.columns:
+        df_ret = df_ret.drop(columns=[target])
+        df_ret = df_ret.rename(columns={"class_label": target})
+    # save file
+    filename = util.config_val("AUGMENT", "result", "augmented.csv")
+
+    df_ret.to_csv(f"{expr.data_dir}/{filename}")
+    util.debug(f"saved augmentation table to {filename} to {expr.data_dir}")
     print("DONE")
 
 
 if __name__ == "__main__":
     cwd = os.path.dirname(os.path.abspath(__file__))
-    main(
-        cwd
-    )  # use this if you want to state the config file path on command line
+    main(cwd)  # use this if you want to state the config file path on command line

@@ -9,4 +9,4 @@ class XGB_model(Model):
 
     is_classifier = True
 
-    clf = XGBClassifier(use_label_encoder=False)  # set up the classifier
+    clf = XGBClassifier()  # set up the classifier

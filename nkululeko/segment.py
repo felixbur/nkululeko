@@ -11,13 +11,10 @@ from nkululeko.constants import VERSION
 import nkululeko.glob_conf as glob_conf
 from nkululeko.reporting.report_item import ReportItem
 
+
 def main(src_dir):
-    parser = argparse.ArgumentParser(
-        description="Call the nkululeko framework."
-    )
-    parser.add_argument(
-        "--config", default="exp.ini", help="The base configuration"
-    )
+    parser = argparse.ArgumentParser(description="Call the nkululeko framework.")
+    parser.add_argument("--config", default="exp.ini", help="The base configuration")
     args = parser.parse_args()
     if args.config is not None:
         config_file = args.config
@@ -47,12 +44,10 @@ def main(src_dir):
 
     # split into train and test
     expr.fill_train_and_tests()
-    util.debug(
-        f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}"
-    )
+    util.debug(f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}")
 
     # segment
-    segment_target = util.config_val("SEGMENT", "target", "_seg")
+    segmented_file = util.config_val("SEGMENT", "result", "segmented.csv")
 
     segmenter = util.config_val("SEGMENT", "method", "silero")
     sample_selection = util.config_val("SEGMENT", "sample_selection", "all")
@@ -67,9 +62,7 @@ def main(src_dir):
             f"unknown segmentation selection specifier {sample_selection},"
             " should be [all | train | test]"
         )
-    util.debug(
-        f"segmenting {sample_selection}: {df.shape[0]} samples with {segmenter}"
-    )
+    util.debug(f"segmenting {sample_selection}: {df.shape[0]} samples with {segmenter}")
     if segmenter == "silero":
         from nkululeko.segmenting.seg_silero import Silero_segmenter
 
@@ -86,7 +79,6 @@ def main(src_dir):
         ends = x[2]
         return (ends - starts).total_seconds()
 
-    df_seg["duration"] = df_seg.index.to_series().map(lambda x: calc_dur(x))
     if "duration" not in df.columns:
         df["duration"] = df.index.to_series().map(lambda x: calc_dur(x))
     num_before = df.shape[0]
@@ -95,8 +87,12 @@ def main(src_dir):
     from nkululeko.plots import Plots
 
     plots = Plots()
-    plots.plot_durations(df, "original_durations", sample_selection, caption='Original durations')
-    plots.plot_durations(df_seg, "segmented_durations", sample_selection, caption='Segmented durations')
+    plots.plot_durations(
+        df, "original_durations", sample_selection, caption="Original durations"
+    )
+    plots.plot_durations(
+        df_seg, "segmented_durations", sample_selection, caption="Segmented durations"
+    )
     print("")
     # remove encoded labels
     target = util.config_val("DATA", "target", "emotion")
@@ -104,18 +100,18 @@ def main(src_dir):
         df_seg = df_seg.drop(columns=[target])
         df_seg = df_seg.rename(columns={"class_label": target})
     # save file
-    dataname = "_".join(expr.datasets.keys())
-    name = f"{dataname}{segment_target}"
-    df_seg.to_csv(f"{expr.data_dir}/{name}.csv")
+    # dataname = "_".join(expr.datasets.keys())
+    # name = f"{dataname}{segment_target}"
+    df_seg.to_csv(f"{expr.data_dir}/{segmented_file}")
     util.debug(
-        f"saved {name}.csv to {expr.data_dir}, {num_after} samples (was"
+        f"saved {segmented_file} to {expr.data_dir}, {num_after} samples (was"
         f" {num_before})"
     )
     glob_conf.report.add_item(
         ReportItem(
             "Data",
-            'Segmentation',
-            f'Segmented {num_before} samples to {num_after} segments',
+            "Segmentation",
+            f"Segmented {num_before} samples to {num_after} segments",
         )
     )
     expr.store_report()
@@ -155,6 +151,4 @@ def segment_dataframe(df):
 
 if __name__ == "__main__":
     cwd = os.path.dirname(os.path.abspath(__file__))
-    main(
-        cwd
-    )  # use this if you want to state the config file path on command line
+    main(cwd)  # use this if you want to state the config file path on command line

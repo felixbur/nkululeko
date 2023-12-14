@@ -8,6 +8,7 @@
   - [Sections](#sections)
     - [EXP](#exp)
     - [DATA](#data)
+    - [AUGMENT](#augment)
     - [SEGMENT](#segment)
     - [FEATS](#feats)
     - [MODEL](#model)
@@ -119,18 +120,6 @@
   * min_dur_test = 3.5
 * **target_divide_by**: divide the target values by some factor, e.g., to make age smaller and encode years from .0 to 1
   * target_divide_by = 100
-* **augment**: select the samples to augment: either *train*, *test*, or *all*
-  * augment = train
-* **augment_result**: file name to store the augmented data (can then be added to training)
-  * augment_result = augment.csv
-* **random_splice**: select the samples to be random spliced: either *train*, *test*, or *all*
-  * random_splice = train
-* **random_splice_result**: file name to store the random spliced data (can then be added to training)
-  * random_splice_result = random_spliced.csv
-* **filter**: don't use all the data but only selected values from columns: [col, val]*
-  * filter = [['gender', 'female'], ['task', 'reading']]
-* **filter.sample_selection**: Which sample set to use for filtering
-  * filter.sample_selection = all # either all, train or test
 * **limit_samples**: maximum number of random N samples per sample selection
   * limit_samples = 20
 * **limit_samples_per_speaker**: maximum number of samples per speaker per sample selection
@@ -144,11 +133,23 @@
 * **check_vad**: check if the files contain speech, using [silero VAD](https://github.com/snakers4/silero-vad)
   * check_vad = True
 
+### AUGMENT
+* **augment**: select the samples to augment: either *train*, *test*, or *all*
+  * augment = train
+* **result**: file name to store the augmented data (can then be added to training)
+  * result = augment.csv
+* **random_splice**: select the samples to be random spliced: either *train*, *test*, or *all*
+  * random_splice = train
+* **result**: file name to store the augmented data (can then be added to training)
+  * result = augment.csv
+
+
+
 ### SEGMENT
 * **sample_selection**: select the samples to segment: either *train*, *test*, or *all*
   * segment = all
-* **segment_target**: name of the extension that is added to the dataset names when storing the segmented data table with the *segment* module
-  * segment_target = _seg
+* **segment_result**: name of the segmented data table as a result
+  * segment_target = segmented.csv
 * **method**: select the model 
   * method = [silero](https://github.com/snakers4/silero-vad)
 * **min_length**: the minimum length of rest samples (in seconds)

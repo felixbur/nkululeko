@@ -401,6 +401,8 @@ class Dataset:
             self.util.debug(f"{self.name}: trying to reuse data splits")
             self.df_test = pd.read_pickle(storage_test)
             self.df_train = pd.read_pickle(storage_train)
+        else:
+            self.util.error(f"unknown split strategy: {split_strategy}")
 
         if self.df_test.shape[0] > 0:
             self.df_test = self.finish_up(self.df_test, storage_test)
@@ -596,7 +598,7 @@ class Dataset:
         return df
 
     def check_continuous_classification(self):
-        datatype = self.util.config_val("DATA", "type", "False")
+        datatype = self.util.config_val("DATA", "type", False)
         if self.util.exp_is_classification() and datatype == "continuous":
             return True
         return False
@@ -606,7 +608,7 @@ class Dataset:
         if self.check_continuous_classification():
             self.util.debug(f"{self.name}: binning continuous variable to categories")
             cat_vals = self.util.continuous_to_categorical(df[self.target])
-            df[self.target] = cat_vals
+            df[self.target] = cat_vals.values
             labels = ast.literal_eval(glob_conf.config["DATA"]["labels"])
             df["class_label"] = df[self.target]
             for i, l in enumerate(labels):

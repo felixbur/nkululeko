@@ -365,7 +365,7 @@ class Experiment:
         """
         from nkululeko.augmenting.augmenter import Augmenter
 
-        sample_selection = self.util.config_val("DATA", "augment", "train")
+        sample_selection = self.util.config_val("AUGMENT", "augment", "train")
         if sample_selection == "all":
             df = pd.concat([self.df_train, self.df_test])
         elif sample_selection == "train":
@@ -379,7 +379,8 @@ class Experiment:
             )
 
         augmenter = Augmenter(df)
-        augmenter.augment(sample_selection)
+        df_ret = augmenter.augment(sample_selection)
+        return df_ret
 
     def autopredict(self):
         """
@@ -459,7 +460,7 @@ class Experiment:
         """
         from nkululeko.augmenting.randomsplicer import Randomsplicer
 
-        sample_selection = self.util.config_val("DATA", "random_splice", "train")
+        sample_selection = self.util.config_val("AUGMENT", "random_splice", "train")
         if sample_selection == "all":
             df = pd.concat([self.df_train, self.df_test])
         elif sample_selection == "train":
@@ -472,7 +473,8 @@ class Experiment:
                 " should be [all | train | test]"
             )
         randomsplicer = Randomsplicer(df)
-        randomsplicer.run(sample_selection)
+        df_ret = randomsplicer.run(sample_selection)
+        return df_ret
 
     def analyse_features(self, needs_feats):
         """

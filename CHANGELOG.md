@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.74.1
+--------------
+* fixed various bugs with augmentation
+
 Version 0.74.0 
 --------------
 * added patience (early stopping)
