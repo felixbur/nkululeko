@@ -365,7 +365,7 @@ class Experiment:
         """
         from nkululeko.augmenting.augmenter import Augmenter
 
-        sample_selection = self.util.config_val("AUGMENT", "augment", "train")
+        sample_selection = self.util.config_val("AUGMENT", "sample_selection", "all")
         if sample_selection == "all":
             df = pd.concat([self.df_train, self.df_test])
         elif sample_selection == "train":
@@ -460,7 +460,7 @@ class Experiment:
         """
         from nkululeko.augmenting.randomsplicer import Randomsplicer
 
-        sample_selection = self.util.config_val("AUGMENT", "random_splice", "train")
+        sample_selection = self.util.config_val("AUGMENT", "sample_selection", "all")
         if sample_selection == "all":
             df = pd.concat([self.df_train, self.df_test])
         elif sample_selection == "train":

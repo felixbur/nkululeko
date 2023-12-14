@@ -134,20 +134,19 @@
   * check_vad = True
 
 ### AUGMENT
-* **augment**: select the samples to augment: either *train*, *test*, or *all*
-  * augment = train
+* **augment**: select the methods to augment: either *traditional* or *random_splice*
+  * augment = ['traditional', 'random_splice]
+  * choices are:
+    * *traditional*: uses the [audiomentations package](https://github.com/iver56/audiomentations)
+    * *random_splice*: randomly re-orders short splices (obfuscates the words)
+* **sample_selection**: select the samples to augment: either *train*, *test*, or *all*
+  * sample_selection = all
 * **result**: file name to store the augmented data (can then be added to training)
-  * result = augment.csv
-* **random_splice**: select the samples to be random spliced: either *train*, *test*, or *all*
-  * random_splice = train
-* **result**: file name to store the augmented data (can then be added to training)
-  * result = augment.csv
-
-
+  * result = augmented.csv
 
 ### SEGMENT
 * **sample_selection**: select the samples to segment: either *train*, *test*, or *all*
-  * segment = all
+  * sample_selection = all
 * **segment_result**: name of the segmented data table as a result
   * segment_target = segmented.csv
 * **method**: select the model 

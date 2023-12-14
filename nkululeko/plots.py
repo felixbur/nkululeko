@@ -262,7 +262,9 @@ class Plots:
             ax.set_xlabel(f"{cont_col}")
             ax.set_ylabel(f"number of {ylab}")
         else:
-            ax = sns.displot(df, x=cont_col, hue=cat_col, kind="kde", fill=True)
+            ax = sns.displot(
+                df, x=cont_col, hue=cat_col, kind="kde", fill=True, warn_singular=False
+            )
             ax.set(xlabel=f"{cont_col}")
             caption = f"{ylab} {df.shape[0]}. {cat_str} ({cats}):" f" {es}"
             ax.fig.suptitle(caption)

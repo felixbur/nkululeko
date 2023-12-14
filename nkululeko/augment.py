@@ -1,12 +1,14 @@
 # augment.py
 # augment the training sets
 
+import argparse
+import pandas as pd
+import os
+import ast
 from nkululeko.experiment import Experiment
 import configparser
 from nkululeko.util import Util
 from nkululeko.constants import VERSION
-import argparse
-import os
 
 
 def main(src_dir):
@@ -47,17 +49,21 @@ def main(src_dir):
     util.debug(f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}")
 
     # augment
-    augmenting = util.config_val("AUGMENT", "augment", False)
-    if augmenting:
-        df_ret = expr.augment()
-
-    random_splicing = util.config_val("AUGMENT", "random_splice", False)
-    if random_splicing:
-        df_ret = expr.random_splice()
-
-    if (not augmenting) and (not random_splicing):
+    augmentings = util.config_val("AUGMENT", "augment", False)
+    got_one = False
+    if augmentings:
+        augmentings = ast.literal_eval(augmentings)
+        def_ret = pd.DataFrame()
+        if "traditional" in augmentings:
+            df_ret = expr.augment()
+            got_one = True
+        if "random_splice" in augmentings:
+            df_ret = pd.concat([def_ret, expr.random_splice()])
+            got_one = True
+    if not augmentings:
         util.error("no augmentation selected")
-
+    if not got_one:
+        util.error(f"invalid augmentation(s): {augmentings}")
     # remove encoded labels
     target = util.config_val("DATA", "target", "emotion")
     if "class_label" in df_ret.columns:

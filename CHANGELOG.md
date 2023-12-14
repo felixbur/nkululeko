@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.74.2
+--------------
+* combined augmentation methods
+  
 Version 0.74.1
 --------------
 * fixed various bugs with augmentation
