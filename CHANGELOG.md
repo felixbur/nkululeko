@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.74.3
+--------------
+* audiomentations interface changed
+
 Version 0.74.2
 --------------
 * combined augmentation methods
