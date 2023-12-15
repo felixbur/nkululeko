@@ -19,7 +19,7 @@ class Wav2vec2(Featureset):
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
         self.model_initialized = False
-        if feat_type == "wav2vec":
+        if feat_type == "wav2vec" or feat_type == "wav2vec2":
             self.feat_type = "wav2vec2-large-robust-ft-swbd-300h"
         else:
             self.feat_type = feat_type

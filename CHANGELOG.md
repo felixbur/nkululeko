@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.74.6
+--------------
+* added standard Wav2vec2 model
+
 Version 0.74.5
 --------------
 * added praat feature extractor for one sample
