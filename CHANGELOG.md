@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.74.4
+--------------
+* fixed bug combining augmentations
+
 Version 0.74.3
 --------------
 * audiomentations interface changed

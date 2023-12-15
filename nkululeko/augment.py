@@ -53,17 +53,21 @@ def main(src_dir):
     got_one = False
     if augmentings:
         augmentings = ast.literal_eval(augmentings)
-        def_ret = pd.DataFrame()
+        results = []
         if "traditional" in augmentings:
-            df_ret = expr.augment()
+            df1 = expr.augment()
+            results.append(df1)
             got_one = True
         if "random_splice" in augmentings:
-            df_ret = pd.concat([def_ret, expr.random_splice()])
+            df2 = expr.random_splice()
+            results.append(df2)
             got_one = True
     if not augmentings:
         util.error("no augmentation selected")
     if not got_one:
         util.error(f"invalid augmentation(s): {augmentings}")
+    df_ret = pd.DataFrame()
+    df_ret = pd.concat(results)
     # remove encoded labels
     target = util.config_val("DATA", "target", "emotion")
     if "class_label" in df_ret.columns:
