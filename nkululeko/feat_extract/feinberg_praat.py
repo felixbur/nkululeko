@@ -199,28 +199,30 @@ def runPCA(df):
     # pickle.dump(x, f)
     # f.close()
 
-    x = StandardScaler().fit_transform(x)
-    if np.any(np.isnan(x)):
+    # x = StandardScaler().fit_transform(x)
+    if np.any(np.isnan(x[0])):
         print(
             f"Warning: {np.count_nonzero(np.isnan(x))} Nans in x, replacing" " with 0"
         )
         x[np.isnan(x)] = 0
-    if np.any(np.isfinite(x)):
-        print(f"Warning: {np.count_nonzero(np.isfinite(x))} infinite in x")
+    # if np.any(np.isfinite(x[0])):
+    #     print(f"Warning: {np.count_nonzero(np.isfinite(x))} finite in x")
 
     # PCA
     pca = PCA(n_components=2)
-    principalComponents = pca.fit_transform(x)
-    if np.any(np.isnan(principalComponents)):
-        print("pc is nan")
-        print(f"count: {np.count_nonzero(np.isnan(principalComponents))}")
-        print(principalComponents)
-        principalComponents = np.nan_to_num(principalComponents)
-
+    try:
+        principalComponents = pca.fit_transform(x)
+        if np.any(np.isnan(principalComponents)):
+            print("pc is nan")
+            print(f"count: {np.count_nonzero(np.isnan(principalComponents))}")
+            print(principalComponents)
+            principalComponents = np.nan_to_num(principalComponents)
+    except ValueError:
+        print("need more than one file for pca")
+        principalComponents = [[0, 0]]
     principalDf = pd.DataFrame(
         data=principalComponents, columns=["JitterPCA", "ShimmerPCA"]
     )
-
     return principalDf
 
 

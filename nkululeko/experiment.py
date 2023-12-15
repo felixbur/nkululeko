@@ -100,12 +100,14 @@ class Experiment:
         dbs = ",".join(list(self.datasets.keys()))
         labels = self.util.config_val("DATA", "labels", False)
         if labels:
-            labels = ast.literal_eval(labels)
+            self.labels = ast.literal_eval(labels)
             self.util.debug(f"Target labels (from config): {labels}")
         else:
-            labels = list(next(iter(self.datasets.values())).df[self.target].unique())
+            self.labels = list(
+                next(iter(self.datasets.values())).df[self.target].unique()
+            )
             self.util.debug(f"Target labels (from database): {labels}")
-        glob_conf.set_labels(labels)
+        glob_conf.set_labels(self.labels)
         self.util.debug(f"loaded databases {dbs}")
 
     def _import_csv(self, storage):
@@ -589,6 +591,7 @@ class Experiment:
         if save:
             # save the experiment for future use
             self.save(self.util.get_save_name())
+            # self.save_onnx(self.util.get_save_name())
 
         # self.__collect_reports()
         self.util.print_best_results(self.reports)
@@ -667,6 +670,7 @@ class Experiment:
         tmp_dict = pickle.load(f)
         f.close()
         self.__dict__.update(tmp_dict)
+        glob_conf.set_labels(self.labels)
 
     def save(self, filename):
         try:
@@ -675,3 +679,17 @@ class Experiment:
             f.close()
         except (AttributeError, TypeError, RuntimeError) as error:
             self.util.warn(f"Save experiment: Can't pickle local object: {error}")
+
+    def save_onnx(self, filename):
+        # export the model to onnx
+        model = self.runmgr.get_best_model()
+        if model.is_ANN():
+            print("converting to onnx from torch")
+        else:
+            from skl2onnx import to_onnx
+
+            print("converting to onnx from sklearn")
+        # save the rest
+        f = open(filename, "wb")
+        pickle.dump(self.__dict__, f)
+        f.close()

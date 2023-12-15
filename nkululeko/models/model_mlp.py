@@ -174,6 +174,9 @@ class MLP_model(Model):
     def store(self):
         torch.save(self.model.state_dict(), self.store_path)
 
+    def store_as_onnx(self):
+        pass
+
     def load(self, run, epoch):
         self.set_id(run, epoch)
         dir = self.util.get_path("model_dir")

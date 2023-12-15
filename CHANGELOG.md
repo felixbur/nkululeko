@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.74.5
+--------------
+* added praat feature extractor for one sample
+
 Version 0.74.4
 --------------
 * fixed bug combining augmentations

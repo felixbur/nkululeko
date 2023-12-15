@@ -42,6 +42,13 @@ class Demo_predictor:
 
     def predict_signal(self, signal, sr):
         features = self.feature_extractor.extract_sample(signal, sr)
+        scale_feats = self.util.config_val("FEATS", "scale", False)
+        if scale_feats:
+            from sklearn.preprocessing import StandardScaler
+
+            scaler = StandardScaler()
+            features = scaler.fit_transform(features)
+        features = np.nan_to_num(features)
         result_dict = self.model.predict_sample(features)
         keys = result_dict.keys()
         if self.label_encoder is not None:

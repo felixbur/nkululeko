@@ -2,6 +2,7 @@
 from nkululeko.feat_extract.featureset import Featureset
 import os
 import pandas as pd
+import numpy as np
 import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract import feinberg_praat
 import ast
@@ -23,14 +24,10 @@ class Praatset(Featureset):
         store = self.util.get_path("store")
         store_format = self.util.config_val("FEATS", "store_format", "pkl")
         storage = f"{store}{self.name}.{store_format}"
-        extract = self.util.config_val(
-            "FEATS", "needs_feature_extraction", False
-        )
+        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
-            self.util.debug(
-                "extracting Praat features, this might take a while..."
-            )
+            self.util.debug("extracting Praat features, this might take a while...")
             self.df = feinberg_praat.compute_features(self.data_df.index)
             self.df = self.df.set_index(self.data_df.index)
             for i, col in enumerate(self.df.columns):
@@ -53,36 +50,25 @@ class Praatset(Featureset):
         self.df = self.df.astype(float)
 
     def extract_sample(self, signal, sr):
-        self.util.error(
-            "feats_praat: extracting single samples not implemented yet"
-        )
-        feats = None
-        return feats
+        import audiofile, audformat
 
-    # def filter(self):
-    #     # use only the features that are indexed in the target dataframes
-    #     self.df = self.df[self.df.index.isin(self.data_df.index)]
-    #     try:
-    #         # use only some features
-    #         selected_features = ast.literal_eval(
-    #             glob_conf.config["FEATS"]["praat.features"]
-    #         )
-    #         self.util.debug(
-    #             f"selecting features from Praat: {selected_features}"
-    #         )
-    #         sel_feats_df = pd.DataFrame()
-    #         hit = False
-    #         for feat in selected_features:
-    #             try:
-    #                 sel_feats_df[feat] = self.df[feat]
-    #                 hit = True
-    #             except KeyError:
-    #                 pass
-    #         if hit:
-    #             self.df = sel_feats_df
-    #             self.util.debug(
-    #                 "new feats shape after selecting Praat features:"
-    #                 f" {self.df.shape}"
-    #             )
-    #     except KeyError:
-    #         pass
+        tmp_audio_names = ["praat_audio_tmp.wav"]
+        audiofile.write(tmp_audio_names[0], signal, sr)
+        df = pd.DataFrame(index=tmp_audio_names)
+        index = audformat.utils.to_segmented_index(df.index, allow_nat=False)
+        df = feinberg_praat.compute_features(index)
+        df.set_index(index)
+        for i, col in enumerate(df.columns):
+            if df[col].isnull().values.any():
+                self.util.debug(
+                    f"{col} includes {df[col].isnull().sum()} nan,"
+                    " inserting mean values"
+                )
+                mean_val = df[col].mean()
+                if not np.isnan(mean_val):
+                    df[col] = df[col].fillna(mean_val)
+                else:
+                    df[col] = df[col].fillna(0)
+        df = df.astype(float)
+        feats = df.to_numpy()
+        return feats
