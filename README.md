@@ -18,7 +18,7 @@
 ## Overview
 A project to detect speaker characteristics by machine learning experiments with a high-level interface.
 
-The idea is to have a framework (based on e.g. sklearn and torch) that can be used to rapidly and automatically analyse and investigate audio data automatically.
+The idea is to have a framework (based on e.g. sklearn and torch) that can be used to rapidly and automatically analyse audio data and explore machine learning models based on that data.
 
 * NEW: Nkululeko now automatically generates PDF reports [sample for EmoDB](meta/images/emodb_report.pdf)
 * The latest features can be seen in [the ini-file](./ini_file.md) options that are used to control Nkululeko
