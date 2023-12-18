@@ -7,6 +7,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeRegressor
 import matplotlib.pyplot as plt
+from xgboost import XGBClassifier, XGBRegressor
 
 
 class FeatureAnalyser:
@@ -14,6 +15,7 @@ class FeatureAnalyser:
         self.util = Util("feats_analyser")
         self.target = self.util.config_val("DATA", "target", "emotion")
         self.labels = df_labels[self.target]
+        # self.labels = df_labels["class_label"]
         self.df_labels = df_labels
         self.features = df_features
         self.label = label
@@ -36,6 +38,11 @@ class FeatureAnalyser:
                 if plot_tree:
                     plots = Plots()
                     plots.plot_tree(model, self.features)
+            elif model_s == "xgb":
+                model = XGBClassifier(enable_categorical=True, tree_method="hist")
+                self.labels = self.labels.astype("category")
+                model.fit(self.features, self.labels)
+                importance = model.feature_importances_
             else:
                 self.util.error(f"invalid analysis method: {model}")
         else:  # regression experiment
@@ -45,6 +52,10 @@ class FeatureAnalyser:
                 importance = model.coef_
             elif model_s == "tree":
                 model = DecisionTreeRegressor()
+                model.fit(self.features, self.labels)
+                importance = model.feature_importances_
+            elif model_s == "xgb":
+                model = XGBRegressor()
                 model.fit(self.features, self.labels)
                 importance = model.feature_importances_
             else:
@@ -90,7 +101,7 @@ class FeatureAnalyser:
                 _plots.plot_feature(
                     sample_selection,
                     feature,
-                    self.target,
+                    "class_label",
                     self.df_labels,
                     self.features,
                 )

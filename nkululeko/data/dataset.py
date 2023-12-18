@@ -207,18 +207,22 @@ class Dataset:
             self.df.speaker = self.df.speaker.apply(lambda x: self.name + x)
 
         # check if the target variable should be reversed
-        def reverse_array(d):
+        def reverse_array(d, max):
             d = np.array(d)
-            max = d.max()
             res = []
             for n in d:
                 res.append(abs(n - max))
             return res
 
-        reverse = self.util.config_val_data(self.name, "reverse", False)
+        reverse = eval(self.util.config_val_data(self.name, "reverse", "False"))
         if reverse:
-            self.util.debug("reversing target numbers")
-            self.df[self.target] = reverse_array(self.df[self.target].values)
+            max = eval(self.util.config_val_data(self.name, "reverse.max", "False"))
+            if max:
+                max = float(max)
+            else:
+                max = self.df[self.target].values.max()
+            self.util.debug(f"reversing target numbers with max values: {max}")
+            self.df[self.target] = reverse_array(self.df[self.target].values, max)
 
         # check if the target variable should be scaled (z-transformed)
         scale = self.util.config_val_data(self.name, "scale", False)

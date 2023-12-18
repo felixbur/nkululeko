@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.75.0
+--------------
+* added max val for reversing
+* added xgb for feature importance
+
 Version 0.74.6
 --------------
 * added standard Wav2vec2 model

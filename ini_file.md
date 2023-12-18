@@ -108,6 +108,7 @@
   * emodb.filter = [['gender', 'female']]
 * **db_name.scale**: scale (standard normalize) the target variable (if numeric)
 * **db_name.reverse**: reverse the target variable (if numeric). I.e. f(x) = abs(x-max)
+* **db_name.reverse.max**: max value to be used in the formula above. If omitted, the distribution will start with 0.
 * **target**: the task name, e.g. *age* or *emotion*
   * target = emotion
 * **labels**: for classification experiments: the names of the categories (is also used for regression when binning the values)
@@ -298,7 +299,7 @@
   * max_feats = 10
 * **sample_selection**: Which sample set/split to use for feature importance, sample distribution, spotlight and feature distributions
   * sample_selection = all # either all, train or test
-* **feature_distributions** plot distributions for all features per category 
+* **feature_distributions** plot distributions for features and analyze importance 
   * feature_distributions = True
 * **scatter**: make a scatter plot of combined train and test data, colored by label.
   * scatter = ['tsne', 'umap', 'pca']
