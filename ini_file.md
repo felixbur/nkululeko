@@ -294,7 +294,7 @@
 
 ### EXPL
 * **model**: Which model to use to estimate feature importance.
-  * model = log_reg # can be log_reg, lin_reg or tree
+  * model = ['log_reg'] # can be *log_reg* (classification), *lin_reg* (regression), *tree* (both) or *xgb* (both), If they are combined, the mean result is used.
 * **max_feats**: Maximal number of important features 
   * max_feats = 10
 * **sample_selection**: Which sample set/split to use for feature importance, sample distribution, spotlight and feature distributions

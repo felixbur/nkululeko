@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.76.0
+--------------
+* added possibility to aggregate feature importance models
+
 Version 0.75.0
 --------------
 * added max val for reversing
