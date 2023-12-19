@@ -5,17 +5,13 @@ import os.path
 import configparser
 import argparse
 import nkululeko.experiment as exp
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 from nkululeko.constants import VERSION
 
 
 def main(src_dir):
-    parser = argparse.ArgumentParser(
-        description="Call the nkululeko framework."
-    )
-    parser.add_argument(
-        "--config", default="exp.ini", help="The base configuration"
-    )
+    parser = argparse.ArgumentParser(description="Call the nkululeko framework.")
+    parser.add_argument("--config", default="exp.ini", help="The base configuration")
     args = parser.parse_args()
     if args.config is not None:
         config_file = args.config
@@ -49,9 +45,7 @@ def main(src_dir):
 
     # split into train and test
     expr.fill_train_and_tests()
-    util.debug(
-        f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}"
-    )
+    util.debug(f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}")
 
     # extract features
     expr.extract_feats()
@@ -69,6 +63,4 @@ def main(src_dir):
 
 if __name__ == "__main__":
     cwd = os.path.dirname(os.path.abspath(__file__))
-    main(
-        cwd
-    )  # use this if you want to state the config file path on command line
+    main(cwd)  # use this if you want to state the config file path on command line

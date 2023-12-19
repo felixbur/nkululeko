@@ -16,7 +16,7 @@ from sklearn.metrics import recall_score
 from collections import OrderedDict
 from PIL import Image
 
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 import nkululeko.glob_conf as glob_conf
 from nkululeko.models.model import Model
 from nkululeko.reporter import Reporter

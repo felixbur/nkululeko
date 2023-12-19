@@ -7,11 +7,11 @@ segment a dataset with the Silero segmenter
 
 import torch
 import pandas as pd
-from tqdm import tqdm  
+from tqdm import tqdm
 import audformat
 from audformat.utils import to_filewise_index
 from audformat import segmented_index
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 
 # from nkululeko.constants import SAMPLING_RATE
 
@@ -44,9 +44,7 @@ class Silero_segmenter:
         SAMPLING_RATE = 16000
         if self.no_testing:
             min_length = float(self.util.config_val("SEGMENT", "min_length", 2))
-            max_length = float(
-                self.util.config_val("SEGMENT", "max_length", 10)
-            )
+            max_length = float(self.util.config_val("SEGMENT", "max_length", 10))
         else:
             min_length = 2
             max_length = 10

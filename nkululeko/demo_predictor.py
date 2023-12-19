@@ -1,5 +1,5 @@
 import nkululeko.glob_conf as glob_conf
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 import numpy as np
 import sounddevice as sd
 import audiofile

@@ -6,7 +6,7 @@ print out report as latex file and pdf
 from pylatex import Document, Section, Subsection, Command, Figure
 from pylatex.utils import italic, NoEscape
 from nkululeko.reporting.report_item import ReportItem
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 
 
 class LatexWriter:
@@ -34,8 +34,13 @@ class LatexWriter:
                             # self.doc.append(f"See figure: {reference}")
 
     def finish_doc(self):
+        from subprocess import CalledProcessError
+
         target_filename = self.util.config_val("REPORT", "latex", "nkululeko_latex")
         target_dir = self.util.get_exp_dir()
         path = "/".join([target_dir, target_filename])
         self.util.debug(f"Generated latex report to {path}")
-        self.doc.generate_pdf(path, clean_tex=False)
+        try:
+            self.doc.generate_pdf(path, clean_tex=False)
+        except CalledProcessError as e:
+            self.util.debug(f"Error while generating PDF file: {e}")

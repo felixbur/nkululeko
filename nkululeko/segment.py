@@ -6,7 +6,7 @@ import os
 import pandas as pd
 import configparser
 from nkululeko.experiment import Experiment
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 from nkululeko.constants import VERSION
 import nkululeko.glob_conf as glob_conf
 from nkululeko.reporting.report_item import ReportItem

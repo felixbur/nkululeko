@@ -8,7 +8,7 @@ import shutil
 import audformat
 import pandas as pd
 import torchaudio
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 
 
 class Resampler:
@@ -42,9 +42,7 @@ class Resampler:
                 continue
             if org_sr != self.SAMPLING_RATE:
                 self.util.debug(f"resampling {f} (sr = {org_sr})")
-                resampler = torchaudio.transforms.Resample(
-                    org_sr, self.SAMPLING_RATE
-                )
+                resampler = torchaudio.transforms.Resample(org_sr, self.SAMPLING_RATE)
                 signal = resampler(signal)
                 if replace:
                     torchaudio.save(
@@ -61,9 +59,7 @@ class Resampler:
             self.df = self.df.set_index(
                 self.df.index.set_levels(new_files, level="file")
             )
-            target_file = self.util.config_val(
-                "RESAMPLE", "target", "resampled.csv"
-            )
+            target_file = self.util.config_val("RESAMPLE", "target", "resampled.csv")
             # remove encoded labels
             target = self.util.config_val("DATA", "target", "emotion")
             if "class_label" in self.df.columns:
@@ -72,8 +68,7 @@ class Resampler:
             # save file
             self.df.to_csv(target_file)
             self.util.debug(
-                "saved resampled list of files to"
-                f" {os.path.abspath(target_file)}"
+                "saved resampled list of files to" f" {os.path.abspath(target_file)}"
             )
         self.util.debug(f"resampled {succes} files, {error} errors")
 

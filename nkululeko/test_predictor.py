@@ -3,7 +3,7 @@
 
 """
 import nkululeko.glob_conf as glob_conf
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 import pandas as pd
 from nkululeko.data.dataset import Dataset
 from nkululeko.feature_extractor import FeatureExtractor

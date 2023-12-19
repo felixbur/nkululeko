@@ -1,7 +1,7 @@
 import audformat
 import pandas as pd
 import nkululeko.glob_conf as glob_conf
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 import ast
 
 
@@ -45,9 +45,7 @@ class DataFilter:
         the samples are selected randomly
         """
         if data_name == "":
-            max = self.util.config_val(
-                "DATA", "limit_samples_per_speaker", False
-            )
+            max = self.util.config_val("DATA", "limit_samples_per_speaker", False)
         else:
             max = self.util.config_val_data(
                 data_name, "limit_samples_per_speaker", False
@@ -73,12 +71,8 @@ class DataFilter:
     def filter_duration(self, data_name=""):
         """remove all samples less than min_dur duration"""
         if data_name == "":
-            min_dur = self.util.config_val(
-                "DATA", "min_duration_of_sample", False
-            )
-            max_dur = self.util.config_val(
-                "DATA", "max_duration_of_sample", False
-            )
+            min_dur = self.util.config_val("DATA", "min_duration_of_sample", False)
+            max_dur = self.util.config_val("DATA", "max_duration_of_sample", False)
         else:
             min_dur = self.util.config_val_data(
                 data_name, "min_duration_of_sample", False
@@ -175,9 +169,7 @@ def filter_min_dur(df, min_dur):
         glob_conf.util.debug(
             "converting file index to multi index, this might take a while..."
         )
-        df_ret.index = audformat.utils.to_segmented_index(
-            df.index, allow_nat=False
-        )
+        df_ret.index = audformat.utils.to_segmented_index(df.index, allow_nat=False)
     for i in df_ret.index:
         start = i[1]
         end = i[2]
@@ -197,9 +189,7 @@ def filter_max_dur(df, max_dur):
         glob_conf.util.debug(
             "converting file index to multi index, this might take a while..."
         )
-        df_ret.index = audformat.utils.to_segmented_index(
-            df.index, allow_nat=False
-        )
+        df_ret.index = audformat.utils.to_segmented_index(df.index, allow_nat=False)
     for i in df_ret.index:
         start = i[1]
         end = i[2]

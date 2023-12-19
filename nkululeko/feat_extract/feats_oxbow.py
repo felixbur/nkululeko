@@ -1,6 +1,6 @@
 # feats_oxbow.py
 
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 from nkululeko.feat_extract.featureset import Featureset
 import os
 import pandas as pd
@@ -21,15 +21,11 @@ class Openxbow(Featureset):
         self.feature_set = eval(f"opensmile.FeatureSet.{self.featset}")
         store = self.util.get_path("store")
         storage = f"{store}{self.name}_{self.featset}.pkl"
-        extract = self.util.config_val(
-            "FEATS", "needs_feature_extraction", False
-        )
+        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             # extract smile features first
-            self.util.debug(
-                "extracting openSmile features, this might take a while..."
-            )
+            self.util.debug("extracting openSmile features, this might take a while...")
             smile = opensmile.Smile(
                 feature_set=self.feature_set,
                 feature_level=opensmile.FeatureLevel.LowLevelDescriptors,
@@ -52,9 +48,7 @@ class Openxbow(Featureset):
             # save the smile features
             smile_df.to_csv(lld_name, sep=";", header=False)
             # get the path of the xbow java jar file
-            xbow_path = self.util.config_val(
-                "FEATS", "xbow.model", "../openXBOW/"
-            )
+            xbow_path = self.util.config_val("FEATS", "xbow.model", "../openXBOW/")
             # get the size of the codebook
             size = self.util.config_val("FEATS", "size", 500)
             # get the number of assignements
@@ -83,8 +77,7 @@ class Openxbow(Featureset):
             if with_os:
                 # extract smile functionals
                 self.util.debug(
-                    "extracting openSmile functionals, this might take a"
-                    " while..."
+                    "extracting openSmile functionals, this might take a" " while..."
                 )
                 smile = opensmile.Smile(
                     feature_set=opensmile.FeatureSet.eGeMAPSv02,  # always use eGemaps for this

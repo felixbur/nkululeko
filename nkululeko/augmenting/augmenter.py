@@ -14,7 +14,7 @@ from audiomentations import (
     Shift,
     TimeStretch,
 )
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 from tqdm import tqdm
 
 

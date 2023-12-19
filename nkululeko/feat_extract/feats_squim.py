@@ -25,7 +25,7 @@ import torchaudio
 from torchaudio.pipelines import SQUIM_OBJECTIVE
 import audiofile
 import nkululeko.glob_conf as glob_conf
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 from nkululeko.feat_extract.featureset import Featureset
 
 
@@ -49,9 +49,7 @@ class SQUIMSet(Featureset):
         store = self.util.get_path("store")
         store_format = self.util.config_val("FEATS", "store_format", "pkl")
         storage = f"{store}{self.name}.{store_format}"
-        extract = self.util.config_val(
-            "FEATS", "needs_feature_extraction", False
-        )
+        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             if not self.model_initialized:
@@ -70,9 +68,7 @@ class SQUIMSet(Featureset):
                 )
                 emb = self.get_embeddings(signal, sampling_rate, file)
                 emb_series[idx] = emb
-            self.df = pd.DataFrame(
-                emb_series.values.tolist(), index=self.data_df.index
-            )
+            self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
             self.df.columns = ["pesq", "sdr", "stoi"]
             self.util.write_store(self.df, storage, store_format)
             try:
@@ -93,13 +89,9 @@ class SQUIMSet(Featureset):
         tmp_audio_name = "squim_audio_tmp.wav"
         try:
             audiofile.write(tmp_audio_name, signal, sampling_rate)
-            WAVEFORM_SPEECH, SAMPLE_RATE_SPEECH = torchaudio.load(
-                tmp_audio_name
-            )
+            WAVEFORM_SPEECH, SAMPLE_RATE_SPEECH = torchaudio.load(tmp_audio_name)
             with torch.no_grad():
-                stoi_hyp, pesq_hyp, si_sdr_hyp = self.objective_model(
-                    WAVEFORM_SPEECH
-                )
+                stoi_hyp, pesq_hyp, si_sdr_hyp = self.objective_model(WAVEFORM_SPEECH)
             pesq = float(pesq_hyp[0].numpy())
             stoi = float(stoi_hyp[0].numpy())
             sdr = float(si_sdr_hyp[0].numpy())

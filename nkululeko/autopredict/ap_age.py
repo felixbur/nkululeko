@@ -2,7 +2,7 @@
 A predictor for age.
 Currently based on audEERING's agender model.
 """
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 from nkululeko.feature_extractor import FeatureExtractor
 import ast
 import nkululeko.glob_conf as glob_conf
@@ -21,9 +21,7 @@ class AgePredictor:
 
     def predict(self, split_selection):
         self.util.debug(f"predicting age for {split_selection} samples")
-        feats_name = "_".join(
-            ast.literal_eval(glob_conf.config["DATA"]["databases"])
-        )
+        feats_name = "_".join(ast.literal_eval(glob_conf.config["DATA"]["databases"]))
         self.feature_extractor = FeatureExtractor(
             self.df, ["agender_agender"], feats_name, split_selection
         )

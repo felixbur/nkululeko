@@ -1,7 +1,7 @@
 """"
 A predictor for SNR - signal-to-noise ratio.
 """
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 import ast
 import nkululeko.glob_conf as glob_conf
 from nkululeko.feature_extractor import FeatureExtractor
@@ -22,9 +22,7 @@ class SNRPredictor:
     def predict(self, split_selection):
         self.util.debug(f"estimating SNR for {split_selection} samples")
         return_df = self.df.copy()
-        feats_name = "_".join(
-            ast.literal_eval(glob_conf.config["DATA"]["databases"])
-        )
+        feats_name = "_".join(ast.literal_eval(glob_conf.config["DATA"]["databases"]))
         self.feature_extractor = FeatureExtractor(
             self.df, ["snr"], feats_name, split_selection
         )

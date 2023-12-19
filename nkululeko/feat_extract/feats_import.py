@@ -1,6 +1,6 @@
 # feats_import.py
 
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 from nkululeko.feat_extract.featureset import Featureset
 import os
 import pandas as pd
@@ -17,9 +17,7 @@ class Importset(Featureset):
         """Import the features or load them from disk if present."""
         store = self.util.get_path("store")
         storage = f"{store}{self.name}.pkl"
-        extract = eval(
-            self.util.config_val("FEATS", "needs_feature_extraction", False)
-        )
+        extract = eval(self.util.config_val("FEATS", "needs_feature_extraction", False))
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         feat_import_file = self.util.config_val("FEATS", "import_file", False)
         if not os.path.isfile(feat_import_file):

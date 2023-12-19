@@ -85,3 +85,11 @@ def cohens_D_to_string(val):
     else:
         rval = "large effect"
     return f"Cohen's d: {rval}"
+
+
+def normalize(values):
+    """Do a z-transformation of a distribution, so that mean = 0 and variance = 1"""
+    from sklearn.preprocessing import StandardScaler
+
+    scaler = StandardScaler()
+    return scaler.fit_transform(values)

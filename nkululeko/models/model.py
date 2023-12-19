@@ -1,5 +1,5 @@
 # model.py
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 import pandas as pd
 import numpy as np
 import nkululeko.glob_conf as glob_conf

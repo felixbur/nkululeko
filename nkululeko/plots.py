@@ -6,7 +6,7 @@ import seaborn as sns
 import numpy as np
 import ast
 from scipy import stats
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 import nkululeko.utils.stats as su
 import nkululeko.glob_conf as glob_conf
 from nkululeko.reporting.report_item import ReportItem
@@ -456,8 +456,10 @@ class Plots:
         return tsne_data
 
     def plot_feature(self, title, feature, label, df_labels, df_features):
+        # remove fullstops in the name
+        feature_name = feature.replace(".", "-")
         fig_dir = self.util.get_path("fig_dir") + "../"  # one up because of the runs
-        filename = f"{fig_dir}feat_dist_{title}_{feature}.{self.format}"
+        filename = f"{fig_dir}feat_dist_{title}_{feature_name}.{self.format}"
         if self.util.is_categorical(df_labels[label]):
             df_plot = pd.DataFrame(
                 {label: df_labels[label], feature: df_features[feature]}
@@ -475,11 +477,13 @@ class Plots:
         plt.savefig(filename)
         fig.clear()
         plt.close(fig)
+        caption = f"Feature plot for feature {feature}"
+        content = caption
         glob_conf.report.add_item(
             ReportItem(
                 Header.HEADER_EXPLORE,
-                f"Feature plot",
-                f"for feature {feature}",
+                caption,
+                content,
                 filename,
             )
         )

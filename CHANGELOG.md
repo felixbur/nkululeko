@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.77.1
+--------------
+* added permutation algorithm to compute feature importance
+* shifted util.py to utils
+
 Version 0.77.0
 --------------
 * added more latex report output

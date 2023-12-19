@@ -25,7 +25,7 @@ from nkululeko.reporting.report import Report
 from nkululeko.runmanager import Runmanager
 from nkululeko.scaler import Scaler
 from nkululeko.test_predictor import Test_predictor
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 
 
 class Experiment:

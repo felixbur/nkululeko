@@ -20,7 +20,7 @@ import numpy as np
 import audiofile as af
 from audformat.utils import map_file_path
 import audeer
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 import nkululeko.augmenting.randomsplicing as rsp
 
 

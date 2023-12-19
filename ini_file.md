@@ -299,8 +299,10 @@
   * max_feats = 10
 * **sample_selection**: Which sample set/split to use for feature importance, sample distribution, spotlight and feature distributions
   * sample_selection = all # either all, train or test
-* **feature_distributions** plot distributions for features and analyze importance 
+* **feature_distributions**: plot distributions for features and analyze importance 
   * feature_distributions = True
+* **permutation**: use [feature permutation](https://scikit-learn.org/stable/modules/permutation_importance.html) to determine the best features. Make sure to test the models before.
+  * permutation = True
 * **scatter**: make a scatter plot of combined train and test data, colored by label.
   * scatter = ['tsne', 'umap', 'pca']
 * **scatter.target**: target for the scatter plot (defaults to *target* value).

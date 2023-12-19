@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 from nkululeko import glob_conf
 import nkululeko.glob_conf as glob_conf
 

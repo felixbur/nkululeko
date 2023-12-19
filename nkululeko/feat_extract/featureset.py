@@ -1,6 +1,6 @@
 # featureset.py
 import pandas as pd
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 import nkululeko.glob_conf as glob_conf
 import ast
 
@@ -23,9 +23,7 @@ class Featureset:
         self.df = self.df[self.df.index.isin(self.data_df.index)]
         try:
             # use only some features
-            selected_features = ast.literal_eval(
-                glob_conf.config["FEATS"]["features"]
-            )
+            selected_features = ast.literal_eval(glob_conf.config["FEATS"]["features"])
             self.util.debug(f"selecting features: {selected_features}")
             sel_feats_df = pd.DataFrame()
             hit = False

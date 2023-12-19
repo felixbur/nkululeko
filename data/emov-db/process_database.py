@@ -21,9 +21,9 @@ gender_map = {"bea": "female", "jenie": "female", "josh": "male", "sam": "male"}
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Process database')
-    parser.add_argument('--data_dir', type=str, default='EmoV-DB_sorted')
-    parser.add_argument('--output_dir', type=str, default='.')
+    parser = argparse.ArgumentParser(description="Process database")
+    parser.add_argument("--data_dir", type=str, default="EmoV-DB_sorted")
+    parser.add_argument("--output_dir", type=str, default=".")
     args = parser.parse_args()
 
     data_dir = Path(args.data_dir)
@@ -39,9 +39,15 @@ def main():
     languages = ["english" for file in paths]
 
     # convert to df
-    df = pd.DataFrame({"file": paths, "emotion": emotions,
-                      "speaker": speakers, "gender": genders, "language": languages})
-
+    df = pd.DataFrame(
+        {
+            "file": paths,
+            "emotion": emotions,
+            "speaker": speakers,
+            "gender": genders,
+            "language": languages,
+        }
+    )
 
     # allocate speaker sam for test
     train_df = df[df["speaker"] != "bea"]

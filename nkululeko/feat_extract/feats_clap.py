@@ -1,6 +1,6 @@
 # feats_clap.py
 
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 from nkululeko.feat_extract.featureset import Featureset
 import os
 import pandas as pd
@@ -32,16 +32,12 @@ class Clap(Featureset):
         store = self.util.get_path("store")
         store_format = self.util.config_val("FEATS", "store_format", "pkl")
         storage = f"{store}{self.name}.{store_format}"
-        extract = self.util.config_val(
-            "FEATS", "needs_feature_extraction", False
-        )
+        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             if not self.model_initialized:
                 self.init_model()
-            self.util.debug(
-                "extracting clap embeddings, this might take a while..."
-            )
+            self.util.debug("extracting clap embeddings, this might take a while...")
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
             length = len(self.data_df.index)
             for idx, (file, start, end) in enumerate(
@@ -55,9 +51,7 @@ class Clap(Featureset):
                 )
                 emb = self.get_embeddings(signal, sampling_rate)
                 emb_series[idx] = emb
-            self.df = pd.DataFrame(
-                emb_series.values.tolist(), index=self.data_df.index
-            )
+            self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
             self.util.write_store(self.df, storage, store_format)
             try:
                 glob_conf.config["DATA"]["needs_feature_extraction"] = "false"

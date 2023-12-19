@@ -7,7 +7,7 @@ import os
 import ast
 from nkululeko.experiment import Experiment
 import configparser
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 from nkululeko.constants import VERSION
 
 

@@ -11,7 +11,7 @@ import math
 from tqdm import tqdm
 import parselmouth
 import statistics
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 import audiofile
 from parselmouth.praat import call
 from scipy.stats.mstats import zscore

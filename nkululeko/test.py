@@ -3,19 +3,15 @@
 
 from nkululeko.experiment import Experiment
 import configparser
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 from nkululeko.constants import VERSION
 import argparse
 import os
 
 
 def main(src_dir):
-    parser = argparse.ArgumentParser(
-        description="Call the nkululeko framework."
-    )
-    parser.add_argument(
-        "--config", default="exp.ini", help="The base configuration"
-    )
+    parser = argparse.ArgumentParser(description="Call the nkululeko framework.")
+    parser.add_argument("--config", default="exp.ini", help="The base configuration")
     parser.add_argument(
         "--outfile",
         default="my_results.csv",
@@ -54,6 +50,4 @@ def main(src_dir):
 
 if __name__ == "__main__":
     cwd = os.path.dirname(os.path.abspath(__file__))
-    main(
-        cwd
-    )  # use this if you want to state the config file path on command line
+    main(cwd)  # use this if you want to state the config file path on command line

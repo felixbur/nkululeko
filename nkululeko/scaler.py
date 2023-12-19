@@ -3,7 +3,7 @@
 
 from sklearn.preprocessing import StandardScaler, RobustScaler
 import pandas as pd
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 
 
 class Scaler:

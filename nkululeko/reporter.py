@@ -21,7 +21,7 @@ import nkululeko.glob_conf as glob_conf
 from nkululeko.reporting.report_item import ReportItem
 from nkululeko.result import Result
 from nkululeko.reporting.defines import Header
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 
 
 class Reporter:

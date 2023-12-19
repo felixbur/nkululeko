@@ -1,5 +1,5 @@
 import pandas as pd
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 import os
 
 
@@ -39,7 +39,9 @@ class FileChecker:
             min = self.util.config_val_data(data_name, "check_size", False)
         if min:
             if min == "True":
-                min = 1000  # 1000 bytes would be a reasonable minimal size for 16 kHz sr
+                min = (
+                    1000  # 1000 bytes would be a reasonable minimal size for 16 kHz sr
+                )
             old_samples = self.df.shape[0]
             df = self.df.copy()
             for i in self.df.index:
@@ -66,9 +68,7 @@ class FileChecker:
         else:
             check = self.util.config_val_data(data_name, "check_vad", False)
         if check:
-            self.util.debug(
-                f"{data_name}: checking for samples without speech."
-            )
+            self.util.debug(f"{data_name}: checking for samples without speech.")
             SAMPLING_RATE = 16000
             (
                 get_speech_timestamps,

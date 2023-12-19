@@ -2,7 +2,7 @@
 A predictor for emotional valence.
 Currently based on audEERING's emotional dimension model.
 """
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 from nkululeko.feature_extractor import FeatureExtractor
 import ast
 import nkululeko.glob_conf as glob_conf
@@ -21,9 +21,7 @@ class ValencePredictor:
 
     def predict(self, split_selection):
         self.util.debug(f"predicting valence for {split_selection} samples")
-        feats_name = "_".join(
-            ast.literal_eval(glob_conf.config["DATA"]["databases"])
-        )
+        feats_name = "_".join(ast.literal_eval(glob_conf.config["DATA"]["databases"]))
         self.feature_extractor = FeatureExtractor(
             self.df, ["auddim"], feats_name, split_selection
         )

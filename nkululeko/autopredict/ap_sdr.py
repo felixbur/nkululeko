@@ -2,7 +2,7 @@
 A predictor for SDR - Signal to Distortion Ratio.
 as estimated by Scale-Invariant Signal-to-Distortion Ratio (SI-SDR) 
 """
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 import ast
 import nkululeko.glob_conf as glob_conf
 from nkululeko.feature_extractor import FeatureExtractor
@@ -23,9 +23,7 @@ class SDRPredictor:
     def predict(self, split_selection):
         self.util.debug(f"estimating SDR for {split_selection} samples")
         return_df = self.df.copy()
-        feats_name = "_".join(
-            ast.literal_eval(glob_conf.config["DATA"]["databases"])
-        )
+        feats_name = "_".join(ast.literal_eval(glob_conf.config["DATA"]["databases"]))
         self.feature_extractor = FeatureExtractor(
             self.df, ["squim"], feats_name, split_selection
         )

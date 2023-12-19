@@ -4,7 +4,7 @@ import sys
 import os
 import pandas as pd
 import numpy as np
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 import nkululeko.glob_conf as glob_conf
 
 
@@ -22,19 +22,14 @@ class MLD_set(Featureset):
             os.remove(storage)
         if not os.path.isfile(storage):
             self.util.debug(
-                "extracting midleveldescriptor features, this might take a"
-                " while..."
+                "extracting midleveldescriptor features, this might take a" " while..."
             )
         else:
-            self.util.debug(
-                "reusing previously extracted midleveldescriptor features"
-            )
+            self.util.debug("reusing previously extracted midleveldescriptor features")
         import midlevel_descriptors as mld
 
         fex_mld = mld.MLD()
-        self.df = fex_mld.extract_from_index(
-            index=self.data_df, cache_path=storage
-        )
+        self.df = fex_mld.extract_from_index(index=self.data_df, cache_path=storage)
         self.util.debug(f"MLD feats shape: {self.df.shape}")
         # shouldn't happen
         # replace NANa with column means values

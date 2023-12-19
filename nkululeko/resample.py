@@ -3,7 +3,7 @@
 
 from nkululeko.experiment import Experiment
 import configparser
-from nkululeko.util import Util
+from nkululeko.utils.util import Util
 from nkululeko.constants import VERSION
 import argparse
 import os
@@ -12,12 +12,8 @@ from nkululeko.augmenting.resampler import Resampler
 
 
 def main(src_dir):
-    parser = argparse.ArgumentParser(
-        description="Call the nkululeko framework."
-    )
-    parser.add_argument(
-        "--config", default="exp.ini", help="The base configuration"
-    )
+    parser = argparse.ArgumentParser(description="Call the nkululeko framework.")
+    parser.add_argument("--config", default="exp.ini", help="The base configuration")
     args = parser.parse_args()
     if args.config is not None:
         config_file = args.config
@@ -50,9 +46,7 @@ def main(src_dir):
 
     # split into train and test
     expr.fill_train_and_tests()
-    util.debug(
-        f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}"
-    )
+    util.debug(f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}")
 
     sample_selection = util.config_val("RESAMPLE", "sample_selection", "all")
     if sample_selection == "all":
@@ -74,6 +68,4 @@ def main(src_dir):
 
 if __name__ == "__main__":
     cwd = os.path.dirname(os.path.abspath(__file__))
-    main(
-        cwd
-    )  # use this if you want to state the config file path on command line
+    main(cwd)  # use this if you want to state the config file path on command line
