@@ -347,9 +347,18 @@ class Plots:
                     kind="bar", ax=axes, title=f"samples ({sampl_num})"
                 )
             # plt.tight_layout()
-            plt.savefig(f"{fig_dir}{filename}.{self.format}")
+            img_path = f"{fig_dir}{filename}.{self.format}"
+            plt.savefig(img_path)
             fig.clear()
             plt.close(fig)
+            glob_conf.report.add_item(
+                ReportItem(
+                    Header.HEADER_EXPLORE,
+                    f"Overview on {df.shape[0]} samples",
+                    "",
+                    img_path,
+                )
+            )
 
     def scatter_plot(self, feats, label_df, label, dimred_type):
         fig_dir = self.util.get_path("fig_dir") + "../"  # one up because of the runs
@@ -401,6 +410,14 @@ class Plots:
         plt.savefig(filename)
         fig.clear()
         plt.close(fig)
+        glob_conf.report.add_item(
+            ReportItem(
+                Header.HEADER_EXPLORE,
+                f"Scatter plot",
+                f"using {dimred_type}",
+                filename,
+            )
+        )
 
     def plotTsne(self, feats, labels, filename, perplexity=30, learning_rate=200):
         """Make a TSNE plot to see whether features are useful for classification"""
@@ -458,6 +475,14 @@ class Plots:
         plt.savefig(filename)
         fig.clear()
         plt.close(fig)
+        glob_conf.report.add_item(
+            ReportItem(
+                Header.HEADER_EXPLORE,
+                f"Feature plot",
+                f"for feature {feature}",
+                filename,
+            )
+        )
 
     def plot_tree(self, model, features):
         from sklearn import tree
@@ -476,3 +501,11 @@ class Plots:
         fig.savefig(filename)
         fig.clear()
         plt.close(fig)
+        glob_conf.report.add_item(
+            ReportItem(
+                Header.HEADER_EXPLORE,
+                f"Tree plot",
+                f"for feature importance",
+                filename,
+            )
+        )

@@ -45,10 +45,15 @@ class Experiment:
         audeer.mkdir(self.data_dir)  # create the experiment directory
         self.util = Util("experiment")
         glob_conf.set_util(self.util)
-        try:
-            with open(os.path.join(self.data_dir, "report.pkl"), "rb") as handle:
-                self.report = pickle.load(handle)
-        except FileNotFoundError:
+        fresh_report = eval(self.util.config_val("REPORT", "fresh", "False"))
+        if not fresh_report:
+            try:
+                with open(os.path.join(self.data_dir, "report.pkl"), "rb") as handle:
+                    self.report = pickle.load(handle)
+            except FileNotFoundError:
+                self.report = Report()
+        else:
+            self.util.debug("starting a fresh report")
             self.report = Report()
         glob_conf.set_report(self.report)
         self.loso = self.util.config_val("MODEL", "loso", False)

@@ -15,7 +15,6 @@ from nkululeko.filter_data import DataFilter
 from nkululeko.plots import Plots
 from nkululeko.reporting.report_item import ReportItem
 from nkululeko.util import Util
-import nkululeko.split.split_utils as split
 
 
 class Dataset:
@@ -431,6 +430,9 @@ class Dataset:
 
     def balanced_split(self):
         """One way to split train and eval sets: Generate split dataframes for some balancing criterion"""
+        from splitutils import binning
+        from splitutils import optimize_traintest_split
+
         seed = 42
         k = 30
         test_size = int(self.util.config_val_data(self.name, "test_size", 20)) / 100.0
@@ -441,7 +443,7 @@ class Dataset:
         bins = self.util.config_val("DATA", f"bin", False)
         if bins:
             nbins = len(ast.literal_eval(bins))
-            targets = split.binning(targets, nbins=nbins)
+            targets = binning(targets, nbins=nbins)
         # on which variable to split
         speakers = df["speaker"].to_numpy()
 
@@ -460,7 +462,7 @@ class Dataset:
                     data = df[stratif_var].to_numpy()
                     bins = self.util.config_val("DATA", f"{stratif_var}_bins", False)
                     if bins:
-                        data = split.binning(data, nbins=int(bins))
+                        data = binning(data, nbins=int(bins))
                     stratif_vars_array[stratif_var] = data
         # weights for all stratify_on variables and
         # and for test proportion match. Give target
@@ -473,7 +475,8 @@ class Dataset:
             weights[key] = value
         # find optimal test indices TEST_I in DF
         # info: dict with goodness of split information
-        train_i, test_i, info = split.optimize_traintest_split(
+
+        train_i, test_i, info = optimize_traintest_split(
             X=df,
             y=targets,
             split_on=speakers,

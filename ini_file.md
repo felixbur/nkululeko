@@ -360,7 +360,8 @@
 ### REPORT
 * **show**: print the report at the end
   * show = False
+* **fresh**: start a new report
 * **latex**: generate a latex and pdf document: name of document
-  * latex = False
+  * latex = my_latex_document
 * **title**: title for document
 * **author**: author for document

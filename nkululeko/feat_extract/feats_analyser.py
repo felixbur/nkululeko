@@ -9,6 +9,9 @@ import matplotlib.pyplot as plt
 from xgboost import XGBClassifier, XGBRegressor
 from nkululeko.util import Util
 from nkululeko.plots import Plots
+import nkululeko.glob_conf as glob_conf
+from nkululeko.reporting.report_item import ReportItem
+from nkululeko.reporting.defines import Header
 
 
 class FeatureAnalyser:
@@ -100,6 +103,15 @@ class FeatureAnalyser:
         fig = ax.figure
         fig.clear()
         plt.close(fig)
+        glob_conf.report.add_item(
+            ReportItem(
+                Header.HEADER_EXPLORE,
+                f"Feature importance",
+                f"using {model_name} models",
+                filename,
+            )
+        )
+
         # result file
         res_dir = self.util.get_path("res_dir")
         file_name = (

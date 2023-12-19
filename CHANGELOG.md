@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.77.0
+--------------
+* added more latex report output
+* got splitutils from a package
+
 Version 0.76.0
 --------------
 * added possibility to aggregate feature importance models
