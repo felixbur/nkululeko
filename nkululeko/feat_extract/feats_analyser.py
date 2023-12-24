@@ -26,6 +26,21 @@ class FeatureAnalyser:
         self.features = df_features
         self.label = label
 
+    def _get_importance(self, model, permutation):
+        model.fit(self.features, self.labels)
+        if permutation:
+            r = permutation_importance(
+                model,
+                self.features,
+                self.labels,
+                n_repeats=30,
+                random_state=0,
+            )
+            importance = r["importances_mean"]
+        else:
+            importance = model.feature_importances_
+        return importance
+
     def analyse(self):
         models = ast.literal_eval(self.util.config_val("EXPL", "model", "[log_reg]"))
         model_name = "_".join(models)
@@ -41,7 +56,40 @@ class FeatureAnalyser:
                     self.util.debug(
                         f"computing feature importance via permutation for {model_s}, might take longer..."
                     )
-                if model_s == "log_reg":
+                if model_s == "bayes":
+                    from sklearn.naive_bayes import GaussianNB
+
+                    model = GaussianNB()
+                    result_importances[model_s] = self._get_importance(
+                        model, permutation
+                    )
+                elif model_s == "gmm":
+                    from sklearn import mixture
+
+                    n_components = int(
+                        self.util.config_val("MODEL", "GMM_components", "4")
+                    )
+                    covariance_type = self.util.config_val(
+                        "MODEL", "GMM_covariance_type", "full"
+                    )
+                    model = mixture.GaussianMixture(
+                        n_components=n_components, covariance_type=covariance_type
+                    )
+                    result_importances[model_s] = self._get_importance(
+                        model, permutation
+                    )
+                elif model_s == "knn":
+                    from sklearn.neighbors import KNeighborsClassifier
+
+                    method = self.util.config_val("MODEL", "KNN_weights", "uniform")
+                    k = int(self.util.config_val("MODEL", "K_val", "5"))
+                    model = KNeighborsClassifier(
+                        n_neighbors=k, weights=method
+                    )  # set up the classifier
+                    result_importances[model_s] = self._get_importance(
+                        model, permutation
+                    )
+                elif model_s == "log_reg":
                     model = LogisticRegression()
                     model.fit(self.features, self.labels)
                     if permutation:
@@ -56,21 +104,23 @@ class FeatureAnalyser:
                     else:
                         importance = model.coef_[0]
                     result_importances[model_s] = importance
+                elif model_s == "svm":
+                    from sklearn.svm import SVC
+
+                    c = float(self.util.config_val("MODEL", "C_val", "0.001"))
+                    model = SVC(kernel="linear", C=c, gamma="scale")
+                    result_importances[model_s] = self._get_importance(
+                        model, permutation
+                    )
+                    plot_tree = eval(self.util.config_val("EXPL", "plot_tree", "False"))
+                    if plot_tree:
+                        plots = Plots()
+                        plots.plot_tree(model, self.features)
                 elif model_s == "tree":
                     model = DecisionTreeClassifier()
-                    model.fit(self.features, self.labels)
-                    if permutation:
-                        r = permutation_importance(
-                            model,
-                            self.features,
-                            self.labels,
-                            n_repeats=30,
-                            random_state=0,
-                        )
-                        importance = r["importances_mean"]
-                    else:
-                        importance = model.feature_importances_
-                    result_importances[model_s] = importance
+                    result_importances[model_s] = self._get_importance(
+                        model, permutation
+                    )
                     plot_tree = eval(self.util.config_val("EXPL", "plot_tree", "False"))
                     if plot_tree:
                         plots = Plots()
@@ -78,19 +128,9 @@ class FeatureAnalyser:
                 elif model_s == "xgb":
                     model = XGBClassifier(enable_categorical=True, tree_method="hist")
                     self.labels = self.labels.astype("category")
-                    model.fit(self.features, self.labels)
-                    if permutation:
-                        r = permutation_importance(
-                            model,
-                            self.features,
-                            self.labels,
-                            n_repeats=30,
-                            random_state=0,
-                        )
-                        importance = r["importances_mean"]
-                    else:
-                        importance = model.feature_importances_
-                    result_importances[model_s] = importance
+                    result_importances[model_s] = self._get_importance(
+                        model, permutation
+                    )
                 else:
                     self.util.error(f"invalid analysis method: {model}")
         else:  # regression experiment
@@ -99,7 +139,18 @@ class FeatureAnalyser:
                     self.util.debug(
                         f"computing feature importance via permutation for {model_s}, might take longer..."
                     )
-                if model_s == "lin_reg":
+                if model_s == "knn_reg":
+                    from sklearn.neighbors import KNeighborsRegressor
+
+                    method = self.util.config_val("MODEL", "KNN_weights", "uniform")
+                    k = int(self.util.config_val("MODEL", "K_val", "5"))
+                    model = KNeighborsRegressor(
+                        n_neighbors=k, weights=method
+                    )  # set up the classifier
+                    result_importances[model_s] = self._get_importance(
+                        model, permutation
+                    )
+                elif model_s == "lin_reg":
                     model = LinearRegression()
                     model.fit(self.features, self.labels)
                     if permutation:
@@ -114,36 +165,16 @@ class FeatureAnalyser:
                     else:
                         importance = model.coef_
                     result_importances[model_s] = importance
-                elif model_s == "tree":
+                elif model_s == "tree_reg":
                     model = DecisionTreeRegressor()
-                    model.fit(self.features, self.labels)
-                    if permutation:
-                        r = permutation_importance(
-                            model,
-                            self.features,
-                            self.labels,
-                            n_repeats=30,
-                            random_state=0,
-                        )
-                        importance = r["importances_mean"]
-                    else:
-                        importance = model.feature_importances_
-                    result_importances[model_s] = importance
-                elif model_s == "xgb":
+                    result_importances[model_s] = self._get_importance(
+                        model, permutation
+                    )
+                elif model_s == "xgr":
                     model = XGBRegressor()
-                    model.fit(self.features, self.labels)
-                    if permutation:
-                        r = permutation_importance(
-                            model,
-                            self.features,
-                            self.labels,
-                            n_repeats=30,
-                            random_state=0,
-                        )
-                        importance = r["importances_mean"]
-                    else:
-                        importance = model.feature_importances_
-                    result_importances[model_s] = importance
+                    result_importances[model_s] = self._get_importance(
+                        model, permutation
+                    )
                 else:
                     self.util.error(f"invalid analysis method: {model_s}")
         df_imp = pd.DataFrame(

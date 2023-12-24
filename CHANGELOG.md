@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.77.2
+--------------
+* added models for features importance comoutation
+  
 Version 0.77.1
 --------------
 * added permutation algorithm to compute feature importance

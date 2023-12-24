@@ -152,6 +152,12 @@ class Modelrunner:
             self.model = KNN_reg_model(
                 self.df_train, self.df_test, self.feats_train, self.feats_test
             )
+        elif model_type == "lin_reg":
+            from nkululeko.models.model_lin_reg import Lin_reg_model
+
+            self.model = Lin_reg_model(
+                self.df_train, self.df_test, self.feats_train, self.feats_test
+            )
         elif model_type == "tree":
             from nkululeko.models.model_tree import Tree_model
 
