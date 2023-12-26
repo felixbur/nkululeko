@@ -2,14 +2,7 @@
 import os
 import numpy as np
 import pandas as pd
-from audiomentations import (
-    AddGaussianNoise,
-    AddGaussianSNR,
-    Compose,
-    PitchShift,
-    Shift,
-    TimeStretch,
-)
+from audiomentations import *
 from tqdm import tqdm
 import audeer
 import audiofile
@@ -34,7 +27,7 @@ class Augmenter:
         #         Shift(p=0.5),
         #     ]
         # )
-        defaults = "Compose([AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.015, p=0.5),TimeStretch(min_rate=0.8, max_rate=1.25, p=0.5),PitchShift(min_semitones=-4, max_semitones=4, p=0.5),Shift(p=0.5),])"
+        defaults = 'Compose([AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.05),Shift(p=0.5),BandPassFilter(min_center_freq=100.0, max_center_freq=6000),Limiter(min_threshold_db=-16.0,max_threshold_db=-6.0,threshold_mode="relative_to_signal_peak"),ClippingDistortion(),])'
         audiomentations = self.util.config_val("AUGMENT", "augmentations", defaults)
         self.audioment = eval(audiomentations)
 

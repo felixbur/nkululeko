@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.77.4
+--------------
+* made traditional augmentations (audiomentation module) configurable
+
 Version 0.77.3
 --------------
 * added augment and train interface

@@ -144,6 +144,8 @@
   * sample_selection = all
 * **result**: file name to store the augmented data (can then be added to training)
   * result = augmented.csv
+* **augmentations**: select the augmentation methods for the audiomentation module. Default provided.
+  * augmentations = Compose([AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.05),Shift(p=0.5),BandPassFilter(min_center_freq=100.0, max_center_freq=6000),])
 
 ### SEGMENT
 * **sample_selection**: select the samples to segment: either *train*, *test*, or *all*
