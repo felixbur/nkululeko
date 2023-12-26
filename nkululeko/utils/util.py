@@ -64,7 +64,9 @@ class Util:
         If the value is present in the experiment configuration it will be used, else
         we look in a global file specified by the root_folders value.
         """
-        configuration = self.config
+        import nkululeko.glob_conf as glob_conf
+
+        configuration = glob_conf.config
         try:
             if len(key) > 0:
                 return configuration["DATA"][dataset + "." + key].strip("'\"")
@@ -86,6 +88,9 @@ class Util:
             if not default in self.stopvals:
                 self.debug(f"value for {key} not found, using default: {default}")
             return default
+
+    def set_config(self, config):
+        self.config = config
 
     def get_save_name(self):
         """Return a relative path to a name to save the experiment"""

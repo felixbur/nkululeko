@@ -4,7 +4,6 @@ import os
 import pickle
 import random
 import time
-from cgi import print_environ  # To convert strings to objects
 
 import audeer
 import audformat

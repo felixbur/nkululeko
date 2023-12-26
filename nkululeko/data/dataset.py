@@ -68,7 +68,7 @@ class Dataset:
         try:
             self.db = audformat.Database.load(root)
         except FileNotFoundError:
-            self.util.error(f"{self.name}: no database found at {root}")
+            self.util.error(f"{self.name}: no audformat database found at {root}")
         return root
 
     def _check_cols(self, df):
@@ -203,6 +203,7 @@ class Dataset:
             self.name, "rename_speakers", False
         ):
             # we might need to append the database name to all speakers in case other databases have the same speaker names
+            self.df.speaker = self.df.speaker.astype(str)
             self.df.speaker = self.df.speaker.apply(lambda x: self.name + x)
 
         # check if the target variable should be reversed

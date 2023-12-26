@@ -1,9 +1,13 @@
 Changelog
 =========
 
+Version 0.77.3
+--------------
+* added augment and train interface
+
 Version 0.77.2
 --------------
-* added models for features importance comoutation
+* added models for features importance computation
   
 Version 0.77.1
 --------------
