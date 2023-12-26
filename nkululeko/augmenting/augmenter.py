@@ -1,11 +1,7 @@
 # augmenter.py
 import os
-
-import audeer
-import audiofile
 import numpy as np
 import pandas as pd
-from audformat.utils import map_file_path
 from audiomentations import (
     AddGaussianNoise,
     AddGaussianSNR,
@@ -14,8 +10,11 @@ from audiomentations import (
     Shift,
     TimeStretch,
 )
-from nkululeko.utils.util import Util
 from tqdm import tqdm
+import audeer
+import audiofile
+from audformat.utils import map_file_path
+from nkululeko.utils.util import Util
 
 
 class Augmenter:
@@ -27,14 +26,17 @@ class Augmenter:
         self.df = df
         self.util = Util("augmenter")
         # Define a standard transformation that randomly add augmentations to files
-        self.audioment = Compose(
-            [
-                AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.015, p=0.5),
-                TimeStretch(min_rate=0.8, max_rate=1.25, p=0.5),
-                PitchShift(min_semitones=-4, max_semitones=4, p=0.5),
-                Shift(p=0.5),
-            ]
-        )
+        # self.audioment = Compose(
+        #     [
+        #         AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.015, p=0.5),
+        #         TimeStretch(min_rate=0.8, max_rate=1.25, p=0.5),
+        #         PitchShift(min_semitones=-4, max_semitones=4, p=0.5),
+        #         Shift(p=0.5),
+        #     ]
+        # )
+        defaults = "Compose([AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.015, p=0.5),TimeStretch(min_rate=0.8, max_rate=1.25, p=0.5),PitchShift(min_semitones=-4, max_semitones=4, p=0.5),Shift(p=0.5),])"
+        audiomentations = self.util.config_val("AUGMENT", "augmentations", defaults)
+        self.audioment = eval(audiomentations)
 
     def changepath(self, fp, np):
         #        parent = os.path.dirname(fp).split('/')[-1]
