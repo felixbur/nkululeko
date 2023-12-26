@@ -144,6 +144,7 @@ Here is an overview of the interfaces:
 * **nkululeko.test**: predict a series of files with the current best model
 * **nkululeko.explore**: perform data exploration
 * **nkululeko.augment**: augment the current training data
+* **nkululeko.aug_train**: augment the current training data and do a training including this data
 * **nkululeko.predict**: predict features like SNR, MOS, arousal/valence, age/gender, with DNN models
 * **nkululeko.segment**: segment a database based on VAD (voice activity detection)
 * **nkululeko.resample**: check on all sampling rates and change to 16kHz 
