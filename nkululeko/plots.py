@@ -279,7 +279,7 @@ class Plots:
         res_pval = int(res_pval[1] * 1000) / 1000
         caption = f"{ylab} {df.shape[0]}. P-val chi2: {res_pval}"
         ax = (
-            df.groupby(col1)[col2]
+            df.groupby(col1, observed=False)[col2]
             .value_counts()
             .unstack()
             .plot(kind="bar", stacked=True, title=caption, rot=0)

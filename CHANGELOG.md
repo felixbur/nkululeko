@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.77.5
+--------------
+* fixed augmentation bug for python version 10
+
 Version 0.77.4
 --------------
 * made traditional augmentations (audiomentation module) configurable

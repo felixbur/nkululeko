@@ -261,11 +261,11 @@ class Experiment:
                 if type(test_cats) == np.ndarray:
                     self.util.debug(f"Categories test (nd.array): {test_cats}")
                 else:
-                    self.util.debug(f"Categories test (list): {test_cats.to_list()}")
+                    self.util.debug(f"Categories test (list): {list(test_cats)}")
             if type(train_cats) == np.ndarray:
                 self.util.debug(f"Categories train (nd.array): {train_cats}")
             else:
-                self.util.debug(f"Categories train (list): {train_cats.to_list()}")
+                self.util.debug(f"Categories train (list): {list(train_cats)}")
 
             # encode the labels as numbers
             self.label_encoder = LabelEncoder()

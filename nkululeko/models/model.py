@@ -137,11 +137,11 @@ class Model:
             groups=annos["fold"],
         ):
             train_x = feats.iloc[train_index].to_numpy()
-            train_y = targets[train_index]
+            train_y = targets.iloc[train_index]
             self.clf.fit(train_x, train_y)
 
             truth_x = feats.iloc[test_index].to_numpy()
-            truth_y = targets[test_index]
+            truth_y = targets.iloc[test_index]
             predict_y = self.clf.predict(truth_x)
             report = Reporter(truth_y.astype(float), predict_y, self.run, self.epoch)
             result = report.get_result().get_test_result()

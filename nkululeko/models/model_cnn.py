@@ -113,7 +113,7 @@ class CNN_model(Model):
             img_path = self.df_feats.iloc[idx, 0]
             image = Image.open(img_path)
             # Get emotion label
-            label = self.df_labels[self.target][idx]
+            label = self.df_labels[self.target].iloc[idx]
             if self.transform:
                 image = self.transform(image)
             return image, label
