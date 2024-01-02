@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.77.7
+--------------
+* added multidb module
+
 Version 0.77.6
 --------------
 * added functions to call modules with config file path directly

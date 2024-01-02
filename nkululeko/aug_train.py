@@ -72,11 +72,11 @@ def doit(config_file):
     expr.init_runmanager()
 
     # run the experiment
-    expr.run()
-
+    reports = expr.run()
+    result = reports[-1].result.test
     expr.store_report()
-
     print("DONE")
+    return result
 
 
 def main(src_dir):
