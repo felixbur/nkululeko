@@ -25,6 +25,10 @@ class Util:
     ]
 
     def __init__(self, caller=None, has_config=True):
+        if caller is not None:
+            self.caller = caller
+        else:
+            self.caller = ""
         if has_config:
             import nkululeko.glob_conf as glob_conf
 
@@ -36,10 +40,7 @@ class Util:
                     self.error(f"no such file: {self.got_data_roots}")
                 self.data_roots = configparser.ConfigParser()
                 self.data_roots.read(self.got_data_roots)
-        if caller is not None:
-            self.caller = caller
-        else:
-            self.caller = ""
+                self.debug(f"getting data roots from {self.got_data_roots}")
 
     def get_path(self, entry):
         """

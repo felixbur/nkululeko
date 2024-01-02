@@ -7,7 +7,6 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeRegressor
 import matplotlib.pyplot as plt
-from xgboost import XGBClassifier, XGBRegressor
 from nkululeko.utils.util import Util
 from nkululeko.utils.stats import normalize
 from nkululeko.plots import Plots
@@ -126,6 +125,8 @@ class FeatureAnalyser:
                         plots = Plots()
                         plots.plot_tree(model, self.features)
                 elif model_s == "xgb":
+                    from xgboost import XGBClassifier
+
                     model = XGBClassifier(enable_categorical=True, tree_method="hist")
                     self.labels = self.labels.astype("category")
                     result_importances[model_s] = self._get_importance(
@@ -171,6 +172,8 @@ class FeatureAnalyser:
                         model, permutation
                     )
                 elif model_s == "xgr":
+                    from xgboost import XGBClassifier
+
                     model = XGBRegressor()
                     result_importances[model_s] = self._get_importance(
                         model, permutation

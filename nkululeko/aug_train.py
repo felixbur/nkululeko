@@ -11,15 +11,7 @@ import nkululeko.glob_conf as glob_conf
 from nkululeko.augment import doit as augment
 
 
-def main(src_dir):
-    parser = argparse.ArgumentParser(description="Call the nkululeko framework.")
-    parser.add_argument("--config", default="exp.ini", help="The base configuration")
-    args = parser.parse_args()
-    if args.config is not None:
-        config_file = args.config
-    else:
-        config_file = f"{src_dir}/exp.ini"
-
+def doit(config_file):
     # test if the configuration file exists
     if not os.path.isfile(config_file):
         print(f"ERROR: no such file: {config_file}")
@@ -85,6 +77,17 @@ def main(src_dir):
     expr.store_report()
 
     print("DONE")
+
+
+def main(src_dir):
+    parser = argparse.ArgumentParser(description="Call the nkululeko framework.")
+    parser.add_argument("--config", default="exp.ini", help="The base configuration")
+    args = parser.parse_args()
+    if args.config is not None:
+        config_file = args.config
+    else:
+        config_file = f"{src_dir}/exp.ini"
+    doit(config_file)
 
 
 if __name__ == "__main__":

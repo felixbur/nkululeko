@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.77.6
+--------------
+* added functions to call modules with config file path directly
+
 Version 0.77.5
 --------------
 * fixed augmentation bug for python version 10
