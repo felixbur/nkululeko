@@ -140,6 +140,7 @@ Read the [Hello World example](#hello-world-example) for initial usage with Emo-
 
 Here is an overview of the interfaces:
 * **nkululeko.nkululeko**: do machine learning experiments combining features and learners
+* **nkululeko.multidb**: do multiple experiments, comparing several databases cross and in itself
 * **nkululeko.demo**: demo the current best model on the command line
 * **nkululeko.test**: predict a series of files with the current best model
 * **nkululeko.explore**: perform data exploration
