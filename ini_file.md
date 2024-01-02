@@ -48,6 +48,8 @@
   * save = False
 * **save_test**: save the test predictions as a new database in CSV format (default is False)
   * save_test = ./my_saved_test_predictions.csv
+* **databases**: name of databases to compare for the *multidb* module
+  * databases = ['emodb', 'timit']
 
 ### DATA
 * **type**: just a flag now to mark continuous data, so it can be binned to categorical data (using *bins* and *labels*)
