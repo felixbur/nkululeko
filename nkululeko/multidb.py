@@ -52,7 +52,7 @@ def main(src_dir):
             else:
                 train = datasets[i]
                 test = datasets[j]
-                print(f"running {train}_vs_{test}")
+                print(f"running train: {train}, test: {test}")
                 config["DATA"]["databases"] = f"['{train}', '{test}']"
                 config["DATA"][f"{test}.split_strategy"] = "test"
                 config["DATA"][f"{train}.split_strategy"] = "train"
@@ -69,14 +69,14 @@ def main(src_dir):
     print(repr(results))
     root = config["EXP"]["root"]
     plot_name = f"{root}/heatmap.png"
-    plot_heatmap(results, datasets, plot_name)
+    plot_heatmap(results, datasets, plot_name, config, datasets)
 
 
 def trunc_to_three(x):
     return int(x * 1000) / 1000.0
 
 
-def plot_heatmap(results, labels, name):
+def plot_heatmap(results, labels, name, config, datasets):
     df_cm = pd.DataFrame(
         results, index=[i for i in labels], columns=[i for i in labels]
     )
@@ -86,9 +86,22 @@ def plot_heatmap(results, labels, name):
         (results.sum() - results.diagonal().sum())
         / (results.size - results.diagonal().size)
     )
+    colsums = results.mean(axis=0)
+    vfunc = np.vectorize(trunc_to_three)
+    colsums = vfunc(colsums)
+    res_dir = config["EXP"]["root"]
+    file_name = f"{res_dir}/results.txt"
+    with open(file_name, "w") as text_file:
+        text_file.write(
+            f"Mean UAR: {mean} (self: {mean_diag}, cross: {mean_non_diag})\n"
+        )
+        data_s = ", ".join(datasets)
+        text_file.write(f"{data_s}\n")
+        text_file.write(f"{colsums}\n")
+
     plt.figure(figsize=(10, 7))
     ax = sn.heatmap(df_cm, annot=True, cmap=cm.Blues)
-    caption = f"Mean UAR: {mean} (self: {mean_diag}, cross: {mean_non_diag})"
+    caption = f"Rows: train, Cols: test. Mean UAR: {mean} (self: {mean_diag}, cross: {mean_non_diag})."
     ax.set_title(caption)
     plt.savefig(name)
     plt.close()

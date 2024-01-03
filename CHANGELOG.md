@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.77.9
+--------------
+* added results text for multidb
+
 Version 0.77.8
 --------------
 * added caption to multidb heatmap
