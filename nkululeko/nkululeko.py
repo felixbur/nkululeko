@@ -47,7 +47,7 @@ def doit(config_file):
 
     # run the experiment
     reports = expr.run()
-    result = reports[-1].result.test
+    result = expr.get_best_report(reports).result.test
     expr.store_report()
     print("DONE")
     return result

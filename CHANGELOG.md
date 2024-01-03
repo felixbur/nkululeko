@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.77.10
+--------------
+* show the best and not the last result for multidb
+
 Version 0.77.9
 --------------
 * added results text for multidb

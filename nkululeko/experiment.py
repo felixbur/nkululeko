@@ -628,7 +628,7 @@ class Experiment:
                 "plot combined speaker predictions not possible for cross" " validation"
             )
             return
-        best = self._get_best_report(self.reports)
+        best = self.get_best_report(self.reports)
         # if not best.is_classification:
         #     best.continuous_to_categorical()
         truths = best.truths
@@ -643,8 +643,8 @@ class Experiment:
         )
         best.plot_per_speaker(df, plot_name, function)
 
-    def _get_best_report(self, best_reports):
-        return self.runmgr.get_best_result(best_reports)
+    def get_best_report(self, reports):
+        return self.runmgr.get_best_result(reports)
 
     def print_best_model(self):
         self.runmgr.print_best_result_runs()
