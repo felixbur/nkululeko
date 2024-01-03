@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.77.8
+--------------
+* added caption to multidb heatmap
+* renamed datasets to databases in multidb
+
 Version 0.77.7
 --------------
 * added multidb module

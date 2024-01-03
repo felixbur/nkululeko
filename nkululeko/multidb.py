@@ -33,7 +33,7 @@ def main(src_dir):
 
     config = configparser.ConfigParser()
     config.read(config_file)
-    datasets = config["EXP"]["datasets"]
+    datasets = config["EXP"]["databases"]
     datasets = ast.literal_eval(datasets)
     dim = len(datasets)
     results = np.zeros(dim * dim).reshape([dim, dim])
@@ -65,30 +65,6 @@ def main(src_dir):
                 result = aug_train(tmp_config)
             else:
                 result = nkulu(tmp_config)
-            # # set up the experiment
-            # expr = Experiment(config)
-            # util = Util("emodbs")
-
-            # # load the data
-            # expr.load_datasets()
-            # # split into train and test
-            # expr.fill_train_and_tests()
-            # util.debug(
-            #     f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}"
-            # )
-
-            # # extract features
-            # expr.extract_feats()
-            # util.debug(
-            #     f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}"
-            # )
-
-            # # initialize a run manager
-            # expr.init_runmanager()
-
-            # # run the experiment
-            # reports = expr.run()
-            # result = reports[-1].result.test
             results[i, j] = float(result)
     print(repr(results))
     root = config["EXP"]["root"]
@@ -96,12 +72,24 @@ def main(src_dir):
     plot_heatmap(results, datasets, plot_name)
 
 
+def trunc_to_three(x):
+    return int(x * 1000) / 1000.0
+
+
 def plot_heatmap(results, labels, name):
     df_cm = pd.DataFrame(
         results, index=[i for i in labels], columns=[i for i in labels]
     )
+    mean = trunc_to_three(results.mean())
+    mean_diag = trunc_to_three(results.diagonal().mean())
+    mean_non_diag = trunc_to_three(
+        (results.sum() - results.diagonal().sum())
+        / (results.size - results.diagonal().size)
+    )
     plt.figure(figsize=(10, 7))
-    sn.heatmap(df_cm, annot=True, cmap=cm.Blues)
+    ax = sn.heatmap(df_cm, annot=True, cmap=cm.Blues)
+    caption = f"Mean UAR: {mean} (self: {mean_diag}, cross: {mean_non_diag})"
+    ax.set_title(caption)
     plt.savefig(name)
     plt.close()
 
