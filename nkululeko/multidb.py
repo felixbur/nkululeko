@@ -97,6 +97,7 @@ def plot_heatmap(results, labels, name, config, datasets):
         )
         data_s = ", ".join(datasets)
         text_file.write(f"{data_s}\n")
+        colsums = np.array2string(colsums, separator=", ")
         text_file.write(f"{colsums}\n")
 
     plt.figure(figsize=(10, 7))

@@ -40,7 +40,7 @@ class Util:
                     self.error(f"no such file: {self.got_data_roots}")
                 self.data_roots = configparser.ConfigParser()
                 self.data_roots.read(self.got_data_roots)
-                self.debug(f"getting data roots from {self.got_data_roots}")
+                # self.debug(f"getting data roots from {self.got_data_roots}")
 
     def get_path(self, entry):
         """
@@ -253,6 +253,13 @@ class Util:
             return default
 
     def continuous_to_categorical(self, series):
+        """
+        discretize a categorical variable.
+        uses the labels and bins from the ini if present
+
+        :param series: a pandas series
+        :return a pandas series with discretized values as categories
+        """
         try:
             bins = ast.literal_eval(self.config["DATA"]["bins"])
             labels = ast.literal_eval(self.config["DATA"]["labels"])

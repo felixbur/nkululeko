@@ -45,19 +45,14 @@ class Plots:
             )
             ax.set_ylabel(f"number of speakers")
             ax.set_xlabel("number of samples")
-            fig = ax.figure
-            # plt.tight_layout()
-            img_path = f"{fig_dir}{filename}.{self.format}"
-            plt.savefig(img_path)
-            plt.close(fig)
-            glob_conf.report.add_item(
-                ReportItem(
-                    Header.HEADER_EXPLORE,
-                    "Samples per speaker",
-                    f"Samples per speaker ({df_speakers.shape[0]})",
-                    img_path,
-                )
+            self._save_plot(
+                ax,
+                "Samples per speaker",
+                f"Samples per speaker ({df_speakers.shape[0]})",
+                filename,
+                "speakers",
             )
+
             # fig.clear()
         else:
             filename = f"samples_value_counts"
@@ -74,27 +69,47 @@ class Plots:
             )
             ax.set_ylabel(f"number of speakers")
             ax.set_xlabel("number of samples")
-            fig = ax.figure
-            # plt.tight_layout()
-            img_path = f"{fig_dir}{filename}.{self.format}"
-            plt.savefig(img_path)
-            plt.close(fig)
-            fig.clear()
-            glob_conf.report.add_item(
-                ReportItem(
-                    Header.HEADER_EXPLORE,
-                    "Sample value counts",
-                    f"Samples per speaker ({df_speakers.shape[0]})",
-                    img_path,
-                )
+            self._save_plot(
+                ax,
+                "Sample value counts",
+                f"Samples per speaker ({df_speakers.shape[0]})",
+                filename,
+                "speakers",
             )
+
         self.plot_distributions(df_speakers, type_s="speakers")
 
     def plot_distributions(self, df, type_s="samples"):
-        fig_dir = self.util.get_path("fig_dir") + "../"  # one up because of the runs
+        class_label, df = self._check_binning("class_label", df)
         attributes = ast.literal_eval(
             self.util.config_val("EXPL", "value_counts", False)
         )
+        # always plot the distribution of the main attribute
+        filename = f"{class_label}_distribution"
+        if self.util.is_categorical(df[class_label]):
+            ax = df[class_label].value_counts().plot(kind="bar")
+        else:
+            # for continous variables, also add a discretized version
+            binned_data = self.util.continuous_to_categorical(df[class_label])
+            ax = binned_data.value_counts().plot(kind="bar")
+            filename_binned = f"{class_label}_discreet"
+            self._save_plot(
+                ax,
+                "Sample value counts",
+                filename_binned,
+                filename_binned,
+                type_s,
+            )
+            ax = df[class_label].plot(kind="kde")
+
+        self._save_plot(
+            ax,
+            "Sample value counts",
+            filename,
+            filename,
+            type_s,
+        )
+
         for att in attributes:
             if len(att) == 1:
                 att1 = att[0]
@@ -104,7 +119,6 @@ class Plots:
                 if att1 not in df:
                     self.util.error(f"unknown feature: {att1}")
                 att1, df = self._check_binning(att1, df)
-                class_label, df = self._check_binning("class_label", df)
                 self.util.debug(f"plotting {att1}")
                 filename = f"{self.target}-{att1}"
                 if self.util.is_categorical(df[class_label]):
@@ -123,18 +137,12 @@ class Plots:
                         )
                     else:
                         ax, caption = self._plot2cont(df, class_label, att1, type_s)
-                fig = ax.figure
-                # plt.tight_layout()
-                img_path = f"{fig_dir}{filename}_{type_s}.{self.format}"
-                plt.savefig(img_path)
-                plt.close(fig)
-                glob_conf.report.add_item(
-                    ReportItem(
-                        Header.HEADER_EXPLORE,
-                        f"Correlation of {self.target} and {att[0]}",
-                        caption,
-                        img_path,
-                    )
+                self._save_plot(
+                    ax,
+                    caption,
+                    f"Correlation of {self.target} and {att[0]}",
+                    filename,
+                    type_s,
                 )
                 # fig.clear()           # avoid error
             elif len(att) == 2:
@@ -193,26 +201,33 @@ class Plots:
                             # class_label = cont, att1 = cont, att2 = cont
                             ax, caption = self._plot2cont(df, att1, att2, type_s)
 
-                fig = ax.figure
-                # avoid warning
-                # plt.tight_layout()
-                img_path = f"{fig_dir}{filename}_{type_s}.{self.format}"
-                plt.savefig(img_path)
-                plt.close(fig)
-                # fig.clear()   # avoid error
-                glob_conf.report.add_item(
-                    ReportItem(
-                        Header.HEADER_EXPLORE,
-                        f"Correlation of {att1} and {att2}",
-                        caption,
-                        img_path,
-                    )
+                self._save_plot(
+                    ax, caption, f"Correlation of {att1} and {att2}", filename, type_s
                 )
+
             else:
                 self.util.error(
                     "plot value counts: the plot distribution descriptor for"
-                    f" {att} has more than 2 values"
+                    f" {att} has more than 2 values. Perhaps you forgot to state a list of lists?"
                 )
+
+    def _save_plot(self, ax, caption, header, filename, type_s):
+        fig_dir = self.util.get_path("fig_dir") + "../"  # one up because of the runs
+        fig = ax.figure
+        # avoid warning
+        # plt.tight_layout()
+        img_path = f"{fig_dir}{filename}_{type_s}.{self.format}"
+        plt.savefig(img_path)
+        plt.close(fig)
+        # fig.clear()   # avoid error
+        glob_conf.report.add_item(
+            ReportItem(
+                Header.HEADER_EXPLORE,
+                header,
+                caption,
+                img_path,
+            )
+        )
 
     def _check_binning(self, att, df):
         bin_reals_att = eval(self.util.config_val("EXPL", f"{att}.bin_reals", "False"))

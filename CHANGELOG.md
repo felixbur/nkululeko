@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.77.11
+--------------
+* added simple target distribution plots
+
 Version 0.77.10
 --------------
 * show the best and not the last result for multidb
