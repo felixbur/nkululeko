@@ -11,9 +11,10 @@ do
    git add data/$data/*.md
 done
 git add data/README.md
+git add tests/*.ini
 git add CHANGELOG.md ini_file.md
 source nkululeko/constants.py
-git commit -m $VERSION
+git commit -m  $VERSION
 git tag $VERSION
 git push 
 git push --tags
