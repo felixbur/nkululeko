@@ -11,8 +11,8 @@ do
    git add data/$data/*.md
 done
 git add README.md
-git add make_package.md
-git add test_runs.md
+git add make_package.sh
+git add test_runs.sh
 git add data/README.md
 git add tests/*.ini
 git add CHANGELOG.md ini_file.md
