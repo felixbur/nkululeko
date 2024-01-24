@@ -4,7 +4,10 @@ python -m nkululeko.explore --config tests/exp_emodb_explore_scatter.ini
 python -m nkululeko.explore --config tests/exp_emodb_explore_features.ini
 python -m nkululeko.explore --config tests/exp_androids_explore.ini
 python -m nkululeko.nkululeko --config tests/exp_emodb_os_praat_xgb.ini
+python -m nkululeko.nkululeko --config tests/exp_emodb_cnn.ini
+python -m nkululeko.nkululeko --config tests/exp_emodb_balancing.ini
 python -m nkululeko.nkululeko --config tests/exp_emodb_audmodel_xgb.ini
+python -m nkululeko.nkululeko --config tests/exp_emodb_split.ini
 #python -m nkululeko.nkululeko --config tests/exp_emodb_clap_mlp.ini
 python -m nkululeko.nkululeko --config tests/exp_emodb_os_mlp.ini
 python -m nkululeko.nkululeko --config tests/exp_ravdess_os_xgb.ini
@@ -16,6 +19,7 @@ python -m nkululeko.augment --config tests/exp_emodb_augment_os_xgb.ini
 python -m nkululeko.nkululeko --config tests/exp_emodb-aug_os_xgb.ini
 python -m nkululeko.augment --config tests/exp_emodb_random_splice_os_xgb.ini
 python -m nkululeko.nkululeko --config tests/exp_emodb_rs_os_xgb.ini
+python -m nkululeko.aug_train --config tests/emodb_aug_train.ini
 python -m nkululeko.nkululeko --config tests/exp_androids_os_svm.ini
 python -m nkululeko.predict --config tests/exp_emodb_predict.ini
 python -m nkululeko.explore --config tests/exp_explore.ini

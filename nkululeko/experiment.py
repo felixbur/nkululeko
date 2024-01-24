@@ -558,7 +558,7 @@ class Experiment:
                     cat_vals = self.util.continuous_to_categorical(
                         df_labels[scat_target]
                     )
-                    df_labels[f"{scat_target}_bins"] = cat_vals
+                    df_labels[f"{scat_target}_bins"] = cat_vals.values
                     for scatter in scatters:
                         plots.scatter_plot(
                             df_feats, df_labels, f"{scat_target}_bins", scatter

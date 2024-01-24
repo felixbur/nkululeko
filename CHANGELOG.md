@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.77.12
+--------------
+* fixed bug with scatter plots for numeric targets
+* made type of numeric target distributions selectable, default "hist"
+
 Version 0.77.11
 --------------
 * added simple target distribution plots

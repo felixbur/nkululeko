@@ -89,7 +89,7 @@ class Plots:
         if self.util.is_categorical(df[class_label]):
             ax = df[class_label].value_counts().plot(kind="bar")
         else:
-            # for continous variables, also add a discretized version
+            # for continuous variables, also add a discretized version
             binned_data = self.util.continuous_to_categorical(df[class_label])
             ax = binned_data.value_counts().plot(kind="bar")
             filename_binned = f"{class_label}_discreet"
@@ -100,7 +100,8 @@ class Plots:
                 filename_binned,
                 type_s,
             )
-            ax = df[class_label].plot(kind="kde")
+            dist_type = self.util.config_val("EXPL", "dist_type", "hist")
+            ax = df[class_label].plot(kind=dist_type)
 
         self._save_plot(
             ax,
@@ -268,7 +269,7 @@ class Plots:
         """
         plot relation of categorical distribution with continuous
         """
-        dist_type = self.util.config_val("EXPL", "dist_type", "kde")
+        dist_type = self.util.config_val("EXPL", "dist_type", "hist")
         cats, cat_str, es = su.get_effect_size(df, cat_col, cont_col)
         if dist_type == "hist":
             ax = sns.histplot(df, x=cont_col, hue=cat_col, kde=True)
@@ -310,7 +311,9 @@ class Plots:
         except AttributeError as ae:
             self.util.warn(ae)
             ax = sns.histplot(df, x="duration", kde=True)
-        title = f"Duration distribution for {sample_selection} {df.shape[0]}"
+        min = self.util.to_3_digits(df.duration.min())
+        max = self.util.to_3_digits(df.duration.max())
+        title = f"Duration distr. for {sample_selection} {df.shape[0]}. min={min}, max={max}"
         ax.set_title(title)
         ax.set_xlabel(f"duration")
         ax.set_ylabel(f"number of samples")

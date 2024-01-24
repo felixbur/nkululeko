@@ -336,3 +336,7 @@ class Util:
                 return True
             else:
                 self.error(f"unknown measure: {measure}")
+
+    def to_3_digits(self, x):
+        x = float(x)
+        return (int(x * 1000)) / 1000.0

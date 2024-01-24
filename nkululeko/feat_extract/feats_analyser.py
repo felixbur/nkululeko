@@ -41,7 +41,7 @@ class FeatureAnalyser:
         return importance
 
     def analyse(self):
-        models = ast.literal_eval(self.util.config_val("EXPL", "model", "[log_reg]"))
+        models = ast.literal_eval(self.util.config_val("EXPL", "model", "['log_reg']"))
         model_name = "_".join(models)
         max_feat_num = int(self.util.config_val("EXPL", "max_feats", "10"))
         # https://scikit-learn.org/stable/modules/permutation_importance.html
