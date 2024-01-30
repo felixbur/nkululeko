@@ -218,7 +218,7 @@
     * **standard**: z-transformation (mean of 0 and std of 1) based on the training set
     * **robust**: robust scaler
     * **speaker**: like *standard* but based on individual speaker sets (also for the test)
-    * **bins**: convert feature values into 1, .5 and 1 (for low, mid and high) 
+    * **bins**: convert feature values into 0, .5 and 1 (for low, mid and high) 
 * **set**: name of opensmile feature set, e.g. eGeMAPSv02, ComParE_2016, GeMAPSv01a, eGeMAPSv01a
   * set = eGeMAPSv02
 * **level**: level of opensmile features
