@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.77.13
+--------------
+* added bins scaler
+
 Version 0.77.12
 --------------
 * fixed bug with scatter plots for numeric targets

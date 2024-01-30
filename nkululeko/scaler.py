@@ -1,8 +1,9 @@
 # scaler.py
 
-
+import numpy as np
 from sklearn.preprocessing import StandardScaler, RobustScaler
 import pandas as pd
+
 from nkululeko.utils.util import Util
 
 
@@ -32,6 +33,8 @@ class Scaler:
             self.scaler = RobustScaler()
         elif scaler_type == "speaker":
             self.scaler = StandardScaler()
+        elif scaler_type == "bins":
+            pass
         else:
             self.util.error("unknown scaler: " + scaler_type)
         self.scaler_type = scaler_type
@@ -56,10 +59,13 @@ class Scaler:
             return self.speaker_scale()
 
     def scale_all(self):
-        self.scaler.fit(self.feats_train.values)
-        self.feats_train = self.scale_df(self.feats_train)
-        if self.feats_test is not None:
-            self.feats_test = self.scale_df(self.feats_test)
+        if self.scaler_type != "bins":
+            self.scaler.fit(self.feats_train.values)
+            self.feats_train = self.scale_df(self.feats_train)
+            if self.feats_test is not None:
+                self.feats_test = self.scale_df(self.feats_test)
+        else:
+            self.bin_to_three()
         return self.feats_train, self.feats_test
 
     def scale_df(self, df):
@@ -80,3 +86,21 @@ class Scaler:
                 feats_df.loc[indices, :]
             )
         return feats_df
+
+    def bin_to_three(self):
+        feats_bin_train = pd.DataFrame(index=self.feats_train.index)
+        feats_bin_test = pd.DataFrame(index=self.feats_test.index)
+        for c in self.feats_train.columns:
+            b1 = np.quantile(self.feats_train[c], 0.33)
+            b2 = np.quantile(self.feats_train[c], 0.66)
+            feats_bin_train[c] = self._bin(self.feats_train[c].values, b1, b2).values
+            feats_bin_test[c] = self._bin(self.feats_test[c].values, b1, b2).values
+
+    def _bin(self, series, b1, b2):
+        bins = [-1000000, b1, b2, 1000000]
+        labels = ["low", "middle", "high"]
+        result = np.digitize(series, bins) - 1
+        result = pd.Series(result)
+        for i, l in enumerate(labels):
+            result = result.replace(i, str(l))
+        return result

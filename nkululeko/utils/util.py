@@ -195,6 +195,7 @@ class Util:
             ["MODEL", "learning_rate"],
             ["MODEL", "k_fold_cross"],
             ["FEATS", "balancing"],
+            ["FEATS", "scale"],
         ]
         for option in options:
             return_string += self._get_value_descript(option[0], option[1])

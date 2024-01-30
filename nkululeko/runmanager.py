@@ -70,7 +70,8 @@ class Runmanager:
             plot_epoch_progression = self.util.config_val(
                 "PLOT", "epoch_progression", 0
             )
-            if plot_epoch_progression:
+            epoch_num = int(self.util.config_val("EXP", "epochs", 1))
+            if epoch_num > 1 and plot_epoch_progression:
                 plot_name_suggest = self.util.get_exp_name()
                 plot_name = (
                     self.util.config_val("PLOT", "name", plot_name_suggest)
@@ -81,7 +82,8 @@ class Runmanager:
             # remember the best run
             best_report = self.get_best_result(self.reports)
             plot_best_model = self.util.config_val("PLOT", "best_model", False)
-            if plot_best_model:
+
+            if epoch_num > 1 and plot_best_model:
                 plot_name_suggest = self.util.get_exp_name()
                 plot_name = (
                     self.util.config_val("PLOT", "name", plot_name_suggest)
