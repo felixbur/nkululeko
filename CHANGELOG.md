@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.77.14
+--------------
+* fixed bug preventing bin scaling to work
+
 Version 0.77.13
 --------------
 * added bins scaler

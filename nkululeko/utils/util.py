@@ -307,7 +307,13 @@ class Util:
         elif format == "csv":
             return audformat.utils.read_csv(name)
         else:
-            self.error(f"unkown store format: {format}")
+            self.error(f"unknown store format: {format}")
+
+    def save_to_store(self, df, name):
+        store = self.get_path("store")
+        store_format = self.config_val("FEATS", "store_format", "pkl")
+        storage = f"{store}{name}.{store_format}"
+        self.write_store(df, storage, store_format)
 
     def copy_flags(self, df_source, df_target):
         if hasattr(df_source, "is_labeled"):

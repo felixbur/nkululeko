@@ -577,6 +577,9 @@ class Experiment:
                 scale_feats,
             )
             self.feats_train, self.feats_test = self.scaler_feats.scale()
+            # store versions
+            self.util.save_to_store(self.feats_train, "feats_train_scaled")
+            self.util.save_to_store(self.feats_test, "feats_test_scaled")
 
     def init_runmanager(self):
         """Initialize the manager object for the runs."""

@@ -95,10 +95,12 @@ class Scaler:
             b2 = np.quantile(self.feats_train[c], 0.66)
             feats_bin_train[c] = self._bin(self.feats_train[c].values, b1, b2).values
             feats_bin_test[c] = self._bin(self.feats_test[c].values, b1, b2).values
+        self.feats_train = feats_bin_train
+        self.feats_test = feats_bin_test
 
     def _bin(self, series, b1, b2):
         bins = [-1000000, b1, b2, 1000000]
-        labels = ["low", "middle", "high"]
+        labels = [0, 0.5, 1]
         result = np.digitize(series, bins) - 1
         result = pd.Series(result)
         for i, l in enumerate(labels):
