@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.78.0
+--------------
+* added 3-d scatter plots
+* removed epoch-plots if epoch_num=1
+
 Version 0.77.14
 --------------
 * fixed bug preventing bin scaling to work

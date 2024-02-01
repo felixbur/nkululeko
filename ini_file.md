@@ -312,6 +312,8 @@
   * scatter = ['tsne', 'umap', 'pca']
 * **scatter.target**: target for the scatter plot (defaults to *target* value).
   * scatter = ['age', 'gender', 'likability]
+* **scatter.dim**: dimension of reduction, can be 2 or 3.
+  * scatter.dim = 2
 * **plot_tree**: Plot a decision tree for classification (Requires model = tree)
   * plot_tree = False
 * **value_counts**: plot distributions of target for the samples and speakers (in the *image_dir*)

@@ -379,51 +379,115 @@ class Plots:
             )
 
     def scatter_plot(self, feats, label_df, label, dimred_type):
+        dim_num = int(self.util.config_val("EXPL", "scatter.dim", 2))
         fig_dir = self.util.get_path("fig_dir") + "../"  # one up because of the runs
         sample_selection = self.util.config_val("EXPL", "sample_selection", "all")
-        filename = (
-            f"{label}_{self.util.get_feattype_name()}_{sample_selection}_{dimred_type}"
-        )
+        filename = f"{label}_{self.util.get_feattype_name()}_{sample_selection}_{dimred_type}_{str(dim_num)}d"
         filename = f"{fig_dir}{filename}.{self.format}"
         self.util.debug(f"computing {dimred_type}, this might take a while...")
         data = None
         labels = label_df[label]
         if dimred_type == "tsne":
-            data = self.getTsne(feats)
-        elif dimred_type == "umap":
-            import umap
-
-            y_umap = umap.UMAP(
-                n_neighbors=10,
-                random_state=0,
-            ).fit_transform(feats.values)
-            data = pd.DataFrame(
-                y_umap,
-                feats.index,
-                columns=["Dim_1", "Dim_2"],
-            )
-        elif dimred_type == "pca":
-            from sklearn.decomposition import PCA
-            from sklearn.preprocessing import StandardScaler
-
-            scaler = StandardScaler()
-            pca = PCA(n_components=2)
-            y_pca = pca.fit_transform(scaler.fit_transform(feats.values))
-            data = pd.DataFrame(
-                y_pca,
-                feats.index,
-                columns=["Dim_1", "Dim_2"],
-            )
+            data = self.getTsne(feats, dim_num)
         else:
-            self.util.error(f"no such dimensionality reduction function: {dimred_type}")
-        plot_data = np.vstack((data.T, labels)).T
-        plot_df = pd.DataFrame(data=plot_data, columns=("Dim_1", "Dim_2", "label"))
-        # plt.tight_layout()
-        ax = (
-            sns.FacetGrid(plot_df, hue="label", height=6)
-            .map(plt.scatter, "Dim_1", "Dim_2")
-            .add_legend()
-        )
+            if dimred_type == "umap":
+                import umap
+
+                y = umap.UMAP(
+                    n_neighbors=10,
+                    random_state=0,
+                    n_components=dim_num,
+                ).fit_transform(feats.values)
+            elif dimred_type == "pca":
+                from sklearn.decomposition import PCA
+                from sklearn.preprocessing import StandardScaler
+
+                scaler = StandardScaler()
+                pca = PCA(n_components=dim_num)
+                y = pca.fit_transform(scaler.fit_transform(feats.values))
+            else:
+                self.util.error(
+                    f"no such dimensionality reduction function: {dimred_type}"
+                )
+            if dim_num == 2:
+                columns = ["Dim_1", "Dim_2"]
+            elif dim_num == 3:
+                columns = ["Dim_1", "Dim_2", "Dim_3"]
+            else:
+                self.util.error(f"wrong dimension number: {dim_num}")
+            data = pd.DataFrame(
+                y,
+                feats.index,
+                columns=columns,
+            )
+
+        if dim_num == 2:
+            plot_data = np.vstack((data.T, labels)).T
+            plot_df = pd.DataFrame(data=plot_data, columns=("Dim_1", "Dim_2", "label"))
+            # plt.tight_layout()
+            ax = (
+                sns.FacetGrid(plot_df, hue="label", height=6)
+                .map(plt.scatter, "Dim_1", "Dim_2")
+                .add_legend()
+            )
+        elif dim_num == 3:
+            from mpl_toolkits.mplot3d import Axes3D
+            from sklearn.preprocessing import LabelEncoder
+
+            le = LabelEncoder()
+
+            labels_e = le.fit_transform(labels)
+            plot_data = np.vstack((data.T, labels_e)).T
+            plot_df = pd.DataFrame(
+                data=plot_data, columns=("Dim_1", "Dim_2", "Dim_3", "label")
+            )
+            # plt.tight_layout()
+            # axes instance
+            fig = plt.figure(figsize=(6, 6))
+            ax = Axes3D(fig, auto_add_to_figure=False)
+            fig.add_axes(ax)
+            # get colormap from seaborn
+            # cmap = ListedColormap(sns.color_palette("hsv", 256).as_hex())
+            color_dict = {
+                0: "red",
+                1: "blue",
+                2: "green",
+                3: "yellow",
+                4: "purple",
+                5: "#ff69b4",
+                6: "black",
+                7: "cyan",
+                8: "magenta",
+                9: "#faebd7",
+                10: "#2e8b57",
+                11: "#eeefff",
+                12: "#da70d6",
+                13: "#ff7f50",
+                14: "#cd853f",
+                15: "#bc8f8f",
+                16: "#5f9ea0",
+                17: "#daa520",
+            }
+            # plot
+            # make the numbers bigger so they can be used as distinguishable colors
+            labels_ex = [color_dict[xi] for xi in labels_e]
+            sc = ax.scatter(
+                plot_df.Dim_1,
+                plot_df.Dim_2,
+                plot_df.Dim_3,
+                s=40,
+                c=labels_ex,
+                marker="o",
+                # cmap=cmap,
+                alpha=1,
+            )
+            ax.set_xlabel("Dim_1")
+            ax.set_ylabel("Dim_2")
+            ax.set_zlabel("Dim_3")
+            # legend
+            plt.legend(*sc.legend_elements(), bbox_to_anchor=(1.05, 1), loc=2)
+        else:
+            self.util.error(f"wrong dimension number: {dim_num}")
         fig = ax.figure
         plt.savefig(filename)
         fig.clear()
@@ -437,35 +501,10 @@ class Plots:
             )
         )
 
-    def plotTsne(self, feats, labels, filename, perplexity=30, learning_rate=200):
-        """Make a TSNE plot to see whether features are useful for classification"""
-        fig_dir = self.util.get_path("fig_dir") + "../"  # one up because of the runs
-        filename = f"{fig_dir}{filename}.{self.format}"
-        self.util.debug(f"plotting tsne to {filename}, this might take a while...")
-        model = TSNE(
-            n_components=2,
-            random_state=0,
-            perplexity=perplexity,
-            learning_rate=learning_rate,
-        )
-        tsne_data = model.fit_transform(feats)
-        tsne_data_labs = np.vstack((tsne_data.T, labels)).T
-        tsne_df = pd.DataFrame(data=tsne_data_labs, columns=("Dim_1", "Dim_2", "label"))
-        # plt.tight_layout()
-        ax = (
-            sns.FacetGrid(tsne_df, hue="label", height=6)
-            .map(plt.scatter, "Dim_1", "Dim_2")
-            .add_legend()
-        )
-        fig = ax.figure
-        plt.savefig(filename)
-        fig.clear()
-        plt.close(fig)
-
-    def getTsne(self, feats, perplexity=30, learning_rate=200):
+    def getTsne(self, feats, dim_num, perplexity=30, learning_rate=200):
         """Make a TSNE plot to see whether features are useful for classification"""
         model = TSNE(
-            n_components=2,
+            n_components=dim_num,
             random_state=0,
             perplexity=perplexity,
             learning_rate=learning_rate,
