@@ -49,7 +49,7 @@ class Reporter:
         self.format = self.util.config_val("PLOT", "format", "png")
         self.truths = truths
         self.preds = preds
-        self.result = Result(0, 0, 0, "unknown")
+        self.result = Result(0, 0, 0, 0, "unknown")
         self.run = run
         self.epoch = epoch
         self.__set_measure()
@@ -186,12 +186,7 @@ class Reporter:
         res_dir = self.util.get_path("res_dir")
         file_name = f"{res_dir}{self.util.get_exp_name()}_{epoch}.txt"
         if self.util.exp_is_classification():
-            data_type = self.util.config_val("DATA", "type", "False")
             labels = glob_conf.labels
-            # if data_type == 'continuous' or data_type == 'continous':
-            #     labels = glob_conf.labels
-            # else:
-            #     labels = glob_conf.label_encoder.classes_
             try:
                 rpt = classification_report(
                     self.truths,
@@ -252,31 +247,33 @@ class Reporter:
 
     def plot_epoch_progression(self, reports, out_name):
         fig_dir = self.util.get_path("fig_dir")
-        results, losses, train_results = [], [], []
+        results, losses, train_results, losses_eval = [], [], [], []
         for r in reports:
             results.append(r.get_result().test)
             losses.append(r.get_result().loss)
             train_results.append(r.get_result().train)
+            losses_eval.append(r.get_result().loss_eval)
 
         # do a plot per run
         # scale the losses so they fit on the picture
-        losses, results, train_results = (
+        losses, results, train_results, losses_eval = (
             np.asarray(losses),
             np.asarray(results),
             np.asarray(train_results),
+            np.asarray(losses_eval),
         )
 
-        if np.all((results < 1)):
-            # scale up values
-            results = results * 100
-            train_results = train_results * 100
-        if np.all((losses < 1)):
-            # scale up values
-            losses = losses * 100
+        if np.all((results > 1)):
+            # scale down values
+            results = results / 100.0
+            train_results = train_results / 100.0
+        # if np.all((losses < 1)):
+        # scale up values
         plt.figure(dpi=200)
         plt.plot(train_results, "green", label="train set")
         plt.plot(results, "red", label="dev set")
-        plt.plot(losses, "grey", label="losses")
+        plt.plot(losses, "black", label="losses")
+        plt.plot(losses_eval, "grey", label="losses_eval")
         plt.xlabel("epochs")
         plt.ylabel(f"{self.MEASURE}")
         plt.legend()

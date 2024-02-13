@@ -93,6 +93,30 @@ class MLP_model(Model):
             self.optimizer.step()
         self.loss = (np.asarray(losses)).mean()
 
+    def evaluate_model(self, model, loader, device):
+        logits = torch.zeros(len(loader.dataset), self.class_num)
+        targets = torch.zeros(len(loader.dataset))
+        model.eval()
+        losses = []
+        with torch.no_grad():
+            for index, (features, labels) in enumerate(loader):
+                start_index = index * loader.batch_size
+                end_index = (index + 1) * loader.batch_size
+                if end_index > len(loader.dataset):
+                    end_index = len(loader.dataset)
+                logits[start_index:end_index, :] = model(features.to(device))
+                targets[start_index:end_index] = labels
+                loss = self.criterion(
+                    logits[start_index:end_index, :],
+                    labels.to(self.device, dtype=torch.int64),
+                )
+                losses.append(loss.item())
+
+        self.loss_eval = (np.asarray(losses)).mean()
+        predictions = logits.argmax(dim=1)
+        uar = recall_score(targets.numpy(), predictions.numpy(), average="macro")
+        return uar, targets, predictions
+
     def predict(self):
         _, truths, predictions = self.evaluate_model(
             self.model, self.testloader, self.device
@@ -101,6 +125,10 @@ class MLP_model(Model):
         report = Reporter(truths, predictions, self.run, self.epoch)
         try:
             report.result.loss = self.loss
+        except AttributeError:  # if the model was loaded from disk the loss is unknown
+            pass
+        try:
+            report.result.loss_eval = self.loss_eval
         except AttributeError:  # if the model was loaded from disk the loss is unknown
             pass
         report.result.train = uar
@@ -143,23 +171,6 @@ class MLP_model(Model):
             # x: (batch_size, channels, samples)
             x = x.squeeze(dim=1).float()
             return self.linear(x)
-
-    def evaluate_model(self, model, loader, device):
-        logits = torch.zeros(len(loader.dataset), self.class_num)
-        targets = torch.zeros(len(loader.dataset))
-        model.eval()
-        with torch.no_grad():
-            for index, (features, labels) in enumerate(loader):
-                start_index = index * loader.batch_size
-                end_index = (index + 1) * loader.batch_size
-                if end_index > len(loader.dataset):
-                    end_index = len(loader.dataset)
-                logits[start_index:end_index, :] = model(features.to(device))
-                targets[start_index:end_index] = labels
-
-        predictions = logits.argmax(dim=1)
-        uar = recall_score(targets.numpy(), predictions.numpy(), average="macro")
-        return uar, targets, predictions
 
     def predict_sample(self, features):
         """Predict one sample"""

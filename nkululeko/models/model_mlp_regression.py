@@ -82,7 +82,6 @@ class MLP_Reg_model(Model):
             self.trainloader,
             self.device,
             self.optimizer,
-            self.criterion,
         )
         return loss
 
@@ -94,6 +93,10 @@ class MLP_Reg_model(Model):
         report = Reporter(truths.numpy(), predictions.numpy(), self.run, self.epoch)
         try:
             report.result.loss = self.loss
+        except AttributeError:  # if the model was loaded from disk the loss is unknown
+            pass
+        try:
+            report.result.loss_eval = self.loss_eval
         except AttributeError:  # if the model was loaded from disk the loss is unknown
             pass
         report.result.train = result
@@ -151,7 +154,7 @@ class MLP_Reg_model(Model):
             x = x.squeeze(dim=1).float()
             return self.linear(x)
 
-    def train_epoch(self, model, loader, device, optimizer, criterion):
+    def train_epoch(self, model, loader, device, optimizer):
         # first check if the model already has been trained
         # if os.path.isfile(self.store_path):
         #     self.load(self.run, self.epoch)
@@ -161,7 +164,7 @@ class MLP_Reg_model(Model):
         losses = []
         for features, labels in loader:
             logits = model(features.to(device)).reshape(-1)
-            loss = criterion(logits, labels.to(device))
+            loss = self.criterion(logits, labels.to(device))
             # print(f'loss: {loss.item()}')
             losses.append(loss.item())
             optimizer.zero_grad()
@@ -173,6 +176,7 @@ class MLP_Reg_model(Model):
         logits = torch.zeros(len(loader.dataset))
         targets = torch.zeros(len(loader.dataset))
         model.eval()
+        losses = []
         with torch.no_grad():
             for index, (features, labels) in enumerate(loader):
                 start_index = index * loader.batch_size
@@ -181,6 +185,9 @@ class MLP_Reg_model(Model):
                     end_index = len(loader.dataset)
                 logits[start_index:end_index] = model(features.to(device)).reshape(-1)
                 targets[start_index:end_index] = labels
+                loss = self.criterion(logits[start_index:end_index], labels.to(device))
+                losses.append(loss.item())
+        self.loss_eval = (np.asarray(losses)).mean()
 
         predictions = logits
         measure = self.util.config_val("MODEL", "measure", "mse")

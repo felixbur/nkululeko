@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.78.1
+--------------
+* added evaluation loss
+
 Version 0.78.0
 --------------
 * added 3-d scatter plots

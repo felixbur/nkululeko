@@ -2,10 +2,11 @@
 
 
 class Result:
-    def __init__(self, test, train, loss, measure):
+    def __init__(self, test, train, loss, loss_eval, measure):
         self.test = test
         self.train = train
         self.loss = loss
+        self.loss_eval = loss_eval
         self.measure = measure
 
     def get_result(self):
@@ -17,5 +18,5 @@ class Result:
     def to_string(self):
         return (
             f"test: {self.test} {self.measure}, train:"
-            f" {self.train} {self.measure}, loss: {self.loss}"
+            f" {self.train} {self.measure}, loss: {self.loss}, eval-loss: {self.loss_eval}"
         )
