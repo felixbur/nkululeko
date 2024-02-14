@@ -42,6 +42,7 @@ class Modelrunner:
         if not self.model.is_ANN() and epoch_num > 1:
             self.util.warn(f"setting epoch num to 1 (was {epoch_num}) if model not ANN")
             epoch_num = 1
+            glob_conf.config["EXP"]["epochs"] = "1"
         patience = self.util.config_val("MODEL", "patience", False)
         patience_counter = -1
         if self.util.high_is_good():

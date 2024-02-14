@@ -196,9 +196,12 @@ class Util:
             ["MODEL", "k_fold_cross"],
             ["FEATS", "balancing"],
             ["FEATS", "scale"],
+            ["FEATS", "wav2vec2.layer"],
         ]
         for option in options:
-            return_string += self._get_value_descript(option[0], option[1])
+            return_string += self._get_value_descript(option[0], option[1]).replace(
+                ".", "-"
+            )
         return return_string
 
     def get_plot_name(self):

@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.78.2
+--------------
+* added transformer layer selection for wav2vec2
+* removed best_model and epoch progression for non-DL models
+
 Version 0.78.1
 --------------
 * added evaluation loss

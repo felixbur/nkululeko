@@ -70,7 +70,11 @@ class Runmanager:
             plot_epoch_progression = self.util.config_val(
                 "PLOT", "epoch_progression", 0
             )
-            epoch_num = int(self.util.config_val("EXP", "epochs", 1))
+            try:
+                epoch_num = int(glob_conf.config["EXP"]["epochs"])
+            except KeyError:
+                # possibly this value has not been set
+                epoch_num = 1
             if epoch_num > 1 and plot_epoch_progression:
                 plot_name_suggest = self.util.get_exp_name()
                 plot_name = (
