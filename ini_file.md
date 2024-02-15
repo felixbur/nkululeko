@@ -185,7 +185,7 @@
     * **wav2vec variants**: [wav2vec2 embeddings](https://huggingface.co/facebook/wav2vec2-large-robust-ft-swbd-300h) from facebook
       * "wav2vec2-large-robust-ft-swbd-300h"
       * **wav2vec.model** = *path to the wav2vec2 model folder*
-      * **wav2vec.layer** = *which last hidden layer to use*
+      * **wav2vec2.layer** = *which last hidden layer to use*
     * **Hubert variants**: [facebook Hubert models](https://ai.meta.com/blog/hubert-self-supervised-representation-learning-for-speech-recognition-generation-and-compression/)
       * "hubert-base-ls960", "hubert-large-ll60k", "hubert-large-ls960-ft", hubert-xlarge-ll60k, "hubert-xlarge-ls960-ft"
     * **WavLM**:
