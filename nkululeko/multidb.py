@@ -98,7 +98,8 @@ def plot_heatmap(results, labels, name, config, datasets):
         data_s = ", ".join(datasets)
         text_file.write(f"{data_s}\n")
         colsums = np.array2string(colsums, separator=", ")
-        text_file.write(f"{colsums}\n")
+        text_file.write(f"column sums\n{colsums}\n")
+        text_file.write(repr(results))
 
     plt.figure(figsize=(10, 7))
     ax = sn.heatmap(df_cm, annot=True, cmap=cm.Blues)
