@@ -39,7 +39,7 @@ class Experiment:
 
         self.set_globals(config_obj)
         self.name = glob_conf.config["EXP"]["name"]
-        self.root = glob_conf.config["EXP"]["root"]
+        self.root = os.path.join(glob_conf.config["EXP"]["root"], "")
         self.data_dir = os.path.join(self.root, self.name)
         audeer.mkdir(self.data_dir)  # create the experiment directory
         self.util = Util("experiment")
