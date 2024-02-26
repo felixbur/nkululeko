@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.79.1
+--------------
+* added extra_train for multidb experiment
+
 Version 0.78.2
 --------------
 * added transformer layer selection for wav2vec2

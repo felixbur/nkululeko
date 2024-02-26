@@ -37,6 +37,11 @@ def main(src_dir):
     datasets = ast.literal_eval(datasets)
     dim = len(datasets)
     results = np.zeros(dim * dim).reshape([dim, dim])
+    # check if some data should be added to training
+    try:
+        extra_train = config["CROSSDB"]["train_extra"]
+    except KeyError:
+        extra_train = False
 
     for i in range(dim):
         for j in range(dim):
@@ -47,15 +52,27 @@ def main(src_dir):
             if i == j:
                 dataset = datasets[i]
                 print(f"running {dataset}")
-                config["DATA"]["databases"] = f"['{dataset}']"
+                if extra_train:
+                    config["DATA"]["databases"] = f"['{dataset}', '{extra_train}']"
+                    config["DATA"][f"{extra_train}.split_strategy"] = "train"
+                else:
+                    config["DATA"]["databases"] = f"['{dataset}']"
                 config["EXP"]["name"] = dataset
             else:
                 train = datasets[i]
                 test = datasets[j]
                 print(f"running train: {train}, test: {test}")
-                config["DATA"]["databases"] = f"['{train}', '{test}']"
-                config["DATA"][f"{test}.split_strategy"] = "test"
-                config["DATA"][f"{train}.split_strategy"] = "train"
+                if extra_train:
+                    config["DATA"][
+                        "databases"
+                    ] = f"['{train}', '{test}', '{extra_train}']"
+                    config["DATA"][f"{test}.split_strategy"] = "test"
+                    config["DATA"][f"{train}.split_strategy"] = "train"
+                    config["DATA"][f"{extra_train}.split_strategy"] = "train"
+                else:
+                    config["DATA"]["databases"] = f"['{train}', '{test}']"
+                    config["DATA"][f"{test}.split_strategy"] = "test"
+                    config["DATA"][f"{train}.split_strategy"] = "train"
                 config["EXP"]["name"] = f"{train}_vs_{test}"
 
             tmp_config = "tmp.ini"

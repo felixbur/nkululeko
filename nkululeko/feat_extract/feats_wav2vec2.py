@@ -27,9 +27,9 @@ class Wav2vec2(Featureset):
 
     def init_model(self):
         # load model
-        self.util.debug("loading wav2vec model...")
+        self.util.debug("loading wav2vec2 model...")
         model_path = self.util.config_val(
-            "FEATS", "wav2vec.model", f"facebook/{self.feat_type}"
+            "FEATS", "wav2vec2.model", f"facebook/{self.feat_type}"
         )
         config = transformers.AutoConfig.from_pretrained(model_path)
         layer_num = config.num_hidden_layers

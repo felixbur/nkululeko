@@ -25,12 +25,14 @@ class AgenderAgenderSet(Featureset):
         if not os.path.isdir(model_root):
             cache_root = audeer.mkdir("cache")
             model_root = audeer.mkdir(model_root)
-            archive_path = audeer.download_url(
-                model_url, cache_root, verbose=True
-            )
+            archive_path = audeer.download_url(model_url, cache_root, verbose=True)
             audeer.extract_archive(archive_path, model_root)
         device = self.util.config_val("MODEL", "device", "cpu")
         self.model = audonnx.load(model_root, device=device)
+        pytorch_total_params = sum(p.numel() for p in self.model.parameters())
+        self.util.debug(
+            f"initialized agender model with {pytorch_total_params} parameters in total"
+        )
 
     def extract(self):
         """Extract the features based on the initialized dataset or re-open them when found on disk."""
@@ -44,8 +46,7 @@ class AgenderAgenderSet(Featureset):
         sampling_rate = 16000
         if no_reuse or extract or not os.path.isfile(storage):
             self.util.debug(
-                "extracting agender model age and gender, this might take a"
-                " while..."
+                "extracting agender model age and gender, this might take a" " while..."
             )
             outputs = ["logits_age", "logits_gender"]
             logits = audinterface.Feature(
