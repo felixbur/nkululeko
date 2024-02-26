@@ -3,6 +3,10 @@ Changelog
 
 Version 0.79.1
 --------------
+* root directory does not have to end with /
+
+Version 0.79.0
+--------------
 * added extra_train for multidb experiment
 
 Version 0.78.2

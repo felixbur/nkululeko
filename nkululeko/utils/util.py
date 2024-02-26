@@ -46,7 +46,7 @@ class Util:
         """
         This method allows the user to get the directory path for the given argument.
         """
-        root = self.config["EXP"]["root"]
+        root = audeer.mkdir(self.config["EXP"]["root"])
         name = self.config["EXP"]["name"]
         try:
             entryn = self.config["EXP"][entry]
@@ -119,7 +119,7 @@ class Util:
         """
         Get the experiment directory
         """
-        root = self.config["EXP"]["root"]
+        root = audeer.mkdir(self.config["EXP"]["root"])
         name = self.config["EXP"]["name"]
         dir_name = f"{root}{name}"
         audeer.mkdir(dir_name)

@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import numpy as np
 import os
+import audeer
 from nkululeko.experiment import Experiment
 import configparser
 from nkululeko.utils.util import Util
@@ -84,7 +85,7 @@ def main(src_dir):
                 result = nkulu(tmp_config)
             results[i, j] = float(result)
     print(repr(results))
-    root = config["EXP"]["root"]
+    root = audeer.mkdir(config["EXP"]["root"])
     plot_name = f"{root}/heatmap.png"
     plot_heatmap(results, datasets, plot_name, config, datasets)
 
