@@ -100,7 +100,7 @@ class Modelrunner:
             # Do at least one confusion matrix plot
             self.util.debug(f"plotting confusion matrix to {plot_name}")
             reports[-1].plot_confmatrix(plot_name, epoch)
-        return reports
+        return reports, epoch
 
     def _select_model(self, model_type):
         self._check_balancing()

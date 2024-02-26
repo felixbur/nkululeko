@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.79.2
+--------------
+* fixed bug and report number of epochs for early stopping 
+
 Version 0.79.1
 --------------
 * root directory does not have to end with /

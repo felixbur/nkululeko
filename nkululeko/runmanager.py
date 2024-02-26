@@ -44,6 +44,7 @@ class Runmanager:
     def do_runs(self):
         """Start the runs"""
         self.best_results = []  # keep the best result per run
+        self.last_epochs = []  # keep the epoch of best result per run
         # for all runs
         for run in range(int(self.util.config_val("EXP", "runs", 1))):
             self.util.debug(f"run {run}")
@@ -56,7 +57,7 @@ class Runmanager:
                 self.feats_test,
                 run,
             )
-            self.reports = self.modelrunner.do_epochs()
+            self.reports, last_epoch = self.modelrunner.do_epochs()
             # wrap up the run
             plot_anim_progression = self.util.config_val("PLOT", "anim_progression", 0)
             if plot_anim_progression:
@@ -104,6 +105,7 @@ class Runmanager:
                 int(self.util.config_val("EXP", "epochs", 1))
             )
             self.best_results.append(best_report)
+            self.last_epochs.append(last_epoch)
 
     def print_best_result_runs(self):
         """Print the best result for all runs"""

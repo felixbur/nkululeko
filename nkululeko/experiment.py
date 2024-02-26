@@ -39,7 +39,7 @@ class Experiment:
 
         self.set_globals(config_obj)
         self.name = glob_conf.config["EXP"]["name"]
-        self.root = audeer.mkdir(glob_conf.config["EXP"]["root"])
+        self.root = os.path.join(glob_conf.config["EXP"]["root"], '')
         self.data_dir = os.path.join(self.root, self.name)
         audeer.mkdir(self.data_dir)  # create the experiment directory
         self.util = Util("experiment")
@@ -593,6 +593,7 @@ class Experiment:
 
         # access the best results all runs
         self.reports = self.runmgr.best_results
+        last_epochs = self.runmgr.last_epochs
         # try to save yourself
         save = self.util.config_val("EXP", "save", False)
         if save:
@@ -623,7 +624,7 @@ class Experiment:
         if label_data and label_result:
             self.predict_test_and_save(label_result)
 
-        return self.reports
+        return self.reports, last_epochs
 
     def plot_confmat_per_speaker(self, function):
         if self.loso or self.logo or self.xfoldx:
