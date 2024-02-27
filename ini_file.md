@@ -15,6 +15,7 @@
     - [EXPL](#expl)
     - [PREDICT](#predict)
     - [EXPORT](#export)
+    - [CROSSDB](#crossdb)
     - [PLOT](#plot)
     - [RESAMPLE](#resample)
     - [REPORT](#report)
@@ -331,7 +332,7 @@
 * **sample_selection**: which split: [train, test, all]
   * sample_selection = all
 
-### [EXPORT](#export)
+### EXPORT
 * **target_root**: New root directory for the database, will be created
   * target_root = ./exported_data/
 * **orig_root**: Path to folder that is parent to the original audio files
@@ -340,6 +341,10 @@
   * data_name = exported_database
 * **segments_as_files**: Whether original files should be used, or segments split (resulting potentially in many new files).
   * segments_as_files = False
+
+### CROSSDB
+* **train_extra**: add an additional training partition to all experiments in [the cross database series](http://blog.syntheticspeech.de/2024/01/02/nkululeko-compare-several-databases/). This extra data should be described [in a root_folder file](http://blog.syntheticspeech.de/2022/02/21/specifying-database-disk-location-with-nkululeko/)
+  * train_extra = addtrain_db
 
 ### PLOT
 * **name**: special name as a prefix for all plots (stored in *img_dir*).
