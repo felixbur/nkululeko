@@ -1,0 +1,8 @@
+file,emotion,speaker,gender,age,transcription
+data/test/audio/03a01Fa.wav,happiness,3,male,31,a01
+data/test/audio/03a01Nc.wav,neutral,3,male,31,a01
+data/test/audio/03a01Wa.wav,anger,3,male,31,a01
+data/test/audio/03a02Ta.wav,sadness,3,male,31,a02
+data/test/audio/03a04Ad.wav,fear,3,male,31,a04
+data/test/audio/03a04Lc.wav,boredom,3,male,31,a04
+data/test/audio/03b10Ec.wav,disgust,3,male,31,b10
