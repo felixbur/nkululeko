@@ -154,7 +154,7 @@ All of them take *--config <my_config.ini>* as an argument.
 * **nkululeko.test**: predict a [given data set](http://blog.syntheticspeech.de/2022/09/01/nkululeko-how-to-evaluate-a-test-set-with-a-given-best-model/) with the current best model
 * **nkululeko.explore**: perform [data exploration](http://blog.syntheticspeech.de/2023/05/11/nkululeko-how-to-visualize-your-data-distribution/)
 * **nkululeko.augment**: [augment](http://blog.syntheticspeech.de/2023/03/13/nkululeko-how-to-augment-the-training-set/) the current training data
-* **nkululeko.aug_train**: augment the current training data and do a training including this data
+* **nkululeko.aug_train**: augment the current training data [and do a training](http://blog.syntheticspeech.de/2023/03/13/nkululeko-how-to-augment-the-training-set/) including this data
 * **nkululeko.predict**: [predict features](http://blog.syntheticspeech.de/2023/08/16/nkululeko-how-to-predict-labels-for-your-data-from-existing-models-and-check-them/) like SNR, MOS, arousal/valence, age/gender, with DNN models
 * **nkululeko.segment**: [segment a database](http://blog.syntheticspeech.de/2023/07/14/nkululeko-segmenting-a-database/) based on VAD (voice activity detection)
 * **nkululeko.resample**: check on all [sampling rates and change](http://blog.syntheticspeech.de/2023/08/31/how-to-fix-different-sampling-rates-in-a-dataset-with-nkululeko/) to 16kHz 
