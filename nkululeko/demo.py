@@ -23,10 +23,14 @@ def main(src_dir):
             "A file with a list of files, one per line, that should be"
             " processed (16kHz mono wav)"
         ),
+        nargs="?",
+        default=None,
     )
     parser.add_argument(
         "--outfile",
         help=("A filename to store the results in CSV"),
+        nargs="?",
+        default=None,
     )
     args = parser.parse_args()
     if args.config is not None:
@@ -56,7 +60,7 @@ def main(src_dir):
     # load the experiment
     expr.load(f"{util.get_save_name()}")
     if args.file is None and args.list is None:
-        expr.demo(None, False)
+        expr.demo(None, False, args.outfile)
     else:
         if args.list is None:
             expr.demo(args.file, False, args.outfile)

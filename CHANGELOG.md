@@ -1,9 +1,14 @@
 Changelog
 =========
 
+Version 0.79.5
+--------------
+* fixed bug on demo without in- or output
+* fixed bug that demo with DL feature extractors did not work
+
 Version 0.79.4
 --------------
-* added funcionality in demo for regression
+* added functionality in demo for regression
 
 Version 0.79.3
 --------------

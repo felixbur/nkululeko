@@ -112,6 +112,9 @@ Some examples for *ini*-files (which you use to control nkululeko) are in the [t
 
 ### [ini-file values](./ini_file.md)
 
+Nkululeko works by specifiying 
+
+
 Basically, you specify your experiment in an ["ini" file](./ini_file.md) (e.g. *experiment.ini*) and then call one of the Nkululeko interfaces to run the experiment like this:
   * ```python -m nkululeko.nkululeko --config experiment.ini```
 
@@ -138,7 +141,7 @@ combine_per_speaker = mode
 ```
 Read the [Hello World example](#hello-world-example) for initial usage with Emo-DB dataset.
 
-Here is an overview of the interfaces:
+Here is an overview of the interfaces/modules:
 * **nkululeko.nkululeko**: do machine learning experiments combining features and learners
 * **nkululeko.multidb**: do multiple experiments, comparing several databases cross and in itself
 * **nkululeko.demo**: demo the current best model on the command line

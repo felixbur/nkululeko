@@ -23,9 +23,7 @@ class AudModelDimSet(Featureset):
         if not os.path.isdir(model_root):
             cache_root = audeer.mkdir("cache")
             model_root = audeer.mkdir(model_root)
-            archive_path = audeer.download_url(
-                model_url, cache_root, verbose=True
-            )
+            archive_path = audeer.download_url(model_url, cache_root, verbose=True)
             audeer.extract_archive(archive_path, model_root)
         device = self.util.config_val("MODEL", "device", "cpu")
         self.model = audonnx.load(model_root, device=device)
@@ -65,5 +63,7 @@ class AudModelDimSet(Featureset):
             self.df = self.util.get_store(storage, store_format)
 
     def extract_sample(self, signal, sr):
+        if self.model == None:
+            self.__init__("na", None)
         result = self.model(signal, sr)
-        return np.asarray(result["hidden_states"].flatten())
+        return np.asarray(result["logits"].flatten())

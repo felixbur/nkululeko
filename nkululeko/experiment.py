@@ -687,13 +687,21 @@ class Experiment:
         if self.runmgr.modelrunner.model.is_ANN():
             self.runmgr.modelrunner.model = None
             self.util.warn(
-                f"Save experiment: Can't pickle the model so saving without it."
+                f"Save experiment: Can't pickle the learning model so saving without it."
             )
         try:
             f = open(filename, "wb")
             pickle.dump(self.__dict__, f)
             f.close()
-        except (AttributeError, TypeError, RuntimeError) as error:
+        except TypeError:
+            self.feature_extractor.featExtractor.model = None
+            f = open(filename, "wb")
+            pickle.dump(self.__dict__, f)
+            f.close()
+            self.util.warn(
+                f"Save experiment: Can't pickle the feature extraction model so saving without it."
+            )
+        except (AttributeError, RuntimeError) as error:
             self.util.warn(f"Save experiment: Can't pickle local object: {error}")
 
     def save_onnx(self, filename):

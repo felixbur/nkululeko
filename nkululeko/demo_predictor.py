@@ -79,7 +79,7 @@ class Demo_predictor:
                 return result_dict
         else:
             # experiment is regression and returns one estimation
-            dict_2["predicted"] = result_dict
+            dict_2["predicted"] = result_dict[0]
             print(dict_2)
             return dict_2
 
