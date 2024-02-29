@@ -53,23 +53,31 @@ class Dataset_CSV(Dataset):
         self.got_target = True
         self.is_labeled = self.got_target
         self.start_fresh = eval(self.util.config_val("DATA", "no_reuse", "False"))
-        if self.is_labeled and not "class_label" in self.df.columns:
-            self.df["class_label"] = self.df[self.target]
-        if "gender" in self.df.columns:
-            self.got_gender = True
-        if "age" in self.df.columns:
-            self.got_age = True
-        if "speaker" in self.df.columns:
-            self.got_speaker = True
-        speaker_num = 0
-        if self.got_speaker:
-            speaker_num = self.df.speaker.nunique()
-        r_string = (
-            f"Loaded database {self.name} with {df.shape[0]} samples: got"
-            f" targets: {self.got_target}, got speakers:"
-            f" {self.got_speaker} ({speaker_num}), got sexes:"
-            f" {self.got_gender}, got age: {self.got_age}"
-        )
+        is_index = False
+        try:
+            if self.is_labeled and not "class_label" in self.df.columns:
+                self.df["class_label"] = self.df[self.target]
+        except AttributeError:
+            is_index = True
+            r_string = (
+                f"Loaded database {self.name} with {df.shape[0]} samples as index."
+            )
+        if not is_index:
+            if "gender" in self.df.columns:
+                self.got_gender = True
+            if "age" in self.df.columns:
+                self.got_age = True
+            if "speaker" in self.df.columns:
+                self.got_speaker = True
+            speaker_num = 0
+            if self.got_speaker:
+                speaker_num = self.df.speaker.nunique()
+            r_string = (
+                f"Loaded database {self.name} with {df.shape[0]} samples: got"
+                f" targets: {self.got_target}, got speakers:"
+                f" {self.got_speaker} ({speaker_num}), got sexes:"
+                f" {self.got_gender}, got age: {self.got_age}"
+            )
         self.util.debug(r_string)
         glob_conf.report.add_item(ReportItem("Data", "Loaded report", r_string))
 

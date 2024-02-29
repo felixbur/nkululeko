@@ -24,6 +24,10 @@ def main(src_dir):
             " processed (16kHz mono wav)"
         ),
     )
+    parser.add_argument(
+        "--outfile",
+        help=("A filename to store the results in CSV"),
+    )
     args = parser.parse_args()
     if args.config is not None:
         config_file = args.config
@@ -41,7 +45,9 @@ def main(src_dir):
 
     # create a new experiment
     expr = Experiment(config)
-    util = Util("demo")
+    module = "demo"
+    expr.set_module(module)
+    util = Util(module)
     util.debug(
         f"running {expr.name} from config {config_file}, nkululeko version"
         f" {VERSION}"
@@ -53,9 +59,9 @@ def main(src_dir):
         expr.demo(None, False)
     else:
         if args.list is None:
-            expr.demo(args.file, False)
+            expr.demo(args.file, False, args.outfile)
         else:
-            expr.demo(args.list, True)
+            expr.demo(args.list, True, args.outfile)
 
     print("DONE")
 

@@ -21,7 +21,9 @@ def doit(config_file):
 
     # create a new experiment
     expr = exp.Experiment(config)
-    util = Util("nkululeko")
+    module = "nkululeko"
+    expr.set_module(module)
+    util = Util(module)
     util.debug(
         f"running {expr.name} from config {config_file}, nkululeko version"
         f" {VERSION}"

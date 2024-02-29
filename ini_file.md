@@ -343,7 +343,7 @@
   * segments_as_files = False
 
 ### CROSSDB
-* **train_extra**: add an additional training partition to all experiments in [the cross database series](http://blog.syntheticspeech.de/2024/01/02/nkululeko-compare-several-databases/). This extra data should be described [in a root_folder file](http://blog.syntheticspeech.de/2022/02/21/specifying-database-disk-location-with-nkululeko/)
+* **train_extra**: add an additional training partition to all experiments in [the cross database series](http://blog.syntheticspeech.de/2024/01/02/nkululeko-compare-several-databases/). This extra data should be described [in a root_folders file](http://blog.syntheticspeech.de/2022/02/21/specifying-database-disk-location-with-nkululeko/)
   * train_extra = addtrain_db
 
 ### PLOT

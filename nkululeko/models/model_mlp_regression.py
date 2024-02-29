@@ -237,6 +237,9 @@ class MLP_Reg_model(Model):
 
     def predict_sample(self, features):
         """Predict one sample"""
-        self.util.error(
-            "model_mlp_regression: predicting one sample not implemented yet"
-        )
+        with torch.no_grad():
+            features = torch.from_numpy(features)
+            features = np.reshape(features, (-1, 1)).T
+            logits = self.model(features.to(self.device)).reshape(-1)
+        a = logits.numpy()
+        return a

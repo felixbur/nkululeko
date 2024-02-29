@@ -1,12 +1,13 @@
-import nkululeko.glob_conf as glob_conf
-from nkululeko.utils.util import Util
+import pandas as pd
 import numpy as np
 import sounddevice as sd
 import audiofile
+import nkululeko.glob_conf as glob_conf
+from nkululeko.utils.util import Util
 
 
 class Demo_predictor:
-    def __init__(self, model, file, is_list, feature_extractor, label_encoder):
+    def __init__(self, model, file, is_list, feature_extractor, label_encoder, outfile):
         """Constructor setting up name and configuration"""
         self.model = model
         self.feature_extractor = feature_extractor
@@ -16,6 +17,7 @@ class Demo_predictor:
         self.target = glob_conf.config["DATA"]["target"]
         self.util = Util("demo_predictor")
         self.file = file
+        self.outfile = outfile
 
     def run_demo(self):
         signal, sr = None, 0
@@ -28,11 +30,24 @@ class Demo_predictor:
                 )
                 self.predict_signal(sig, sr)
             else:
+                df_res = pd.DataFrame()
                 with open(self.file) as f:
+                    first = True
                     for index, line in enumerate(f):
-                        sig, sr = audiofile.read(line.strip())
-                        print(f"predicting file {index}: {line.strip()}")
-                        self.predict_signal(sig, sr)
+                        # first line might be "file"
+                        if self.file.endswith(".csv") and first:
+                            first = False
+                        else:
+                            sig, sr = audiofile.read(line.strip())
+                            print(f"predicting file {index}: {line.strip()}")
+                            res_dict = self.predict_signal(sig, sr)
+                            df_tmp = pd.DataFrame(res_dict, index=[line.strip()])
+                            df_res = pd.concat([df_res, df_tmp], ignore_index=False)
+                    df_res = df_res.set_index(df_res.index.rename("file"))
+                    if self.outfile is not None:
+                        df_res.to_csv(self.outfile)
+                    else:
+                        self.util.debug(df_res)
         else:
             while True:
                 signal = self.record_audio(3)
@@ -44,10 +59,8 @@ class Demo_predictor:
         features = self.feature_extractor.extract_sample(signal, sr)
         scale_feats = self.util.config_val("FEATS", "scale", False)
         if scale_feats:
-            from sklearn.preprocessing import StandardScaler
-
-            scaler = StandardScaler()
-            features = scaler.fit_transform(features)
+            # standard normalize the input features
+            features = (features - features.mean()) / (features.std())
         features = np.nan_to_num(features)
         result_dict = self.model.predict_sample(features)
         keys = result_dict.keys()
@@ -57,9 +70,12 @@ class Demo_predictor:
                 ak = np.array(int(k)).reshape(1)
                 lab = self.label_encoder.inverse_transform(ak)[0]
                 dict_2[lab] = f"{result_dict[k]:.3f}"
+            dict_2["predicted"] = max(dict_2, key=dict_2.get)
             print(dict_2)
+            return dict_2
         else:
             print(result_dict)
+            return result_dict
 
     def record_audio(self, seconds):
         print("recording ...")

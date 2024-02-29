@@ -22,7 +22,9 @@ def doit(config_file):
     config.read(config_file)
     # create a new experiment
     expr = Experiment(config)
-    util = Util("augment")
+    module = "augment"
+    expr.set_module(module)
+    util = Util(module)
     util.debug(
         f"running {expr.name} from config {config_file}, nkululeko version"
         f" {VERSION}"

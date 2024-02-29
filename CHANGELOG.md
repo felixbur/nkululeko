@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 0.79.3
+--------------
+* fixed bug that test module did not work
+* fixed bug that demo module did not work for ANNs
+* added csv output for demo mode and file lists
+
 Version 0.79.2
 --------------
 * fixed bug and report number of epochs for early stopping 

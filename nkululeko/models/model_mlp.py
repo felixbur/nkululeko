@@ -175,7 +175,10 @@ class MLP_model(Model):
     def predict_sample(self, features):
         """Predict one sample"""
         with torch.no_grad():
-            logits = self.model(torch.from_numpy(features).to(self.device))
+            features = torch.from_numpy(features)
+            features = np.reshape(features, (-1, 1)).T
+            logits = self.model(features.to(self.device))
+            # logits = self.model(features)
         a = logits.numpy()
         res = {}
         for i in range(len(a[0])):

@@ -539,21 +539,22 @@ class Dataset:
     def prepare_labels(self):
         # strategy = self.util.config_val("DATA", "strategy", "train_test")
         only_tests = eval(self.util.config_val("DATA", "tests", "False"))
-        # if strategy == "cross_data" or only_tests:
-        #     self.df = self.map_labels(self.df)
-        #     # Bin target values if they are continuous but a classification experiment should be done
-        #     self.map_continuous_classification(self.df)
-        #     self.df = self._add_labels(self.df)
-        #     if self.util.config_val_data(self.name, "value_counts", False):
-        #         if not self.got_gender or not self.got_speaker:
-        #             self.util.error(
-        #                 "can't plot value counts if no speaker or gender is" " given"
-        #             )
-        #         else:
-        #             self.plot.describe_df(
-        #                 self.name, self.df, self.target, f"{self.name}_distplot"
-        #             )
-        # elif strategy == "train_test":
+        module = glob_conf.module
+        if only_tests and module == "test":
+            self.df = self.map_labels(self.df)
+            # Bin target values if they are continuous but a classification experiment should be done
+            self.map_continuous_classification(self.df)
+            self.df = self._add_labels(self.df)
+            if self.util.config_val_data(self.name, "value_counts", False):
+                if not self.got_gender or not self.got_speaker:
+                    self.util.error(
+                        "can't plot value counts if no speaker or gender is" " given"
+                    )
+                else:
+                    self.plot.describe_df(
+                        self.name, self.df, self.target, f"{self.name}_distplot"
+                    )
+            return
         self.df_train = self.map_labels(self.df_train)
         self.df_test = self.map_labels(self.df_test)
         self.map_continuous_classification(self.df_train)
