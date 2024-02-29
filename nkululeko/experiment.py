@@ -686,6 +686,9 @@ class Experiment:
     def save(self, filename):
         if self.runmgr.modelrunner.model.is_ANN():
             self.runmgr.modelrunner.model = None
+            self.util.warn(
+                f"Save experiment: Can't pickle the model so saving without it."
+            )
         try:
             f = open(filename, "wb")
             pickle.dump(self.__dict__, f)

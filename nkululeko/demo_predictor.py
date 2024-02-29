@@ -63,19 +63,25 @@ class Demo_predictor:
             features = (features - features.mean()) / (features.std())
         features = np.nan_to_num(features)
         result_dict = self.model.predict_sample(features)
-        keys = result_dict.keys()
-        if self.label_encoder is not None:
-            dict_2 = {}
-            for i, k in enumerate(keys):
-                ak = np.array(int(k)).reshape(1)
-                lab = self.label_encoder.inverse_transform(ak)[0]
-                dict_2[lab] = f"{result_dict[k]:.3f}"
-            dict_2["predicted"] = max(dict_2, key=dict_2.get)
+        dict_2 = {}
+        if self.util.exp_is_classification():
+            keys = result_dict.keys()
+            if self.label_encoder is not None:
+                for i, k in enumerate(keys):
+                    ak = np.array(int(k)).reshape(1)
+                    lab = self.label_encoder.inverse_transform(ak)[0]
+                    dict_2[lab] = f"{result_dict[k]:.3f}"
+                dict_2["predicted"] = max(dict_2, key=dict_2.get)
+                print(dict_2)
+                return dict_2
+            else:
+                print(result_dict)
+                return result_dict
+        else:
+            # experiment is regression and returns one estimation
+            dict_2["predicted"] = result_dict
             print(dict_2)
             return dict_2
-        else:
-            print(result_dict)
-            return result_dict
 
     def record_audio(self, seconds):
         print("recording ...")

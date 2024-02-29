@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.79.4
+--------------
+* added funcionality in demo for regression
+
 Version 0.79.3
 --------------
 * fixed bug that test module did not work
