@@ -151,7 +151,7 @@ All of them take *--config <my_config.ini>* as an argument.
   * *--list* (optional) list of input files
   * *--file* (optional) name of input file
   * *--outfile* (optional) name of CSV file for output
-* **nkululeko.test**: predict a series of files with the current best model
+* **nkululeko.test**: predict a [given data set](http://blog.syntheticspeech.de/2022/09/01/nkululeko-how-to-evaluate-a-test-set-with-a-given-best-model/) with the current best model
 * **nkululeko.explore**: perform [data exploration](http://blog.syntheticspeech.de/2023/05/11/nkululeko-how-to-visualize-your-data-distribution/)
 * **nkululeko.augment**: [augment](http://blog.syntheticspeech.de/2023/03/13/nkululeko-how-to-augment-the-training-set/) the current training data
 * **nkululeko.aug_train**: augment the current training data and do a training including this data
