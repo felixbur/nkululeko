@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import numpy as np
 import os
+import audeer
 from nkululeko.experiment import Experiment
 import configparser
 from nkululeko.utils.util import Util
@@ -37,6 +38,12 @@ def main(src_dir):
     datasets = ast.literal_eval(datasets)
     dim = len(datasets)
     results = np.zeros(dim * dim).reshape([dim, dim])
+    last_epochs = np.zeros(dim * dim).reshape([dim, dim])
+    # check if some data should be added to training
+    try:
+        extra_train = config["CROSSDB"]["train_extra"]
+    except KeyError:
+        extra_train = False
 
     for i in range(dim):
         for j in range(dim):
@@ -47,36 +54,50 @@ def main(src_dir):
             if i == j:
                 dataset = datasets[i]
                 print(f"running {dataset}")
-                config["DATA"]["databases"] = f"['{dataset}']"
+                if extra_train:
+                    config["DATA"]["databases"] = f"['{dataset}', '{extra_train}']"
+                    config["DATA"][f"{extra_train}.split_strategy"] = "train"
+                else:
+                    config["DATA"]["databases"] = f"['{dataset}']"
                 config["EXP"]["name"] = dataset
             else:
                 train = datasets[i]
                 test = datasets[j]
                 print(f"running train: {train}, test: {test}")
-                config["DATA"]["databases"] = f"['{train}', '{test}']"
-                config["DATA"][f"{test}.split_strategy"] = "test"
-                config["DATA"][f"{train}.split_strategy"] = "train"
+                if extra_train:
+                    config["DATA"][
+                        "databases"
+                    ] = f"['{train}', '{test}', '{extra_train}']"
+                    config["DATA"][f"{test}.split_strategy"] = "test"
+                    config["DATA"][f"{train}.split_strategy"] = "train"
+                    config["DATA"][f"{extra_train}.split_strategy"] = "train"
+                else:
+                    config["DATA"]["databases"] = f"['{train}', '{test}']"
+                    config["DATA"][f"{test}.split_strategy"] = "test"
+                    config["DATA"][f"{train}.split_strategy"] = "train"
                 config["EXP"]["name"] = f"{train}_vs_{test}"
 
             tmp_config = "tmp.ini"
             with open(tmp_config, "w") as tmp_file:
                 config.write(tmp_file)
             if config.has_section("AUGMENT"):
-                result = aug_train(tmp_config)
+                result, last_epoch = aug_train(tmp_config)
             else:
-                result = nkulu(tmp_config)
+                result, last_epoch = nkulu(tmp_config)
             results[i, j] = float(result)
+            last_epochs[i, j] = int(last_epoch)
     print(repr(results))
-    root = config["EXP"]["root"]
+    print(repr(last_epochs))
+    root = os.path.join(config["EXP"]["root"], "")
     plot_name = f"{root}/heatmap.png"
-    plot_heatmap(results, datasets, plot_name, config, datasets)
+    plot_heatmap(results, last_epochs, datasets, plot_name, config, datasets)
 
 
 def trunc_to_three(x):
     return int(x * 1000) / 1000.0
 
 
-def plot_heatmap(results, labels, name, config, datasets):
+def plot_heatmap(results, last_epochs, labels, name, config, datasets):
     df_cm = pd.DataFrame(
         results, index=[i for i in labels], columns=[i for i in labels]
     )
@@ -89,6 +110,8 @@ def plot_heatmap(results, labels, name, config, datasets):
     colsums = results.mean(axis=0)
     vfunc = np.vectorize(trunc_to_three)
     colsums = vfunc(colsums)
+    colsums_epochs = last_epochs.mean(axis=0)
+    colsums_epochs = vfunc(colsums_epochs)
     res_dir = config["EXP"]["root"]
     file_name = f"{res_dir}/results.txt"
     with open(file_name, "w") as text_file:
@@ -98,7 +121,14 @@ def plot_heatmap(results, labels, name, config, datasets):
         data_s = ", ".join(datasets)
         text_file.write(f"{data_s}\n")
         colsums = np.array2string(colsums, separator=", ")
-        text_file.write(f"{colsums}\n")
+        text_file.write(f"column sums\n{colsums}\n")
+        text_file.write("all results\n")
+        text_file.write(repr(results))
+        text_file.write("\n")
+        colsums_epochs = np.array2string(colsums_epochs, separator=", ")
+        text_file.write(f"column sums epochs\n{colsums_epochs}\n")
+        text_file.write("all epochs\n")
+        text_file.write(repr(last_epochs))
 
     plt.figure(figsize=(10, 7))
     ax = sn.heatmap(df_cm, annot=True, cmap=cm.Blues)

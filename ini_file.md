@@ -15,6 +15,7 @@
     - [EXPL](#expl)
     - [PREDICT](#predict)
     - [EXPORT](#export)
+    - [CROSSDB](#crossdb)
     - [PLOT](#plot)
     - [RESAMPLE](#resample)
     - [REPORT](#report)
@@ -185,6 +186,7 @@
     * **wav2vec variants**: [wav2vec2 embeddings](https://huggingface.co/facebook/wav2vec2-large-robust-ft-swbd-300h) from facebook
       * "wav2vec2-large-robust-ft-swbd-300h"
       * **wav2vec.model** = *path to the wav2vec2 model folder*
+      * **wav2vec2.layer** = *which last hidden layer to use*
     * **Hubert variants**: [facebook Hubert models](https://ai.meta.com/blog/hubert-self-supervised-representation-learning-for-speech-recognition-generation-and-compression/)
       * "hubert-base-ls960", "hubert-large-ll60k", "hubert-large-ls960-ft", hubert-xlarge-ll60k, "hubert-xlarge-ls960-ft"
     * **WavLM**:
@@ -330,7 +332,7 @@
 * **sample_selection**: which split: [train, test, all]
   * sample_selection = all
 
-### [EXPORT](#export)
+### EXPORT
 * **target_root**: New root directory for the database, will be created
   * target_root = ./exported_data/
 * **orig_root**: Path to folder that is parent to the original audio files
@@ -339,6 +341,10 @@
   * data_name = exported_database
 * **segments_as_files**: Whether original files should be used, or segments split (resulting potentially in many new files).
   * segments_as_files = False
+
+### CROSSDB
+* **train_extra**: add an additional training partition to all experiments in [the cross database series](http://blog.syntheticspeech.de/2024/01/02/nkululeko-compare-several-databases/). This extra data should be described [in a root_folders file](http://blog.syntheticspeech.de/2022/02/21/specifying-database-disk-location-with-nkululeko/)
+  * train_extra = addtrain_db
 
 ### PLOT
 * **name**: special name as a prefix for all plots (stored in *img_dir*).

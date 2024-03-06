@@ -1,6 +1,38 @@
 Changelog
 =========
 
+Version 0.79.5
+--------------
+* fixed bug on demo without in- or output
+* fixed bug that demo with DL feature extractors did not work
+
+Version 0.79.4
+--------------
+* added functionality in demo for regression
+
+Version 0.79.3
+--------------
+* fixed bug that test module did not work
+* fixed bug that demo module did not work for ANNs
+* added csv output for demo mode and file lists
+
+Version 0.79.2
+--------------
+* fixed bug and report number of epochs for early stopping 
+
+Version 0.79.1
+--------------
+* root directory does not have to end with /
+
+Version 0.79.0
+--------------
+* added extra_train for multidb experiment
+
+Version 0.78.2
+--------------
+* added transformer layer selection for wav2vec2
+* removed best_model and epoch progression for non-DL models
+
 Version 0.78.1
 --------------
 * added evaluation loss

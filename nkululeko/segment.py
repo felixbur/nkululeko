@@ -31,7 +31,9 @@ def main(src_dir):
     config.read(config_file)
     # create a new experiment
     expr = Experiment(config)
-    util = Util("segment")
+    module = "segment"
+    expr.set_module(module)
+    util = Util(module)
     util.debug(f"running {expr.name}, nkululeko version {VERSION}")
 
     if util.config_val("EXP", "no_warnings", False):

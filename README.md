@@ -112,6 +112,9 @@ Some examples for *ini*-files (which you use to control nkululeko) are in the [t
 
 ### [ini-file values](./ini_file.md)
 
+Nkululeko works by specifiying 
+
+
 Basically, you specify your experiment in an ["ini" file](./ini_file.md) (e.g. *experiment.ini*) and then call one of the Nkululeko interfaces to run the experiment like this:
   * ```python -m nkululeko.nkululeko --config experiment.ini```
 
@@ -138,17 +141,23 @@ combine_per_speaker = mode
 ```
 Read the [Hello World example](#hello-world-example) for initial usage with Emo-DB dataset.
 
-Here is an overview of the interfaces:
+Here is an overview of the interfaces/modules:
+
+All of them take *--config <my_config.ini>* as an argument.
+
 * **nkululeko.nkululeko**: do machine learning experiments combining features and learners
-* **nkululeko.multidb**: do multiple experiments, comparing several databases cross and in itself
-* **nkululeko.demo**: demo the current best model on the command line
-* **nkululeko.test**: predict a series of files with the current best model
-* **nkululeko.explore**: perform data exploration
-* **nkululeko.augment**: augment the current training data
-* **nkululeko.aug_train**: augment the current training data and do a training including this data
-* **nkululeko.predict**: predict features like SNR, MOS, arousal/valence, age/gender, with DNN models
-* **nkululeko.segment**: segment a database based on VAD (voice activity detection)
-* **nkululeko.resample**: check on all sampling rates and change to 16kHz 
+* **nkululeko.multidb**: do [multiple experiments](http://blog.syntheticspeech.de/2024/01/02/nkululeko-compare-several-databases/), comparing several databases cross and in itself
+* **nkululeko.demo**: [demo the current best model](http://blog.syntheticspeech.de/2022/09/01/nkululeko-how-to-evaluate-a-test-set-with-a-given-best-model/) on the command line
+  * *--list* (optional) list of input files
+  * *--file* (optional) name of input file
+  * *--outfile* (optional) name of CSV file for output
+* **nkululeko.test**: predict a [given data set](http://blog.syntheticspeech.de/2022/09/01/nkululeko-how-to-evaluate-a-test-set-with-a-given-best-model/) with the current best model
+* **nkululeko.explore**: perform [data exploration](http://blog.syntheticspeech.de/2023/05/11/nkululeko-how-to-visualize-your-data-distribution/)
+* **nkululeko.augment**: [augment](http://blog.syntheticspeech.de/2023/03/13/nkululeko-how-to-augment-the-training-set/) the current training data
+* **nkululeko.aug_train**: augment the current training data [and do a training](http://blog.syntheticspeech.de/2023/03/13/nkululeko-how-to-augment-the-training-set/) including this data
+* **nkululeko.predict**: [predict features](http://blog.syntheticspeech.de/2023/08/16/nkululeko-how-to-predict-labels-for-your-data-from-existing-models-and-check-them/) like SNR, MOS, arousal/valence, age/gender, with DNN models
+* **nkululeko.segment**: [segment a database](http://blog.syntheticspeech.de/2023/07/14/nkululeko-segmenting-a-database/) based on VAD (voice activity detection)
+* **nkululeko.resample**: check on all [sampling rates and change](http://blog.syntheticspeech.de/2023/08/31/how-to-fix-different-sampling-rates-in-a-dataset-with-nkululeko/) to 16kHz 
 
 There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
 * [Introduction](http://blog.syntheticspeech.de/2021/08/04/machine-learning-experiment-framework/)

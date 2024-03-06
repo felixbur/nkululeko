@@ -22,4 +22,6 @@ python -m nkululeko.nkululeko --config tests/exp_emodb_rs_os_xgb.ini
 python -m nkululeko.aug_train --config tests/emodb_aug_train.ini
 python -m nkululeko.nkululeko --config tests/exp_androids_os_svm.ini
 python -m nkululeko.predict --config tests/exp_emodb_predict.ini
+python -m nkululeko.nkululeko --config tests/emodb_demo.ini
+python -m nkululeko.demo --config tests/emodb_demo.ini --list data/test/samples.csv
 python -m nkululeko.explore --config tests/exp_explore.ini

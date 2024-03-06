@@ -16,6 +16,11 @@ def set_util(util_obj):
     util = util_obj
 
 
+def set_module(module_obj):
+    global module
+    module = module_obj
+
+
 def set_report(report_obj):
     global report
     report = report_obj

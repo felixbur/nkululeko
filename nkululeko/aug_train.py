@@ -1,7 +1,8 @@
-# nkululeko.py
-# Entry script to do a Nkululeko experiment
+# aug_train.py
+# train with augmentations
 import ast
 import os.path
+import numpy as np
 import configparser
 import argparse
 import nkululeko.experiment as exp
@@ -23,7 +24,9 @@ def doit(config_file):
 
     # create a new experiment
     expr = exp.Experiment(config)
-    util = Util("augment_and_train")
+    module = "aug_train"
+    expr.set_module(module)
+    util = Util(module)
     util.debug(
         f"running {expr.name} from config {config_file}, nkululeko version"
         f" {VERSION}"
@@ -72,11 +75,11 @@ def doit(config_file):
     expr.init_runmanager()
 
     # run the experiment
-    reports = expr.run()
+    reports, last_epochs = expr.run()
     result = expr.get_best_report(reports).result.test
     expr.store_report()
     print("DONE")
-    return result
+    return result, int(np.asarray(last_epochs).min())
 
 
 def main(src_dir):

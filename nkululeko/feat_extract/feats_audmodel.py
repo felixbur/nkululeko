@@ -25,9 +25,7 @@ class AudModelSet(Featureset):
         if not os.path.isdir(model_root):
             cache_root = audeer.mkdir("cache")
             model_root = audeer.mkdir(model_root)
-            archive_path = audeer.download_url(
-                model_url, cache_root, verbose=True
-            )
+            archive_path = audeer.download_url(model_url, cache_root, verbose=True)
             audeer.extract_archive(archive_path, model_root)
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         device = self.util.config_val("MODEL", "device", cuda)
@@ -68,5 +66,7 @@ class AudModelSet(Featureset):
             self.df = self.util.get_store(storage, store_format)
 
     def extract_sample(self, signal, sr):
+        if self.model == None:
+            self.__init__("na", None)
         result = self.model(signal, sr)
         return np.asarray(result["hidden_states"].flatten())

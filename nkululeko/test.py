@@ -33,7 +33,9 @@ def main(src_dir):
 
     # create a new experiment
     expr = Experiment(config)
-    util = Util("test")
+    module = "test"
+    expr.set_module(module)
+    util = Util(module)
     util.debug(
         f"running {expr.name} from config {config_file}, nkululeko version"
         f" {VERSION}"

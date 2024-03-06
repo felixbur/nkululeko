@@ -39,7 +39,7 @@ class Experiment:
 
         self.set_globals(config_obj)
         self.name = glob_conf.config["EXP"]["name"]
-        self.root = glob_conf.config["EXP"]["root"]
+        self.root = os.path.join(glob_conf.config["EXP"]["root"], "")
         self.data_dir = os.path.join(self.root, self.name)
         audeer.mkdir(self.data_dir)  # create the experiment directory
         self.util = Util("experiment")
@@ -59,6 +59,9 @@ class Experiment:
         self.logo = self.util.config_val("MODEL", "logo", False)
         self.xfoldx = self.util.config_val("MODEL", "k_fold_cross", False)
         self.start = time.process_time()
+
+    def set_module(self, module):
+        glob_conf.set_module(module)
 
     def store_report(self):
         with open(os.path.join(self.data_dir, "report.pkl"), "wb") as handle:
@@ -593,6 +596,7 @@ class Experiment:
 
         # access the best results all runs
         self.reports = self.runmgr.best_results
+        last_epochs = self.runmgr.last_epochs
         # try to save yourself
         save = self.util.config_val("EXP", "save", False)
         if save:
@@ -623,7 +627,7 @@ class Experiment:
         if label_data and label_result:
             self.predict_test_and_save(label_result)
 
-        return self.reports
+        return self.reports, last_epochs
 
     def plot_confmat_per_speaker(self, function):
         if self.loso or self.logo or self.xfoldx:
@@ -652,7 +656,7 @@ class Experiment:
     def print_best_model(self):
         self.runmgr.print_best_result_runs()
 
-    def demo(self, file, is_list):
+    def demo(self, file, is_list, outfile):
         model = self.runmgr.get_best_model()
         labelEncoder = None
         try:
@@ -660,7 +664,7 @@ class Experiment:
         except AttributeError:
             pass
         demo = Demo_predictor(
-            model, file, is_list, self.feature_extractor, labelEncoder
+            model, file, is_list, self.feature_extractor, labelEncoder, outfile
         )
         demo.run_demo()
 
@@ -680,11 +684,24 @@ class Experiment:
         glob_conf.set_labels(self.labels)
 
     def save(self, filename):
+        if self.runmgr.modelrunner.model.is_ANN():
+            self.runmgr.modelrunner.model = None
+            self.util.warn(
+                f"Save experiment: Can't pickle the learning model so saving without it."
+            )
         try:
             f = open(filename, "wb")
             pickle.dump(self.__dict__, f)
             f.close()
-        except (AttributeError, TypeError, RuntimeError) as error:
+        except TypeError:
+            self.feature_extractor.featExtractor.model = None
+            f = open(filename, "wb")
+            pickle.dump(self.__dict__, f)
+            f.close()
+            self.util.warn(
+                f"Save experiment: Can't pickle the feature extraction model so saving without it."
+            )
+        except (AttributeError, RuntimeError) as error:
             self.util.warn(f"Save experiment: Can't pickle local object: {error}")
 
     def save_onnx(self, filename):

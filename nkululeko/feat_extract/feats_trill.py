@@ -71,8 +71,18 @@ class TRILLset(Featureset):
 
     def getEmbeddings(self, file):
         wav = af.read(file)[0]
-        wav = tf.convert_to_tensor(wav)
+        emb_short = self.getEmbeddings_signal(wav, 16000)
+        return emb_short
+
+    def getEmbeddings_signal(self, signal, sr):
+        wav = tf.convert_to_tensor(signal)
         emb_short = self.embed_wav(wav)
         # you get one embedding per frame, we use the mean for all the frames
         emb_short = emb_short.numpy().mean(axis=0)
         return emb_short
+
+    def extract_sample(self, signal, sr):
+        if self.module == None:
+            self.__init__("na", None)
+        feats = self.getEmbeddings_signal(signal, sr)
+        return feats

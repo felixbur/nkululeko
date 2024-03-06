@@ -17,6 +17,7 @@ pip uninstall -y torch torchvision torchaudio
 pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
 
 """
+
 import os
 from tqdm import tqdm
 import pandas as pd
@@ -42,6 +43,10 @@ class SQUIMSet(Featureset):
         # load model
         self.util.debug("loading model...")
         self.objective_model = SQUIM_OBJECTIVE.get_model()
+        pytorch_total_params = sum(p.numel() for p in self.objective_model.parameters())
+        self.util.debug(
+            f"initialized squim model with {pytorch_total_params} parameters in total"
+        )
         self.model_initialized = True
 
     def extract(self):
