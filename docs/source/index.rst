@@ -5,7 +5,7 @@
 
 Welcome to nkululeko's documentation!
 =====================================
-This documentation contains installation, usage, INI file format, and examples of Nkululeko, Machine Learning Speaker Characteristics. The program is intended for novice people interested in speaker characteristics detection (e.g., emotion, age, and gender) without proficient in (Python) programming language.  Main features of Nkululeko are:
+This documentation contains installation, usage, INI file format, and tutorials of Nkululeko, Machine Learning Speaker Characteristics. The program is intended for novice people interested in speaker characteristics detection (e.g., emotion, age, and gender) without proficient in (Python) programming language.  Main features of Nkululeko are:
 
 1. Finding good combinations of acoustic features and models (classifier or regressor) for speaker characteristics detection,
 2. Characteristics of the database, such as distibution of gender, age, emotion, duration, data size, and so on with their visualization,
@@ -25,22 +25,29 @@ The examples only covers some important features of Nkululeko. For more details,
    :maxdepth: 2
    :caption: USAGE
 
-   usage
+   usage.md
 
 .. toctree::
    :maxdepth: 2
-   :caption: INI file 
+   :caption: INI File 
 
-   ini
+   ini_file.md
 
 .. toctree::
    :maxdepth: 2
-   :caption: Examples
+   :caption: Tutorials
 
    how_to
-   hello_world
+   hello_world_aud.md
+   hello_world_csv.md
    comparing
+ 
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Function Reference
+
+   calfem_reference
 
 Indices and tables
 ==================
