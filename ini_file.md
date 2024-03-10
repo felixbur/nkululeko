@@ -167,7 +167,8 @@
   * type = ['os']
   * possible values:
     * **import**: [already computed features](http://blog.syntheticspeech.de/2022/10/18/how-to-import-features-from-outside-the-nkululeko-software/)
-      * **import_file** = path to a file with features in CSV format  
+      * **import_file** = pathes to files with features in CSV format
+        * import_file = ['path1/file1.csv', 'path2/file1.csv2']  
     * **mld**: [mid-level-descriptors](http://www.essv.de/paper.php?id=447)
       * **mld.model** = *path to the mld sources folder*
       * **min_syls** = *minimum number of syllables*
