@@ -4,6 +4,7 @@ python -m nkululeko.explore --config tests/exp_emodb_explore_scatter.ini
 python -m nkululeko.explore --config tests/exp_emodb_explore_features.ini
 python -m nkululeko.explore --config tests/exp_androids_explore.ini
 python -m nkululeko.nkululeko --config tests/exp_emodb_os_praat_xgb.ini
+python -m nkululeko.nkululeko --config tests/exp_emodb_featimport_xgb.ini
 python -m nkululeko.nkululeko --config tests/exp_emodb_cnn.ini
 python -m nkululeko.nkululeko --config tests/exp_emodb_balancing.ini
 python -m nkululeko.nkululeko --config tests/exp_emodb_audmodel_xgb.ini
@@ -24,4 +25,5 @@ python -m nkululeko.nkululeko --config tests/exp_androids_os_svm.ini
 python -m nkululeko.predict --config tests/exp_emodb_predict.ini
 python -m nkululeko.nkululeko --config tests/emodb_demo.ini
 python -m nkululeko.demo --config tests/emodb_demo.ini --list data/test/samples.csv
+python -m nkululeko.multidb --config tests/exp_multidb.ini
 python -m nkululeko.explore --config tests/exp_explore.ini

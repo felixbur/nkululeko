@@ -1,6 +1,16 @@
 Changelog
 =========
 
+Version 0.80.1
+--------------
+* added support for string value in import_features
++ added support for multiple extra training databases when doing multi-db experiments
+
+Version 0.80.0
+--------------
+* fixed bug no feature import
+* add support for multiple import feature files
+
 Version 0.79.5
 --------------
 * fixed bug on demo without in- or output

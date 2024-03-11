@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import numpy as np
 import os
-import audeer
 from nkululeko.experiment import Experiment
 import configparser
 from nkululeko.utils.util import Util
@@ -41,9 +40,9 @@ def main(src_dir):
     last_epochs = np.zeros(dim * dim).reshape([dim, dim])
     # check if some data should be added to training
     try:
-        extra_train = config["CROSSDB"]["train_extra"]
+        extra_trains = config["CROSSDB"]["train_extra"]
     except KeyError:
-        extra_train = False
+        extra_trains = False
 
     for i in range(dim):
         for j in range(dim):
@@ -54,9 +53,12 @@ def main(src_dir):
             if i == j:
                 dataset = datasets[i]
                 print(f"running {dataset}")
-                if extra_train:
-                    config["DATA"]["databases"] = f"['{dataset}', '{extra_train}']"
-                    config["DATA"][f"{extra_train}.split_strategy"] = "train"
+                if extra_trains:
+                    extra_trains_1 = extra_trains.removeprefix("[").removesuffix("]")
+                    config["DATA"]["databases"] = f"['{dataset}', {extra_trains_1}]"
+                    extra_trains_2 = ast.literal_eval(extra_trains)
+                    for extra_train in extra_trains_2:
+                        config["DATA"][f"{extra_train}.split_strategy"] = "train"
                 else:
                     config["DATA"]["databases"] = f"['{dataset}']"
                 config["EXP"]["name"] = dataset
@@ -64,13 +66,16 @@ def main(src_dir):
                 train = datasets[i]
                 test = datasets[j]
                 print(f"running train: {train}, test: {test}")
-                if extra_train:
+                if extra_trains:
+                    extra_trains_1 = extra_trains.removeprefix("[").removesuffix("]")
                     config["DATA"][
                         "databases"
-                    ] = f"['{train}', '{test}', '{extra_train}']"
+                    ] = f"['{train}', '{test}', {extra_trains_1}]"
                     config["DATA"][f"{test}.split_strategy"] = "test"
                     config["DATA"][f"{train}.split_strategy"] = "train"
-                    config["DATA"][f"{extra_train}.split_strategy"] = "train"
+                    extra_trains_2 = ast.literal_eval(extra_trains)
+                    for extra_train in extra_trains_2:
+                        config["DATA"][f"{extra_train}.split_strategy"] = "train"
                 else:
                     config["DATA"]["databases"] = f"['{train}', '{test}']"
                     config["DATA"][f"{test}.split_strategy"] = "test"

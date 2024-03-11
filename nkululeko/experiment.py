@@ -357,7 +357,7 @@ class Experiment:
             self.df_train = self.df_train[
                 self.df_train.index.isin(self.feats_train.index)
             ]
-            self.util.warn(f"mew train labels shape: {self.df_train.shape[0]}")
+            self.util.warn(f"new train labels shape: {self.df_train.shape[0]}")
         if self.feats_test.shape[0] < self.df_test.shape[0]:
             self.util.warn(
                 f"test feats ({self.feats_test.shape[0]}) != test labels"
