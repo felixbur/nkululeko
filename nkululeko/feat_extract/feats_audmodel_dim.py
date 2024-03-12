@@ -18,6 +18,9 @@ class AudModelDimSet(Featureset):
 
     def __init__(self, name, data_df):
         super().__init__(name, data_df)
+        self.model_loaded = False
+
+    def _load_model(self):
         model_url = "https://zenodo.org/record/6221127/files/w2v2-L-robust-12.6bc4a7fd-1.1.0.zip"
         model_root = self.util.config_val("FEATS", "aud.model", "./audmodel/")
         if not os.path.isdir(model_root):
@@ -25,8 +28,10 @@ class AudModelDimSet(Featureset):
             model_root = audeer.mkdir(model_root)
             archive_path = audeer.download_url(model_url, cache_root, verbose=True)
             audeer.extract_archive(archive_path, model_root)
-        device = self.util.config_val("MODEL", "device", "cpu")
+        cuda = "cuda" if torch.cuda.is_available() else "cpu"
+        device = self.util.config_val("MODEL", "device", cuda)
         self.model = audonnx.load(model_root, device=device)
+        self.model_loaded = True
 
     def extract(self):
         """Extract the features based on the initialized dataset or re-open them when found on disk."""
@@ -41,6 +46,8 @@ class AudModelDimSet(Featureset):
             self.util.debug(
                 "extracting audmodel dimensions, this might take a while..."
             )
+            if not self.model_loaded:
+                self._load_model()
             logits = audinterface.Feature(
                 self.model.labels("logits"),
                 process_func=self.model,

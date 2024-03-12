@@ -18,6 +18,9 @@ class AgenderAgenderSet(Featureset):
 
     def __init__(self, name, data_df):
         super().__init__(name, data_df)
+        self.model_loaded = False
+
+    def _load_model(self):
         model_url = "https://zenodo.org/record/7761387/files/w2v2-L-robust-6-age-gender.25c844af-1.1.1.zip"
         model_root = self.util.config_val(
             "FEATS", "agender.model", "./audmodel_agender/"
@@ -33,6 +36,7 @@ class AgenderAgenderSet(Featureset):
         self.util.debug(
             f"initialized agender model with {pytorch_total_params} parameters in total"
         )
+        self.model_loaded = True
 
     def extract(self):
         """Extract the features based on the initialized dataset or re-open them when found on disk."""
@@ -48,6 +52,8 @@ class AgenderAgenderSet(Featureset):
             self.util.debug(
                 "extracting agender model age and gender, this might take a" " while..."
             )
+            if not self.model_loaded:
+                self._load_model()
             outputs = ["logits_age", "logits_gender"]
             logits = audinterface.Feature(
                 self.model.labels(outputs),

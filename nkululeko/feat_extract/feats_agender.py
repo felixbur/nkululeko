@@ -18,6 +18,9 @@ class AudModelAgenderSet(Featureset):
 
     def __init__(self, name, data_df):
         super().__init__(name, data_df)
+        self.model_loaded = False
+
+    def _load_model(self):
         model_url = "https://zenodo.org/record/7761387/files/w2v2-L-robust-6-age-gender.25c844af-1.1.1.zip"
         model_root = self.util.config_val(
             "FEATS", "agender.model", "./audmodel_agender/"
@@ -25,12 +28,15 @@ class AudModelAgenderSet(Featureset):
         if not os.path.isdir(model_root):
             cache_root = audeer.mkdir("cache")
             model_root = audeer.mkdir(model_root)
-            archive_path = audeer.download_url(
-                model_url, cache_root, verbose=True
-            )
+            archive_path = audeer.download_url(model_url, cache_root, verbose=True)
             audeer.extract_archive(archive_path, model_root)
         device = self.util.config_val("MODEL", "device", "cpu")
         self.model = audonnx.load(model_root, device=device)
+        pytorch_total_params = sum(p.numel() for p in self.model.parameters())
+        self.util.debug(
+            f"initialized agender model with {pytorch_total_params} parameters in total"
+        )
+        self.model_loaded = True
 
     def extract(self):
         """Extract the features based on the initialized dataset or re-open them when found on disk."""
@@ -43,9 +49,10 @@ class AudModelAgenderSet(Featureset):
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if no_reuse or extract or not os.path.isfile(storage):
             self.util.debug(
-                "extracting agender model embeddings, this might take a"
-                " while..."
+                "extracting agender model embeddings, this might take a" " while..."
             )
+            if not self.model_loaded:
+                self._load_model()
             hidden_states = audinterface.Feature(
                 self.model.labels("hidden_states"),
                 process_func=self.model,
