@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.80.2
+--------------
+* fixed bug that caused clash with GPU/CPU use
+
 Version 0.80.1
 --------------
 * added support for string value in import_features

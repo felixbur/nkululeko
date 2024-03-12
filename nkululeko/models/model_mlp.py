@@ -107,8 +107,8 @@ class MLP_model(Model):
                 logits[start_index:end_index, :] = model(features.to(device))
                 targets[start_index:end_index] = labels
                 loss = self.criterion(
-                    logits[start_index:end_index, :],
-                    labels.to(self.device, dtype=torch.int64),
+                    logits[start_index:end_index, :].to(device),
+                    labels.to(device, dtype=torch.int64),
                 )
                 losses.append(loss.item())
 

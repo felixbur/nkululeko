@@ -185,7 +185,12 @@ class MLP_Reg_model(Model):
                     end_index = len(loader.dataset)
                 logits[start_index:end_index] = model(features.to(device)).reshape(-1)
                 targets[start_index:end_index] = labels
-                loss = self.criterion(logits[start_index:end_index], labels.to(device))
+                loss = self.criterion(
+                    logits[start_index:end_index].to(
+                        device,
+                    ),
+                    labels.to(device),
+                )
                 losses.append(loss.item())
         self.loss_eval = (np.asarray(losses)).mean()
 
