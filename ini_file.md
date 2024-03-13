@@ -25,7 +25,7 @@
 ### EXP
 
 * **root**: experiment root folder 
-  * root = /xxx/projects/nkululeko/
+  * root = ./results/
 * **type**: the kind of experiment
   * type = classification
   * possible values:
@@ -139,7 +139,7 @@
 
 ### AUGMENT
 * **augment**: select the methods to augment: either *traditional* or *random_splice*
-  * augment = ['traditional', 'random_splice]
+  * augment = ['traditional', 'random_splice']
   * choices are:
     * *traditional*: uses the [audiomentations package](https://github.com/iver56/audiomentations)
     * *random_splice*: randomly re-orders short splices (obfuscates the words)
@@ -344,7 +344,7 @@
   * segments_as_files = False
 
 ### CROSSDB
-* **train_extra**: add an additional training partition to all experiments in [the cross database series](http://blog.syntheticspeech.de/2024/01/02/nkululeko-compare-several-databases/). This extra data should be described [in a root_folders file](http://blog.syntheticspeech.de/2022/02/21/specifying-database-disk-location-with-nkululeko/)
+* **train_extra**: add a additional training partition to all experiments in [the cross database series](http://blog.syntheticspeech.de/2024/01/02/nkululeko-compare-several-databases/). This extra data should be described [in a root_folders file](http://blog.syntheticspeech.de/2022/02/21/specifying-database-disk-location-with-nkululeko/)
   * train_extra = addtrain_db
 
 ### PLOT
@@ -352,9 +352,9 @@
   * name = my_special_config_within_the_experiment
 * **epochs**: whether to make a plot each for every epoch result.
   * epochs = False
-* **anim_progression**: generate an **animated** gif from the epoch plots
+* **anim_progression**: generate an **animated** GIF from the epoch plots
   * anim_progression = False
-* **fps**: frames per second for the animated gif
+* **fps**: frames per second for the animated GIF
   * fps = **1**
 * **epoch_progression**: plot the progression of test, train and loss results over epochs
   * epoch_progression = False
@@ -377,7 +377,7 @@
 * **show**: print the report at the end
   * show = False
 * **fresh**: start a new report
-* **latex**: generate a latex and pdf document: name of document
+* **latex**: generate a latex and PDF document: name of document
   * latex = my_latex_document
 * **title**: title for document
 * **author**: author for document

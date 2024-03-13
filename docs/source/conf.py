@@ -32,7 +32,9 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     # 'nbsphinx',           # to embedd ipynb files
-    'sphinx.ext.mathjax' # to enable latex
+    'sphinx.ext.mathjax', # to enable latex
+    'sphinx_rtd_theme',
+    'myst_parser',        # to enable markdown
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -54,10 +56,17 @@ html_theme = 'sphinx_rtd_theme'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# html_static_path = ['_static']
 
 # suffix for source files
-source_suffix = '.rst'
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.txt': 'restructuredtext',
+    '.md': 'markdown',
+}
+
+# headed anchors until h3
+myst_heading_anchors = 3
 
 # The master toctree document.
 master_doc = 'index'
