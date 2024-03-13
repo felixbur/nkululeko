@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.80.3
+--------------
+* made sounddevice use optional as Portaudio library causes difficulties
+
 Version 0.80.2
 --------------
 * fixed bug that caused clash with GPU/CPU use

@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import sounddevice as sd
 import audiofile
 import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.util import Util
@@ -84,6 +83,8 @@ class Demo_predictor:
             return dict_2
 
     def record_audio(self, seconds):
+        import sounddevice as sd
+
         print("recording ...")
         y = sd.rec(int(seconds * self.sr), samplerate=self.sr, channels=1)
         sd.wait()
@@ -91,6 +92,8 @@ class Demo_predictor:
         return y
 
     def play_audio(self, signal):
+        import sounddevice as sd
+
         print("playback ...")
         sd.play(signal.T, self.sr)
         status = sd.wait()
