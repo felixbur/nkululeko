@@ -3,12 +3,14 @@
 # Test the loading of a previously trained model and demo mode
 # needs the project config file to run before
 
-from nkululeko.experiment import Experiment
+import os
+import argparse
 import configparser
+
+from nkululeko.experiment import Experiment
 from nkululeko.utils.util import Util
 from nkululeko.constants import VERSION
-import argparse
-import os
+import nkululeko.glob_conf as glob_conf
 
 
 def main(src_dir):
@@ -25,6 +27,12 @@ def main(src_dir):
         ),
         nargs="?",
         default=None,
+    )
+    parser.add_argument(
+        "--folder",
+        help=("A name of a folder where the files within the list are in."),
+        nargs="?",
+        default="./",
     )
     parser.add_argument(
         "--outfile",
@@ -59,6 +67,8 @@ def main(src_dir):
 
     # load the experiment
     expr.load(f"{util.get_save_name()}")
+    if args.folder is not None:
+        glob_conf.config["DATA"]["test_folder"] = args.folder
     if args.file is None and args.list is None:
         expr.demo(None, False, args.outfile)
     else:

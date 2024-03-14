@@ -43,16 +43,12 @@ class Wavlm(Featureset):
         """Extract the features or load them from disk if present."""
         store = self.util.get_path("store")
         storage = f"{store}{self.name}.pkl"
-        extract = self.util.config_val(
-            "FEATS", "needs_feature_extraction", False
-        )
+        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             if not self.model_initialized:
                 self.init_model()
-            self.util.debug(
-                "extracting wavlm embeddings, this might take a while..."
-            )
+            self.util.debug("extracting wavlm embeddings, this might take a while...")
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
             length = len(self.data_df.index)
             for idx, (file, start, end) in enumerate(
@@ -63,12 +59,13 @@ class Wavlm(Featureset):
                     frame_offset=int(start.total_seconds() * 16000),
                     num_frames=int((end - start).total_seconds() * 16000),
                 )
-                assert sampling_rate == 16000
+                if sampling_rate != 16000:
+                    self.util.error(
+                        f"sampling rate should be 16000 but is {sampling_rate}"
+                    )
                 emb = self.get_embeddings(signal, sampling_rate, file)
                 emb_series.iloc[idx] = emb
-            self.df = pd.DataFrame(
-                emb_series.values.tolist(), index=self.data_df.index
-            )
+            self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
             self.df.to_pickle(storage)
             try:
                 glob_conf.config["DATA"]["needs_feature_extraction"] = "false"
@@ -86,6 +83,8 @@ class Wavlm(Featureset):
 
     def get_embeddings(self, signal, sampling_rate, file):
         r"""Extract embeddings from raw audio signal."""
+        if sampling_rate != 16000:
+            self.util.error(f"sampling rate should be 16000 but is {sampling_rate}")
         try:
             with torch.no_grad():
                 # run through processor to normalize signal

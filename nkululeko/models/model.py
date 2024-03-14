@@ -274,7 +274,7 @@ class Model:
         prediction = {}
         if self.util.exp_is_classification():
             # get the class probabilities
-            predictions = self.clf.predict_proba(features)
+            predictions = self.clf.predict_proba([features])
             # pred = self.clf.predict(features)
             for i in range(len(self.clf.classes_)):
                 cat = self.clf.classes_[i]
@@ -292,8 +292,13 @@ class Model:
         self.set_id(run, epoch)
         dir = self.util.get_path("model_dir")
         name = f"{self.util.get_exp_name(only_train=True)}_{self.run}_{self.epoch:03d}.model"
-        with open(dir + name, "rb") as handle:
-            self.clf = pickle.load(handle)
+        try:
+            with open(dir + name, "rb") as handle:
+                self.clf = pickle.load(handle)
+        except FileNotFoundError as fe:
+            self.util.error(
+                f"did you forget to store your models? needs: \n[MODEL]\nsave=True\n{fe}"
+            )
 
     def load_path(self, path, run, epoch):
         self.set_id(run, epoch)

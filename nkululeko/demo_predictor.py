@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import audiofile
+import audformat
 import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.util import Util
 
@@ -30,23 +31,38 @@ class Demo_predictor:
                 self.predict_signal(sig, sr)
             else:
                 df_res = pd.DataFrame()
-                with open(self.file) as f:
-                    first = True
-                    for index, line in enumerate(f):
-                        # first line might be "file"
-                        if self.file.endswith(".csv") and first:
-                            first = False
-                        else:
-                            sig, sr = audiofile.read(line.strip())
-                            print(f"predicting file {index}: {line.strip()}")
-                            res_dict = self.predict_signal(sig, sr)
-                            df_tmp = pd.DataFrame(res_dict, index=[line.strip()])
-                            df_res = pd.concat([df_res, df_tmp], ignore_index=False)
-                    df_res = df_res.set_index(df_res.index.rename("file"))
-                    if self.outfile is not None:
-                        df_res.to_csv(self.outfile)
+                # first, try to read the list as audformat and use the index
+                file_list = []
+                try:
+                    in_df = audformat.utils.read_csv(self.file)
+                    if audformat.is_segmented_index(in_df.index):
+                        self.util.error(
+                            f"segmented index not implemented yet: {self.file}"
+                        )
                     else:
-                        self.util.debug(df_res)
+                        file_list = in_df.index.values
+                except (ValueError, AttributeError) as error:
+                    with open(self.file) as f:
+                        first = True
+                        for index, line in enumerate(f):
+                            # first line might be "file"
+                            if self.file.endswith(".csv") and first:
+                                first = False
+                            else:
+                                file_list.append(line)
+                for file_name in file_list:
+                    test_folder = glob_conf.config["DATA"]["test_folder"]
+                    file_path = test_folder + file_name.strip()
+                    sig, sr = audiofile.read(file_path)
+                    print(f"predicting file {file_path}")
+                    res_dict = self.predict_signal(sig, sr)
+                    df_tmp = pd.DataFrame(res_dict, index=[file_path])
+                    df_res = pd.concat([df_res, df_tmp], ignore_index=False)
+                df_res = df_res.set_index(df_res.index.rename("file"))
+                if self.outfile is not None:
+                    df_res.to_csv(self.outfile)
+                else:
+                    self.util.debug(df_res)
         else:
             while True:
                 signal = self.record_audio(3)

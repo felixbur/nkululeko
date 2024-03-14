@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.80.4
+--------------
+* added test-file folder to demo file lists
+
 Version 0.80.3
 --------------
 * made sounddevice use optional as Portaudio library causes difficulties
