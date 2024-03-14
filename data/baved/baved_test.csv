@@ -1,0 +1,406 @@
+file,emotion_level,speakers,gender,age,word,language
+BAVED/2/47-m-20-2-0-724.wav,low,47,male,20,هذا,arabic
+BAVED/2/4-m-20-2-2-705.wav,high,4,male,20,هذا,arabic
+BAVED/2/47-m-20-2-0-720.wav,low,47,male,20,هذا,arabic
+BAVED/2/54-f-19-2-1-607.wav,normal,54,female,19,هذا,arabic
+BAVED/2/47-m-20-2-1-725.wav,normal,47,male,20,هذا,arabic
+BAVED/2/51-m-20-2-1-765.wav,normal,51,male,20,هذا,arabic
+BAVED/2/54-f-19-2-2-610.wav,high,54,female,19,هذا,arabic
+BAVED/2/54-f-19-2-0-604.wav,low,54,female,19,هذا,arabic
+BAVED/2/51-m-20-2-0-763.wav,low,51,male,20,هذا,arabic
+BAVED/2/47-m-20-2-1-727.wav,normal,47,male,20,هذا,arabic
+BAVED/2/4-m-20-2-0-693.wav,low,4,male,20,هذا,arabic
+BAVED/2/4-m-20-2-2-710.wav,high,4,male,20,هذا,arabic
+BAVED/2/46-m-20-2-1-716.wav,normal,46,male,20,هذا,arabic
+BAVED/2/4-m-20-2-2-707.wav,high,4,male,20,هذا,arabic
+BAVED/2/47-m-20-2-0-723.wav,low,47,male,20,هذا,arabic
+BAVED/2/47-m-20-2-2-735.wav,high,47,male,20,هذا,arabic
+BAVED/2/4-m-20-2-0-698.wav,low,4,male,20,هذا,arabic
+BAVED/2/4-m-20-2-0-700.wav,low,4,male,20,هذا,arabic
+BAVED/2/47-m-20-2-0-721.wav,low,47,male,20,هذا,arabic
+BAVED/2/47-m-20-2-2-734.wav,high,47,male,20,هذا,arabic
+BAVED/2/46-m-20-2-2-717.wav,high,46,male,20,هذا,arabic
+BAVED/2/54-f-19-2-2-612.wav,high,54,female,19,هذا,arabic
+BAVED/2/51-m-20-2-2-766.wav,high,51,male,20,هذا,arabic
+BAVED/2/4-m-20-2-0-702.wav,low,4,male,20,هذا,arabic
+BAVED/2/47-m-20-2-2-731.wav,high,47,male,20,هذا,arabic
+BAVED/2/47-m-20-2-0-718.wav,low,47,male,20,هذا,arabic
+BAVED/2/47-m-20-2-2-733.wav,high,47,male,20,هذا,arabic
+BAVED/2/47-m-20-2-2-730.wav,high,47,male,20,هذا,arabic
+BAVED/2/4-m-20-2-2-703.wav,high,4,male,20,هذا,arabic
+BAVED/2/46-m-20-2-0-715.wav,low,46,male,20,هذا,arabic
+BAVED/2/4-m-20-2-0-701.wav,low,4,male,20,هذا,arabic
+BAVED/2/4-m-20-2-2-704.wav,high,4,male,20,هذا,arabic
+BAVED/2/4-m-20-2-0-699.wav,low,4,male,20,هذا,arabic
+BAVED/2/47-m-20-2-1-729.wav,normal,47,male,20,هذا,arabic
+BAVED/2/4-m-20-2-0-697.wav,low,4,male,20,هذا,arabic
+BAVED/2/47-m-20-2-0-722.wav,low,47,male,20,هذا,arabic
+BAVED/2/54-f-19-2-2-611.wav,high,54,female,19,هذا,arabic
+BAVED/2/51-m-20-2-1-764.wav,normal,51,male,20,هذا,arabic
+BAVED/2/4-m-20-2-0-694.wav,low,4,male,20,هذا,arabic
+BAVED/2/47-m-20-2-0-719.wav,low,47,male,20,هذا,arabic
+BAVED/2/47-m-20-2-2-732.wav,high,47,male,20,هذا,arabic
+BAVED/2/47-m-20-2-1-728.wav,normal,47,male,20,هذا,arabic
+BAVED/2/54-f-19-2-1-606.wav,normal,54,female,19,هذا,arabic
+BAVED/2/4-m-20-2-0-695.wav,low,4,male,20,هذا,arabic
+BAVED/2/47-m-20-2-1-726.wav,normal,47,male,20,هذا,arabic
+BAVED/2/51-m-20-2-0-762.wav,low,51,male,20,هذا,arabic
+BAVED/2/54-f-19-2-2-609.wav,high,54,female,19,هذا,arabic
+BAVED/2/4-m-20-2-2-709.wav,high,4,male,20,هذا,arabic
+BAVED/2/4-m-20-2-0-696.wav,low,4,male,20,هذا,arabic
+BAVED/2/4-m-20-2-2-708.wav,high,4,male,20,هذا,arabic
+BAVED/2/51-m-20-2-2-767.wav,high,51,male,20,هذا,arabic
+BAVED/2/54-f-19-2-1-605.wav,normal,54,female,19,هذا,arabic
+BAVED/2/4-m-20-2-2-706.wav,high,4,male,20,هذا,arabic
+BAVED/2/4-m-20-2-2-711.wav,high,4,male,20,هذا,arabic
+BAVED/2/54-f-19-2-2-608.wav,high,54,female,19,هذا,arabic
+BAVED/1/4-m-20-1-2-406.wav,high,4,male,20,لم يعجبني,arabic
+BAVED/1/46-m-20-1-1-413.wav,normal,46,male,20,لم يعجبني,arabic
+BAVED/1/4-m-20-1-0-398.wav,low,4,male,20,لم يعجبني,arabic
+BAVED/1/54-f-19-1-1-313.wav,normal,54,female,19,لم يعجبني,arabic
+BAVED/1/47-m-20-1-2-428.wav,high,47,male,20,لم يعجبني,arabic
+BAVED/1/51-m-20-1-1-457.wav,normal,51,male,20,لم يعجبني,arabic
+BAVED/1/47-m-20-1-1-423.wav,normal,47,male,20,لم يعجبني,arabic
+BAVED/1/54-f-19-1-2-316.wav,high,54,female,19,لم يعجبني,arabic
+BAVED/1/47-m-20-1-0-420.wav,low,47,male,20,لم يعجبني,arabic
+BAVED/1/51-m-20-1-2-459.wav,high,51,male,20,لم يعجبني,arabic
+BAVED/1/4-m-20-1-0-400.wav,low,4,male,20,لم يعجبني,arabic
+BAVED/1/46-m-20-1-2-414.wav,high,46,male,20,لم يعجبني,arabic
+BAVED/1/4-m-20-1-0-399.wav,low,4,male,20,لم يعجبني,arabic
+BAVED/1/54-f-19-1-1-314.wav,normal,54,female,19,لم يعجبني,arabic
+BAVED/1/4-m-20-1-1-403.wav,normal,4,male,20,لم يعجبني,arabic
+BAVED/1/47-m-20-1-2-426.wav,high,47,male,20,لم يعجبني,arabic
+BAVED/1/47-m-20-1-1-424.wav,normal,47,male,20,لم يعجبني,arabic
+BAVED/1/54-f-19-1-0-310.wav,low,54,female,19,لم يعجبني,arabic
+BAVED/1/47-m-20-1-0-417.wav,low,47,male,20,لم يعجبني,arabic
+BAVED/1/54-f-19-1-1-312.wav,normal,54,female,19,لم يعجبني,arabic
+BAVED/1/47-m-20-1-2-431.wav,high,47,male,20,لم يعجبني,arabic
+BAVED/1/47-m-20-1-0-416.wav,low,47,male,20,لم يعجبني,arabic
+BAVED/1/47-m-20-1-2-429.wav,high,47,male,20,لم يعجبني,arabic
+BAVED/1/54-f-19-1-2-317.wav,high,54,female,19,لم يعجبني,arabic
+BAVED/1/47-m-20-1-0-419.wav,low,47,male,20,لم يعجبني,arabic
+BAVED/1/4-m-20-1-0-394.wav,low,4,male,20,لم يعجبني,arabic
+BAVED/1/51-m-20-1-2-458.wav,high,51,male,20,لم يعجبني,arabic
+BAVED/1/47-m-20-1-0-415.wav,low,47,male,20,لم يعجبني,arabic
+BAVED/1/4-m-20-1-2-405.wav,high,4,male,20,لم يعجبني,arabic
+BAVED/1/4-m-20-1-1-401.wav,normal,4,male,20,لم يعجبني,arabic
+BAVED/1/51-m-20-1-0-454.wav,low,51,male,20,لم يعجبني,arabic
+BAVED/1/4-m-20-1-0-396.wav,low,4,male,20,لم يعجبني,arabic
+BAVED/1/51-m-20-1-0-456.wav,low,51,male,20,لم يعجبني,arabic
+BAVED/1/54-f-19-1-0-311.wav,low,54,female,19,لم يعجبني,arabic
+BAVED/1/47-m-20-1-2-430.wav,high,47,male,20,لم يعجبني,arabic
+BAVED/1/54-f-19-1-0-309.wav,low,54,female,19,لم يعجبني,arabic
+BAVED/1/47-m-20-1-1-421.wav,normal,47,male,20,لم يعجبني,arabic
+BAVED/1/4-m-20-1-1-402.wav,normal,4,male,20,لم يعجبني,arabic
+BAVED/1/4-m-20-1-2-407.wav,high,4,male,20,لم يعجبني,arabic
+BAVED/1/46-m-20-1-0-412.wav,low,46,male,20,لم يعجبني,arabic
+BAVED/1/47-m-20-1-0-418.wav,low,47,male,20,لم يعجبني,arabic
+BAVED/1/54-f-19-1-2-315.wav,high,54,female,19,لم يعجبني,arabic
+BAVED/1/4-m-20-1-1-404.wav,normal,4,male,20,لم يعجبني,arabic
+BAVED/1/47-m-20-1-2-427.wav,high,47,male,20,لم يعجبني,arabic
+BAVED/1/4-m-20-1-0-397.wav,low,4,male,20,لم يعجبني,arabic
+BAVED/1/4-m-20-1-0-395.wav,low,4,male,20,لم يعجبني,arabic
+BAVED/1/51-m-20-1-0-455.wav,low,51,male,20,لم يعجبني,arabic
+BAVED/1/47-m-20-1-2-432.wav,high,47,male,20,لم يعجبني,arabic
+BAVED/1/47-m-20-1-1-425.wav,normal,47,male,20,لم يعجبني,arabic
+BAVED/1/47-m-20-1-1-422.wav,normal,47,male,20,لم يعجبني,arabic
+BAVED/3/4-m-20-3-0-938.wav,low,4,male,20,الفيلم,arabic
+BAVED/3/51-m-20-3-1-1016.wav,normal,51,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-1-965.wav,normal,47,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-0-960.wav,low,47,male,20,الفيلم,arabic
+BAVED/3/46-m-20-3-2-954.wav,high,46,male,20,الفيلم,arabic
+BAVED/3/46-m-20-3-0-952.wav,low,46,male,20,الفيلم,arabic
+BAVED/3/54-f-19-3-2-869.wav,high,54,female,19,الفيلم,arabic
+BAVED/3/47-m-20-3-2-980.wav,high,47,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-1-963.wav,normal,47,male,20,الفيلم,arabic
+BAVED/3/54-f-19-3-1-868.wav,normal,54,female,19,الفيلم,arabic
+BAVED/3/47-m-20-3-2-973.wav,high,47,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-1-967.wav,normal,47,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-2-978.wav,high,47,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-2-970.wav,high,47,male,20,الفيلم,arabic
+BAVED/3/4-m-20-3-1-944.wav,normal,4,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-1-969.wav,normal,47,male,20,الفيلم,arabic
+BAVED/3/54-f-19-3-2-871.wav,high,54,female,19,الفيلم,arabic
+BAVED/3/4-m-20-3-2-948.wav,high,4,male,20,الفيلم,arabic
+BAVED/3/4-m-20-3-1-941.wav,normal,4,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-0-959.wav,low,47,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-2-979.wav,high,47,male,20,الفيلم,arabic
+BAVED/3/54-f-19-3-0-864.wav,low,54,female,19,الفيلم,arabic
+BAVED/3/4-m-20-3-1-942.wav,normal,4,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-0-962.wav,low,47,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-2-971.wav,high,47,male,20,الفيلم,arabic
+BAVED/3/51-m-20-3-2-1017.wav,high,51,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-2-974.wav,high,47,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-1-964.wav,normal,47,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-2-972.wav,high,47,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-2-977.wav,high,47,male,20,الفيلم,arabic
+BAVED/3/51-m-20-3-0-1013.wav,low,51,male,20,الفيلم,arabic
+BAVED/3/51-m-20-3-2-1018.wav,high,51,male,20,الفيلم,arabic
+BAVED/3/54-f-19-3-1-866.wav,normal,54,female,19,الفيلم,arabic
+BAVED/3/4-m-20-3-2-949.wav,high,4,male,20,الفيلم,arabic
+BAVED/3/4-m-20-3-2-950.wav,high,4,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-0-957.wav,low,47,male,20,الفيلم,arabic
+BAVED/3/4-m-20-3-0-936.wav,low,4,male,20,الفيلم,arabic
+BAVED/3/51-m-20-3-0-1014.wav,low,51,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-0-958.wav,low,47,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-2-976.wav,high,47,male,20,الفيلم,arabic
+BAVED/3/4-m-20-3-0-935.wav,low,4,male,20,الفيلم,arabic
+BAVED/3/4-m-20-3-0-939.wav,low,4,male,20,الفيلم,arabic
+BAVED/3/54-f-19-3-1-867.wav,normal,54,female,19,الفيلم,arabic
+BAVED/3/47-m-20-3-2-981.wav,high,47,male,20,الفيلم,arabic
+BAVED/3/54-f-19-3-2-870.wav,high,54,female,19,الفيلم,arabic
+BAVED/3/4-m-20-3-2-951.wav,high,4,male,20,الفيلم,arabic
+BAVED/3/4-m-20-3-0-937.wav,low,4,male,20,الفيلم,arabic
+BAVED/3/51-m-20-3-1-1015.wav,normal,51,male,20,الفيلم,arabic
+BAVED/3/4-m-20-3-1-947.wav,normal,4,male,20,الفيلم,arabic
+BAVED/3/4-m-20-3-0-940.wav,low,4,male,20,الفيلم,arabic
+BAVED/3/4-m-20-3-1-946.wav,normal,4,male,20,الفيلم,arabic
+BAVED/3/54-f-19-3-0-863.wav,low,54,female,19,الفيلم,arabic
+BAVED/3/54-f-19-3-0-865.wav,low,54,female,19,الفيلم,arabic
+BAVED/3/4-m-20-3-1-945.wav,normal,4,male,20,الفيلم,arabic
+BAVED/3/46-m-20-3-1-953.wav,normal,46,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-1-966.wav,normal,47,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-2-975.wav,high,47,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-1-968.wav,normal,47,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-0-956.wav,low,47,male,20,الفيلم,arabic
+BAVED/3/4-m-20-3-1-943.wav,normal,4,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-0-955.wav,low,47,male,20,الفيلم,arabic
+BAVED/3/47-m-20-3-0-961.wav,low,47,male,20,الفيلم,arabic
+BAVED/0/47-m-20-0-2-172.wav,high,47,male,20,اعجبني,arabic
+BAVED/0/47-m-20-0-2-168.wav,high,47,male,20,اعجبني,arabic
+BAVED/0/4-m-20-0-0-143.wav,low,4,male,20,اعجبني,arabic
+BAVED/0/54-f-19-0-1-46.wav,normal,54,female,19,اعجبني,arabic
+BAVED/0/51-m-20-0-0-204.wav,low,51,male,20,اعجبني,arabic
+BAVED/0/46-m-20-0-1-157.wav,normal,46,male,20,اعجبني,arabic
+BAVED/0/47-m-20-0-0-159.wav,low,47,male,20,اعجبني,arabic
+BAVED/0/51-m-20-0-1-206.wav,normal,51,male,20,اعجبني,arabic
+BAVED/0/51-m-20-0-1-205.wav,normal,51,male,20,اعجبني,arabic
+BAVED/0/47-m-20-0-2-169.wav,high,47,male,20,اعجبني,arabic
+BAVED/0/47-m-20-0-1-163.wav,normal,47,male,20,اعجبني,arabic
+BAVED/0/47-m-20-0-1-165.wav,normal,47,male,20,اعجبني,arabic
+BAVED/0/4-m-20-0-2-152.wav,high,4,male,20,اعجبني,arabic
+BAVED/0/46-m-20-0-0-156.wav,low,46,male,20,اعجبني,arabic
+BAVED/0/4-m-20-0-2-148.wav,high,4,male,20,اعجبني,arabic
+BAVED/0/54-f-19-0-2-48.wav,high,54,female,19,اعجبني,arabic
+BAVED/0/47-m-20-0-0-160.wav,low,47,male,20,اعجبني,arabic
+BAVED/0/46-m-20-0-2-158.wav,high,46,male,20,اعجبني,arabic
+BAVED/0/47-m-20-0-0-162.wav,low,47,male,20,اعجبني,arabic
+BAVED/0/4-m-20-0-2-149.wav,high,4,male,20,اعجبني,arabic
+BAVED/0/47-m-20-0-1-166.wav,normal,47,male,20,اعجبني,arabic
+BAVED/0/4-m-20-0-2-147.wav,high,4,male,20,اعجبني,arabic
+BAVED/0/4-m-20-0-2-151.wav,high,4,male,20,اعجبني,arabic
+BAVED/0/47-m-20-0-0-161.wav,low,47,male,20,اعجبني,arabic
+BAVED/0/4-m-20-0-1-146.wav,normal,4,male,20,اعجبني,arabic
+BAVED/0/47-m-20-0-1-167.wav,normal,47,male,20,اعجبني,arabic
+BAVED/0/4-m-20-0-1-145.wav,normal,4,male,20,اعجبني,arabic
+BAVED/0/4-m-20-0-2-150.wav,high,4,male,20,اعجبني,arabic
+BAVED/0/47-m-20-0-1-164.wav,normal,47,male,20,اعجبني,arabic
+BAVED/0/4-m-20-0-0-141.wav,low,4,male,20,اعجبني,arabic
+BAVED/0/47-m-20-0-2-171.wav,high,47,male,20,اعجبني,arabic
+BAVED/0/54-f-19-0-2-49.wav,high,54,female,19,اعجبني,arabic
+BAVED/0/54-f-19-0-2-50.wav,high,54,female,19,اعجبني,arabic
+BAVED/0/4-m-20-0-0-139.wav,low,4,male,20,اعجبني,arabic
+BAVED/0/4-m-20-0-0-144.wav,low,4,male,20,اعجبني,arabic
+BAVED/0/4-m-20-0-0-142.wav,low,4,male,20,اعجبني,arabic
+BAVED/0/4-m-20-0-0-140.wav,low,4,male,20,اعجبني,arabic
+BAVED/0/54-f-19-0-1-47.wav,normal,54,female,19,اعجبني,arabic
+BAVED/0/54-f-19-0-0-43.wav,low,54,female,19,اعجبني,arabic
+BAVED/0/51-m-20-0-2-207.wav,high,51,male,20,اعجبني,arabic
+BAVED/0/54-f-19-0-1-45.wav,normal,54,female,19,اعجبني,arabic
+BAVED/0/51-m-20-0-0-203.wav,low,51,male,20,اعجبني,arabic
+BAVED/0/54-f-19-0-0-44.wav,low,54,female,19,اعجبني,arabic
+BAVED/0/51-m-20-0-2-208.wav,high,51,male,20,اعجبني,arabic
+BAVED/0/47-m-20-0-2-170.wav,high,47,male,20,اعجبني,arabic
+BAVED/6/4-m-20-6-2-1724.wav,high,4,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-0-1736.wav,low,47,male,20,سيئ,arabic
+BAVED/6/54-f-19-6-2-1646.wav,high,54,female,19,سيئ,arabic
+BAVED/6/4-m-20-6-2-1723.wav,high,4,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-1-1748.wav,normal,47,male,20,سيئ,arabic
+BAVED/6/54-f-19-6-0-1640.wav,low,54,female,19,سيئ,arabic
+BAVED/6/4-m-20-6-2-1725.wav,high,4,male,20,سيئ,arabic
+BAVED/6/46-m-20-6-1-1728.wav,normal,46,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-0-1733.wav,low,47,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-0-1732.wav,low,47,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-1-1741.wav,normal,47,male,20,سيئ,arabic
+BAVED/6/51-m-20-6-2-1793.wav,high,51,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-1-1744.wav,normal,47,male,20,سيئ,arabic
+BAVED/6/4-m-20-6-2-1721.wav,high,4,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-0-1730.wav,low,47,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-2-1749.wav,high,47,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-2-1754.wav,high,47,male,20,سيئ,arabic
+BAVED/6/4-m-20-6-2-1722.wav,high,4,male,20,سيئ,arabic
+BAVED/6/4-m-20-6-0-1712.wav,low,4,male,20,سيئ,arabic
+BAVED/6/51-m-20-6-2-1792.wav,high,51,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-2-1759.wav,high,47,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-1-1745.wav,normal,47,male,20,سيئ,arabic
+BAVED/6/51-m-20-6-1-1791.wav,normal,51,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-0-1731.wav,low,47,male,20,سيئ,arabic
+BAVED/6/54-f-19-6-1-1643.wav,normal,54,female,19,سيئ,arabic
+BAVED/6/47-m-20-6-1-1747.wav,normal,47,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-1-1743.wav,normal,47,male,20,سيئ,arabic
+BAVED/6/54-f-19-6-1-1644.wav,normal,54,female,19,سيئ,arabic
+BAVED/6/47-m-20-6-1-1739.wav,normal,47,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-2-1751.wav,high,47,male,20,سيئ,arabic
+BAVED/6/4-m-20-6-1-1718.wav,normal,4,male,20,سيئ,arabic
+BAVED/6/4-m-20-6-0-1716.wav,low,4,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-2-1756.wav,high,47,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-0-1738.wav,low,47,male,20,سيئ,arabic
+BAVED/6/4-m-20-6-1-1719.wav,normal,4,male,20,سيئ,arabic
+BAVED/6/4-m-20-6-0-1714.wav,low,4,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-1-1740.wav,normal,47,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-2-1753.wav,high,47,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-0-1734.wav,low,47,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-2-1757.wav,high,47,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-2-1758.wav,high,47,male,20,سيئ,arabic
+BAVED/6/4-m-20-6-2-1720.wav,high,4,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-2-1760.wav,high,47,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-1-1746.wav,normal,47,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-0-1735.wav,low,47,male,20,سيئ,arabic
+BAVED/6/51-m-20-6-0-1788.wav,low,51,male,20,سيئ,arabic
+BAVED/6/54-f-19-6-1-1645.wav,normal,54,female,19,سيئ,arabic
+BAVED/6/51-m-20-6-1-1790.wav,normal,51,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-2-1755.wav,high,47,male,20,سيئ,arabic
+BAVED/6/4-m-20-6-0-1715.wav,low,4,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-2-1752.wav,high,47,male,20,سيئ,arabic
+BAVED/6/4-m-20-6-1-1717.wav,normal,4,male,20,سيئ,arabic
+BAVED/6/51-m-20-6-0-1789.wav,low,51,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-2-1762.wav,high,47,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-2-1763.wav,high,47,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-2-1761.wav,high,47,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-1-1742.wav,normal,47,male,20,سيئ,arabic
+BAVED/6/46-m-20-6-0-1727.wav,low,46,male,20,سيئ,arabic
+BAVED/6/54-f-19-6-0-1642.wav,low,54,female,19,سيئ,arabic
+BAVED/6/4-m-20-6-0-1713.wav,low,4,male,20,سيئ,arabic
+BAVED/6/54-f-19-6-0-1641.wav,low,54,female,19,سيئ,arabic
+BAVED/6/46-m-20-6-2-1729.wav,high,46,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-2-1750.wav,high,47,male,20,سيئ,arabic
+BAVED/6/47-m-20-6-0-1737.wav,low,47,male,20,سيئ,arabic
+BAVED/5/47-m-20-5-1-1503.wav,normal,47,male,20,مقول,arabic
+BAVED/5/54-f-19-5-0-1402.wav,low,54,female,19,مقول,arabic
+BAVED/5/4-m-20-5-0-1481.wav,low,4,male,20,مقول,arabic
+BAVED/5/46-m-20-5-1-1493.wav,normal,46,male,20,مقول,arabic
+BAVED/5/51-m-20-5-0-1546.wav,low,51,male,20,مقول,arabic
+BAVED/5/47-m-20-5-1-1506.wav,normal,47,male,20,مقول,arabic
+BAVED/5/47-m-20-5-1-1511.wav,normal,47,male,20,مقول,arabic
+BAVED/5/4-m-20-5-0-1485.wav,low,4,male,20,مقول,arabic
+BAVED/5/47-m-20-5-1-1509.wav,normal,47,male,20,مقول,arabic
+BAVED/5/47-m-20-5-0-1501.wav,low,47,male,20,مقول,arabic
+BAVED/5/47-m-20-5-2-1518.wav,high,47,male,20,مقول,arabic
+BAVED/5/47-m-20-5-0-1497.wav,low,47,male,20,مقول,arabic
+BAVED/5/4-m-20-5-0-1480.wav,low,4,male,20,مقول,arabic
+BAVED/5/47-m-20-5-2-1513.wav,high,47,male,20,مقول,arabic
+BAVED/5/4-m-20-5-1-1487.wav,normal,4,male,20,مقول,arabic
+BAVED/5/47-m-20-5-2-1515.wav,high,47,male,20,مقول,arabic
+BAVED/5/47-m-20-5-2-1522.wav,high,47,male,20,مقول,arabic
+BAVED/5/4-m-20-5-1-1486.wav,normal,4,male,20,مقول,arabic
+BAVED/5/47-m-20-5-1-1507.wav,normal,47,male,20,مقول,arabic
+BAVED/5/4-m-20-5-0-1478.wav,low,4,male,20,مقول,arabic
+BAVED/5/47-m-20-5-2-1516.wav,high,47,male,20,مقول,arabic
+BAVED/5/46-m-20-5-2-1494.wav,high,46,male,20,مقول,arabic
+BAVED/5/47-m-20-5-1-1504.wav,normal,47,male,20,مقول,arabic
+BAVED/5/54-f-19-5-1-1407.wav,normal,54,female,19,مقول,arabic
+BAVED/5/4-m-20-5-1-1488.wav,normal,4,male,20,مقول,arabic
+BAVED/5/47-m-20-5-2-1514.wav,high,47,male,20,مقول,arabic
+BAVED/5/47-m-20-5-2-1523.wav,high,47,male,20,مقول,arabic
+BAVED/5/4-m-20-5-0-1484.wav,low,4,male,20,مقول,arabic
+BAVED/5/51-m-20-5-1-1549.wav,normal,51,male,20,مقول,arabic
+BAVED/5/54-f-19-5-1-1406.wav,normal,54,female,19,مقول,arabic
+BAVED/5/54-f-19-5-1-1405.wav,normal,54,female,19,مقول,arabic
+BAVED/5/54-f-19-5-2-1410.wav,high,54,female,19,مقول,arabic
+BAVED/5/47-m-20-5-2-1520.wav,high,47,male,20,مقول,arabic
+BAVED/5/54-f-19-5-1-1403.wav,normal,54,female,19,مقول,arabic
+BAVED/5/47-m-20-5-0-1498.wav,low,47,male,20,مقول,arabic
+BAVED/5/47-m-20-5-1-1502.wav,normal,47,male,20,مقول,arabic
+BAVED/5/4-m-20-5-0-1479.wav,low,4,male,20,مقول,arabic
+BAVED/5/47-m-20-5-1-1512.wav,normal,47,male,20,مقول,arabic
+BAVED/5/54-f-19-5-1-1408.wav,normal,54,female,19,مقول,arabic
+BAVED/5/47-m-20-5-2-1517.wav,high,47,male,20,مقول,arabic
+BAVED/5/47-m-20-5-1-1510.wav,normal,47,male,20,مقول,arabic
+BAVED/5/51-m-20-5-0-1547.wav,low,51,male,20,مقول,arabic
+BAVED/5/4-m-20-5-2-1490.wav,high,4,male,20,مقول,arabic
+BAVED/5/4-m-20-5-0-1482.wav,low,4,male,20,مقول,arabic
+BAVED/5/47-m-20-5-1-1508.wav,normal,47,male,20,مقول,arabic
+BAVED/5/51-m-20-5-2-1551.wav,high,51,male,20,مقول,arabic
+BAVED/5/47-m-20-5-2-1519.wav,high,47,male,20,مقول,arabic
+BAVED/5/51-m-20-5-1-1548.wav,normal,51,male,20,مقول,arabic
+BAVED/5/47-m-20-5-0-1495.wav,low,47,male,20,مقول,arabic
+BAVED/5/4-m-20-5-2-1489.wav,high,4,male,20,مقول,arabic
+BAVED/5/47-m-20-5-0-1499.wav,low,47,male,20,مقول,arabic
+BAVED/5/4-m-20-5-0-1483.wav,low,4,male,20,مقول,arabic
+BAVED/5/4-m-20-5-0-1477.wav,low,4,male,20,مقول,arabic
+BAVED/5/54-f-19-5-1-1404.wav,normal,54,female,19,مقول,arabic
+BAVED/5/54-f-19-5-1-1409.wav,normal,54,female,19,مقول,arabic
+BAVED/5/47-m-20-5-2-1521.wav,high,47,male,20,مقول,arabic
+BAVED/5/51-m-20-5-2-1550.wav,high,51,male,20,مقول,arabic
+BAVED/5/46-m-20-5-0-1492.wav,low,46,male,20,مقول,arabic
+BAVED/5/54-f-19-5-2-1411.wav,high,54,female,19,مقول,arabic
+BAVED/5/47-m-20-5-1-1505.wav,normal,47,male,20,مقول,arabic
+BAVED/5/4-m-20-5-2-1491.wav,high,4,male,20,مقول,arabic
+BAVED/5/47-m-20-5-0-1496.wav,low,47,male,20,مقول,arabic
+BAVED/5/47-m-20-5-0-1500.wav,low,47,male,20,مقول,arabic
+BAVED/4/47-m-20-4-2-1261.wav,high,47,male,20,رائع,arabic
+BAVED/4/47-m-20-4-1-1250.wav,normal,47,male,20,رائع,arabic
+BAVED/4/4-m-20-4-0-1214.wav,low,4,male,20,رائع,arabic
+BAVED/4/47-m-20-4-2-1268.wav,high,47,male,20,رائع,arabic
+BAVED/4/47-m-20-4-0-1246.wav,low,47,male,20,رائع,arabic
+BAVED/4/4-m-20-4-2-1227.wav,high,4,male,20,رائع,arabic
+BAVED/4/54-f-19-4-2-1133.wav,high,54,female,19,رائع,arabic
+BAVED/4/47-m-20-4-2-1262.wav,high,47,male,20,رائع,arabic
+BAVED/4/4-m-20-4-2-1229.wav,high,4,male,20,رائع,arabic
+BAVED/4/54-f-19-4-1-1129.wav,normal,54,female,19,رائع,arabic
+BAVED/4/54-f-19-4-0-1126.wav,low,54,female,19,رائع,arabic
+BAVED/4/47-m-20-4-0-1249.wav,low,47,male,20,رائع,arabic
+BAVED/4/54-f-19-4-1-1131.wav,normal,54,female,19,رائع,arabic
+BAVED/4/4-m-20-4-2-1233.wav,high,4,male,20,رائع,arabic
+BAVED/4/47-m-20-4-0-1245.wav,low,47,male,20,رائع,arabic
+BAVED/4/4-m-20-4-2-1225.wav,high,4,male,20,رائع,arabic
+BAVED/4/47-m-20-4-2-1263.wav,high,47,male,20,رائع,arabic
+BAVED/4/47-m-20-4-1-1254.wav,normal,47,male,20,رائع,arabic
+BAVED/4/4-m-20-4-2-1231.wav,high,4,male,20,رائع,arabic
+BAVED/4/4-m-20-4-1-1222.wav,normal,4,male,20,رائع,arabic
+BAVED/4/47-m-20-4-2-1259.wav,high,47,male,20,رائع,arabic
+BAVED/4/47-m-20-4-0-1247.wav,low,47,male,20,رائع,arabic
+BAVED/4/47-m-20-4-2-1266.wav,high,47,male,20,رائع,arabic
+BAVED/4/47-m-20-4-1-1253.wav,normal,47,male,20,رائع,arabic
+BAVED/4/47-m-20-4-2-1258.wav,high,47,male,20,رائع,arabic
+BAVED/4/4-m-20-4-0-1215.wav,low,4,male,20,رائع,arabic
+BAVED/4/46-m-20-4-2-1241.wav,high,46,male,20,رائع,arabic
+BAVED/4/4-m-20-4-2-1228.wav,high,4,male,20,رائع,arabic
+BAVED/4/47-m-20-4-1-1251.wav,normal,47,male,20,رائع,arabic
+BAVED/4/47-m-20-4-2-1256.wav,high,47,male,20,رائع,arabic
+BAVED/4/47-m-20-4-2-1264.wav,high,47,male,20,رائع,arabic
+BAVED/4/47-m-20-4-2-1257.wav,high,47,male,20,رائع,arabic
+BAVED/4/4-m-20-4-2-1226.wav,high,4,male,20,رائع,arabic
+BAVED/4/47-m-20-4-2-1269.wav,high,47,male,20,رائع,arabic
+BAVED/4/47-m-20-4-0-1243.wav,low,47,male,20,رائع,arabic
+BAVED/4/51-m-20-4-1-1306.wav,normal,51,male,20,رائع,arabic
+BAVED/4/4-m-20-4-1-1224.wav,normal,4,male,20,رائع,arabic
+BAVED/4/4-m-20-4-2-1230.wav,high,4,male,20,رائع,arabic
+BAVED/4/4-m-20-4-0-1216.wav,low,4,male,20,رائع,arabic
+BAVED/4/46-m-20-4-1-1240.wav,normal,46,male,20,رائع,arabic
+BAVED/4/46-m-20-4-0-1239.wav,low,46,male,20,رائع,arabic
+BAVED/4/47-m-20-4-0-1242.wav,low,47,male,20,رائع,arabic
+BAVED/4/51-m-20-4-0-1305.wav,low,51,male,20,رائع,arabic
+BAVED/4/47-m-20-4-1-1255.wav,normal,47,male,20,رائع,arabic
+BAVED/4/51-m-20-4-2-1307.wav,high,51,male,20,رائع,arabic
+BAVED/4/54-f-19-4-1-1127.wav,normal,54,female,19,رائع,arabic
+BAVED/4/47-m-20-4-1-1252.wav,normal,47,male,20,رائع,arabic
+BAVED/4/4-m-20-4-1-1219.wav,normal,4,male,20,رائع,arabic
+BAVED/4/47-m-20-4-0-1244.wav,low,47,male,20,رائع,arabic
+BAVED/4/4-m-20-4-2-1234.wav,high,4,male,20,رائع,arabic
+BAVED/4/47-m-20-4-2-1260.wav,high,47,male,20,رائع,arabic
+BAVED/4/47-m-20-4-2-1265.wav,high,47,male,20,رائع,arabic
+BAVED/4/54-f-19-4-2-1134.wav,high,54,female,19,رائع,arabic
+BAVED/4/54-f-19-4-1-1128.wav,normal,54,female,19,رائع,arabic
+BAVED/4/4-m-20-4-2-1235.wav,high,4,male,20,رائع,arabic
+BAVED/4/4-m-20-4-2-1232.wav,high,4,male,20,رائع,arabic
+BAVED/4/54-f-19-4-1-1130.wav,normal,54,female,19,رائع,arabic
+BAVED/4/4-m-20-4-0-1217.wav,low,4,male,20,رائع,arabic
+BAVED/4/54-f-19-4-2-1132.wav,high,54,female,19,رائع,arabic
+BAVED/4/4-m-20-4-1-1221.wav,normal,4,male,20,رائع,arabic
+BAVED/4/4-m-20-4-1-1218.wav,normal,4,male,20,رائع,arabic
+BAVED/4/4-m-20-4-1-1220.wav,normal,4,male,20,رائع,arabic
+BAVED/4/51-m-20-4-0-1304.wav,low,51,male,20,رائع,arabic
+BAVED/4/47-m-20-4-2-1267.wav,high,47,male,20,رائع,arabic
+BAVED/4/47-m-20-4-0-1248.wav,low,47,male,20,رائع,arabic
+BAVED/4/4-m-20-4-1-1223.wav,normal,4,male,20,رائع,arabic

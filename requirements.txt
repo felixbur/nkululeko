@@ -1,10 +1,12 @@
 audeer
+audobject
 audformat
 audinterface
 audiofile
+audiomentations==0.31.0
 audonnx
-audtorch
-datasets
+# audtorch
+# datasets
 imageio
 matplotlib
 numpy
@@ -15,8 +17,10 @@ scikit_learn
 scipy
 seaborn
 sounddevice
-tensorflow
-tensorflow_hub
+# tensorflow
+# tensorflow_hub
 torch
-transformers
+# transformers
 xgboost
+umap-learn
+pylatex

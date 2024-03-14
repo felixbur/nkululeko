@@ -1,6 +1,505 @@
 Changelog
 =========
 
+Version 0.80.2
+--------------
+* fixed bug that caused clash with GPU/CPU use
+
+Version 0.80.1
+--------------
+* added support for string value in import_features
++ added support for multiple extra training databases when doing multi-db experiments
+
+Version 0.80.0
+--------------
+* fixed bug no feature import
+* add support for multiple import feature files
+
+Version 0.79.5
+--------------
+* fixed bug on demo without in- or output
+* fixed bug that demo with DL feature extractors did not work
+
+Version 0.79.4
+--------------
+* added functionality in demo for regression
+
+Version 0.79.3
+--------------
+* fixed bug that test module did not work
+* fixed bug that demo module did not work for ANNs
+* added csv output for demo mode and file lists
+
+Version 0.79.2
+--------------
+* fixed bug and report number of epochs for early stopping 
+
+Version 0.79.1
+--------------
+* root directory does not have to end with /
+
+Version 0.79.0
+--------------
+* added extra_train for multidb experiment
+
+Version 0.78.2
+--------------
+* added transformer layer selection for wav2vec2
+* removed best_model and epoch progression for non-DL models
+
+Version 0.78.1
+--------------
+* added evaluation loss
+
+Version 0.78.0
+--------------
+* added 3-d scatter plots
+* removed epoch-plots if epoch_num=1
+
+Version 0.77.14
+--------------
+* fixed bug preventing bin scaling to work
+
+Version 0.77.13
+--------------
+* added bins scaler
+
+Version 0.77.12
+--------------
+* fixed bug with scatter plots for numeric targets
+* made type of numeric target distributions selectable, default "hist"
+
+Version 0.77.11
+--------------
+* added simple target distribution plots
+
+Version 0.77.10
+--------------
+* show the best and not the last result for multidb
+
+Version 0.77.9
+--------------
+* added results text for multidb
+
+Version 0.77.8
+--------------
+* added caption to multidb heatmap
+* renamed datasets to databases in multidb
+
+Version 0.77.7
+--------------
+* added multidb module
+
+Version 0.77.6
+--------------
+* added functions to call modules with config file path directly
+
+Version 0.77.5
+--------------
+* fixed augmentation bug for python version 10
+
+Version 0.77.4
+--------------
+* made traditional augmentations (audiomentation module) configurable
+
+Version 0.77.3
+--------------
+* added augment and train interface
+
+Version 0.77.2
+--------------
+* added models for features importance computation
+  
+Version 0.77.1
+--------------
+* added permutation algorithm to compute feature importance
+* shifted util.py to utils
+
+Version 0.77.0
+--------------
+* added more latex report output
+* got splitutils from a package
+
+Version 0.76.0
+--------------
+* added possibility to aggregate feature importance models
+
+Version 0.75.0
+--------------
+* added max val for reversing
+* added xgb for feature importance
+
+Version 0.74.6
+--------------
+* added standard Wav2vec2 model
+
+Version 0.74.5
+--------------
+* added praat feature extractor for one sample
+
+Version 0.74.4
+--------------
+* fixed bug combining augmentations
+
+Version 0.74.3
+--------------
+* audiomentations interface changed
+
+Version 0.74.2
+--------------
+* combined augmentation methods
+  
+Version 0.74.1
+--------------
+* fixed various bugs with augmentation
+
+Version 0.74.0 
+--------------
+* added patience (early stopping)
+* added MAE loss and measure
+
+Version 0.73.0
+--------------
+* added reverse and scale arguments to target variable
+* also, the data store can now be csv
+
+Version 0.72.0
+--------------
+* worked over explore value counts section
+* added bin_reals for all columns
+
+Version 0.71.4
+--------------
+* automatic epoch reset if not ANN
+* scatter plots now show a regression line
+
+Version 0.71.3
+--------------
+* enabled scatter plots for all variables
+
+Version 0.71.2
+--------------
+* enabled scatter plots for continuous labels
+
+Version 0.71.1
+--------------
+* made a wav2vec default 
+* renamed praat features, ommiting spaces
+* fixed plot distribution bugs
+* added feature plots for continuous targets
+
+Version 0.71.0
+--------------
+* added explore visuals. 
+* all columns from databases should now be usable
+
+Version 0.70.0
+--------------
+* added imb_learn balancing of training set
+
+Version 0.69.0
+--------------
+* added CNN model and melspec extractor
+
+Version 0.68.4
+--------------
+* bugfix: got_gender was uncorrectly set
+
+Version 0.68.3
+--------------
+* Feinberg Praat scripts ignore error and log filename
+
+Version 0.68.2
+--------------
+* column names in datasets are now configurable
+
+Version 0.68.1
+--------------
+* added error message on file to praat extraction
+
+Version 0.68.0
+--------------
+* added stratification framework for split balancing
+
+Version 0.67.0
+--------------
+* added first version of spotlight integration
+
+Version 0.66.13
+---------------
+* small changes related to github worker
+
+Version 0.66.12
+---------------
+* fixed bug that prevented Praat features to be selected 
+  
+Version 0.66.11
+---------------
+* removed torch from automatic install. depends on cpu/gpu machine
+
+Version 0.66.10
+---------------
+* Removed print statements from feats_wav2vec2
+
+Version 0.66.9
+--------------
+* Version that should install without requiring opensmile which seems not to be supported by all Apple processors (arm CPU (Apple M1))
+
+Version 0.66.8
+--------------
+* forgot __init__.py in reporting module
+
+Version 0.66.7
+--------------
+* minor changes to experiment class
+
+Version 0.66.6
+--------------
+* minor cosmetics
+
+Version 0.66.5
+--------------
+* Latex report now with images
+
+Version 0.66.4
+--------------
+* Pypi version mixup
+
+Version 0.66.3
+--------------
+* made path to PDF output relative to experiment root
+
+Version 0.66.2
+--------------
+* enabled data-pathes with quotes 
+* enabled missing category labels
+* used tgdm for progress display
+
+Version 0.66.1
+--------------
+* start on the latex report framework
+
+Version 0.66.0
+--------------
+* added speechbrain speakerID embeddings 
+  
+Version 0.65.9
+--------------
+* added a filter that ensures that the labels have the same size as the features
+
+Version 0.65.8
+--------------
+* changed default behaviour of resampler to "keep original files"
+
+Version 0.65.7
+--------------
+* more databases and force wav while resampling
+
+Version 0.65.6
+--------------
+* minor catch for seaborn in plots
+
+Version 0.65.5
+--------------
+* added fill_na in plot effect size
+
+Version 0.65.4
+--------------
+* added datasets to distribution
+* changes in wav2vec2
+
+Version 0.65.3
+--------------
+* various bugfixes
+
+Version 0.65.2
+--------------
+* fixed bug in dataset.csv that prevented correct paths for relative files
+* fixed bug in export module concerning new file directory
+
+Version 0.65.1
+--------------
+* small enhancements with transformer features
+
+Version 0.65.0
+--------------
+* introduced export module
+
+Version 0.64.4
+--------------
+* added num_speakers for reloaded data
+* re-formatted all with black
+
+Version 0.64.3
+--------------
+* added number of speakers shown after data load
+
+Version 0.64.2
+--------------
+* added __init__.py for submodules
+
+Version 0.64.1
+--------------
+* fix error on csv
+
+Version 0.64.0
+--------------
+* added bin_reals
+* added statistics for effect size and correlation to plots
+
+Version 0.63.4
+--------------
+* fixed bug in split selection
+
+Version 0.63.3
+--------------
+* Introduced data.audio_path
+
+
+Version 0.63.2
+--------------
+* re-introduced min and max_length for silero segmenatation
+
+Version 0.63.1
+--------------
+* fixed bug in resample
+
+Version 0.63.0
+--------------
+* added wavlm model
+* added error on filename for models
+
+Version 0.62.1
+--------------
+* added min and max_length for silero segmenatation
+
+Version 0.62.0
+--------------
+* fixed segment silero bug
+* added all Wav2vec2 models
+* added resampler module
+* added error on file for embeddings
+
+Version 0.61.0
+--------------
+* added HUBERT embeddings
+  
+Version 0.60.0
+--------------
+* some bugfixes
+* new package structure
+* fixed wav2vec2 bugs
+* removed "cross_data" strategy 
+
+
+Version 0.59.1
+--------------
+* bugfix, after fresh install, it seems some libraries have changed
+* added no_warnings
+* changed print() to util.debug()
+* added progress to opensmile extract
+  
+Version 0.59.0
+--------------
+* introduced SQUIM features
+* added SDR predict
+* added STOI predict
+
+Version 0.58.0
+--------------
+* added dominance predict
+* added MOS predict 
+* added PESQ predict 
+
+Version 0.57.0
+--------------
+* renamed autopredict predict
+* added arousal autopredict
+* added valence autopredict 
+
+
+Version 0.56.0
+--------------
+* added autopredict module
+* added snr as feature extractor
+* added gender autopredict
+* added age autopredict
+* added snr autopredict
+
+Version 0.55.1
+--------------
+* changed error message in plot class
+
+Version 0.55.0
+--------------
+* added segmentation module
+
+Version 0.54.0
+--------------
+* added audeering public age and gender model embeddings and age and gender predictions
+
+Version 0.53.0
+--------------
+* added file checks: size in bytes and voice activity detection with silero
+
+Version 0.52.1
+--------------
+* bugfix: min/max duration_of_sample was not working
+
+Version 0.52.0
+--------------
+* added flexible value distribution plots
+
+Version 0.51.0
+--------------
+* added datafilter
+
+Version 0.50.1
+--------------
+* added caller information for debug and error messages in Util
+
+Version 0.50.0
+--------------
+* removed loso and added pre-selected logo (leave-one-group-out), aka folds
+
+Version 0.49.1
+--------------
+* bugfix: samples selection for augmentation didn't work
+
+Version 0.49.0
+--------------
+* added random-splicing
+
+Version 0.48.1
+--------------
+* bugfix: database object was not loaded when dataframe was reused
+
+Version 0.48.0
+--------------
+* enabled specific feature selection for praat and opensmile features
+
+Version 0.47.1
+--------------
+* enabled feature storage format csv for opensmile features
+
+Version 0.47.0
+--------------
+* added praat speech rate features
+
+Version 0.46.0
+--------------
+* added warnings for non-existent parameters
+* added sample selection for scatter plotting
+
+Version 0.45.4
+--------------
+* added version attribute to setup.cfg
+
+Version 0.45.4
+--------------
+* added __version__ attribute
+
+
 Version 0.44.1
 --------------
 * bugfixing: feature importance: https://github.com/felixbur/nkululeko/issues/23
