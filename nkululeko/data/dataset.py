@@ -541,10 +541,10 @@ class Dataset:
         only_tests = eval(self.util.config_val("DATA", "tests", "False"))
         module = glob_conf.module
         if only_tests and module == "test":
-            self.df = self.map_labels(self.df)
+            self.df_test = self.map_labels(self.df_test)
             # Bin target values if they are continuous but a classification experiment should be done
-            self.map_continuous_classification(self.df)
-            self.df = self._add_labels(self.df)
+            self.map_continuous_classification(self.df_test)
+            self.df_test = self._add_labels(self.df_test)
             if self.util.config_val_data(self.name, "value_counts", False):
                 if not self.got_gender or not self.got_speaker:
                     self.util.error(
@@ -552,7 +552,7 @@ class Dataset:
                     )
                 else:
                     self.plot.describe_df(
-                        self.name, self.df, self.target, f"{self.name}_distplot"
+                        self.name, self.df_test, self.target, f"{self.name}_distplot"
                     )
             return
         self.df_train = self.map_labels(self.df_train)

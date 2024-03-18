@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.81.0
+--------------
+* added test selection to test module
+
 Version 0.80.4
 --------------
 * added test-file folder to demo file lists

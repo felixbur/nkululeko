@@ -2,6 +2,7 @@
     Predict targets from a model and save as csv file.
 
 """
+
 import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.util import Util
 import pandas as pd
@@ -50,9 +51,14 @@ class Test_predictor:
         else:
             predictions = self.model.get_predictions()
             # print(predictions)
-            df = pd.DataFrame(index=self.orig_df.index)
-            df["speaker"] = self.orig_df["speaker"]
-            df["gender"] = self.orig_df["gender"]
-            df[self.target] = self.label_encoder.inverse_transform(predictions)
-            # df[self.target] = predictions
+            # df = pd.DataFrame(index=self.orig_df.index)
+            # df["speaker"] = self.orig_df["speaker"]
+            # df["gender"] = self.orig_df["gender"]
+            # df[self.target] = self.orig_df[self.target]
+            df = self.orig_df.copy()
+            df["predictions"] = self.label_encoder.inverse_transform(predictions)
+            target = self.util.config_val("DATA", "target", "emotion")
+            if "class_label" in df.columns:
+                df = df.drop(columns=[target])
+                df = df.rename(columns={"class_label": target})
             df.to_csv(self.name)

@@ -153,16 +153,17 @@ class Experiment:
                     self.got_age = True
                 if data.got_speaker:
                     self.got_speaker = True
+                data.split()
                 data.prepare_labels()
                 self.df_test = pd.concat(
-                    [self.df_test, self.util.make_segmented_index(data.df)]
+                    [self.df_test, self.util.make_segmented_index(data.df_test)]
                 )
                 self.df_test.is_labeled = data.is_labeled
             self.df_test.got_gender = self.got_gender
             self.df_test.got_speaker = self.got_speaker
             # self.util.set_config_val('FEATS', 'needs_features_extraction', 'True')
             # self.util.set_config_val('FEATS', 'no_reuse', 'True')
-            self.df_test["class_labels"] = self.df_test[self.target]
+            self.df_test["class_label"] = self.df_test[self.target]
             self.df_test[self.target] = self.label_encoder.transform(
                 self.df_test[self.target]
             )
