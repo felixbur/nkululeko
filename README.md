@@ -147,7 +147,7 @@ All of them take *--config <my_config.ini>* as an argument.
 
 * **nkululeko.nkululeko**: do machine learning experiments combining features and learners
 * **nkululeko.multidb**: do [multiple experiments](http://blog.syntheticspeech.de/2024/01/02/nkululeko-compare-several-databases/), comparing several databases cross and in itself
-* **nkululeko.demo**: [demo the current best model](http://blog.syntheticspeech.de/2022/09/01/nkululeko-how-to-evaluate-a-test-set-with-a-given-best-model/) on the command line
+* **nkululeko.demo**: [demo the current best model](http://blog.syntheticspeech.de/2022/01/24/nkululeko-try-out-demo-a-trained-model/) on the command line
   * *--list* (optional) list of input files
   * *--file* (optional) name of input file
   * *--folder* (optional) parent folder for input files
