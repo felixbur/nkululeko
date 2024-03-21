@@ -10,3 +10,6 @@ class XGB_model(Model):
     is_classifier = True
 
     clf = XGBClassifier()  # set up the classifier
+
+    def get_type(self):
+        return "xgb"

@@ -252,8 +252,11 @@
     * **tree_reg**: Classification tree regressor
     * **svm**: Support Vector Machine 
       * C_val = 0.001
+      * kernel = rbf # ‘linear’, ‘poly’, ‘rbf’, ‘sigmoid’, ‘precomputed’
     * **xgb**:XG-Boost
     * **svr**: Support Vector Regression
+      * C_val = 0.001
+      * kernel = rbf # ‘linear’, ‘poly’, ‘rbf’, ‘sigmoid’, ‘precomputed’
     * **xgr**: XG-Boost Regression
     * **mlp**: Multi-Layer-Perceptron for classification
     * **mlp_reg**: Multi-Layer-Perceptron for regression

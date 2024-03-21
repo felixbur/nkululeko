@@ -12,8 +12,17 @@ class SVM_model(Model):
     def __init__(self, df_train, df_test, feats_train, feats_test):
         super().__init__(df_train, df_test, feats_train, feats_test)
         c = float(self.util.config_val("MODEL", "C_val", "0.001"))
+        if eval(self.util.config_val("MODEL", "class_weight", "False")):
+            class_weight = "balanced"
+        else:
+            class_weight = None
+        kernel = self.util.config_val("MODEL", "kernel", "rbf")
         self.clf = svm.SVC(
-            kernel="linear", C=c, gamma="scale", probability=True
+            kernel=kernel,
+            C=c,
+            gamma="scale",
+            probability=True,
+            class_weight=class_weight,
         )  # set up the classifier
 
     def set_C(self, c):

@@ -247,4 +247,4 @@ class MLP_Reg_model(Model):
             features = np.reshape(features, (-1, 1)).T
             logits = self.model(features.to(self.device)).reshape(-1)
         a = logits.numpy()
-        return a
+        return a[0]

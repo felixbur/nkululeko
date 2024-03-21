@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.81.1
+--------------
+* fixed bugs in demo module 
+* made kernel for SVM/SVR configurable
+
 Version 0.81.0
 --------------
 * added test selection to test module

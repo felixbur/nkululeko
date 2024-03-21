@@ -175,10 +175,6 @@ class Util:
         mt = f'{self.config["MODEL"]["type"]}'
         ft = "_".join(ast.literal_eval(self.config["FEATS"]["type"]))
         ft += "_"
-        set = self.config_val("FEATS", "set", False)
-        set_string = ""
-        if set:
-            set_string += set
         layer_string = ""
         layer_s = self.config_val("MODEL", "layers", False)
         if layer_s:
@@ -186,16 +182,19 @@ class Util:
             sorted_layers = sorted(layers.items(), key=lambda x: x[1])
             for l in sorted_layers:
                 layer_string += f"{str(l[1])}-"
-        return_string = f"{mt}_{ft}{set_string}{layer_string[:-1]}"
+        return_string = f"{mt}_{ft}{layer_string[:-1]}"
         options = [
             ["MODEL", "C_val"],
+            ["MODEL", "kernel"],
             ["MODEL", "drop"],
+            ["MODEL", "class_weight"],
             ["MODEL", "loss"],
             ["MODEL", "logo"],
             ["MODEL", "learning_rate"],
             ["MODEL", "k_fold_cross"],
             ["FEATS", "balancing"],
             ["FEATS", "scale"],
+            ["FEATS", "set"],
             ["FEATS", "wav2vec2.layer"],
         ]
         for option in options:
