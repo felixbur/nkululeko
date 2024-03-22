@@ -59,9 +59,13 @@ class Demo_predictor:
                     sig, sr = audiofile.read(file_path)
                     print(f"predicting file {file_path}")
                     res_dict = self.predict_signal(sig, sr)
-                    df_tmp = pd.DataFrame(res_dict, index=[file_path])
+                    df_tmp = pd.DataFrame(res_dict, index=[file_name])
                     df_res = pd.concat([df_res, df_tmp], ignore_index=False)
                 df_res = df_res.set_index(df_res.index.rename("file"))
+                # save only filename and prediction (df_tmp) by default
+                # drop other columns
+                df_res = df_res[["predicted"]]
+
                 if self.outfile is not None:
                     df_res.to_csv(self.outfile)
                 else:
