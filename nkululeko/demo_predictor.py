@@ -1,7 +1,10 @@
-import pandas as pd
-import numpy as np
-import audiofile
+import os
+
 import audformat
+import audiofile
+import numpy as np
+import pandas as pd
+
 import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.util import Util
 
@@ -52,7 +55,7 @@ class Demo_predictor:
                                 file_list.append(line)
                 for file_name in file_list:
                     test_folder = glob_conf.config["DATA"]["test_folder"]
-                    file_path = test_folder + file_name.strip()
+                    file_path = os.path.join(test_folder, file_name.strip())
                     sig, sr = audiofile.read(file_path)
                     print(f"predicting file {file_path}")
                     res_dict = self.predict_signal(sig, sr)
