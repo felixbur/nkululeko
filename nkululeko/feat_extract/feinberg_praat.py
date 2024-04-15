@@ -294,8 +294,8 @@ def compute_features(file_index):
                 f4_median,
             ) = measureFormants(sound, 75, 300)
             #        file_list.append(wave_file) # make an ID list
-        except statistics.StatisticsError as se:
-            print(f"error on file {wave_file}: {se}")
+        except (statistics.StatisticsError, parselmouth.PraatError) as errors:
+            print(f"error on file {wave_file}: {errors}")
 
         duration_list.append(duration)  # make duration list
         mean_F0_list.append(meanF0)  # make a mean F0 list

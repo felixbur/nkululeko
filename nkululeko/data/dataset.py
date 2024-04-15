@@ -162,7 +162,10 @@ class Dataset:
                     if column not in [self.target, "age", "speaker", "gender"]:
                         df[column] = df_target[column]
             except audformat.core.errors.BadKeyError:
-                pass
+                if not self.is_labeled:
+                    self.util.error(
+                        f"Giving up: no target ({self.target}) column found"
+                    )
 
         if self.is_labeled:
             # remember the target in case they get labelencoded later

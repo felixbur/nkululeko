@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.81.2
+--------------
+* added a parselmouth.Praat error if pitch out of range
+* changed file path for demo_predictor
+
 Version 0.81.1
 --------------
 * fixed bugs in demo module 
