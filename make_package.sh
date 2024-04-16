@@ -15,7 +15,7 @@ git add make_package.sh
 git add test_runs.sh
 git add data/README.md
 git add tests/*.ini
-git add CHANGELOG.md ini_file.md
+git add CHANGELOG.md ini_file.md setup.cfg
 source nkululeko/constants.py
 git commit -m  $VERSION
 git tag $VERSION
