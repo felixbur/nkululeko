@@ -20,7 +20,7 @@ from PIL import Image
 from nkululeko.utils.util import Util
 import nkululeko.glob_conf as glob_conf
 from nkululeko.models.model import Model
-from nkululeko.reporter import Reporter
+from nkululeko.reporting.reporter import Reporter
 from nkululeko.losses.loss_softf1loss import SoftF1Loss
 
 

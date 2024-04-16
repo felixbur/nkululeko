@@ -1,15 +1,19 @@
 # model_mlp.py
-from nkululeko.utils.util import Util
-import nkululeko.glob_conf as glob_conf
-from nkululeko.models.model import Model
-from nkululeko.reporter import Reporter
-import torch
 import ast
-import numpy as np
-from sklearn.metrics import mean_squared_error, mean_absolute_error
 from collections import OrderedDict
-from nkululeko.losses.loss_ccc import ConcordanceCorCoeff
 import os
+
+import numpy as np
+import torch
+
+from audmetric import concordance_cc
+from audmetric import mean_absolute_error
+from audmetric import mean_squared_error
+
+import nkululeko.glob_conf as glob_conf
+from nkululeko.losses.loss_ccc import ConcordanceCorCoeff
+from nkululeko.models.model import Model
+from nkululeko.reporting.reporter import Reporter
 
 
 class MLP_Reg_model(Model):
@@ -201,7 +205,7 @@ class MLP_Reg_model(Model):
         elif measure == "mae":
             result = mean_absolute_error(targets.numpy(), predictions.numpy())
         elif measure == "ccc":
-            result = Reporter.ccc(targets.numpy(), predictions.numpy())
+            result = concordance_cc(targets.numpy(), predictions.numpy())
         else:
             self.util.error(f"unknown measure: {measure}")
         return result, targets, predictions

@@ -1,6 +1,6 @@
 # runmanager.py
 
-from nkululeko.reporter import Reporter
+from nkululeko.reporting.reporter import Reporter
 from nkululeko.utils.util import Util
 import nkululeko.glob_conf as glob_conf
 from nkululeko.modelrunner import Modelrunner

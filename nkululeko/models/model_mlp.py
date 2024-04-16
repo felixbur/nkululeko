@@ -2,7 +2,7 @@
 from nkululeko.utils.util import Util
 import nkululeko.glob_conf as glob_conf
 from nkululeko.models.model import Model
-from nkululeko.reporter import Reporter
+from nkululeko.reporting.reporter import Reporter
 import torch
 import ast
 import numpy as np

@@ -30,8 +30,8 @@ python -m nkululeko.nkululeko --config tests/emodb_demo.ini
 # test demo
 python -m nkululeko.demo --config tests/emodb_demo.ini --list data/test/samples.csv
 # test test module
-python -m nkululeko.nkululeko --config exp_emodb_os_xgb_test.ini
-python -m nkululeko.test --config exp_emodb_os_xgb_test.ini
+python -m nkululeko.nkululeko --config tests/exp_emodb_os_xgb_test.ini
+python -m nkululeko.test --config tests/exp_emodb_os_xgb_test.ini
 # test multidb
 python -m nkululeko.multidb --config tests/exp_multidb.ini
 # test spotlight

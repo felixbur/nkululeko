@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import nkululeko.glob_conf as glob_conf
 import sklearn.utils
-from nkululeko.reporter import Reporter
+from nkululeko.reporting.reporter import Reporter
 import ast
 from sklearn.model_selection import GridSearchCV
 import pickle

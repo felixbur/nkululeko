@@ -1,47 +1,46 @@
-"""
-This is a copy of David R. Feinberg's Praat scripts
+"""This is a copy of David R. Feinberg's Praat scripts.
 https://github.com/drfeinberg/PraatScripts
-taken June 23rd 2022
+taken June 23rd 2022.
 """
 
 #!/usr/bin/env python3
+import math
+import statistics
+
 import numpy as np
 import pandas as pd
-import math
-from tqdm import tqdm
 import parselmouth
-import statistics
-from nkululeko.utils.util import Util
-import audiofile
 from parselmouth.praat import call
 from scipy.stats.mstats import zscore
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
+from tqdm import tqdm
+
+import audiofile
 
 
 # This is the function to measure source acoustics using default male parameters.
 
 
-def measurePitch(voiceID, f0min, f0max, unit):
-    sound = parselmouth.Sound(voiceID)  # read the sound
+def measure_pitch(voice_id, f0min, f0max, unit):
+    sound = parselmouth.Sound(voice_id)  # read the sound
     duration = call(sound, "Get total duration")  # duration
     pitch = call(sound, "To Pitch", 0.0, f0min, f0max)  # create a praat pitch object
-    meanF0 = call(pitch, "Get mean", 0, 0, unit)  # get mean pitch
-    stdevF0 = call(
+    mean_f0 = call(pitch, "Get mean", 0, 0, unit)  # get mean pitch
+    stdev_f0 = call(
         pitch, "Get standard deviation", 0, 0, unit
     )  # get standard deviation
     harmonicity = call(sound, "To Harmonicity (cc)", 0.01, f0min, 0.1, 1.0)
     hnr = call(harmonicity, "Get mean", 0, 0)
-    pointProcess = call(sound, "To PointProcess (periodic, cc)", f0min, f0max)
-    localJitter = call(pointProcess, "Get jitter (local)", 0, 0, 0.0001, 0.02, 1.3)
-    localabsoluteJitter = call(
-        pointProcess, "Get jitter (local, absolute)", 0, 0, 0.0001, 0.02, 1.3
+    point_process = call(sound, "To PointProcess (periodic, cc)", f0min, f0max)
+    local_jitter = call(point_process, "Get jitter (local)", 0, 0, 0.0001, 0.02, 1.3)
+    localabsolute_jitter = call(
+        point_process, "Get jitter (local, absolute)", 0, 0, 0.0001, 0.02, 1.3
     )
-    rapJitter = call(pointProcess, "Get jitter (rap)", 0, 0, 0.0001, 0.02, 1.3)
-    ppq5Jitter = call(pointProcess, "Get jitter (ppq5)", 0, 0, 0.0001, 0.02, 1.3)
-    ddpJitter = call(pointProcess, "Get jitter (ddp)", 0, 0, 0.0001, 0.02, 1.3)
-    localShimmer = call(
-        [sound, pointProcess],
+    rap_jitter = call(point_process, "Get jitter (rap)", 0, 0, 0.0001, 0.02, 1.3)
+    ppq5_jitter = call(point_process, "Get jitter (ppq5)", 0, 0, 0.0001, 0.02, 1.3)
+    ddp_jitter = call(point_process, "Get jitter (ddp)", 0, 0, 0.0001, 0.02, 1.3)
+    local_shimmer = call(
+        [sound, point_process],
         "Get shimmer (local)",
         0,
         0,
@@ -50,8 +49,8 @@ def measurePitch(voiceID, f0min, f0max, unit):
         1.3,
         1.6,
     )
-    localdbShimmer = call(
-        [sound, pointProcess],
+    localdb_shimmer = call(
+        [sound, point_process],
         "Get shimmer (local_dB)",
         0,
         0,
@@ -60,8 +59,8 @@ def measurePitch(voiceID, f0min, f0max, unit):
         1.3,
         1.6,
     )
-    apq3Shimmer = call(
-        [sound, pointProcess],
+    apq3_shimmer = call(
+        [sound, point_process],
         "Get shimmer (apq3)",
         0,
         0,
@@ -70,8 +69,8 @@ def measurePitch(voiceID, f0min, f0max, unit):
         1.3,
         1.6,
     )
-    aqpq5Shimmer = call(
-        [sound, pointProcess],
+    aqpq5_shimmer = call(
+        [sound, point_process],
         "Get shimmer (apq5)",
         0,
         0,
@@ -80,8 +79,8 @@ def measurePitch(voiceID, f0min, f0max, unit):
         1.3,
         1.6,
     )
-    apq11Shimmer = call(
-        [sound, pointProcess],
+    apq11_shimmer = call(
+        [sound, point_process],
         "Get shimmer (apq11)",
         0,
         0,
@@ -90,26 +89,26 @@ def measurePitch(voiceID, f0min, f0max, unit):
         1.3,
         1.6,
     )
-    ddaShimmer = call(
-        [sound, pointProcess], "Get shimmer (dda)", 0, 0, 0.0001, 0.02, 1.3, 1.6
+    dda_shimmer = call(
+        [sound, point_process], "Get shimmer (dda)", 0, 0, 0.0001, 0.02, 1.3, 1.6
     )
 
     return (
         duration,
-        meanF0,
-        stdevF0,
+        mean_f0,
+        stdev_f0,
         hnr,
-        localJitter,
-        localabsoluteJitter,
-        rapJitter,
-        ppq5Jitter,
-        ddpJitter,
-        localShimmer,
-        localdbShimmer,
-        apq3Shimmer,
-        aqpq5Shimmer,
-        apq11Shimmer,
-        ddaShimmer,
+        local_jitter,
+        localabsolute_jitter,
+        rap_jitter,
+        ppq5_jitter,
+        ddp_jitter,
+        local_shimmer,
+        localdb_shimmer,
+        apq3_shimmer,
+        aqpq5_shimmer,
+        apq11_shimmer,
+        dda_shimmer,
     )
 
 
@@ -120,13 +119,13 @@ def measurePitch(voiceID, f0min, f0max, unit):
 # Adapted from: DOI 10.17605/OSF.IO/K2BHS
 # This function measures formants using Formant Position formula
 # def measureFormants(sound, wave_file, f0min,f0max):
-def measureFormants(sound, f0min, f0max):
+def measure_formants(sound, f0min, f0max):
     sound = parselmouth.Sound(sound)  # read the sound
     #    pitch = call(sound, "To Pitch (cc)", 0, f0min, 15, 'no', 0.03, 0.45, 0.01, 0.35, 0.14, f0max)
-    pointProcess = call(sound, "To PointProcess (periodic, cc)", f0min, f0max)
+    point_process = call(sound, "To PointProcess (periodic, cc)", f0min, f0max)
 
     formants = call(sound, "To Formant (burg)", 0.0025, 5, 5000, 0.025, 50)
-    numPoints = call(pointProcess, "Get number of points")
+    num_points = call(point_process, "Get number of points")
 
     f1_list = []
     f2_list = []
@@ -134,9 +133,9 @@ def measureFormants(sound, f0min, f0max):
     f4_list = []
 
     # Measure formants only at glottal pulses
-    for point in range(0, numPoints):
+    for point in range(0, num_points):
         point += 1
-        t = call(pointProcess, "Get time from index", point)
+        t = call(point_process, "Get time from index", point)
         f1 = call(formants, "Get value at time", 1, t, "Hertz", "Linear")
         f2 = call(formants, "Get value at time", 2, t, "Hertz", "Linear")
         f3 = call(formants, "Get value at time", 3, t, "Hertz", "Linear")
@@ -179,7 +178,7 @@ def measureFormants(sound, f0min, f0max):
 # ## This function runs a 2-factor Principle Components Analysis (PCA) on Jitter and Shimmer
 
 
-def runPCA(df):
+def run_pca(df):
     # z-score the Jitter and Shimmer measurements
     measures = [
         "localJitter",
@@ -211,19 +210,19 @@ def runPCA(df):
     # PCA
     pca = PCA(n_components=2)
     try:
-        principalComponents = pca.fit_transform(x)
-        if np.any(np.isnan(principalComponents)):
+        principal_components = pca.fit_transform(x)
+        if np.any(np.isnan(principal_components)):
             print("pc is nan")
-            print(f"count: {np.count_nonzero(np.isnan(principalComponents))}")
-            print(principalComponents)
-            principalComponents = np.nan_to_num(principalComponents)
+            print(f"count: {np.count_nonzero(np.isnan(principal_components))}")
+            print(principal_components)
+            principal_components = np.nan_to_num(principal_components)
     except ValueError:
         print("need more than one file for pca")
-        principalComponents = [[0, 0]]
-    principalDf = pd.DataFrame(
-        data=principalComponents, columns=["JitterPCA", "ShimmerPCA"]
+        principal_components = [[0, 0]]
+    principal_df = pd.DataFrame(
+        data=principal_components, columns=["JitterPCA", "ShimmerPCA"]
     )
-    return principalDf
+    return principal_df
 
 
 # ## This block of code runs the above functions on all of the '.wav' files in the /audio folder
@@ -231,22 +230,21 @@ def runPCA(df):
 
 def compute_features(file_index):
     # create lists to put the results
-    file_list = []
     duration_list = []
-    mean_F0_list = []
-    sd_F0_list = []
+    mean_f0_list = []
+    sd_f0_list = []
     hnr_list = []
-    localJitter_list = []
-    localabsoluteJitter_list = []
-    rapJitter_list = []
-    ppq5Jitter_list = []
-    ddpJitter_list = []
-    localShimmer_list = []
-    localdbShimmer_list = []
-    apq3Shimmer_list = []
-    aqpq5Shimmer_list = []
-    apq11Shimmer_list = []
-    ddaShimmer_list = []
+    local_jitter_list = []
+    localabsolute_jitter_list = []
+    rap_jitter_list = []
+    ppq5_jitter_list = []
+    ddp_jitter_list = []
+    local_shimmer_list = []
+    localdb_shimmer_list = []
+    apq3_shimmer_list = []
+    aqpq5_shimmer_list = []
+    apq11_shimmer_list = []
+    dda_shimmer_list = []
     f1_mean_list = []
     f2_mean_list = []
     f3_mean_list = []
@@ -268,21 +266,21 @@ def compute_features(file_index):
             sound = parselmouth.Sound(values=signal, sampling_frequency=sampling_rate)
             (
                 duration,
-                meanF0,
-                stdevF0,
+                mean_f0,
+                stdev_f0,
                 hnr,
-                localJitter,
-                localabsoluteJitter,
-                rapJitter,
-                ppq5Jitter,
-                ddpJitter,
-                localShimmer,
-                localdbShimmer,
-                apq3Shimmer,
-                aqpq5Shimmer,
-                apq11Shimmer,
-                ddaShimmer,
-            ) = measurePitch(sound, 75, 300, "Hertz")
+                local_jitter,
+                localabsolute_jitter,
+                rap_jitter,
+                ppq5_jitter,
+                ddp_jitter,
+                local_shimmer,
+                localdb_shimmer,
+                apq3_shimmer,
+                aqpq5_shimmer,
+                apq11_shimmer,
+                dda_shimmer,
+            ) = measure_pitch(sound, 75, 300, "Hertz")
             (
                 f1_mean,
                 f2_mean,
@@ -292,28 +290,28 @@ def compute_features(file_index):
                 f2_median,
                 f3_median,
                 f4_median,
-            ) = measureFormants(sound, 75, 300)
+            ) = measure_formants(sound, 75, 300)
             #        file_list.append(wave_file) # make an ID list
         except (statistics.StatisticsError, parselmouth.PraatError) as errors:
             print(f"error on file {wave_file}: {errors}")
 
         duration_list.append(duration)  # make duration list
-        mean_F0_list.append(meanF0)  # make a mean F0 list
-        sd_F0_list.append(stdevF0)  # make a sd F0 list
+        mean_f0_list.append(mean_f0)  # make a mean F0 list
+        sd_f0_list.append(stdev_f0)  # make a sd F0 list
         hnr_list.append(hnr)  # add HNR data
 
         # add raw jitter and shimmer measures
-        localJitter_list.append(localJitter)
-        localabsoluteJitter_list.append(localabsoluteJitter)
-        rapJitter_list.append(rapJitter)
-        ppq5Jitter_list.append(ppq5Jitter)
-        ddpJitter_list.append(ddpJitter)
-        localShimmer_list.append(localShimmer)
-        localdbShimmer_list.append(localdbShimmer)
-        apq3Shimmer_list.append(apq3Shimmer)
-        aqpq5Shimmer_list.append(aqpq5Shimmer)
-        apq11Shimmer_list.append(apq11Shimmer)
-        ddaShimmer_list.append(ddaShimmer)
+        local_jitter_list.append(local_jitter)
+        localabsolute_jitter_list.append(localabsolute_jitter)
+        rap_jitter_list.append(rap_jitter)
+        ppq5_jitter_list.append(ppq5_jitter)
+        ddp_jitter_list.append(ddp_jitter)
+        local_shimmer_list.append(local_shimmer)
+        localdb_shimmer_list.append(localdb_shimmer)
+        apq3_shimmer_list.append(apq3_shimmer)
+        aqpq5_shimmer_list.append(aqpq5_shimmer)
+        apq11_shimmer_list.append(apq11_shimmer)
+        dda_shimmer_list.append(dda_shimmer)
 
         # add the formant data
         f1_mean_list.append(f1_mean)
@@ -330,20 +328,20 @@ def compute_features(file_index):
         np.column_stack(
             [
                 duration_list,
-                mean_F0_list,
-                sd_F0_list,
+                mean_f0_list,
+                sd_f0_list,
                 hnr_list,
-                localJitter_list,
-                localabsoluteJitter_list,
-                rapJitter_list,
-                ppq5Jitter_list,
-                ddpJitter_list,
-                localShimmer_list,
-                localdbShimmer_list,
-                apq3Shimmer_list,
-                aqpq5Shimmer_list,
-                apq11Shimmer_list,
-                ddaShimmer_list,
+                local_jitter_list,
+                localabsolute_jitter_list,
+                rap_jitter_list,
+                ppq5_jitter_list,
+                ddp_jitter_list,
+                local_shimmer_list,
+                localdb_shimmer_list,
+                apq3_shimmer_list,
+                aqpq5_shimmer_list,
+                apq11_shimmer_list,
+                dda_shimmer_list,
                 f1_mean_list,
                 f2_mean_list,
                 f3_mean_list,
@@ -382,7 +380,7 @@ def compute_features(file_index):
     )
 
     # add pca data
-    pcaData = runPCA(df)  # Run jitter and shimmer PCA
+    pcaData = run_pca(df)  # Run jitter and shimmer PCA
     df = pd.concat([df, pcaData], axis=1)  # Add PCA data
     # reload the data so it's all numbers
     df.to_csv("processed_results.csv", index=False)

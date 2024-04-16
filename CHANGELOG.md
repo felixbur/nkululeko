@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.81.3
+--------------
+* added confidence intervals to result reporting
+
 Version 0.81.2
 --------------
 * added a parselmouth.Praat error if pitch out of range
