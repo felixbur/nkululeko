@@ -10,19 +10,13 @@ function Explore {
 }
 # test basic nkululeko
 function Nkulu {
-    python -m nkululeko.nkululeko --config tests/exp_emodb_os_xgb.ini 
-    python -m nkululeko.nkululeko --config tests/exp_emodb_os_svm.ini
-    python -m nkululeko.nkululeko --config tests/exp_emodb_os_knn.ini
     python -m nkululeko.nkululeko --config tests/exp_emodb_os_praat_xgb.ini
     python -m nkululeko.nkululeko --config tests/exp_emodb_featimport_xgb.ini
     python -m nkululeko.nkululeko --config tests/exp_emodb_cnn.ini
     python -m nkululeko.nkululeko --config tests/exp_emodb_balancing.ini
     python -m nkululeko.nkululeko --config tests/exp_emodb_audmodel_xgb.ini
     python -m nkululeko.nkululeko --config tests/exp_emodb_split.ini
-    python -m nkululeko.nkululeko --config tests/exp_emodb_os_mlp.ini
     python -m nkululeko.nkululeko --config tests/exp_ravdess_os_xgb.ini
-    python -m nkululeko.nkululeko --config tests/exp_agedb_os_xgr.ini 
-    python -m nkululeko.nkululeko --config tests/exp_agedb_os_mlp.ini 
     python -m nkululeko.nkululeko --config tests/exp_agedb_class_os_xgb.ini 
 }
 # test augmentation
@@ -40,9 +34,18 @@ function Pred {
 }
 # test demo
 function Demo {
+    python -m nkululeko.nkululeko --config tests/exp_emodb_os_xgb.ini 
+    python -m nkululeko.nkululeko --config tests/exp_emodb_os_svm.ini
+    python -m nkululeko.nkululeko --config tests/exp_emodb_os_knn.ini
+    python -m nkululeko.nkululeko --config tests/exp_emodb_os_mlp.ini
+    python -m nkululeko.nkululeko --config tests/exp_agedb_os_xgr.ini 
+    python -m nkululeko.nkululeko --config tests/exp_agedb_os_mlp.ini 
     python -m nkululeko.demo --config tests/exp_emodb_os_xgb.ini --list data/test/samples.csv
     python -m nkululeko.demo --config tests/exp_emodb_os_svm.ini --list data/test/samples.csv
     python -m nkululeko.demo --config tests/exp_emodb_os_knn.ini --list data/test/samples.csv
+    python -m nkululeko.demo --config tests/exp_emodb_os_mlp.ini --list data/test/samples.csv
+    python -m nkululeko.demo --config tests/exp_agedb_os_xgr.ini --list data/test/samples.csv
+    python -m nkululeko.demo --config tests/exp_agedb_os_mlp.ini --list data/test/samples.csv
 }
 # test test module
 function Test {
