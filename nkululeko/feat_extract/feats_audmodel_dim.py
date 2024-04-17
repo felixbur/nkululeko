@@ -1,12 +1,16 @@
 # feats_audmodel_dim.py
-from nkululeko.feat_extract.featureset import Featureset
 import os
-import pandas as pd
-import audeer
-import nkululeko.glob_conf as glob_conf
-import audonnx
+
 import numpy as np
+import pandas as pd
+import torch
+
+import audeer
 import audinterface
+import audonnx
+
+from nkululeko.feat_extract.featureset import Featureset
+import nkululeko.glob_conf as glob_conf
 
 
 class AudModelDimSet(Featureset):

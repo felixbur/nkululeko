@@ -25,6 +25,9 @@ class SVM_model(Model):
             class_weight=class_weight,
         )  # set up the classifier
 
-    def set_C(self, c):
-        """Set the C parameter"""
+    def set_c(self, c):
+        """Set the C parameter."""
         self.clf.C = c
+
+    def get_type(self):
+        return "svm"

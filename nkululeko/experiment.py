@@ -685,7 +685,7 @@ class Experiment:
         glob_conf.set_labels(self.labels)
 
     def save(self, filename):
-        if self.runmgr.modelrunner.model.is_ANN():
+        if self.runmgr.modelrunner.model.is_ann():
             self.runmgr.modelrunner.model = None
             self.util.warn(
                 f"Save experiment: Can't pickle the learning model so saving without it."
@@ -708,7 +708,7 @@ class Experiment:
     def save_onnx(self, filename):
         # export the model to onnx
         model = self.runmgr.get_best_model()
-        if model.is_ANN():
+        if model.is_ann():
             print("converting to onnx from torch")
         else:
             from skl2onnx import to_onnx

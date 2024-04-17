@@ -96,8 +96,8 @@ class Dataset:
         """Load the dataframe with files, speakers and task labels"""
         # store the dataframe
         store = self.util.get_path("store")
-        store_file = f"{store}{self.name}"
         store_format = self.util.config_val("FEATS", "store_format", "pkl")
+        store_file = f"{store}{self.name}.{store_format}"
         self.root = self._load_db()
         if not self.start_fresh and os.path.isfile(store_file):
             self.util.debug(f"{self.name}: reusing previously stored file {store_file}")
@@ -241,7 +241,7 @@ class Dataset:
         # store the dataframe
         store = self.util.get_path("store")
         store_format = self.util.config_val("FEATS", "store_format", "pkl")
-        store_file = f"{store}{self.name}"
+        store_file = f"{store}{self.name}.{store_format}"
         self.util.write_store(self.df, store_file, store_format)
 
     def _get_df_for_lists(self, db, df_files):
