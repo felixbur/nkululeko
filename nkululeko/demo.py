@@ -2,20 +2,35 @@
 # Demonstration code to use the ML-experiment framework
 # Test the loading of a previously trained model and demo mode
 # needs the project config file to run before
+"""
+This script is used to test the loading of a previously trained model and run it in demo mode.
+It requires the project config file to be run before.
 
-import os
+Usage:
+python -m nkululeko.demo [--config CONFIG] [--file FILE] [--list LIST] [--folder FOLDER] [--outfile OUTFILE]
+
+Options:
+--config CONFIG     The base configuration file (default: exp.ini)
+--file FILE         A file that should be processed (16kHz mono wav)
+--list LIST         A file with a list of files, one per line, that should be processed (16kHz mono wav)
+--folder FOLDER     A name of a folder where the files within the list are in (default: ./)
+--outfile OUTFILE   A filename to store the results in CSV
+"""
 import argparse
 import configparser
+import os
 
+import nkululeko.glob_conf as glob_conf
+from nkululeko.constants import VERSION
 from nkululeko.experiment import Experiment
 from nkululeko.utils.util import Util
-from nkululeko.constants import VERSION
-import nkululeko.glob_conf as glob_conf
 
 
 def main(src_dir):
-    parser = argparse.ArgumentParser(description="Call the nkululeko framework.")
-    parser.add_argument("--config", default="exp.ini", help="The base configuration")
+    parser = argparse.ArgumentParser(
+        description="Call the nkululeko framework.")
+    parser.add_argument("--config", default="exp.ini",
+                        help="The base configuration")
     parser.add_argument(
         "--file", help="A file that should be processed (16kHz mono wav)"
     )
