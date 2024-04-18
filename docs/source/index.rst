@@ -42,12 +42,20 @@ The examples only covers some important features of Nkululeko. For more details,
    hello_world_csv.md
    comparing
  
+.. toctree:: 
+   :maxdepth: 2
+   :caption: CLI Reference (modules)
+
+   nkululeko.md
+   test.md
+   demo.md
+
 
 .. toctree::
    :maxdepth: 1
    :caption: Function Reference
 
-   calfem_reference
+   
 
 Indices and tables
 ==================

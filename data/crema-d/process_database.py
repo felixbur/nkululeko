@@ -13,6 +13,10 @@ I only used the AudioWAV subdirectory
 
 adapted from https://www.kaggle.com/code/shivamburnwal/speech-emotion-recognition
 
+<<<<<<< HEAD
+Usage: `python3 process_database.py /data/Crema-D/AudioWAV/`
+
+=======
 Usage: `python3 process_database.py` 
 OR
 `python3 --dir /data/Crema-D/AudioWAV`
@@ -21,10 +25,18 @@ help: `python3 process_database.py --help`
 Output: crema-d.csv
 columns: emotion, file, speaker_id, split
 split is 0 for train, 1 for dev, 2 for test
+>>>>>>> e639b1104ec3f50b3944440119f2416aea6e31ac
 """
 
 import pandas as pd
 import os
+<<<<<<< HEAD
+import sys
+
+# Crema source directory as argument #1 (location of AudioWAV)
+# Crema = './AudioWAV'
+Crema = sys.argv[1]
+=======
 import argparse
 from pathlib import Path, PurePath
 from sklearn.model_selection import train_test_split
@@ -36,6 +48,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--dir', type=str, default='./AudioWAV', help='path to Crema-D AudioWAV directory')
 args = parser.parse_args()
 Crema = Path(args.dir)
+>>>>>>> e639b1104ec3f50b3944440119f2416aea6e31ac
 dataset_name = 'crema-d'
 
 # check if directory exists
@@ -81,6 +94,11 @@ speaker_df = pd.DataFrame(file_speaker, columns=['speaker_id'])
 
 Crema_df = pd.concat([emotion_df, path_df, speaker_df], axis=1)
 Crema_df = Crema_df.set_index('file')
+<<<<<<< HEAD
+Crema_df.head()
+Crema_df.to_csv(f'{dataset_name}.csv')
+print(f"Pre-processing done. Check your file 'crema-d.csv' in current directory")
+=======
 
 # Splitting data based on speaker ID
 remaining_speakers, test_speakers = train_test_split(Crema_df['speaker_id'].unique(), test_size=0.2, random_state=42)
@@ -98,4 +116,5 @@ if Crema_df['split'].unique().size == 3:
     Crema_df.loc[Crema_df['split'] == 1].to_csv(f'{dataset_name}_dev.csv')
     Crema_df.loc[Crema_df['split'] == 2].to_csv(f'{dataset_name}_test.csv')
 # Crema_df.to_csv(f'{dataset_name}.csv')
+>>>>>>> e639b1104ec3f50b3944440119f2416aea6e31ac
 
