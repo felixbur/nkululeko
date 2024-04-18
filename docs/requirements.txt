@@ -17,3 +17,15 @@ xgboost
 pylatex
 audformat
 audeer
+confidence_intervals
+seaborn
+torchaudio
+parselmouth
+audmetric
+librosa
+audiomentations
+audonnx
+audinterface
+laion_clap
+opensmile
+inaSpeechSegmenter
