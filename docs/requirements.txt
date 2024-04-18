@@ -20,7 +20,7 @@ audeer
 confidence_intervals
 seaborn
 torchaudio
-parselmouth
+praat-parselmouth
 audmetric
 librosa
 audiomentations
