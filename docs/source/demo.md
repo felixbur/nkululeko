@@ -24,8 +24,6 @@ Let's start case by case.
 In order to use a model, of course you do need to have it trained and saved before. So you need a run with the nkululeko module before. Below is minimal addition to the [INI FILE](ini_file.md) needed to run the demo module.
 
 ```ini
-[EXP]
-save = True
 [MODEL]
 save = True
 ```
