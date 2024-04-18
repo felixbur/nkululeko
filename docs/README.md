@@ -20,4 +20,12 @@ After that, check the built HTML in `build/html/index.html`
 firefox build/html/index.html
 ```
 
+## Generate RST files from docstring
+
+To generate RST files from docstring, you can use the following command:
+
+```bash
+sphinx-apidoc -f -o source/ ../nkululeko/
+```
+
 If found any issues, please report them [here](https://github.com/felixbur/nkululeko/issues).
