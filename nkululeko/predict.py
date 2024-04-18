@@ -1,17 +1,21 @@
 # predict.py
-# use some model and add automatically predicted labels to train and test splits, than save as a new dataset
+# use some model and add automatically predicted labels to train and test splits
+# then save as a new dataset
 
-from nkululeko.experiment import Experiment
-import configparser
-from nkululeko.utils.util import Util
-from nkululeko.constants import VERSION
 import argparse
+import configparser
 import os
+
+from nkululeko.constants import VERSION
+from nkululeko.experiment import Experiment
+from nkululeko.utils.util import Util
 
 
 def main(src_dir):
-    parser = argparse.ArgumentParser(description="Call the nkululeko framework.")
-    parser.add_argument("--config", default="exp.ini", help="The base configuration")
+    parser = argparse.ArgumentParser(
+        description="Call the nkululeko PREDICT framework.")
+    parser.add_argument("--config", default="exp.ini",
+                        help="The base configuration")
     args = parser.parse_args()
     if args.config is not None:
         config_file = args.config
@@ -41,7 +45,8 @@ def main(src_dir):
 
     # split into train and test
     expr.fill_train_and_tests()
-    util.debug(f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}")
+    util.debug(
+        f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}")
 
     # process the data
     df = expr.autopredict()

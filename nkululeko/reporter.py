@@ -1,5 +1,4 @@
-"""
-Reporter module.
+"""Reporter module.
 
 This module contains the Reporter class which is responsible for generating reports.
 """

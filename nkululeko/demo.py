@@ -28,7 +28,7 @@ from nkululeko.utils.util import Util
 
 def main(src_dir):
     parser = argparse.ArgumentParser(
-        description="Call the nkululeko framework.")
+        description="Call the nkululeko DEMO framework.")
     parser.add_argument("--config", default="exp.ini",
                         help="The base configuration")
     parser.add_argument(
