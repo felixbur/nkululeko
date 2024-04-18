@@ -61,6 +61,11 @@ The examples only covers some important features of Nkululeko. For more details,
    nkululeko.utils.rst
 
 
+.. automodule:: nkululeko
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Indices and tables
 ==================
 
