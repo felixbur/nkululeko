@@ -28,7 +28,9 @@ def main(src_dir):
     config.read(config_file)
     # create a new experiment
     expr = Experiment(config)
-    util = Util("predict")
+    module = "predict"
+    expr.set_module(module)
+    util = Util(module)
     util.debug(
         f"running {expr.name} from config {config_file}, nkululeko version"
         f" {VERSION}"

@@ -1,23 +1,25 @@
 # model.py
-from nkululeko.utils.util import Util
-import pandas as pd
-import numpy as np
-import nkululeko.glob_conf as glob_conf
-import sklearn.utils
-from nkululeko.reporting.reporter import Reporter
 import ast
-from sklearn.model_selection import GridSearchCV
 import pickle
 import random
+
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import LeaveOneGroupOut
 from sklearn.model_selection import StratifiedKFold
+import sklearn.utils
+
+import nkululeko.glob_conf as glob_conf
+from nkululeko.reporting.reporter import Reporter
+from nkululeko.utils.util import Util
 
 
 class Model:
-    """Generic model class for linear (non-neural) algorithms"""
+    """Generic model class for linear (non-neural) algorithms."""
 
     def __init__(self, df_train, df_test, feats_train, feats_test):
-        """Constructor taking the configuration and all dataframes"""
+        """Constructor taking the configuration and all dataframes."""
         self.df_train, self.df_test, self.feats_train, self.feats_test = (
             df_train,
             df_test,
@@ -35,7 +37,7 @@ class Model:
     def set_model_type(self, type):
         self.model_type = type
 
-    def is_ANN(self):
+    def is_ann(self):
         if self.model_type == "ann":
             return True
         else:
@@ -277,8 +279,6 @@ class Model:
         prediction = {}
         if self.util.exp_is_classification():
             # get the class probabilities
-            if not self.get_type() == "xgb":
-                features = [features]
             predictions = self.clf.predict_proba(features)
             # pred = self.clf.predict(features)
             for i in range(len(self.clf.classes_)):
@@ -302,7 +302,7 @@ class Model:
                 self.clf = pickle.load(handle)
         except FileNotFoundError as fe:
             self.util.error(
-                f"did you forget to store your models? needs: \n[MODEL]\nsave=True\n{fe}"
+                f"Did you forget to store your models? needs: \n[MODEL]\nsave=True\n{fe}"
             )
 
     def load_path(self, path, run, epoch):

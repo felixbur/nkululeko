@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.81.4
+--------------
+* fixed bug in demo module
+* removed [MODEL] save
+
 Version 0.81.3
 --------------
 * added confidence intervals to result reporting

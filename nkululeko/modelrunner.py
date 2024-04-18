@@ -39,7 +39,7 @@ class Modelrunner:
         plot_epochs = self.util.config_val("PLOT", "epochs", False)
         only_test = self.util.config_val("MODEL", "only_test", False)
         epoch_num = int(self.util.config_val("EXP", "epochs", 1))
-        if not self.model.is_ANN() and epoch_num > 1:
+        if not self.model.is_ann() and epoch_num > 1:
             self.util.warn(f"setting epoch num to 1 (was {epoch_num}) if model not ANN")
             epoch_num = 1
             glob_conf.config["EXP"]["epochs"] = "1"
@@ -69,7 +69,7 @@ class Modelrunner:
             if plot_epochs:
                 self.util.debug(f"plotting conf matrix to {plot_name}")
                 report.plot_confmatrix(plot_name, epoch)
-            store_models = self.util.config_val("MODEL", "save", False)
+            store_models = self.util.config_val("EXP", "save", False)
             plot_best_model = self.util.config_val("PLOT", "best_model", False)
             if (store_models or plot_best_model) and (
                 not only_test
