@@ -1,4 +1,4 @@
-# How to set up your first nkululeko project
+# Nkululeko Workflow
 
 Nkululeko is a framework to build machine learning models that recognize
 speaker characteristics on a very high level of abstraction (i.e.
@@ -7,7 +7,7 @@ starting without programming experience).
 This post is meant to help you with setting up your first experiment,
 based on the Berlin Emodb.
 
-1) Set up python
+1) Set up Python
 
 It's written in python, so first you have to set up a Python environment.
 It is recommended to use Linux-based systems for easiness, but it should work on Windows as well.
@@ -16,10 +16,10 @@ The current version of nkululeko is tested with Python 3.8.5.
 2) Get a database
 
 Load the Berlin emodb database to some location on you harddrive, as
-discussed in [this post](http://blog.syntheticspeech.de/2021/08/10/get-all-information-from-emodb/). I will refer to the location as "emodb root"
-from now on.
+discussed in [this post](http://blog.syntheticspeech.de/2021/08/10/get-all-information-from-emodb/). 
+I will refer to the location as "emodb root" from now on. You can also follow [Hello World page](hello_world_aud.md).
 
-3) Install nkululeko
+3) Install Nkululeko
 
 Inside your virtual environment, run:
 
@@ -28,7 +28,7 @@ Inside your virtual environment, run:
 This should install nkululeko and all required modules. It takes a long
 time and a lot of space, when done intially.
 
-5) Adapt the ini file
+5) Adapt the INI file
 
 Use your favourite editor, e.g., Visual Studio code and edit the file
 that defines your experiment. You might start with this demo sample. You
@@ -40,7 +40,7 @@ this:
 
     emodb = /home/felix/data/audb/emodb
 
-An overview on all nkululeko options should be here.
+An overview on all nkululeko options is listed in [INI file](ini_file).
 
 6) Run the experiment
 

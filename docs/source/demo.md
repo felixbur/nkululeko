@@ -50,7 +50,7 @@ DONE
 
 ## Predicting a list of audio files
 
-To predict a list of audio files, you can use `--list' argument. An example is given below. Notice, that you need to specify the relative path of audio file in that list if it is not relative to the current directory. Additonally, you can add`--outfile` argument to save the result to a file.
+To predict a list of audio files, you can use `--list` argument. An example is given below. Notice, that you need to specify the relative path of audio file in that list if it is not relative to the current directory. Additonally, you can add`--outfile` argument to save the result to a file.
 
 ```bash
 (.env) python3 -m nkululeko.demo --config data/ravdess/exp1.ini --list data/ravdess/ravdess_test.csv --folder data/ravdess/ --outfile /tmp/ravdess_test_predict.csv
