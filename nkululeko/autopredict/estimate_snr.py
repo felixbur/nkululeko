@@ -1,20 +1,30 @@
 # estimate.snr
-import numpy as np
+"""
+Module for estimating SNR (signal to noise ratio) from an audio signal.
+
+This module provides a class `SNREstimator` which calculates the SNR based on
+the log energy and energy thresholds of the audio signal.
+
+"""
+
+import argparse
+
 import audiofile
 import matplotlib.pyplot as plt
+import numpy as np
 from scipy.signal.windows import hamming
-import argparse
 
 
 class SNREstimator:
-    """Estimate SNR from audio signal using log energy and energy thresholds
+    """Estimate SNR from audio signal using log energy and energy thresholds.
+
     Args:
         input_data (ndarray): Input audio signal
         sample_rate (int): Sampling rate of input audio signal
         window_size (int): Window size in samples
         hop_size (int): Hop size in samples
 
-        Returns:
+    Returns:
         object: SNREstimator object
         estimated_snr (float): Estimated SNR in dB, extracted from SNREstimator.estimate_snr()
 
@@ -34,7 +44,7 @@ class SNREstimator:
         num_frames = 1 + (len(signal) - self.frame_length) // self.hop_length
         frames = [
             signal[
-                i * self.hop_length : (i * self.hop_length) + self.frame_length
+                i * self.hop_length: (i * self.hop_length) + self.frame_length
             ]
             for i in range(num_frames)
         ]
@@ -54,7 +64,8 @@ class SNREstimator:
             for frame in frames
         ]
 
-        energy_threshold_low = np.percentile(log_energies, 25)  # First quartile
+        energy_threshold_low = np.percentile(
+            log_energies, 25)  # First quartile
         energy_threshold_high = np.percentile(
             log_energies, 75
         )  # Third quartile

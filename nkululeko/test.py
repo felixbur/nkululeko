@@ -1,17 +1,20 @@
 # test.py
 # Just use a database as test
 
-from nkululeko.experiment import Experiment
-import configparser
-from nkululeko.utils.util import Util
-from nkululeko.constants import VERSION
 import argparse
+import configparser
 import os
+
+from nkululeko.constants import VERSION
+from nkululeko.experiment import Experiment
+from nkululeko.utils.util import Util
 
 
 def main(src_dir):
-    parser = argparse.ArgumentParser(description="Call the nkululeko framework.")
-    parser.add_argument("--config", default="exp.ini", help="The base configuration")
+    parser = argparse.ArgumentParser(
+        description="Call the nkululeko TEST framework.")
+    parser.add_argument("--config", default="exp.ini",
+                        help="The base configuration")
     parser.add_argument(
         "--outfile",
         default="my_results.csv",

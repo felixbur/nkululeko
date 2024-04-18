@@ -1,14 +1,17 @@
-""" feats_snr.py
-    Estimate snr (signal to noise ratio as acoustic features)
+""" feats_snr.py is to estimate snr.
+
+SNR (signal to noise ratio) is extracted as acoustic features.
 """
 import os
-from tqdm import tqdm
-import pandas as pd
+
 import audiofile
+import pandas as pd
+from tqdm import tqdm
+
 import nkululeko.glob_conf as glob_conf
-from nkululeko.utils.util import Util
-from nkululeko.feat_extract.featureset import Featureset
 from nkululeko.autopredict.estimate_snr import SNREstimator
+from nkululeko.feat_extract.featureset import Featureset
+from nkululeko.utils.util import Util
 
 
 class SNRSet(Featureset):
@@ -16,14 +19,17 @@ class SNRSet(Featureset):
 
     def __init__(self, name, data_df):
         """Constructor."""
+
         super().__init__(name, data_df)
 
     def extract(self):
         """Estimate the features or load them from disk if present."""
+
         store = self.util.get_path("store")
         store_format = self.util.config_val("FEATS", "store_format", "pkl")
         storage = f"{store}{self.name}.{store_format}"
-        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
+        extract = self.util.config_val(
+            "FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             self.util.debug("estimating SNR, this might take a while...")
@@ -40,7 +46,8 @@ class SNRSet(Featureset):
                 snr = self.get_snr(signal[0], sampling_rate)
                 snr_series[idx] = snr
             print("")
-            self.df = pd.DataFrame(snr_series.values.tolist(), index=self.data_df.index)
+            self.df = pd.DataFrame(
+                snr_series.values.tolist(), index=self.data_df.index)
             self.df.columns = ["snr"]
             self.util.write_store(self.df, storage, store_format)
             try:
@@ -53,10 +60,11 @@ class SNRSet(Featureset):
 
     def get_snr(self, signal, sampling_rate):
         r"""Estimate SNR from raw audio signal.
+
         Args:
             signal: audio signal
             sampling_rate: sample rate
-        Returns
+        Returns:
             snr: estimated signal to noise ratio
         """
         snr_estimator = SNREstimator(signal, sampling_rate)

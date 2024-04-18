@@ -1,4 +1,4 @@
-# How to test model with nkululeko.demo
+# Demo module
 
 Nkululeko has `demo` module to either test the built model with an audio file,
 a list of audio files, or even live streaming from your microphone!
@@ -12,10 +12,10 @@ Let's recap the concept of train/dev/test splits:
 Using machine learning (like SVM or XGB), usually we only need train and test.
 Using neural networks or deep learning (like MLP or CNN), we need train, dev, and test.
 
-In this tutorial, we split the use case of `demo` module into two:
+In this tutorial, we split the use case of `demo` module into two:  
 (1) predicting audio file or
 live streaming from microphone and  
-(2) predicting a list of audio files.
+(2) predicting a list of audio files.  
 
 Let's start case by case.
 
@@ -72,7 +72,7 @@ DONE
 
 The example of CSV file for prediction is given below. You can submit it for a such challange.
 
-```csv
+```
 file,angry,happy,neutral,sad,predicted
 ./Actor_21/03-01-07-01-01-01-21.wav,0.314,0.315,0.038,0.332,sad
 ./Actor_21/03-01-06-01-02-02-21.wav,0.314,0.313,0.041,0.332,sad

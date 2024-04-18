@@ -1,15 +1,15 @@
-# nkululeko.test
+# Test module
 
-Module for testing the testing known datatast (has labels).  
-
+Module for testing a saved model on known datatast (has labels).  
 
 Usage:  
+
 ```bash
-python -m nkululeko.test --config mycoonfg.ini --outfile myresults.csv
+python -m nkululeko.test --config myconfg.ini --outfile myresults.csv
 ```
 
-
 Example of `INI` file:  
+
 ```ini
 [DATA]
 tests = ['my_testdb']
