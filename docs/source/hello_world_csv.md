@@ -1,4 +1,4 @@
-# Hello World with [CSV]
+# Hello World [CSV]
 
 In the previous tutorial, we learned how to use Nkululeko with audformat dataset.
 Since most dataset are not in audformat, we will learn how to use Nkululeko with pre-processed CSV dataset.
