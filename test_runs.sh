@@ -1,5 +1,21 @@
 #!/bin/bash
 
+# Display help message
+function Help {
+    echo "Usage: test_runs.sh [options]"
+    echo "Options:"
+    echo "  --Explore: test explore module"
+    echo "  --Nkulu: test basic nkululeko"
+    echo "  --Aug: test augmentation"
+    echo "  --Pred: test prediction"
+    echo "  --Demo: test demo"
+    echo "  --Test: test test module"
+    echo "  --Multi: test multidb"
+    echo "  --Spot: test spotlight"
+    echo "  --all: test all modules"
+    echo "  --help: display this help message"
+}
+
 # test explore module
 function Explore {
     python -m nkululeko.explore --config tests/exp_emodb_explore_data.ini
@@ -61,6 +77,7 @@ function Spot {
     python -m nkululeko.explore --config tests/exp_explore.ini
 }
 
+Help
 for arg in "$@"; do
   if [[ "$arg" = --Explore ]] || [[ "$arg" = --all ]]; then
     Explore
