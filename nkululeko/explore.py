@@ -1,17 +1,20 @@
 # explore.py
 # explore the feature sets
 
-from nkululeko.experiment import Experiment
-import configparser
-from nkululeko.utils.util import Util
-from nkululeko.constants import VERSION
 import argparse
+import configparser
 import os
+
+from nkululeko.constants import VERSION
+from nkululeko.experiment import Experiment
+from nkululeko.utils.util import Util
 
 
 def main(src_dir):
-    parser = argparse.ArgumentParser(description="Call the nkululeko framework.")
-    parser.add_argument("--config", default="exp.ini", help="The base configuration")
+    parser = argparse.ArgumentParser(
+        description="Call the nkululeko EXPLORE framework.")
+    parser.add_argument("--config", default="exp.ini",
+                        help="The base configuration")
     args = parser.parse_args()
     if args.config is not None:
         config_file = args.config
@@ -46,9 +49,11 @@ def main(src_dir):
 
     # split into train and test
     expr.fill_train_and_tests()
-    util.debug(f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}")
+    util.debug(
+        f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}")
 
-    plot_feats = eval(util.config_val("EXPL", "feature_distributions", "False"))
+    plot_feats = eval(util.config_val(
+        "EXPL", "feature_distributions", "False"))
     tsne = eval(util.config_val("EXPL", "tsne", "False"))
     scatter = eval(util.config_val("EXPL", "scatter", "False"))
     spotlight = eval(util.config_val("EXPL", "spotlight", "False"))

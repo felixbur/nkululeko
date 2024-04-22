@@ -1,5 +1,6 @@
-from itertools import combinations
 import math
+from itertools import combinations
+
 import numpy as np
 import pandas as pd
 
@@ -16,7 +17,8 @@ def check_na(a):
 
 def cohen_d(d1, d2):
     """
-    Compute Cohen's d from two distributions of real valued arrays
+    Compute Cohen's d from two distributions of real valued arrays.
+
     Args:
         d1: one array
         d2: the other array
@@ -50,8 +52,10 @@ def all_combinations(items_list):
 
 
 def get_effect_size(df, target, variable):
-    """
-    Get the effect size as Cohen's D from a real numbered variable on a categorical target.
+    """Get the effect size as Cohen's D.
+
+    Effect size is computed  from a real numbered variable on a categorical target.
+
     Args:
         df: a pd.Dataframe with at least target and variable as columns
         target: the categorical target, e.g. emotion
@@ -88,7 +92,10 @@ def cohens_D_to_string(val):
 
 
 def normalize(values):
-    """Do a z-transformation of a distribution, so that mean = 0 and variance = 1"""
+    """Do a z-transformation of a distribution. 
+
+    So that mean = 0 and variance = 1
+    """
     from sklearn.preprocessing import StandardScaler
 
     scaler = StandardScaler()

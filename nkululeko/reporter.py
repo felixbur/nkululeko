@@ -1,7 +1,14 @@
+"""Reporter module.
+
+This module contains the Reporter class which is responsible for generating reports.
+"""
+
+
 import ast
 import glob
 import json
 import math
+
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import pearsonr
@@ -10,17 +17,17 @@ from sklearn.metrics import (
     accuracy_score,
     classification_report,
     confusion_matrix,
-    mean_squared_error,
     mean_absolute_error,
+    mean_squared_error,
     r2_score,
     recall_score,
 )
 from sklearn.utils import resample
 
 import nkululeko.glob_conf as glob_conf
+from nkululeko.reporting.defines import Header
 from nkululeko.reporting.report_item import ReportItem
 from nkululeko.result import Result
-from nkululeko.reporting.defines import Header
 from nkululeko.utils.util import Util
 
 
@@ -63,9 +70,11 @@ class Reporter:
             else:
                 # regression experiment
                 if self.measure == "mse":
-                    self.result.test = mean_squared_error(self.truths, self.preds)
+                    self.result.test = mean_squared_error(
+                        self.truths, self.preds)
                 elif self.measure == "mae":
-                    self.result.test = mean_absolute_error(self.truths, self.preds)
+                    self.result.test = mean_absolute_error(
+                        self.truths, self.preds)
                 elif self.measure == "ccc":
                     self.result.test = self.ccc(self.truths, self.preds)
                     if math.isnan(self.result.test):
@@ -96,31 +105,54 @@ class Reporter:
             self.continuous_to_categorical()
         self._plot_confmat(self.truths, self.preds, plot_name, epoch)
 
-    def plot_per_speaker(self, result_df, plot_name, function):
-        """Plot a confusion matrix with the mode category per speakers
-        Args:
-            * result_df: a pandas dataframe with columns: preds, truths and speaker
-        """
-        speakers = result_df.speaker.unique()
-        pred = np.zeros(0)
-        truth = np.zeros(0)
-        for s in speakers:
-            s_df = result_df[result_df.speaker == s]
-            mode = s_df.pred.mode().iloc[-1]
-            mean = s_df.pred.mean()
-            if function == "mode":
-                s_df.pred = mode
-            elif function == "mean":
-                s_df.pred = mean
-            else:
-                self.util.error(f"unkown function {function}")
-            pred = np.append(pred, s_df.pred.values)
-            truth = np.append(truth, s_df["truth"].values)
-        if not (self.is_classification or self.cont_to_cat):
-            bins = ast.literal_eval(glob_conf.config["DATA"]["bins"])
-            truth = np.digitize(truth, bins) - 1
-            pred = np.digitize(pred, bins) - 1
-        self._plot_confmat(truth, pred.astype("int"), plot_name, 0)
+
+def plot_per_speaker(self, result_df, plot_name, function):
+    """Plot a confusion matrix with the mode category per speakers.
+
+    This function creates a confusion matrix for each speaker in the result_df.
+    The result_df should contain the columns: preds, truths and speaker.
+
+    Args:
+        * result_df: a pandas dataframe with columns: preds, truths and speaker
+        * plot_name: a string with the name of the plot
+        * function: a string with the function to use for each speaker, 
+        can be 'mode' or 'mean'
+
+    Returns:
+        * None
+    """
+    # Initialize empty arrays for predictions and truths
+    pred = np.zeros(0)
+    truth = np.zeros(0)
+
+    # Iterate over each speaker
+    for s in result_df.speaker.unique():
+        # Filter the dataframe for the current speaker
+        s_df = result_df[result_df.speaker == s]
+
+        # Get the mode or mean prediction for the current speaker
+        mode = s_df.pred.mode().iloc[-1]
+        mean = s_df.pred.mean()
+        if function == "mode":
+            s_df.pred = mode
+        elif function == "mean":
+            s_df.pred = mean
+        else:
+            self.util.error(f"unknown function {function}")
+
+        # Append the current speaker's predictions and truths to the arrays
+        pred = np.append(pred, s_df.pred.values)
+        truth = np.append(truth, s_df["truth"].values)
+
+    # If the experiment is not a classification or continuous to categorical conversion was performed,
+    # convert the truths and predictions to categorical
+    if not (self.is_classification or self.cont_to_cat):
+        bins = ast.literal_eval(glob_conf.config["DATA"]["bins"])
+        truth = np.digitize(truth, bins) - 1
+        pred = np.digitize(pred, bins) - 1
+
+    # Plot the confusion matrix for the speakers
+    self._plot_confmat(truth, pred.astype("int"), plot_name, 0)
 
     def _plot_confmat(self, truths, preds, plot_name, epoch):
         # print(truths)
@@ -153,7 +185,8 @@ class Reporter:
             reg_res = f", {self.MEASURE}: {self.result.test:.3f}"
 
         if epoch != 0:
-            plt.title(f"Confusion Matrix, UAR: {uar:.3f}{reg_res}, Epoch: {epoch}")
+            plt.title(
+                f"Confusion Matrix, UAR: {uar:.3f}{reg_res}, Epoch: {epoch}")
         else:
             plt.title(f"Confusion Matrix, UAR: {uar:.3f}{reg_res}")
         img_path = f"{fig_dir}{plot_name}.{self.format}"
@@ -232,7 +265,8 @@ class Reporter:
         import imageio
 
         fig_dir = self.util.get_path("fig_dir")
-        filenames = glob.glob(fig_dir + f"{self.util.get_plot_name()}*_?_???_cnf.png")
+        filenames = glob.glob(
+            fig_dir + f"{self.util.get_plot_name()}*_?_???_cnf.png")
         images = []
         for filename in filenames:
             images.append(imageio.imread(filename))
@@ -288,7 +322,8 @@ class Reporter:
         var_pred = np.var(prediction, 0)
         v_pred = prediction - mean_pred
         v_gt = ground_truth - mean_gt
-        cor = sum(v_pred * v_gt) / (np.sqrt(sum(v_pred**2)) * np.sqrt(sum(v_gt**2)))
+        cor = sum(v_pred * v_gt) / \
+            (np.sqrt(sum(v_pred**2)) * np.sqrt(sum(v_gt**2)))
         sd_gt = np.std(ground_truth)
         sd_pred = np.std(prediction)
         numerator = 2 * cor * sd_gt * sd_pred

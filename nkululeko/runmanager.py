@@ -1,9 +1,13 @@
-# runmanager.py
+"""Runmanager module.
 
-from nkululeko.reporting.reporter import Reporter
-from nkululeko.utils.util import Util
+This module contains the Runmanager class which is responsible for managing the 
+runs of the experiment.
+"""
+
 import nkululeko.glob_conf as glob_conf
 from nkululeko.modelrunner import Modelrunner
+from nkululeko.reporting.reporter import Reporter
+from nkululeko.utils.util import Util
 
 
 class Runmanager:
@@ -59,7 +63,8 @@ class Runmanager:
             )
             self.reports, last_epoch = self.modelrunner.do_epochs()
             # wrap up the run
-            plot_anim_progression = self.util.config_val("PLOT", "anim_progression", 0)
+            plot_anim_progression = self.util.config_val(
+                "PLOT", "anim_progression", 0)
             if plot_anim_progression:
                 plot_name_suggest = self.util.get_exp_name()
                 plot_name = (
@@ -83,7 +88,8 @@ class Runmanager:
                     + "_epoch_progression"
                 )
                 self.util.debug(f"plotting progression to {plot_name}")
-                self.reports[-1].plot_epoch_progression(self.reports, plot_name)
+                self.reports[-1].plot_epoch_progression(
+                    self.reports, plot_name)
             # remember the best run
             best_report = self.get_best_result(self.reports)
             plot_best_model = self.util.config_val("PLOT", "best_model", False)
@@ -122,7 +128,8 @@ class Runmanager:
         self.print_model(best_report, plot_name)
 
     def print_given_result(self, run, epoch):
-        """Print a result (confusion matrix) for a given epoch and run
+        """Print a result (confusion matrix) for a given epoch and run.
+
         Args:
             run: for which run
             epoch: for which epoch
@@ -139,7 +146,8 @@ class Runmanager:
         self.print_model(report, plot_name)
 
     def print_model(self, report, plot_name):
-        """Print a confusion matrix for a special report
+        """Print a confusion matrix for a special report.
+
         Args:
             report: for which report (will be computed newly from model)
             plot_name: name of plot file
@@ -152,7 +160,8 @@ class Runmanager:
         report.print_results(epoch)
 
     def load_model(self, report):
-        """Load a model from disk for a specific run and epoch and evaluate
+        """Load a model from disk for a specific run and epoch and evaluate it.
+
         Args:
             report: for which report (will be re-evaluated)
 
