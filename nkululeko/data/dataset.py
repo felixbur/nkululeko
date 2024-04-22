@@ -76,6 +76,7 @@ class Dataset:
         if rename_cols:
             col_dict = ast.literal_eval(rename_cols)
             df = df.rename(columns=col_dict)
+            self.util.debug(f"renamed data columns: {col_dict}")
         return df
 
     def _report_load(self):
@@ -281,13 +282,19 @@ class Dataset:
                 # try to get the age values
                 df_local["age"] = source_df["age"].astype(int)
                 got_age = True
-            except (KeyError, ValueError, audformat.errors.BadKeyError) as e:
+            except (KeyError, ValueError, audformat.errors.BadKeyError):
                 pass
             try:
                 # also it might be possible that the sex is part of the speaker description
                 df_local["gender"] = db[table]["speaker"].get(map="gender")
                 got_gender = True
-            except (ValueError, audformat.errors.BadKeyError) as e:
+            except (ValueError, audformat.errors.BadKeyError):
+                pass
+            try:
+                # also it might be possible that the sex is part of the speaker description
+                df_local["gender"] = db[table]["speaker"].get(map="sex")
+                got_gender = True
+            except (ValueError, audformat.errors.BadKeyError):
                 pass
             try:
                 # also it might be possible that the age is part of the speaker description

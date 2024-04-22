@@ -695,7 +695,7 @@ class Experiment:
             pickle.dump(self.__dict__, f)
             f.close()
         except TypeError:
-            self.feature_extractor.featExtractor.model = None
+            self.feature_extractor.feat_extractor.model = None
             f = open(filename, "wb")
             pickle.dump(self.__dict__, f)
             f.close()

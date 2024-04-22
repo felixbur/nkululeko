@@ -1,6 +1,16 @@
 Changelog
 =========
 
+Version 0.81.6
+--------------
+* updated documentation
+* updated crema-d
+* updated tests
+
+Version 0.81.5
+--------------
+* added sex=gender for speaker mappings
+
 Version 0.81.4
 --------------
 * fixed bug in demo module

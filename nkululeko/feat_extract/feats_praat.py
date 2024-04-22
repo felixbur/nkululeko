@@ -1,17 +1,19 @@
 # feats_praat.py
-from nkululeko.feat_extract.featureset import Featureset
-import os
-import pandas as pd
-import numpy as np
-import nkululeko.glob_conf as glob_conf
-from nkululeko.feat_extract import feinberg_praat
 import ast
+import os
+
+import numpy as np
+import pandas as pd
+
+from nkululeko.feat_extract import feinberg_praat
+from nkululeko.feat_extract.featureset import Featureset
+import nkululeko.glob_conf as glob_conf
 
 
-class Praatset(Featureset):
-    """
-    a feature extractor for the Praat software, based on
-    David R. Feinberg's Praat scripts for the parselmouth python interface.
+class PraatSet(Featureset):
+    """A feature extractor for the Praat software.
+
+    Based on David R. Feinberg's Praat scripts for the parselmouth python interface.
     https://osf.io/6dwr3/
 
     """

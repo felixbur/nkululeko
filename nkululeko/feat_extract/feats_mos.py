@@ -10,6 +10,7 @@ pip uninstall -y torch torchvision torchaudio
 pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
 
 """
+
 import os
 import pandas as pd
 from tqdm import tqdm
@@ -23,7 +24,7 @@ from nkululeko.utils.util import Util
 from nkululeko.feat_extract.featureset import Featureset
 
 
-class MOSSet(Featureset):
+class MosSet(Featureset):
     """Class to predict MOS (mean opinion score)"""
 
     def __init__(self, name, data_df):
