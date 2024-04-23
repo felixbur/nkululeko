@@ -13,11 +13,12 @@ from nkululeko.feat_extract.featureset import Featureset
 import nkululeko.glob_conf as glob_conf
 
 
-class AudModelDimSet(Featureset):
-    """
-    Emotional dimensions from the wav2vec2. based model finetuned on MSPPodcast emotions, described in the paper
+class AuddimSet(Featureset):
+    """Emotional dimensions from the wav2vec2 model finetuned on MSPPodcast emotions.
+
+    Described in the paper
     "Dawn of the transformer era in speech emotion recognition: closing the valence gap"
-    https://arxiv.org/abs/2203.07378
+    https://arxiv.org/abs/2203.07378.
     """
 
     def __init__(self, name, data_df):

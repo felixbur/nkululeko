@@ -32,10 +32,7 @@ class AudModelAgenderSet(Featureset):
             audeer.extract_archive(archive_path, model_root)
         device = self.util.config_val("MODEL", "device", "cpu")
         self.model = audonnx.load(model_root, device=device)
-        pytorch_total_params = sum(p.numel() for p in self.model.parameters())
-        self.util.debug(
-            f"initialized agender model with {pytorch_total_params} parameters in total"
-        )
+        self.util.debug(f"initialized agender model")
         self.model_loaded = True
 
     def extract(self):

@@ -8,7 +8,7 @@ from nkululeko.utils.util import Util
 from nkululeko.feat_extract.featureset import Featureset
 
 
-class Importset(Featureset):
+class ImportSet(Featureset):
     """Class to import features that have been compiled elsewhere"""
 
     def __init__(self, name, data_df):

@@ -1,36 +1,33 @@
-""" feats_squim.py
-predict SQUIM ( SPEECH QUALITY AND INTELLIGIBILITY
-MEASURES) features
+"""Predict SQUIM ( SPEECH QUALITY AND INTELLIGIBILITY MEASURES) features.
 
-
-    Wideband Perceptual Estimation of Speech Quality (PESQ) [2]
-    Short-Time Objective Intelligibility (STOI) [3]
-    Scale-Invariant Signal-to-Distortion Ratio (SI-SDR) [4]
-
-
-adapted from
+Wideband Perceptual Estimation of Speech Quality (PESQ) [2].
+    Short-Time Objective Intelligibility (STOI) [3].
+    Scale-Invariant Signal-to-Distortion Ratio (SI-SDR) [4].
+Adapted from
 from https://pytorch.org/audio/main/tutorials/squim_tutorial.html#sphx-glr-tutorials-squim-tutorial-py
-paper: https://arxiv.org/pdf/2304.01448.pdf
-
-needs 
+paper: https://arxiv.org/pdf/2304.01448.pdf.
+Needs
 pip uninstall -y torch torchvision torchaudio
 pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
 
 """
 
 import os
-from tqdm import tqdm
+
 import pandas as pd
 import torch
 import torchaudio
 from torchaudio.pipelines import SQUIM_OBJECTIVE
+from tqdm import tqdm
+
 import audiofile
+
+from nkululeko.feat_extract.featureset import Featureset
 import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.util import Util
-from nkululeko.feat_extract.featureset import Featureset
 
 
-class SQUIMSet(Featureset):
+class SquimSet(Featureset):
     """Class to predict SQUIM features"""
 
     def __init__(self, name, data_df):

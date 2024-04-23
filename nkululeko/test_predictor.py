@@ -62,3 +62,4 @@ class Test_predictor:
                 df = df.drop(columns=[target])
                 df = df.rename(columns={"class_label": target})
             df.to_csv(self.name)
+        self.util.debug(f"results stored in {self.name}")
