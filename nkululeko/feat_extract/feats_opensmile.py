@@ -9,7 +9,7 @@ import opensmile
 
 class Opensmileset(Featureset):
     def __init__(self, name, data_df, feats_type=None, config_file=None):
-        super().__init__(name, data_df)
+        super().__init__(name, data_df, feats_type)
         self.featset = self.util.config_val("FEATS", "set", "eGeMAPSv02")
         try:
             self.feature_set = eval(f"opensmile.FeatureSet.{self.featset}")
