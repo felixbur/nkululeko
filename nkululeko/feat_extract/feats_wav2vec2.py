@@ -1,5 +1,11 @@
-# feats_wav2vec2.py
-# feat_types example = wav2vec2-large-robust-ft-swbd-300h
+""" feats_wav2vec2.py
+feat_types example = [wav2vec2-large-robust-ft-swbd-300h,
+wav2vec2-xls-r-2b, wav2vec2-large, wav2vec2-large-xlsr-53, wav2vec2-base]
+
+Complete list: https://huggingface.co/facebook?search_models=wav2vec2
+Currently only supports wav2vec2
+"""
+
 import os
 from tqdm import tqdm
 import pandas as pd
@@ -16,11 +22,11 @@ class Wav2vec2(Featureset):
 
     def __init__(self, name, data_df, feat_type):
         """Constructor. is_train is needed to distinguish from test/dev sets, because they use the codebook from the training"""
-        super().__init__(name, data_df)
+        super().__init__(name, data_df, feat_type)
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
         self.model_initialized = False
-        if feat_type == "wav2vec" or feat_type == "wav2vec2":
+        if feat_type == "wav2vec2":
             self.feat_type = "wav2vec2-large-robust-ft-swbd-300h"
         else:
             self.feat_type = feat_type
@@ -33,7 +39,8 @@ class Wav2vec2(Featureset):
         )
         config = transformers.AutoConfig.from_pretrained(model_path)
         layer_num = config.num_hidden_layers
-        hidden_layer = int(self.util.config_val("FEATS", "wav2vec2.layer", "0"))
+        hidden_layer = int(self.util.config_val(
+            "FEATS", "wav2vec2.layer", "0"))
         config.num_hidden_layers = layer_num - hidden_layer
         self.util.debug(f"using hidden layer #{config.num_hidden_layers}")
         self.processor = Wav2Vec2FeatureExtractor.from_pretrained(model_path)
@@ -48,7 +55,8 @@ class Wav2vec2(Featureset):
         """Extract the features or load them from disk if present."""
         store = self.util.get_path("store")
         storage = f"{store}{self.name}.pkl"
-        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
+        extract = self.util.config_val(
+            "FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             if not self.model_initialized:
@@ -69,7 +77,8 @@ class Wav2vec2(Featureset):
                 emb = self.get_embeddings(signal, sampling_rate, file)
                 emb_series[idx] = emb
             # print(f"emb_series shape: {emb_series.shape}")
-            self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
+            self.df = pd.DataFrame(
+                emb_series.values.tolist(), index=self.data_df.index)
             # print(f"df shape: {self.df.shape}")
             self.df.to_pickle(storage)
             try:

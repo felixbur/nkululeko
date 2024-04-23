@@ -1,4 +1,5 @@
 # feats_trill.py
+import tensorflow_hub as hub
 import os
 import tensorflow as tf
 from numpy.core.numeric import tensordot
@@ -11,7 +12,6 @@ from nkululeko.feat_extract.featureset import Featureset
 
 # Import TF 2.X and make sure we're running eager.
 assert tf.executing_eagerly()
-import tensorflow_hub as hub
 
 
 class TRILLset(Featureset):
@@ -20,7 +20,7 @@ class TRILLset(Featureset):
     """https://ai.googleblog.com/2020/06/improving-speech-representations-and.html"""
 
     # Initialization of the class
-    def __init__(self, name, data_df):
+    def __init__(self, name, data_df, feats_type):
         """
         Initialize the class with name, data and Util instance
         Also loads the model from hub
@@ -31,7 +31,7 @@ class TRILLset(Featureset):
         :type data_df: DataFrame
         :return: None
         """
-        super().__init__(name, data_df)
+        super().__init__(name, data_df, feats_type)
         # Load the model from the configured path
         model_path = self.util.config_val(
             "FEATS",
@@ -39,20 +39,24 @@ class TRILLset(Featureset):
             "https://tfhub.dev/google/nonsemantic-speech-benchmark/trill/3",
         )
         self.module = hub.load(model_path)
+        self.feats_type = feats_type
 
     def extract(self):
         store = self.util.get_path("store")
         storage = f"{store}{self.name}.pkl"
-        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
+        extract = self.util.config_val(
+            "FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
-            self.util.debug("extracting TRILL embeddings, this might take a while...")
+            self.util.debug(
+                "extracting TRILL embeddings, this might take a while...")
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
             length = len(self.data_df.index)
             for idx, file in enumerate(tqdm(self.data_df.index.get_level_values(0))):
                 emb = self.getEmbeddings(file)
                 emb_series[idx] = emb
-            self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
+            self.df = pd.DataFrame(
+                emb_series.values.tolist(), index=self.data_df.index)
             self.df.to_pickle(storage)
             try:
                 glob_conf.config["DATA"]["needs_feature_extraction"] = "false"

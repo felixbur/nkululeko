@@ -1,6 +1,7 @@
 # feats_hubert.py
 # HuBERT feature extractor for Nkululeko
-# example feat_type = "hubert-large-ll60k", "hubert-xlarge-ll60k"
+# example feat_type = "hubert-large-ll60k", "hubert-xlarge-ll60k",
+# "hubert-base-ls960", hubert-large-ls960-ft", "hubert-xlarge-ls960-ft"
 
 
 import os
@@ -22,7 +23,7 @@ class Hubert(Featureset):
     def __init__(self, name, data_df, feat_type):
         """Constructor. is_train is needed to distinguish from test/dev sets,
         because they use the codebook from the training"""
-        super().__init__(name, data_df)
+        super().__init__(name, data_df, feat_type)
         # check if device is not set, use cuda if available
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)

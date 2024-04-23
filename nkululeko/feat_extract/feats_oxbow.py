@@ -10,9 +10,10 @@ import opensmile
 class Openxbow(Featureset):
     """Class to extract openXBOW processed opensmile features (https://github.com/openXBOW)"""
 
-    def __init__(self, name, data_df, is_train=False):
+    def __init__(self, name, data_df, feats_type, is_train=False):
         """Constructor. is_train is needed to distinguish from test/dev sets, because they use the codebook from the training"""
-        super().__init__(name, data_df)
+        super().__init__(name, data_df, feats_type)
+        self.feats_types = feats_type
         self.is_train = is_train
 
     def extract(self):
@@ -21,11 +22,13 @@ class Openxbow(Featureset):
         self.feature_set = eval(f"opensmile.FeatureSet.{self.featset}")
         store = self.util.get_path("store")
         storage = f"{store}{self.name}_{self.featset}.pkl"
-        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
+        extract = self.util.config_val(
+            "FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             # extract smile features first
-            self.util.debug("extracting openSmile features, this might take a while...")
+            self.util.debug(
+                "extracting openSmile features, this might take a while...")
             smile = opensmile.Smile(
                 feature_set=self.feature_set,
                 feature_level=opensmile.FeatureLevel.LowLevelDescriptors,
@@ -48,7 +51,13 @@ class Openxbow(Featureset):
             # save the smile features
             smile_df.to_csv(lld_name, sep=";", header=False)
             # get the path of the xbow java jar file
-            xbow_path = self.util.config_val("FEATS", "xbow.model", "../openXBOW/")
+            xbow_path = self.util.config_val(
+                "FEATS", "xbow.model", "openXBOW")
+            # check if JAR file exist
+            if not os.path.isfile(f"{xbow_path}/openXBOW.jar"):
+                # download using wget if not exist and locate in xbow_path
+                os.system(
+                    f"git clone https://github.com/openXBOW/openXBOW")
             # get the size of the codebook
             size = self.util.config_val("FEATS", "size", 500)
             # get the number of assignements
@@ -57,16 +66,12 @@ class Openxbow(Featureset):
             if self.is_train:
                 # store the codebook
                 os.system(
-                    f"java -jar {xbow_path}openXBOW.jar -i"
-                    f" {lld_name} -standardizeInput -log                     -o"
-                    f" {xbow_name} -size {size} -a {assignments} -B"
-                    f" {codebook_name}"
+                    f"java -jar {xbow_path}/openXBOW.jar -i {lld_name} -standardizeInput -log -o {xbow_name} -size {size} -a {assignments} -B {codebook_name}"
                 )
             else:
                 # use the codebook
                 os.system(
-                    f"java -jar {xbow_path}openXBOW.jar -i {lld_name}          "
-                    f"           -o {xbow_name} -b {codebook_name}"
+                    f"java -jar {xbow_path}/openXBOW.jar -i {lld_name} -o {xbow_name} -b {codebook_name}"
                 )
             # read in the result from disk
             xbow_df = pd.read_csv(xbow_name, sep=";", header=None)

@@ -65,15 +65,19 @@ class FeatureExtractor:
 
         elif feats_type == "spectra":
             from nkululeko.feat_extract.feats_spectra import Spectraloader
-
             return Spectraloader
+
         elif feats_type == "trill":
             from nkululeko.feat_extract.feats_trill import TRILLset
-
             return TRILLset
+
         elif feats_type.startswith(
-                ("wav2vec", "hubert", "wavlm", "spkrec", "whisper")):
+                ("wav2vec2", "hubert", "wavlm", "spkrec", "whisper")):
             return self._get_feat_extractor_by_prefix(feats_type)
+
+        elif feats_type == "xbow":
+            from nkululeko.feat_extract.feats_oxbow import Openxbow
+            return Openxbow
 
         elif feats_type in (
             "audmodel",
