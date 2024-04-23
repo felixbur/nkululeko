@@ -59,10 +59,7 @@ class Wavlm(Featureset):
                     frame_offset=int(start.total_seconds() * 16000),
                     num_frames=int((end - start).total_seconds() * 16000),
                 )
-                if sampling_rate != 16000:
-                    self.util.error(
-                        f"sampling rate should be 16000 but is {sampling_rate}"
-                    )
+                assert sampling_rate == 16000, f"sampling rate should be 16000 but is {sampling_rate}"
                 emb = self.get_embeddings(signal, sampling_rate, file)
                 emb_series.iloc[idx] = emb
             self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
