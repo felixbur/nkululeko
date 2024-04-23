@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.82.0
+--------------
+* added nkuluflag module
+
 Version 0.81.7
 --------------
 * bugfixes

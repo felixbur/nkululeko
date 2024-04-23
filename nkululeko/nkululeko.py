@@ -1,12 +1,14 @@
 # nkululeko.py
 # Entry script to do a Nkululeko experiment
-import numpy as np
-import os.path
-import configparser
 import argparse
+import configparser
+import os.path
+
+import numpy as np
+
+from nkululeko.constants import VERSION
 import nkululeko.experiment as exp
 from nkululeko.utils.util import Util
-from nkululeko.constants import VERSION
 
 
 def doit(config_file):
