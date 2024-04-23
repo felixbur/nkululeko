@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.81.7
+--------------
+* bugfixes
+* added whisper feature extractor
+
 Version 0.81.6
 --------------
 * updated documentation

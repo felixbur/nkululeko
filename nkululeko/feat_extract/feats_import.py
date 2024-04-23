@@ -11,8 +11,8 @@ from nkululeko.feat_extract.featureset import Featureset
 class ImportSet(Featureset):
     """Class to import features that have been compiled elsewhere"""
 
-    def __init__(self, name, data_df):
-        super().__init__(name, data_df)
+    def __init__(self, name, data_df, feats_type):
+        super().__init__(name, data_df, feats_type)
 
     def extract(self):
         """Import the features."""
