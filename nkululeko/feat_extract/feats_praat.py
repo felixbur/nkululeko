@@ -18,18 +18,20 @@ class PraatSet(Featureset):
 
     """
 
-    def __init__(self, name, data_df):
-        super().__init__(name, data_df)
+    def __init__(self, name, data_df, feats_type):
+        super().__init__(name, data_df, feats_type)
 
     def extract(self):
         """Extract the features based on the initialized dataset or re-open them when found on disk."""
         store = self.util.get_path("store")
         store_format = self.util.config_val("FEATS", "store_format", "pkl")
         storage = f"{store}{self.name}.{store_format}"
-        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
+        extract = self.util.config_val(
+            "FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
-            self.util.debug("extracting Praat features, this might take a while...")
+            self.util.debug(
+                "extracting Praat features, this might take a while...")
             self.df = feinberg_praat.compute_features(self.data_df.index)
             self.df = self.df.set_index(self.data_df.index)
             for i, col in enumerate(self.df.columns):
@@ -52,7 +54,8 @@ class PraatSet(Featureset):
         self.df = self.df.astype(float)
 
     def extract_sample(self, signal, sr):
-        import audiofile, audformat
+        import audiofile
+        import audformat
 
         tmp_audio_names = ["praat_audio_tmp.wav"]
         audiofile.write(tmp_audio_names[0], signal, sr)

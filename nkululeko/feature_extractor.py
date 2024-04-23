@@ -39,10 +39,12 @@ class FeatureExtractor:
         self.feats = pd.DataFrame()
         for feats_type in self.feats_types:
             store_name = f"{self.data_name}_{feats_type}"
-            self.feat_extractor = self._get_feat_extractor(store_name, feats_type)
+            self.feat_extractor = self._get_feat_extractor(
+                store_name, feats_type)
             self.feat_extractor.extract()
             self.feat_extractor.filter()
-            self.feats = pd.concat([self.feats, self.feat_extractor.df], axis=1)
+            self.feats = pd.concat(
+                [self.feats, self.feat_extractor.df], axis=1)
         return self.feats
 
     def extract_sample(self, signal, sr):
@@ -53,24 +55,30 @@ class FeatureExtractor:
         if feat_extractor_class is None:
             self.util.error(f"unknown feats_type: {feats_type}")
         return feat_extractor_class(
-            f"{store_name}_{self.feats_designation}", self.data_df
+            f"{store_name}_{self.feats_designation}", self.data_df, feats_type
         )
 
     def _get_feat_extractor_class(self, feats_type):
         if feats_type == "os":
             from nkululeko.feat_extract.feats_opensmile import Opensmileset
-
             return Opensmileset
+
         elif feats_type == "spectra":
             from nkululeko.feat_extract.feats_spectra import Spectraloader
-
             return Spectraloader
+
         elif feats_type == "trill":
             from nkululeko.feat_extract.feats_trill import TRILLset
-
             return TRILLset
-        elif feats_type.startswith(("wav2vec", "hubert", "wavlm", "spkrec")):
+
+        elif feats_type.startswith(
+                ("wav2vec2", "hubert", "wavlm", "spkrec", "whisper")):
             return self._get_feat_extractor_by_prefix(feats_type)
+
+        elif feats_type == "xbow":
+            from nkululeko.feat_extract.feats_oxbow import Openxbow
+            return Openxbow
+
         elif feats_type in (
             "audmodel",
             "auddim",
@@ -89,16 +97,18 @@ class FeatureExtractor:
             return None
 
     def _get_feat_extractor_by_prefix(self, feats_type):
-        prefix, _, ext = feats_type.partition("_")
+        prefix, _, ext = feats_type.partition("-")
         from importlib import import_module
 
-        module = import_module(f"nkululeko.feat_extract.feats_{prefix.lower()}")
-        class_name = f"{prefix.capitalize()}{ext.capitalize()}set"
+        module = import_module(
+            f"nkululeko.feat_extract.feats_{prefix.lower()}")
+        class_name = f"{prefix.capitalize()}"
         return getattr(module, class_name)
 
     def _get_feat_extractor_by_name(self, feats_type):
         from importlib import import_module
 
-        module = import_module(f"nkululeko.feat_extract.feats_{feats_type.lower()}")
+        module = import_module(
+            f"nkululeko.feat_extract.feats_{feats_type.lower()}")
         class_name = f"{feats_type.capitalize()}Set"
         return getattr(module, class_name)

@@ -11,14 +11,15 @@ import laion_clap
 import audiofile
 
 
-class Clap(Featureset):
+class ClapSet(Featureset):
     """Class to extract laion's clap embeddings (https://github.com/LAION-AI/CLAP)"""
 
-    def __init__(self, name, data_df):
+    def __init__(self, name, data_df, feats_type):
         """Constructor. is_train is needed to distinguish from test/dev sets, because they use the codebook from the training"""
-        super().__init__(name, data_df)
+        super().__init__(name, data_df, feats_type)
         self.device = self.util.config_val("MODEL", "device", "cpu")
         self.model_initialized = False
+        self.feat_type = feats_type
 
     def init_model(self):
         # load model
@@ -32,12 +33,14 @@ class Clap(Featureset):
         store = self.util.get_path("store")
         store_format = self.util.config_val("FEATS", "store_format", "pkl")
         storage = f"{store}{self.name}.{store_format}"
-        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
+        extract = self.util.config_val(
+            "FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             if not self.model_initialized:
                 self.init_model()
-            self.util.debug("extracting clap embeddings, this might take a while...")
+            self.util.debug(
+                "extracting clap embeddings, this might take a while...")
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
             length = len(self.data_df.index)
             for idx, (file, start, end) in enumerate(
@@ -51,7 +54,8 @@ class Clap(Featureset):
                 )
                 emb = self.get_embeddings(signal, sampling_rate)
                 emb_series[idx] = emb
-            self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
+            self.df = pd.DataFrame(
+                emb_series.values.tolist(), index=self.data_df.index)
             self.util.write_store(self.df, storage, store_format)
             try:
                 glob_conf.config["DATA"]["needs_feature_extraction"] = "false"

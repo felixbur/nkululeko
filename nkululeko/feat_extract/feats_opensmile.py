@@ -8,12 +8,12 @@ import opensmile
 
 
 class Opensmileset(Featureset):
-    def __init__(self, name, data_df):
+    def __init__(self, name, data_df, feats_type=None, config_file=None):
         super().__init__(name, data_df)
         self.featset = self.util.config_val("FEATS", "set", "eGeMAPSv02")
         try:
             self.feature_set = eval(f"opensmile.FeatureSet.{self.featset}")
-            #'eGeMAPSv02, ComParE_2016, GeMAPSv01a, eGeMAPSv01a':
+            # 'eGeMAPSv02, ComParE_2016, GeMAPSv01a, eGeMAPSv01a':
         except AttributeError:
             self.util.error(
                 f"something is wrong with feature set: {self.featset}"

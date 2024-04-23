@@ -9,16 +9,17 @@ import numpy as np
 import audinterface
 
 
-class AudModelAgenderSet(Featureset):
+class AgenderSet(Featureset):
     """
     Embeddings from the wav2vec2. based model finetuned on agender data, described in the paper
     "Speech-based Age and Gender Prediction with Transformers"
     https://arxiv.org/abs/2306.16962
     """
 
-    def __init__(self, name, data_df):
-        super().__init__(name, data_df)
+    def __init__(self, name, data_df, feats_type):
+        super().__init__(name, data_df, feats_type)
         self.model_loaded = False
+        self.feats_type = feats_type
 
     def _load_model(self):
         model_url = "https://zenodo.org/record/7761387/files/w2v2-L-robust-6-age-gender.25c844af-1.1.1.zip"
@@ -28,7 +29,8 @@ class AudModelAgenderSet(Featureset):
         if not os.path.isdir(model_root):
             cache_root = audeer.mkdir("cache")
             model_root = audeer.mkdir(model_root)
-            archive_path = audeer.download_url(model_url, cache_root, verbose=True)
+            archive_path = audeer.download_url(
+                model_url, cache_root, verbose=True)
             audeer.extract_archive(archive_path, model_root)
         device = self.util.config_val("MODEL", "device", "cpu")
         self.model = audonnx.load(model_root, device=device)
