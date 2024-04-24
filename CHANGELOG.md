@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.82.3
+--------------
+* fixed another audformat peculiarity to interprete time values as nanoseconds
+
 Version 0.82.2
 --------------
 * fixed audformat peculiarity that dataframes can have only one column
