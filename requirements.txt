@@ -3,7 +3,7 @@ audobject
 audformat
 audinterface
 audiofile
-audmetrics
+audmetric
 audiomentations==0.31.0
 audonnx
 confidence-intervals
