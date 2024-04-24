@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version 0.82.2
+--------------
+* fixed audformat peculiarity that dataframes can have only one column
+
+Version 0.82.1
+--------------
+* Add more test for GC action
+
 Version 0.82.0
 --------------
 * added nkuluflag module

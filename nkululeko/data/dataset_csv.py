@@ -23,6 +23,8 @@ class Dataset_CSV(Dataset):
         root = os.path.dirname(data_file)
         audio_path = self.util.config_val_data(self.name, "audio_path", "")
         df = audformat.utils.read_csv(data_file)
+        if isinstance(df, pd.Series):
+            df = df.to_frame()
         rename_cols = self.util.config_val_data(self.name, "colnames", False)
         if rename_cols:
             col_dict = ast.literal_eval(rename_cols)
