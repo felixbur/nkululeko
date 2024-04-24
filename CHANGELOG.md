@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.82.4
+--------------
+* fixed bug in wavlm 
+
 Version 0.82.3
 --------------
 * fixed another audformat peculiarity to interprete time values as nanoseconds

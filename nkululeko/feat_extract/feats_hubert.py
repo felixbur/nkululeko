@@ -6,23 +6,26 @@
 
 import os
 
-import audeer
-import nkululeko.glob_conf as glob_conf
 import pandas as pd
 import torch
 import torchaudio
-from audformat.utils import map_file_path
-from nkululeko.feat_extract.featureset import Featureset
 from tqdm import tqdm
-from transformers import HubertModel, Wav2Vec2FeatureExtractor
+from transformers import HubertModel
+from transformers import Wav2Vec2FeatureExtractor
+
+from nkululeko.feat_extract.featureset import Featureset
+import nkululeko.glob_conf as glob_conf
 
 
 class Hubert(Featureset):
-    """Class to extract HuBERT embedding)"""
+    """Class to extract HuBERT embedding)."""
 
     def __init__(self, name, data_df, feat_type):
-        """Constructor. is_train is needed to distinguish from test/dev sets,
-        because they use the codebook from the training"""
+        """Constructor.
+
+        Is_train is needed to distinguish from test/dev sets,
+        because they use the codebook from the training.
+        """
         super().__init__(name, data_df, feat_type)
         # check if device is not set, use cuda if available
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
@@ -61,16 +64,12 @@ class Hubert(Featureset):
         """Extract the features or load them from disk if present."""
         store = self.util.get_path("store")
         storage = f"{store}{self.name}.pkl"
-        extract = self.util.config_val(
-            "FEATS", "needs_feature_extraction", False
-        )
+        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             if not self.model_initialized:
                 self.init_model()
-            self.util.debug(
-                "extracting Hubert embeddings, this might take a while..."
-            )
+            self.util.debug("extracting Hubert embeddings, this might take a while...")
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
             length = len(self.data_df.index)
             for idx, (file, start, end) in enumerate(
@@ -84,9 +83,7 @@ class Hubert(Featureset):
                 assert sampling_rate == 16000
                 emb = self.get_embeddings(signal, sampling_rate, file)
                 emb_series.iloc[idx] = emb
-            self.df = pd.DataFrame(
-                emb_series.values.tolist(), index=self.data_df.index
-            )
+            self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
             self.df.to_pickle(storage)
             try:
                 glob_conf.config["DATA"]["needs_feature_extraction"] = "false"
