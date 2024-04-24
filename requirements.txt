@@ -3,8 +3,10 @@ audobject
 audformat
 audinterface
 audiofile
+audmetric
 audiomentations==0.31.0
 audonnx
+confidence-intervals
 # audtorch
 # datasets
 imageio

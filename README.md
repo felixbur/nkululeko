@@ -1,5 +1,4 @@
-usage: nkuluflag.py [-h] [--config CONFIG] [--data [DATA ...]] [--label [LABEL ...]] [--tuning_params [TUNING_PARAMS ...]] [--layers [LAYERS ...]] [--model MODEL] [--feat FEAT] [--set SET]
-                    [--with_os WITH_OS] [--target TARGET] [--epochs EPOCHS] [--runs RUNS] [--learning_rate LEARNING_RATE] [--drop DROP]
+
 - [Overview](#overview)
   - [Confusion matrix](#confusion-matrix)
   - [Epoch progression](#epoch-progression)
@@ -212,6 +211,7 @@ There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
 * [Oversample the training set](http://blog.syntheticspeech.de/2023/11/16/nkululeko-oversample-the-training-set/)  
 * [Compare several databases](http://blog.syntheticspeech.de/2024/01/02/nkululeko-compare-several-databases/)
 * [Tweak the target variable for database comparison](http://blog.syntheticspeech.de/2024/03/13/nkululeko-how-to-tweak-the-target-variable-for-database-comparison/)
+* [How to run multiple experiments in one go](http://blog.syntheticspeech.de/2022/03/28/how-to-run-multiple-experiments-in-one-go-with-nkululeko/)
 
 ### <a name="helloworld">Hello World example</a>
 * NEW: [Here's a Google colab that runs this example out-of-the-box](https://colab.research.google.com/drive/1GYNBd5cdZQ1QC3Jm58qoeMaJg3UuPhjw?usp=sharing#scrollTo=4G_SjuF9xeQf), and here is the same [with Kaggle](https://www.kaggle.com/felixburk/nkululeko-hello-world-example)

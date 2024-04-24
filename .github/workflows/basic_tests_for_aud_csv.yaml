@@ -18,16 +18,29 @@ jobs:
         pip install -r requirements.txt
         # pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
         pip install --editable .
+        # python -m nkululeko.nkululeko --config tests/exp_emodb_os_xgb.ini
+
+    - name: Run audformat-emodb-os-svm
+      run: |
         cd data/emodb
         wget https://zenodo.org/record/7447302/files/emodb.zip
         unzip emodb.zip
         cd ../..
-        # python -m nkululeko.nkululeko --config tests/exp_emodb_os_xgb.ini
-
-    - name: Run tests
-      run: |
         python3 -m nkululeko.nkululeko --config data/emodb/exp_os_svm.ini > output.txt
         if grep -q "DONE" output.txt; then
+          echo "Test Success"
+        else
+          echo "Test Failed"
+          exit 1
+        fi
+    - name: Run csv-ravdess-praat-xgb
+      run: |
+        cd data/ravdess
+        wget https://zenodo.org/record/1188976/files/Audio_Speech_Actors_01-24.zip
+        unzip Audio_Speech_Actors_01-24.zip
+        cd ../..
+        python3 -m nkululeko.nkululeko --config data/ravdess/exp_praat_xgb.ini > output1.txt
+        if grep -q "DONE" output1.txt; then
           echo "Test Success"
         else
           echo "Test Failed"
