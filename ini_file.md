@@ -193,6 +193,8 @@
       * "hubert-base-ls960", "hubert-large-ll60k", "hubert-large-ls960-ft", hubert-xlarge-ll60k, "hubert-xlarge-ls960-ft"
     * **WavLM**:
       * "wavlm-base", "wavlm-base-plus", "wavlm-large"
+    * **Whisper**: [whisper models](https://huggingface.co/models?other=whisper)
+      * "whisper-base", "whisper-large", "whisper-medium", "whisper-tiny"
     * **audmodel**: [audEERING emotion model embeddings](https://arxiv.org/abs/2203.07378), wav2vec2.0 model finetuned on [MSPPodcast](https://ecs.utdallas.edu/research/researchlabs/msp-lab/MSP-Podcast.html) emotions, embeddings
       * **aud.model** = ./audmodel/ (*path to the audEERING model folder*)
     * **auddim**: [audEERING emotion model dimensions](https://arxiv.org/abs/2203.07378), wav2vec2.0 model finetuned on [MSPPodcast](https://ecs.utdallas.edu/research/researchlabs/msp-lab/MSP-Podcast.html) arousal, dominance, valence

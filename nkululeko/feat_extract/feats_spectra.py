@@ -4,6 +4,7 @@ feats_spectra.py
 Inspired by code from Su Lei
 
 """
+
 import os
 import torchaudio
 import torchaudio.transforms as T
@@ -23,9 +24,9 @@ import nkululeko.glob_conf as glob_conf
 
 
 class Spectraloader(Featureset):
-    def __init__(self, name, data_df):
+    def __init__(self, name, data_df, feat_type):
         """Constructor setting the name"""
-        Featureset.__init__(self, name, data_df)
+        super().__init__(name, data_df, feat_type)
         self.sampling_rate = SAMPLING_RATE
         self.num_bands = int(self.util.config_val("FEATS", "fft_nbands", "64"))
         self.win_dur = int(self.util.config_val("FEATS", "fft_win_dur", "25"))

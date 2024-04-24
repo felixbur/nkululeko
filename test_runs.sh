@@ -6,6 +6,7 @@ function Help {
     echo "Options:"
     echo "  --Explore: test explore module"
     echo "  --Nkulu: test basic nkululeko"
+    echo "  --Feat: test selected acoustic features"
     echo "  --Aug: test augmentation"
     echo "  --Pred: test prediction"
     echo "  --Demo: test demo"
@@ -34,6 +35,11 @@ function Nkulu {
     python -m nkululeko.nkululeko --config tests/exp_emodb_split.ini
     python -m nkululeko.nkululeko --config tests/exp_ravdess_os_xgb.ini
     python -m nkululeko.nkululeko --config tests/exp_agedb_class_os_xgb.ini 
+}
+# test features
+function Feat {
+    python -m nkululeko.nkululeko --config tests/exp_emodb_hubert_xgb.ini 
+    python -m nkululeko.nkululeko --config tests/exp_emodb_whisper_xgb.ini 
 }
 # test augmentation
 function Aug {
@@ -84,6 +90,9 @@ for arg in "$@"; do
   fi
   if [[ "$arg" = --Nkulu ]] || [[ "$arg" = --all ]]; then
     Nkulu
+  fi
+  if [[ "$arg" = --Feat ]] || [[ "$arg" = --all ]]; then
+    Feat
   fi
   if [[ "$arg" = --Aug ]] || [[ "$arg" = --all ]]; then
     Aug

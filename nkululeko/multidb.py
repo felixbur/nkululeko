@@ -12,18 +12,15 @@ import numpy as np
 import pandas as pd
 import seaborn as sn
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.aug_train import doit as aug_train
-from nkululeko.experiment import Experiment
 from nkululeko.nkululeko import doit as nkulu
-from nkululeko.utils.util import Util
 
 
 def main(src_dir):
     parser = argparse.ArgumentParser(
-        description="Call the nkululeko MULTIDB framework.")
-    parser.add_argument("--config", default="exp.ini",
-                        help="The base configuration")
+        description="Call the nkululeko MULTIDB framework."
+    )
+    parser.add_argument("--config", default="exp.ini", help="The base configuration")
     args = parser.parse_args()
     if args.config is not None:
         config_file = args.config
@@ -58,8 +55,7 @@ def main(src_dir):
                 dataset = datasets[i]
                 print(f"running {dataset}")
                 if extra_trains:
-                    extra_trains_1 = extra_trains.removeprefix(
-                        "[").removesuffix("]")
+                    extra_trains_1 = extra_trains.removeprefix("[").removesuffix("]")
                     config["DATA"]["databases"] = f"['{dataset}', {extra_trains_1}]"
                     extra_trains_2 = ast.literal_eval(extra_trains)
                     for extra_train in extra_trains_2:
@@ -72,8 +68,7 @@ def main(src_dir):
                 test = datasets[j]
                 print(f"running train: {train}, test: {test}")
                 if extra_trains:
-                    extra_trains_1 = extra_trains.removeprefix(
-                        "[").removesuffix("]")
+                    extra_trains_1 = extra_trains.removeprefix("[").removesuffix("]")
                     config["DATA"][
                         "databases"
                     ] = f"['{train}', '{test}', {extra_trains_1}]"

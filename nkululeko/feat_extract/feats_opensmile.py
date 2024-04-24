@@ -15,24 +15,14 @@ class Opensmileset(Featureset):
             self.feature_set = eval(f"opensmile.FeatureSet.{self.featset}")
             # 'eGeMAPSv02, ComParE_2016, GeMAPSv01a, eGeMAPSv01a':
         except AttributeError:
-            self.util.error(
-                f"something is wrong with feature set: {self.featset}"
-            )
+            self.util.error(f"something is wrong with feature set: {self.featset}")
         self.featlevel = self.util.config_val("FEATS", "level", "functionals")
         try:
-            self.featlevel = self.featlevel.replace(
-                "lld", "LowLevelDescriptors"
-            )
-            self.featlevel = self.featlevel.replace(
-                "functionals", "Functionals"
-            )
-            self.feature_level = eval(
-                f"opensmile.FeatureLevel.{self.featlevel}"
-            )
+            self.featlevel = self.featlevel.replace("lld", "LowLevelDescriptors")
+            self.featlevel = self.featlevel.replace("functionals", "Functionals")
+            self.feature_level = eval(f"opensmile.FeatureLevel.{self.featlevel}")
         except AttributeError:
-            self.util.error(
-                f"something is wrong with feature level: {self.featlevel}"
-            )
+            self.util.error(f"something is wrong with feature level: {self.featlevel}")
 
     def extract(self):
         """Extract the features based on the initialized dataset or re-open them when found on disk."""
@@ -44,9 +34,7 @@ class Opensmileset(Featureset):
         )
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or not os.path.isfile(storage) or no_reuse:
-            self.util.debug(
-                "extracting openSmile features, this might take a while..."
-            )
+            self.util.debug("extracting openSmile features, this might take a while...")
             smile = opensmile.Smile(
                 feature_set=self.feature_set,
                 feature_level=self.feature_level,
@@ -85,9 +73,7 @@ class Opensmileset(Featureset):
             selected_features = ast.literal_eval(
                 glob_conf.config["FEATS"]["os.features"]
             )
-            self.util.debug(
-                f"selecting features from opensmile: {selected_features}"
-            )
+            self.util.debug(f"selecting features from opensmile: {selected_features}")
             sel_feats_df = pd.DataFrame()
             hit = False
             for feat in selected_features:
