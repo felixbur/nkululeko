@@ -1,21 +1,25 @@
-""" test_predictor.py
+"""test_predictor.py.
+
     Predict targets from a model and save as csv file.
 
 """
 
-import nkululeko.glob_conf as glob_conf
-from nkululeko.utils.util import Util
-import pandas as pd
-from nkululeko.data.dataset import Dataset
-from nkululeko.feature_extractor import FeatureExtractor
-from nkululeko.scaler import Scaler
+import ast
+
 import numpy as np
+import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
+from nkululeko.data.dataset import Dataset
+from nkululeko.feature_extractor import FeatureExtractor
+import nkululeko.glob_conf as glob_conf
+from nkululeko.scaler import Scaler
+from nkululeko.utils.util import Util
 
-class Test_predictor:
+
+class TestPredictor:
     def __init__(self, model, orig_df, labenc, name):
-        """Constructor setting up name and configuration"""
+        """Constructor setting up name and configuration."""
         self.model = model
         self.orig_df = orig_df
         self.label_encoder = labenc
@@ -49,7 +53,14 @@ class Test_predictor:
             df[self.target] = labelenc.inverse_transform(predictions.tolist())
             df.to_csv(self.name)
         else:
+            test_dbs = ast.literal_eval(glob_conf.config["DATA"]["tests"])
+            test_dbs_string = "_".join(test_dbs)
             predictions = self.model.get_predictions()
+            report = self.model.predict()
+            report.set_filename_add(f"test-{test_dbs_string}")
+            self.util.print_best_results([report])
+            report.plot_confmatrix(self.util.get_plot_name(), 0)
+            report.print_results(0)
             # print(predictions)
             # df = pd.DataFrame(index=self.orig_df.index)
             # df["speaker"] = self.orig_df["speaker"]

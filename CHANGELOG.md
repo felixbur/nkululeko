@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.83.0
+--------------
+* test module now prints out reports
+
 Version 0.82.4
 --------------
 * fixed bug in wavlm 

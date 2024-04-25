@@ -3,7 +3,6 @@
 This module contains the Reporter class which is responsible for generating reports.
 """
 
-
 import ast
 import glob
 import json
@@ -12,16 +11,14 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import pearsonr
-from sklearn.metrics import (
-    ConfusionMatrixDisplay,
-    accuracy_score,
-    classification_report,
-    confusion_matrix,
-    mean_absolute_error,
-    mean_squared_error,
-    r2_score,
-    recall_score,
-)
+from sklearn.metrics import ConfusionMatrixDisplay
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
+from sklearn.metrics import recall_score
 from sklearn.utils import resample
 
 import nkululeko.glob_conf as glob_conf
@@ -70,11 +67,9 @@ class Reporter:
             else:
                 # regression experiment
                 if self.measure == "mse":
-                    self.result.test = mean_squared_error(
-                        self.truths, self.preds)
+                    self.result.test = mean_squared_error(self.truths, self.preds)
                 elif self.measure == "mae":
-                    self.result.test = mean_absolute_error(
-                        self.truths, self.preds)
+                    self.result.test = mean_absolute_error(self.truths, self.preds)
                 elif self.measure == "ccc":
                     self.result.test = self.ccc(self.truths, self.preds)
                     if math.isnan(self.result.test):
@@ -115,7 +110,7 @@ def plot_per_speaker(self, result_df, plot_name, function):
     Args:
         * result_df: a pandas dataframe with columns: preds, truths and speaker
         * plot_name: a string with the name of the plot
-        * function: a string with the function to use for each speaker, 
+        * function: a string with the function to use for each speaker,
         can be 'mode' or 'mean'
 
     Returns:
@@ -185,8 +180,7 @@ def plot_per_speaker(self, result_df, plot_name, function):
             reg_res = f", {self.MEASURE}: {self.result.test:.3f}"
 
         if epoch != 0:
-            plt.title(
-                f"Confusion Matrix, UAR: {uar:.3f}{reg_res}, Epoch: {epoch}")
+            plt.title(f"Confusion Matrix, UAR: {uar:.3f}{reg_res}, Epoch: {epoch}")
         else:
             plt.title(f"Confusion Matrix, UAR: {uar:.3f}{reg_res}")
         img_path = f"{fig_dir}{plot_name}.{self.format}"
@@ -265,8 +259,7 @@ def plot_per_speaker(self, result_df, plot_name, function):
         import imageio
 
         fig_dir = self.util.get_path("fig_dir")
-        filenames = glob.glob(
-            fig_dir + f"{self.util.get_plot_name()}*_?_???_cnf.png")
+        filenames = glob.glob(fig_dir + f"{self.util.get_plot_name()}*_?_???_cnf.png")
         images = []
         for filename in filenames:
             images.append(imageio.imread(filename))
@@ -322,8 +315,7 @@ def plot_per_speaker(self, result_df, plot_name, function):
         var_pred = np.var(prediction, 0)
         v_pred = prediction - mean_pred
         v_gt = ground_truth - mean_gt
-        cor = sum(v_pred * v_gt) / \
-            (np.sqrt(sum(v_pred**2)) * np.sqrt(sum(v_gt**2)))
+        cor = sum(v_pred * v_gt) / (np.sqrt(sum(v_pred**2)) * np.sqrt(sum(v_gt**2)))
         sd_gt = np.std(ground_truth)
         sd_pred = np.std(prediction)
         numerator = 2 * cor * sd_gt * sd_pred
