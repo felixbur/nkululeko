@@ -23,7 +23,7 @@ from nkululeko.plots import Plots
 from nkululeko.reporting.report import Report
 from nkululeko.runmanager import Runmanager
 from nkululeko.scaler import Scaler
-from nkululeko.test_predictor import Test_predictor
+from nkululeko.test_predictor import TestPredictor
 from nkululeko.utils.util import Util
 
 
@@ -672,7 +672,7 @@ class Experiment:
     def predict_test_and_save(self, result_name):
         model = self.runmgr.get_best_model()
         model.set_testdata(self.df_test, self.feats_test)
-        test_predictor = Test_predictor(
+        test_predictor = TestPredictor(
             model, self.df_test, self.label_encoder, result_name
         )
         test_predictor.predict_and_store()

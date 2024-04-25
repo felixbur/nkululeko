@@ -39,6 +39,8 @@ function Nkulu {
 # test features
 function Feat {
     python -m nkululeko.nkululeko --config tests/exp_emodb_hubert_xgb.ini 
+    python -m nkululeko.nkululeko --config tests/exp_emodb_audmodel_xgb.ini 
+    python -m nkululeko.nkululeko --config tests/exp_emodb_wavlm_xgb.ini 
     python -m nkululeko.nkululeko --config tests/exp_emodb_whisper_xgb.ini 
 }
 # test augmentation

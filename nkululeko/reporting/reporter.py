@@ -55,6 +55,7 @@ class Reporter:
         self.run = run
         self.epoch = epoch
         self.__set_measure()
+        self.filenameadd = ""
         self.cont_to_cat = False
         if len(self.truths) > 0 and len(self.preds) > 0:
             if self.util.exp_is_classification():
@@ -206,7 +207,7 @@ class Reporter:
                 f"Confusion Matrix, UAR: {uar_str} "
                 + f"(+-{up_str}/{low_str}) {reg_res}"
             )
-        img_path = f"{fig_dir}{plot_name}.{self.format}"
+        img_path = f"{fig_dir}{plot_name}{self.filenameadd}.{self.format}"
         plt.savefig(img_path)
         fig.clear()
         plt.close(fig)
@@ -228,14 +229,17 @@ class Reporter:
         )
         # print(rpt)
         self.util.debug(rpt)
-        file_name = f"{res_dir}{self.util.get_exp_name()}_conf.txt"
+        file_name = f"{res_dir}{self.util.get_exp_name()}{self.filenameadd}_conf.txt"
         with open(file_name, "w") as text_file:
             text_file.write(rpt)
+
+    def set_filename_add(self, my_string):
+        self.filenameadd = f"_{my_string}"
 
     def print_results(self, epoch):
         """Print all evaluation values to text file."""
         res_dir = self.util.get_path("res_dir")
-        file_name = f"{res_dir}{self.util.get_exp_name()}_{epoch}.txt"
+        file_name = f"{res_dir}{self.util.get_exp_name()}_{epoch}{self.filenameadd}.txt"
         if self.util.exp_is_classification():
             labels = glob_conf.labels
             try:
