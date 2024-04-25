@@ -1,2 +1,0 @@
-{"anger": {"precision": 0.6707317073170732, "recall": 1.0, "f1-score": 0.8029197080291971, "support": 55.0}, "happiness": {"precision": 0.0, "recall": 0.0, "f1-score": 0.0, "support": 27.0}, "accuracy": 0.6707317073170732, "macro avg": {"precision": 0.3353658536585366, "recall": 0.5, "f1-score": 0.40145985401459855, "support": 82.0}, "weighted avg": {"precision": 0.4498810232004759, "recall": 0.6707317073170732, "f1-score": 0.5385437066049493, "support": 82.0}}
-result per class (F1 score): [0.803, 0.0]
