@@ -1,0 +1,2 @@
+{"anger": {"precision": 0.6666666666666666, "recall": 0.9454545454545454, "f1-score": 0.7819548872180451, "support": 55.0}, "happiness": {"precision": 0.25, "recall": 0.037037037037037035, "f1-score": 0.06451612903225806, "support": 27.0}, "accuracy": 0.6463414634146342, "macro avg": {"precision": 0.4583333333333333, "recall": 0.49124579124579126, "f1-score": 0.42323550812515154, "support": 82.0}, "weighted avg": {"precision": 0.5294715447154471, "recall": 0.6463414634146342, "f1-score": 0.5457250522056518, "support": 82.0}}
+result per class (F1 score): [0.782, 0.065]

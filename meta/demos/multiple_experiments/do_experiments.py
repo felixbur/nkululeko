@@ -19,13 +19,13 @@ features = [
     # {'--feat': 'os',
     # '--set': 'ComParE_2016',
     # },
-    {"--feat": "audmodel"},
+    {"--feat": "praat"},
 ]
 
 
 for c in classifiers:
     for f in features:
-        cmd = "python -m nkululeko.nkuluflag --config exp.ini "
+        cmd = "python -m nkululeko.nkuluflag --config meta/demos/multiple_exeriments/exp.ini "
         for item in c:
             cmd += f"{item} {c[item]} "
         for item in f:
