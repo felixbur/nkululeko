@@ -34,8 +34,9 @@ class MLP_model(Model):
         else:
             self.util.error(f"unknown loss function: {criterion}")
         self.util.debug(f"using model with cross entropy loss function")
-        # set up the model
-        self.device = self.util.config_val("MODEL", "device", "cpu")
+        # set up the model, use GPU if availabe
+        cuda = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = self.util.config_val("MODEL", "device", cuda)
         try:
             layers_string = glob_conf.config["MODEL"]["layers"]
         except KeyError as ke:
@@ -86,7 +87,8 @@ class MLP_model(Model):
         losses = []
         for features, labels in self.trainloader:
             logits = self.model(features.to(self.device))
-            loss = self.criterion(logits, labels.to(self.device, dtype=torch.int64))
+            loss = self.criterion(logits, labels.to(
+                self.device, dtype=torch.int64))
             losses.append(loss.item())
             self.optimizer.zero_grad()
             loss.backward()
@@ -114,14 +116,16 @@ class MLP_model(Model):
 
         self.loss_eval = (np.asarray(losses)).mean()
         predictions = logits.argmax(dim=1)
-        uar = recall_score(targets.numpy(), predictions.numpy(), average="macro")
+        uar = recall_score(
+            targets.numpy(), predictions.numpy(), average="macro")
         return uar, targets, predictions
 
     def predict(self):
         _, truths, predictions = self.evaluate_model(
             self.model, self.testloader, self.device
         )
-        uar, _, _ = self.evaluate_model(self.model, self.trainloader, self.device)
+        uar, _, _ = self.evaluate_model(
+            self.model, self.trainloader, self.device)
         report = Reporter(truths, predictions, self.run, self.epoch)
         try:
             report.result.loss = self.loss
@@ -179,6 +183,9 @@ class MLP_model(Model):
             features = np.reshape(features, (-1, 1)).T
             logits = self.model(features.to(self.device))
             # logits = self.model(features)
+        # if tensor conver to cpu
+        if isinstance(logits, torch.Tensor):
+            logits = logits.cpu()
         a = logits.numpy()
         res = {}
         for i in range(len(a[0])):
@@ -196,7 +203,8 @@ class MLP_model(Model):
         dir = self.util.get_path("model_dir")
         # name = f'{self.util.get_exp_name()}_{run}_{epoch:03d}.model'
         name = f"{self.util.get_exp_name(only_train=True)}_{self.run}_{self.epoch:03d}.model"
-        self.device = self.util.config_val("MODEL", "device", "cpu")
+        cuda = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = self.util.config_val("MODEL", "device", cuda)
         layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])
         self.store_path = dir + name
         drop = self.util.config_val("MODEL", "drop", False)
@@ -211,7 +219,8 @@ class MLP_model(Model):
     def load_path(self, path, run, epoch):
         self.set_id(run, epoch)
         with open(path, "rb") as handle:
-            self.device = self.util.config_val("MODEL", "device", "cpu")
+            cuda = "cuda" if torch.cuda.is_available() else "cpu"
+            self.device = self.util.config_val("MODEL", "device", cuda)
             layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])
             self.store_path = path
             drop = self.util.config_val("MODEL", "drop", False)

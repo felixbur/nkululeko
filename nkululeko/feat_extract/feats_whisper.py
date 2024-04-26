@@ -32,19 +32,22 @@ class Whisper(Featureset):
         model_name = f"openai/{self.feat_type}"
         self.model = WhisperModel.from_pretrained(model_name).to(self.device)
         print(f"intialized Whisper model on {self.device}")
-        self.feature_extractor = AutoFeatureExtractor.from_pretrained(model_name)
+        self.feature_extractor = AutoFeatureExtractor.from_pretrained(
+            model_name)
         self.model_initialized = True
 
     def extract(self):
         """Extract the features or load them from disk if present."""
         store = self.util.get_path("store")
         storage = f"{store}{self.name}.pkl"
-        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
+        extract = self.util.config_val(
+            "FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             if not self.model_initialized:
                 self.init_model()
-            self.util.debug("extracting whisper embeddings, this might take a while...")
+            self.util.debug(
+                "extracting whisper embeddings, this might take a while...")
             emb_series = []
             for (file, start, end), _ in audeer.progress_bar(
                 self.data_df.iterrows(),
