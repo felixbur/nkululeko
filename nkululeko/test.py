@@ -10,20 +10,7 @@ from nkululeko.experiment import Experiment
 from nkululeko.utils.util import Util
 
 
-def main(src_dir):
-    parser = argparse.ArgumentParser(
-        description="Call the nkululeko TEST framework.")
-    parser.add_argument("--config", default="exp.ini",
-                        help="The base configuration")
-    parser.add_argument(
-        "--outfile",
-        default="my_results.csv",
-        help="File name to store the predictions",
-    )
-
-    args = parser.parse_args()
-
-    config_file = args.config
+def do_it(config_file, outfile):
 
     # test if the configuration file exists
     if not os.path.isfile(config_file):
@@ -48,9 +35,27 @@ def main(src_dir):
     expr.load(f"{util.get_save_name()}")
     expr.fill_tests()
     expr.extract_test_feats()
-    expr.predict_test_and_save(args.outfile)
+    result = expr.predict_test_and_save(outfile)
 
     print("DONE")
+
+    return result, 0
+
+
+def main(src_dir):
+    parser = argparse.ArgumentParser(description="Call the nkululeko TEST framework.")
+    parser.add_argument("--config", default="exp.ini", help="The base configuration")
+    parser.add_argument(
+        "--outfile",
+        default="my_results.csv",
+        help="File name to store the predictions",
+    )
+    args = parser.parse_args()
+    if args.config is not None:
+        config_file = args.config
+    else:
+        config_file = f"{src_dir}/exp.ini"
+    do_it(config_file, args.outfile)
 
 
 if __name__ == "__main__":
