@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.83.1
+--------------
+* add test module to nkuluflag
+
 Version 0.83.0
 --------------
 * test module now prints out reports

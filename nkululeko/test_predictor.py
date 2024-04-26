@@ -29,6 +29,7 @@ class TestPredictor:
 
     def predict_and_store(self):
         label_data = self.util.config_val("DATA", "label_data", False)
+        result = 0
         if label_data:
             data = Dataset(label_data)
             data.load()
@@ -57,6 +58,7 @@ class TestPredictor:
             test_dbs_string = "_".join(test_dbs)
             predictions = self.model.get_predictions()
             report = self.model.predict()
+            result = report.result.get_result()
             report.set_filename_add(f"test-{test_dbs_string}")
             self.util.print_best_results([report])
             report.plot_confmatrix(self.util.get_plot_name(), 0)
@@ -74,3 +76,4 @@ class TestPredictor:
                 df = df.rename(columns={"class_label": target})
             df.to_csv(self.name)
         self.util.debug(f"results stored in {self.name}")
+        return result
