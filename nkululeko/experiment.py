@@ -675,7 +675,8 @@ class Experiment:
         test_predictor = TestPredictor(
             model, self.df_test, self.label_encoder, result_name
         )
-        test_predictor.predict_and_store()
+        result = test_predictor.predict_and_store()
+        return result
 
     def load(self, filename):
         f = open(filename, "rb")
