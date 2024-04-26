@@ -1,6 +1,26 @@
 Changelog
 =========
 
+Version 0.83.0
+--------------
+* test module now prints out reports
+
+Version 0.82.4
+--------------
+* fixed bug in wavlm 
+
+Version 0.82.3
+--------------
+* fixed another audformat peculiarity to interprete time values as nanoseconds
+
+Version 0.82.2
+--------------
+* fixed audformat peculiarity that dataframes can have only one column
+
+Version 0.82.1
+--------------
+* Add more test for GC action
+
 Version 0.82.0
 --------------
 * added nkuluflag module

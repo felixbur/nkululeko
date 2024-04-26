@@ -22,7 +22,18 @@ class Dataset_CSV(Dataset):
         #     data_file = os.path.join(exp_root, data_file)
         root = os.path.dirname(data_file)
         audio_path = self.util.config_val_data(self.name, "audio_path", "")
-        df = audformat.utils.read_csv(data_file)
+        df = pd.read_csv(data_file)
+        # special treatment for segmented dataframes with only one column:
+        if "start" in df.columns and len(df.columns) == 4:
+            index = audformat.segmented_index(
+                df.file.values, df.start.values, df.end.values
+            )
+            df = df.set_index(index)
+            df = df.drop(columns=["file", "start", "end"])
+        else:
+            df = audformat.utils.read_csv(data_file)
+        if isinstance(df, pd.Series):
+            df = df.to_frame()
         rename_cols = self.util.config_val_data(self.name, "colnames", False)
         if rename_cols:
             col_dict = ast.literal_eval(rename_cols)

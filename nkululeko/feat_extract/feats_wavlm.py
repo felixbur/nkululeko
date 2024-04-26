@@ -4,27 +4,32 @@
 
 import os
 
-import nkululeko.glob_conf as glob_conf
 import pandas as pd
 import torch
 import torchaudio
-from nkululeko.feat_extract.featureset import Featureset
 from tqdm import tqdm
-from transformers import Wav2Vec2FeatureExtractor, WavLMModel
+from transformers import Wav2Vec2FeatureExtractor
+from transformers import WavLMModel
+
+from nkululeko.feat_extract.featureset import Featureset
+import nkululeko.glob_conf as glob_conf
 
 
 class Wavlm(Featureset):
-    """Class to extract WavLM embedding)"""
+    """Class to extract WavLM embedding)."""
 
-    def __init__(self, name, data_df, feat_type):
-        """Constructor. is_train is needed to distinguish from test/dev sets,
-        because they use the codebook from the training"""
-        super().__init__(name, data_df)
+    def __init__(self, name, data_df, feats_type):
+        """Constructor.
+
+        Is_train is needed to distinguish from test/dev sets,
+        because they use the codebook from the training.
+        """
+        super().__init__(name, data_df, feats_type)
         # check if device is not set, use cuda if available
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
         self.model_initialized = False
-        self.feat_type = feat_type
+        self.feat_type = feats_type
 
     def init_model(self):
         # load model
@@ -59,7 +64,9 @@ class Wavlm(Featureset):
                     frame_offset=int(start.total_seconds() * 16000),
                     num_frames=int((end - start).total_seconds() * 16000),
                 )
-                assert sampling_rate == 16000, f"sampling rate should be 16000 but is {sampling_rate}"
+                assert (
+                    sampling_rate == 16000
+                ), f"sampling rate should be 16000 but is {sampling_rate}"
                 emb = self.get_embeddings(signal, sampling_rate, file)
                 emb_series.iloc[idx] = emb
             self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
