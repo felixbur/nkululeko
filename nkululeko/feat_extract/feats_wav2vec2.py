@@ -21,7 +21,11 @@ class Wav2vec2(Featureset):
     """Class to extract wav2vec2 embeddings"""
 
     def __init__(self, name, data_df, feat_type):
-        """Constructor. is_train is needed to distinguish from test/dev sets, because they use the codebook from the training"""
+        """Constructor.
+
+        If_train is needed to distinguish from test/dev sets,
+        because they use the codebook from the training
+        """
         super().__init__(name, data_df, feat_type)
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
@@ -39,8 +43,7 @@ class Wav2vec2(Featureset):
         )
         config = transformers.AutoConfig.from_pretrained(model_path)
         layer_num = config.num_hidden_layers
-        hidden_layer = int(self.util.config_val(
-            "FEATS", "wav2vec2.layer", "0"))
+        hidden_layer = int(self.util.config_val("FEATS", "wav2vec2.layer", "0"))
         config.num_hidden_layers = layer_num - hidden_layer
         self.util.debug(f"using hidden layer #{config.num_hidden_layers}")
         self.processor = Wav2Vec2FeatureExtractor.from_pretrained(model_path)
@@ -55,8 +58,7 @@ class Wav2vec2(Featureset):
         """Extract the features or load them from disk if present."""
         store = self.util.get_path("store")
         storage = f"{store}{self.name}.pkl"
-        extract = self.util.config_val(
-            "FEATS", "needs_feature_extraction", False)
+        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             if not self.model_initialized:
@@ -77,8 +79,7 @@ class Wav2vec2(Featureset):
                 emb = self.get_embeddings(signal, sampling_rate, file)
                 emb_series[idx] = emb
             # print(f"emb_series shape: {emb_series.shape}")
-            self.df = pd.DataFrame(
-                emb_series.values.tolist(), index=self.data_df.index)
+            self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
             # print(f"df shape: {self.df.shape}")
             self.df.to_pickle(storage)
             try:
