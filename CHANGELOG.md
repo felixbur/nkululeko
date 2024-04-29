@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.83.2
+--------------
+* added default cuda if present and not stated
+
 Version 0.83.1
 --------------
 * add test module to nkuluflag

@@ -36,8 +36,9 @@ jobs:
     - name: Run csv-ravdess-praat-xgb
       run: |
         cd data/ravdess
-        wget https://zenodo.org/record/1188976/files/Audio_Speech_Actors_01-24.zip
-        unzip Audio_Speech_Actors_01-24.zip
+        # wget https://zenodo.org/record/1188976/files/Audio_Speech_Actors_01-24.zip
+        wget https://zenodo.org/records/11063852/files/Audio_Speech_Actors_01-24_16k.zip
+        unzip Audio_Speech_Actors_01-24_16k.zip
         cd ../..
         python3 -m nkululeko.nkululeko --config data/ravdess/exp_praat_xgb.ini > output1.txt
         if grep -q "DONE" output1.txt; then

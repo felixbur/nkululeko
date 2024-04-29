@@ -679,9 +679,12 @@ class Experiment:
         return result
 
     def load(self, filename):
-        f = open(filename, "rb")
-        tmp_dict = pickle.load(f)
-        f.close()
+        try:
+            f = open(filename, "rb")
+            tmp_dict = pickle.load(f)
+            f.close()
+        except EOFError as eof:
+            self.util.error(f"can't open file {filename}: {eof}")
         self.__dict__.update(tmp_dict)
         glob_conf.set_labels(self.labels)
 

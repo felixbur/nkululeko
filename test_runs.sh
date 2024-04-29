@@ -84,8 +84,10 @@ function Multi {
 function Spot {
     python -m nkululeko.explore --config tests/exp_explore.ini
 }
-
-Help
+if [ $# -eq 0 ] || [ "$1" == "--help" ]; then
+    Help
+    exit 0
+fi
 for arg in "$@"; do
   if [[ "$arg" = --Explore ]] || [[ "$arg" = --all ]]; then
     Explore
