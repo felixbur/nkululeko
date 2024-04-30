@@ -75,6 +75,8 @@ function Demo {
 function Test {
     python -m nkululeko.nkululeko --config tests/exp_emodb_os_xgb_test.ini
     python -m nkululeko.test --config tests/exp_emodb_os_xgb_test.ini
+    python -m nkululeko.nkululeko --config tests/exp_emodb_wav2vec2_xgb_test.ini
+    python -m nkululeko.test --config tests/exp_emodb_wav2vec2_xgb_test.ini
 }
 # test multidb
 function Multi {
@@ -86,7 +88,6 @@ function Spot {
 }
 if [ $# -eq 0 ] || [ "$1" == "--help" ]; then
     Help
-    exit 0
 fi
 for arg in "$@"; do
   if [[ "$arg" = --Explore ]] || [[ "$arg" = --all ]]; then
