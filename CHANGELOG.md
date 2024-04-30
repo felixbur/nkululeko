@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.83.3
+--------------
+* fixed a naming error in trill features that prevented storage of experiment
+
 Version 0.83.2
 --------------
 * added default cuda if present and not stated

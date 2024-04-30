@@ -75,6 +75,8 @@ function Demo {
 function Test {
     python -m nkululeko.nkululeko --config tests/exp_emodb_os_xgb_test.ini
     python -m nkululeko.test --config tests/exp_emodb_os_xgb_test.ini
+    python -m nkululeko.nkululeko --config tests/exp_emodb_trill_test.ini
+    python -m nkululeko.test --config tests/exp_emodb_trill_test.ini
     python -m nkululeko.nkululeko --config tests/exp_emodb_wav2vec2_xgb_test.ini
     python -m nkululeko.test --config tests/exp_emodb_wav2vec2_xgb_test.ini
 }
