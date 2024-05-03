@@ -11,10 +11,9 @@ class GMM_model(Model):
 
     def __init__(self, df_train, df_test, feats_train, feats_test):
         super().__init__(df_train, df_test, feats_train, feats_test)
+        self.name = "gmm"
         n_components = int(self.util.config_val("MODEL", "GMM_components", "4"))
-        covariance_type = self.util.config_val(
-            "MODEL", "GMM_covariance_type", "full"
-        )
+        covariance_type = self.util.config_val("MODEL", "GMM_covariance_type", "full")
         self.clf = mixture.GaussianMixture(
             n_components=n_components, covariance_type=covariance_type
         )

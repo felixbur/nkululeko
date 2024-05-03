@@ -5,20 +5,22 @@ import pickle
 import random
 import time
 
-import audeer
-import audformat
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
-import nkululeko.glob_conf as glob_conf
+import audeer
+import audformat
+
 from nkululeko.data.dataset import Dataset
 from nkululeko.data.dataset_csv import Dataset_CSV
 from nkululeko.demo_predictor import Demo_predictor
 from nkululeko.feat_extract.feats_analyser import FeatureAnalyser
 from nkululeko.feature_extractor import FeatureExtractor
 from nkululeko.file_checker import FileChecker
-from nkululeko.filter_data import DataFilter, filter_min_dur
+from nkululeko.filter_data import DataFilter
+from nkululeko.filter_data import filter_min_dur
+import nkululeko.glob_conf as glob_conf
 from nkululeko.plots import Plots
 from nkululeko.reporting.report import Report
 from nkululeko.runmanager import Runmanager
@@ -101,6 +103,7 @@ class Experiment:
                 self.got_speaker = True
             self.datasets.update({d: data})
         self.target = self.util.config_val("DATA", "target", "emotion")
+        glob_conf.set_target(self.target)
         # print target via debug
         self.util.debug(f"target: {self.target}")
         # print keys/column
@@ -487,11 +490,7 @@ class Experiment:
         return df_ret
 
     def analyse_features(self, needs_feats):
-        """
-        Do a feature exploration
-
-        """
-
+        """Do a feature exploration."""
         plot_feats = eval(
             self.util.config_val("EXPL", "feature_distributions", "False")
         )
@@ -511,7 +510,7 @@ class Experiment:
                 f"unknown sample selection specifier {sample_selection}, should"
                 " be [all | train | test]"
             )
-
+        self.util.debug(f"sampling selection: {sample_selection}")
         if self.util.config_val("EXPL", "value_counts", False):
             self.plot_distribution(df_labels)
 
@@ -537,9 +536,13 @@ class Experiment:
                 f"unknown sample selection specifier {sample_selection}, should"
                 " be [all | train | test]"
             )
+        feat_analyser = FeatureAnalyser(sample_selection, df_labels, df_feats)
+        # check if SHAP features should be analysed
+        shap = eval(self.util.config_val("EXPL", "shap", "False"))
+        if shap:
+            feat_analyser.analyse_shap(self.runmgr.get_best_model())
 
         if plot_feats:
-            feat_analyser = FeatureAnalyser(sample_selection, df_labels, df_feats)
             feat_analyser.analyse()
 
         # check if a scatterplot should be done
@@ -692,7 +695,7 @@ class Experiment:
         if self.runmgr.modelrunner.model.is_ann():
             self.runmgr.modelrunner.model = None
             self.util.warn(
-                "Save experiment: Can't pickle the learning model so saving without it."
+                "Save experiment: Can't pickle the trained model so saving without it. (it should be stored anyway)"
             )
         try:
             f = open(filename, "wb")

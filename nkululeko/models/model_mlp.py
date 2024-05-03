@@ -1,4 +1,6 @@
 # model_mlp.py
+import pandas as pd
+
 from nkululeko.utils.util import Util
 import nkululeko.glob_conf as glob_conf
 from nkululeko.models.model import Model
@@ -20,6 +22,7 @@ class MLP_model(Model):
         """Constructor taking the configuration and all dataframes"""
         super().__init__(df_train, df_test, feats_train, feats_test)
         super().set_model_type("ann")
+        self.name = "mlp"
         self.target = glob_conf.config["DATA"]["target"]
         labels = glob_conf.labels
         self.class_num = len(labels)
@@ -87,8 +90,7 @@ class MLP_model(Model):
         losses = []
         for features, labels in self.trainloader:
             logits = self.model(features.to(self.device))
-            loss = self.criterion(logits, labels.to(
-                self.device, dtype=torch.int64))
+            loss = self.criterion(logits, labels.to(self.device, dtype=torch.int64))
             losses.append(loss.item())
             self.optimizer.zero_grad()
             loss.backward()
@@ -116,16 +118,14 @@ class MLP_model(Model):
 
         self.loss_eval = (np.asarray(losses)).mean()
         predictions = logits.argmax(dim=1)
-        uar = recall_score(
-            targets.numpy(), predictions.numpy(), average="macro")
+        uar = recall_score(targets.numpy(), predictions.numpy(), average="macro")
         return uar, targets, predictions
 
     def predict(self):
         _, truths, predictions = self.evaluate_model(
             self.model, self.testloader, self.device
         )
-        uar, _, _ = self.evaluate_model(
-            self.model, self.trainloader, self.device)
+        uar, _, _ = self.evaluate_model(self.model, self.trainloader, self.device)
         report = Reporter(truths, predictions, self.run, self.epoch)
         try:
             report.result.loss = self.loss
@@ -176,8 +176,18 @@ class MLP_model(Model):
             x = x.squeeze(dim=1).float()
             return self.linear(x)
 
+    def predict_shap(self, features):
+        # predict outputs for all samples in SHAP format (pd. dataframe)
+        results = []
+        for index, row in features.iterrows():
+            feats = row.values
+            res_dict = self.predict_sample(feats)
+            class_key = max(res_dict, key=res_dict.get)
+            results.append(class_key)
+        return results
+
     def predict_sample(self, features):
-        """Predict one sample"""
+        """Predict one sample."""
         with torch.no_grad():
             features = torch.from_numpy(features)
             features = np.reshape(features, (-1, 1)).T

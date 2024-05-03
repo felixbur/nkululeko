@@ -330,7 +330,9 @@
 * **dist_type**: type of plot for value counts, either histogram or density estimation (kde)
   * dist_type = hist
 * **spotlight**: open a web-browser window to inspect the data with the [spotlight software](https://github.com/Renumics/spotlight). Needs package *renumics-spotlight* to be installed!
-  * spotlight = False 
+  * spotlight = False
+* **shap**: comopute [SHAP](https://shap.readthedocs.io/en/latest/) values
+  * shap = False
 ### [PREDICT](#predict) 
 * **targets**: Speaker/speech characteristics to be predicted by some models
   * targets = ['gender', 'age', 'snr', 'arousal', 'valence', 'dominance', 'pesq', 'mos']

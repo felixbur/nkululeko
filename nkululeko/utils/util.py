@@ -1,10 +1,13 @@
 # util.py
-import pandas as pd
 import ast
-import sys
-import numpy as np
-import os.path
 import configparser
+import os.path
+import pickle
+import sys
+
+import numpy as np
+import pandas as pd
+
 import audeer
 import audformat
 
@@ -294,6 +297,28 @@ class Util:
                 f"\nmean: {vals.mean():.3f}, max: {vals.max():.3f}, max_index:"
                 f" {vals.argmax()}"
             )
+
+    def exist_pickle(self, name):
+        store = self.get_path("store")
+        name = "/".join([store, name]) + ".pkl"
+        if os.path.isfile(name):
+            return True
+        return False
+
+    def to_pickle(self, anyobject, name):
+        store = self.get_path("store")
+        name = "/".join([store, name]) + ".pkl"
+        self.debug(f"saving {name}")
+        with open(name, "wb") as handle:
+            pickle.dump(anyobject, handle)
+
+    def from_pickle(self, name):
+        store = self.get_path("store")
+        name = "/".join([store, name]) + ".pkl"
+        self.debug(f"loading {name}")
+        with open(name, "rb") as handle:
+            any_opject = pickle.load(handle)
+        return any_opject
 
     def write_store(self, df, storage, format):
         if format == "pkl":

@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.84.0
+--------------
+* added SHAP analysis
+* started with finetuning
+
 Version 0.83.3
 --------------
 * fixed a naming error in trill features that prevented storage of experiment

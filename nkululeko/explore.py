@@ -12,9 +12,9 @@ from nkululeko.utils.util import Util
 
 def main(src_dir):
     parser = argparse.ArgumentParser(
-        description="Call the nkululeko EXPLORE framework.")
-    parser.add_argument("--config", default="exp.ini",
-                        help="The base configuration")
+        description="Call the nkululeko EXPLORE framework."
+    )
+    parser.add_argument("--config", default="exp.ini", help="The base configuration")
     args = parser.parse_args()
     if args.config is not None:
         config_file = args.config
@@ -43,28 +43,34 @@ def main(src_dir):
         import warnings
 
         warnings.filterwarnings("ignore")
-
-    # load the data
-    expr.load_datasets()
-
-    # split into train and test
-    expr.fill_train_and_tests()
-    util.debug(
-        f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}")
-
-    plot_feats = eval(util.config_val(
-        "EXPL", "feature_distributions", "False"))
-    tsne = eval(util.config_val("EXPL", "tsne", "False"))
-    scatter = eval(util.config_val("EXPL", "scatter", "False"))
-    spotlight = eval(util.config_val("EXPL", "spotlight", "False"))
-    model_type = util.config_val("EXPL", "model", False)
-    plot_tree = eval(util.config_val("EXPL", "plot_tree", "False"))
     needs_feats = False
-    if plot_feats or tsne or scatter or model_type or plot_tree:
-        # these investigations need features to explore
-        expr.extract_feats()
+    try:
+        # load the experiment
+        expr.load(f"{util.get_save_name()}")
         needs_feats = True
-    # explore
+    except FileNotFoundError:
+        # first time: load the data
+        expr.load_datasets()
+
+        # split into train and test
+        expr.fill_train_and_tests()
+        util.debug(
+            f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}"
+        )
+
+        plot_feats = eval(util.config_val("EXPL", "feature_distributions", "False"))
+        tsne = eval(util.config_val("EXPL", "tsne", "False"))
+        scatter = eval(util.config_val("EXPL", "scatter", "False"))
+        spotlight = eval(util.config_val("EXPL", "spotlight", "False"))
+        shap = eval(util.config_val("EXPL", "shap", "False"))
+        model_type = util.config_val("EXPL", "model", False)
+        plot_tree = eval(util.config_val("EXPL", "plot_tree", "False"))
+        needs_feats = False
+        if plot_feats or tsne or scatter or model_type or plot_tree or shap:
+            # these investigations need features to explore
+            expr.extract_feats()
+            needs_feats = True
+        # explore
     expr.analyse_features(needs_feats)
     expr.store_report()
     print("DONE")

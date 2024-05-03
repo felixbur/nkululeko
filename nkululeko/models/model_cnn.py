@@ -34,7 +34,8 @@ class CNN_model(Model):
         """Constructor taking the configuration and all dataframes"""
         super().__init__(df_train, df_test, feats_train, feats_test)
         super().set_model_type("ann")
-        self.target = glob_conf.config["DATA"]["target"]
+        self.name = "cnn"
+        self.target = glob_conf.target
         labels = glob_conf.labels
         self.class_num = len(labels)
         # set up loss criterion
@@ -86,8 +87,7 @@ class CNN_model(Model):
         train_set = self.Dataset_image(
             feats_train, df_train, self.target, transformations
         )
-        test_set = self.Dataset_image(
-            feats_test, df_test, self.target, transformations)
+        test_set = self.Dataset_image(feats_test, df_test, self.target, transformations)
         # Define data loaders
         self.trainloader = torch.utils.data.DataLoader(
             train_set,
@@ -140,8 +140,7 @@ class CNN_model(Model):
         losses = []
         for images, labels in self.trainloader:
             logits = self.model(images.to(self.device))
-            loss = self.criterion(logits, labels.to(
-                self.device, dtype=torch.int64))
+            loss = self.criterion(logits, labels.to(self.device, dtype=torch.int64))
             losses.append(loss.item())
             self.optimizer.zero_grad()
             loss.backward()
@@ -169,16 +168,14 @@ class CNN_model(Model):
 
         self.loss_eval = (np.asarray(losses)).mean()
         predictions = logits.argmax(dim=1)
-        uar = recall_score(
-            targets.numpy(), predictions.numpy(), average="macro")
+        uar = recall_score(targets.numpy(), predictions.numpy(), average="macro")
         return uar, targets, predictions
 
     def predict(self):
         _, truths, predictions = self.evaluate_model(
             self.model, self.testloader, self.device
         )
-        uar, _, _ = self.evaluate_model(
-            self.model, self.trainloader, self.device)
+        uar, _, _ = self.evaluate_model(self.model, self.trainloader, self.device)
         report = Reporter(truths, predictions, self.run, self.epoch)
         try:
             report.result.loss = self.loss

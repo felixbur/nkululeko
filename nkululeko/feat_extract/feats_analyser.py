@@ -40,6 +40,39 @@ class FeatureAnalyser:
             importance = model.feature_importances_
         return importance
 
+    def analyse_shap(self, model):
+        """Shap analysis.
+
+        Use the best model from a previous run and analyse feature importance with SHAP.
+        https://m.mage.ai/how-to-interpret-and-explain-your-machine-learning-models-using-shap-values-471c2635b78e.
+        """
+        import shap
+
+        name = "my_shap_values"
+        if not self.util.exist_pickle(name):
+
+            explainer = shap.Explainer(
+                model.predict_shap,
+                self.features,
+                output_names=glob_conf.labels,
+                algorithm="permutation",
+                npermutations=5,
+            )
+            self.util.debug("computing SHAP values...")
+            shap_values = explainer(self.features)
+            self.util.to_pickle(shap_values, name)
+        else:
+            shap_values = self.util.from_pickle(name)
+        plt.tight_layout()
+        shap.plots.bar(shap_values)
+        fig_dir = self.util.get_path("fig_dir") + "../"  # one up because of the runs
+        exp_name = self.util.get_exp_name(only_data=True)
+        format = self.util.config_val("PLOT", "format", "png")
+        filename = f"_SHAP_{model.name}"
+        filename = f"{fig_dir}{exp_name}{filename}.{format}"
+        plt.savefig(filename)
+        self.util.debug(f"plotted SHAP feature importance tp {filename}")
+
     def analyse(self):
         models = ast.literal_eval(self.util.config_val("EXPL", "model", "['log_reg']"))
         model_name = "_".join(models)

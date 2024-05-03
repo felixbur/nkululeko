@@ -25,6 +25,7 @@ class MLP_Reg_model(Model):
     def __init__(self, df_train, df_test, feats_train, feats_test):
         """Constructor taking the configuration and all dataframes"""
         super().__init__(df_train, df_test, feats_train, feats_test)
+        self.name = "mlp_reg"
         super().set_model_type("ann")
         self.target = glob_conf.config["DATA"]["target"]
         labels = glob_conf.labels
@@ -52,8 +53,7 @@ class MLP_Reg_model(Model):
         drop = self.util.config_val("MODEL", "drop", False)
         if drop:
             self.util.debug(f"training with dropout: {drop}")
-        self.model = self.MLP(
-            feats_train.shape[1], layers, 1, drop).to(self.device)
+        self.model = self.MLP(feats_train.shape[1], layers, 1, drop).to(self.device)
         self.learning_rate = float(
             self.util.config_val("MODEL", "learning_rate", 0.0001)
         )
@@ -96,10 +96,8 @@ class MLP_Reg_model(Model):
         _, truths, predictions = self.evaluate_model(
             self.model, self.testloader, self.device
         )
-        result, _, _ = self.evaluate_model(
-            self.model, self.trainloader, self.device)
-        report = Reporter(truths.numpy(), predictions.numpy(),
-                          self.run, self.epoch)
+        result, _, _ = self.evaluate_model(self.model, self.trainloader, self.device)
+        report = Reporter(truths.numpy(), predictions.numpy(), self.run, self.epoch)
         try:
             report.result.loss = self.loss
         except AttributeError:  # if the model was loaded from disk the loss is unknown
@@ -133,11 +131,9 @@ class MLP_Reg_model(Model):
 
         def __getitem__(self, item):
             index = self.df.index[item]
-            features = self.df_features.loc[index, :].values.astype(
-                "float32").squeeze()
+            features = self.df_features.loc[index, :].values.astype("float32").squeeze()
             labels = (
-                np.array([self.df.loc[index, self.label]]
-                         ).astype("float32").squeeze()
+                np.array([self.df.loc[index, self.label]]).astype("float32").squeeze()
             )
             return features, labels
 
@@ -194,8 +190,7 @@ class MLP_Reg_model(Model):
                 end_index = (index + 1) * loader.batch_size
                 if end_index > len(loader.dataset):
                     end_index = len(loader.dataset)
-                logits[start_index:end_index] = model(
-                    features.to(device)).reshape(-1)
+                logits[start_index:end_index] = model(features.to(device)).reshape(-1)
                 targets[start_index:end_index] = labels
                 loss = self.criterion(
                     logits[start_index:end_index].to(

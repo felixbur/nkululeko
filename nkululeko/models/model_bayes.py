@@ -12,3 +12,4 @@ class Bayes_model(Model):
     def __init__(self, df_train, df_test, feats_train, feats_test):
         super().__init__(df_train, df_test, feats_train, feats_test)
         self.clf = GaussianNB()  # set up the classifier
+        self.name = "bayes"

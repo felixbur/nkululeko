@@ -2,8 +2,9 @@
 # Demonstration code to use the ML-experiment framework
 # Test the loading of a previously trained model and demo mode
 # needs the project config file to run before
-"""
-This script is used to test the loading of a previously trained model and run it in demo mode.
+"""This script is used to test the loading of a previously trained model.
+
+And run it in demo mode.
 It requires the project config file to be run before.
 
 Usage:  
@@ -20,17 +21,15 @@ import argparse
 import configparser
 import os
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.constants import VERSION
 from nkululeko.experiment import Experiment
+import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.util import Util
 
 
 def main(src_dir):
-    parser = argparse.ArgumentParser(
-        description="Call the nkululeko DEMO framework.")
-    parser.add_argument("--config", default="exp.ini",
-                        help="The base configuration")
+    parser = argparse.ArgumentParser(description="Call the nkululeko DEMO framework.")
+    parser.add_argument("--config", default="exp.ini", help="The base configuration")
     parser.add_argument(
         "--file", help="A file that should be processed (16kHz mono wav)"
     )
