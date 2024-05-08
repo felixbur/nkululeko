@@ -10,20 +10,21 @@ function Help {
     echo "Options:"
     echo "  nkululeko: test basic nkululeko"
     echo "  augment: test augmentation"
-    echo "  pred: test prediction"
+    echo "  predict: test prediction"
     echo "  demo: test demo"
     echo "  test: test test module"
-    echo "  multi: test multidb"
+    echo "  multidb: test multidb"
     echo "  explore: test explore module (must be run last)"
     echo "  all: test all modules"
     echo "  --help: display this help message"
 }
 
 # rm results dir if argument is "nkululeko" or "all"
+# TODO: move root to /tmp so no need to do this
 if [ "$1" == "nkululeko" ] || [ "$1" == "all" ]; then
     echo "Removing (old) results directory and create if not exist"
-    rm -rf results/*
-    mkdir -p results
+    rm -rf tests/results/*
+    mkdir -p tests/results
 fi
 
 # Run a test and check for errors
@@ -134,11 +135,12 @@ do
         else
             RunTest python3 -m "nkululeko.$module" --config "tests/$ini_file"
         fi
+
         if [ $? -eq 0 ]; then
             ((success_count++))
         else
             ((failed_count++))
-            failed_modules+=("$module $ini_file")
+            failed_modules+=("$module with $ini_file")
         fi
     done
 done
@@ -152,8 +154,6 @@ if [ ${#failed_modules[@]} -gt 0 ]; then
         echo "$failed_module"
     done
 fi
-
-
 
 end_time=$(date +%s)
 total_time=$((end_time - start_time))
