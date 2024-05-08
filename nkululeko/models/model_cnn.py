@@ -16,6 +16,7 @@ import numpy as np
 from sklearn.metrics import recall_score
 from collections import OrderedDict
 from PIL import Image
+from traitlets import default
 
 from nkululeko.utils.util import Util
 import nkululeko.glob_conf as glob_conf
@@ -33,7 +34,8 @@ class CNN_model(Model):
         """Constructor taking the configuration and all dataframes"""
         super().__init__(df_train, df_test, feats_train, feats_test)
         super().set_model_type("ann")
-        self.target = glob_conf.config["DATA"]["target"]
+        self.name = "cnn"
+        self.target = glob_conf.target
         labels = glob_conf.labels
         self.class_num = len(labels)
         # set up loss criterion
@@ -48,6 +50,7 @@ class CNN_model(Model):
             self.util.error(f"unknown loss function: {criterion}")
         self.util.debug(f"using model with cross entropy loss function")
         # set up the model
+        # cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", "cpu")
         try:
             layers_string = glob_conf.config["MODEL"]["layers"]
@@ -209,7 +212,8 @@ class CNN_model(Model):
         dir = self.util.get_path("model_dir")
         # name = f'{self.util.get_exp_name()}_{run}_{epoch:03d}.model'
         name = f"{self.util.get_exp_name(only_train=True)}_{self.run}_{self.epoch:03d}.model"
-        self.device = self.util.config_val("MODEL", "device", "cpu")
+        cuda = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = self.util.config_val("MODEL", "device", cuda)
         layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])
         self.store_path = dir + name
         drop = self.util.config_val("MODEL", "drop", False)
@@ -222,7 +226,8 @@ class CNN_model(Model):
     def load_path(self, path, run, epoch):
         self.set_id(run, epoch)
         with open(path, "rb") as handle:
-            self.device = self.util.config_val("MODEL", "device", "cpu")
+            cuda = "cuda" if torch.cuda.is_available() else "cpu"
+            self.device = self.util.config_val("MODEL", "device", cuda)
             layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])
             self.store_path = path
             drop = self.util.config_val("MODEL", "drop", False)

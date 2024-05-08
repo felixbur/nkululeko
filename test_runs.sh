@@ -39,6 +39,8 @@ function Nkulu {
 # test features
 function Feat {
     python -m nkululeko.nkululeko --config tests/exp_emodb_hubert_xgb.ini 
+    python -m nkululeko.nkululeko --config tests/exp_emodb_audmodel_xgb.ini 
+    python -m nkululeko.nkululeko --config tests/exp_emodb_wavlm_xgb.ini 
     python -m nkululeko.nkululeko --config tests/exp_emodb_whisper_xgb.ini 
 }
 # test augmentation
@@ -73,6 +75,10 @@ function Demo {
 function Test {
     python -m nkululeko.nkululeko --config tests/exp_emodb_os_xgb_test.ini
     python -m nkululeko.test --config tests/exp_emodb_os_xgb_test.ini
+    python -m nkululeko.nkululeko --config tests/exp_emodb_trill_test.ini
+    python -m nkululeko.test --config tests/exp_emodb_trill_test.ini
+    python -m nkululeko.nkululeko --config tests/exp_emodb_wav2vec2_test.ini
+    python -m nkululeko.test --config tests/exp_emodb_wav2vec2_test.ini
 }
 # test multidb
 function Multi {
@@ -82,8 +88,9 @@ function Multi {
 function Spot {
     python -m nkululeko.explore --config tests/exp_explore.ini
 }
-
-Help
+if [ $# -eq 0 ] || [ "$1" == "--help" ]; then
+    Help
+fi
 for arg in "$@"; do
   if [[ "$arg" = --Explore ]] || [[ "$arg" = --all ]]; then
     Explore

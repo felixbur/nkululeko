@@ -9,6 +9,7 @@ import torch
 from audmetric import concordance_cc
 from audmetric import mean_absolute_error
 from audmetric import mean_squared_error
+from traitlets import default
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.losses.loss_ccc import ConcordanceCorCoeff
@@ -24,6 +25,7 @@ class MLP_Reg_model(Model):
     def __init__(self, df_train, df_test, feats_train, feats_test):
         """Constructor taking the configuration and all dataframes"""
         super().__init__(df_train, df_test, feats_train, feats_test)
+        self.name = "mlp_reg"
         super().set_model_type("ann")
         self.target = glob_conf.config["DATA"]["target"]
         labels = glob_conf.labels
@@ -40,7 +42,8 @@ class MLP_Reg_model(Model):
             self.util.error(f"unknown loss function: {criterion}")
         self.util.debug(f"training model with {criterion} loss function")
         # set up the model
-        self.device = self.util.config_val("MODEL", "device", "cpu")
+        cuda = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = self.util.config_val("MODEL", "device", cuda)
         layers_string = glob_conf.config["MODEL"]["layers"]
         self.util.debug(f"using layers {layers_string}")
         try:

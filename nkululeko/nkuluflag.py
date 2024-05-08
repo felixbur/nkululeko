@@ -2,13 +2,16 @@ import argparse
 import configparser
 import os
 import os.path
+import sys
 
 from nkululeko.nkululeko import doit as nkulu
+from nkululeko.test import do_it as test_mod
 
 
-def do_it(src_dir):
+def doit(cla):
     parser = argparse.ArgumentParser(description="Call the nkululeko framework.")
     parser.add_argument("--config", help="The base configuration")
+    parser.add_argument("--mod", default="nkulu", help="Which nkululeko module to call")
     parser.add_argument("--data", help="The databases", nargs="*", action="append")
     parser.add_argument(
         "--label", nargs="*", help="The labels for the target", action="append"
@@ -25,20 +28,23 @@ def do_it(src_dir):
     parser.add_argument("--model", default="xgb", help="The model type")
     parser.add_argument("--feat", default="['os']", help="The feature type")
     parser.add_argument("--set", help="The opensmile set")
-    parser.add_argument("--with_os", help="To add os features")
     parser.add_argument("--target", help="The target designation")
     parser.add_argument("--epochs", help="The number of epochs")
     parser.add_argument("--runs", help="The number of runs")
     parser.add_argument("--learning_rate", help="The learning rate")
     parser.add_argument("--drop", help="The dropout rate [0:1]")
 
-    args = parser.parse_args()
+    args = parser.parse_args(cla)
 
     if args.config is not None:
         config_file = args.config
     else:
         print("ERROR: need config file")
         quit(-1)
+
+    if args.mod is not None:
+        nkulu_mod = args.mod
+
     # test if config is there
     if not os.path.isfile(config_file):
         print(f"ERROR: no such file {config_file}")
@@ -86,10 +92,17 @@ def do_it(src_dir):
     with open(tmp_config, "w") as tmp_file:
         config.write(tmp_file)
 
-    result, last_epoch = nkulu(tmp_config)
+    result, last_epoch = 0, 0
+    if nkulu_mod == "nkulu":
+        result, last_epoch = nkulu(tmp_config)
+    elif nkulu_mod == "test":
+        result, last_epoch = test_mod(tmp_config, "test_results.csv")
+    else:
+        print(f"ERROR: unknown module: {nkulu_mod}, should be [nkulu | test]")
     return result, last_epoch
 
 
 if __name__ == "__main__":
-    cwd = os.path.dirname(os.path.abspath(__file__))
-    do_it(cwd)  # sys.argv[1])
+    cla = sys.argv
+    cla.pop(0)
+    doit(cla)  # sys.argv[1])

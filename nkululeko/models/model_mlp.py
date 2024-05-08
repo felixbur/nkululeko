@@ -1,4 +1,6 @@
 # model_mlp.py
+import pandas as pd
+
 from nkululeko.utils.util import Util
 import nkululeko.glob_conf as glob_conf
 from nkululeko.models.model import Model
@@ -20,6 +22,7 @@ class MLP_model(Model):
         """Constructor taking the configuration and all dataframes"""
         super().__init__(df_train, df_test, feats_train, feats_test)
         super().set_model_type("ann")
+        self.name = "mlp"
         self.target = glob_conf.config["DATA"]["target"]
         labels = glob_conf.labels
         self.class_num = len(labels)
@@ -34,8 +37,9 @@ class MLP_model(Model):
         else:
             self.util.error(f"unknown loss function: {criterion}")
         self.util.debug(f"using model with cross entropy loss function")
-        # set up the model
-        self.device = self.util.config_val("MODEL", "device", "cpu")
+        # set up the model, use GPU if availabe
+        cuda = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = self.util.config_val("MODEL", "device", cuda)
         try:
             layers_string = glob_conf.config["MODEL"]["layers"]
         except KeyError as ke:
@@ -172,13 +176,26 @@ class MLP_model(Model):
             x = x.squeeze(dim=1).float()
             return self.linear(x)
 
+    def predict_shap(self, features):
+        # predict outputs for all samples in SHAP format (pd. dataframe)
+        results = []
+        for index, row in features.iterrows():
+            feats = row.values
+            res_dict = self.predict_sample(feats)
+            class_key = max(res_dict, key=res_dict.get)
+            results.append(class_key)
+        return results
+
     def predict_sample(self, features):
-        """Predict one sample"""
+        """Predict one sample."""
         with torch.no_grad():
             features = torch.from_numpy(features)
             features = np.reshape(features, (-1, 1)).T
             logits = self.model(features.to(self.device))
             # logits = self.model(features)
+        # if tensor conver to cpu
+        if isinstance(logits, torch.Tensor):
+            logits = logits.cpu()
         a = logits.numpy()
         res = {}
         for i in range(len(a[0])):
@@ -196,7 +213,8 @@ class MLP_model(Model):
         dir = self.util.get_path("model_dir")
         # name = f'{self.util.get_exp_name()}_{run}_{epoch:03d}.model'
         name = f"{self.util.get_exp_name(only_train=True)}_{self.run}_{self.epoch:03d}.model"
-        self.device = self.util.config_val("MODEL", "device", "cpu")
+        cuda = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = self.util.config_val("MODEL", "device", cuda)
         layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])
         self.store_path = dir + name
         drop = self.util.config_val("MODEL", "drop", False)
@@ -211,7 +229,8 @@ class MLP_model(Model):
     def load_path(self, path, run, epoch):
         self.set_id(run, epoch)
         with open(path, "rb") as handle:
-            self.device = self.util.config_val("MODEL", "device", "cpu")
+            cuda = "cuda" if torch.cuda.is_available() else "cpu"
+            self.device = self.util.config_val("MODEL", "device", cuda)
             layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])
             self.store_path = path
             drop = self.util.config_val("MODEL", "drop", False)

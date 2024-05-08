@@ -1,10 +1,11 @@
 # demo_predictor.py
 import os
 
-import audformat
-import audiofile
 import numpy as np
 import pandas as pd
+
+import audformat
+import audiofile
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.util import Util
@@ -12,7 +13,7 @@ from nkululeko.utils.util import Util
 
 class Demo_predictor:
     def __init__(self, model, file, is_list, feature_extractor, label_encoder, outfile):
-        """Constructor setting up name and configuration"""
+        """Constructor setting up name and configuration."""
         self.model = model
         self.feature_extractor = feature_extractor
         self.label_encoder = label_encoder

@@ -5,25 +5,27 @@ import pickle
 import random
 import time
 
-import audeer
-import audformat
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
-import nkululeko.glob_conf as glob_conf
+import audeer
+import audformat
+
 from nkululeko.data.dataset import Dataset
 from nkululeko.data.dataset_csv import Dataset_CSV
 from nkululeko.demo_predictor import Demo_predictor
 from nkululeko.feat_extract.feats_analyser import FeatureAnalyser
 from nkululeko.feature_extractor import FeatureExtractor
 from nkululeko.file_checker import FileChecker
-from nkululeko.filter_data import DataFilter, filter_min_dur
+from nkululeko.filter_data import DataFilter
+from nkululeko.filter_data import filter_min_dur
+import nkululeko.glob_conf as glob_conf
 from nkululeko.plots import Plots
 from nkululeko.reporting.report import Report
 from nkululeko.runmanager import Runmanager
 from nkululeko.scaler import Scaler
-from nkululeko.test_predictor import Test_predictor
+from nkululeko.test_predictor import TestPredictor
 from nkululeko.utils.util import Util
 
 
@@ -101,6 +103,7 @@ class Experiment:
                 self.got_speaker = True
             self.datasets.update({d: data})
         self.target = self.util.config_val("DATA", "target", "emotion")
+        glob_conf.set_target(self.target)
         # print target via debug
         self.util.debug(f"target: {self.target}")
         # print keys/column
@@ -487,11 +490,7 @@ class Experiment:
         return df_ret
 
     def analyse_features(self, needs_feats):
-        """
-        Do a feature exploration
-
-        """
-
+        """Do a feature exploration."""
         plot_feats = eval(
             self.util.config_val("EXPL", "feature_distributions", "False")
         )
@@ -511,7 +510,7 @@ class Experiment:
                 f"unknown sample selection specifier {sample_selection}, should"
                 " be [all | train | test]"
             )
-
+        self.util.debug(f"sampling selection: {sample_selection}")
         if self.util.config_val("EXPL", "value_counts", False):
             self.plot_distribution(df_labels)
 
@@ -537,9 +536,13 @@ class Experiment:
                 f"unknown sample selection specifier {sample_selection}, should"
                 " be [all | train | test]"
             )
+        feat_analyser = FeatureAnalyser(sample_selection, df_labels, df_feats)
+        # check if SHAP features should be analysed
+        shap = eval(self.util.config_val("EXPL", "shap", "False"))
+        if shap:
+            feat_analyser.analyse_shap(self.runmgr.get_best_model())
 
         if plot_feats:
-            feat_analyser = FeatureAnalyser(sample_selection, df_labels, df_feats)
             feat_analyser.analyse()
 
         # check if a scatterplot should be done
@@ -672,15 +675,19 @@ class Experiment:
     def predict_test_and_save(self, result_name):
         model = self.runmgr.get_best_model()
         model.set_testdata(self.df_test, self.feats_test)
-        test_predictor = Test_predictor(
+        test_predictor = TestPredictor(
             model, self.df_test, self.label_encoder, result_name
         )
-        test_predictor.predict_and_store()
+        result = test_predictor.predict_and_store()
+        return result
 
     def load(self, filename):
-        f = open(filename, "rb")
-        tmp_dict = pickle.load(f)
-        f.close()
+        try:
+            f = open(filename, "rb")
+            tmp_dict = pickle.load(f)
+            f.close()
+        except EOFError as eof:
+            self.util.error(f"can't open file {filename}: {eof}")
         self.__dict__.update(tmp_dict)
         glob_conf.set_labels(self.labels)
 
@@ -688,22 +695,26 @@ class Experiment:
         if self.runmgr.modelrunner.model.is_ann():
             self.runmgr.modelrunner.model = None
             self.util.warn(
-                f"Save experiment: Can't pickle the learning model so saving without it."
+                "Save experiment: Can't pickle the trained model so saving without it. (it should be stored anyway)"
             )
         try:
             f = open(filename, "wb")
             pickle.dump(self.__dict__, f)
             f.close()
-        except TypeError:
+        except (TypeError, AttributeError) as error:
             self.feature_extractor.feat_extractor.model = None
             f = open(filename, "wb")
             pickle.dump(self.__dict__, f)
             f.close()
             self.util.warn(
-                f"Save experiment: Can't pickle the feature extraction model so saving without it."
+                "Save experiment: Can't pickle the feature extraction model so saving without it."
+                + f"{type(error).__name__} {error}"
             )
-        except (AttributeError, RuntimeError) as error:
-            self.util.warn(f"Save experiment: Can't pickle local object: {error}")
+        except RuntimeError as error:
+            self.util.warn(
+                "Save experiment: Can't pickle local object, NOT saving: "
+                + f"{type(error).__name__} {error}"
+            )
 
     def save_onnx(self, filename):
         # export the model to onnx

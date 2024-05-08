@@ -19,9 +19,12 @@ scikit_learn
 scipy
 seaborn
 sounddevice
+splitutils
 # tensorflow
 # tensorflow_hub
 torch
+torchaudio
+torchvision
 # transformers
 xgboost
 umap-learn

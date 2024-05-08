@@ -5,8 +5,10 @@ from nkululeko.models.model import Model
 
 
 class XGR_model(Model):
-    """An XGBoost model"""
+    """An XGBoost regression model"""
 
-    is_classifier = False
-
-    clf = XGBRegressor()  # set up the regressor
+    def __init__(self, df_train, df_test, feats_train, feats_test):
+        super().__init__(df_train, df_test, feats_train, feats_test)
+        self.name = "xgr"
+        self.is_classifier = False
+        self.clf = XGBRegressor()  # set up the regressor

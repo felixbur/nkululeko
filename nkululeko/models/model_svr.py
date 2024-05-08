@@ -11,6 +11,7 @@ class SVR_model(Model):
 
     def __init__(self, df_train, df_test, feats_train, feats_test):
         super().__init__(df_train, df_test, feats_train, feats_test)
+        self.name = "svr"
         c = float(self.util.config_val("MODEL", "C_val", "0.001"))
         #  kernel{‘linear’, ‘poly’, ‘rbf’, ‘sigmoid’, ‘precomputed’} or callable, default=’rbf’
         kernel = self.util.config_val("MODEL", "kernel", "rbf")

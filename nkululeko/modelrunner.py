@@ -2,18 +2,16 @@
 
 import pandas as pd
 
-from nkululeko.utils.util import Util
 from nkululeko import glob_conf
-import nkululeko.glob_conf as glob_conf
+from nkululeko.utils.util import Util
 
 
 class Modelrunner:
-    """
-    Class to model one run
-    """
+    """Class to model one run."""
 
     def __init__(self, df_train, df_test, feats_train, feats_test, run):
-        """Constructor setting up the dataframes
+        """Constructor setting up the dataframes.
+
         Args:
             df_train: train dataframe
             df_test: test dataframe

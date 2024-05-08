@@ -28,12 +28,17 @@ from nkululeko.utils.util import Util
 
 
 class SquimSet(Featureset):
-    """Class to predict SQUIM features"""
+    """Class to predict SQUIM features."""
 
     def __init__(self, name, data_df, feats_type):
-        """Constructor. is_train is needed to distinguish from test/dev sets, because they use the codebook from the training"""
+        """Constructor.
+
+        Is_train is needed to distinguish from test/dev sets,
+        because they use the codebook from the training.
+        """
         super().__init__(name, data_df, feats_type)
-        self.device = self.util.config_val("MODEL", "device", "cpu")
+        cuda = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = self.util.config_val("MODEL", "device", cuda)
         self.model_initialized = False
 
     def init_model(self):
