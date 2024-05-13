@@ -6,7 +6,7 @@
 # Display help message
 function Help {
     echo "Usage: test_runs.sh [options]"
-    echo "Example: test_runs.sh nkululeko"
+    echo "Example: ./test_runs.sh nkululeko"
     echo "Options:"
     echo "  nkululeko: test basic nkululeko"
     echo "  augment: test augmentation"
@@ -16,12 +16,13 @@ function Help {
     echo "  multidb: test multidb"
     echo "  explore: test explore module (must be run last)"
     echo "  all: test all modules"
+    echo "  -spotlight: test all modules except spotlight (useful in SSH)"
     echo "  --help: display this help message"
 }
 
 # rm results dir if argument is "nkululeko" or "all"
 # TODO: move root to /tmp so no need to do this
-if [ "$1" == "nkululeko" ] || [ "$1" == "all" ]; then
+if [ "$1" == "nkululeko" ] || [ "$1" == "all" ];  [ "$1" == "-spotlight" ]; then
     echo "Removing (old) results directory and create if not exist"
     rm -rf tests/results/*
     mkdir -p tests/results
