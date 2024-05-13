@@ -9,7 +9,8 @@ cd ../..
 python3 -m nkululeko.resample --config data/jvnv/exp.ini
 # make experiment
 python3 -m nkululeko.nkululeko --config data/jvnv/exp.ini
-
+# sample results (exp.ini):
+# DEBUG reporter: epoch: 0, UAR: .918, (+-.882/.948), ACC: .919
 ```
 
 References:  
