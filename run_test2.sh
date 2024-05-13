@@ -117,6 +117,9 @@ start_time=$(date +%s)
 # Loop over the module or all modules if -all arg is given
 if [ "$1" == "all" ]; then
     modules=(nkululeko augment predict demo test multidb explore)
+elif [ "$1" == "-spotlight" ]; then
+    modules=(nkululeko augment predict demo test multidb explore)
+    unset explore_ini_files[-1]  # Exclude INI file for spotlight
 else
     modules=("$@")
 fi
