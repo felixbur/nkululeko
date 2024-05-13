@@ -8,7 +8,7 @@ wget https://zenodo.org/record/7447302/files/emodb.zip
 # Unzip
 unzip emodb.zip
 # change to Nkululeko parent directory
-cd ..
+cd ../..
 # run the nkululeko experiment
 python -m nkululeko.nkululeko --config tests/exp_emodb_os_xgb.ini
 ```
