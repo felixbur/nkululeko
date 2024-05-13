@@ -33,43 +33,58 @@ class Util:
         else:
             self.caller = ""
         if has_config:
-            import nkululeko.glob_conf as glob_conf
-
-            self.config = glob_conf.config
-            self.got_data_roots = self.config_val("DATA", "root_folders", False)
-            if self.got_data_roots:
-                # if there is a global data rootfolder file, read from there
-                if not os.path.isfile(self.got_data_roots):
-                    self.error(f"no such file: {self.got_data_roots}")
-                self.data_roots = configparser.ConfigParser()
-                self.data_roots.read(self.got_data_roots)
-                # self.debug(f"getting data roots from {self.got_data_roots}")
+            try:
+                import nkululeko.glob_conf as glob_conf
+                self.config = glob_conf.config
+                self.got_data_roots = self.config_val(
+                    "DATA", "root_folders", False)
+                if self.got_data_roots:
+                    # if there is a global data rootfolder file, read from there
+                    if not os.path.isfile(self.got_data_roots):
+                        self.error(f"no such file: {self.got_data_roots}")
+                    self.data_roots = configparser.ConfigParser()
+                    self.data_roots.read(self.got_data_roots)
+            except (ModuleNotFoundError, AttributeError):
+                self.config = None
+                self.got_data_roots = False
 
     def get_path(self, entry):
         """
         This method allows the user to get the directory path for the given argument.
         """
-        root = os.path.join(self.config["EXP"]["root"], "")
-        name = self.config["EXP"]["name"]
-        try:
-            entryn = self.config["EXP"][entry]
-        except KeyError:
-            # some default values
+        if self.config is None:
+            # If no configuration file is provided, use default paths
             if entry == "fig_dir":
-                entryn = "./images/"
+                dir_name = "./images/"
             elif entry == "res_dir":
-                entryn = "./results/"
+                dir_name = "./results/"
             elif entry == "model_dir":
-                entryn = "./models/"
+                dir_name = "./models/"
             else:
-                entryn = "./store/"
+                dir_name = "./store/"
+        else:
+            root = os.path.join(self.config["EXP"]["root"], "")
+            name = self.config["EXP"]["name"]
+            try:
+                entryn = self.config["EXP"][entry]
+            except KeyError:
+                # some default values
+                if entry == "fig_dir":
+                    entryn = "./images/"
+                elif entry == "res_dir":
+                    entryn = "./results/"
+                elif entry == "model_dir":
+                    entryn = "./models/"
+                else:
+                    entryn = "./store/"
 
-        # Expand image, model and result directories with run index
-        if entry == "fig_dir" or entry == "res_dir" or entry == "model_dir":
-            run = self.config_val("EXP", "run", 0)
-            entryn = entryn + f"run_{run}/"
+            # Expand image, model and result directories with run index
+            if entry == "fig_dir" or entry == "res_dir" or entry == "model_dir":
+                run = self.config_val("EXP", "run", 0)
+                entryn = entryn + f"run_{run}/"
 
-        dir_name = f"{root}{name}/{entryn}"
+            dir_name = f"{root}{name}/{entryn}"
+
         audeer.mkdir(dir_name)
         return dir_name
 
@@ -101,7 +116,8 @@ class Util:
                         )
                     return default
             if not default in self.stopvals:
-                self.debug(f"value for {key} not found, using default: {default}")
+                self.debug(
+                    f"value for {key} not found, using default: {default}")
             return default
 
     def set_config(self, config):
@@ -138,7 +154,8 @@ class Util:
         if len(df) == 0:
             return df
         if not isinstance(df.index, pd.MultiIndex):
-            df.index = audformat.utils.to_segmented_index(df.index, allow_nat=False)
+            df.index = audformat.utils.to_segmented_index(
+                df.index, allow_nat=False)
         return df
 
     def _get_value_descript(self, section, name):
@@ -243,11 +260,14 @@ class Util:
         print(df.head(1))
 
     def config_val(self, section, key, default):
+        if self.config is None:
+            return default
         try:
             return self.config[section][key]
         except KeyError:
-            if not default in self.stopvals:
-                self.debug(f"value for {key} not found, using default: {default}")
+            if default not in self.stopvals:
+                self.debug(
+                    f"value for {key} not found, using default: {default}")
             return default
 
     def config_val_list(self, section, key, default):
@@ -255,7 +275,8 @@ class Util:
             return ast.literal_eval(self.config[section][key])
         except KeyError:
             if not default in self.stopvals:
-                self.debug(f"value for {key} not found, using default: {default}")
+                self.debug(
+                    f"value for {key} not found, using default: {default}")
             return default
 
     def continuous_to_categorical(self, series):
