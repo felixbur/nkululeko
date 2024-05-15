@@ -109,15 +109,15 @@ class Experiment:
         # print keys/column
         dbs = ",".join(list(self.datasets.keys()))
         labels = self.util.config_val("DATA", "labels", False)
+        auto_labels = list(
+            next(iter(self.datasets.values())).df[self.target].unique()
+        )
         if labels:
             self.labels = ast.literal_eval(labels)
             self.util.debug(f"Target labels (from config): {labels}")
         else:
-            self.labels = list(
-                next(iter(self.datasets.values())).df[self.target].unique()
-            )
-        # show available labels on both labeled and unlabeled config
-        self.util.debug(f"Target labels (from database): {labels}")
+            self.labels = auto_labels
+        self.util.debug(f"Target labels (from database): {auto_labels}")
         glob_conf.set_labels(self.labels)
         self.util.debug(f"loaded databases {dbs}")
 
