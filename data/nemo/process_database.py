@@ -19,11 +19,21 @@ def process_database(data_dir, output_dir):
     df.rename(columns={"file_id": "file",
               "speaker_id": "speaker"}, inplace=True)
 
-    # Split the data into train, dev, and test sets based on speaker_id
-    train_df, temp_df = train_test_split(
-        df, test_size=0.3, stratify=df['speaker'], random_state=42)
-    dev_df, test_df = train_test_split(
-        temp_df, test_size=0.5, stratify=temp_df['speaker'], random_state=42)
+    # Split the data into train, dev, and test sets based speaker independently
+    speaker_ids = df['speaker'].unique()
+    train_speaker_ids, temp_speaker_ids = train_test_split(
+        speaker_ids, test_size=0.3, random_state=42)
+    dev_speaker_ids, test_speaker_ids = train_test_split(
+        temp_speaker_ids, test_size=0.5, random_state=42)
+
+    train_df = df[df['speaker'].isin(train_speaker_ids)]
+    dev_df = df[df['speaker'].isin(dev_speaker_ids)]
+    test_df = df[df['speaker'].isin(test_speaker_ids)]
+
+    # train_df, temp_df = train_test_split(
+    #     df, test_size=0.3, stratify=df['speaker'], random_state=42)
+    # dev_df, test_df = train_test_split(
+    #     temp_df, test_size=0.5, stratify=temp_df['speaker'], random_state=42)
 
     # Write the data to CSV files for each set
     train_df.to_csv(os.path.join(output_dir, "nemo_train.csv"), index=False)

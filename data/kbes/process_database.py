@@ -51,7 +51,7 @@ def process_database(data_dir, output_dir):
         # get gender
         gender = gender_mapping[int(basename.split("-")[2])]
         # add language
-        language = "bangla"
+        language = "bengali"
         # add to data list
         data.append({
             "file": wav,
