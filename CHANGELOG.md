@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.84.1
+--------------
+* made resample independent of config file
+
 Version 0.84.0
 --------------
 * added SHAP analysis

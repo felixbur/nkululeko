@@ -12,16 +12,19 @@ from nkululeko.utils.util import Util
 
 
 class Resampler:
-    def __init__(self, df, not_testing=True):
+    def __init__(self, df, replace, not_testing=True):
         self.SAMPLING_RATE = 16000
         self.df = df
         self.util = Util("resampler", has_config=not_testing)
         self.util.warn(f"all files might be resampled to {self.SAMPLING_RATE}")
         self.not_testing = not_testing
+        self.replace = eval(self.util.config_val(
+            "RESAMPLE", "replace", "False")) if not not_testing else replace
 
     def resample(self):
         files = self.df.index.get_level_values(0).values
-        replace = eval(self.util.config_val("RESAMPLE", "replace", "False"))
+        # replace = eval(self.util.config_val("RESAMPLE", "replace", "False"))
+        replace = self.replace
         if self.not_testing:
             store = self.util.get_path("store")
         else:
@@ -42,7 +45,8 @@ class Resampler:
                 continue
             if org_sr != self.SAMPLING_RATE:
                 self.util.debug(f"resampling {f} (sr = {org_sr})")
-                resampler = torchaudio.transforms.Resample(org_sr, self.SAMPLING_RATE)
+                resampler = torchaudio.transforms.Resample(
+                    org_sr, self.SAMPLING_RATE)
                 signal = resampler(signal)
                 if replace:
                     torchaudio.save(
@@ -59,7 +63,8 @@ class Resampler:
             self.df = self.df.set_index(
                 self.df.index.set_levels(new_files, level="file")
             )
-            target_file = self.util.config_val("RESAMPLE", "target", "resampled.csv")
+            target_file = self.util.config_val(
+                "RESAMPLE", "target", "resampled.csv")
             # remove encoded labels
             target = self.util.config_val("DATA", "target", "emotion")
             if "class_label" in self.df.columns:
