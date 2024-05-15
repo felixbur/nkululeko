@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.85.0
+--------------
+* first version with finetuning wav2vec2 layers
+
 Version 0.84.1
 --------------
 * made resample independent of config file
