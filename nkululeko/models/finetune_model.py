@@ -1,3 +1,7 @@
+"""
+Code based on @jwagner
+"""
+
 import dataclasses
 import typing
 
@@ -147,6 +151,11 @@ class Model(Wav2Vec2PreTrainedModel):
             return ModelOutput(
                 logits_cat=logits_cat,
             )
+
+    def predict(self, signal):
+        result = self(torch.from_numpy(signal))
+        result = result[0].detach().numpy()[0]
+        return result
 
 
 class ModelWithPreProcessing(Model):
