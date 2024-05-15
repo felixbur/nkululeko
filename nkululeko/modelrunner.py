@@ -47,16 +47,12 @@ class Modelrunner:
             highest = 0
         else:
             highest = 100000
-        # for all epochs
-        for epoch in range(epoch_num):
-            if only_test:
-                self.model.load(self.run, epoch)
-                self.util.debug(f"reusing model: {self.model.store_path}")
-                self.model.reset_test(self.df_test, self.feats_test)
-            else:
-                self.model.set_id(self.run, epoch)
-                self.model.train()
+        if self.model.model_type == "finetuned":
+            # epochs are handled by Huggingface API
+            self.model.train()
             report = self.model.predict()
+            # todo: findout the best epoch
+            epoch = epoch_num
             report.set_id(self.run, epoch)
             plot_name = self.util.get_plot_name() + f"_{self.run}_{epoch:03d}_cnf"
             reports.append(report)
@@ -67,32 +63,53 @@ class Modelrunner:
             if plot_epochs:
                 self.util.debug(f"plotting conf matrix to {plot_name}")
                 report.plot_confmatrix(plot_name, epoch)
-            store_models = self.util.config_val("EXP", "save", False)
-            plot_best_model = self.util.config_val("PLOT", "best_model", False)
-            if (store_models or plot_best_model) and (
-                not only_test
-            ):  # in any case the model needs to be stored to disk.
-                self.model.store()
-            if patience:
-                patience = int(patience)
-                result = report.result.get_result()
-                if self.util.high_is_good():
-                    if result > highest:
-                        highest = result
-                        patience_counter = 0
-                    else:
-                        patience_counter += 1
+        else:
+            # for all epochs
+            for epoch in range(epoch_num):
+                if only_test:
+                    self.model.load(self.run, epoch)
+                    self.util.debug(f"reusing model: {self.model.store_path}")
+                    self.model.reset_test(self.df_test, self.feats_test)
                 else:
-                    if result < highest:
-                        highest = result
-                        patience_counter = 0
+                    self.model.set_id(self.run, epoch)
+                    self.model.train()
+                report = self.model.predict()
+                report.set_id(self.run, epoch)
+                plot_name = self.util.get_plot_name() + f"_{self.run}_{epoch:03d}_cnf"
+                reports.append(report)
+                self.util.debug(
+                    f"run: {self.run} epoch: {epoch}: result: "
+                    f"{reports[-1].get_result().get_test_result()}"
+                )
+                if plot_epochs:
+                    self.util.debug(f"plotting conf matrix to {plot_name}")
+                    report.plot_confmatrix(plot_name, epoch)
+                store_models = self.util.config_val("EXP", "save", False)
+                plot_best_model = self.util.config_val("PLOT", "best_model", False)
+                if (store_models or plot_best_model) and (
+                    not only_test
+                ):  # in any case the model needs to be stored to disk.
+                    self.model.store()
+                if patience:
+                    patience = int(patience)
+                    result = report.result.get_result()
+                    if self.util.high_is_good():
+                        if result > highest:
+                            highest = result
+                            patience_counter = 0
+                        else:
+                            patience_counter += 1
                     else:
-                        patience_counter += 1
-                if patience_counter >= patience:
-                    self.util.debug(
-                        f"reached patience ({str(patience)}): early stopping"
-                    )
-                    break
+                        if result < highest:
+                            highest = result
+                            patience_counter = 0
+                        else:
+                            patience_counter += 1
+                    if patience_counter >= patience:
+                        self.util.debug(
+                            f"reached patience ({str(patience)}): early stopping"
+                        )
+                        break
 
         if not plot_epochs:
             # Do at least one confusion matrix plot
@@ -131,6 +148,12 @@ class Modelrunner:
             from nkululeko.models.model_bayes import Bayes_model
 
             self.model = Bayes_model(
+                self.df_train, self.df_test, self.feats_train, self.feats_test
+            )
+        elif model_type == "finetune":
+            from nkululeko.models.model_tuned import Pretrained_model
+
+            self.model = Pretrained_model(
                 self.df_train, self.df_test, self.feats_train, self.feats_test
             )
         elif model_type == "gmm":

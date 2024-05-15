@@ -39,7 +39,7 @@ class Model:
         self.model_type = type
 
     def is_ann(self):
-        if self.model_type == "ann":
+        if (self.model_type == "ann") or (self.model_type == "finetuned"):
             return True
         else:
             return False
