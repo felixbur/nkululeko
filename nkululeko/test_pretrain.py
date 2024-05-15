@@ -53,8 +53,8 @@ def doit(config_file):
     expr.fill_train_and_tests()
     util.debug(f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}")
 
+    model_root = util.get_path("model_dir")
     log_root = audeer.mkdir("log")
-    model_root = audeer.mkdir("model")
     torch_root = audeer.path(model_root, "torch")
 
     metrics_gender = {
@@ -69,7 +69,7 @@ def doit(config_file):
     num_layers = None
 
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-    os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
     batch_size = 16
     accumulation_steps = 4
@@ -259,6 +259,7 @@ def doit(config_file):
         greater_is_better=True,
         load_best_model_at_end=True,
         remove_unused_columns=False,
+        report_to="none",
     )
 
     trainer = Trainer(
@@ -271,9 +272,20 @@ def doit(config_file):
         tokenizer=processor.feature_extractor,
         callbacks=[transformers.integrations.TensorBoardCallback()],
     )
+    if False:
+        trainer.train()
+        trainer.save_model(torch_root)
 
-    trainer.train()
-    trainer.save_model(torch_root)
+    modelnew = fm.Model.from_pretrained(
+        torch_root,
+        config=config,
+    )
+    print(f"loaded new model type{type(modelnew)}")
+    import audiofile
+
+    signal, _ = audiofile.read("./test.wav", always_2d=True)
+    result = modelnew.predict(signal)
+    print(result)
 
     print("DONE")
 
