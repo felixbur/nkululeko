@@ -1,48 +1,39 @@
 """
-Code based on @jwagner
+Code based on @jwagner.
 """
 
-import audiofile
-import audeer
-import audmetric
-import datasets
-import pandas as pd
-import transformers
-from nkululeko.utils.util import Util
-import nkululeko.glob_conf as glob_conf
-from nkululeko.models.model import Model as BaseModel
-
-# import nkululeko.models.finetune_model as fm
-from nkululeko.reporting.reporter import Reporter
-import torch
-import ast
-import numpy as np
-from sklearn.metrics import recall_score
-from collections import OrderedDict
-import os
-import json
-import pickle
 import dataclasses
+import json
+import os
+import pickle
 import typing
 
+import datasets
+import numpy as np
+import pandas as pd
 import torch
 import transformers
-from transformers.models.wav2vec2.modeling_wav2vec2 import (
-    Wav2Vec2PreTrainedModel,
-    Wav2Vec2Model,
-)
+from transformers.models.wav2vec2.modeling_wav2vec2 import Wav2Vec2Model
+from transformers.models.wav2vec2.modeling_wav2vec2 import Wav2Vec2PreTrainedModel
+
+import audeer
+import audiofile
+import audmetric
+
+import nkululeko.glob_conf as glob_conf
+from nkululeko.models.model import Model as BaseModel
+from nkululeko.reporting.reporter import Reporter
 
 
-class Pretrained_model(BaseModel):
+class TunedModel(BaseModel):
 
     is_classifier = True
 
     def __init__(self, df_train, df_test, feats_train, feats_test):
-        """Constructor taking the configuration and all dataframes"""
+        """Constructor taking the configuration and all dataframes."""
         super().__init__(df_train, df_test, feats_train, feats_test)
-        super().set_model_type("ann")
+        super().set_model_type("finetuned")
         self.name = "finetuned_wav2vec2"
-        self.model_type = "finetuned"
         self.target = glob_conf.config["DATA"]["target"]
         labels = glob_conf.labels
         self.class_num = len(labels)
@@ -74,22 +65,11 @@ class Pretrained_model(BaseModel):
 
         for split in ["train", "dev"]:
             df = data_sources[split]
-            df[target_name] = df[target_name].astype("float")
-
-            y = pd.Series(
-                data=df.itertuples(index=False, name=None),
-                index=df.index,
-                dtype=object,
-                name="labels",
-            )
-
+            y = df[target_name].astype("float")
             y.name = "targets"
             df = y.reset_index()
             df.start = df.start.dt.total_seconds()
             df.end = df.end.dt.total_seconds()
-
-            # print(f"{split}: {len(df)}")
-
             ds = datasets.Dataset.from_pandas(df)
             dataset[split] = ds
 
@@ -142,12 +122,6 @@ class Pretrained_model(BaseModel):
 
     def set_model_type(self, type):
         self.model_type = type
-
-    def is_ann(self):
-        if self.model_type == "ann":
-            return True
-        else:
-            return False
 
     def set_testdata(self, data_df, feats_df):
         self.df_test, self.feats_test = data_df, feats_df
@@ -207,7 +181,8 @@ class Pretrained_model(BaseModel):
             "ACC": audmetric.accuracy,
         }
 
-        truth = p.label_ids[:, 0].astype(int)
+        # truth = p.label_ids[:, 0].astype(int)
+        truth = p.label_ids
         preds = p.predictions
         preds = np.argmax(preds, axis=1)
         scores = {}
@@ -216,8 +191,7 @@ class Pretrained_model(BaseModel):
         return scores
 
     def train(self):
-        """Train the model"""
-
+        """Train the model."""
         model_root = self.util.get_path("model_dir")
         log_root = os.path.join(self.util.get_exp_dir(), "log")
         audeer.mkdir(log_root)
@@ -225,16 +199,17 @@ class Pretrained_model(BaseModel):
         conf_file = os.path.join(self.torch_root, "config.json")
         if os.path.isfile(conf_file):
             self.util.debug(f"reusing finetuned model: {conf_file}")
-            self.load(self.run, self.epoch)
+            self.load(self.run, self.epoch_num)
             return
         targets = pd.DataFrame(self.dataset["train"]["targets"])
         counts = targets[0].value_counts().sort_index()
         train_weights = 1 / counts
         train_weights /= train_weights.sum()
-        # print(train_weights)
-        criterion_gender = torch.nn.CrossEntropyLoss(
+        self.util.debug("train weights: {train_weights}")
+        criterion = torch.nn.CrossEntropyLoss(
             weight=torch.Tensor(train_weights).to("cuda"),
         )
+        # criterion = torch.nn.CrossEntropyLoss()
 
         class Trainer(transformers.Trainer):
 
@@ -246,14 +221,12 @@ class Pretrained_model(BaseModel):
             ):
 
                 targets = inputs.pop("labels").squeeze()
-                targets_gender = targets.type(torch.long)
+                targets = targets.type(torch.long)
 
                 outputs = model(**inputs)
-                logits_gender = outputs[0].squeeze()
+                logits = outputs[0].squeeze()
 
-                loss_gender = criterion_gender(logits_gender, targets_gender)
-
-                loss = loss_gender
+                loss = criterion(logits, targets)
 
                 return (loss, outputs) if return_outputs else loss
 
@@ -325,7 +298,7 @@ class Pretrained_model(BaseModel):
             self.df_test[self.target].to_numpy().astype(float),
             predictions,
             self.run,
-            self.epoch,
+            self.epoch_num,
         )
         return report
 
@@ -371,13 +344,13 @@ class ModelOutput(transformers.file_utils.ModelOutput):
 
 class ModelHead(torch.nn.Module):
 
-    def __init__(self, config, num_labels):
+    def __init__(self, config):
 
         super().__init__()
 
         self.dense = torch.nn.Linear(config.hidden_size, config.hidden_size)
         self.dropout = torch.nn.Dropout(config.final_dropout)
-        self.out_proj = torch.nn.Linear(config.hidden_size, num_labels)
+        self.out_proj = torch.nn.Linear(config.hidden_size, config.num_labels)
 
     def forward(self, features, **kwargs):
 
@@ -398,7 +371,7 @@ class Model(Wav2Vec2PreTrainedModel):
         super().__init__(config)
 
         self.wav2vec2 = Wav2Vec2Model(config)
-        self.cat = ModelHead(config, 2)
+        self.cat = ModelHead(config)
         self.init_weights()
 
     def freeze_feature_extractor(self):

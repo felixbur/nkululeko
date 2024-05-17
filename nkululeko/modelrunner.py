@@ -151,9 +151,9 @@ class Modelrunner:
                 self.df_train, self.df_test, self.feats_train, self.feats_test
             )
         elif model_type == "finetune":
-            from nkululeko.models.model_tuned import Pretrained_model
+            from nkululeko.models.model_tuned import TunedModel
 
-            self.model = Pretrained_model(
+            self.model = TunedModel(
                 self.df_train, self.df_test, self.feats_train, self.feats_test
             )
         elif model_type == "gmm":
