@@ -348,7 +348,12 @@ class Experiment:
         feats_name = "_".join(ast.literal_eval(
             glob_conf.config["DATA"]["databases"]))
         self.feats_test, self.feats_train = pd.DataFrame(), pd.DataFrame()
-        feats_types = self.util.config_val_list("FEATS", "type", ["os"])
+        feats_types = self.util.config_val_list("FEATS", "type", [])
+        # for some models no features are needed
+        if len(feats_types) == 0:
+            self.util.debug("no feature extractor specified.")
+            self.feats_train, self.feats_test = pd.DataFrame(), pd.DataFrame()
+            return
         self.feature_extractor = FeatureExtractor(
             df_train, feats_types, feats_name, "train"
         )
