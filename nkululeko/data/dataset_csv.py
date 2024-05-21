@@ -21,7 +21,7 @@ class Dataset_CSV(Dataset):
         #     exp_root = self.util.config_val("EXP", "root", "")
         #     data_file = os.path.join(exp_root, data_file)
         root = os.path.dirname(data_file)
-        audio_path = self.util.config_val_data(self.name, "audio_path", "")
+        audio_path = self.util.config_val_data(self.name, "audio_path", "./")
         df = pd.read_csv(data_file)
         # special treatment for segmented dataframes with only one column:
         if "start" in df.columns and len(df.columns) == 4:
@@ -49,7 +49,8 @@ class Dataset_CSV(Dataset):
                     .map(lambda x: root + "/" + audio_path + "/" + x)
                     .values
                 )
-                df = df.set_index(df.index.set_levels(file_index, level="file"))
+                df = df.set_index(df.index.set_levels(
+                    file_index, level="file"))
             else:
                 if not isinstance(df, pd.DataFrame):
                     df = pd.DataFrame(df)
@@ -63,7 +64,8 @@ class Dataset_CSV(Dataset):
         self.db = None
         self.got_target = True
         self.is_labeled = self.got_target
-        self.start_fresh = eval(self.util.config_val("DATA", "no_reuse", "False"))
+        self.start_fresh = eval(
+            self.util.config_val("DATA", "no_reuse", "False"))
         is_index = False
         try:
             if self.is_labeled and not "class_label" in self.df.columns:
@@ -90,7 +92,8 @@ class Dataset_CSV(Dataset):
                 f" {self.got_gender}, got age: {self.got_age}"
             )
         self.util.debug(r_string)
-        glob_conf.report.add_item(ReportItem("Data", "Loaded report", r_string))
+        glob_conf.report.add_item(ReportItem(
+            "Data", "Loaded report", r_string))
 
     def prepare(self):
         super().prepare()

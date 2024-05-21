@@ -109,14 +109,15 @@ class Experiment:
         # print keys/column
         dbs = ",".join(list(self.datasets.keys()))
         labels = self.util.config_val("DATA", "labels", False)
+        auto_labels = list(
+            next(iter(self.datasets.values())).df[self.target].unique()
+        )
         if labels:
             self.labels = ast.literal_eval(labels)
             self.util.debug(f"Target labels (from config): {labels}")
         else:
-            self.labels = list(
-                next(iter(self.datasets.values())).df[self.target].unique()
-            )
-            self.util.debug(f"Target labels (from database): {labels}")
+            self.labels = auto_labels
+        self.util.debug(f"Target labels (from database): {auto_labels}")
         glob_conf.set_labels(self.labels)
         self.util.debug(f"loaded databases {dbs}")
 
@@ -159,7 +160,8 @@ class Experiment:
                 data.split()
                 data.prepare_labels()
                 self.df_test = pd.concat(
-                    [self.df_test, self.util.make_segmented_index(data.df_test)]
+                    [self.df_test, self.util.make_segmented_index(
+                        data.df_test)]
                 )
                 self.df_test.is_labeled = data.is_labeled
             self.df_test.got_gender = self.got_gender
@@ -260,7 +262,8 @@ class Experiment:
                     test_cats = self.df_test[self.target].unique()
                 else:
                     # if there is no target, copy a dummy label
-                    self.df_test = self._add_random_target(self.df_test).astype("str")
+                    self.df_test = self._add_random_target(
+                        self.df_test).astype("str")
                 train_cats = self.df_train[self.target].unique()
                 # print(f"df_train: {pd.DataFrame(self.df_train[self.target])}")
                 # print(f"train_cats with target {self.target}: {train_cats}")
@@ -268,7 +271,8 @@ class Experiment:
                 if type(test_cats) == np.ndarray:
                     self.util.debug(f"Categories test (nd.array): {test_cats}")
                 else:
-                    self.util.debug(f"Categories test (list): {list(test_cats)}")
+                    self.util.debug(
+                        f"Categories test (list): {list(test_cats)}")
             if type(train_cats) == np.ndarray:
                 self.util.debug(f"Categories train (nd.array): {train_cats}")
             else:
@@ -291,7 +295,8 @@ class Experiment:
 
         target_factor = self.util.config_val("DATA", "target_divide_by", False)
         if target_factor:
-            self.df_test[self.target] = self.df_test[self.target] / float(target_factor)
+            self.df_test[self.target] = self.df_test[self.target] / \
+                float(target_factor)
             self.df_train[self.target] = self.df_train[self.target] / float(
                 target_factor
             )
@@ -314,14 +319,16 @@ class Experiment:
     def plot_distribution(self, df_labels):
         """Plot the distribution of samples and speaker per target class and biological sex"""
         plot = Plots()
-        sample_selection = self.util.config_val("EXPL", "sample_selection", "all")
+        sample_selection = self.util.config_val(
+            "EXPL", "sample_selection", "all")
         plot.plot_distributions(df_labels)
         if self.got_speaker:
             plot.plot_distributions_speaker(df_labels)
 
     def extract_test_feats(self):
         self.feats_test = pd.DataFrame()
-        feats_name = "_".join(ast.literal_eval(glob_conf.config["DATA"]["tests"]))
+        feats_name = "_".join(ast.literal_eval(
+            glob_conf.config["DATA"]["tests"]))
         feats_types = self.util.config_val_list("FEATS", "type", ["os"])
         self.feature_extractor = FeatureExtractor(
             self.df_test, feats_types, feats_name, "test"
@@ -338,7 +345,8 @@ class Experiment:
 
         """
         df_train, df_test = self.df_train, self.df_test
-        feats_name = "_".join(ast.literal_eval(glob_conf.config["DATA"]["databases"]))
+        feats_name = "_".join(ast.literal_eval(
+            glob_conf.config["DATA"]["databases"]))
         self.feats_test, self.feats_train = pd.DataFrame(), pd.DataFrame()
         feats_types = self.util.config_val_list("FEATS", "type", [])
         # for some models no features are needed
@@ -372,7 +380,8 @@ class Experiment:
                 f"test feats ({self.feats_test.shape[0]}) != test labels"
                 f" ({self.df_test.shape[0]})"
             )
-            self.df_test = self.df_test[self.df_test.index.isin(self.feats_test.index)]
+            self.df_test = self.df_test[self.df_test.index.isin(
+                self.feats_test.index)]
             self.util.warn(f"mew test labels shape: {self.df_test.shape[0]}")
 
         self._check_scale()
@@ -383,7 +392,8 @@ class Experiment:
         """
         from nkululeko.augmenting.augmenter import Augmenter
 
-        sample_selection = self.util.config_val("AUGMENT", "sample_selection", "all")
+        sample_selection = self.util.config_val(
+            "AUGMENT", "sample_selection", "all")
         if sample_selection == "all":
             df = pd.concat([self.df_train, self.df_test])
         elif sample_selection == "train":
@@ -478,7 +488,8 @@ class Experiment:
         """
         from nkululeko.augmenting.randomsplicer import Randomsplicer
 
-        sample_selection = self.util.config_val("AUGMENT", "sample_selection", "all")
+        sample_selection = self.util.config_val(
+            "AUGMENT", "sample_selection", "all")
         if sample_selection == "all":
             df = pd.concat([self.df_train, self.df_test])
         elif sample_selection == "train":
@@ -499,7 +510,8 @@ class Experiment:
         plot_feats = eval(
             self.util.config_val("EXPL", "feature_distributions", "False")
         )
-        sample_selection = self.util.config_val("EXPL", "sample_selection", "all")
+        sample_selection = self.util.config_val(
+            "EXPL", "sample_selection", "all")
         # get the data labels
         if sample_selection == "all":
             df_labels = pd.concat([self.df_train, self.df_test])
@@ -562,7 +574,8 @@ class Experiment:
             for scat_target in scat_targets:
                 if self.util.is_categorical(df_labels[scat_target]):
                     for scatter in scatters:
-                        plots.scatter_plot(df_feats, df_labels, scat_target, scatter)
+                        plots.scatter_plot(
+                            df_feats, df_labels, scat_target, scatter)
                 else:
                     self.util.debug(
                         f"{self.name}: binning continuous variable to categories"
@@ -651,7 +664,8 @@ class Experiment:
         preds = best.preds
         speakers = self.df_test.speaker.values
         print(f"{len(truths)} {len(preds)} {len(speakers) }")
-        df = pd.DataFrame(data={"truth": truths, "pred": preds, "speaker": speakers})
+        df = pd.DataFrame(
+            data={"truth": truths, "pred": preds, "speaker": speakers})
         plot_name = "result_combined_per_speaker"
         self.util.debug(
             f"plotting speaker combination ({function}) confusion matrix to"
