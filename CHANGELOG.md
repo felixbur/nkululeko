@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.85.2
+--------------
+* added data, and automatic task label detection
+
 Version 0.85.1
 --------------
 * fixed bug in model_finetuned that label_num was constant 2
