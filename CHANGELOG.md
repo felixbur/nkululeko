@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.85.1
+--------------
+* fixed bug in model_finetuned that label_num was constant 2
+
 Version 0.85.0
 --------------
 * first version with finetuning wav2vec2 layers
