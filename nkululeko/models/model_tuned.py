@@ -42,9 +42,9 @@ class TunedModel(BaseModel):
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.batch_size = int(self.util.config_val("MODEL", "batch_size", "8"))
         if self.device != "cpu":
-            self.util.debug(f"running on device {device}")
+            self.util.debug(f"running on device {self.device}")
             os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-            os.environ["CUDA_VISIBLE_DEVICES"] = self.device
+            os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # self.device
         self.df_train, self.df_test = df_train, df_test
         self.epoch_num = int(self.util.config_val("EXP", "epochs", 1))
 
