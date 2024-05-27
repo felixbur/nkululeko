@@ -303,8 +303,8 @@
   * device = cpu
 * **patience**: Number of epochs to wait if the result gets better (for early stopping)
   * patience = 5
-* **model_ckpt**: Base model for finetuning/transfer learning. Variants of wav2vec2, Hubert, and WavLM are tested to work.
-  * model_ckpt = microsoft/wavlm-base
+* **pretrained_model**: Base model for finetuning/transfer learning. Variants of wav2vec2, Hubert, and WavLM are tested to work.
+  * pretrained_model = microsoft/wavlm-base
 
 ### EXPL
 * **model**: Which model to use to estimate feature importance.

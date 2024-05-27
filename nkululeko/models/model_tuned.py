@@ -54,14 +54,14 @@ class TunedModel(BaseModel):
 
     def _init_model(self):
         model_path = "facebook/wav2vec2-large-robust-ft-swbd-300h"
-        model_ckpt = self.util.config_val("MODEL", "model_ckpt", model_path)
+        pretrained_model = self.util.config_val("MODEL", "pretrained_model", model_path)
         self.num_layers = None
         self.sampling_rate = 16000
         self.max_duration_sec = 8.0
         self.accumulation_steps = 4
         
         # print finetuning information via debug
-        self.util.debug(f"Finetuning from model: {model_ckpt}")
+        self.util.debug(f"Finetuning from model: {pretrained_model}")
 
         # create dataset
         dataset = {}
@@ -92,7 +92,7 @@ class TunedModel(BaseModel):
             value in target_mapping.items()}
 
         self.config = transformers.AutoConfig.from_pretrained(
-            model_ckpt,
+            pretrained_model,
             num_labels=len(target_mapping),
             label2id=target_mapping,
             id2label=target_mapping_reverse,
@@ -124,7 +124,7 @@ class TunedModel(BaseModel):
         assert self.processor.feature_extractor.sampling_rate == self.sampling_rate
 
         self.model = Model.from_pretrained(
-            model_ckpt,
+            pretrained_model,
             config=self.config,
         )
         self.model.freeze_feature_extractor()
