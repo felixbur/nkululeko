@@ -21,8 +21,6 @@ from transformers.models.wav2vec2.modeling_wav2vec2 import (
     Wav2Vec2PreTrainedModel,
 )
 
-from transformers import AutoConfig, AutoModel
-
 import nkululeko.glob_conf as glob_conf
 from nkululeko.models.model import Model as BaseModel
 from nkululeko.reporting.reporter import Reporter
@@ -43,11 +41,11 @@ class TunedModel(BaseModel):
         # device = self.util.config_val("MODEL", "device", "cpu")
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.batch_size = int(self.util.config_val("MODEL", "batch_size", "8"))
-        self.device_id = self.util.config_val("MODEL", "device_id", "0")
+        # self.device_id = self.util.config_val("MODEL", "device_id", "0")
         if self.device != "cpu":
             self.util.debug(f"running on device {self.device}")
             os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-            os.environ["CUDA_VISIBLE_DEVICES"] = self.device_id  # self.device
+            os.environ["CUDA_VISIBLE_DEVICES"] = self.device  # self.device
         self.df_train, self.df_test = df_train, df_test
         self.epoch_num = int(self.util.config_val("EXP", "epochs", 1))
 
@@ -55,12 +53,13 @@ class TunedModel(BaseModel):
 
     def _init_model(self):
         model_path = "facebook/wav2vec2-large-robust-ft-swbd-300h"
-        pretrained_model = self.util.config_val("MODEL", "pretrained_model", model_path)
+        pretrained_model = self.util.config_val(
+            "MODEL", "pretrained_model", model_path)
         self.num_layers = None
         self.sampling_rate = 16000
         self.max_duration_sec = 8.0
         self.accumulation_steps = 4
-        
+
         # print finetuning information via debug
         self.util.debug(f"Finetuning from model: {pretrained_model}")
 
@@ -382,7 +381,7 @@ class Model(Wav2Vec2PreTrainedModel):
             setattr(config, 'add_adapter', False)
 
         super().__init__(config)
-        
+
         self.wav2vec2 = Wav2Vec2Model(config)
         self.cat = ModelHead(config)
         self.init_weights()
