@@ -8,17 +8,18 @@ import os
 import pickle
 import typing
 
+import audeer
+import audiofile
+import audmetric
 import datasets
 import numpy as np
 import pandas as pd
 import torch
 import transformers
-from transformers.models.wav2vec2.modeling_wav2vec2 import Wav2Vec2Model
-from transformers.models.wav2vec2.modeling_wav2vec2 import Wav2Vec2PreTrainedModel
-
-import audeer
-import audiofile
-import audmetric
+from transformers.models.wav2vec2.modeling_wav2vec2 import (
+    Wav2Vec2Model,
+    Wav2Vec2PreTrainedModel,
+)
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.models.model import Model as BaseModel
@@ -37,12 +38,14 @@ class TunedModel(BaseModel):
         self.target = glob_conf.config["DATA"]["target"]
         labels = glob_conf.labels
         self.class_num = len(labels)
-        device = self.util.config_val("MODEL", "device", "cpu")
+        # device = self.util.config_val("MODEL", "device", "cpu")
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.batch_size = int(self.util.config_val("MODEL", "batch_size", "8"))
-        if device != "cpu":
-            self.util.debug(f"running on device {device}")
+        # self.device_id = self.util.config_val("MODEL", "device_id", "0")
+        if self.device != "cpu":
+            self.util.debug(f"running on device {self.device}")
             os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-            os.environ["CUDA_VISIBLE_DEVICES"] = device
+            os.environ["CUDA_VISIBLE_DEVICES"] = self.device  # self.device
         self.df_train, self.df_test = df_train, df_test
         self.epoch_num = int(self.util.config_val("EXP", "epochs", 1))
 
@@ -50,12 +53,17 @@ class TunedModel(BaseModel):
 
     def _init_model(self):
         model_path = "facebook/wav2vec2-large-robust-ft-swbd-300h"
+        pretrained_model = self.util.config_val(
+            "MODEL", "pretrained_model", model_path)
         self.num_layers = None
         self.sampling_rate = 16000
         self.max_duration_sec = 8.0
         self.accumulation_steps = 4
-        # create dataset
 
+        # print finetuning information via debug
+        self.util.debug(f"Finetuning from model: {pretrained_model}")
+
+        # create dataset
         dataset = {}
         target_name = glob_conf.target
         data_sources = {
@@ -79,15 +87,18 @@ class TunedModel(BaseModel):
         le = glob_conf.label_encoder
         mapping = dict(zip(le.classes_, range(len(le.classes_))))
         target_mapping = {k: int(v) for k, v in mapping.items()}
-        target_mapping_reverse = {value: key for key, value in target_mapping.items()}
+        target_mapping_reverse = {
+            value: key for key,
+            value in target_mapping.items()}
 
         self.config = transformers.AutoConfig.from_pretrained(
-            model_path,
+            pretrained_model,
             num_labels=len(target_mapping),
             label2id=target_mapping,
             id2label=target_mapping_reverse,
             finetuning_task=target_name,
         )
+
         if self.num_layers is not None:
             self.config.num_hidden_layers = self.num_layers
         setattr(self.config, "sampling_rate", self.sampling_rate)
@@ -113,7 +124,7 @@ class TunedModel(BaseModel):
         assert self.processor.feature_extractor.sampling_rate == self.sampling_rate
 
         self.model = Model.from_pretrained(
-            model_path,
+            pretrained_model,
             config=self.config,
         )
         self.model.freeze_feature_extractor()
@@ -207,19 +218,17 @@ class TunedModel(BaseModel):
         train_weights /= train_weights.sum()
         self.util.debug("train weights: {train_weights}")
         criterion = torch.nn.CrossEntropyLoss(
-            weight=torch.Tensor(train_weights).to("cuda"),
+            weight=torch.Tensor(train_weights).to(self.device),
         )
         # criterion = torch.nn.CrossEntropyLoss()
 
         class Trainer(transformers.Trainer):
-
             def compute_loss(
                 self,
                 model,
                 inputs,
                 return_outputs=False,
             ):
-
                 targets = inputs.pop("labels").squeeze()
                 targets = targets.type(torch.long)
 
@@ -246,7 +255,7 @@ class TunedModel(BaseModel):
             gradient_accumulation_steps=self.accumulation_steps,
             evaluation_strategy="steps",
             num_train_epochs=self.epoch_num,
-            fp16=True,
+            fp16=self.device == "cuda",
             save_steps=num_steps,
             eval_steps=num_steps,
             logging_steps=num_steps,
@@ -368,6 +377,9 @@ class Model(Wav2Vec2PreTrainedModel):
 
     def __init__(self, config):
 
+        if not hasattr(config, 'add_adapter'):
+            setattr(config, 'add_adapter', False)
+
         super().__init__(config)
 
         self.wav2vec2 = Wav2Vec2Model(config)
@@ -462,7 +474,9 @@ class ModelWithPreProcessing(Model):
         mean = input_values.mean()
 
         # var = input_values.var()
-        # raises: onnxruntime.capi.onnxruntime_pybind11_state.NotImplemented: [ONNXRuntimeError] : 9 : NOT_IMPLEMENTED : Could not find an implementation for the node ReduceProd_3:ReduceProd(11)
+        # raises: onnxruntime.capi.onnxruntime_pybind11_state.NotImplemented:
+        # [ONNXRuntimeError] : 9 : NOT_IMPLEMENTED : Could not find an
+        # implementation for the node ReduceProd_3:ReduceProd(11)
 
         var = torch.square(input_values - mean).mean()
         input_values = (input_values - mean) / torch.sqrt(var + 1e-7)
