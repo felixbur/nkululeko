@@ -1,6 +1,4 @@
-"""
-Code based on @jwagner.
-"""
+"""Code based on @jwagner."""
 
 import dataclasses
 import json
@@ -8,18 +6,17 @@ import os
 import pickle
 import typing
 
-import audeer
-import audiofile
-import audmetric
 import datasets
 import numpy as np
 import pandas as pd
 import torch
 import transformers
-from transformers.models.wav2vec2.modeling_wav2vec2 import (
-    Wav2Vec2Model,
-    Wav2Vec2PreTrainedModel,
-)
+from transformers.models.wav2vec2.modeling_wav2vec2 import Wav2Vec2Model
+from transformers.models.wav2vec2.modeling_wav2vec2 import Wav2Vec2PreTrainedModel
+
+import audeer
+import audiofile
+import audmetric
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.models.model import Model as BaseModel
@@ -27,8 +24,6 @@ from nkululeko.reporting.reporter import Reporter
 
 
 class TunedModel(BaseModel):
-
-    is_classifier = True
 
     def __init__(self, df_train, df_test, feats_train, feats_test):
         """Constructor taking the configuration and all dataframes."""
@@ -38,23 +33,38 @@ class TunedModel(BaseModel):
         self.target = glob_conf.config["DATA"]["target"]
         labels = glob_conf.labels
         self.class_num = len(labels)
-        # device = self.util.config_val("MODEL", "device", "cpu")
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.batch_size = int(self.util.config_val("MODEL", "batch_size", "8"))
-        # self.device_id = self.util.config_val("MODEL", "device_id", "0")
+        device = self.util.config_val("MODEL", "device", False)
+        if not device:
+            self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        else:
+            self.device = device
         if self.device != "cpu":
-            self.util.debug(f"running on device {self.device}")
             os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-            os.environ["CUDA_VISIBLE_DEVICES"] = self.device  # self.device
+            os.environ["CUDA_VISIBLE_DEVICES"] = self.device
+        self.util.debug(f"running on device {self.device}")
+        self.is_classifier = self.util.exp_is_classification()
+        if self.is_classifier:
+            self.measure = "uar"
+        else:
+            self.measure = self.util.config_val("MODEL", "measure", "ccc")
+        self.util.debug(f"evaluation metrics: {self.measure}")
+        self.batch_size = int(self.util.config_val("MODEL", "batch_size", "8"))
+        self.util.debug(f"batch size: {self.batch_size}")
+        self.learning_rate = float(
+            self.util.config_val("MODEL", "learning_rate", 0.0001)
+        )
         self.df_train, self.df_test = df_train, df_test
         self.epoch_num = int(self.util.config_val("EXP", "epochs", 1))
-
+        drop = self.util.config_val("MODEL", "drop", False)
+        self.drop = 0.1
+        if drop:
+            self.drop = float(drop)
+        self.util.debug(f"init: training with dropout: {self.drop}")
         self._init_model()
 
     def _init_model(self):
         model_path = "facebook/wav2vec2-large-robust-ft-swbd-300h"
-        pretrained_model = self.util.config_val(
-            "MODEL", "pretrained_model", model_path)
+        pretrained_model = self.util.config_val("MODEL", "pretrained_model", model_path)
         self.num_layers = None
         self.sampling_rate = 16000
         self.max_duration_sec = 8.0
@@ -84,25 +94,32 @@ class TunedModel(BaseModel):
         self.dataset = datasets.DatasetDict(dataset)
 
         # load pre-trained model
-        le = glob_conf.label_encoder
-        mapping = dict(zip(le.classes_, range(len(le.classes_))))
-        target_mapping = {k: int(v) for k, v in mapping.items()}
-        target_mapping_reverse = {
-            value: key for key,
-            value in target_mapping.items()}
-
-        self.config = transformers.AutoConfig.from_pretrained(
-            pretrained_model,
-            num_labels=len(target_mapping),
-            label2id=target_mapping,
-            id2label=target_mapping_reverse,
-            finetuning_task=target_name,
-        )
-
+        if self.is_classifier:
+            le = glob_conf.label_encoder
+            mapping = dict(zip(le.classes_, range(len(le.classes_))))
+            target_mapping = {k: int(v) for k, v in mapping.items()}
+            target_mapping_reverse = {
+                value: key for key, value in target_mapping.items()
+            }
+            self.config = transformers.AutoConfig.from_pretrained(
+                model_path,
+                num_labels=len(target_mapping),
+                label2id=target_mapping,
+                id2label=target_mapping_reverse,
+                finetuning_task=target_name,
+            )
+        else:
+            self.config = transformers.AutoConfig.from_pretrained(
+                model_path,
+                num_labels=1,
+                finetuning_task=target_name,
+            )
         if self.num_layers is not None:
             self.config.num_hidden_layers = self.num_layers
+        self.config.final_dropout = self.drop
         setattr(self.config, "sampling_rate", self.sampling_rate)
         setattr(self.config, "data", self.util.get_data_name())
+        setattr(self.config, "is_classifier", self.is_classifier)
 
         vocab_dict = {}
         with open("vocab.json", "w") as vocab_file:
@@ -181,7 +198,7 @@ class TunedModel(BaseModel):
             return_tensors="pt",
         )
 
-        batch["labels"] = torch.tensor(targets)
+        batch["labels"] = torch.Tensor(targets)
 
         return batch
 
@@ -191,14 +208,25 @@ class TunedModel(BaseModel):
             "UAR": audmetric.unweighted_average_recall,
             "ACC": audmetric.accuracy,
         }
+        metrics_reg = {
+            "PCC": audmetric.pearson_cc,
+            "CCC": audmetric.concordance_cc,
+            "MSE": audmetric.mean_squared_error,
+            "MAE": audmetric.mean_absolute_error,
+        }
 
         # truth = p.label_ids[:, 0].astype(int)
         truth = p.label_ids
         preds = p.predictions
         preds = np.argmax(preds, axis=1)
         scores = {}
-        for name, metric in metrics.items():
-            scores[f"{name}"] = metric(truth, preds)
+        if self.is_classifier:
+            for name, metric in metrics.items():
+                scores[f"{name}"] = metric(truth, preds)
+        else:
+            for name, metric in metrics_reg.items():
+                scores[f"{name}"] = metric(truth, preds)
+
         return scores
 
     def train(self):
@@ -214,13 +242,16 @@ class TunedModel(BaseModel):
             return
         targets = pd.DataFrame(self.dataset["train"]["targets"])
         counts = targets[0].value_counts().sort_index()
-        train_weights = 1 / counts
-        train_weights /= train_weights.sum()
-        self.util.debug("train weights: {train_weights}")
-        criterion = torch.nn.CrossEntropyLoss(
-            weight=torch.Tensor(train_weights).to(self.device),
-        )
-        # criterion = torch.nn.CrossEntropyLoss()
+
+        if self.is_classifier:
+            train_weights = 1 / counts
+            train_weights /= train_weights.sum()
+            self.util.debug(f"train weights: {train_weights}")
+            criterion = torch.nn.CrossEntropyLoss(
+                weight=torch.Tensor(train_weights).to("cuda"),
+            )
+        else:
+            criterion = ConcordanceCorCoeff()
 
         class Trainer(transformers.Trainer):
             def compute_loss(
@@ -245,7 +276,8 @@ class TunedModel(BaseModel):
             // 5
         )
         num_steps = max(1, num_steps)
-        # print(num_steps)
+
+        metrics_for_best_model = self.measure.upper()
 
         training_args = transformers.TrainingArguments(
             output_dir=model_root,
@@ -259,9 +291,10 @@ class TunedModel(BaseModel):
             save_steps=num_steps,
             eval_steps=num_steps,
             logging_steps=num_steps,
-            learning_rate=1e-4,
+            logging_strategy="epoch",
+            learning_rate=self.learning_rate,
             save_total_limit=2,
-            metric_for_best_model="UAR",
+            metric_for_best_model=metrics_for_best_model,
             greater_is_better=True,
             load_best_model_at_end=True,
             remove_unused_columns=False,
@@ -280,6 +313,7 @@ class TunedModel(BaseModel):
         )
         trainer.train()
         trainer.save_model(self.torch_root)
+        self.util.debug(f"saved best model to {self.torch_root}")
         self.load(self.run, self.epoch)
 
     def get_predictions(self):
@@ -314,7 +348,7 @@ class TunedModel(BaseModel):
     def predict_sample(self, signal):
         """Predict one sample"""
         prediction = {}
-        if self.util.exp_is_classification():
+        if self.is_classifier:
             # get the class probabilities
             predictions = self.model.predict(signal)
             # pred = self.clf.predict(features)
@@ -346,8 +380,19 @@ class TunedModel(BaseModel):
 @dataclasses.dataclass
 class ModelOutput(transformers.file_utils.ModelOutput):
 
-    logits_cat: torch.FloatTensor = None
+    logits: torch.FloatTensor = None
     hidden_states: typing.Tuple[torch.FloatTensor] = None
+    cnn_features: torch.FloatTensor = None
+
+
+@dataclasses.dataclass
+class ModelOutputReg(transformers.file_utils.ModelOutput):
+
+    logits: torch.FloatTensor
+    hidden_states: typing.Tuple[torch.FloatTensor] = None
+    attentions: typing.Tuple[torch.FloatTensor] = None
+    logits_framewise: torch.FloatTensor = None
+    hidden_states_framewise: torch.FloatTensor = None
     cnn_features: torch.FloatTensor = None
 
 
@@ -377,13 +422,14 @@ class Model(Wav2Vec2PreTrainedModel):
 
     def __init__(self, config):
 
-        if not hasattr(config, 'add_adapter'):
-            setattr(config, 'add_adapter', False)
+        if not hasattr(config, "add_adapter"):
+            setattr(config, "add_adapter", False)
 
         super().__init__(config)
 
         self.wav2vec2 = Wav2Vec2Model(config)
-        self.cat = ModelHead(config)
+        self.head = ModelHead(config)
+        self.is_classifier = config.is_classifier
         self.init_weights()
 
     def freeze_feature_extractor(self):
@@ -419,39 +465,44 @@ class Model(Wav2Vec2PreTrainedModel):
         labels=None,
         return_hidden=False,
     ):
-
         outputs = self.wav2vec2(
             input_values,
             attention_mask=attention_mask,
         )
-
         cnn_features = outputs.extract_features
         hidden_states_framewise = outputs.last_hidden_state
         hidden_states = self.pooling(
             hidden_states_framewise,
             attention_mask,
         )
-        logits_cat = self.cat(hidden_states)
-
+        logits = self.head(hidden_states)
         if not self.training:
-            logits_cat = torch.softmax(logits_cat, dim=1)
+            logits = torch.softmax(logits, dim=1)
 
         if return_hidden:
-
             # make time last axis
             cnn_features = torch.transpose(cnn_features, 1, 2)
-
-            return ModelOutput(
-                logits_cat=logits_cat,
-                hidden_states=hidden_states,
-                cnn_features=cnn_features,
-            )
-
+            if self.is_classifier:
+                return ModelOutput(
+                    logits=logits,
+                    hidden_states=hidden_states,
+                    cnn_features=cnn_features,
+                )
+            else:
+                return ModelOutputReg(
+                    logits=logits,
+                    hidden_states=hidden_states,
+                    cnn_features=cnn_features,
+                )
         else:
-
-            return ModelOutput(
-                logits_cat=logits_cat,
-            )
+            if self.is_classifier:
+                return ModelOutput(
+                    logits=logits,
+                )
+            else:
+                return ModelOutputReg(
+                    logits=logits,
+                )
 
     def predict(self, signal):
         result = self(torch.from_numpy(signal))
@@ -459,35 +510,31 @@ class Model(Wav2Vec2PreTrainedModel):
         return result
 
 
-class ModelWithPreProcessing(Model):
+class ConcordanceCorCoeff(torch.nn.Module):
 
-    def __init__(self, config):
-        super().__init__(config)
+    def __init__(self):
+        super().__init__()
+        self.mean = torch.mean
+        self.var = torch.var
+        self.sum = torch.sum
+        self.sqrt = torch.sqrt
+        self.std = torch.std
 
-    def forward(
-        self,
-        input_values,
-    ):
-        # Wav2Vec2FeatureExtractor.zero_mean_unit_var_norm():
-        # normed_slice = (vector - vector[:length].mean()) / np.sqrt(vector[:length].var() + 1e-7)
-
-        mean = input_values.mean()
-
-        # var = input_values.var()
-        # raises: onnxruntime.capi.onnxruntime_pybind11_state.NotImplemented:
-        # [ONNXRuntimeError] : 9 : NOT_IMPLEMENTED : Could not find an
-        # implementation for the node ReduceProd_3:ReduceProd(11)
-
-        var = torch.square(input_values - mean).mean()
-        input_values = (input_values - mean) / torch.sqrt(var + 1e-7)
-
-        output = super().forward(
-            input_values,
-            return_hidden=True,
+    def forward(self, prediction, ground_truth):
+        ground_truth = ground_truth.float()
+        mean_gt = self.mean(ground_truth, 0)
+        mean_pred = self.mean(prediction, 0)
+        var_gt = self.var(ground_truth, 0)
+        var_pred = self.var(prediction, 0)
+        v_pred = prediction - mean_pred
+        v_gt = ground_truth - mean_gt
+        cor = self.sum(v_pred * v_gt) / (
+            self.sqrt(self.sum(v_pred**2)) * self.sqrt(self.sum(v_gt**2))
         )
+        sd_gt = self.std(ground_truth)
+        sd_pred = self.std(prediction)
+        numerator = 2 * cor * sd_gt * sd_pred
+        denominator = var_gt + var_pred + (mean_gt - mean_pred) ** 2
+        ccc = numerator / denominator
 
-        return (
-            output.hidden_states,
-            output.logits_cat,
-            output.cnn_features,
-        )
+        return 1 - ccc

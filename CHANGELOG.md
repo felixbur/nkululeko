@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 0.86.0
+--------------
+* added regression to finetuning
+* added other transformer models to finetuning
+* added output the train/dev features sets actually used by the model
+
 Version 0.85.2
 --------------
 * added data, and automatic task label detection
