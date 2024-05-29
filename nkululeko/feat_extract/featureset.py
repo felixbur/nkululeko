@@ -15,7 +15,7 @@ class Featureset:
         self.name = name
         self.data_df = data_df
         self.util = Util("featureset")
-        self.feats_types = feats_type
+        self.feats_type = feats_type
 
     def extract(self):
         pass
@@ -25,8 +25,7 @@ class Featureset:
         self.df = self.df[self.df.index.isin(self.data_df.index)]
         try:
             # use only some features
-            selected_features = ast.literal_eval(
-                glob_conf.config["FEATS"]["features"])
+            selected_features = ast.literal_eval(glob_conf.config["FEATS"]["features"])
             self.util.debug(f"selecting features: {selected_features}")
             sel_feats_df = pd.DataFrame()
             hit = False
@@ -35,11 +34,12 @@ class Featureset:
                     sel_feats_df[feat] = self.df[feat]
                     hit = True
                 except KeyError:
+                    self.util.warn(f"non existent feature in {self.feats_type}: {feat}")
                     pass
             if hit:
                 self.df = sel_feats_df
                 self.util.debug(
-                    f"new feats shape after selecting features: {self.df.shape}"
+                    f"new feats shape after selecting features for {self.feats_type}: {self.df.shape}"
                 )
         except KeyError:
             pass

@@ -65,28 +65,28 @@ class Opensmileset(Featureset):
         feats = smile.process_signal(signal, sr)
         return feats.to_numpy()
 
-    def filter(self):
-        # use only the features that are indexed in the target dataframes
-        self.df = self.df[self.df.index.isin(self.data_df.index)]
-        try:
-            # use only some features
-            selected_features = ast.literal_eval(
-                glob_conf.config["FEATS"]["os.features"]
-            )
-            self.util.debug(f"selecting features from opensmile: {selected_features}")
-            sel_feats_df = pd.DataFrame()
-            hit = False
-            for feat in selected_features:
-                try:
-                    sel_feats_df[feat] = self.df[feat]
-                    hit = True
-                except KeyError:
-                    pass
-            if hit:
-                self.df = sel_feats_df
-                self.util.debug(
-                    "new feats shape after selecting opensmile features:"
-                    f" {self.df.shape}"
-                )
-        except KeyError:
-            pass
+    # def filter(self):
+    #     # use only the features that are indexed in the target dataframes
+    #     self.df = self.df[self.df.index.isin(self.data_df.index)]
+    #     try:
+    #         # use only some features
+    #         selected_features = ast.literal_eval(
+    #             glob_conf.config["FEATS"]["os.features"]
+    #         )
+    #         self.util.debug(f"selecting features from opensmile: {selected_features}")
+    #         sel_feats_df = pd.DataFrame()
+    #         hit = False
+    #         for feat in selected_features:
+    #             try:
+    #                 sel_feats_df[feat] = self.df[feat]
+    #                 hit = True
+    #             except KeyError:
+    #                 pass
+    #         if hit:
+    #             self.df = sel_feats_df
+    #             self.util.debug(
+    #                 "new feats shape after selecting opensmile features:"
+    #                 f" {self.df.shape}"
+    #             )
+    #     except KeyError:
+    #         pass
