@@ -317,6 +317,8 @@
   * patience = 5
 * **pretrained_model**: Base model for finetuning/transfer learning. Variants of wav2vec2, Hubert, and WavLM are tested to work. Default is facebook/wav2vec2-large-robust-ft-swbd-300h.
   * pretrained_model = microsoft/wavlm-base
+* **push_to_hub**: For finetuning, whether to push the model to the huggingface model hub. Default is False.
+  * push_to_hub = True
 
 ### EXPL
 
