@@ -25,5 +25,5 @@ python3 -m nkululeko.nkululeko --config data/eaed/exp.ini
 ```
 
 Reference:  
-[1]  Safwat, S., Salem, M. A.-M., & Sharaf, N. (2024). Building an Egyptian-Arabic Speech Corpus for Emotion Analysis Using Deep Learning. In F. Liu, A. A. Sadanandan, D. N. Pham, P. Mursanto, & D. Lukose (Eds.), PRICAI 2023: Trends in Artificial Intelligence (pp. 320–332). Springer Nature Singapore.
+[1]  Safwat, S., Salem, M. A.-M., & Sharaf, N. (2024). Building an Egyptian-Arabic Speech Corpus for Emotion Analysis Using Deep Learning. In F. Liu, A. A. Sadanandan, D. N. Pham, P. Mursanto, & D. Lukose (Eds.), PRICAI 2023: Trends in Artificial Intelligence (pp. 320–332). Springer Nature Singapore.  
 [2] <https://ieee-dataport.org/documents/egyptian-arabic-emotional-dataset-eaed>
