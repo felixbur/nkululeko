@@ -5,7 +5,7 @@
 
 ## Contents
 
-- [Overview of options for the nkululeko framework](#overview-of-options-for-the-nkululeko-framework)
+* [Overview of options for the nkululeko framework](#overview-of-options-for-the-nkululeko-framework)
   * [Contents](#contents)
   * [Sections](#sections)
     * [EXP](#exp)
@@ -251,6 +251,11 @@
   * type = svm
   * possible values:
     * **bayes**: Naive Bayes classifier
+    * **cnn**: Convolutional neural network (only works with feature type=spectra)
+    * **finetune**: Finetune a transformer model with [huggingface](https://huggingface.co/docs/transformers/training). In this case the features are ignored, because audiofiles are used directly.
+      * **pretrained_model**: Base model for finetuning/transfer learning. Variants of wav2vec2, Hubert, and WavLM are tested to work. Default is facebook/wav2vec2-large-robust-ft-swbd-300h.
+        * pretrained_model = microsoft/wavlm-base
+
     * **gmm**: Gaussian mixture classifier
       * GMM_components = 4
       * GMM_covariance_type = [full | tied | diag | spherical](https://scikit-learn.org/stable/auto_examples/mixture/plot_gmm_covariances.html)
@@ -258,19 +263,18 @@
       * K_val = 5
       * KNN_weights = uniform | distance
     * **knn_reg**: K nearest neighbor regressor
-    * **tree**: Classification tree classifier
-    * **tree_reg**: Classification tree regressor
+    * **mlp**: Multi-Layer-Perceptron for classification
+    * **mlp_reg**: Multi-Layer-Perceptron for regression
     * **svm**: Support Vector Machine
       * C_val = 0.001
       * kernel = rbf # ‘linear’, ‘poly’, ‘rbf’, ‘sigmoid’, ‘precomputed’
-    * **xgb**:XG-Boost
     * **svr**: Support Vector Regression
       * C_val = 0.001
       * kernel = rbf # ‘linear’, ‘poly’, ‘rbf’, ‘sigmoid’, ‘precomputed’
+    * **tree**: Classification tree classifier
+    * **tree_reg**: Classification tree regressor
+    * **xgb**: XG-Boost
     * **xgr**: XG-Boost Regression
-    * **mlp**: Multi-Layer-Perceptron for classification
-    * **mlp_reg**: Multi-Layer-Perceptron for regression
-    * **cnn**: Convolutional neural network (only works with feature type=spectra)
 * **tuning_params**: possible tuning parameters for x-fold optimization (for Bayes, KNN, KNN_reg, Tree, Tree_reg, SVM, SVR, XGB and XGR)
   * tuning_params = ['subsample', 'n_estimators', 'max_depth']
     * subsample = [.5, .7]
@@ -313,8 +317,6 @@
   * patience = 5
 * **pretrained_model**: Base model for finetuning/transfer learning. Variants of wav2vec2, Hubert, and WavLM are tested to work. Default is facebook/wav2vec2-large-robust-ft-swbd-300h.
   * pretrained_model = microsoft/wavlm-base
-* **push_to_hub: For finetuning, whether model will be pushed to Huggingface. Default is `False`.
-  * push_to_hub = True
 
 ### EXPL
 
