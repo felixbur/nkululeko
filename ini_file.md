@@ -257,6 +257,8 @@
         * pretrained_model = microsoft/wavlm-base
       * **push_to_hub**: For finetuning, whether to push the model to the huggingface model hub. Default is False.
         * push_to_hub = True
+      * **max_duration**: Max. duration of samples/segments for the transformer in seconds, frames are pooled.
+        * max_duration = 8.0
     * **gmm**: Gaussian mixture classifier
       * GMM_components = 4
       * GMM_covariance_type = [full | tied | diag | spherical](https://scikit-learn.org/stable/auto_examples/mixture/plot_gmm_covariances.html)
