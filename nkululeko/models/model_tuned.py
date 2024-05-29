@@ -64,8 +64,7 @@ class TunedModel(BaseModel):
 
     def _init_model(self):
         model_path = "facebook/wav2vec2-large-robust-ft-swbd-300h"
-        pretrained_model = self.util.config_val(
-            "MODEL", "pretrained_model", model_path)
+        pretrained_model = self.util.config_val("MODEL", "pretrained_model", model_path)
         self.num_layers = None
         self.sampling_rate = 16000
         self.max_duration_sec = 8.0
@@ -244,20 +243,35 @@ class TunedModel(BaseModel):
             self.load(self.run, self.epoch_num)
             return
         targets = pd.DataFrame(self.dataset["train"]["targets"])
-        counts = targets[0].value_counts().sort_index()
 
         if self.is_classifier:
-            train_weights = 1 / counts
-            train_weights /= train_weights.sum()
-            self.util.debug(f"train weights: {train_weights}")
-            criterion = torch.nn.CrossEntropyLoss(
-                weight=torch.Tensor(train_weights).to("cuda"),
-            )
+            criterion = self.util.config_val("MODEL", "loss", "cross")
+            if criterion == "cross":
+                if self.util.config_val("MODEL", "class_weight", False):
+                    counts = targets[0].value_counts().sort_index()
+                    train_weights = 1 / counts
+                    train_weights /= train_weights.sum()
+                    self.util.debug(f"train weights: {train_weights}")
+                    criterion = torch.nn.CrossEntropyLoss(
+                        weight=torch.Tensor(train_weights).to("cuda"),
+                    )
+                else:
+                    criterion = torch.nn.CrossEntropyLoss()
+            else:
+                self.util.error(f"criterion {criterion} not supported for classifier")
         else:
-            criterion = ConcordanceCorCoeff()
+            self.criterion = self.util.config_val("MODEL", "loss", "ccc")
+            if criterion == "ccc":
+                criterion = ConcordanceCorCoeff()
+            elif criterion == "mse":
+                criterion = torch.nn.MSELoss()
+            elif criterion == "mae":
+                criterion = torch.nn.L1Loss()
+            else:
+                self.util.error(f"criterion {criterion} not supported for regressor")
 
         # set push_to_hub value, default false
-        push = self.util.config_val("MODEL", "push_to_hub", False)
+        push = eval(self.util.config_val("MODEL", "push_to_hub", "False"))
 
         class Trainer(transformers.Trainer):
             def compute_loss(
