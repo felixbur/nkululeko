@@ -261,7 +261,7 @@ class TunedModel(BaseModel):
                 self.util.error(f"criterion {criterion} not supported for classifier")
         else:
             self.criterion = self.util.config_val("MODEL", "loss", "ccc")
-            if criterion == "ccc":
+            if criterion == "1-ccc":
                 criterion = ConcordanceCorCoeff()
             elif criterion == "mse":
                 criterion = torch.nn.MSELoss()
@@ -298,6 +298,16 @@ class TunedModel(BaseModel):
         num_steps = max(1, num_steps)
 
         metrics_for_best_model = self.measure.upper()
+        if metrics_for_best_model == "UAR":
+            greater_is_better = True
+        elif metrics_for_best_model == "CCC":
+            greater_is_better = True
+        elif metrics_for_best_model == "MSE":
+            greater_is_better = False
+        elif metrics_for_best_model == "MAE":
+            greater_is_better = False
+        else:
+            self.util.error(f"unknown metric/measure: {metrics_for_best_model}")
 
         training_args = transformers.TrainingArguments(
             output_dir=model_root,
@@ -315,7 +325,7 @@ class TunedModel(BaseModel):
             learning_rate=self.learning_rate,
             save_total_limit=2,
             metric_for_best_model=metrics_for_best_model,
-            greater_is_better=True,
+            greater_is_better=greater_is_better,
             load_best_model_at_end=True,
             remove_unused_columns=False,
             report_to="none",
