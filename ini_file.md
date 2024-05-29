@@ -265,7 +265,7 @@
       * kernel = rbf # ‘linear’, ‘poly’, ‘rbf’, ‘sigmoid’, ‘precomputed’
     * **tree**: Classification tree classifier 
     * **tree_reg**: Classification tree regressor
-    * **xgb**:XG-Boost
+    * **xgb**: XG-Boost
     * **xgr**: XG-Boost Regression
 * **tuning_params**: possible tuning parameters for x-fold optimization (for Bayes, KNN, KNN_reg, Tree, Tree_reg, SVM, SVR, XGB and XGR)
   * tuning_params = ['subsample', 'n_estimators', 'max_depth']
