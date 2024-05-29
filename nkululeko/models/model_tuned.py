@@ -51,8 +51,9 @@ class TunedModel(BaseModel):
         self.batch_size = int(self.util.config_val("MODEL", "batch_size", "8"))
         self.util.debug(f"batch size: {self.batch_size}")
         self.learning_rate = float(
-            self.util.config_val("MODEL", "learning_rate", 0.0001)
+            self.util.config_val("MODEL", "learning_rate", "0.0001")
         )
+        self.max_duration = float(self.util.config_val("MODEL", "max_duration", "8.0"))
         self.df_train, self.df_test = df_train, df_test
         self.epoch_num = int(self.util.config_val("EXP", "epochs", 1))
         drop = self.util.config_val("MODEL", "drop", False)
@@ -67,7 +68,7 @@ class TunedModel(BaseModel):
         pretrained_model = self.util.config_val("MODEL", "pretrained_model", model_path)
         self.num_layers = None
         self.sampling_rate = 16000
-        self.max_duration_sec = 8.0
+        self.max_duration_sec = self.max_duration
         self.accumulation_steps = 4
 
         # print finetuning information via debug
