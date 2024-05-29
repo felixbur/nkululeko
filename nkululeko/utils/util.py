@@ -134,6 +134,12 @@ class Util:
             pd_series.dtype, pd.CategoricalDtype
         )
 
+    def get_name(self):
+        """
+        Get the name of the experiment
+        """
+        return self.config["EXP"]["name"]
+
     def get_exp_dir(self):
         """
         Get the experiment directory

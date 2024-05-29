@@ -73,8 +73,9 @@ class Experiment:
         if self.util.config_val("REPORT", "latex", False):
             self.report.export_latex()
 
-    def get_name(self):
-        return self.util.get_exp_name()
+    # moved to util
+    # def get_name(self):
+    #     return self.util.get_exp_name()
 
     def set_globals(self, config_obj):
         """install a config object in the global space"""

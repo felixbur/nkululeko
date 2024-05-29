@@ -270,6 +270,7 @@ class TunedModel(BaseModel):
             remove_unused_columns=False,
             report_to="none",
             push_to_hub=push,
+            hub_model_id=f"{self.util.get_name()}",
         )
 
         trainer = Trainer(
