@@ -5,22 +5,22 @@
 
 ## Contents
 
-* [Overview of options for the nkululeko framework](#overview-of-options-for-the-nkululeko-framework)
-  * [Contents](#contents)
-  * [Sections](#sections)
-    * [EXP](#exp)
-    * [DATA](#data)
-    * [AUGMENT](#augment)
-    * [SEGMENT](#segment)
-    * [FEATS](#feats)
-    * [MODEL](#model)
-    * [EXPL](#expl)
-    * [PREDICT](#predict)
-    * [EXPORT](#export)
-    * [CROSSDB](#crossdb)
-    * [PLOT](#plot)
-    * [RESAMPLE](#resample)
-    * [REPORT](#report)
+- [Overview of options for the nkululeko framework](#overview-of-options-for-the-nkululeko-framework)
+  - [Contents](#contents)
+  - [Sections](#sections)
+    - [EXP](#exp)
+    - [DATA](#data)
+    - [AUGMENT](#augment)
+    - [SEGMENT](#segment)
+    - [FEATS](#feats)
+    - [MODEL](#model)
+    - [EXPL](#expl)
+    - [PREDICT](#predict)
+    - [EXPORT](#export)
+    - [CROSSDB](#crossdb)
+    - [PLOT](#plot)
+    - [RESAMPLE](#resample)
+    - [REPORT](#report)
 
 ## Sections
 
@@ -255,7 +255,8 @@
     * **finetune**: Finetune a transformer model with [huggingface](https://huggingface.co/docs/transformers/training). In this case the features are ignored, because audiofiles are used directly.
       * **pretrained_model**: Base model for finetuning/transfer learning. Variants of wav2vec2, Hubert, and WavLM are tested to work. Default is facebook/wav2vec2-large-robust-ft-swbd-300h.
         * pretrained_model = microsoft/wavlm-base
-
+      * **push_to_hub**: For finetuning, whether to push the model to the huggingface model hub. Default is False.
+        * push_to_hub = True
     * **gmm**: Gaussian mixture classifier
       * GMM_components = 4
       * GMM_covariance_type = [full | tied | diag | spherical](https://scikit-learn.org/stable/auto_examples/mixture/plot_gmm_covariances.html)
@@ -315,10 +316,6 @@
   * device = 0
 * **patience**: Number of epochs to wait if the result gets better (for early stopping)
   * patience = 5
-* **pretrained_model**: Base model for finetuning/transfer learning. Variants of wav2vec2, Hubert, and WavLM are tested to work. Default is facebook/wav2vec2-large-robust-ft-swbd-300h.
-  * pretrained_model = microsoft/wavlm-base
-* **push_to_hub**: For finetuning, whether to push the model to the huggingface model hub. Default is False.
-  * push_to_hub = True
 
 ### EXPL
 
