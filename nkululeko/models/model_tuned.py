@@ -222,6 +222,9 @@ class TunedModel(BaseModel):
         )
         # criterion = torch.nn.CrossEntropyLoss()
 
+        # set push_to_hub value, default false
+        push = self.util.config_val("MODEL", "push_to_hub", False)
+
         class Trainer(transformers.Trainer):
             def compute_loss(
                 self,
@@ -266,6 +269,7 @@ class TunedModel(BaseModel):
             load_best_model_at_end=True,
             remove_unused_columns=False,
             report_to="none",
+            push_to_hub=push,
         )
 
         trainer = Trainer(
