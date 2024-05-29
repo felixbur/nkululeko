@@ -64,7 +64,8 @@ class TunedModel(BaseModel):
 
     def _init_model(self):
         model_path = "facebook/wav2vec2-large-robust-ft-swbd-300h"
-        pretrained_model = self.util.config_val("MODEL", "pretrained_model", model_path)
+        pretrained_model = self.util.config_val(
+            "MODEL", "pretrained_model", model_path)
         self.num_layers = None
         self.sampling_rate = 16000
         self.max_duration_sec = 8.0
@@ -95,6 +96,7 @@ class TunedModel(BaseModel):
 
         # load pre-trained model
         if self.is_classifier:
+            self.util.debug(f"Task is classification.")
             le = glob_conf.label_encoder
             mapping = dict(zip(le.classes_, range(len(le.classes_))))
             target_mapping = {k: int(v) for k, v in mapping.items()}
@@ -102,15 +104,16 @@ class TunedModel(BaseModel):
                 value: key for key, value in target_mapping.items()
             }
             self.config = transformers.AutoConfig.from_pretrained(
-                model_path,
+                pretrained_model,
                 num_labels=len(target_mapping),
                 label2id=target_mapping,
                 id2label=target_mapping_reverse,
                 finetuning_task=target_name,
             )
         else:
+            self.util.debug(f"Task is regression.")
             self.config = transformers.AutoConfig.from_pretrained(
-                model_path,
+                pretrained_model,
                 num_labels=1,
                 finetuning_task=target_name,
             )
