@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.86.1
+--------------
+* functionality to push to hub
+* fixed bug that prevented wavlm finetuning
+
 Version 0.86.0
 --------------
 * added regression to finetuning
