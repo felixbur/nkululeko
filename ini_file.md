@@ -295,6 +295,7 @@
   * loss = mse/cross
   * possible values (SHOULD correspond with *measure*):
     * **mse**: mean squared error
+    * **mae**: mean average error
     * **1-ccc**: concordance correlation coefficient
     * **cross**: cross entropy correlation
     * **f1**: Soft (differentiable) F1 Loss
