@@ -11,22 +11,32 @@ from nkululeko.utils.util import Util
 
 from nkululeko.constants import VERSION
 from nkululeko.experiment import Experiment
+from nkululeko.utils.files import find_files
 
 
 def main(src_dir):
     parser = argparse.ArgumentParser(
-        description="Call the nkululeko RESAMPLE framework.")
+        description="Call the nkululeko RESAMPLE framework."
+    )
     parser.add_argument("--config", default=None,
                         help="The base configuration")
     parser.add_argument("--file", default=None,
                         help="The input audio file to resample")
-    parser.add_argument("--replace", action="store_true",
-                        help="Replace the original audio file")
+    parser.add_argument(
+        "--folder",
+        default=None,
+        help="The input directory containing audio files and subdirectories to resample",
+    )
+    parser.add_argument(
+        "--replace", action="store_true", help="Replace the original audio file"
+    )
 
     args = parser.parse_args()
 
-    if args.file is None and args.config is None:
-        print("ERROR: Either --file or --config argument must be provided.")
+    if args.file is None and args.folder is None and args.config is None:
+        print(
+            "ERROR: Either --file, --folder, or --config argument must be provided."
+        )
         exit()
 
     if args.file is not None:
@@ -40,6 +50,20 @@ def main(src_dir):
         # Resample the audio file
         util = Util("resampler", has_config=False)
         util.debug(f"Resampling audio file: {args.file}")
+        rs = Resampler(df_sample, not_testing=True, replace=args.replace)
+        rs.resample()
+    elif args.folder is not None:
+        # Load all audio files in the directory and its subdirectories into a DataFrame
+        files = find_files(args.folder, relative=True, ext=["wav"])
+        files = pd.Series(files)
+        df_sample = pd.DataFrame(index=files)
+        df_sample.index = audformat.utils.to_segmented_index(
+            df_sample.index, allow_nat=False
+        )
+
+        # Resample the audio files
+        util = Util("resampler", has_config=False)
+        util.debug(f"Resampling audio files in directory: {args.folder}")
         rs = Resampler(df_sample, not_testing=True, replace=args.replace)
         rs.resample()
     else:
@@ -66,6 +90,7 @@ def main(src_dir):
 
         if util.config_val("EXP", "no_warnings", False):
             import warnings
+
             warnings.filterwarnings("ignore")
 
         # Load the data
@@ -74,7 +99,8 @@ def main(src_dir):
         # Split into train and test
         expr.fill_train_and_tests()
         util.debug(
-            f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}")
+            f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}"
+        )
 
         sample_selection = util.config_val(
             "RESAMPLE", "sample_selection", "all")

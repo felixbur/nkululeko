@@ -1,30 +1,32 @@
 # Overview of options for the nkululeko framework
+
 * To be specified in a .ini file, [config parser syntax](https://zetcode.com/python/configparser/)
-* Kind of all (well, most) values have defaults 
+* Kind of all (well, most) values have defaults
 
 ## Contents
-- [Overview of options for the nkululeko framework](#overview-of-options-for-the-nkululeko-framework)
-  - [Contents](#contents)
-  - [Sections](#sections)
-    - [EXP](#exp)
-    - [DATA](#data)
-    - [AUGMENT](#augment)
-    - [SEGMENT](#segment)
-    - [FEATS](#feats)
-    - [MODEL](#model)
-    - [EXPL](#expl)
-    - [PREDICT](#predict)
-    - [EXPORT](#export)
-    - [CROSSDB](#crossdb)
-    - [PLOT](#plot)
-    - [RESAMPLE](#resample)
-    - [REPORT](#report)
 
+* [Overview of options for the nkululeko framework](#overview-of-options-for-the-nkululeko-framework)
+  * [Contents](#contents)
+  * [Sections](#sections)
+    * [EXP](#exp)
+    * [DATA](#data)
+    * [AUGMENT](#augment)
+    * [SEGMENT](#segment)
+    * [FEATS](#feats)
+    * [MODEL](#model)
+    * [EXPL](#expl)
+    * [PREDICT](#predict)
+    * [EXPORT](#export)
+    * [CROSSDB](#crossdb)
+    * [PLOT](#plot)
+    * [RESAMPLE](#resample)
+    * [REPORT](#report)
 
 ## Sections
+
 ### EXP
 
-* **root**: experiment root folder 
+* **root**: experiment root folder
   * root = ./results/
 * **type**: the kind of experiment
   * type = classification
@@ -53,13 +55,14 @@
   * databases = ['emodb', 'timit']
 
 ### DATA
+
 * **type**: just a flag now to mark continuous data, so it can be binned to categorical data (using *bins* and *labels*)
   * type = continuous
 * **databases**: list of databases to be used in the experiment
   * databases = ['emodb', 'timit']
 * **tests**: Datasets to be used as test data for the given best model. The databases do NOT have to appear in the **databases** field!
   * tests = ['emovo']
-* **root_folders**: specify an additional configuration specifically for all entries starting with a dataset name, acting as global defaults. 
+* **root_folders**: specify an additional configuration specifically for all entries starting with a dataset name, acting as global defaults.
   * root_folders = data_roots.ini
 * **db_name**: path with audformatted repository for each database listed in 'databases*. If this path is not absolute, it will be treated relative to the experiment folder.
   * emodb = /home/data/audformat/emodb/
@@ -117,7 +120,7 @@
   * target = emotion
 * **labels**: for classification experiments: the names of the categories (is also used for regression when binning the values)
   * labels = ['anger', 'boredom', 'disgust', 'fear', 'happiness', 'neutral', 'sadness']
-* **bins**: array of integers to be used for binning continuous data 
+* **bins**: array of integers to be used for binning continuous data
   * bins  = [-100, 40, 50, 60, 70, 100]
 * **no_reuse**: don't re-use any tables, but start fresh
   * no_reuse = False
@@ -139,6 +142,7 @@
   * check_vad = True
 
 ### AUGMENT
+
 * **augment**: select the methods to augment: either *traditional* or *random_splice*
   * augment = ['traditional', 'random_splice']
   * choices are:
@@ -152,11 +156,12 @@
   * augmentations = Compose([AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.05),Shift(p=0.5),BandPassFilter(min_center_freq=100.0, max_center_freq=6000),])
 
 ### SEGMENT
+
 * **sample_selection**: select the samples to segment: either *train*, *test*, or *all*
   * sample_selection = all
 * **segment_result**: name of the segmented data table as a result
   * segment_target = segmented.csv
-* **method**: select the model 
+* **method**: select the model
   * method = [silero](https://github.com/snakers4/silero-vad)
 * **min_length**: the minimum length of rest samples (in seconds)
   * min_length = 2
@@ -164,6 +169,7 @@
   * max_length = 10
 
 ### FEATS
+
 * **type**: a comma-separated list of types of features; they will be column-wise concatenated
   * type = ['os']
   * possible values:
@@ -200,7 +206,7 @@
     * **auddim**: [audEERING emotion model dimensions](https://arxiv.org/abs/2203.07378), wav2vec2.0 model finetuned on [MSPPodcast](https://ecs.utdallas.edu/research/researchlabs/msp-lab/MSP-Podcast.html) arousal, dominance, valence
     * **agender**: [audEERING age and gender model embeddings](https://arxiv.org/abs/2306.16962), wav2vec2.0 model finetuned on [several age databases](https://github.com/audeering/w2v2-age-gender-how-to), embeddings
       * **agender.model** = ./agender/ (*path to the audEERING model folder*)
-    * **agender_agender**: [audEERING age and gender model age and gender predictions](https://arxiv.org/abs/2306.16962), wav2vec2.0 model finetuned on [several age and gendeer databases](https://github.com/audeering/w2v2-age-gender-how-to): age, female, male, child 
+    * **agender_agender**: [audEERING age and gender model age and gender predictions](https://arxiv.org/abs/2306.16962), wav2vec2.0 model finetuned on [several age and gendeer databases](https://github.com/audeering/w2v2-age-gender-how-to): age, female, male, child
     * **clap**: [Laion's Clap embedding](https://github.com/LAION-AI/CLAP)
     * **xbow**: [open crossbow](https://github.com/openXBOW) features codebook computed from open smile features
       * **xbow.model** = *path to xbow root folder (containing xbow.jar)*
@@ -224,7 +230,7 @@
     * **standard**: z-transformation (mean of 0 and std of 1) based on the training set
     * **robust**: robust scaler
     * **speaker**: like *standard* but based on individual speaker sets (also for the test)
-    * **bins**: convert feature values into 0, .5 and 1 (for low, mid and high) 
+    * **bins**: convert feature values into 0, .5 and 1 (for low, mid and high)
 * **set**: name of opensmile feature set, e.g. eGeMAPSv02, ComParE_2016, GeMAPSv01a, eGeMAPSv01a
   * set = eGeMAPSv02
 * **level**: level of opensmile features
@@ -232,38 +238,40 @@
   * possible values:
     * **functional**: aggregated over the whole utterance
     * **lld**: low-level descriptor: framewise
-* **balancing**: balance the features with respect to [class distribution](https://imbalanced-learn.org/stable/) 
+* **balancing**: balance the features with respect to [class distribution](https://imbalanced-learn.org/stable/)
   * balancing=smote
   * possible values:
     * **ros**: simply repeat random samples from the minority classes
     * **smote**: *invent* new minority samples by little changes from the existing ones
-    * **adasyn**: similar to smote, but resulting in uneven class distributions 
+    * **adasyn**: similar to smote, but resulting in uneven class distributions
+
 ### MODEL
+
 * **type**: type of classifier
   * type = svm
   * possible values:
-    * **bayes**: Naive Bayes classifier 
+    * **bayes**: Naive Bayes classifier
     * **cnn**: Convolutional neural network (only works with feature type=spectra)
-    * **finetune**: Finetune a transformer model with [huggingface](https://huggingface.co/docs/transformers/training). In this case the features are ignored, because audiofiles are used directly. 
-      * **pretrained_model**: Base model for finetuning/transfer learning. Variants of wav2vec2, Hubert, and WavLM are tested to work. Default is facebook/wav2vec2-large-robust-ft-swbd-300h. 
+    * **finetune**: Finetune a transformer model with [huggingface](https://huggingface.co/docs/transformers/training). In this case the features are ignored, because audiofiles are used directly.
+      * **pretrained_model**: Base model for finetuning/transfer learning. Variants of wav2vec2, Hubert, and WavLM are tested to work. Default is facebook/wav2vec2-large-robust-ft-swbd-300h.
         * pretrained_model = microsoft/wavlm-base
 
-    * **gmm**: Gaussian mixture classifier 
+    * **gmm**: Gaussian mixture classifier
       * GMM_components = 4
       * GMM_covariance_type = [full | tied | diag | spherical](https://scikit-learn.org/stable/auto_examples/mixture/plot_gmm_covariances.html)
-    * **knn**: k nearest neighbor classifier 
+    * **knn**: k nearest neighbor classifier
       * K_val = 5
       * KNN_weights = uniform | distance
     * **knn_reg**: K nearest neighbor regressor
     * **mlp**: Multi-Layer-Perceptron for classification
     * **mlp_reg**: Multi-Layer-Perceptron for regression
-    * **svm**: Support Vector Machine 
+    * **svm**: Support Vector Machine
       * C_val = 0.001
       * kernel = rbf # ‘linear’, ‘poly’, ‘rbf’, ‘sigmoid’, ‘precomputed’
     * **svr**: Support Vector Regression
       * C_val = 0.001
       * kernel = rbf # ‘linear’, ‘poly’, ‘rbf’, ‘sigmoid’, ‘precomputed’
-    * **tree**: Classification tree classifier 
+    * **tree**: Classification tree classifier
     * **tree_reg**: Classification tree regressor
     * **xgb**: XG-Boost
     * **xgr**: XG-Boost Regression
@@ -307,15 +315,20 @@
   * device = 0
 * **patience**: Number of epochs to wait if the result gets better (for early stopping)
   * patience = 5
+* **pretrained_model**: Base model for finetuning/transfer learning. Variants of wav2vec2, Hubert, and WavLM are tested to work. Default is facebook/wav2vec2-large-robust-ft-swbd-300h.
+  * pretrained_model = microsoft/wavlm-base
+* **push_to_hub**: For finetuning, whether to push the model to the huggingface model hub. Default is False.
+  * push_to_hub = True
 
 ### EXPL
+
 * **model**: Which model to use to estimate feature importance.
-  * model = ['log_reg'] # can be all models from the [MODEL](#MODEL) section, If they are combined, the mean result is used.
-* **max_feats**: Maximal number of important features 
+  * model = ['log_reg'] # can be all models from the [MODEL](#model) section, If they are combined, the mean result is used.
+* **max_feats**: Maximal number of important features
   * max_feats = 10
 * **sample_selection**: Which sample set/split to use for feature importance, sample distribution, spotlight and feature distributions
   * sample_selection = all # either all, train or test
-* **feature_distributions**: plot distributions for features and analyze importance 
+* **feature_distributions**: plot distributions for features and analyze importance
   * feature_distributions = True
 * **permutation**: use [feature permutation](https://scikit-learn.org/stable/modules/permutation_importance.html) to determine the best features. Make sure to test the models before.
   * permutation = True
@@ -328,7 +341,7 @@
 * **plot_tree**: Plot a decision tree for classification (Requires model = tree)
   * plot_tree = False
 * **value_counts**: plot distributions of target for the samples and speakers (in the *image_dir*)
-  * value_counts = [['gender'], ['age'], ['age', 'duration']] 
+  * value_counts = [['gender'], ['age'], ['age', 'duration']]
 * **column.bin_reals**: If the column variable is real numbers (instead of categories), should it be binned? for any value in *value_counts* as well as the target variable
   * age.bin_reals = True
 * **dist_type**: type of plot for value counts, either histogram or density estimation (kde)
@@ -337,13 +350,16 @@
   * spotlight = False
 * **shap**: comopute [SHAP](https://shap.readthedocs.io/en/latest/) values
   * shap = False
-### [PREDICT](#predict) 
+
+### [PREDICT](#predict)
+
 * **targets**: Speaker/speech characteristics to be predicted by some models
   * targets = ['gender', 'age', 'snr', 'arousal', 'valence', 'dominance', 'pesq', 'mos']
 * **sample_selection**: which split: [train, test, all]
   * sample_selection = all
 
 ### EXPORT
+
 * **target_root**: New root directory for the database, will be created
   * target_root = ./exported_data/
 * **orig_root**: Path to folder that is parent to the original audio files
@@ -354,10 +370,12 @@
   * segments_as_files = False
 
 ### CROSSDB
+
 * **train_extra**: add a additional training partition to all experiments in [the cross database series](http://blog.syntheticspeech.de/2024/01/02/nkululeko-compare-several-databases/). This extra data should be described [in a root_folders file](http://blog.syntheticspeech.de/2022/02/21/specifying-database-disk-location-with-nkululeko/)
   * train_extra = ['addtrain_db_1', 'addtrain_db_2']
 
 ### PLOT
+
 * **name**: special name as a prefix for all plots (stored in *img_dir*).
   * name = my_special_config_within_the_experiment
 * **epochs**: whether to make a plot each for every epoch result.
@@ -376,14 +394,16 @@
   * format = png
 
 ### RESAMPLE
+
 * **sample_selection**: which split: [train, test, all]
   * sample_selection = all
 * **replace**: whether samples should be replaced right where they are, or copies done and a new dataframe given
-  * replace = False 
+  * replace = False
 * **target**: the name of the new dataframe, if replace==false
   * target = data_resampled.csv
 
 ### REPORT
+
 * **show**: print the report at the end
   * show = False
 * **fresh**: start a new report
