@@ -299,7 +299,7 @@
     * **1-ccc**: concordance correlation coefficient
     * **cross**: cross entropy correlation
     * **f1**: Soft (differentiable) F1 Loss
-* **measure**: A measure to report progress with regression experiments (classification is UAR)
+* **measure**: A measure/metric to report progress with regression experiments (classification is UAR)
   * measure = mse
   * possible values:
     * **mse**: mean squared error
