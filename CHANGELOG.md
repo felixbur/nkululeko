@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.86.3
+--------------
+* bugfixed: nan in finetuned model and double saving
+* import features now get multiindex automatically
+
 Version 0.86.2
 --------------
 * plots epoch progression for finetuned models now

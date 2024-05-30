@@ -35,6 +35,7 @@ class ImportSet(Featureset):
             if not os.path.isfile(feat_import_file):
                 self.util.error(f"no import file: {feat_import_file}")
             df = audformat.utils.read_csv(feat_import_file)
+            df = self.util.make_segmented_index(df)
             df = df[df.index.isin(self.data_df.index)]
             feat_df = pd.concat([feat_df, df])
         if feat_df.shape[0] == 0:

@@ -35,9 +35,9 @@ class Util:
         if has_config:
             try:
                 import nkululeko.glob_conf as glob_conf
+
                 self.config = glob_conf.config
-                self.got_data_roots = self.config_val(
-                    "DATA", "root_folders", False)
+                self.got_data_roots = self.config_val("DATA", "root_folders", False)
                 if self.got_data_roots:
                     # if there is a global data rootfolder file, read from there
                     if not os.path.isfile(self.got_data_roots):
@@ -116,8 +116,7 @@ class Util:
                         )
                     return default
             if not default in self.stopvals:
-                self.debug(
-                    f"value for {key} not found, using default: {default}")
+                self.debug(f"value for {key} not found, using default: {default}")
             return default
 
     def set_config(self, config):
@@ -160,8 +159,8 @@ class Util:
         if len(df) == 0:
             return df
         if not isinstance(df.index, pd.MultiIndex):
-            df.index = audformat.utils.to_segmented_index(
-                df.index, allow_nat=False)
+            self.debug("converting to segmented index, this might take a while...")
+            df.index = audformat.utils.to_segmented_index(df.index, allow_nat=False)
         return df
 
     def _get_value_descript(self, section, name):
@@ -272,8 +271,7 @@ class Util:
             return self.config[section][key]
         except KeyError:
             if default not in self.stopvals:
-                self.debug(
-                    f"value for {key} not found, using default: {default}")
+                self.debug(f"value for {key} not found, using default: {default}")
             return default
 
     def config_val_list(self, section, key, default):
@@ -281,8 +279,7 @@ class Util:
             return ast.literal_eval(self.config[section][key])
         except KeyError:
             if not default in self.stopvals:
-                self.debug(
-                    f"value for {key} not found, using default: {default}")
+                self.debug(f"value for {key} not found, using default: {default}")
             return default
 
     def continuous_to_categorical(self, series):
