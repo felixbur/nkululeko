@@ -1,21 +1,23 @@
 # plots.py
-import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.manifold import TSNE
-import seaborn as sns
-import numpy as np
 import ast
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 from scipy import stats
-from nkululeko.utils.util import Util
-import nkululeko.utils.stats as su
+import seaborn as sns
+from sklearn.manifold import TSNE
+
 import nkululeko.glob_conf as glob_conf
-from nkululeko.reporting.report_item import ReportItem
 from nkululeko.reporting.defines import Header
+from nkululeko.reporting.report_item import ReportItem
+import nkululeko.utils.stats as su
+from nkululeko.utils.util import Util
 
 
 class Plots:
     def __init__(self):
-        """Initializing the util system"""
+        """Initializing the util system."""
         self.util = Util("plots")
         self.format = self.util.config_val("PLOT", "format", "png")
         self.target = self.util.config_val("DATA", "target", "emotion")
@@ -138,8 +140,7 @@ class Plots:
                             df, att1, class_label, att1, type_s
                         )
                     else:
-                        ax, caption = self._plot2cont(
-                            df, class_label, att1, type_s)
+                        ax, caption = self._plot2cont(df, class_label, att1, type_s)
                 self._save_plot(
                     ax,
                     caption,
@@ -152,8 +153,7 @@ class Plots:
                 att1 = att[0]
                 att2 = att[1]
                 if att1 == self.target or att2 == self.target:
-                    self.util.debug(
-                        f"no need to correlate {self.target} with itself")
+                    self.util.debug(f"no need to correlate {self.target} with itself")
                     return
                 if att1 not in df:
                     self.util.error(f"unknown feature: {att1}")
@@ -168,8 +168,7 @@ class Plots:
                     if self.util.is_categorical(df[att1]):
                         if self.util.is_categorical(df[att2]):
                             # class_label = cat, att1 = cat, att2 = cat
-                            ax, caption = self._plot2cat(
-                                df, att1, att2, att1, type_s)
+                            ax, caption = self._plot2cat(df, att1, att2, att1, type_s)
                         else:
                             # class_label = cat, att1 = cat, att2 = cont
                             ax, caption = self._plotcatcont(
@@ -190,8 +189,7 @@ class Plots:
                     if self.util.is_categorical(df[att1]):
                         if self.util.is_categorical(df[att2]):
                             # class_label = cont, att1 = cat, att2 = cat
-                            ax, caption = self._plot2cat(
-                                df, att1, att2, att1, type_s)
+                            ax, caption = self._plot2cat(df, att1, att2, att1, type_s)
                         else:
                             # class_label = cont, att1 = cat, att2 = cont
                             ax, caption = self._plot2cont_cat(
@@ -205,8 +203,7 @@ class Plots:
                             )
                         else:
                             # class_label = cont, att1 = cont, att2 = cont
-                            ax, caption = self._plot2cont(
-                                df, att1, att2, type_s)
+                            ax, caption = self._plot2cont(df, att1, att2, type_s)
 
                 self._save_plot(
                     ax, caption, f"Correlation of {att1} and {att2}", filename, type_s
@@ -238,8 +235,7 @@ class Plots:
         )
 
     def _check_binning(self, att, df):
-        bin_reals_att = eval(self.util.config_val(
-            "EXPL", f"{att}.bin_reals", "False"))
+        bin_reals_att = eval(self.util.config_val("EXPL", f"{att}.bin_reals", "False"))
         if bin_reals_att:
             self.util.debug(f"binning continuous variable {att} to categories")
             att_new = f"{att}_binned"
@@ -342,8 +338,7 @@ class Plots:
 
     def describe_df(self, name, df, target, filename):
         """Make a stacked barplot of samples and speakers per sex and target values. speaker, gender and target columns must be present"""
-        fig_dir = self.util.get_path(
-            "fig_dir") + "../"  # one up because of the runs
+        fig_dir = self.util.get_path("fig_dir") + "../"  # one up because of the runs
         sampl_num = df.shape[0]
         sex_col = "gender"
         if target == "gender":
@@ -392,8 +387,7 @@ class Plots:
         dim_num = int(self.util.config_val("EXPL", "scatter.dim", 2))
         # one up because of the runs
         fig_dir = self.util.get_path("fig_dir") + "../"
-        sample_selection = self.util.config_val(
-            "EXPL", "sample_selection", "all")
+        sample_selection = self.util.config_val("EXPL", "sample_selection", "all")
         filename = f"{label}_{self.util.get_feattype_name()}_{sample_selection}_{dimred_type}_{str(dim_num)}d"
         filename = f"{fig_dir}{filename}.{self.format}"
         self.util.debug(f"computing {dimred_type}, this might take a while...")
@@ -435,8 +429,7 @@ class Plots:
 
         if dim_num == 2:
             plot_data = np.vstack((data.T, labels)).T
-            plot_df = pd.DataFrame(
-                data=plot_data, columns=("Dim_1", "Dim_2", "label"))
+            plot_df = pd.DataFrame(data=plot_data, columns=("Dim_1", "Dim_2", "label"))
             # plt.tight_layout()
             ax = (
                 sns.FacetGrid(plot_df, hue="label", height=6)

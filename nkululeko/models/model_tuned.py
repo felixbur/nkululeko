@@ -1,5 +1,6 @@
 """Code based on @jwagner."""
 
+import ast
 import dataclasses
 import json
 import os
@@ -242,8 +243,8 @@ class TunedModel(BaseModel):
     def train(self):
         """Train the model."""
         model_root = self.util.get_path("model_dir")
-        log_root = os.path.join(self.util.get_exp_dir(), "log")
-        audeer.mkdir(log_root)
+        self.log_root = os.path.join(self.util.get_exp_dir(), "log")
+        audeer.mkdir(self.log_root)
         self.torch_root = audeer.path(model_root, "torch")
         conf_file = os.path.join(self.torch_root, "config.json")
         if os.path.isfile(conf_file):
@@ -351,8 +352,15 @@ class TunedModel(BaseModel):
             tokenizer=self.processor.feature_extractor,
             callbacks=[transformers.integrations.TensorBoardCallback()],
         )
+
         trainer.train()
-        # trainer.save_model(self.torch_root) # already saved above
+        # trainer.save_model(self.torch_root)
+        log_file = os.path.join(
+            self.log_root,
+            "log.txt",
+        )
+        with open(log_file, "w") as text_file:
+            print(trainer.state.log_history, file=text_file)
         self.util.debug(f"saved best model to {self.torch_root}")
         self.load(self.run, self.epoch)
 
@@ -383,7 +391,29 @@ class TunedModel(BaseModel):
             self.run,
             self.epoch_num,
         )
+        self._plot_epoch_progression(report)
         return report
+
+    def _plot_epoch_progression(self, report):
+        log_file = os.path.join(
+            self.log_root,
+            "log.txt",
+        )
+        with open(log_file, "r") as file:
+            data = file.read()
+        list = ast.literal_eval(data)
+        epochs, vals, loss = [], [], []
+        for index, tp in enumerate(list):
+            try:
+                epochs.append(tp["epoch"])
+                measure = self.measure.upper()
+                vals.append(tp[f"eval_{measure}"])
+                loss.append(tp["eval_loss"])
+            except KeyError:
+                del epochs[-1]
+                # print(f'no value at {index}')
+        df = pd.DataFrame({"results": vals, "losses": loss}, index=epochs)
+        report.plot_epoch_progression_finetuned(df)
 
     def predict_sample(self, signal):
         """Predict one sample"""
