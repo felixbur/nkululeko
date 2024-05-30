@@ -61,11 +61,13 @@ class TunedModel(BaseModel):
         if drop:
             self.drop = float(drop)
         self.util.debug(f"init: training with dropout: {self.drop}")
+        self.push = eval(self.util.config_val("MODEL", "push_to_hub", "False"))
         self._init_model()
 
     def _init_model(self):
         model_path = "facebook/wav2vec2-large-robust-ft-swbd-300h"
-        pretrained_model = self.util.config_val("MODEL", "pretrained_model", model_path)
+        pretrained_model = self.util.config_val(
+            "MODEL", "pretrained_model", model_path)
         self.num_layers = None
         self.sampling_rate = 16000
         self.max_duration_sec = self.max_duration
@@ -129,6 +131,11 @@ class TunedModel(BaseModel):
             json.dump(vocab_dict, vocab_file)
         tokenizer = transformers.Wav2Vec2CTCTokenizer("./vocab.json")
         tokenizer.save_pretrained(".")
+
+        # uoload tokenizer to hub if true
+        if self.push:
+            tokenizer.push_to_hub(self.util.get_name())
+
 
         feature_extractor = transformers.Wav2Vec2FeatureExtractor(
             feature_size=1,
@@ -272,7 +279,7 @@ class TunedModel(BaseModel):
                 self.util.error(f"criterion {criterion} not supported for regressor")
 
         # set push_to_hub value, default false
-        push = eval(self.util.config_val("MODEL", "push_to_hub", "False"))
+        # push = eval(self.util.config_val("MODEL", "push_to_hub", "False"))
 
         class Trainer(transformers.Trainer):
             def compute_loss(
@@ -311,7 +318,7 @@ class TunedModel(BaseModel):
             self.util.error(f"unknown metric/measure: {metrics_for_best_model}")
 
         training_args = transformers.TrainingArguments(
-            output_dir=model_root,
+            output_dir=self.torch_root,
             logging_dir=log_root,
             per_device_train_batch_size=self.batch_size,
             per_device_eval_batch_size=self.batch_size,
@@ -330,7 +337,7 @@ class TunedModel(BaseModel):
             load_best_model_at_end=True,
             remove_unused_columns=False,
             report_to="none",
-            push_to_hub=push,
+            push_to_hub=self.push,
             hub_model_id=f"{self.util.get_name()}",
         )
 
@@ -345,7 +352,7 @@ class TunedModel(BaseModel):
             callbacks=[transformers.integrations.TensorBoardCallback()],
         )
         trainer.train()
-        trainer.save_model(self.torch_root)
+        # trainer.save_model(self.torch_root) # already saved above
         self.util.debug(f"saved best model to {self.torch_root}")
         self.load(self.run, self.epoch)
 
@@ -487,7 +494,10 @@ class Model(Wav2Vec2PreTrainedModel):
             )
             outputs = torch.sum(hidden_states, dim=1)
             attention_sum = torch.sum(attention_mask, dim=1)
-            outputs = outputs / torch.reshape(attention_sum, (-1, 1))
+            
+            epsilon = 1e-6 # to avoid division by zero and numerical instability
+            outputs = outputs / (torch.reshape(attention_sum, (-1, 1)) + 
+                                 epsilon)
 
         return outputs
 
