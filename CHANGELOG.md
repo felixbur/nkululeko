@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.86.2
+--------------
+* plots epoch progression for finetuned models now
+
 Version 0.86.1
 --------------
 * functionality to push to hub

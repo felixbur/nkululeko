@@ -300,6 +300,23 @@ class Reporter:
     def get_result(self):
         return self.result
 
+    def plot_epoch_progression_finetuned(self, df):
+        plot_name_suggest = self.util.get_exp_name()
+        fig_dir = self.util.get_path("fig_dir")
+        plot_name = (
+            self.util.config_val("PLOT", "name", plot_name_suggest)
+            + "_epoch_progression"
+        )
+        ax = df.plot()
+        fig = ax.figure
+        plt.xlabel("epochs")
+        plt.ylabel(f"{self.MEASURE}")
+        plot_path = f"{fig_dir}{plot_name}.{self.format}"
+        plt.savefig(plot_path)
+        self.util.debug(f"plotted epoch progression to {plot_path}")
+        plt.close(fig)
+        fig.clear()
+
     def plot_epoch_progression(self, reports, out_name):
         fig_dir = self.util.get_path("fig_dir")
         results, losses, train_results, losses_eval = [], [], [], []
