@@ -320,7 +320,7 @@ class TunedModel(BaseModel):
 
         training_args = transformers.TrainingArguments(
             output_dir=self.torch_root,
-            logging_dir=log_root,
+            logging_dir=self.log_root,
             per_device_train_batch_size=self.batch_size,
             per_device_eval_batch_size=self.batch_size,
             gradient_accumulation_steps=self.accumulation_steps,
