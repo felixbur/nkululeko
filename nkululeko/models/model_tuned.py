@@ -326,7 +326,7 @@ class TunedModel(BaseModel):
             gradient_accumulation_steps=self.accumulation_steps,
             evaluation_strategy="steps",
             num_train_epochs=self.epoch_num,
-            fp16=self.device == "cuda",
+            fp16=self.device != "cpu",
             save_steps=num_steps,
             eval_steps=num_steps,
             logging_steps=num_steps,
