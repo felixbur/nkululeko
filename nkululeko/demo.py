@@ -20,16 +20,20 @@ Options:   \n
 import argparse
 import configparser
 import os
+import pandas as pd
 
 from nkululeko.constants import VERSION
 from nkululeko.experiment import Experiment
 import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.util import Util
+from transformers import pipeline
 
 
 def main(src_dir):
-    parser = argparse.ArgumentParser(description="Call the nkululeko DEMO framework.")
-    parser.add_argument("--config", default="exp.ini", help="The base configuration")
+    parser = argparse.ArgumentParser(
+        description="Call the nkululeko DEMO framework.")
+    parser.add_argument("--config", default="exp.ini",
+                        help="The base configuration")
     parser.add_argument(
         "--file", help="A file that should be processed (16kHz mono wav)"
     )
@@ -78,6 +82,33 @@ def main(src_dir):
         f"running {expr.name} from config {config_file}, nkululeko version"
         f" {VERSION}"
     )
+
+    # check if finetuning
+    if util.get_model_type() == "finetune":
+        model_path = os.path.join(
+            util.get_exp_dir(), "models", "run_0", "torch")
+        pipe = pipeline("audio-classification", model=model_path)
+        if args.file is not None:
+            print(f"{args.file}, {pipe(args.file, top_k=1)[0]['label']}")
+            return
+        if args.list is not None:
+            # read audio files from list
+            print(f"Reading files from {args.list}")
+            list_file = pd.read_csv(args.list, header='infer')
+            files = [f[0] for f in list_file.values]
+            for file in files:
+                print(f"{file}, {pipe(file, top_k=1)[0]['label']}")
+            return
+        if args.folder is not None:
+            # read audio files from folder
+            from nkululeko.utils.files import find_files
+            files = find_files(args.folder, relative=True, ext=["wav", "mp3"])
+            for file in files:
+                print(f"{file}, {pipe(file, top_k=1)[0]['label']}")
+            return
+        else:
+            print("ERROR: input mic currently is not supported for finetuning")
+            return
 
     # load the experiment
     expr.load(f"{util.get_save_name()}")

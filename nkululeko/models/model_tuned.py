@@ -54,7 +54,8 @@ class TunedModel(BaseModel):
         self.learning_rate = float(
             self.util.config_val("MODEL", "learning_rate", "0.0001")
         )
-        self.max_duration = float(self.util.config_val("MODEL", "max_duration", "8.0"))
+        self.max_duration = float(
+            self.util.config_val("MODEL", "max_duration", "8.0"))
         self.df_train, self.df_test = df_train, df_test
         self.epoch_num = int(self.util.config_val("EXP", "epochs", 1))
         self.util.debug(f"num of epochs: {self.epoch_num}")
@@ -137,7 +138,6 @@ class TunedModel(BaseModel):
         # uoload tokenizer to hub if true
         if self.push:
             tokenizer.push_to_hub(self.util.get_name())
-
 
         feature_extractor = transformers.Wav2Vec2FeatureExtractor(
             feature_size=1,
@@ -268,7 +268,8 @@ class TunedModel(BaseModel):
                 else:
                     criterion = torch.nn.CrossEntropyLoss()
             else:
-                self.util.error(f"criterion {criterion} not supported for classifier")
+                self.util.error(
+                    f"criterion {criterion} not supported for classifier")
         else:
             self.criterion = self.util.config_val("MODEL", "loss", "ccc")
             if criterion == "1-ccc":
@@ -278,7 +279,8 @@ class TunedModel(BaseModel):
             elif criterion == "mae":
                 criterion = torch.nn.L1Loss()
             else:
-                self.util.error(f"criterion {criterion} not supported for regressor")
+                self.util.error(
+                    f"criterion {criterion} not supported for regressor")
 
         # set push_to_hub value, default false
         # push = eval(self.util.config_val("MODEL", "push_to_hub", "False"))
@@ -317,10 +319,11 @@ class TunedModel(BaseModel):
         elif metrics_for_best_model == "MAE":
             greater_is_better = False
         else:
-            self.util.error(f"unknown metric/measure: {metrics_for_best_model}")
+            self.util.error(
+                f"unknown metric/measure: {metrics_for_best_model}")
 
         training_args = transformers.TrainingArguments(
-            output_dir=self.torch_root,
+            output_dir=model_root,
             logging_dir=self.log_root,
             per_device_train_batch_size=self.batch_size,
             per_device_eval_batch_size=self.batch_size,
@@ -342,6 +345,7 @@ class TunedModel(BaseModel):
             report_to="none",
             push_to_hub=self.push,
             hub_model_id=f"{self.util.get_name()}",
+            overwrite_output_dir=True,
         )
 
         trainer = Trainer(
@@ -449,7 +453,7 @@ class TunedModel(BaseModel):
             self.clf = pickle.load(handle)
 
 
-@dataclasses.dataclass
+@ dataclasses.dataclass
 class ModelOutput(transformers.file_utils.ModelOutput):
 
     logits: torch.FloatTensor = None
@@ -457,7 +461,7 @@ class ModelOutput(transformers.file_utils.ModelOutput):
     cnn_features: torch.FloatTensor = None
 
 
-@dataclasses.dataclass
+@ dataclasses.dataclass
 class ModelOutputReg(transformers.file_utils.ModelOutput):
 
     logits: torch.FloatTensor
@@ -526,9 +530,9 @@ class Model(Wav2Vec2PreTrainedModel):
             )
             outputs = torch.sum(hidden_states, dim=1)
             attention_sum = torch.sum(attention_mask, dim=1)
-            
-            epsilon = 1e-6 # to avoid division by zero and numerical instability
-            outputs = outputs / (torch.reshape(attention_sum, (-1, 1)) + 
+
+            epsilon = 1e-6  # to avoid division by zero and numerical instability
+            outputs = outputs / (torch.reshape(attention_sum, (-1, 1)) +
                                  epsilon)
 
         return outputs
