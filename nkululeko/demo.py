@@ -83,32 +83,51 @@ def main(src_dir):
         f" {VERSION}"
     )
 
-    # check if finetuning
+    def print_pipe(files, outfile):
+        """
+        Prints the pipeline output for a list of files, and optionally writes the results to an output file.
+
+        Args:
+            files (list): A list of file paths to process through the pipeline.
+            outfile (str, optional): The path to an output file to write the pipeline results to.
+
+        Returns:
+            None
+        """
+        results = []
+        for file in files:
+            result = pipe(file, top_k=1)
+            if result[0]["score"] != result[0]["score"]:  # Check for NaN
+                print(f"ERROR: NaN value in pipeline output for file: {file}")
+            else:
+                results.append(f"{file}, {result[0]['label']}")
+        print("\n".join(results))
+
+        if outfile is not None:
+            with open(outfile, "w") as f:
+                f.write("\n".join(results))
+
     if util.get_model_type() == "finetune":
         model_path = os.path.join(
             util.get_exp_dir(), "models", "run_0", "torch")
         pipe = pipeline("audio-classification", model=model_path)
         if args.file is not None:
-            print(f"{args.file}, {pipe(args.file, top_k=1)[0]['label']}")
-            return
-        if args.list is not None:
+            print_pipe([args.file], args.outfile)
+        elif args.list is not None:
             # read audio files from list
             print(f"Reading files from {args.list}")
-            list_file = pd.read_csv(args.list, header='infer')
-            files = [f[0] for f in list_file.values]
-            for file in files:
-                print(f"{file}, {pipe(file, top_k=1)[0]['label']}")
-            return
-        if args.folder is not None:
+            list_file = pd.read_csv(args.list, header="infer")
+            files = list_file.iloc[:, 0].tolist()
+            print_pipe(files, args.outfile)
+        elif args.folder is not None:
             # read audio files from folder
             from nkululeko.utils.files import find_files
+
             files = find_files(args.folder, relative=True, ext=["wav", "mp3"])
-            for file in files:
-                print(f"{file}, {pipe(file, top_k=1)[0]['label']}")
-            return
+            print_pipe(files, args.outfile)
         else:
             print("ERROR: input mic currently is not supported for finetuning")
-            return
+        return
 
     # load the experiment
     expr.load(f"{util.get_save_name()}")
