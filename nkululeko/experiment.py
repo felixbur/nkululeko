@@ -115,7 +115,8 @@ class Experiment:
             self.util.debug(f"Target labels (from config): {labels}")
         else:
             self.labels = auto_labels
-            self.util.debug(f"Target labels (from database): {auto_labels}")
+        # print autolabel no matter it is specified or not
+        self.util.debug(f"Target labels (from database): {auto_labels}")
         glob_conf.set_labels(self.labels)
         self.util.debug(f"loaded databases {dbs}")
 

@@ -315,7 +315,7 @@ class Reporter:
         plt.savefig(plot_path)
         self.util.debug(f"plotted epoch progression to {plot_path}")
         plt.close(fig)
-        fig.clear()
+        # fig.clear()
 
     def plot_epoch_progression(self, reports, out_name):
         fig_dir = self.util.get_path("fig_dir")

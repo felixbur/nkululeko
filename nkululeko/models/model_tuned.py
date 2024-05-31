@@ -57,6 +57,7 @@ class TunedModel(BaseModel):
         self.max_duration = float(self.util.config_val("MODEL", "max_duration", "8.0"))
         self.df_train, self.df_test = df_train, df_test
         self.epoch_num = int(self.util.config_val("EXP", "epochs", 1))
+        self.util.debug(f"num of epochs: {self.epoch_num}")
         drop = self.util.config_val("MODEL", "drop", False)
         self.drop = 0.1
         if drop:
@@ -327,6 +328,7 @@ class TunedModel(BaseModel):
             evaluation_strategy="steps",
             num_train_epochs=self.epoch_num,
             fp16=self.device != "cpu",
+            use_cpu=self.device == "cpu",
             save_steps=num_steps,
             eval_steps=num_steps,
             logging_steps=num_steps,
@@ -354,7 +356,7 @@ class TunedModel(BaseModel):
         )
 
         trainer.train()
-        # trainer.save_model(self.torch_root)
+        trainer.save_model(self.torch_root)
         log_file = os.path.join(
             self.log_root,
             "log.txt",
