@@ -112,11 +112,11 @@ class Experiment:
         auto_labels = list(next(iter(self.datasets.values())).df[self.target].unique())
         if labels:
             self.labels = ast.literal_eval(labels)
-            self.util.debug(f"Target labels (from config): {labels}")
+            self.util.debug(f"Using target labels (from config): {labels}")
         else:
             self.labels = auto_labels
         # print autolabel no matter it is specified or not
-        self.util.debug(f"Target labels (from database): {auto_labels}")
+        self.util.debug(f"Labels (from database): {auto_labels}")
         glob_conf.set_labels(self.labels)
         self.util.debug(f"loaded databases {dbs}")
 

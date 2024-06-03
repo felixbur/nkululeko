@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.86.4
+--------------
+* add finetuning to the demo module
+
 Version 0.86.3
 --------------
 * bugfixed: nan in finetuned model and double saving
