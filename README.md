@@ -14,6 +14,8 @@
   - [Hello World example](#hello-world-example)
   - [Features](#features)
 - [License](#license)
+- [Contributing](#contributing)
+- [Citing](#citing)
 
  
 ## Overview
@@ -270,6 +272,12 @@ Here's [an animation that shows the progress of classification done with nkulule
 
 ## License
 Nkululeko can be used under the [MIT license](https://choosealicense.com/licenses/mit/)
+
+
+## Contributing
+Contributions are welcome and encouraged. To learn more about how to contribute to nkululeko please refer to the [Contributing guidelines](./CONTRIBUTING.md)
+
+## Citing
 If you use it, please mention the Nkululeko paper
 
 F. Burkhardt, Johannes Wagner, Hagen Wierstorf, Florian Eyben and Björn Schuller: Nkululeko: A Tool For Rapid Speaker Characteristics Detection, Proc. Proc. LREC, 2022
