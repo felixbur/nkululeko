@@ -75,12 +75,6 @@ It is recommended to check that your contribution complies with the following ru
 
 	You can also check for common programming errors with the following tools:
 
--	Code with good test coverage (at least 80%), check with:
-
-	```bash
-	pytest
-	```
-
 -	Check code formatting using black:
 
 	```bash
