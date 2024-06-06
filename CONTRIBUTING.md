@@ -84,7 +84,7 @@ It is recommended to check that your contribution complies with the following ru
 -	Check code formatting using black:
 
 	```bash
-  black --check nkululeko
+	black --check nkululeko
 	```
 
 Filing bugs
