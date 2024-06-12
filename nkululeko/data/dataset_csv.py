@@ -59,6 +59,20 @@ class Dataset_CSV(Dataset):
                         lambda x: root + "/" + audio_path + "/" + x
                     )
                 )
+        else: # absolute path is True
+            if audformat.index_type(df.index) == "segmented":
+                file_index = (
+                    df.index.levels[0]
+                    .map(lambda x: audio_path + "/" + x)
+                    .values
+                )
+                df = df.set_index(df.index.set_levels(
+                    file_index, level="file"))
+            else:
+                if not isinstance(df, pd.DataFrame):
+                    df = pd.DataFrame(df)
+                df = df.set_index(df.index.to_series().apply(
+                    lambda x: audio_path + "/" + x ))
 
         self.df = df
         self.db = None
