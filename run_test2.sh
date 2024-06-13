@@ -42,6 +42,7 @@ function RunTest {
 # test basic nkululeko
 nkululeko_ini_files=(
     exp_emodb_os_praat_xgb.ini
+    exp_emodb_limit_size.ini
     exp_emodb_featimport_xgb.ini
     exp_emodb_cnn.ini
     exp_emodb_balancing.ini
