@@ -263,14 +263,15 @@ class Reporter:
                     c_ress[i] = float(f"{c_res:.3f}")
                 self.util.debug(f"labels: {labels}")
                 f1_per_class = f"result per class (F1 score): {c_ress}"
-                fpr, tpr, _ = roc_curve(self.truths, self.preds)
-                auc_score = auc(fpr, tpr)
-                pauc_score = roc_auc_score(self.truths, self.preds, max_fpr=0.1)
-                auc_auc = f"auc: {auc_score:.3f}, pauc: {pauc_score:.3f}"
-                self.util.debug(auc_auc)
+                if len(np.unique(self.truths)) == 2:
+                    fpr, tpr, _ = roc_curve(self.truths, self.preds)
+                    auc_score = auc(fpr, tpr)
+                    pauc_score = roc_auc_score(self.truths, self.preds, max_fpr=0.1)
+                    auc_pauc = f"auc: {auc_score:.3f}, pauc: {pauc_score:.3f}"
+                    self.util.debug(auc_pauc)
                 self.util.debug(f1_per_class)
                 rpt_str = f"{json.dumps(rpt)}\n{f1_per_class}"
-                rpt_str += f"\n{auc_auc}"
+                # rpt_str += f"\n{auc_auc}"
                 text_file.write(rpt_str)
                 glob_conf.report.add_item(
                     ReportItem(
