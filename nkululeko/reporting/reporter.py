@@ -7,11 +7,11 @@ from confidence_intervals import evaluate_with_conf_int
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import pearsonr
-from sklearn.metrics import ConfusionMatrixDisplay
+from sklearn.metrics import ConfusionMatrixDisplay, roc_curve
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import r2_score
-from sklearn.metrics import auc, roc_auc_score
+from sklearn.metrics import roc_curve, auc, roc_auc_score
 from torch import is_tensor
 
 from audmetric import accuracy
@@ -263,7 +263,8 @@ class Reporter:
                     c_ress[i] = float(f"{c_res:.3f}")
                 self.util.debug(f"labels: {labels}")
                 f1_per_class = f"result per class (F1 score): {c_ress}"
-                auc_score = auc(self.truths, self.preds)
+                fpr, tpr, _ = roc_curve(self.truths, self.preds)
+                auc_score = auc(fpr, tpr)
                 pauc_score = roc_auc_score(self.truths, self.preds, max_fpr=0.1)
                 auc_auc = f"auc: {auc_score:.3f}, pauc: {pauc_score:.3f}"
                 self.util.debug(auc_auc)
