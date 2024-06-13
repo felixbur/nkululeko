@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.86.5
+--------------
+* fix audio path detection in data csv import
+
 Version 0.86.4
 --------------
 * add finetuning to the demo module
