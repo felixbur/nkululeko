@@ -225,7 +225,7 @@ class Reporter:
 
         res_dir = self.util.get_path("res_dir")
         rpt = (
-            f"epoch: {epoch}, UAR: {uar_str}"
+            f"Best score at epoch: {epoch}, UAR: {uar_str}"
             + f", (+-{up_str}/{low_str}), ACC: {acc_str}"
         )
         # print(rpt)
@@ -262,12 +262,12 @@ class Reporter:
                     c_res = rpt[l]["f1-score"]
                     c_ress[i] = float(f"{c_res:.3f}")
                 self.util.debug(f"labels: {labels}")
-                f1_per_class = f"result per class (F1 score): {c_ress}"
+                f1_per_class = f"result per class (F1 score): {c_ress} from epoch: {epoch}"
                 if len(np.unique(self.truths)) == 2:
                     fpr, tpr, _ = roc_curve(self.truths, self.preds)
                     auc_score = auc(fpr, tpr)
                     pauc_score = roc_auc_score(self.truths, self.preds, max_fpr=0.1)
-                    auc_pauc = f"auc: {auc_score:.3f}, pauc: {pauc_score:.3f}"
+                    auc_pauc = f"auc: {auc_score:.3f}, pauc: {pauc_score:.3f} from epoch: {epoch}"
                     self.util.debug(auc_pauc)
                 self.util.debug(f1_per_class)
                 rpt_str = f"{json.dumps(rpt)}\n{f1_per_class}"

@@ -30,6 +30,8 @@ class Modelrunner:
         # intialize a new model
         model_type = glob_conf.config["MODEL"]["type"]
         self._select_model(model_type)
+        self.best_performance = 0
+        self.best_epoch = 0
 
     def do_epochs(self):
         # initialze results
@@ -51,7 +53,8 @@ class Modelrunner:
             # epochs are handled by Huggingface API
             self.model.train()
             report = self.model.predict()
-            # todo: findout the best epoch
+            # todo: findout the best epoch, no need
+            # since oad_best_model_at_end is given in training args
             epoch = epoch_num
             report.set_id(self.run, epoch)
             plot_name = self.util.get_plot_name() + f"_{self.run}_{epoch:03d}_cnf"
@@ -77,10 +80,15 @@ class Modelrunner:
                 report.set_id(self.run, epoch)
                 plot_name = self.util.get_plot_name() + f"_{self.run}_{epoch:03d}_cnf"
                 reports.append(report)
+                test_score_metric = report.get_result().get_test_result()
                 self.util.debug(
-                    f"run: {self.run} epoch: {epoch}: result: "
-                    f"{reports[-1].get_result().get_test_result()}"
+                    f"run: {self.run} epoch: {epoch}: result: {test_score_metric}"
                 )
+                # print(f"performance: {performance.split(' ')[1]}")
+                performance = float(test_score_metric.split(' ')[1])
+                if performance > self.best_performance:
+                    self.best_performance = performance
+                    self.best_epoch = epoch
                 if plot_epochs:
                     self.util.debug(f"plotting conf matrix to {plot_name}")
                     report.plot_confmatrix(plot_name, epoch)
@@ -110,11 +118,14 @@ class Modelrunner:
                             f"reached patience ({str(patience)}): early stopping"
                         )
                         break
+        # After training, report the best performance and epoch
+        best_report = reports[self.best_epoch]
+        # self.util.debug(f"Best score at epoch: {self.best_epoch}, UAR: {self.best_performance}") # move to reporter below
 
         if not plot_epochs:
             # Do at least one confusion matrix plot
             self.util.debug(f"plotting confusion matrix to {plot_name}")
-            reports[-1].plot_confmatrix(plot_name, epoch)
+            best_report.plot_confmatrix(plot_name, self.best_epoch)
         return reports, epoch
 
     def _select_model(self, model_type):
