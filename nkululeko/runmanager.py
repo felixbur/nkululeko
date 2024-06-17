@@ -107,9 +107,10 @@ class Runmanager:
                 )
                 self.print_model(best_report, plot_name)
             # finally, print out the numbers for this run
-            self.reports[-1].print_results(
-                int(self.util.config_val("EXP", "epochs", 1))
-            )
+            # self.reports[-1].print_results(
+            #     int(self.util.config_val("EXP", "epochs", 1))
+            # )
+            best_report.print_results(best_report.epoch)
             self.best_results.append(best_report)
             self.last_epochs.append(last_epoch)
 
@@ -152,7 +153,7 @@ class Runmanager:
             report: for which report (will be computed newly from model)
             plot_name: name of plot file
         """
-        epoch = report.epoch
+        epoch = report.best_epoch
         # self.load_model(report)
         # report = self.model.predict()
         self.util.debug(f"plotting conf matrix to {plot_name}")
