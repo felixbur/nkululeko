@@ -63,8 +63,7 @@ class Runmanager:
             )
             self.reports, last_epoch = self.modelrunner.do_epochs()
             # wrap up the run
-            plot_anim_progression = self.util.config_val(
-                "PLOT", "anim_progression", 0)
+            plot_anim_progression = self.util.config_val("PLOT", "anim_progression", 0)
             if plot_anim_progression:
                 plot_name_suggest = self.util.get_exp_name()
                 plot_name = (
@@ -88,8 +87,7 @@ class Runmanager:
                     + "_epoch_progression"
                 )
                 self.util.debug(f"plotting progression to {plot_name}")
-                self.reports[-1].plot_epoch_progression(
-                    self.reports, plot_name)
+                self.reports[-1].plot_epoch_progression(self.reports, plot_name)
             # remember the best run
             best_report = self.get_best_result(self.reports)
             plot_best_model = self.util.config_val("PLOT", "best_model", False)
@@ -146,19 +144,19 @@ class Runmanager:
         )
         self.print_model(report, plot_name)
 
-    def print_model(self, report, plot_name):
+    def print_model(self, reporter, plot_name):
         """Print a confusion matrix for a special report.
 
         Args:
             report: for which report (will be computed newly from model)
             plot_name: name of plot file
         """
-        epoch = report.best_epoch
+        epoch = reporter.epoch
         # self.load_model(report)
         # report = self.model.predict()
         self.util.debug(f"plotting conf matrix to {plot_name}")
-        report.plot_confmatrix(plot_name, epoch)
-        report.print_results(epoch)
+        reporter.plot_confmatrix(plot_name)
+        reporter.print_results()
 
     def load_model(self, report):
         """Load a model from disk for a specific run and epoch and evaluate it.

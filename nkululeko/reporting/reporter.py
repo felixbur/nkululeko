@@ -122,7 +122,7 @@ class Reporter:
         self.truths = np.digitize(self.truths, bins) - 1
         self.preds = np.digitize(self.preds, bins) - 1
 
-    def plot_confmatrix(self, plot_name, epoch):
+    def plot_confmatrix(self, plot_name, epoch=None):
         if not self.util.exp_is_classification():
             self.continuous_to_categorical()
         self._plot_confmat(self.truths, self.preds, plot_name, epoch)
@@ -156,9 +156,11 @@ class Reporter:
             pred = np.digitize(pred, bins) - 1
         self._plot_confmat(truth, pred.astype("int"), plot_name, 0)
 
-    def _plot_confmat(self, truths, preds, plot_name, epoch):
+    def _plot_confmat(self, truths, preds, plot_name, epoch=None):
         # print(truths)
         # print(preds)
+        if epoch is None:
+            epoch = self.epoch
         fig_dir = self.util.get_path("fig_dir")
         labels = glob_conf.labels
         fig = plt.figure()  # figsize=[5, 5]
@@ -237,7 +239,9 @@ class Reporter:
     def set_filename_add(self, my_string):
         self.filenameadd = f"_{my_string}"
 
-    def print_results(self, epoch):
+    def print_results(self, epoch=None):
+        if epoch is None:
+            epoch = self.epoch
         """Print all evaluation values to text file."""
         res_dir = self.util.get_path("res_dir")
         file_name = f"{res_dir}{self.util.get_exp_name()}_{epoch}{self.filenameadd}.txt"
@@ -262,7 +266,9 @@ class Reporter:
                     c_res = rpt[l]["f1-score"]
                     c_ress[i] = float(f"{c_res:.3f}")
                 self.util.debug(f"labels: {labels}")
-                f1_per_class = f"result per class (F1 score): {c_ress} from epoch: {epoch}"
+                f1_per_class = (
+                    f"result per class (F1 score): {c_ress} from epoch: {epoch}"
+                )
                 if len(np.unique(self.truths)) == 2:
                     fpr, tpr, _ = roc_curve(self.truths, self.preds)
                     auc_score = auc(fpr, tpr)

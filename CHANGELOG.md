@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.86.6
+--------------
+* now best (not last) result is shown at end
+
 Version 0.86.5
 --------------
 * fix audio path detection in data csv import
