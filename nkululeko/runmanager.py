@@ -151,7 +151,6 @@ class Runmanager:
             report: for which report (will be computed newly from model)
             plot_name: name of plot file
         """
-        epoch = reporter.epoch
         # self.load_model(report)
         # report = self.model.predict()
         self.util.debug(f"plotting conf matrix to {plot_name}")
