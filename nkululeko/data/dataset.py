@@ -151,8 +151,12 @@ class Dataset:
                 self.got_gender = got_gender2 or self.got_gender
                 self.got_age = got_age2 or self.got_age
                 if audformat.is_filewise_index(df_target.index):
-                    df_target = df_target.loc[df.index.get_level_values("file")]
-                    df_target = df_target.set_index(df.index)
+                    try:
+                        df_target = df_target.loc[df.index.get_level_values("file")]
+                        df_target = df_target.set_index(df.index)
+                    except KeyError:
+                        # just a try...
+                        pass
                 if got_target2:
                     df[self.target] = df_target[self.target]
                 if got_speaker2:
