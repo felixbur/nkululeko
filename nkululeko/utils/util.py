@@ -184,7 +184,7 @@ class Util:
 
     def get_feattype_name(self):
         """
-        Get a string as name from all feature sets that are useed
+        Get a string as name from all feature sets that are used
         """
         return "_".join(ast.literal_eval(self.config["FEATS"]["type"]))
 
@@ -209,19 +209,10 @@ class Util:
         mt = f'{self.config["MODEL"]["type"]}'
         # ft = "_".join(ast.literal_eval(self.config["FEATS"]["type"]))
         ft_value = self.config["FEATS"]["type"]
-        if isinstance(ft_value, str):
-            if ft_value.startswith("[") and ft_value.endswith("]"):
-                # If the value is a string representation of a list
-                ft = "_".join(ast.literal_eval(ft_value))
-            else:
-                # If the value is a single string
-                ft = ft_value
-        elif isinstance(ft_value, list):
-            # If the value is already a list of strings
-            ft = "_".join(ft_value)
+        if isinstance(ft_value, str) and ft_value.startswith("[") and ft_value.endswith("]"):
+            ft = "_".join(ast.literal_eval(ft_value))
         else:
-            # If the value is neither a string nor a list of strings
-            raise ValueError(f"Invalid value for FEATS.type: {ft_value}")
+            ft = ft_value
         ft += "_"
         layer_string = ""
         layer_s = self.config_val("MODEL", "layers", False)
