@@ -5,13 +5,13 @@ import pickle
 import random
 import time
 
+import audeer
+import audformat
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
-import audeer
-import audformat
-
+import nkululeko.glob_conf as glob_conf
 from nkululeko.data.dataset import Dataset
 from nkululeko.data.dataset_csv import Dataset_CSV
 from nkululeko.demo_predictor import Demo_predictor
@@ -19,8 +19,6 @@ from nkululeko.feat_extract.feats_analyser import FeatureAnalyser
 from nkululeko.feature_extractor import FeatureExtractor
 from nkululeko.file_checker import FileChecker
 from nkululeko.filter_data import DataFilter
-from nkululeko.filter_data import filter_min_dur
-import nkululeko.glob_conf as glob_conf
 from nkululeko.plots import Plots
 from nkululeko.reporting.report import Report
 from nkululeko.runmanager import Runmanager
@@ -340,7 +338,10 @@ class Experiment:
         df_train, df_test = self.df_train, self.df_test
         feats_name = "_".join(ast.literal_eval(glob_conf.config["DATA"]["databases"]))
         self.feats_test, self.feats_train = pd.DataFrame(), pd.DataFrame()
-        feats_types = self.util.config_val_list("FEATS", "type", [])
+        # feats_types = self.util.config_val_list("FEATS", "type", [])
+        feats_types = self.util.config_val("FEATS", "type", ["os"])
+        if isinstance(feats_types, str):
+            feats_types = [feats_types]
         # for some models no features are needed
         if len(feats_types) == 0:
             self.util.debug("no feature extractor specified.")
@@ -733,7 +734,6 @@ class Experiment:
         if model.is_ann():
             print("converting to onnx from torch")
         else:
-            from skl2onnx import to_onnx
 
             print("converting to onnx from sklearn")
         # save the rest
