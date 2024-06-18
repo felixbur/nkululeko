@@ -150,6 +150,9 @@ class Dataset:
                 self.got_speaker = got_speaker2 or self.got_speaker
                 self.got_gender = got_gender2 or self.got_gender
                 self.got_age = got_age2 or self.got_age
+                if audformat.is_filewise_index(df_target.index):
+                    df_target = df_target.loc[df.index.get_level_values("file")]
+                    df_target = df_target.set_index(df.index)
                 if got_target2:
                     df[self.target] = df_target[self.target]
                 if got_speaker2:
@@ -255,6 +258,7 @@ class Dataset:
         df = pd.DataFrame()
         for table in df_files:
             source_df = db.tables[table].df
+            # check if columns should be renamed
             source_df = self._check_cols(source_df)
             # create a dataframe with the index (the filenames)
             df_local = pd.DataFrame(index=source_df.index)

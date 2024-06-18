@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.86.7
+--------------
+* handles now audformat tables where the target is in a file index
+  
 Version 0.86.6
 --------------
 * now best (not last) result is shown at end
