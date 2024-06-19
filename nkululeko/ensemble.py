@@ -65,15 +65,15 @@ def ensemble_predictions(config_files, method):
 
     elif method == 'mean':
         for label in labels:
-            ensemble_preds[label] = ensemble_preds[label].mean(axis=1)
+            ensemble_preds[label] = ensemble_preds[label].mean(axis=1).round(4)
 
     elif method == 'max':
         for label in labels:
-            ensemble_preds[label] = ensemble_preds[label].max(axis=1)
+            ensemble_preds[label] = ensemble_preds[label].max(axis=1).round(4)
 
     elif method == 'sum':
         for label in labels:
-            ensemble_preds[label] = ensemble_preds[label].sum(axis=1)
+            ensemble_preds[label] = ensemble_preds[label].sum(axis=1).round(4)
 
     else:
         raise ValueError(f"Unknown ensemble method: {method}")
