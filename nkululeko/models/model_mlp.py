@@ -119,14 +119,24 @@ class MLP_model(Model):
         self.loss_eval = (np.asarray(losses)).mean()
         predictions = logits.argmax(dim=1)
         uar = recall_score(targets.numpy(), predictions.numpy(), average="macro")
-        return uar, targets, predictions
+        return uar, targets, predictions, logits
 
     def predict(self):
-        _, truths, predictions = self.evaluate_model(
+        _, truths, predictions, logits = self.evaluate_model(
             self.model, self.testloader, self.device
         )
-        uar, _, _ = self.evaluate_model(self.model, self.trainloader, self.device)
-        report = Reporter(truths, predictions, self.run, self.epoch)
+        uar, _, _, _ = self.evaluate_model(self.model, self.trainloader, self.device)
+        # make a dataframe for probabilites (logits)
+        proba_d = {}
+        classes = self.df_test[self.target].unique()
+        for c in classes:
+            proba_d[c] = []
+        for i, c in enumerate(classes):
+            proba_d[c] = list(logits.numpy().T[i])
+        probas = pd.DataFrame(proba_d)
+        probas = probas.set_index(self.df_test.index)
+
+        report = Reporter(truths, predictions, probas, self.run, self.epoch)
         try:
             report.result.loss = self.loss
         except AttributeError:  # if the model was loaded from disk the loss is unknown
