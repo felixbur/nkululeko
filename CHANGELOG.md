@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.86.8
+--------------
+* handle single feature sets as strings in the config
+
 Version 0.86.7
 --------------
 * handles now audformat tables where the target is in a file index
