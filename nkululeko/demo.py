@@ -30,10 +30,8 @@ from transformers import pipeline
 
 
 def main(src_dir):
-    parser = argparse.ArgumentParser(
-        description="Call the nkululeko DEMO framework.")
-    parser.add_argument("--config", default="exp.ini",
-                        help="The base configuration")
+    parser = argparse.ArgumentParser(description="Call the nkululeko DEMO framework.")
+    parser.add_argument("--config", default="exp.ini", help="The base configuration")
     parser.add_argument(
         "--file", help="A file that should be processed (16kHz mono wav)"
     )
@@ -84,8 +82,7 @@ def main(src_dir):
     )
 
     def print_pipe(files, outfile):
-        """
-        Prints the pipeline output for a list of files, and optionally writes the results to an output file.
+        """Prints the pipeline output for a list of files, and optionally writes the results to an output file.
 
         Args:
             files (list): A list of file paths to process through the pipeline.
@@ -108,8 +105,7 @@ def main(src_dir):
                 f.write("\n".join(results))
 
     if util.get_model_type() == "finetune":
-        model_path = os.path.join(
-            util.get_exp_dir(), "models", "run_0", "torch")
+        model_path = os.path.join(util.get_exp_dir(), "models", "run_0", "torch")
         pipe = pipeline("audio-classification", model=model_path)
         if args.file is not None:
             print_pipe([args.file], args.outfile)
