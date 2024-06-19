@@ -5,15 +5,15 @@ import os.path
 import pickle
 import sys
 
+import audeer
+import audformat
 import numpy as np
 import pandas as pd
 
-import audeer
-import audformat
-
 
 class Util:
-    # a list of words that need not to be warned upon if default values are used
+    # a list of words that need not to be warned upon if default values are
+    # used
     stopvals = [
         "all",
         False,
@@ -40,7 +40,8 @@ class Util:
                 self.got_data_roots = self.config_val(
                     "DATA", "root_folders", False)
                 if self.got_data_roots:
-                    # if there is a global data rootfolder file, read from there
+                    # if there is a global data rootfolder file, read from
+                    # there
                     if not os.path.isfile(self.got_data_roots):
                         self.error(f"no such file: {self.got_data_roots}")
                     self.data_roots = configparser.ConfigParser()
@@ -107,16 +108,17 @@ class Util:
             if self.got_data_roots:
                 try:
                     if len(key) > 0:
-                        return self.data_roots["DATA"][dataset + "." + key].strip("'\"")
+                        return self.data_roots["DATA"][dataset +
+                                                       "." + key].strip("'\"")
                     else:
                         return self.data_roots["DATA"][dataset].strip("'\"")
                 except KeyError:
-                    if not default in self.stopvals:
+                    if default not in self.stopvals:
                         self.debug(
-                            f"value for {key} not found, using default:" f" {default}"
-                        )
+                            f"value for {key} not found, using default:"
+                            f" {default}")
                     return default
-            if not default in self.stopvals:
+            if default not in self.stopvals:
                 self.debug(
                     f"value for {key} not found, using default: {default}")
             return default
@@ -182,7 +184,7 @@ class Util:
 
     def get_feattype_name(self):
         """
-        Get a string as name from all feature sets that are useed
+        Get a string as name from all feature sets that are used
         """
         return "_".join(ast.literal_eval(self.config["FEATS"]["type"]))
 
@@ -205,7 +207,12 @@ class Util:
     def get_model_description(self):
         mt = ""
         mt = f'{self.config["MODEL"]["type"]}'
-        ft = "_".join(ast.literal_eval(self.config["FEATS"]["type"]))
+        # ft = "_".join(ast.literal_eval(self.config["FEATS"]["type"]))
+        ft_value = self.config["FEATS"]["type"]
+        if isinstance(ft_value, str) and ft_value.startswith("[") and ft_value.endswith("]"):
+            ft = "_".join(ast.literal_eval(ft_value))
+        else:
+            ft = ft_value
         ft += "_"
         layer_string = ""
         layer_s = self.config_val("MODEL", "layers", False)
@@ -230,9 +237,8 @@ class Util:
             ["FEATS", "wav2vec2.layer"],
         ]
         for option in options:
-            return_string += self._get_value_descript(option[0], option[1]).replace(
-                ".", "-"
-            )
+            return_string += self._get_value_descript(
+                option[0], option[1]).replace(".", "-")
         return return_string
 
     def get_plot_name(self):
@@ -286,7 +292,7 @@ class Util:
         try:
             return ast.literal_eval(self.config[section][key])
         except KeyError:
-            if not default in self.stopvals:
+            if default not in self.stopvals:
                 self.debug(
                     f"value for {key} not found, using default: {default}")
             return default
