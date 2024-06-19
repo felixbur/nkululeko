@@ -131,6 +131,8 @@ class Util:
         store = self.get_path("store")
         return f"{store}/{self.get_exp_name()}.pkl"
 
+    def get_save_name_csv(self):
+        return f"{self.get_save_name()}.csv"
     def is_categorical(self, pd_series):
         """Check if a dataframe column is categorical"""
         return pd_series.dtype.name == "object" or isinstance(
@@ -297,6 +299,9 @@ class Util:
                     f"value for {key} not found, using default: {default}")
             return default
 
+    def get_labels(self):
+        return ast.literal_eval(self.config["DATA"]["labels"])
+    
     def continuous_to_categorical(self, series):
         """
         discretize a categorical variable.
