@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 # ensemble.py: combining multiple Nkululeko results
-# supported ensemble methods: majority_voting, mean, max
-# for majority_voting: use output directly
-# for mean and max: use demo from experiment
+# supported ensemble methods: majority_voting, mean, max, sum
+# for majority_voting: use output directly (without --outfile)
+# for mean, max, sum: use ~~demo~~ results from previous experiments
 
 from ast import arg
 from json import load
