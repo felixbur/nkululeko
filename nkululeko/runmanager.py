@@ -177,7 +177,7 @@ class Runmanager:
         return self.load_model(best_report)
 
     def get_best_result(self, reports):
-        best_r = Reporter([], [], 0, 0)
+        best_r = Reporter([], [], None, 0, 0)
         if self.util.high_is_good():
             best_r = self.search_best_result(reports, "ascending")
         else:
@@ -185,7 +185,7 @@ class Runmanager:
         return best_r
 
     def search_best_result(self, reports, order):
-        best_r = Reporter([], [], 0, 0)
+        best_r = Reporter([], [], None, 0, 0)
         if order == "ascending":
             best_result = 0
             for r in reports:

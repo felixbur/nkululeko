@@ -2,16 +2,19 @@ import ast
 import glob
 import json
 import math
+import os
 
 from confidence_intervals import evaluate_with_conf_int
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import pearsonr
-from sklearn.metrics import ConfusionMatrixDisplay, roc_curve
+from sklearn.metrics import ConfusionMatrixDisplay
+from sklearn.metrics import auc
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import r2_score
-from sklearn.metrics import roc_curve, auc, roc_auc_score
+from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_curve
 from torch import is_tensor
 
 from audmetric import accuracy
@@ -46,7 +49,7 @@ class Reporter:
                 self.MEASURE = "CCC"
                 self.result.measure = self.MEASURE
 
-    def __init__(self, truths, preds, run, epoch):
+    def __init__(self, truths, preds, probas, run, epoch):
         """Initialization with ground truth und predictions vector."""
         self.util = Util("reporter")
         self.format = self.util.config_val("PLOT", "format", "png")
@@ -108,6 +111,17 @@ class Reporter:
                 self.result.test = test_result
                 self.result.set_upper_lower(upper, lower)
                 # train and loss are being set by the model
+        # print out the class  probilities
+        if self.util.exp_is_classification() and probas is not None:
+            le = glob_conf.label_encoder
+            mapping = dict(zip(le.classes_, range(len(le.classes_))))
+            mapping_reverse = {value: key for key, value in mapping.items()}
+            probas = probas.rename(columns=mapping_reverse)
+            probas["predicted"] = preds
+            probas["predicted"] = probas["predicted"].map(mapping_reverse)
+            sp = os.path.join(self.util.get_path("store"), "pred_df.csv")
+            probas.to_csv(sp)
+            self.util.debug(f"saved probabilities to {sp}")
 
     def set_id(self, run, epoch):
         """Make the report identifiable with run and epoch index."""

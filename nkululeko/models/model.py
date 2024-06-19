@@ -247,8 +247,25 @@ class Model:
                 self.clf.fit(feats, labels)
 
     def get_predictions(self):
-        predictions = self.clf.predict(self.feats_test.to_numpy())
-        return predictions
+        #        predictions = self.clf.predict(self.feats_test.to_numpy())
+        if self.util.exp_is_classification():
+            # make a dataframe for the class probabilities
+            proba_d = {}
+            for c in self.clf.classes_:
+                proba_d[c] = []
+            # get the class probabilities
+            predictions = self.clf.predict_proba(self.feats_test.to_numpy())
+            # pred = self.clf.predict(features)
+            for i, c in enumerate(self.clf.classes_):
+                proba_d[c] = list(predictions.T[i])
+            probas = pd.DataFrame(proba_d)
+            probas = probas.set_index(self.feats_test.index)
+            predictions = probas.idxmax(axis=1).values
+        else:
+            predictions = self.clf.predict(self.feats_test.to_numpy())
+            probas = None
+
+        return predictions, probas
 
     def predict(self):
         if self.feats_test.isna().to_numpy().any():
@@ -263,10 +280,12 @@ class Model:
             )
             return report
         """Predict the whole eval feature set"""
-        predictions = self.get_predictions()
+        predictions, probas = self.get_predictions()
+
         report = Reporter(
             self.df_test[self.target].to_numpy().astype(float),
             predictions,
+            probas,
             self.run,
             self.epoch,
         )
