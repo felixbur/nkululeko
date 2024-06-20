@@ -70,12 +70,16 @@ def get_effect_size(df, target, variable):
         cats[c] = df[df[target] == c][variable].values
     combos = all_combinations(categories)
     results = {}
-    for combo in combos:
-        one = combo[0]
-        other = combo[1]
-        results[f"{one}-{other}"] = cohen_d(cats[one], cats[other])
-    max_cat = max(results, key=results.get)
-    cat_s = cohens_D_to_string(float(results[max_cat]))
+    if len(categories) == 1:
+        cat_s = cohens_D_to_string(0)
+        return categories[0], cat_s, 0
+    else:
+        for combo in combos:
+            one = combo[0]
+            other = combo[1]
+            results[f"{one}-{other}"] = cohen_d(cats[one], cats[other])
+        max_cat = max(results, key=results.get)
+        cat_s = cohens_D_to_string(float(results[max_cat]))
     return max_cat, cat_s, results[max_cat]
 
 
@@ -92,7 +96,7 @@ def cohens_D_to_string(val):
 
 
 def normalize(values):
-    """Do a z-transformation of a distribution. 
+    """Do a z-transformation of a distribution.
 
     So that mean = 0 and variance = 1
     """

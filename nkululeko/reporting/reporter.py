@@ -26,6 +26,7 @@ from audmetric import mean_squared_error
 from audmetric import unweighted_average_recall
 
 import nkululeko.glob_conf as glob_conf
+from nkululeko.plots import Plots
 from nkululeko.reporting.defines import Header
 from nkululeko.reporting.report_item import ReportItem
 from nkululeko.reporting.result import Result
@@ -126,7 +127,11 @@ class Reporter:
 
     def print_probabilities(self):
         """Print the probabilities per class to a file in the store."""
-        if self.util.exp_is_classification() and self.probas is not None:
+        if (
+            self.util.exp_is_classification()
+            and self.probas is not None
+            and "uncertainty" not in self.probas
+        ):
             le = glob_conf.label_encoder
             mapping = dict(zip(le.classes_, range(len(le.classes_))))
             mapping_reverse = {value: key for key, value in mapping.items()}
@@ -145,9 +150,16 @@ class Reporter:
             probas["truth"] = self.truths
             probas["predicted"] = probas["predicted"].map(mapping_reverse)
             probas["truth"] = probas["truth"].map(mapping_reverse)
+            probas["correct"] = probas.predicted == probas.truth
             sp = os.path.join(self.util.get_path("store"), "pred_df.csv")
+            self.probas = probas
             probas.to_csv(sp)
-            self.util.debug(f"saved probabilities to {sp}")
+            self.util.debug(f"Saved probabilities to {sp}")
+            plots = Plots()
+            ax, caption = plots.plotcatcont(
+                probas, "correct", "uncertainty", "uncertainty", "correct"
+            )
+            plots.save_plot(ax, caption, "Uncertainty", "uncertainty", "samples")
 
     def set_id(self, run, epoch):
         """Make the report identifiable with run and epoch index."""
@@ -258,10 +270,11 @@ class Reporter:
             )
         img_path = f"{fig_dir}{plot_name}{self.filenameadd}.{self.format}"
         plt.savefig(img_path)
+        self.util.debug(f"Saved confusion plot to {img_path}")
         fig.clear()
         plt.close(fig)
-        plt.savefig(img_path)
-        plt.close(fig)
+        plt.close()
+        plt.clf()
         glob_conf.report.add_item(
             ReportItem(
                 Header.HEADER_RESULTS,
