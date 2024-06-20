@@ -132,12 +132,20 @@ class Reporter:
             and self.probas is not None
             and "uncertainty" not in self.probas
         ):
-            le = glob_conf.label_encoder
-            mapping = dict(zip(le.classes_, range(len(le.classes_))))
-            mapping_reverse = {value: key for key, value in mapping.items()}
-            probas = self.probas.rename(columns=mapping_reverse)
+            probas = self.probas
+            probas["predicted"] = self.preds
+            probas["truth"] = self.truths
             # softmax the probabilities or logits
             uncertainty = probas.apply(softmax, axis=1)
+            try:
+                le = glob_conf.label_encoder
+                mapping = dict(zip(le.classes_, range(len(le.classes_))))
+                mapping_reverse = {value: key for key, value in mapping.items()}
+                probas = probas.rename(columns=mapping_reverse)
+                probas["predicted"] = probas["predicted"].map(mapping_reverse)
+                probas["truth"] = probas["truth"].map(mapping_reverse)
+            except AttributeError as ae:
+                self.util.debug(f"Can't label categories: {ae}")
             # compute entropy per sample
             uncertainty = uncertainty.apply(entropy)
             # scale it to 0-1
@@ -146,10 +154,6 @@ class Reporter:
                 max_ent - uncertainty.min()
             )
             probas["uncertainty"] = uncertainty
-            probas["predicted"] = self.preds
-            probas["truth"] = self.truths
-            probas["predicted"] = probas["predicted"].map(mapping_reverse)
-            probas["truth"] = probas["truth"].map(mapping_reverse)
             probas["correct"] = probas.predicted == probas.truth
             sp = os.path.join(self.util.get_path("store"), "pred_df.csv")
             self.probas = probas

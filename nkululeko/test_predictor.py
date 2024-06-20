@@ -56,18 +56,13 @@ class TestPredictor:
         else:
             test_dbs = ast.literal_eval(glob_conf.config["DATA"]["tests"])
             test_dbs_string = "_".join(test_dbs)
-            predictions = self.model.get_predictions()
+            predictions, _ = self.model.get_predictions()
             report = self.model.predict()
             result = report.result.get_result()
             report.set_filename_add(f"test-{test_dbs_string}")
             self.util.print_best_results([report])
             report.plot_confmatrix(self.util.get_plot_name(), 0)
             report.print_results(0)
-            # print(predictions)
-            # df = pd.DataFrame(index=self.orig_df.index)
-            # df["speaker"] = self.orig_df["speaker"]
-            # df["gender"] = self.orig_df["gender"]
-            # df[self.target] = self.orig_df[self.target]
             df = self.orig_df.copy()
             df["predictions"] = self.label_encoder.inverse_transform(predictions)
             target = self.util.config_val("DATA", "target", "emotion")
