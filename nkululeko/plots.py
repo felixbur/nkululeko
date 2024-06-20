@@ -48,7 +48,7 @@ class Plots:
             )
             ax.set_ylabel(f"number of speakers")
             ax.set_xlabel("number of samples")
-            self._save_plot(
+            self.save_plot(
                 ax,
                 "Samples per speaker",
                 f"Samples per speaker ({df_speakers.shape[0]})",
@@ -70,9 +70,9 @@ class Plots:
                     rot=0,
                 )
             )
-            ax.set_ylabel(f"number of speakers")
+            ax.set_ylabel("number of speakers")
             ax.set_xlabel("number of samples")
-            self._save_plot(
+            self.save_plot(
                 ax,
                 "Sample value counts",
                 f"Samples per speaker ({df_speakers.shape[0]})",
@@ -96,7 +96,7 @@ class Plots:
             binned_data = self.util.continuous_to_categorical(df[class_label])
             ax = binned_data.value_counts().plot(kind="bar")
             filename_binned = f"{class_label}_discreet"
-            self._save_plot(
+            self.save_plot(
                 ax,
                 "Sample value counts",
                 filename_binned,
@@ -106,7 +106,7 @@ class Plots:
             dist_type = self.util.config_val("EXPL", "dist_type", "hist")
             ax = df[class_label].plot(kind=dist_type)
 
-        self._save_plot(
+        self.save_plot(
             ax,
             "Sample value counts",
             filename,
@@ -131,17 +131,17 @@ class Plots:
                             df, class_label, att1, self.target, type_s
                         )
                     else:
-                        ax, caption = self._plotcatcont(
+                        ax, caption = self.plotcatcont(
                             df, class_label, att1, att1, type_s
                         )
                 else:
                     if self.util.is_categorical(df[att1]):
-                        ax, caption = self._plotcatcont(
+                        ax, caption = self.plotcatcont(
                             df, att1, class_label, att1, type_s
                         )
                     else:
                         ax, caption = self._plot2cont(df, class_label, att1, type_s)
-                self._save_plot(
+                self.save_plot(
                     ax,
                     caption,
                     f"Correlation of {self.target} and {att[0]}",
@@ -171,15 +171,11 @@ class Plots:
                             ax, caption = self._plot2cat(df, att1, att2, att1, type_s)
                         else:
                             # class_label = cat, att1 = cat, att2 = cont
-                            ax, caption = self._plotcatcont(
-                                df, att1, att2, att1, type_s
-                            )
+                            ax, caption = self.plotcatcont(df, att1, att2, att1, type_s)
                     else:
                         if self.util.is_categorical(df[att2]):
                             # class_label = cat, att1 = cont, att2 = cat
-                            ax, caption = self._plotcatcont(
-                                df, att2, att1, att2, type_s
-                            )
+                            ax, caption = self.plotcatcont(df, att2, att1, att2, type_s)
                         else:
                             # class_label = cat, att1 = cont, att2 = cont
                             ax, caption = self._plot2cont_cat(
@@ -205,7 +201,7 @@ class Plots:
                             # class_label = cont, att1 = cont, att2 = cont
                             ax, caption = self._plot2cont(df, att1, att2, type_s)
 
-                self._save_plot(
+                self.save_plot(
                     ax, caption, f"Correlation of {att1} and {att2}", filename, type_s
                 )
 
@@ -215,16 +211,16 @@ class Plots:
                     f" {att} has more than 2 values. Perhaps you forgot to state a list of lists?"
                 )
 
-    def _save_plot(self, ax, caption, header, filename, type_s):
+    def save_plot(self, ax, caption, header, filename, type_s):
         # one up because of the runs
         fig_dir = self.util.get_path("fig_dir") + "../"
-        fig = ax.figure
+        fig_plots = ax.figure
         # avoid warning
         # plt.tight_layout()
         img_path = f"{fig_dir}{filename}_{type_s}.{self.format}"
         plt.savefig(img_path)
-        plt.close(fig)
-        # fig.clear()   # avoid error
+        plt.close(fig_plots)
+        self.util.debug(f"Saved plot to {img_path}")
         glob_conf.report.add_item(
             ReportItem(
                 Header.HEADER_EXPLORE,
@@ -244,35 +240,29 @@ class Plots:
         return att, df
 
     def _plot2cont_cat(self, df, cont1, cont2, cat, ylab):
-        """
-        plot relation of two continuous distributions with one categorical
-        """
+        """Plot relation of two continuous distributions with one categorical."""
         pearson = stats.pearsonr(df[cont1], df[cont2])
         # trunc to three digits
         pearson = int(pearson[0] * 1000) / 1000
         pearson_string = f"PCC: {pearson}"
         ax = sns.lmplot(data=df, x=cont1, y=cont2, hue=cat)
         caption = f"{ylab} {df.shape[0]}. {pearson_string}"
-        ax.fig.suptitle(caption)
+        ax.figure.suptitle(caption)
         return ax, caption
 
     def _plot2cont(self, df, col1, col2, ylab):
-        """
-        plot relation of two continuous distributions
-        """
+        """Plot relation of two continuous distributions."""
         pearson = stats.pearsonr(df[col1], df[col2])
         # trunc to three digits
         pearson = int(pearson[0] * 1000) / 1000
         pearson_string = f"PCC: {pearson}"
         ax = sns.lmplot(data=df, x=col1, y=col2)
         caption = f"{ylab} {df.shape[0]}. {pearson_string}"
-        ax.fig.suptitle(caption)
+        ax.figure.suptitle(caption)
         return ax, caption
 
-    def _plotcatcont(self, df, cat_col, cont_col, xlab, ylab):
-        """
-        plot relation of categorical distribution with continuous
-        """
+    def plotcatcont(self, df, cat_col, cont_col, xlab, ylab):
+        """Plot relation of categorical distribution with continuous."""
         dist_type = self.util.config_val("EXPL", "dist_type", "hist")
         cats, cat_str, es = su.get_effect_size(df, cat_col, cont_col)
         if dist_type == "hist":
@@ -287,13 +277,11 @@ class Plots:
             )
             ax.set(xlabel=f"{cont_col}")
             caption = f"{ylab} {df.shape[0]}. {cat_str} ({cats}):" f" {es}"
-            ax.fig.suptitle(caption)
+            ax.figure.suptitle(caption)
         return ax, caption
 
     def _plot2cat(self, df, col1, col2, xlab, ylab):
-        """
-        plot relation of 2 categorical distributions
-        """
+        """Plot relation of 2 categorical distributions."""
         crosstab = pd.crosstab(index=df[col1], columns=df[col2])
         res_pval = stats.chi2_contingency(crosstab)
         res_pval = int(res_pval[1] * 1000) / 1000
@@ -320,8 +308,8 @@ class Plots:
         max = self.util.to_3_digits(df.duration.max())
         title = f"Duration distr. for {sample_selection} {df.shape[0]}. min={min}, max={max}"
         ax.set_title(title)
-        ax.set_xlabel(f"duration")
-        ax.set_ylabel(f"number of samples")
+        ax.set_xlabel("duration")
+        ax.set_ylabel("number of samples")
         fig = ax.figure
         # plt.tight_layout()
         img_path = f"{fig_dir}{filename}_{sample_selection}.{self.format}"

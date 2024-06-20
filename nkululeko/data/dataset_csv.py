@@ -23,6 +23,9 @@ class Dataset_CSV(Dataset):
         root = os.path.dirname(data_file)
         audio_path = self.util.config_val_data(self.name, "audio_path", "./")
         df = pd.read_csv(data_file)
+        # trim all string values
+        df_obj = df.select_dtypes("object")
+        df[df_obj.columns] = df_obj.apply(lambda x: x.str.strip())
         # special treatment for segmented dataframes with only one column:
         if "start" in df.columns and len(df.columns) == 4:
             index = audformat.segmented_index(
@@ -49,8 +52,7 @@ class Dataset_CSV(Dataset):
                     .map(lambda x: root + "/" + audio_path + "/" + x)
                     .values
                 )
-                df = df.set_index(df.index.set_levels(
-                    file_index, level="file"))
+                df = df.set_index(df.index.set_levels(file_index, level="file"))
             else:
                 if not isinstance(df, pd.DataFrame):
                     df = pd.DataFrame(df)
@@ -59,27 +61,24 @@ class Dataset_CSV(Dataset):
                         lambda x: root + "/" + audio_path + "/" + x
                     )
                 )
-        else: # absolute path is True
+        else:  # absolute path is True
             if audformat.index_type(df.index) == "segmented":
                 file_index = (
-                    df.index.levels[0]
-                    .map(lambda x: audio_path + "/" + x)
-                    .values
+                    df.index.levels[0].map(lambda x: audio_path + "/" + x).values
                 )
-                df = df.set_index(df.index.set_levels(
-                    file_index, level="file"))
+                df = df.set_index(df.index.set_levels(file_index, level="file"))
             else:
                 if not isinstance(df, pd.DataFrame):
                     df = pd.DataFrame(df)
-                df = df.set_index(df.index.to_series().apply(
-                    lambda x: audio_path + "/" + x ))
+                df = df.set_index(
+                    df.index.to_series().apply(lambda x: audio_path + "/" + x)
+                )
 
         self.df = df
         self.db = None
         self.got_target = True
         self.is_labeled = self.got_target
-        self.start_fresh = eval(
-            self.util.config_val("DATA", "no_reuse", "False"))
+        self.start_fresh = eval(self.util.config_val("DATA", "no_reuse", "False"))
         is_index = False
         try:
             if self.is_labeled and not "class_label" in self.df.columns:
@@ -106,8 +105,7 @@ class Dataset_CSV(Dataset):
                 f" {self.got_gender}, got age: {self.got_age}"
             )
         self.util.debug(r_string)
-        glob_conf.report.add_item(ReportItem(
-            "Data", "Loaded report", r_string))
+        glob_conf.report.add_item(ReportItem("Data", "Loaded report", r_string))
 
     def prepare(self):
         super().prepare()

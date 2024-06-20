@@ -7,6 +7,7 @@
   - [t-SNE plots](#t-sne-plots)
   - [Data distribution](#data-distribution)
   - [Bias checking](#bias-checking)
+  - [Uncertainty](#uncertainty)
 - [Documentation](#documentation)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -68,6 +69,13 @@ Sometimes you only want to take a look at your data:
 In cases you might wonder if there's bias in your data. You can try to detect this with automatically estimated speech properties, by visualizing the correlation of target label and predicted labels.
 
 <img src="meta/images/emotion-pesq.png" width="500px"/>
+
+### Uncertainty
+Nkululeko estimates uncertainty of model decision (only for classifiers) with entropy over the class-probabilities or logits per sample.
+
+<img src="meta/images/uncertainty.png" width="500px"/>
+
+
 
 ## Documentation
 The documentation, along with extensions of installation, usage, INI file format, and examples, can be found [nkululeko.readthedocs.io](https://nkululeko.readthedocs.io).

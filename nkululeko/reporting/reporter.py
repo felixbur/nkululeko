@@ -2,16 +2,21 @@ import ast
 import glob
 import json
 import math
+import os
 
 from confidence_intervals import evaluate_with_conf_int
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.special import softmax
+from scipy.stats import entropy
 from scipy.stats import pearsonr
-from sklearn.metrics import ConfusionMatrixDisplay, roc_curve
+from sklearn.metrics import ConfusionMatrixDisplay
+from sklearn.metrics import auc
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import r2_score
-from sklearn.metrics import roc_curve, auc, roc_auc_score
+from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_curve
 from torch import is_tensor
 
 from audmetric import accuracy
@@ -21,6 +26,7 @@ from audmetric import mean_squared_error
 from audmetric import unweighted_average_recall
 
 import nkululeko.glob_conf as glob_conf
+from nkululeko.plots import Plots
 from nkululeko.reporting.defines import Header
 from nkululeko.reporting.report_item import ReportItem
 from nkululeko.reporting.result import Result
@@ -46,9 +52,18 @@ class Reporter:
                 self.MEASURE = "CCC"
                 self.result.measure = self.MEASURE
 
-    def __init__(self, truths, preds, run, epoch):
-        """Initialization with ground truth und predictions vector."""
+    def __init__(self, truths, preds, run, epoch, probas=None):
+        """Initialization with ground truth und predictions vector.
+
+        Args:
+            truths (list): the ground truth
+            preds (list): the predictions
+            run (int): number of run
+            epoch (int): number of epoch
+            probas (pd.Dataframe, optional): probabilities per class. Defaults to None.
+        """
         self.util = Util("reporter")
+        self.probas = probas
         self.format = self.util.config_val("PLOT", "format", "png")
         self.truths = np.asarray(truths)
         self.preds = np.asarray(preds)
@@ -108,6 +123,47 @@ class Reporter:
                 self.result.test = test_result
                 self.result.set_upper_lower(upper, lower)
                 # train and loss are being set by the model
+        # print out the class  probilities
+
+    def print_probabilities(self):
+        """Print the probabilities per class to a file in the store."""
+        if (
+            self.util.exp_is_classification()
+            and self.probas is not None
+            and "uncertainty" not in self.probas
+        ):
+            probas = self.probas
+            probas["predicted"] = self.preds
+            probas["truth"] = self.truths
+            # softmax the probabilities or logits
+            uncertainty = probas.apply(softmax, axis=1)
+            try:
+                le = glob_conf.label_encoder
+                mapping = dict(zip(le.classes_, range(len(le.classes_))))
+                mapping_reverse = {value: key for key, value in mapping.items()}
+                probas = probas.rename(columns=mapping_reverse)
+                probas["predicted"] = probas["predicted"].map(mapping_reverse)
+                probas["truth"] = probas["truth"].map(mapping_reverse)
+            except AttributeError as ae:
+                self.util.debug(f"Can't label categories: {ae}")
+            # compute entropy per sample
+            uncertainty = uncertainty.apply(entropy)
+            # scale it to 0-1
+            max_ent = math.log(len(glob_conf.labels))
+            uncertainty = (uncertainty - uncertainty.min()) / (
+                max_ent - uncertainty.min()
+            )
+            probas["uncertainty"] = uncertainty
+            probas["correct"] = probas.predicted == probas.truth
+            sp = os.path.join(self.util.get_path("store"), "pred_df.csv")
+            self.probas = probas
+            probas.to_csv(sp)
+            self.util.debug(f"Saved probabilities to {sp}")
+            plots = Plots()
+            ax, caption = plots.plotcatcont(
+                probas, "correct", "uncertainty", "uncertainty", "correct"
+            )
+            plots.save_plot(ax, caption, "Uncertainty", "uncertainty", "samples")
 
     def set_id(self, run, epoch):
         """Make the report identifiable with run and epoch index."""
@@ -123,6 +179,12 @@ class Reporter:
         self.preds = np.digitize(self.preds, bins) - 1
 
     def plot_confmatrix(self, plot_name, epoch=None):
+        """Plot a confusionmatrix to the store.
+
+        Args:
+            plot_name (str): name for the image file.
+            epoch (int, optional): Number of epoch. Defaults to None.
+        """
         if not self.util.exp_is_classification():
             self.continuous_to_categorical()
         self._plot_confmat(self.truths, self.preds, plot_name, epoch)
@@ -212,10 +274,11 @@ class Reporter:
             )
         img_path = f"{fig_dir}{plot_name}{self.filenameadd}.{self.format}"
         plt.savefig(img_path)
+        self.util.debug(f"Saved confusion plot to {img_path}")
         fig.clear()
         plt.close(fig)
-        plt.savefig(img_path)
-        plt.close(fig)
+        plt.close()
+        plt.clf()
         glob_conf.report.add_item(
             ReportItem(
                 Header.HEADER_RESULTS,

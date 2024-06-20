@@ -97,7 +97,9 @@ class MLP_Reg_model(Model):
             self.model, self.testloader, self.device
         )
         result, _, _ = self.evaluate_model(self.model, self.trainloader, self.device)
-        report = Reporter(truths.numpy(), predictions.numpy(), self.run, self.epoch)
+        report = Reporter(
+            truths.numpy(), predictions.numpy(), None, self.run, self.epoch
+        )
         try:
             report.result.loss = self.loss
         except AttributeError:  # if the model was loaded from disk the loss is unknown
