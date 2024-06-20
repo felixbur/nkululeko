@@ -7,6 +7,8 @@ import os
 from confidence_intervals import evaluate_with_conf_int
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.special import softmax
+from scipy.stats import entropy
 from scipy.stats import pearsonr
 from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.metrics import auc
@@ -49,9 +51,18 @@ class Reporter:
                 self.MEASURE = "CCC"
                 self.result.measure = self.MEASURE
 
-    def __init__(self, truths, preds, probas, run, epoch):
-        """Initialization with ground truth und predictions vector."""
+    def __init__(self, truths, preds, run, epoch, probas=None):
+        """Initialization with ground truth und predictions vector.
+
+        Args:
+            truths (list): the ground truth
+            preds (list): the predictions
+            run (int): number of run
+            epoch (int): number of epoch
+            probas (pd.Dataframe, optional): probabilities per class. Defaults to None.
+        """
         self.util = Util("reporter")
+        self.probas = probas
         self.format = self.util.config_val("PLOT", "format", "png")
         self.truths = np.asarray(truths)
         self.preds = np.asarray(preds)
@@ -112,13 +123,28 @@ class Reporter:
                 self.result.set_upper_lower(upper, lower)
                 # train and loss are being set by the model
         # print out the class  probilities
-        if self.util.exp_is_classification() and probas is not None:
+
+    def print_probabilities(self):
+        """Print the probabilities per class to a file in the store."""
+        if self.util.exp_is_classification() and self.probas is not None:
             le = glob_conf.label_encoder
             mapping = dict(zip(le.classes_, range(len(le.classes_))))
             mapping_reverse = {value: key for key, value in mapping.items()}
-            probas = probas.rename(columns=mapping_reverse)
-            probas["predicted"] = preds
+            probas = self.probas.rename(columns=mapping_reverse)
+            # softmax the probabilities or logits
+            uncertainty = probas.apply(softmax, axis=1)
+            # compute entropy per sample
+            uncertainty = uncertainty.apply(entropy)
+            # scale it to 0-1
+            max_ent = math.log(len(glob_conf.labels))
+            uncertainty = (uncertainty - uncertainty.min()) / (
+                max_ent - uncertainty.min()
+            )
+            probas["uncertainty"] = uncertainty
+            probas["predicted"] = self.preds
+            probas["truth"] = self.truths
             probas["predicted"] = probas["predicted"].map(mapping_reverse)
+            probas["truth"] = probas["truth"].map(mapping_reverse)
             sp = os.path.join(self.util.get_path("store"), "pred_df.csv")
             probas.to_csv(sp)
             self.util.debug(f"saved probabilities to {sp}")
@@ -137,6 +163,12 @@ class Reporter:
         self.preds = np.digitize(self.preds, bins) - 1
 
     def plot_confmatrix(self, plot_name, epoch=None):
+        """Plot a confusionmatrix to the store.
+
+        Args:
+            plot_name (str): name for the image file.
+            epoch (int, optional): Number of epoch. Defaults to None.
+        """
         if not self.util.exp_is_classification():
             self.continuous_to_categorical()
         self._plot_confmat(self.truths, self.preds, plot_name, epoch)

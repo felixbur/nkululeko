@@ -85,7 +85,7 @@ class Modelrunner:
                     f"run: {self.run} epoch: {epoch}: result: {test_score_metric}"
                 )
                 # print(f"performance: {performance.split(' ')[1]}")
-                performance = float(test_score_metric.split(' ')[1])
+                performance = float(test_score_metric.split(" ")[1])
                 if performance > self.best_performance:
                     self.best_performance = performance
                     self.best_epoch = epoch
@@ -204,15 +204,15 @@ class Modelrunner:
                 self.df_train, self.df_test, self.feats_train, self.feats_test
             )
         elif model_type == "cnn":
-            from nkululeko.models.model_cnn import CNN_model
+            from nkululeko.models.model_cnn import CNNModel
 
-            self.model = CNN_model(
+            self.model = CNNModel(
                 self.df_train, self.df_test, self.feats_train, self.feats_test
             )
         elif model_type == "mlp":
-            from nkululeko.models.model_mlp import MLP_model
+            from nkululeko.models.model_mlp import MLPModel
 
-            self.model = MLP_model(
+            self.model = MLPModel(
                 self.df_train, self.df_test, self.feats_train, self.feats_test
             )
         elif model_type == "mlp_reg":

@@ -11,7 +11,7 @@ from nkululeko.utils.util import Util
 
 
 class Runmanager:
-    """Class to manage the runs of the experiment (e.g. when results differ caused by random initialization)"""
+    """Class to manage the runs of the experiment (e.g. when results differ caused by random initialization)."""
 
     model = None  # The underlying model
     df_train, df_test, feats_train, feats_test = (
@@ -23,14 +23,13 @@ class Runmanager:
     reports = []
 
     def __init__(self, df_train, df_test, feats_train, feats_test):
-        """Constructor setting up the dataframes
+        """Constructor setting up the dataframes.
+
         Args:
             df_train: train dataframe
             df_test: test dataframe
             feats_train: train features
             feats_train: test features
-
-        Returns:
 
         """
         self.df_train, self.df_test, self.feats_train, self.feats_test = (
@@ -46,7 +45,7 @@ class Runmanager:
         # self._select_model(model_type)
 
     def do_runs(self):
-        """Start the runs"""
+        """Start the runs."""
         self.best_results = []  # keep the best result per run
         self.last_epochs = []  # keep the epoch of best result per run
         # for all runs
@@ -105,15 +104,13 @@ class Runmanager:
                 )
                 self.print_model(best_report, plot_name)
             # finally, print out the numbers for this run
-            # self.reports[-1].print_results(
-            #     int(self.util.config_val("EXP", "epochs", 1))
-            # )
             best_report.print_results(best_report.epoch)
+            best_report.print_probabilities()
             self.best_results.append(best_report)
             self.last_epochs.append(last_epoch)
 
     def print_best_result_runs(self):
-        """Print the best result for all runs"""
+        """Print the best result for all runs."""
         best_report = self.get_best_result(self.best_results)
         self.util.debug(
             f"best result all runs with run {best_report.run}             and"

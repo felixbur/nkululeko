@@ -285,10 +285,11 @@ class Model:
         report = Reporter(
             self.df_test[self.target].to_numpy().astype(float),
             predictions,
-            probas,
             self.run,
             self.epoch,
+            probas=probas,
         )
+        report.print_probabilities()
         return report
 
     def get_type(self):

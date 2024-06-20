@@ -1,25 +1,33 @@
 # model_mlp.py
-import pandas as pd
+import ast
+from collections import OrderedDict
 
-from nkululeko.utils.util import Util
+import numpy as np
+import pandas as pd
+from sklearn.metrics import recall_score
+import torch
+
 import nkululeko.glob_conf as glob_conf
+from nkululeko.losses.loss_softf1loss import SoftF1Loss
 from nkululeko.models.model import Model
 from nkululeko.reporting.reporter import Reporter
-import torch
-import ast
-import numpy as np
-from sklearn.metrics import recall_score
-from collections import OrderedDict
-from nkululeko.losses.loss_softf1loss import SoftF1Loss
+from nkululeko.utils.util import Util
 
 
-class MLP_model(Model):
+class MLPModel(Model):
     """MLP = multi layer perceptron."""
 
     is_classifier = True
 
     def __init__(self, df_train, df_test, feats_train, feats_test):
-        """Constructor taking the configuration and all dataframes."""
+        """Constructor, taking all dataframes.
+
+        Args:
+            df_train (pd.DataFrame): The train labels.
+            df_test (pd.DataFrame): The test labels.
+            feats_train (pd.DataFrame): The train features.
+            feats_test (pd.DataFrame): The test features.
+        """
         super().__init__(df_train, df_test, feats_train, feats_test)
         super().set_model_type("ann")
         self.name = "mlp"
@@ -97,7 +105,7 @@ class MLP_model(Model):
             self.optimizer.step()
         self.loss = (np.asarray(losses)).mean()
 
-    def evaluate_model(self, model, loader, device):
+    def evaluate(self, model, loader, device):
         logits = torch.zeros(len(loader.dataset), self.class_num)
         targets = torch.zeros(len(loader.dataset))
         model.eval()
@@ -121,22 +129,26 @@ class MLP_model(Model):
         uar = recall_score(targets.numpy(), predictions.numpy(), average="macro")
         return uar, targets, predictions, logits
 
-    def predict(self):
-        _, truths, predictions, logits = self.evaluate_model(
-            self.model, self.testloader, self.device
-        )
-        uar, _, _, _ = self.evaluate_model(self.model, self.trainloader, self.device)
+    def get_probas(self, logits):
         # make a dataframe for probabilites (logits)
         proba_d = {}
         classes = self.df_test[self.target].unique()
+        classes.sort()
         for c in classes:
             proba_d[c] = []
         for i, c in enumerate(classes):
             proba_d[c] = list(logits.numpy().T[i])
         probas = pd.DataFrame(proba_d)
         probas = probas.set_index(self.df_test.index)
+        return probas
 
-        report = Reporter(truths, predictions, probas, self.run, self.epoch)
+    def predict(self):
+        _, truths, predictions, logits = self.evaluate(
+            self.model, self.testloader, self.device
+        )
+        uar, _, _, _ = self.evaluate(self.model, self.trainloader, self.device)
+        probas = self.get_probas(logits)
+        report = Reporter(truths, predictions, self.run, self.epoch, probas=probas)
         try:
             report.result.loss = self.loss
         except AttributeError:  # if the model was loaded from disk the loss is unknown
@@ -149,9 +161,7 @@ class MLP_model(Model):
         return report
 
     def get_predictions(self):
-        _, truths, predictions = self.evaluate_model(
-            self.model, self.testloader, self.device
-        )
+        _, _, predictions, _ = self.evaluate(self.model, self.testloader, self.device)
         return predictions.numpy()
 
     def get_loader(self, df_x, df_y, shuffle):

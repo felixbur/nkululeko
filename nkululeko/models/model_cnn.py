@@ -5,33 +5,40 @@ Inspired by code from Su Lei
 
 """
 
+import ast
+from collections import OrderedDict
+
+import numpy as np
+import pandas as pd
+from PIL import Image
+from sklearn.metrics import recall_score
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torchvision
-import torchvision.transforms as transforms
 from torch.utils.data import Dataset
-import ast
-import numpy as np
-from sklearn.metrics import recall_score
-from collections import OrderedDict
-from PIL import Image
-from traitlets import default
+import torchvision.transforms as transforms
 
-from nkululeko.utils.util import Util
 import nkululeko.glob_conf as glob_conf
+from nkululeko.losses.loss_softf1loss import SoftF1Loss
 from nkululeko.models.model import Model
 from nkululeko.reporting.reporter import Reporter
-from nkululeko.losses.loss_softf1loss import SoftF1Loss
+from nkululeko.utils.util import Util
 
 
-class CNN_model(Model):
-    """CNN = convolutional neural net"""
+class CNNModel(Model):
+    """CNN = convolutional neural net."""
 
     is_classifier = True
 
     def __init__(self, df_train, df_test, feats_train, feats_test):
-        """Constructor taking the configuration and all dataframes"""
+        """Constructor, taking all dataframes.
+
+        Args:
+            df_train (pd.DataFrame): The train labels.
+            df_test (pd.DataFrame): The test labels.
+            feats_train (pd.DataFrame): The train features.
+            feats_test (pd.DataFrame): The test features.
+        """
         super().__init__(df_train, df_test, feats_train, feats_test)
         super().set_model_type("ann")
         self.name = "cnn"
@@ -147,7 +154,20 @@ class CNN_model(Model):
             self.optimizer.step()
         self.loss = (np.asarray(losses)).mean()
 
-    def evaluate_model(self, model, loader, device):
+    def get_probas(self, logits):
+        # make a dataframe for probabilites (logits)
+        proba_d = {}
+        classes = self.df_test[self.target].unique()
+        classes.sort()
+        for c in classes:
+            proba_d[c] = []
+        for i, c in enumerate(classes):
+            proba_d[c] = list(logits.numpy().T[i])
+        probas = pd.DataFrame(proba_d)
+        probas = probas.set_index(self.df_test.index)
+        return probas
+
+    def evaluate(self, model, loader, device):
         logits = torch.zeros(len(loader.dataset), self.class_num)
         targets = torch.zeros(len(loader.dataset))
         model.eval()
@@ -169,14 +189,15 @@ class CNN_model(Model):
         self.loss_eval = (np.asarray(losses)).mean()
         predictions = logits.argmax(dim=1)
         uar = recall_score(targets.numpy(), predictions.numpy(), average="macro")
-        return uar, targets, predictions
+        return uar, targets, predictions, logits
 
     def predict(self):
-        _, truths, predictions = self.evaluate_model(
+        _, truths, predictions, logits = self.evaluate(
             self.model, self.testloader, self.device
         )
-        uar, _, _ = self.evaluate_model(self.model, self.trainloader, self.device)
-        report = Reporter(truths, predictions, self.run, self.epoch)
+        uar, _, _, _ = self.evaluate(self.model, self.trainloader, self.device)
+        probas = self.get_probas(logits)
+        report = Reporter(truths, predictions, self.run, self.epoch, probas=probas)
         try:
             report.result.loss = self.loss
         except AttributeError:  # if the model was loaded from disk the loss is unknown
@@ -189,13 +210,11 @@ class CNN_model(Model):
         return report
 
     def get_predictions(self):
-        _, truths, predictions = self.evaluate_model(
-            self.model, self.testloader, self.device
-        )
+        _, _, predictions, _ = self.evaluate(self.model, self.testloader, self.device)
         return predictions.numpy()
 
     def predict_sample(self, features):
-        """Predict one sample"""
+        """Predict one sample."""
         with torch.no_grad():
             logits = self.model(torch.from_numpy(features).to(self.device))
         a = logits.numpy()
