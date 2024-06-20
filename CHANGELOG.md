@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.87.0
+--------------
+* added class probability output and uncertainty analysis
+
 Version 0.86.8
 --------------
 * handle single feature sets as strings in the config
