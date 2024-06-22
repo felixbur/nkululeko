@@ -301,7 +301,11 @@ class Util:
 
     def get_labels(self):
         return ast.literal_eval(self.config["DATA"]["labels"])
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> ensemble
     def continuous_to_categorical(self, series):
         """
         discretize a categorical variable.
