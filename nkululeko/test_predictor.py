@@ -6,13 +6,12 @@
 
 import ast
 
-import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
+import nkululeko.glob_conf as glob_conf
 from nkululeko.data.dataset import Dataset
 from nkululeko.feature_extractor import FeatureExtractor
-import nkululeko.glob_conf as glob_conf
 from nkululeko.scaler import Scaler
 from nkululeko.utils.util import Util
 
@@ -42,7 +41,6 @@ class TestPredictor:
             scale = self.util.config_val("FEATS", "scale", False)
             labelenc = LabelEncoder()
             data_df[self.target] = labelenc.fit_transform(data_df[self.target])
-            #            data_df[self.target] = self.label_encoder.fit_transform(data_df[self.target])
             if scale:
                 self.scaler = Scaler(data_df, None, feats_df, None, scale)
                 feats_df, _ = self.scaler.scale()

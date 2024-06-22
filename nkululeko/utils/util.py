@@ -37,8 +37,7 @@ class Util:
                 import nkululeko.glob_conf as glob_conf
 
                 self.config = glob_conf.config
-                self.got_data_roots = self.config_val(
-                    "DATA", "root_folders", False)
+                self.got_data_roots = self.config_val("DATA", "root_folders", False)
                 if self.got_data_roots:
                     # if there is a global data rootfolder file, read from
                     # there
@@ -108,19 +107,17 @@ class Util:
             if self.got_data_roots:
                 try:
                     if len(key) > 0:
-                        return self.data_roots["DATA"][dataset +
-                                                       "." + key].strip("'\"")
+                        return self.data_roots["DATA"][dataset + "." + key].strip("'\"")
                     else:
                         return self.data_roots["DATA"][dataset].strip("'\"")
                 except KeyError:
                     if default not in self.stopvals:
                         self.debug(
-                            f"value for {key} not found, using default:"
-                            f" {default}")
+                            f"value for {key} not found, using default:" f" {default}"
+                        )
                     return default
             if default not in self.stopvals:
-                self.debug(
-                    f"value for {key} not found, using default: {default}")
+                self.debug(f"value for {key} not found, using default: {default}")
             return default
 
     def set_config(self, config):
@@ -130,6 +127,10 @@ class Util:
         """Return a relative path to a name to save the experiment"""
         store = self.get_path("store")
         return f"{store}/{self.get_exp_name()}.pkl"
+
+    def get_pred_name(self):
+        store = self.get_path("store")
+        return f"{store}/pred_df.csv"
 
     def is_categorical(self, pd_series):
         """Check if a dataframe column is categorical"""
@@ -163,10 +164,8 @@ class Util:
         if len(df) == 0:
             return df
         if not isinstance(df.index, pd.MultiIndex):
-            self.debug(
-                "converting to segmented index, this might take a while...")
-            df.index = audformat.utils.to_segmented_index(
-                df.index, allow_nat=False)
+            self.debug("converting to segmented index, this might take a while...")
+            df.index = audformat.utils.to_segmented_index(df.index, allow_nat=False)
         return df
 
     def _get_value_descript(self, section, name):
@@ -209,7 +208,11 @@ class Util:
         mt = f'{self.config["MODEL"]["type"]}'
         # ft = "_".join(ast.literal_eval(self.config["FEATS"]["type"]))
         ft_value = self.config["FEATS"]["type"]
-        if isinstance(ft_value, str) and ft_value.startswith("[") and ft_value.endswith("]"):
+        if (
+            isinstance(ft_value, str)
+            and ft_value.startswith("[")
+            and ft_value.endswith("]")
+        ):
             ft = "_".join(ast.literal_eval(ft_value))
         else:
             ft = ft_value
@@ -237,8 +240,9 @@ class Util:
             ["FEATS", "wav2vec2.layer"],
         ]
         for option in options:
-            return_string += self._get_value_descript(
-                option[0], option[1]).replace(".", "-")
+            return_string += self._get_value_descript(option[0], option[1]).replace(
+                ".", "-"
+            )
         return return_string
 
     def get_plot_name(self):
@@ -284,8 +288,7 @@ class Util:
             return self.config[section][key]
         except KeyError:
             if default not in self.stopvals:
-                self.debug(
-                    f"value for {key} not found, using default: {default}")
+                self.debug(f"value for {key} not found, using default: {default}")
             return default
 
     def config_val_list(self, section, key, default):
@@ -293,9 +296,11 @@ class Util:
             return ast.literal_eval(self.config[section][key])
         except KeyError:
             if default not in self.stopvals:
-                self.debug(
-                    f"value for {key} not found, using default: {default}")
+                self.debug(f"value for {key} not found, using default: {default}")
             return default
+
+    def get_labels(self):
+        return ast.literal_eval(self.config["DATA"]["labels"])
 
     def continuous_to_categorical(self, series):
         """
