@@ -47,9 +47,7 @@ class Wav2vec2(Featureset):
         config.num_hidden_layers = layer_num - hidden_layer
         self.util.debug(f"using hidden layer #{config.num_hidden_layers}")
         self.processor = Wav2Vec2FeatureExtractor.from_pretrained(model_path)
-        self.model = Wav2Vec2Model.from_pretrained(model_path, config=config).to(
-            self.device
-        )
+        self.model = Wav2Vec2Model.from_pretrained(model_path, config=config).to(self.device)
         print(f"intialized Wav2vec model on {self.device}")
         self.model.eval()
         self.model_initialized = True
@@ -90,7 +88,7 @@ class Wav2vec2(Featureset):
             self.util.debug("reusing extracted wav2vec2 embeddings")
             self.df = pd.read_pickle(storage)
             if self.df.isnull().values.any():
-                nanrows = self.df.columns[self.df.isna().any()].tolist()
+                # nanrows = self.df.columns[self.df.isna().any()].tolist()
                 # print(nanrows)
                 self.util.error(
                     f"got nan: {self.df.shape} {self.df.isnull().sum().sum()}"

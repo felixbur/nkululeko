@@ -79,8 +79,8 @@ class Wavlm(Featureset):
             self.util.debug(f"reusing extracted {self.feat_type} embeddings")
             self.df = pd.read_pickle(storage)
             if self.df.isnull().values.any():
-                nanrows = self.df.columns[self.df.isna().any()].tolist()
-                print(nanrows)
+                # nanrows = self.df.columns[self.df.isna().any()].tolist()
+                # print(nanrows)
                 self.util.error(
                     f"got nan: {self.df.shape} {self.df.isnull().sum().sum()}"
                 )
@@ -104,11 +104,14 @@ class Wavlm(Featureset):
                 # pool result and convert to numpy
                 y = torch.mean(y, dim=1)
                 y = y.detach().cpu().numpy()
+
+                # print(f"hs shape: {y.shape}")
+
         except RuntimeError as re:
             print(str(re))
-            self.util.error(f"couldn't extract file: {file}")
+            self.util.error(f"Couldn't extract file: {file}")
 
-        return y.flatten()
+        return y.ravel()
 
     def extract_sample(self, signal, sr):
         self.init_model()
