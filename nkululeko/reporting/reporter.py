@@ -186,6 +186,9 @@ class Reporter:
             epoch (int, optional): Number of epoch. Defaults to None.
         """
         if not self.util.exp_is_classification():
+            self._plot_scatter(
+                self.truths, self.preds, plot_name.replace("cnf", "scatter"), epoch
+            )
             self.continuous_to_categorical()
         self._plot_confmat(self.truths, self.preds, plot_name, epoch)
 
@@ -217,6 +220,43 @@ class Reporter:
             truth = np.digitize(truth, bins) - 1
             pred = np.digitize(pred, bins) - 1
         self._plot_confmat(truth, pred.astype("int"), plot_name, 0)
+
+    def _plot_scatter(self, truths, preds, plot_name, epoch=None):
+        # print(truths)
+        # print(preds)
+        if epoch is None:
+            epoch = self.epoch
+        fig_dir = self.util.get_path("fig_dir")
+        fig = plt.figure()  # figsize=[5, 5]
+
+        pcc = pearsonr(self.truths, self.preds)[0]
+
+        reg_res = f"{self.result.test:.3f} {self.MEASURE}"
+
+        plt.scatter(truths, preds, cmap="Blues")
+        plt.xlabel("truth")
+        plt.ylabel("prediction")
+
+        if epoch != 0:
+            plt.title(f"Scatter plot: {reg_res}, PCC: {pcc:.3f}, Epoch: {epoch}")
+        else:
+            plt.title(f"Scatter plot: {reg_res}, PCC: {pcc:.3f}")
+
+        img_path = f"{fig_dir}{plot_name}{self.filenameadd}.{self.format}"
+        plt.savefig(img_path)
+        self.util.debug(f"Saved scatter plot to {img_path}")
+        fig.clear()
+        plt.close(fig)
+        plt.close()
+        plt.clf()
+        glob_conf.report.add_item(
+            ReportItem(
+                Header.HEADER_RESULTS,
+                self.util.get_model_description(),
+                "Result scatter plot",
+                img_path,
+            )
+        )
 
     def _plot_confmat(self, truths, preds, plot_name, epoch=None):
         # print(truths)
