@@ -157,7 +157,7 @@ Here is an overview of the interfaces/modules:
 All of them take *--config <my_config.ini>* as an argument.
 
 * **nkululeko.nkululeko**: do machine learning experiments combining features and learners
-* **nkululeko.ensemble**: combine several nkululeko experiments and report on late fusion results
+* **nkululeko.ensemble**: [combine several nkululeko experiments](http://blog.syntheticspeech.de/2024/06/25/nkululeko-ensemble-classifiers-with-late-fusion/) and report on late fusion results
   * *configurations*: which experiments to combine
   * *--method* (optional): majority_voting, mean, max, sum
   * *--outfile* (optional): name of CSV file for output
