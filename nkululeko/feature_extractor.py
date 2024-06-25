@@ -39,12 +39,10 @@ class FeatureExtractor:
         self.feats = pd.DataFrame()
         for feats_type in self.feats_types:
             store_name = f"{self.data_name}_{feats_type}"
-            self.feat_extractor = self._get_feat_extractor(
-                store_name, feats_type)
+            self.feat_extractor = self._get_feat_extractor(store_name, feats_type)
             self.feat_extractor.extract()
             self.feat_extractor.filter()
-            self.feats = pd.concat(
-                [self.feats, self.feat_extractor.df], axis=1)
+            self.feats = pd.concat([self.feats, self.feat_extractor.df], axis=1)
         return self.feats
 
     def extract_sample(self, signal, sr):
@@ -77,7 +75,7 @@ class FeatureExtractor:
             return TRILLset
 
         elif feats_type.startswith(
-            ("wav2vec2", "hubert", "wavlm", "spkrec", "whisper")
+            ("wav2vec2", "hubert", "wavlm", "spkrec", "whisper", "ast")
         ):
             return self._get_feat_extractor_by_prefix(feats_type)
 
@@ -107,15 +105,13 @@ class FeatureExtractor:
         prefix, _, ext = feats_type.partition("-")
         from importlib import import_module
 
-        module = import_module(
-            f"nkululeko.feat_extract.feats_{prefix.lower()}")
+        module = import_module(f"nkululeko.feat_extract.feats_{prefix.lower()}")
         class_name = f"{prefix.capitalize()}"
         return getattr(module, class_name)
 
     def _get_feat_extractor_by_name(self, feats_type):
         from importlib import import_module
 
-        module = import_module(
-            f"nkululeko.feat_extract.feats_{feats_type.lower()}")
+        module = import_module(f"nkululeko.feat_extract.feats_{feats_type.lower()}")
         class_name = f"{feats_type.capitalize()}Set"
         return getattr(module, class_name)

@@ -1,48 +1,39 @@
-# feats_wavlm.py
-# HuBERT feature extractor for Nkululeko
-# supported feat_types: 'wavlm-base', 'wavlm-base-plus', 'wavlm-large'
-
+# feats_ast.py
 import os
 
+import numpy as np
 import pandas as pd
 import torch
+import torch.nn.functional as F
 import torchaudio
 from tqdm import tqdm
-from transformers import Wav2Vec2FeatureExtractor
-from transformers import WavLMModel
+from transformers import AutoProcessor, ASTModel
 
-from nkululeko.feat_extract.featureset import Featureset
 import nkululeko.glob_conf as glob_conf
+from nkululeko.feat_extract.featureset import Featureset
 
 
-class Wavlm(Featureset):
-    """Class to extract WavLM embedding)."""
+class Ast(Featureset):
+    """Class to extract AST (Audio Spectrogram Transformer) embeddings"""
 
-    def __init__(self, name, data_df, feats_type):
-        """Constructor.
-
-        Is_train is needed to distinguish from test/dev sets,
-        because they use the codebook from the training.
-        """
-        super().__init__(name, data_df, feats_type)
-        # check if device is not set, use cuda if available
+    def __init__(self, name, data_df, feat_type):
+        super().__init__(name, data_df, feat_type)
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
         self.model_initialized = False
-        self.feat_type = feats_type
+        self.feat_type = feat_type
 
     def init_model(self):
-        # load model
-        self.util.debug("loading WavLM model...")
-
+        self.util.debug("loading AST model...")
         model_path = self.util.config_val(
-            "FEATS", "WavLM.model", f"microsoft/{self.feat_type}"
+            "FEATS", "ast.model", "MIT/ast-finetuned-audioset-10-10-0.4593"
         )
-        self.processor = Wav2Vec2FeatureExtractor.from_pretrained(model_path)
-        self.model = WavLMModel.from_pretrained(model_path).to(self.device)
-        print(f"intialized WavLM model on {self.device}")
+        self.processor = AutoProcessor.from_pretrained(model_path)
+        self.model = ASTModel.from_pretrained(model_path).to(self.device)
+        print(f"initialized AST model on {self.device}")
         self.model.eval()
         self.model_initialized = True
+
 
     def extract(self):
         """Extract the features or load them from disk if present."""
@@ -64,6 +55,10 @@ class Wavlm(Featureset):
                     frame_offset=int(start.total_seconds() * 16000),
                     num_frames=int((end - start).total_seconds() * 16000),
                 )
+                # make mono if stereo
+                if signal.shape[0] == 2:
+                    signal = torch.mean(signal, dim=0, keepdim=True)
+
                 assert (
                     sampling_rate == 16000
                 ), f"sampling rate should be 16000 but is {sampling_rate}"
@@ -85,34 +80,38 @@ class Wavlm(Featureset):
                     f"got nan: {self.df.shape} {self.df.isnull().sum().sum()}"
                 )
 
+
     def get_embeddings(self, signal, sampling_rate, file):
-        r"""Extract embeddings from raw audio signal."""
-        if sampling_rate != 16000:
-            self.util.error(f"sampling rate should be 16000 but is {sampling_rate}")
+        """Extract embeddings from raw audio signal."""
         try:
+            inputs = self.processor(signal.numpy(), sampling_rate=sampling_rate, return_tensors="pt")
+
+            inputs = {k: v.to(self.device) for k, v in inputs.items()}
+
             with torch.no_grad():
-                # run through processor to normalize signal
-                # always returns a batch, so we just get the first entry
-                # then we put it on the device
-                y = self.processor(signal, sampling_rate=sampling_rate)
-                y = y["input_values"][0]
-                y = torch.from_numpy(y.reshape(1, -1)).to(self.device)
-                # run through model
-                # first entry contains hidden state
-                y = self.model(y)[0]
+                # Get the hidden states
+                outputs = self.model(**inputs)
 
-                # pool result and convert to numpy
-                y = torch.mean(y, dim=1)
-                y = y.detach().cpu().numpy()
+            # Get the hidden states from the last layer
+            last_hidden_state = outputs.last_hidden_state
 
-                # print(f"hs shape: {y.shape}")
+            # print(f"last_hidden_state shape: {last_hidden_state.shape}")
+            # Average pooling over the time dimension
+            embeddings = torch.mean(last_hidden_state, dim=1)
+            embeddings = embeddings.cpu().numpy()
 
-        except RuntimeError as re:
-            print(str(re))
-            self.util.error(f"Couldn't extract file: {file}")
-
-        return y.ravel()
-
+            # convert the same from (768,) to (1, 768)
+            # embeddings = embeddings.reshape(1, -1)
+            print(f"hs shape: {embeddings.shape}")
+            
+        
+        except Exception as e:
+            self.util.error(f"Error extracting embeddings for file {file}: {str(e)}, fill with")
+            return np.zeros(
+                self.model.config.hidden_size
+            )  # Return zero vector on error
+        return embeddings.ravel()
+    
     def extract_sample(self, signal, sr):
         self.init_model()
         feats = self.get_embeddings(signal, sr, "no file")

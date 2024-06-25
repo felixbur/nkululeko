@@ -1,7 +1,11 @@
 #!/bin/bash
 
-# directory for test files
-# test_dir="tests"
+# save output to log.out
+exec > >(tee -i log.out)
+
+# save error to log.err
+exec 2> >(tee -i log.err >&2)
+
 
 # Display help message
 function Help {
@@ -17,15 +21,19 @@ function Help {
     echo "  explore: test explore module (must be run last)"
     echo "  all: test all modules"
     echo "  -spotlight: test all modules except spotlight (useful in SSH)"
+    echo "  -overwrite: remove (old) results directory and create if not exist"
     echo "  --help: display this help message"
 }
 
 # rm results dir if argument is "nkululeko" or "all"
 # TODO: move root to /tmp so no need to do this
-if [ "$1" == "nkululeko" ] || [ "$1" == "all" ];  [ "$1" == "-spotlight" ]; then
-    echo "Removing (old) results directory and create if not exist"
-    rm -rf tests/results/*
-    mkdir -p tests/results
+if [ "$1" == "nkululeko" ] || [ "$1" == "all" ];  [ "$1" == "-spotlight" ]; then 
+    # add overwrite argument
+    if [ "$2" == "-overwrite" ]; then
+        echo "Removing (old) results directory and create if not exist"
+        rm -rf tests/results/*
+        mkdir -p tests/results
+    fi
 fi
 
 # Run a test and check for errors
@@ -109,6 +117,10 @@ explore_ini_files=(
     exp_explore.ini # test splotlight
 )
 
+ensemble_ini_files=(
+    exp_emodb_os_knn.ini
+    exp_emodb_os_svm.ini
+)
 
 if [ $# -eq 0 ] || [ "$1" == "--help" ]; then
     Help
@@ -137,7 +149,18 @@ do
         # if module is "demo" add "--list" argument
         if [ "$module" == "demo" ]; then
             RunTest python3 -m "nkululeko.$module" --config "tests/$ini_file" --list "data/test/samples.csv"
-        else
+        
+        # for ensemble module
+        elif [ "$module" == "ensemble" ]; then
+            # combine all ini files
+            inis = ""
+            for ensemble_ini_file in "${ensemble_ini_files[@]}"
+            do
+                inis += "tests/$ensemble_ini_file "
+            done
+            RunTest python3 -m "nkululeko.$module" $inis --method mean
+
+        else # for other modules
             RunTest python3 -m "nkululeko.$module" --config "tests/$ini_file"
         fi
 

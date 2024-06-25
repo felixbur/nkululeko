@@ -20,13 +20,14 @@ Options:   \n
 import argparse
 import configparser
 import os
-import pandas as pd
 
+import pandas as pd
+from transformers import pipeline
+
+import nkululeko.glob_conf as glob_conf
 from nkululeko.constants import VERSION
 from nkululeko.experiment import Experiment
-import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.util import Util
-from transformers import pipeline
 
 
 def main(src_dir):

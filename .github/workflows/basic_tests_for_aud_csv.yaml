@@ -11,10 +11,11 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.8'
+        # cache: 'pip' # caching pip dependencies, causing error due to too large
     - name: Install dependencies
       run: |
         sudo apt-get -y install sox libportaudio2
-        # python -m pip install --upgrade pip
+        python3 -m pip install --upgrade pip
         pip install -r requirements.txt
         # pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
         pip install --editable .
