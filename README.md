@@ -157,6 +157,11 @@ Here is an overview of the interfaces/modules:
 All of them take *--config <my_config.ini>* as an argument.
 
 * **nkululeko.nkululeko**: do machine learning experiments combining features and learners
+* **nkululeko.ensemble**: combine several nkululeko experiments and report on late fusion results
+  * *configurations*: which experiments to combine
+  * *--method* (optional): majority_voting, mean, max, sum
+  * *--outfile* (optional): name of CSV file for output
+  * *--no_labels* (optional): indicate that no ground truth is given 
 * **nkululeko.multidb**: do [multiple experiments](http://blog.syntheticspeech.de/2024/01/02/nkululeko-compare-several-databases/), comparing several databases cross and in itself
 * **nkululeko.demo**: [demo the current best model](http://blog.syntheticspeech.de/2022/01/24/nkululeko-try-out-demo-a-trained-model/) on the command line
   * *--list* (optional) list of input files
