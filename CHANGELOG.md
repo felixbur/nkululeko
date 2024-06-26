@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.88.2
+--------------
+* changed combine speaker results to show speakers not samples
+
 Version 0.88.1
 --------------
 * added obligatory scatter plot for regression
