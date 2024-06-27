@@ -100,10 +100,8 @@ class Ast(Featureset):
             embeddings = torch.mean(last_hidden_state, dim=1)
             embeddings = embeddings.cpu().numpy()
 
-            # convert the same from (768,) to (1, 768)
-            # embeddings = embeddings.reshape(1, -1)
-            print(f"hs shape: {embeddings.shape}")
-            
+            # print(f"hs shape: {embeddings.shape}")
+            # hs shape: (1, 768)
         
         except Exception as e:
             self.util.error(f"Error extracting embeddings for file {file}: {str(e)}, fill with")
