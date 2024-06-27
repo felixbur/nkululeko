@@ -155,7 +155,8 @@ class Reporter:
             )
             probas["uncertainty"] = uncertainty
             probas["correct"] = probas.predicted == probas.truth
-            sp = os.path.join(self.util.get_path("store"), "pred_df.csv")
+            sp = self.util.get_pred_name()
+            
             self.probas = probas
             probas.to_csv(sp)
             self.util.debug(f"Saved probabilities to {sp}")

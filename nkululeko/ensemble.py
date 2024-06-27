@@ -16,26 +16,11 @@ from nkululeko.experiment import Experiment
 from nkululeko.utils.util import Util
 
 import torch
-import logging
 
 # Constants
 DEFAULT_METHOD = "majority_voting"
 DEFAULT_OUTFILE = "ensemble_result.csv"
 COLUMN_PREDICTED = "predicted"
-
-# Setup logging
-class CustomFormatter(logging.Formatter):
-    def format(self, record):
-        return record.getMessage()
-
-# Setup logging with custom formatter
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-
-handler = logging.StreamHandler()
-handler.setFormatter(CustomFormatter())
-logger.addHandler(handler)
-
 
 def ensemble_predictions(config_files: List[str], method: str, no_labels: bool) -> pd.DataFrame:
     """
@@ -78,7 +63,7 @@ def ensemble_predictions(config_files: List[str], method: str, no_labels: bool) 
             # load the experiment
             # get CSV files of predictions
             pred_name = expr.util.get_pred_name()
-            print(f"Loading predictions from {pred_name}")
+            util.debug(f"Loading predictions from {pred_name}")
             preds = pd.read_csv(pred_name)
             
         ensemble_preds_ls.append(preds)
@@ -201,7 +186,7 @@ def ensemble_predictions(config_files: List[str], method: str, no_labels: bool) 
     predicted = ensemble_preds["predicted"]
     uar = balanced_accuracy_score(truth, predicted)
     acc = (truth == predicted).mean()
-    Util("ensemble").debug(f"UAR: {uar:.3f}, ACC: {acc:.3f}")
+    Util("ensemble").debug(f"{method}: UAR: {uar:.3f}, ACC: {acc:.3f}")
 
     # only return until 'predicted' column
     return ensemble_preds
@@ -241,14 +226,14 @@ def main(src_dir: Path) -> None:
 
         # save to csv
         ensemble_preds.to_csv(args.outfile, index=False)
-        logger.info(f"Ensemble predictions saved to: {args.outfile}")
-        logger.info(f"Ensemble done, used {time.time()-start:.2f} seconds")
+        Util('ensemble').debug(f"Ensemble predictions saved to: {args.outfile}")
+        Util('ensemble').debug(f"Ensemble done, used {time.time()-start:.2f} seconds")
 
     except Exception as e:
-        logger.error(f"An error occurred during ensemble prediction: {str(e)}")
+        Util('ensemble').debug(f"An error occurred during ensemble prediction: {str(e)}")
         return
 
-    logger.info("DONE")
+    Util('ensemble').debug("DONE")
 
 if __name__ == "__main__":
     cwd = Path(__file__).parent

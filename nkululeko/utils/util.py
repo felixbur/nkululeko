@@ -4,12 +4,15 @@ import configparser
 import os.path
 import pickle
 import sys
+from sysconfig import get_config_h_filename
+from turtle import setup
 
 import audeer
 import audformat
 import numpy as np
 import pandas as pd
 
+import logging
 
 class Util:
     # a list of words that need not to be warned upon if default values are
@@ -32,6 +35,7 @@ class Util:
             self.caller = caller
         else:
             self.caller = ""
+        self.config = None
         if has_config:
             try:
                 import nkululeko.glob_conf as glob_conf
@@ -49,6 +53,32 @@ class Util:
                 self.config = None
                 self.got_data_roots = False
 
+        self.setup_logging()
+
+    def setup_logging(self):
+        # Setup logging
+        logger = logging.getLogger(__name__)
+        if not logger.hasHandlers():
+            logger.setLevel(logging.DEBUG)  # Set the desired logging level
+
+            # Create a console handler
+            console_handler = logging.StreamHandler()
+
+            # Create a simple formatter that only shows the message
+            class SimpleFormatter(logging.Formatter):
+                def format(self, record):
+                    return record.getMessage()
+
+            # Set the formatter for the console handler
+            console_handler.setFormatter(SimpleFormatter())
+
+            # Add the console handler to the logger
+            logger.addHandler(console_handler)
+        self.logger = logger
+    
+    def get_config_filename(self):
+        return get_config_h_filename()
+    
     def get_path(self, entry):
         """
         This method allows the user to get the directory path for the given argument.
@@ -130,7 +160,9 @@ class Util:
 
     def get_pred_name(self):
         store = self.get_path("store")
-        return f"{store}/pred_df.csv"
+        pred_name = self.get_model_description()
+        return f"{store}/{pred_name}_pred.csv"
+
 
     def is_categorical(self, pd_series):
         """Check if a dataframe column is categorical"""
@@ -187,6 +219,7 @@ class Util:
         """
         return "_".join(ast.literal_eval(self.config["FEATS"]["type"]))
 
+    
     def get_exp_name(self, only_train=False, only_data=False):
         trains_val = self.config_val("DATA", "trains", False)
         if only_train and trains_val:
@@ -266,7 +299,7 @@ class Util:
         print(f"WARNING {self.caller}: {message}")
 
     def debug(self, message):
-        print(f"DEBUG {self.caller}: {message}")
+        self.logger.debug(f"{self.caller}: {message}")
 
     def set_config_val(self, section, key, value):
         try:
