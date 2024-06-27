@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version 0.88.1
+--------------
+* added obligatory scatter plot for regression
+
+Version 0.88.0
+--------------
+* added ensemble late fusion and AST features
+
 Version 0.87.0
 --------------
 * added class probability output and uncertainty analysis
