@@ -30,6 +30,7 @@ class Util:
         "functionals",
     ]
 
+    logged_configs = set()
     def __init__(self, caller=None, has_config=True):
         if caller is not None:
             self.caller = caller
@@ -276,6 +277,8 @@ class Util:
             return_string += self._get_value_descript(option[0], option[1]).replace(
                 ".", "-"
             )
+            # prevent double underscores
+            return_string = return_string.replace("__", "_")
         return return_string
 
     def get_plot_name(self):
@@ -318,11 +321,20 @@ class Util:
         if self.config is None:
             return default
         try:
-            return self.config[section][key]
+            value = self.config[section][key]
+            config_key = f"{section}.{key}"
+            if value != str(default) and config_key not in Util.logged_configs:
+                self.debug(f"found value for {config_key}: {value}")
+                Util.logged_configs.add(config_key)
+            return value
         except KeyError:
             if default not in self.stopvals:
                 self.debug(f"value for {key} not found, using default: {default}")
             return default
+
+    @classmethod
+    def reset_logged_configs(cls):
+        cls.logged_configs.clear()
 
     def config_val_list(self, section, key, default):
         try:
