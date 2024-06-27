@@ -1,6 +1,7 @@
 # util.py
 import ast
 import configparser
+from logging import config
 import os.path
 import pickle
 import sys
@@ -30,7 +31,7 @@ class Util:
         "functionals",
     ]
 
-    logged_configs = set()
+    
     def __init__(self, caller=None, has_config=True):
         if caller is not None:
             self.caller = caller
@@ -55,6 +56,7 @@ class Util:
                 self.got_data_roots = False
 
         self.setup_logging()
+        self.logged_configs = set()
 
     def setup_logging(self):
         # Setup logging
@@ -151,6 +153,7 @@ class Util:
 
     def set_config(self, config):
         self.config = config
+        self.logged_configs.clear()
 
     def get_save_name(self):
         """Return a relative path to a name to save the experiment"""
@@ -269,6 +272,9 @@ class Util:
             )
             # prevent double underscores
             return_string = return_string.replace("__", "_")
+            # remove trailing underscores in the end
+            return_string = return_string.strip("_")
+
         return return_string
 
     def get_plot_name(self):
@@ -312,14 +318,13 @@ class Util:
             return default
         try:
             value = self.config[section][key]
-            config_key = f"{section}.{key}"
-            if value != str(default) and config_key not in Util.logged_configs:
-                self.debug(f"found value for {config_key}: {value}")
-                Util.logged_configs.add(config_key)
+            if value != str(default) and key not in self.logged_configs:
+                self.debug(f"value for {key} is found: {value}")
+                self.logged_configs.add(key)
             return value
         except KeyError:
             if default not in self.stopvals:
-                self.debug(f"value for {key} not found, using default: {default}")
+                self.debug(f"value for {key} is not found, using default: {default}")
             return default
 
     @classmethod
