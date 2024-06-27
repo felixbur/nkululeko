@@ -34,23 +34,24 @@ from nkululeko.utils.util import Util
 
 
 class Reporter:
-    def __set_measure(self):
+    def _set_metric(self):
         if self.util.exp_is_classification():
-            self.MEASURE = "UAR"
-            self.result.measure = self.MEASURE
+            self.metric = "uar"
+            self.METRIC = "UAR"
+            self.result.metric = self.METRIC
             self.is_classification = True
         else:
             self.is_classification = False
-            self.measure = self.util.config_val("MODEL", "measure", "mse")
-            if self.measure == "mse":
-                self.MEASURE = "MSE"
-                self.result.measure = self.MEASURE
-            elif self.measure == "mae":
-                self.MEASURE = "MAE"
-                self.result.measure = self.MEASURE
-            elif self.measure == "ccc":
-                self.MEASURE = "CCC"
-                self.result.measure = self.MEASURE
+            self.metric = self.util.config_val("MODEL", "measure", "mse")
+            if self.metric == "mse":
+                self.METRIC = "MSE"
+                self.result.metric = self.METRIC
+            elif self.metric == "mae":
+                self.METRIC = "MAE"
+                self.result.metric = self.METRIC
+            elif self.metric == "ccc":
+                self.METRIC = "CCC"
+                self.result.metric = self.METRIC
 
     def __init__(self, truths, preds, run, epoch, probas=None):
         """Initialization with ground truth und predictions vector.
@@ -70,60 +71,70 @@ class Reporter:
         self.result = Result(0, 0, 0, 0, "unknown")
         self.run = run
         self.epoch = epoch
-        self.__set_measure()
+        self._set_metric()
         self.filenameadd = ""
         self.cont_to_cat = False
         if len(self.truths) > 0 and len(self.preds) > 0:
             if self.util.exp_is_classification():
-                uar, (upper, lower) = evaluate_with_conf_int(
-                    self.preds,
-                    unweighted_average_recall,
-                    self.truths,
-                    num_bootstraps=1000,
-                    alpha=5,
+                uar, upper, lower = self._get_test_result(
+                    self.truths, self.preds, "uar"
                 )
                 self.result.test = uar
                 self.result.set_upper_lower(upper, lower)
                 self.result.loss = 1 - accuracy(self.truths, self.preds)
             else:
                 # regression experiment
-                if self.measure == "mse":
-                    test_result, (upper, lower) = evaluate_with_conf_int(
-                        self.preds,
-                        mean_squared_error,
-                        self.truths,
-                        num_bootstraps=1000,
-                        alpha=5,
-                    )
-                elif self.measure == "mae":
-                    test_result, (upper, lower) = evaluate_with_conf_int(
-                        self.preds,
-                        mean_absolute_error,
-                        self.truths,
-                        num_bootstraps=1000,
-                        alpha=5,
-                    )
-                elif self.measure == "ccc":
-                    test_result, (upper, lower) = evaluate_with_conf_int(
-                        self.preds,
-                        concordance_cc,
-                        self.truths,
-                        num_bootstraps=1000,
-                        alpha=5,
-                    )
-
-                    if math.isnan(self.result.test):
-                        self.util.debug(f"Truth: {self.truths}")
-                        self.util.debug(f"Predict.: {self.preds}")
-                        self.util.debug("Result is NAN: setting to -1")
-                        self.result.test = -1
-                else:
-                    self.util.error(f"unknown measure: {self.measure}")
-
+                # keep the original values for further use, they will be binned later
+                self.truths_cont = self.truths
+                self.preds_cont = self.preds
+                test_result, upper, lower = self._get_test_result(
+                    self.truths, self.preds, self.metric
+                )
                 self.result.test = test_result
                 self.result.set_upper_lower(upper, lower)
                 # train and loss are being set by the model
-        # print out the class  probilities
+
+    def _get_test_result(self, truths, preds, metric):
+        if metric == "uar":
+            test_result, (upper, lower) = evaluate_with_conf_int(
+                preds,
+                unweighted_average_recall,
+                truths,
+                num_bootstraps=1000,
+                alpha=5,
+            )
+        elif metric == "mse":
+            test_result, (upper, lower) = evaluate_with_conf_int(
+                preds,
+                mean_squared_error,
+                truths,
+                num_bootstraps=1000,
+                alpha=5,
+            )
+        elif metric == "mae":
+            test_result, (upper, lower) = evaluate_with_conf_int(
+                preds,
+                mean_absolute_error,
+                truths,
+                num_bootstraps=1000,
+                alpha=5,
+            )
+        elif metric == "ccc":
+            test_result, (upper, lower) = evaluate_with_conf_int(
+                preds,
+                concordance_cc,
+                truths,
+                num_bootstraps=1000,
+                alpha=5,
+            )
+            if math.isnan(test_result):
+                self.util.debug(f"Truth: {self.truths}")
+                self.util.debug(f"Predict.: {self.preds}")
+                self.util.debug("Result is NAN: setting to -1")
+                test_result = -1
+        else:
+            self.util.error(f"unknown metric: {self.metric}")
+        return test_result, upper, lower
 
     def print_probabilities(self):
         """Print the probabilities per class to a file in the store."""
@@ -196,31 +207,49 @@ class Reporter:
     def plot_per_speaker(self, result_df, plot_name, function):
         """Plot a confusion matrix with the mode category per speakers.
 
+        If the function is mode and the values continuous, bin first
+
         Args:
             result_df: a pandas dataframe with columns: preds, truths and speaker.
             plot_name: name for the figure.
             function: either mode or mean.
         """
-        speakers = result_df.speaker.unique()
-        pred = np.zeros(0)
-        truth = np.zeros(0)
+        if function == "mode" and not self.is_classification:
+            truths, preds = result_df["truths"].values, result_df["preds"].values
+            truths, preds = self.util._bin_distributions(truths, preds)
+            result_df["truths"], result_df["preds"] = truths, preds
+        speakers = result_df.speakers.unique()
+        preds_speakers = np.zeros(0)
+        truths_speakers = np.zeros(0)
         for s in speakers:
-            s_df = result_df[result_df.speaker == s]
-            mode = s_df.pred.mode().iloc[-1]
-            mean = s_df.pred.mean()
+            s_df = result_df[result_df.speakers == s]
+            s_truth = s_df.truths.iloc[0]
+            s_pred = None
             if function == "mode":
-                s_df.pred = mode
+                s_pred = s_df.preds.mode().iloc[-1]
             elif function == "mean":
-                s_df.pred = mean
+                s_pred = s_df.preds.mean()
             else:
-                self.util.error(f"unkown function {function}")
-            pred = np.append(pred, s_df.pred.values)
-            truth = np.append(truth, s_df["truth"].values)
-        if not (self.is_classification or self.cont_to_cat):
-            bins = ast.literal_eval(glob_conf.config["DATA"]["bins"])
-            truth = np.digitize(truth, bins) - 1
-            pred = np.digitize(pred, bins) - 1
-        self._plot_confmat(truth, pred.astype("int"), plot_name, 0)
+                self.util.error(f"unknown function {function}")
+            preds_speakers = np.append(preds_speakers, s_pred)
+            truths_speakers = np.append(truths_speakers, s_truth)
+        test_result, upper, lower = self._get_test_result(
+            result_df.truths.values, result_df.preds.values, self.metric
+        )
+        test_result = Result(test_result, None, None, None, self.METRIC)
+        test_result.set_upper_lower(upper, lower)
+        result_msg = f"Speaker combination result: {test_result.test_result_str()}"
+        self.util.debug(result_msg)
+        if function == "mean":
+            truths_speakers, preds_speakers = self.util._bin_distributions(
+                truths_speakers, preds_speakers
+            )
+        self._plot_confmat(
+            truths_speakers,
+            preds_speakers.astype("int"),
+            plot_name,
+            test_result=test_result,
+        )
 
     def _plot_scatter(self, truths, preds, plot_name, epoch=None):
         # print(truths)
@@ -228,13 +257,10 @@ class Reporter:
         if epoch is None:
             epoch = self.epoch
         fig_dir = self.util.get_path("fig_dir")
-        fig = plt.figure()  # figsize=[5, 5]
-
         pcc = pearsonr(self.truths, self.preds)[0]
-
-        reg_res = f"{self.result.test:.3f} {self.MEASURE}"
-
-        plt.scatter(truths, preds, cmap="Blues")
+        reg_res = self.result.test_result_str()
+        fig = plt.figure()
+        plt.scatter(truths, preds)
         plt.xlabel("truth")
         plt.ylabel("prediction")
 
@@ -259,11 +285,11 @@ class Reporter:
             )
         )
 
-    def _plot_confmat(self, truths, preds, plot_name, epoch=None):
-        # print(truths)
-        # print(preds)
+    def _plot_confmat(self, truths, preds, plot_name, epoch=None, test_result=None):
         if epoch is None:
             epoch = self.epoch
+        if test_result is None:
+            test_result = self.result
         fig_dir = self.util.get_path("fig_dir")
         labels = glob_conf.labels
         fig = plt.figure()  # figsize=[5, 5]
@@ -296,12 +322,15 @@ class Reporter:
 
         reg_res = ""
         if not self.is_classification:
-            reg_res = f"{self.result.test:.3f} {self.MEASURE}"
+            reg_res = f"{test_result.test_result_str()}"
+            self.util.debug(
+                f"Best result at epoch {epoch}: {test_result.test_result_str()}"
+            )
 
-        uar_str = str(int(uar * 1000) / 1000.0)[1:]
-        acc_str = str(int(acc * 1000) / 1000.0)[1:]
-        up_str = str(int(upper * 1000) / 1000.0)[1:]
-        low_str = str(int(lower * 1000) / 1000.0)[1:]
+        uar_str = self.util.to_3_digits_str(uar)
+        acc_str = self.util.to_3_digits_str(acc)
+        up_str = self.util.to_3_digits_str(upper)
+        low_str = self.util.to_3_digits_str(lower)
 
         if epoch != 0:
             plt.title(
@@ -428,7 +457,7 @@ class Reporter:
         ax = df.plot()
         fig = ax.figure
         plt.xlabel("epochs")
-        plt.ylabel(f"{self.MEASURE}")
+        plt.ylabel(f"{self.METRIC}")
         plot_path = f"{fig_dir}{plot_name}.{self.format}"
         plt.savefig(plot_path)
         self.util.debug(f"plotted epoch progression to {plot_path}")
@@ -465,7 +494,7 @@ class Reporter:
         plt.plot(losses, "black", label="losses")
         plt.plot(losses_eval, "grey", label="losses_eval")
         plt.xlabel("epochs")
-        plt.ylabel(f"{self.MEASURE}")
+        plt.ylabel(f"{self.METRIC}")
         plt.legend()
         plt.savefig(f"{fig_dir}{out_name}.{self.format}")
         plt.close()

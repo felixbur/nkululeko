@@ -81,9 +81,7 @@ class Util:
         return get_config_h_filename()
     
     def get_path(self, entry):
-        """
-        This method allows the user to get the directory path for the given argument.
-        """
+        """This method allows the user to get the directory path for the given argument."""
         if self.config is None:
             # If no configuration file is provided, use default paths
             if entry == "fig_dir":
@@ -172,15 +170,11 @@ class Util:
         )
 
     def get_name(self):
-        """
-        Get the name of the experiment
-        """
+        """Get the name of the experiment."""
         return self.config["EXP"]["name"]
 
     def get_exp_dir(self):
-        """
-        Get the experiment directory
-        """
+        """Get the experiment directory."""
         root = os.path.join(self.config["EXP"]["root"], "")
         name = self.config["EXP"]["name"]
         dir_name = f"{root}{name}"
@@ -209,15 +203,11 @@ class Util:
         return ""
 
     def get_data_name(self):
-        """
-        Get a string as name from all databases that are useed
-        """
+        """Get a string as name from all databases that are useed."""
         return "_".join(ast.literal_eval(self.config["DATA"]["databases"]))
 
     def get_feattype_name(self):
-        """
-        Get a string as name from all feature sets that are used
-        """
+        """Get a string as name from all feature sets that are used."""
         return "_".join(ast.literal_eval(self.config["FEATS"]["type"]))
 
     
@@ -348,9 +338,9 @@ class Util:
         return ast.literal_eval(self.config["DATA"]["labels"])
 
     def continuous_to_categorical(self, series):
-        """
-        discretize a categorical variable.
-        uses the labels and bins from the ini if present
+        """Discretize a categorical variable.
+
+        Uses the labels and bins from the ini if present
 
         :param series: a pandas series
         :return a pandas series with discretized values as categories
@@ -366,10 +356,22 @@ class Util:
             labels = ["0_low", "1_middle", "2_high"]
         result = np.digitize(series, bins) - 1
         result = pd.Series(result)
-        for i, l in enumerate(labels):
-            result = result.replace(i, str(l))
+        for i, lab in enumerate(labels):
+            result = result.replace(i, str(lab))
         result = result.astype("category")
         return result
+
+    def _bin_distributions(self, truths, preds):
+        try:
+            bins = ast.literal_eval(self.config["DATA"]["bins"])
+        except KeyError:
+            # if no binning is given, simply take three bins, based on truth
+            b1 = np.quantile(truths, 0.33)
+            b2 = np.quantile(truths, 0.66)
+            bins = [-1000000, b1, b2, 1000000]
+        truths = np.digitize(truths, bins) - 1
+        preds = np.digitize(preds, bins) - 1
+        return truths, preds
 
     def print_best_results(self, best_reports):
         res_dir = self.get_res_dir()
@@ -461,5 +463,10 @@ class Util:
                 self.error(f"unknown measure: {measure}")
 
     def to_3_digits(self, x):
+        """Given a float, return this to 3 digits."""
         x = float(x)
         return (int(x * 1000)) / 1000.0
+
+    def to_3_digits_str(self, x):
+        """Given a float, return this to 3 digits as string without integer number."""
+        return str(self.to_3_digits(x))[1:]
