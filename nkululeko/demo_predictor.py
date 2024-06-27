@@ -72,9 +72,11 @@ class Demo_predictor:
                 else:
                     self.util.debug(df_res)
         else:
-            while True:
+            answer = input("want to record y/n?")
+            while answer == "y":
                 signal = self.record_audio(3)
                 self.predict_signal(signal, self.sr)
+                answer = input("want to record y/n?")
 
     #            self.play_audio(signal)
 
@@ -109,7 +111,7 @@ class Demo_predictor:
     def record_audio(self, seconds):
         import sounddevice as sd
 
-        print("recording ...")
+        print("recording ...", flush=True)
         y = sd.rec(int(seconds * self.sr), samplerate=self.sr, channels=1)
         sd.wait()
         y = y.T
