@@ -18,9 +18,8 @@ from nkululeko.utils.util import Util
 # import torch
 
 # Constants
-DEFAULT_METHOD = "majority_voting"
+DEFAULT_METHOD = "mean"
 DEFAULT_OUTFILE = "ensemble_result.csv"
-COLUMN_PREDICTED = "predicted"
 
 def majority_voting(ensemble_preds_ls):
     all_predictions = pd.concat([df['predicted'] for df in ensemble_preds_ls], axis=1)
@@ -169,7 +168,7 @@ def confidence_weighted_ensemble(ensemble_preds_ls, labels):
             for label in labels:
                 class_probabilities[label] += row[label] * confidence
         
-        #Normalize probabilities
+        # Normalize probabilities
         for label in labels:
             class_probabilities[label] /= total_confidence
         
@@ -253,7 +252,7 @@ def ensemble_predictions(config_files: List[str], method: str, threshold:float, 
     else:
         raise ValueError(f"Unknown ensemble method: {method}")
 
-    # get the highest value from all labels to infer that labels
+    # get the highest value from all labels to infer the label
     # replace the old first predicted column
     if method in ["mean", "max", "sum"]:
         ensemble_preds["predicted"] = ensemble_preds[labels].idxmax(axis=1)
@@ -275,7 +274,6 @@ def ensemble_predictions(config_files: List[str], method: str, threshold:float, 
     acc = (truth == predicted).mean()
     Util("ensemble").debug(f"{method}: UAR: {uar:.3f}, ACC: {acc:.3f}")
 
-    # only return until 'predicted' column
     return ensemble_preds
 
 

@@ -284,14 +284,14 @@ class Util:
         return False
 
     def error(self, message):
-        print(f"ERROR {self.caller}: {message}")
+        self.logger.error(f"ERROR: {self.caller}: {message}")
         sys.exit()
 
     def warn(self, message):
-        print(f"WARNING {self.caller}: {message}")
+        self.logger.warning(f"WARNING: {self.caller}: {message}")
 
     def debug(self, message):
-        print(f"DEBUG: {self.caller}: {message}")
+        self.logger.debug(f"DEBUG: {self.caller}: {message}")
 
     def set_config_val(self, section, key, value):
         try:
