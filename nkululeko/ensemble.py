@@ -7,7 +7,6 @@ import time
 from argparse import ArgumentParser
 from pathlib import Path
 
-from matplotlib import axis
 import numpy as np
 import pandas as pd
 from sklearn.metrics import balanced_accuracy_score
@@ -16,7 +15,7 @@ from nkululeko.constants import VERSION
 from nkululeko.experiment import Experiment
 from nkululeko.utils.util import Util
 
-import torch
+# import torch
 
 # Constants
 DEFAULT_METHOD = "majority_voting"
@@ -48,9 +47,9 @@ def uncertainty_ensemble(ensemble_preds):
     best_uncertainty = []
     for _, row in ensemble_preds.iterrows():
         uncertainties = row[['uncertainty']].values
-        max_uncertainty_idx = np.argmax(uncertainties)
-        final_predictions.append(row['predicted'].iloc[max_uncertainty_idx])
-        best_uncertainty.append(uncertainties[max_uncertainty_idx])
+        min_uncertainty_idx = np.argmin(uncertainties)
+        final_predictions.append(row['predicted'].iloc[min_uncertainty_idx])
+        best_uncertainty.append(uncertainties[min_uncertainty_idx])
 
     return final_predictions, best_uncertainty
 
@@ -78,58 +77,110 @@ def max_class_ensemble(ensemble_preds_ls, labels):
     
     return pd.Series(final_preds), pd.Series(final_probs)
 
-def entropy_ensemble(ensemble_preds_ls, labels):
-    from scipy.stats import entropy
-    final_predictions = []
-    final_confidence_scores = []
+# def entropy_ensemble(ensemble_preds_ls, labels):
+#     from scipy.stats import entropy
+#     final_predictions = []
+#     final_confidence_scores = []
     
-    for idx, _ in pd.concat(ensemble_preds_ls, axis=1).iterrows():
-        model_probas = []
-        model_preds = []
+#     for idx, _ in pd.concat(ensemble_preds_ls, axis=1).iterrows():
+#         model_probas = []
+#         model_preds = []
         
-        for model_df in ensemble_preds_ls:
-            model_row = model_df.loc[idx]
-            probas_sof = torch.nn.functional.softmax(torch.tensor(model_row[labels].values.astype(float)), dim=0)
-            model_probas.append(probas_sof)
-            model_preds.append(model_row['predicted'])
+#         for model_df in ensemble_preds_ls:
+#             model_row = model_df.loc[idx]
+#             probas_sof = torch.nn.functional.softmax(torch.tensor(model_row[labels].values.astype(float)), dim=0)
+#             model_probas.append(probas_sof)
+#             model_preds.append(model_row['predicted'])
         
-        entropies = [entropy(proba) for proba in model_probas]
-        best_model_idx = np.argmin(entropies)
+#         entropies = [entropy(proba) for proba in model_probas]
+#         best_model_idx = np.argmin(entropies)
         
-        final_predictions.append(model_preds[best_model_idx])
-        final_confidence_scores.append(model_probas[best_model_idx])
+#         final_predictions.append(model_preds[best_model_idx])
+#         final_confidence_scores.append(model_probas[best_model_idx])
 
-    return pd.Series(final_predictions), pd.Series(final_confidence_scores)
+#     return pd.Series(final_predictions), pd.Series(final_confidence_scores)
 
-def uncertainty_threshold_ensemble(ensemble_preds_ls, labels, threshold=1.0):
+def uncertainty_threshold_ensemble(ensemble_preds_ls, labels, threshold):
     final_predictions = []
     final_uncertainties = []
     
-    # Combine all predictions
-    all_preds = pd.concat(ensemble_preds_ls, axis=1, keys=range(len(ensemble_preds_ls)))
-    
     for idx in ensemble_preds_ls[0].index:
         uncertainties = [df.loc[idx, 'uncertainty'] for df in ensemble_preds_ls]
-        max_uncertainty_idx = np.argmax(uncertainties)
-        max_uncertainty = uncertainties[max_uncertainty_idx]
+        min_uncertainty_idx = np.argmin(uncertainties)
+        min_uncertainty = uncertainties[min_uncertainty_idx]
         
-        if max_uncertainty >= threshold:
-            # Use the prediction with highest uncertainty
-            final_predictions.append(ensemble_preds_ls[max_uncertainty_idx].loc[idx, 'predicted'])
-            final_uncertainties.append(max_uncertainty)
-        else:
-            # Calculate mean of probabilities
+        if min_uncertainty <= threshold:
+            # Use the prediction with low uncertainty
+            final_predictions.append(ensemble_preds_ls[min_uncertainty_idx].loc[idx, 'predicted'])
+            final_uncertainties.append(min_uncertainty)
+        else: # for uncertainty above threshold
+            # Calculate mean of probabilities same class different model
             mean_probs = np.mean([df.loc[idx, labels].values for df in ensemble_preds_ls], axis=0)
             final_predictions.append(labels[np.argmax(mean_probs)])
             final_uncertainties.append(np.mean(uncertainties))
     
-    # result = all_preds.groupby(level=1).first().copy()
-    # result['predicted'] = final_predictions
-    # result['uncertainty'] = final_uncertainties
-
     return final_predictions
 
-def ensemble_predictions(config_files: List[str], method: str, no_labels: bool) -> pd.DataFrame:
+def uncertainty_weighted_ensemble(ensemble_preds_ls, labels):
+    final_predictions = []
+    final_uncertainties = []
+    
+    for idx in ensemble_preds_ls[0].index:
+        uncertainties = [df.loc[idx, 'uncertainty'] for df in ensemble_preds_ls]
+        # Convert uncertainties to accuracies/confidence
+        accuracies = [1 - uncertainty for uncertainty in uncertainties]  
+        
+        # Calculate weights (inverse of uncertainties)
+        weights = [1 / uncertainty if uncertainty != 0 else 1e10 for uncertainty in uncertainties]
+        
+        # Normalize weights for each class
+        total_weight = sum(weights)
+        normalized_weights = [w / total_weight for w in weights]
+        
+        # Calculate weighted probabilities for each class
+        weighted_probs = {label: 0 for label in labels}
+        for df, weight in zip(ensemble_preds_ls, normalized_weights):
+            for label in labels:
+                weighted_probs[label] += df.loc[idx, label] * weight
+        
+        # Select the class with the highest weighted probability
+        predicted_class = max(weighted_probs, key=weighted_probs.get)
+        final_predictions.append(predicted_class)
+        
+        # Use the lowest accuracy as the final uncertainty
+        final_uncertainties.append(1 - min(accuracies))
+    
+    return final_predictions, final_uncertainties
+
+
+def confidence_weighted_ensemble(ensemble_preds_ls, labels):
+    final_predictions = []
+    final_confidences = []
+    
+    for idx in ensemble_preds_ls[0].index:
+        class_probabilities = {label: 0 for label in labels}
+        total_confidence = 0
+        
+        for df in ensemble_preds_ls:
+            row = df.loc[idx]
+            confidence = 1 - row['uncertainty']  # confidence score
+            total_confidence += confidence
+            
+            for label in labels:
+                class_probabilities[label] += row[label] * confidence
+        
+        #Normalize probabilities
+        for label in labels:
+            class_probabilities[label] /= total_confidence
+        
+        predicted_class = max(class_probabilities, key=class_probabilities.get)
+        final_predictions.append(predicted_class)
+        final_confidences.append(max(class_probabilities.values()))
+    
+    return final_predictions, final_confidences
+
+
+def ensemble_predictions(config_files: List[str], method: str, threshold:float, no_labels: bool) -> pd.DataFrame:
     """
     Ensemble predictions from multiple experiments.
 
@@ -178,108 +229,6 @@ def ensemble_predictions(config_files: List[str], method: str, no_labels: bool) 
     # pd concate
     ensemble_preds = pd.concat(ensemble_preds_ls, axis=1)
 
-    # if method == "majority_voting":
-    #     """Majority voting, get mode, works for odd number of models
-    #     raise error when number of configs only two"""
-    #     assert (
-    #         len(config_files) > 2
-    #     ), "Majority voting only works for more than two models"
-        
-    #     # Combine 'predicted' columns from all models
-    #     all_predictions = pd.concat([df['predicted'] for df in ensemble_preds_ls], axis=1)
-        
-    #     # Perform majority voting
-    #     ensemble_preds['predicted'] = all_predictions.mode(axis=1).iloc[:, 0]
-
-    # elif method == "mean":
-    #     for label in labels:
-    #         ensemble_preds[label] = ensemble_preds[label].mean(axis=1)
-
-    # elif method == "max":
-    #     for label in labels:
-    #         ensemble_preds[label] = ensemble_preds[label].max(axis=1)
-    #         # get max value from all labels to inver that labels
-
-    # elif method == "sum":
-    #     for label in labels:
-    #         ensemble_preds[label] = ensemble_preds[label].sum(axis=1)
-
-    # elif method == "uncertainty":
-    #     final_predictions = []
-    #     best_uncertainty = []
-    #     for _, row in ensemble_preds.iterrows():
-    #         uncertainties = row[['uncertainty']].values
-    #         max_uncertainty_idx = np.argmax(uncertainties)
-    #         final_predictions.append(row['predicted'].iloc[max_uncertainty_idx])
-    #         best_uncertainty.append(uncertainties[max_uncertainty_idx])
-
-    #     ensemble_preds['predicted'] = final_predictions
-    #     ensemble_preds['uncertainty'] = best_uncertainty
-    #     # print(f"uncertainty result: {ensemble_preds.head()}")
-    
-    # elif method == "max_class":
-    #     """Get the class with the highest probability across all models."""
-    #     final_preds = []
-    #     final_probs = []
-        
-    #     for _, row in ensemble_preds.iterrows():
-    #         max_probs = []
-    #         max_classes = []
-            
-    #         for model_df in ensemble_preds_ls:
-    #             model_probs = row[labels].astype(float)
-    #             max_prob = model_probs.max()
-    #             max_class = model_probs.idxmax()
-                
-    #             max_probs.append(max_prob)
-    #             max_classes.append(max_class)
-            
-    #         # Find the model with the highest max probability
-    #         best_model_index = np.argmax(max_probs)
-            
-    #         final_preds.append(max_classes[best_model_index])
-    #         final_probs.append(max_probs[best_model_index])
-        
-    #     ensemble_preds['predicted'] = final_preds
-    #     # ensemble_preds['max_probability'] = final_probs
-
-    
-    # elif method == "entropy":
-    #     """Get the class with the lowest entropy across all models.
-    #     entropy is calculated from confidence score of each prediction, 
-    #     which is calculated using softmax from proability of each class."""
-    #     from scipy.stats import entropy
-
-    #     final_predictions = []
-    #     final_confidence_scores = []
-        
-    #     for idx, _ in ensemble_preds.iterrows():
-    #         model_probas = []
-    #         model_preds = []
-            
-    #         for model_df in ensemble_preds_ls:
-    #             model_row = model_df.loc[idx]
-    #             # calculate confidence score for each row using softmax
-    #             probas_sof = torch.nn.functional.softmax(torch.tensor(model_row[labels].values.astype(float)), dim=0)
-    #             model_probas.append(probas_sof)
-    #             model_preds.append(model_row['predicted'])
-            
-    #         # Calculate entropy for each model's prediction
-    #         entropies = [entropy(proba) for proba in model_probas]
-            
-    #         # Select the model with the lowest entropy
-    #         best_model_idx = np.argmin(entropies)
-            
-    #         final_predictions.append(model_preds[best_model_idx])
-    #         final_confidence_scores.append(model_probas[best_model_idx])
-
-    #     ensemble_preds['predicted'] = final_predictions
-        
-    # elif method == "uncertainty_threshold":
-    #     """ get prediction from uncertainty method with threshold
-    #     remove prediction with uncertainty below threshold. 
-    #     Fill with mean if no prediction above threshold"""
-    #     threshold = 0.4
     if method == "majority_voting":
         assert len(ensemble_preds_ls) > 2, "Majority voting only works for more than two models"
         ensemble_preds['predicted'] = majority_voting(ensemble_preds_ls)
@@ -289,19 +238,22 @@ def ensemble_predictions(config_files: List[str], method: str, no_labels: bool) 
         ensemble_preds['predicted'] = max_ensemble(ensemble_preds, labels)
     elif method == "sum":
         ensemble_preds['predicted'] = sum_ensemble(ensemble_preds, labels)
-    elif method == "uncertainty":
-        ensemble_preds['predicted'], ensemble_preds['uncertainty'] = uncertainty_ensemble(ensemble_preds)
     elif method == "max_class":
         ensemble_preds['predicted'], ensemble_preds['max_probability'] = max_class_ensemble(ensemble_preds_ls, labels)
-    elif method == "entropy":
-        ensemble_preds['predicted'], ensemble_preds['confidence_scores'] = entropy_ensemble(ensemble_preds_ls, labels)
+    # elif method == "entropy":
+    #     ensemble_preds['predicted'], ensemble_preds['confidence_scores'] = entropy_ensemble(ensemble_preds_ls, labels)
+    elif method == "uncertainty_lowest":
+        ensemble_preds['predicted'], ensemble_preds['uncertainty'] = uncertainty_ensemble(ensemble_preds)
     elif method == "uncertainty_threshold":
-        threshold = 0.4
-        ensemble_preds['predicted'] = uncertainty_threshold_ensemble(ensemble_preds_ls, labels)
+        ensemble_preds['predicted'] = uncertainty_threshold_ensemble(ensemble_preds_ls, labels, threshold)
+    elif method == "uncertainty_weighted":
+        ensemble_preds['predicted'], ensemble_preds['uncertainty'] = uncertainty_weighted_ensemble(ensemble_preds_ls, labels)
+    elif method == "confidence_weighted":
+        ensemble_preds['predicted'], ensemble_preds['confidence'] = confidence_weighted_ensemble(ensemble_preds_ls, labels)
     else:
         raise ValueError(f"Unknown ensemble method: {method}")
 
-    # get the highest value from all labels to inver that labels
+    # get the highest value from all labels to infer that labels
     # replace the old first predicted column
     if method in ["mean", "max", "sum"]:
         ensemble_preds["predicted"] = ensemble_preds[labels].idxmax(axis=1)
@@ -338,8 +290,26 @@ def main(src_dir: Path) -> None:
     parser.add_argument(
         "--method",
         default=DEFAULT_METHOD,
-        choices=["majority_voting", "mean", "max", "sum", "uncertainty", "entropy", "max_class", "uncertainty_threshold"],
+        choices=[
+            "majority_voting", 
+            "mean", 
+            "max", 
+            "sum", 
+            "max_class", 
+            "uncertainty_lowest", 
+            # "entropy", 
+            "uncertainty_threshold", 
+            "uncertainty_weighted",
+            "confidence_weighted"
+        ],
         help=f"Ensemble method to use (default: {DEFAULT_METHOD})",
+    )
+    # add threshold if method is uncertainty_threshold
+    parser.add_argument(
+        "--threshold",
+        default=1.0,
+        type=float,
+        help="Threshold for uncertainty_threshold method (default: 1.0)",
     )
     parser.add_argument(
         "--outfile",
@@ -357,7 +327,7 @@ def main(src_dir: Path) -> None:
 
     start = time.time()
 
-    ensemble_preds = ensemble_predictions(args.configs, args.method, args.no_labels)
+    ensemble_preds = ensemble_predictions(args.configs, args.method, args.threshold, args.no_labels)
 
     # save to csv
     ensemble_preds.to_csv(args.outfile, index=False)

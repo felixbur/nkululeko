@@ -163,7 +163,7 @@ class Util:
     def get_pred_name(self):
         store = self.get_path("store")
         pred_name = self.get_model_description()
-        return f"{store}/{pred_name}_pred.csv"
+        return f"{store}/pred_{pred_name}.csv"
 
 
     def is_categorical(self, pd_series):
@@ -298,7 +298,7 @@ class Util:
         print(f"WARNING {self.caller}: {message}")
 
     def debug(self, message):
-        self.logger.debug(f"{self.caller}: {message}")
+        print(f"DEBUG: {self.caller}: {message}")
 
     def set_config_val(self, section, key, value):
         try:
@@ -317,11 +317,7 @@ class Util:
         if self.config is None:
             return default
         try:
-            value = self.config[section][key]
-            if value != str(default) and key not in self.logged_configs:
-                self.debug(f"value for {key} is found: {value}")
-                self.logged_configs.add(key)
-            return value
+            return self.config[section][key]
         except KeyError:
             if default not in self.stopvals:
                 self.debug(f"value for {key} is not found, using default: {default}")
