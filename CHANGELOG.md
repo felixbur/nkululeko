@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.88.3
+--------------
+* fixed bug in false uncertainty estimation
+* changed demo live recording
+
 Version 0.88.2
 --------------
 * changed combine speaker results to show speakers not samples

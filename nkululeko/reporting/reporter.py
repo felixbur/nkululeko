@@ -144,10 +144,10 @@ class Reporter:
             and "uncertainty" not in self.probas
         ):
             probas = self.probas
-            probas["predicted"] = self.preds
-            probas["truth"] = self.truths
             # softmax the probabilities or logits
             uncertainty = probas.apply(softmax, axis=1)
+            probas["predicted"] = self.preds
+            probas["truth"] = self.truths
             try:
                 le = glob_conf.label_encoder
                 mapping = dict(zip(le.classes_, range(len(le.classes_))))
