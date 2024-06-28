@@ -1,19 +1,18 @@
 # util.py
 import ast
 import configparser
-from logging import config
+import logging
 import os.path
 import pickle
 import sys
-from sysconfig import get_config_h_filename
-from turtle import setup
 
+# from sysconfig import get_config_h_filename
+# from turtle import setup
 import audeer
 import audformat
 import numpy as np
 import pandas as pd
 
-import logging
 
 class Util:
     # a list of words that need not to be warned upon if default values are
@@ -31,7 +30,6 @@ class Util:
         "functionals",
     ]
 
-    
     def __init__(self, caller=None, has_config=True):
         if caller is not None:
             self.caller = caller
@@ -56,7 +54,7 @@ class Util:
                 self.got_data_roots = False
 
         self.setup_logging()
-        self.logged_configs = set()
+        # self.logged_configs = set()
 
     def setup_logging(self):
         # Setup logging
@@ -78,10 +76,7 @@ class Util:
             # Add the console handler to the logger
             logger.addHandler(console_handler)
         self.logger = logger
-    
-    def get_config_filename(self):
-        return get_config_h_filename()
-    
+
     def get_path(self, entry):
         """This method allows the user to get the directory path for the given argument."""
         if self.config is None:
@@ -153,7 +148,7 @@ class Util:
 
     def set_config(self, config):
         self.config = config
-        self.logged_configs.clear()
+        # self.logged_configs.clear()
 
     def get_save_name(self):
         """Return a relative path to a name to save the experiment"""
@@ -164,7 +159,6 @@ class Util:
         store = self.get_path("store")
         pred_name = self.get_model_description()
         return f"{store}/pred_{pred_name}.csv"
-
 
     def is_categorical(self, pd_series):
         """Check if a dataframe column is categorical"""
@@ -213,7 +207,6 @@ class Util:
         """Get a string as name from all feature sets that are used."""
         return "_".join(ast.literal_eval(self.config["FEATS"]["type"]))
 
-    
     def get_exp_name(self, only_train=False, only_data=False):
         trains_val = self.config_val("DATA", "trains", False)
         if only_train and trains_val:
