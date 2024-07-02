@@ -1,10 +1,13 @@
 # util.py
 import ast
 import configparser
+import logging
 import os.path
 import pickle
 import sys
 
+# from sysconfig import get_config_h_filename
+# from turtle import setup
 import audeer
 import audformat
 import numpy as np
@@ -32,6 +35,7 @@ class Util:
             self.caller = caller
         else:
             self.caller = ""
+        self.config = None
         if has_config:
             try:
                 import nkululeko.glob_conf as glob_conf
@@ -48,6 +52,30 @@ class Util:
             except (ModuleNotFoundError, AttributeError):
                 self.config = None
                 self.got_data_roots = False
+
+        self.setup_logging()
+        # self.logged_configs = set()
+
+    def setup_logging(self):
+        # Setup logging
+        logger = logging.getLogger(__name__)
+        if not logger.hasHandlers():
+            logger.setLevel(logging.DEBUG)  # Set the desired logging level
+
+            # Create a console handler
+            console_handler = logging.StreamHandler()
+
+            # Create a simple formatter that only shows the message
+            class SimpleFormatter(logging.Formatter):
+                def format(self, record):
+                    return record.getMessage()
+
+            # Set the formatter for the console handler
+            console_handler.setFormatter(SimpleFormatter())
+
+            # Add the console handler to the logger
+            logger.addHandler(console_handler)
+        self.logger = logger
 
     def get_path(self, entry):
         """This method allows the user to get the directory path for the given argument."""
@@ -120,6 +148,7 @@ class Util:
 
     def set_config(self, config):
         self.config = config
+        # self.logged_configs.clear()
 
     def get_save_name(self):
         """Return a relative path to a name to save the experiment"""
@@ -128,7 +157,8 @@ class Util:
 
     def get_pred_name(self):
         store = self.get_path("store")
-        return f"{store}/pred_df.csv"
+        pred_name = self.get_model_description()
+        return f"{store}/pred_{pred_name}.csv"
 
     def is_categorical(self, pd_series):
         """Check if a dataframe column is categorical"""
@@ -233,6 +263,11 @@ class Util:
             return_string += self._get_value_descript(option[0], option[1]).replace(
                 ".", "-"
             )
+            # prevent double underscores
+            return_string = return_string.replace("__", "_")
+            # remove trailing underscores in the end
+            return_string = return_string.strip("_")
+
         return return_string
 
     def get_plot_name(self):
@@ -249,14 +284,14 @@ class Util:
         return False
 
     def error(self, message):
-        print(f"ERROR {self.caller}: {message}")
+        self.logger.error(f"ERROR: {self.caller}: {message}")
         sys.exit()
 
     def warn(self, message):
-        print(f"WARNING {self.caller}: {message}")
+        self.logger.warning(f"WARNING: {self.caller}: {message}")
 
     def debug(self, message):
-        print(f"DEBUG {self.caller}: {message}")
+        self.logger.debug(f"DEBUG: {self.caller}: {message}")
 
     def set_config_val(self, section, key, value):
         try:
@@ -278,8 +313,12 @@ class Util:
             return self.config[section][key]
         except KeyError:
             if default not in self.stopvals:
-                self.debug(f"value for {key} not found, using default: {default}")
+                self.debug(f"value for {key} is not found, using default: {default}")
             return default
+
+    @classmethod
+    def reset_logged_configs(cls):
+        cls.logged_configs.clear()
 
     def config_val_list(self, section, key, default):
         try:

@@ -238,21 +238,21 @@ class Modelrunner:
             if balancing == "ros":
                 from imblearn.over_sampling import RandomOverSampler
 
-                sampler = RandomOverSampler()
+                sampler = RandomOverSampler(random_state=42)
                 X_res, y_res = sampler.fit_resample(
                     self.feats_train, self.df_train[self.target]
                 )
             elif balancing == "smote":
                 from imblearn.over_sampling import SMOTE
 
-                sampler = SMOTE()
+                sampler = SMOTE(random_state=42)
                 X_res, y_res = sampler.fit_resample(
                     self.feats_train, self.df_train[self.target]
                 )
             elif balancing == "adasyn":
                 from imblearn.over_sampling import ADASYN
 
-                sampler = ADASYN()
+                sampler = ADASYN(random_state=42)
                 X_res, y_res = sampler.fit_resample(
                     self.feats_train, self.df_train[self.target]
                 )
