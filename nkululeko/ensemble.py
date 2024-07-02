@@ -42,6 +42,7 @@ def sum_ensemble(ensemble_preds, labels):
 
 
 def uncertainty_ensemble(ensemble_preds):
+    """ Same as uncertainty_threshold with a threshold of 0.1 """
     final_predictions = []
     best_uncertainty = []
     for _, row in ensemble_preds.iterrows():
@@ -54,6 +55,7 @@ def uncertainty_ensemble(ensemble_preds):
 
 
 def max_class_ensemble(ensemble_preds_ls, labels):
+    """ Compare the highest probabilites of all models across classes (instead of same class as in max_ensemble) and return the highest probability and the class """
     final_preds = []
     final_probs = []
     
@@ -76,28 +78,6 @@ def max_class_ensemble(ensemble_preds_ls, labels):
     
     return pd.Series(final_preds), pd.Series(final_probs)
 
-# def entropy_ensemble(ensemble_preds_ls, labels):
-#     from scipy.stats import entropy
-#     final_predictions = []
-#     final_confidence_scores = []
-    
-#     for idx, _ in pd.concat(ensemble_preds_ls, axis=1).iterrows():
-#         model_probas = []
-#         model_preds = []
-        
-#         for model_df in ensemble_preds_ls:
-#             model_row = model_df.loc[idx]
-#             probas_sof = torch.nn.functional.softmax(torch.tensor(model_row[labels].values.astype(float)), dim=0)
-#             model_probas.append(probas_sof)
-#             model_preds.append(model_row['predicted'])
-        
-#         entropies = [entropy(proba) for proba in model_probas]
-#         best_model_idx = np.argmin(entropies)
-        
-#         final_predictions.append(model_preds[best_model_idx])
-#         final_confidence_scores.append(model_probas[best_model_idx])
-
-#     return pd.Series(final_predictions), pd.Series(final_confidence_scores)
 
 def uncertainty_threshold_ensemble(ensemble_preds_ls, labels, threshold):
     final_predictions = []
@@ -121,6 +101,7 @@ def uncertainty_threshold_ensemble(ensemble_preds_ls, labels, threshold):
     return final_predictions
 
 def uncertainty_weighted_ensemble(ensemble_preds_ls, labels):
+    """Weighted ensemble based on uncertainty, normalized for each class"""
     final_predictions = []
     final_uncertainties = []
     
@@ -153,6 +134,7 @@ def uncertainty_weighted_ensemble(ensemble_preds_ls, labels):
 
 
 def confidence_weighted_ensemble(ensemble_preds_ls, labels):
+    """Weighted ensemble based on confidence, normalized for all samples per model"""
     final_predictions = []
     final_confidences = []
     
@@ -239,10 +221,6 @@ def ensemble_predictions(config_files: List[str], method: str, threshold:float, 
         ensemble_preds['predicted'] = sum_ensemble(ensemble_preds, labels)
     elif method == "max_class":
         ensemble_preds['predicted'], ensemble_preds['max_probability'] = max_class_ensemble(ensemble_preds_ls, labels)
-    # elif method == "entropy":
-    #     ensemble_preds['predicted'], ensemble_preds['confidence_scores'] = entropy_ensemble(ensemble_preds_ls, labels)
-    elif method == "uncertainty_lowest":
-        ensemble_preds['predicted'], ensemble_preds['uncertainty'] = uncertainty_ensemble(ensemble_preds)
     elif method == "uncertainty_threshold":
         ensemble_preds['predicted'] = uncertainty_threshold_ensemble(ensemble_preds_ls, labels, threshold)
     elif method == "uncertainty_weighted":
@@ -294,7 +272,7 @@ def main(src_dir: Path) -> None:
             "max", 
             "sum", 
             "max_class", 
-            "uncertainty_lowest", 
+            # "uncertainty_lowest", 
             # "entropy", 
             "uncertainty_threshold", 
             "uncertainty_weighted",
@@ -307,7 +285,7 @@ def main(src_dir: Path) -> None:
         "--threshold",
         default=1.0,
         type=float,
-        help="Threshold for uncertainty_threshold method (default: 1.0)",
+        help="Threshold for uncertainty_threshold method (default: 1.0, i.e. no threshold)",
     )
     parser.add_argument(
         "--outfile",
