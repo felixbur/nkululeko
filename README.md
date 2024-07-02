@@ -159,7 +159,8 @@ All of them take *--config <my_config.ini>* as an argument.
 * **nkululeko.nkululeko**: do machine learning experiments combining features and learners
 * **nkululeko.ensemble**: [combine several nkululeko experiments](http://blog.syntheticspeech.de/2024/06/25/nkululeko-ensemble-classifiers-with-late-fusion/) and report on late fusion results
   * *configurations*: which experiments to combine
-  * *--method* (optional): majority_voting, mean, max, sum
+  * *--method* (optional): mean, max, sum, max_class, uncertainty_threshold, uncertainty_weighted, confidence_weighted
+  * *--threshold*: uncertainty threshold (1.0 means no threshold)
   * *--outfile* (optional): name of CSV file for output
   * *--no_labels* (optional): indicate that no ground truth is given 
 * **nkululeko.multidb**: do [multiple experiments](http://blog.syntheticspeech.de/2024/01/02/nkululeko-compare-several-databases/), comparing several databases cross and in itself
@@ -229,6 +230,8 @@ There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
 * [Tweak the target variable for database comparison](http://blog.syntheticspeech.de/2024/03/13/nkululeko-how-to-tweak-the-target-variable-for-database-comparison/)
 * [How to run multiple experiments in one go](http://blog.syntheticspeech.de/2022/03/28/how-to-run-multiple-experiments-in-one-go-with-nkululeko/)
 * [How to finetune a transformer-model](http://blog.syntheticspeech.de/2024/05/29/nkululeko-how-to-finetune-a-transformer-model/)
+* [Ensemble (combine) classifiers with late-fusion](http://blog.syntheticspeech.de/2024/06/25/nkululeko-ensemble-classifiers-with-late-fusion/)
+
 
 ### <a name="helloworld">Hello World example</a>
 * NEW: [Here's a Google colab that runs this example out-of-the-box](https://colab.research.google.com/drive/1GYNBd5cdZQ1QC3Jm58qoeMaJg3UuPhjw?usp=sharing#scrollTo=4G_SjuF9xeQf), and here is the same [with Kaggle](https://www.kaggle.com/felixburk/nkululeko-hello-world-example)

@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.88.4
+--------------
+* added more ensemble methods, e.g. based on uncertainty
+
 Version 0.88.3
 --------------
 * fixed bug in false uncertainty estimation
