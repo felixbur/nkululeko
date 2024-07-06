@@ -157,8 +157,9 @@ class Util:
 
     def get_pred_name(self):
         store = self.get_path("store")
+        target = self.get_target_name()
         pred_name = self.get_model_description()
-        return f"{store}/pred_{pred_name}.csv"
+        return f"{store}/pred_{target}_{pred_name}.csv"
 
     def is_categorical(self, pd_series):
         """Check if a dataframe column is categorical"""
@@ -217,8 +218,13 @@ class Util:
         return_string = f"{ds}"
         if not only_data:
             mt = self.get_model_description()
-            return_string = return_string + "_" + mt
+            target = self.get_target_name()
+            return_string = return_string + "_" + target + "_" + mt
         return return_string.replace("__", "_")
+
+    def get_target_name(self):
+        """Get a string as name from all target sets that are used."""
+        return self.config["DATA"]["target"]
 
     def get_model_type(self):
         return self.config["MODEL"]["type"]
