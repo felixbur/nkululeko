@@ -24,7 +24,7 @@ class Spkrec(Featureset):
     def __init__(self, name, data_df, feat_type):
         """Constructor. is_train is needed to distinguish from test/dev sets,
         because they use the codebook from the training"""
-        super().__init__(name, data_df)
+        super().__init__(name, data_df, feat_type)
         # check if device is not set, use cuda if available
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
