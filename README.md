@@ -24,7 +24,8 @@ A project to detect speaker characteristics by machine learning experiments with
 
 The idea is to have a framework (based on e.g. sklearn and torch) that can be used to rapidly and automatically analyse audio data and explore machine learning models based on that data.
 
-* NEW with nkululeko: [Finetune transformer-models](http://blog.syntheticspeech.de/2024/05/29/nkululeko-how-to-finetune-a-transformer-model/)
+* NEW with nkululek: [Ensemble learning](http://blog.syntheticspeech.de/2024/06/25/nkululeko-ensemble-classifiers-with-late-fusion/)
+* NEW: [Finetune transformer-models](http://blog.syntheticspeech.de/2024/05/29/nkululeko-how-to-finetune-a-transformer-model/)
 * The latest features can be seen in [the ini-file](./ini_file.md) options that are used to control Nkululeko
 * Below is a [Hello World example](#helloworld) that should set you up fastly, also on [Google Colab](https://colab.research.google.com/drive/1GYNBd5cdZQ1QC3Jm58qoeMaJg3UuPhjw?usp=sharing#scrollTo=4G_SjuF9xeQf), and [with Kaggle](https://www.kaggle.com/felixburk/nkululeko-hello-world-example)
 * [Here's a blog post on how to set up nkululeko on your computer.](http://blog.syntheticspeech.de/2021/08/30/how-to-set-up-your-first-nkululeko-project/)
@@ -159,7 +160,8 @@ All of them take *--config <my_config.ini>* as an argument.
 * **nkululeko.nkululeko**: do machine learning experiments combining features and learners
 * **nkululeko.ensemble**: [combine several nkululeko experiments](http://blog.syntheticspeech.de/2024/06/25/nkululeko-ensemble-classifiers-with-late-fusion/) and report on late fusion results
   * *configurations*: which experiments to combine
-  * *--method* (optional): majority_voting, mean, max, sum
+  * *--method* (optional): majority_voting, mean, max, sum, max_class, uncertainty_threshold, uncertainty_weighted, confidence_weighted
+  * *--threshold*: uncertainty threshold (1.0 means no threshold)
   * *--outfile* (optional): name of CSV file for output
   * *--no_labels* (optional): indicate that no ground truth is given 
 * **nkululeko.multidb**: do [multiple experiments](http://blog.syntheticspeech.de/2024/01/02/nkululeko-compare-several-databases/), comparing several databases cross and in itself
@@ -229,6 +231,8 @@ There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
 * [Tweak the target variable for database comparison](http://blog.syntheticspeech.de/2024/03/13/nkululeko-how-to-tweak-the-target-variable-for-database-comparison/)
 * [How to run multiple experiments in one go](http://blog.syntheticspeech.de/2022/03/28/how-to-run-multiple-experiments-in-one-go-with-nkululeko/)
 * [How to finetune a transformer-model](http://blog.syntheticspeech.de/2024/05/29/nkululeko-how-to-finetune-a-transformer-model/)
+* [Ensemble (combine) classifiers with late-fusion](http://blog.syntheticspeech.de/2024/06/25/nkululeko-ensemble-classifiers-with-late-fusion/)
+
 
 ### <a name="helloworld">Hello World example</a>
 * NEW: [Here's a Google colab that runs this example out-of-the-box](https://colab.research.google.com/drive/1GYNBd5cdZQ1QC3Jm58qoeMaJg3UuPhjw?usp=sharing#scrollTo=4G_SjuF9xeQf), and here is the same [with Kaggle](https://www.kaggle.com/felixburk/nkululeko-hello-world-example)
