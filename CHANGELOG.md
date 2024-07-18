@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 0.88.5
+--------------
+* add a unique name to the uncertainty plot
+* fix error in speaker embedding (still need speechbrain < 1.0)
+* add get_target_name function in util
+
 Version 0.88.4
 --------------
 * added more ensemble methods, e.g. based on uncertainty
