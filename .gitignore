@@ -94,7 +94,6 @@ bak/
 *.tmp.*
 *.pyc
 *.bak*
-results/
 *.pkl
 *.wav
 *.csv
@@ -110,3 +109,6 @@ data/*/**
 *.sym
 *.symlink
 
+# Ignore exp folders
+exp_*/
+results/
