@@ -11,6 +11,7 @@
       git add data/$data/*.md
    done
    git add README.md
+   git add requirements.txt
    git add make_package.sh
    git add test_runs.sh
    git add data/README.md

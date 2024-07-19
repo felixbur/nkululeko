@@ -7,25 +7,29 @@ audmetric
 audiomentations==0.31.0
 audonnx
 confidence-intervals
+cylimiter
 # audtorch
 # datasets
 imageio
+imblearn
 matplotlib
 numpy
 opensmile
 pandas
 praat-parselmouth
+pylatex
+renumics-spotlight 
 scikit_learn
 scipy
 seaborn
+sliceguard
 sounddevice
 splitutils
-# tensorflow
-# tensorflow_hub
+tensorflow
+tensorflow_hub
 torch
 torchaudio
 torchvision
-# transformers
-xgboost
+transformers
 umap-learn
-pylatex
+xgboost
