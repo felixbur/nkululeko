@@ -100,6 +100,13 @@ bak/
 *.onnx
 *.yaml
 *.png
+*.safetensors
+*.pth
+*.bin
+*.pt
+*.ckpt
+*.json
+
 
 # dataset
 data/*/** 
@@ -112,3 +119,25 @@ data/*/**
 # Ignore exp folders
 exp_*/
 results/
+*_orig/
+*_test/
+*_tests/
+*_bak/
+*_tmp/
+*_old/
+*_backup/
+*_backup_*/
+./openXBOW/
+./pretrained_models/
+
+# ignore specific files
+results_*
+result_*
+test_*
+run_*.sh
+tmp*
+test*
+log.*
+
+# xbow
+xbow_codebook/
