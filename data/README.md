@@ -1,15 +1,15 @@
 # Data
 
-This is the default top directory for data import for Nkululeko.
+This is the default top directory for Nkululeko data import.
 
 Each database should be in its own subfolder (you can also use `ln -sf`` to soft link original database path to these subfolders) and contain a README how to import the data to Nkululeko CSV or audformat.
 
 ## Accessibility
 
-The column `access` in the table below indicates the accessability of the database. The following values are used:
+The column `access` in the table below indicates the database's accessability. The following values are used:
 - `public`: the database is publicly available in the internet and can be downloaded directly without any restrictions.
-- `restricted`: the database is publicly available in the internet but requires registration or other restrictions to download.
-- `private`: the database is not publicly available in the internet and requires to contact privately to the owner of the dataset.
+- `restricted`: the database is publicly available on the internet but requires registration or other restrictions to download.
+- `private`: the database is not publicly available on the internet and requires the private information of the owner of the dataset.
 
 ## Databases
 
@@ -60,4 +60,4 @@ The column `access` in the table below indicates the accessability of the databa
 
 # Performance 
 <!-- include performance from images directory -->
-![Nkululeko performance](../meta/images/nkululeko_performance_202310.png)
+![Nkululeko performance](../meta/images/nkululeko_ser_20240719.png)
