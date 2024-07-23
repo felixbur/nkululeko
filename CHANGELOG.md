@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.88.6
+--------------
+* added test speaker assign
+
 Version 0.88.5
 --------------
 * add a unique name to the uncertainty plot

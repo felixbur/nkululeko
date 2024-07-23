@@ -423,6 +423,9 @@ class Dataset:
             self.util.debug(f"{self.name}: trying to reuse data splits")
             self.df_test = pd.read_pickle(storage_test)
             self.df_train = pd.read_pickle(storage_train)
+        elif isinstance(ast.literal_eval(split_strategy), list):
+            # treat this as a list of test speakers
+            self.assign_speakers(ast.literal_eval(split_strategy))
         else:
             self.util.error(f"unknown split strategy: {split_strategy}")
 
@@ -510,6 +513,19 @@ class Dataset:
         self.df_test = df.iloc[test_i]
         self.util.debug(
             f"{self.name} (balanced split): [{self.df_train.shape[0]}/{self.df_test.shape[0]}]"
+            " samples in train/test"
+        )
+        # because this generates new train/test sample quantaties, the feature extraction has to be done again
+        glob_conf.config["FEATS"]["needs_feature_extraction"] = "True"
+
+    def assign_speakers(self, speakers):
+        """One way to split train and eval sets: Specify test speaker names."""
+        self.df_test = self.df[self.df.speaker.isin(speakers)]
+        if len(self.df_test) == 0:
+            self.util.error(f"no speakers found in {speakers}")
+        self.df_train = self.df[~self.df.index.isin(self.df_test.index)]
+        self.util.debug(
+            f"{self.name} (speakers assigned): [{self.df_train.shape[0]}/{self.df_test.shape[0]}]"
             " samples in train/test"
         )
         # because this generates new train/test sample quantaties, the feature extraction has to be done again
