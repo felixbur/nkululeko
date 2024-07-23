@@ -6,12 +6,11 @@ import os.path
 import pickle
 import sys
 
-# from sysconfig import get_config_h_filename
-# from turtle import setup
-import audeer
-import audformat
 import numpy as np
 import pandas as pd
+
+import audeer
+import audformat
 
 
 class Util:
@@ -116,8 +115,8 @@ class Util:
         return dir_name
 
     def config_val_data(self, dataset, key, default):
-        """
-        Retrieve a configuration value for datasets.
+        """Retrieve a configuration value for datasets.
+
         If the value is present in the experiment configuration it will be used, else
         we look in a global file specified by the root_folders value.
         """

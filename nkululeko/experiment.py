@@ -5,13 +5,13 @@ import pickle
 import random
 import time
 
-import audeer
-import audformat
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
-import nkululeko.glob_conf as glob_conf
+import audeer
+import audformat
+
 from nkululeko.data.dataset import Dataset
 from nkululeko.data.dataset_csv import Dataset_CSV
 from nkululeko.demo_predictor import Demo_predictor
@@ -19,6 +19,7 @@ from nkululeko.feat_extract.feats_analyser import FeatureAnalyser
 from nkululeko.feature_extractor import FeatureExtractor
 from nkululeko.file_checker import FileChecker
 from nkululeko.filter_data import DataFilter
+import nkululeko.glob_conf as glob_conf
 from nkululeko.plots import Plots
 from nkululeko.reporting.report import Report
 from nkululeko.runmanager import Runmanager
@@ -185,9 +186,7 @@ class Experiment:
                 f"reusing previously stored {storage_test} and {storage_train}"
             )
             self.df_test = self._import_csv(storage_test)
-            # print(f"df_test: {self.df_test}")
             self.df_train = self._import_csv(storage_train)
-            # print(f"df_train: {self.df_train}")
         else:
             self.df_train, self.df_test = pd.DataFrame(), pd.DataFrame()
             for d in self.datasets.values():

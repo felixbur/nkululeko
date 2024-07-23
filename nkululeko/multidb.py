@@ -36,6 +36,10 @@ def main(src_dir):
     config.read(config_file)
     datasets = config["EXP"]["databases"]
     datasets = ast.literal_eval(datasets)
+    try:
+        use_splits = eval(config["EXP"]["use_splits"])
+    except KeyError:
+        use_splits = False
     dim = len(datasets)
     results = np.zeros(dim * dim).reshape([dim, dim])
     last_epochs = np.zeros(dim * dim).reshape([dim, dim])
@@ -72,15 +76,23 @@ def main(src_dir):
                     config["DATA"][
                         "databases"
                     ] = f"['{train}', '{test}', {extra_trains_1}]"
-                    config["DATA"][f"{test}.split_strategy"] = "test"
-                    config["DATA"][f"{train}.split_strategy"] = "train"
+                    if use_splits:
+                        config["DATA"][f"{test}.as_test"] = "True"
+                        config["DATA"][f"{train}.as_train"] = "True"
+                    else:
+                        config["DATA"][f"{test}.split_strategy"] = "test"
+                        config["DATA"][f"{train}.split_strategy"] = "train"
                     extra_trains_2 = ast.literal_eval(extra_trains)
                     for extra_train in extra_trains_2:
                         config["DATA"][f"{extra_train}.split_strategy"] = "train"
                 else:
                     config["DATA"]["databases"] = f"['{train}', '{test}']"
-                    config["DATA"][f"{test}.split_strategy"] = "test"
-                    config["DATA"][f"{train}.split_strategy"] = "train"
+                    if use_splits:
+                        config["DATA"][f"{test}.as_test"] = "True"
+                        config["DATA"][f"{train}.as_train"] = "True"
+                    else:
+                        config["DATA"][f"{test}.split_strategy"] = "test"
+                        config["DATA"][f"{train}.split_strategy"] = "train"
                 config["EXP"]["name"] = f"{train}_vs_{test}"
 
             tmp_config = "tmp.ini"

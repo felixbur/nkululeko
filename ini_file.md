@@ -53,7 +53,8 @@
   * save_test = ./my_saved_test_predictions.csv
 * **databases**: name of databases to compare for the *multidb* module
   * databases = ['emodb', 'timit']
-
+* **use_splits**: can be used for multidb module to use the orginal split sets when train or test database. Else the whole database is used.
+  * use_splits = True
 ### DATA
 
 * **type**: just a flag now to mark continuous data, so it can be binned to categorical data (using *bins* and *labels*)

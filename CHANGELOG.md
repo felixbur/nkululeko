@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.88.7
+--------------
+* added use_splits for multidb
+
 Version 0.88.6
 --------------
 * added test speaker assign
