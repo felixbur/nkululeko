@@ -429,6 +429,14 @@ class Dataset:
         else:
             self.util.error(f"unknown split strategy: {split_strategy}")
 
+        # check if train or test set should be ignored
+        as_test = eval(self.util.config_val_data(self.name, "as_test", "False"))
+        if as_test:
+            self.df_train = pd.DataFrame()
+        as_train = eval(self.util.config_val_data(self.name, "as_train", "False"))
+        if as_train:
+            self.df_test = pd.DataFrame()
+
         if self.df_test.shape[0] > 0:
             self.df_test = self.finish_up(self.df_test, storage_test)
         if self.df_train.shape[0] > 0:
