@@ -1,0 +1,153 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+
+# IDE settings
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Database
+*.db
+*.sqlite3
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# pyenv
+.python-version
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# mypy
+.mypy_cache/
+
+# Pyre type checker
+.pyre/
+
+# cache/tmp
+cache/
+bak/
+bak
+
+
+# others
+*.bak
+*.swp
+*.tmp
+*.tmp.*
+*.pyc
+*.bak*
+*.pkl
+*.wav
+*.csv
+*.onnx
+*.yaml
+*.png
+*.safetensors
+*.pth
+*.bin
+*.pt
+*.ckpt
+*.json
+
+
+# dataset
+data/*/** 
+
+# Ignore all symbolic links
+*.lnk
+*.sym
+*.symlink
+
+# Ignore exp folders
+exp_*/
+results/
+*_orig/
+*_test/
+*_tests/
+*_bak/
+*_tmp/
+*_old/
+*_backup/
+*_backup_*/
+./openXBOW/
+./pretrained_models/
+
+# ignore specific files
+results_*
+result_*
+test_*
+run_*.sh
+tmp*
+test*
+log.*
+
+# xbow
+xbow_codebook/
+nkulu_work/
+
+# ignore docs generated files
+docs/_build/
+docs/_static/
+docs/_templates/
+docs/source/
+docs/build/
