@@ -86,6 +86,8 @@ venv.bak/
 # cache/tmp
 cache/
 bak/
+bak
+
 
 # others
 *.bak
@@ -141,3 +143,11 @@ log.*
 
 # xbow
 xbow_codebook/
+nkulu_work/
+
+# ignore docs generated files
+docs/_build/
+docs/_static/
+docs/_templates/
+docs/source/
+docs/build/
