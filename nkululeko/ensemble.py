@@ -1,3 +1,20 @@
+"""
+Ensemble predictions from multiple experiments.
+
+Args:
+    config_files (list): List of configuration file paths.
+    method (str): Ensemble method to use. Options are 'majority_voting', 'mean', 'max', 'sum', 'uncertainty', 'uncertainty_weighted', 'confidence_weighted', or 'performance_weighted'.
+    threshold (float): Threshold for the 'uncertainty' ensemble method (default: 1.0, i.e. no threshold).
+    weights (list): Weights for the 'performance_weighted' ensemble method.
+    no_labels (bool): Flag indicating whether the predictions have labels or not.
+
+Returns:
+    pandas.DataFrame: The ensemble predictions.
+
+Raises:
+    ValueError: If an unknown ensemble method is provided.
+    AssertionError: If the number of config files is less than 2 for majority voting.
+"""
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
