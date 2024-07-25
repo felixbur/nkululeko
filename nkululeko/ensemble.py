@@ -242,7 +242,7 @@ def ensemble_predictions(
             confidence_weighted_ensemble(ensemble_preds_ls, labels)
         )
     elif method == "performance_weighted":
-        ensemble_preds["predicted"], ensemble_preds["performance"] = (
+        ensemble_preds["predicted"], ensemble_preds["confidence"] = (
             performance_weighted_ensemble(ensemble_preds_ls, labels, weights)
         )
     else:
