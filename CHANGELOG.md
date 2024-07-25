@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.88.9
+--------------
+* added performance_weighted ensemble
+
 Version 0.88.8
 --------------
 * some cosmetics
