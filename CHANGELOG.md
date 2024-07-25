@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.88.8
+--------------
+* some cosmetics
+
 Version 0.88.7
 --------------
 * added use_splits for multidb
