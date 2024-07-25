@@ -141,6 +141,9 @@ tmp*
 test*
 log.*
 
+# add exception for run_test?.sh
+!run_test?.sh
+
 # xbow
 xbow_codebook/
 nkulu_work/

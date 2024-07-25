@@ -45,19 +45,6 @@ def sum_ensemble(ensemble_preds, labels):
     return ensemble_preds[labels].idxmax(axis=1)
 
 
-def uncertainty_ensemble(ensemble_preds):
-    """Same as uncertainty_threshold with a threshold of 0.1"""
-    final_predictions = []
-    best_uncertainty = []
-    for _, row in ensemble_preds.iterrows():
-        uncertainties = row[["uncertainty"]].values
-        min_uncertainty_idx = np.argmin(uncertainties)
-        final_predictions.append(row["predicted"].iloc[min_uncertainty_idx])
-        best_uncertainty.append(uncertainties[min_uncertainty_idx])
-
-    return final_predictions, best_uncertainty
-
-
 def uncertainty_ensemble(ensemble_preds_ls, labels, threshold):
     final_predictions = []
     final_uncertainties = []
@@ -153,6 +140,12 @@ def performance_weighted_ensemble(ensemble_preds_ls, labels, weights):
     final_predictions = []
     final_confidences = []
 
+    # asserts weiths in decimal 0-1
+    assert all(0 <= w <= 1 for w in weights), "Weights must be between 0 and 1"
+    
+    # assert lenght of weights matches number of models
+    assert len(weights) == len(ensemble_preds_ls), "Number of weights must match number of models"
+    
     # Normalize weights
     total_weight = sum(weights)
     weights = [weight / total_weight for weight in weights]
@@ -295,12 +288,13 @@ def main(src_dir: Path) -> None:
             "mean",
             "max",
             "sum",
-            "max_class",
+            # "max_class",
             # "uncertainty_lowest",
             # "entropy",
-            "uncertainty_threshold",
+            "uncertainty",
             "uncertainty_weighted",
             "confidence_weighted",
+            "performance_weighted",
         ],
         help=f"Ensemble method to use (default: {DEFAULT_METHOD})",
     )
@@ -320,6 +314,7 @@ def main(src_dir: Path) -> None:
         "--weights",
         default=None,
         nargs="+",
+        type=float,
         help="Weights for the ensemble method (default: None, e.g. 0.5 0.5)",
     )
     parser.add_argument(
@@ -333,7 +328,7 @@ def main(src_dir: Path) -> None:
     start = time.time()
 
     ensemble_preds = ensemble_predictions(
-        args.configs, args.method, args.threshold, args.no_labels
+        args.configs, args.method, args.threshold, args.weights, args.no_labels
     )
 
     # save to csv
