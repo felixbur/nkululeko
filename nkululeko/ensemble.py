@@ -58,32 +58,7 @@ def uncertainty_ensemble(ensemble_preds):
     return final_predictions, best_uncertainty
 
 
-def max_class_ensemble(ensemble_preds_ls, labels):
-    """Compare the highest probabilites of all models across classes (instead of same class as in max_ensemble) and return the highest probability and the class"""
-    final_preds = []
-    final_probs = []
-
-    for _, row in pd.concat(ensemble_preds_ls, axis=1).iterrows():
-        max_probs = []
-        max_classes = []
-
-        for model_df in ensemble_preds_ls:
-            model_probs = row[labels].astype(float)
-            max_prob = model_probs.max()
-            max_class = model_probs.idxmax()
-
-            max_probs.append(max_prob)
-            max_classes.append(max_class)
-
-        best_model_index = np.argmax(max_probs)
-
-        final_preds.append(max_classes[best_model_index])
-        final_probs.append(max_probs[best_model_index])
-
-    return pd.Series(final_preds), pd.Series(final_probs)
-
-
-def uncertainty_threshold_ensemble(ensemble_preds_ls, labels, threshold):
+def uncertainty_ensemble(ensemble_preds_ls, labels, threshold):
     final_predictions = []
     final_uncertainties = []
 
@@ -173,8 +148,34 @@ def confidence_weighted_ensemble(ensemble_preds_ls, labels):
     return final_predictions, final_confidences
 
 
+def performance_weighted_ensemble(ensemble_preds_ls, labels, weights):
+    """Weighted ensemble based on performances"""
+    final_predictions = []
+    final_confidences = []
+
+    # Normalize weights
+    total_weight = sum(weights)
+    weights = [weight / total_weight for weight in weights]
+    
+    for idx in ensemble_preds_ls[0].index:
+        class_probabilities = {label: 0 for label in labels}
+        
+        for df, weight in zip(ensemble_preds_ls, weights):
+            row = df.loc[idx]
+            for label in labels:
+                class_probabilities[label] += row[label] * weight
+
+        predicted_class = max(class_probabilities, key=class_probabilities.get)
+        final_predictions.append(predicted_class)
+        final_confidences.append(max(class_probabilities.values()))
+
+    return final_predictions, final_confidences
+
+
+
+
 def ensemble_predictions(
-    config_files: List[str], method: str, threshold: float, no_labels: bool
+    config_files: List[str], method: str, threshold: float, weights: List[float], no_labels: bool
 ) -> pd.DataFrame:
     """
     Ensemble predictions from multiple experiments.
@@ -235,12 +236,8 @@ def ensemble_predictions(
         ensemble_preds["predicted"] = max_ensemble(ensemble_preds, labels)
     elif method == "sum":
         ensemble_preds["predicted"] = sum_ensemble(ensemble_preds, labels)
-    elif method == "max_class":
-        ensemble_preds["predicted"], ensemble_preds["max_probability"] = (
-            max_class_ensemble(ensemble_preds_ls, labels)
-        )
-    elif method == "uncertainty_threshold":
-        ensemble_preds["predicted"] = uncertainty_threshold_ensemble(
+    elif method == "uncertainty":
+        ensemble_preds["predicted"] = uncertainty_ensemble(
             ensemble_preds_ls, labels, threshold
         )
     elif method == "uncertainty_weighted":
@@ -250,6 +247,10 @@ def ensemble_predictions(
     elif method == "confidence_weighted":
         ensemble_preds["predicted"], ensemble_preds["confidence"] = (
             confidence_weighted_ensemble(ensemble_preds_ls, labels)
+        )
+    elif method == "performance_weighted":
+        ensemble_preds["predicted"], ensemble_preds["performance"] = (
+            performance_weighted_ensemble(ensemble_preds_ls, labels, weights)
         )
     else:
         raise ValueError(f"Unknown ensemble method: {method}")
@@ -269,7 +270,6 @@ def ensemble_predictions(
     ensemble_preds = ensemble_preds.iloc[:, : len(labels) + 3]
 
     # calculate UAR from predicted and truth columns
-
     truth = ensemble_preds["truth"]
     predicted = ensemble_preds["predicted"]
     uar = balanced_accuracy_score(truth, predicted)
@@ -285,7 +285,7 @@ def main(src_dir: Path) -> None:
         "configs",
         nargs="+",
         help="Paths to the configuration files of the experiments to ensemble. \
-             Can be INI files for Nkululeko.nkululeo or CSV files from Nkululeko.demo.",
+             Can be INI files for Nkululeko.nkululeko or CSV files from Nkululeko.demo.",
     )
     parser.add_argument(
         "--method",
@@ -315,6 +315,12 @@ def main(src_dir: Path) -> None:
         "--outfile",
         default=DEFAULT_OUTFILE,
         help=f"Output file path for the ensemble predictions (default: {DEFAULT_OUTFILE})",
+    )
+    parser.add_argument(
+        "--weights",
+        default=None,
+        nargs="+",
+        help="Weights for the ensemble method (default: None, e.g. 0.5 0.5)",
     )
     parser.add_argument(
         "--no_labels",
