@@ -7,18 +7,19 @@ import nkululeko.glob_conf as glob_conf
 import audonnx
 import numpy as np
 import audinterface
+import torch
 
-
-class AgenderAgenderSet(Featureset):
+class Agender_agenderSet(Featureset):
     """
     Age and gender predictions from the wav2vec2. based model finetuned on agender, described in the paper
     "Speech-based Age and Gender Prediction with Transformers"
     https://arxiv.org/abs/2306.16962
     """
 
-    def __init__(self, name, data_df):
-        super().__init__(name, data_df)
+    def __init__(self, name, data_df, feats_type):
+        super().__init__(name, data_df, feats_type)
         self.model_loaded = False
+        self.feats_type = feats_type
 
     def _load_model(self):
         model_url = "https://zenodo.org/record/7761387/files/w2v2-L-robust-6-age-gender.25c844af-1.1.1.zip"
