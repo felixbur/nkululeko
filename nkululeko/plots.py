@@ -4,14 +4,14 @@ import ast
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy import stats
 import seaborn as sns
+from scipy import stats
 from sklearn.manifold import TSNE
 
 import nkululeko.glob_conf as glob_conf
+import nkululeko.utils.stats as su
 from nkululeko.reporting.defines import Header
 from nkululeko.reporting.report_item import ReportItem
-import nkululeko.utils.stats as su
 from nkululeko.utils.util import Util
 
 
@@ -32,9 +32,9 @@ class Plots:
         # plot the distribution of samples per speaker
         # one up because of the runs
         fig_dir = self.util.get_path("fig_dir") + "../"
-        self.util.debug(f"plotting samples per speaker")
+        self.util.debug("plotting samples per speaker")
         if "gender" in df_speakers:
-            filename = f"samples_value_counts"
+            filename = "samples_value_counts"
             ax = (
                 df_speakers.groupby("samplenum")["gender"]
                 .value_counts()
@@ -46,7 +46,7 @@ class Plots:
                     rot=0,
                 )
             )
-            ax.set_ylabel(f"number of speakers")
+            ax.set_ylabel("number of speakers")
             ax.set_xlabel("number of samples")
             self.save_plot(
                 ax,
@@ -58,7 +58,7 @@ class Plots:
 
             # fig.clear()
         else:
-            filename = f"samples_value_counts"
+            filename = "samples_value_counts"
             ax = (
                 df_speakers["samplenum"]
                 .value_counts()
@@ -265,7 +265,8 @@ class Plots:
         """Plot relation of categorical distribution with continuous."""
         dist_type = self.util.config_val("EXPL", "dist_type", "hist")
         cats, cat_str, es = su.get_effect_size(df, cat_col, cont_col)
-        if dist_type == "hist":
+        model_type = self.util.get_model_type()
+        if dist_type == "hist" and model_type != "tree":
             ax = sns.histplot(df, x=cont_col, hue=cat_col, kde=True)
             caption = f"{ylab} {df.shape[0]}. {cat_str} ({cats}):" f" {es}"
             ax.set_title(caption)
@@ -489,7 +490,7 @@ class Plots:
         glob_conf.report.add_item(
             ReportItem(
                 Header.HEADER_EXPLORE,
-                f"Scatter plot",
+                "Scatter plot",
                 f"using {dimred_type}",
                 filename,
             )
@@ -561,8 +562,8 @@ class Plots:
         glob_conf.report.add_item(
             ReportItem(
                 Header.HEADER_EXPLORE,
-                f"Tree plot",
-                f"for feature importance",
+                "Tree plot",
+                "for feature importance",
                 filename,
             )
         )

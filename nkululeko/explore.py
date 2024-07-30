@@ -1,3 +1,24 @@
+"""
+Explore the feature sets of a machine learning experiment.
+
+This script is the entry point for the 'explore' module of the nkululeko framework.
+It handles loading the experiment configuration, setting up the experiment, and
+running various feature exploration techniques based on the configuration.
+
+The script supports the following configuration options:
+- `no_warnings`: If set to `True`, it will ignore all warnings during the exploration.
+- `feature_distributions`: If set to `True`, it will generate plots of the feature distributions.
+- `tsne`: If set to `True`, it will generate a t-SNE plot of the feature space.
+- `scatter`: If set to `True`, it will generate a scatter plot of the feature space.
+- `spotlight`: If set to `True`, it will generate a 'spotlight' plot of the feature space.
+- `shap`: If set to `True`, it will generate SHAP feature importance plots.
+- `model`: The type of model to use for the feature exploration (e.g. 'SVM').
+- `plot_tree`: If set to `True`, it will generate a decision tree plot.
+
+The script can be run from the command line with the `--config` argument to specify
+the configuration file to use. If no configuration file is provided, it will look
+for an `exp.ini` file in the same directory as the script.
+"""
 # explore.py
 # explore the feature sets
 

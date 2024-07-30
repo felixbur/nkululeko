@@ -160,9 +160,10 @@ All of them take *--config <my_config.ini>* as an argument.
 * **nkululeko.nkululeko**: do machine learning experiments combining features and learners
 * **nkululeko.ensemble**: [combine several nkululeko experiments](http://blog.syntheticspeech.de/2024/06/25/nkululeko-ensemble-classifiers-with-late-fusion/) and report on late fusion results
   * *configurations*: which experiments to combine
-  * *--method* (optional): majority_voting, mean, max, sum, max_class, uncertainty_threshold, uncertainty_weighted, confidence_weighted
+  * *--method* (optional): majority_voting, mean (default), max, sum, uncertainty, uncertainty_weighted, confidence_weighted, performance_weighted  
   * *--threshold*: uncertainty threshold (1.0 means no threshold)
-  * *--outfile* (optional): name of CSV file for output
+  * *--weightes*: weights for performance_weighted method (could be from previous UAR, ACC)
+  * *--outfile* (optional): name of CSV file for output (default: ensemble_result.csv)
   * *--no_labels* (optional): indicate that no ground truth is given 
 * **nkululeko.multidb**: do [multiple experiments](http://blog.syntheticspeech.de/2024/01/02/nkululeko-compare-several-databases/), comparing several databases cross and in itself
 * **nkululeko.demo**: [demo the current best model](http://blog.syntheticspeech.de/2022/01/24/nkululeko-try-out-demo-a-trained-model/) on the command line

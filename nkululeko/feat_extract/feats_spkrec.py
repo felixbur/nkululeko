@@ -12,7 +12,7 @@ import pandas as pd
 import torch
 import torchaudio
 from nkululeko.feat_extract.featureset import Featureset
-from speechbrain.pretrained import EncoderClassifier
+from speechbrain.inference import EncoderClassifier
 from tqdm import tqdm
 
 # from transformers import HubertModel, Wav2Vec2FeatureExtractor

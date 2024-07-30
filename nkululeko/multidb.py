@@ -1,3 +1,10 @@
+"""
+Demonstrates the usage of the ML-experiment framework for the nkululeko MULTIDB project.
+
+The `main` function is the entry point of the script, which parses command-line arguments, reads a configuration file, and runs the nkululeko or aug_train functions based on the configuration.
+
+The `plot_heatmap` function generates a heatmap plot of the results and saves it to a file, along with some summary statistics.
+"""
 # main.py
 # Demonstration code to use the ML-experiment framework
 

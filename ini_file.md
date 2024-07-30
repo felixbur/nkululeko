@@ -228,7 +228,7 @@
   * no_reuse = False
 * **store_format**: how to store the features: possible values [pkl | csv]
   * store_format = pkl
-* **scale**: scale the features
+* **scale**: scale the features (important for gmm)
   * scale=standard
   * possible values:
     * **standard**: z-transformation (mean of 0 and std of 1) based on the training set
@@ -264,7 +264,7 @@
       * **max_duration**: Max. duration of samples/segments for the transformer in seconds, frames are pooled.
         * max_duration = 8.0
     * **gmm**: Gaussian mixture classifier
-      * GMM_components = 4
+      * GMM_components = 4 (currently must be the same as number of labels)
       * GMM_covariance_type = [full | tied | diag | spherical](https://scikit-learn.org/stable/auto_examples/mixture/plot_gmm_covariances.html)
     * **knn**: k nearest neighbor classifier
       * K_val = 5
