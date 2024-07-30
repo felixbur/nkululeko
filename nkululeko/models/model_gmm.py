@@ -12,10 +12,12 @@ class GMM_model(Model):
     def __init__(self, df_train, df_test, feats_train, feats_test):
         super().__init__(df_train, df_test, feats_train, feats_test)
         self.name = "gmm"
-        n_components = int(self.util.config_val("MODEL", "GMM_components", "4"))
+        self.n_components = int(self.util.config_val("MODEL", "GMM_components", "4"))
         covariance_type = self.util.config_val("MODEL", "GMM_covariance_type", "full")
         self.clf = mixture.GaussianMixture(
-            n_components=n_components, covariance_type=covariance_type
+            n_components=self.n_components, 
+            covariance_type=covariance_type,
+            random_state = 42,
         )
         # set up the classifier
 
@@ -30,6 +32,6 @@ class GMM_model(Model):
         preds = preds.tolist()
         
         # Create a DataFrame for probabilities
-        proba_df = pd.DataFrame(probs, index=self.feats_test.index, columns=range(self.clf.n_components))
+        proba_df = pd.DataFrame(probs, index=self.feats_test.index, columns=range(self.n_components))
         
         return preds, proba_df
