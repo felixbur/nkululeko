@@ -265,7 +265,8 @@ class Plots:
         """Plot relation of categorical distribution with continuous."""
         dist_type = self.util.config_val("EXPL", "dist_type", "hist")
         cats, cat_str, es = su.get_effect_size(df, cat_col, cont_col)
-        if dist_type == "hist":
+        model_type = self.util.get_model_type()
+        if dist_type == "hist" and model_type != 'tree' :
             ax = sns.histplot(df, x=cont_col, hue=cat_col, kde=True)
             caption = f"{ylab} {df.shape[0]}. {cat_str} ({cats}):" f" {es}"
             ax.set_title(caption)
