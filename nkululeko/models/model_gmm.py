@@ -2,7 +2,7 @@
 
 from sklearn import mixture
 from nkululeko.models.model import Model
-
+import pandas as pd
 
 class GMM_model(Model):
     """An GMM model"""
@@ -18,3 +18,18 @@ class GMM_model(Model):
             n_components=n_components, covariance_type=covariance_type
         )
         # set up the classifier
+
+    def get_predictions(self):
+        """Use the predict_proba method of the GaussianMixture model to get 
+        probabilities. Create a DataFrame with these probabilities and return 
+        it along with the predictions."""
+        probs = self.clf.predict_proba(self.feats_test)
+        preds = self.clf.predict(self.feats_test)
+        
+        # Convert predictions to a list
+        preds = preds.tolist()
+        
+        # Create a DataFrame for probabilities
+        proba_df = pd.DataFrame(probs, index=self.feats_test.index, columns=range(self.clf.n_components))
+        
+        return preds, proba_df
