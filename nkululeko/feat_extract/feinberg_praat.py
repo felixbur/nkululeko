@@ -380,11 +380,11 @@ def compute_features(file_index):
     )
 
     # add pca data
-    pcaData = run_pca(df)  # Run jitter and shimmer PCA
-    df = pd.concat([df, pcaData], axis=1)  # Add PCA data
+    pca_data = run_pca(df)  # Run jitter and shimmer PCA
+    df = pd.concat([df, pca_data], axis=1)  # Add PCA data
     # reload the data so it's all numbers
-    df.to_csv("processed_results.csv", index=False)
-    df = pd.read_csv("processed_results.csv", header=0)
+    # df.to_csv("processed_results.csv", index=False)
+    # df = pd.read_csv("processed_results.csv", header=0)
     #    df.sort_values('voiceID').head(20)
     # ## Next we calculate the vocal-tract length estimates
 

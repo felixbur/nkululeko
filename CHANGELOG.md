@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.88.11
+--------------
+* removed hack in Praat script 
+
 Version 0.88.10
 --------------
 * SVM C val defaults to 1
