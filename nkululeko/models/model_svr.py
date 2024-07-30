@@ -1,11 +1,12 @@
 # svrmodel.py
 
 from sklearn import svm
+
 from nkululeko.models.model import Model
 
 
-class SVR_model(Model):
-    """An SVR model"""
+class SVRModel(Model):
+    """An SVR model."""
 
     is_classifier = False
 

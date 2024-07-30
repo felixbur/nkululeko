@@ -3,22 +3,21 @@ import ast
 import os
 import os.path
 from random import sample
+
 import numpy as np
 import pandas as pd
 
 import audformat
-from audformat.utils import duration
 
-import nkululeko.filter_data as filter
-import nkululeko.glob_conf as glob_conf
 from nkululeko.filter_data import DataFilter
+import nkululeko.glob_conf as glob_conf
 from nkululeko.plots import Plots
 from nkululeko.reporting.report_item import ReportItem
 from nkululeko.utils.util import Util
 
 
 class Dataset:
-    """Class to represent datasets"""
+    """Class to represent datasets."""
 
     name = ""  # An identifier for the dataset
     config = None  # The configuration

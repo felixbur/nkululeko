@@ -132,15 +132,15 @@ class Modelrunner:
         self._check_balancing()
 
         if model_type == "svm":
-            from nkululeko.models.model_svm import SVM_model
+            from nkululeko.models.model_svm import SVMModel
 
-            self.model = SVM_model(
+            self.model = SVMModel(
                 self.df_train, self.df_test, self.feats_train, self.feats_test
             )
         elif model_type == "svr":
-            from nkululeko.models.model_svr import SVR_model
+            from nkululeko.models.model_svr import SVRModel
 
-            self.model = SVR_model(
+            self.model = SVRModel(
                 self.df_train, self.df_test, self.feats_train, self.feats_test
             )
         elif model_type == "xgb":
