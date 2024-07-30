@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.88.10
+--------------
+* SVM C val defaults to 1
+* fixed agender_agender naming bug
+
 Version 0.88.9
 --------------
 * added performance_weighted ensemble
