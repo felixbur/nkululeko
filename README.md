@@ -148,8 +148,6 @@ type = svm
 [EXPL]
 model = tree
 plot_tree = True
-[PLOT]
-combine_per_speaker = mode
 ```
 Read the [Hello World example](#hello-world-example) for initial usage with Emo-DB dataset.
 
