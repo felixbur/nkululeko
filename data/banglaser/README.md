@@ -13,6 +13,7 @@ cd ../..
 python3 -m nkululeko.resample --config data/banglaser/exp.ini
 python3 -m nkululeko.nkululeko --config data/banglaser/exp.ini
 ...
+# sample outputs
 DEBUG: reporter: Best score at epoch: 0, UAR: .681, (+-.611/.747), ACC: .672
 DEBUG: reporter: labels: ['angry', 'neutral', 'sad', 'happy']
 DEBUG: reporter: result per class (F1 score): [0.681, 0.494, 0.886, 0.674] from epoch: 0

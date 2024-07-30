@@ -6,9 +6,14 @@ Test speakers: gauland (102 samples) and weidel (122 samples).
 
 Original audio source: [Deutscher Bundestag](https://www.bundestag.de/) in the year 2020.
 
-All segments were then random spliced as described in the paper. The dataset, which is restricted, can be obtaine from [1]. See [2] for details. 
+All segments were then random spliced as described in the paper. The dataset, which is restricted, can be obtain from [1]. See [2] for details. 
 
 ```bash
+python3 process_database.py
+cd ../..
+python3 -m nkululeko.nkululeko --config data/gerparas/exp.ini
+# output sample
+
 ```
 
 Reference:  
