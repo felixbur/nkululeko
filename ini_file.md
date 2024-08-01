@@ -321,7 +321,7 @@
   * device = 0
 * **patience**: Number of epochs to wait if the result gets better (for early stopping)
   * patience = 5
-* **n_jobs**: set the number of usable processors for model training
+* **n_jobs**: set/restrict the number of processes for model training (replaces former *num_workers*)
   * n_jobs = 8
 
 ### EXPL
