@@ -27,6 +27,7 @@ class Util:
         "pkl",
         "eGeMAPSv02",
         "functionals",
+        "n_jobs",
     ]
 
     def __init__(self, caller=None, has_config=True):
@@ -150,7 +151,7 @@ class Util:
         # self.logged_configs.clear()
 
     def get_save_name(self):
-        """Return a relative path to a name to save the experiment"""
+        """Return a relative path to a name to save the experiment."""
         store = self.get_path("store")
         return f"{store}/{self.get_exp_name()}.pkl"
 
@@ -161,7 +162,7 @@ class Util:
         return f"{store}/pred_{target}_{pred_name}.csv"
 
     def is_categorical(self, pd_series):
-        """Check if a dataframe column is categorical"""
+        """Check if a dataframe column is categorical."""
         return pd_series.dtype.name == "object" or isinstance(
             pd_series.dtype, pd.CategoricalDtype
         )
@@ -307,7 +308,7 @@ class Util:
             self.config[section][key] = str(value)
 
     def check_df(self, i, df):
-        """Check a dataframe"""
+        """Check a dataframe."""
         print(f"check {i}: {df.shape}")
         print(df.head(1))
 

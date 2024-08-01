@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.88.12
+--------------
+* added n_jobs for sklearn processing
+* re_named num_workers n_jobs
+
 Version 0.88.11
 --------------
 * removed hack in Praat script 

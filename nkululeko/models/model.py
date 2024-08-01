@@ -3,6 +3,7 @@ import ast
 import pickle
 import random
 
+from joblib import parallel_backend
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import GridSearchCV
@@ -34,6 +35,7 @@ class Model:
         self.epoch = 0
         self.logo = self.util.config_val("MODEL", "logo", False)
         self.xfoldx = self.util.config_val("MODEL", "k_fold_cross", False)
+        self.n_jobs = int(self.util.config_val("MODEL", "n_jobs", "8"))
 
     def set_model_type(self, type):
         self.model_type = type
@@ -75,7 +77,8 @@ class Model:
         ):
             train_x = feats.iloc[train_index].to_numpy()
             train_y = targets[train_index]
-            self.clf.fit(train_x, train_y)
+            with parallel_backend("threading", n_jobs=self.n_jobs):
+                self.clf.fit(train_x, train_y)
             truth_x = feats.iloc[test_index].to_numpy()
             truth_y = targets[test_index]
             predict_y = self.clf.predict(truth_x)
@@ -141,7 +144,8 @@ class Model:
         ):
             train_x = feats.iloc[train_index].to_numpy()
             train_y = targets.iloc[train_index]
-            self.clf.fit(train_x, train_y)
+            with parallel_backend("threading", n_jobs=self.n_jobs):
+                self.clf.fit(train_x, train_y)
 
             truth_x = feats.iloc[test_index].to_numpy()
             truth_y = targets.iloc[test_index]
@@ -171,7 +175,7 @@ class Model:
         )
 
     def train(self):
-        """Train the model"""
+        """Train the model."""
         # # first check if the model already has been trained
         # if os.path.isfile(self.store_path):
         #     self.load(self.run, self.epoch)
@@ -204,22 +208,39 @@ class Model:
             )
 
         tuning_params = self.util.config_val("MODEL", "tuning_params", False)
-        if tuning_params:
-            # tune the model meta parameters
-            tuning_params = ast.literal_eval(tuning_params)
-            tuned_params = {}
-            try:
-                scoring = glob_conf.config["MODEL"]["scoring"]
-            except KeyError:
-                self.util.error("got tuning params but no scoring")
-            for param in tuning_params:
-                values = ast.literal_eval(glob_conf.config["MODEL"][param])
-                tuned_params[param] = values
-            self.util.debug(f"tuning on {tuned_params}")
-            self.clf = GridSearchCV(
-                self.clf, tuned_params, refit=True, verbose=3, scoring=scoring
-            )
-            try:
+        with parallel_backend("threading", n_jobs=self.n_jobs):
+            if tuning_params:
+                # tune the model meta parameters
+                tuning_params = ast.literal_eval(tuning_params)
+                tuned_params = {}
+                try:
+                    scoring = glob_conf.config["MODEL"]["scoring"]
+                except KeyError:
+                    self.util.error("got tuning params but no scoring")
+                for param in tuning_params:
+                    values = ast.literal_eval(glob_conf.config["MODEL"][param])
+                    tuned_params[param] = values
+                self.util.debug(f"tuning on {tuned_params}")
+                self.clf = GridSearchCV(
+                    self.clf, tuned_params, refit=True, verbose=3, scoring=scoring
+                )
+                try:
+                    class_weight = eval(
+                        self.util.config_val("MODEL", "class_weight", "False")
+                    )
+                    if class_weight:
+                        self.util.debug("using class weight")
+                        self.clf.fit(
+                            feats,
+                            self.df_train[self.target],
+                            sample_weight=self.classes_weights,
+                        )
+                    else:
+                        self.clf.fit(feats, self.df_train[self.target])
+                except KeyError:
+                    self.clf.fit(feats, self.df_train[self.target])
+                self.util.debug(f"winner parameters: {self.clf.best_params_}")
+            else:
                 class_weight = self.util.config_val("MODEL", "class_weight", False)
                 if class_weight:
                     self.util.debug("using class weight")
@@ -229,22 +250,8 @@ class Model:
                         sample_weight=self.classes_weights,
                     )
                 else:
-                    self.clf.fit(feats, self.df_train[self.target])
-            except KeyError:
-                self.clf.fit(feats, self.df_train[self.target])
-            self.util.debug(f"winner parameters: {self.clf.best_params_}")
-        else:
-            class_weight = self.util.config_val("MODEL", "class_weight", False)
-            if class_weight:
-                self.util.debug("using class weight")
-                self.clf.fit(
-                    feats,
-                    self.df_train[self.target],
-                    sample_weight=self.classes_weights,
-                )
-            else:
-                labels = self.df_train[self.target]
-                self.clf.fit(feats, labels)
+                    labels = self.df_train[self.target]
+                    self.clf.fit(feats, labels)
 
     def get_predictions(self):
         #        predictions = self.clf.predict(self.feats_test.to_numpy())

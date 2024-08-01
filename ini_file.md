@@ -317,12 +317,12 @@
   * drop = .5
 * **batch_size**: Size of the batch before backpropagation for neural nets
   * batch_size = 8
-* **num_workers**: Number of parallel processes for neural nets
-  * num_workers = 5
 * **device**: For torch/huggingface models: select your GPU number if you have one. Values are either "cpu" or GPU ids (e.g., 0, 1 or both "0,1"). By default, the GPU/CUDA is used if available, otherwise is CPU.
   * device = 0
 * **patience**: Number of epochs to wait if the result gets better (for early stopping)
   * patience = 5
+* **n_jobs**: set the number of usable processors for model training
+  * n_jobs = 8
 
 ### EXPL
 

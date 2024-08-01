@@ -80,7 +80,7 @@ class CNNModel(Model):
         # batch size
         self.batch_size = int(self.util.config_val("MODEL", "batch_size", 8))
         # number of parallel processes
-        self.num_workers = int(self.util.config_val("MODEL", "num_workers", 5))
+        self.num_workers = self.n_jobs
 
         # set up the data_loaders
 
@@ -100,13 +100,13 @@ class CNNModel(Model):
             train_set,
             batch_size=self.batch_size,
             shuffle=True,
-            num_workers=self.num_workers,
+            num_workers=self.n_jobs,
         )
         self.testloader = torch.utils.data.DataLoader(
             test_set,
             batch_size=self.batch_size,
             shuffle=False,
-            num_workers=self.num_workers,
+            num_workers=self.n_jobs,
         )
 
     class Dataset_image(Dataset):
@@ -136,7 +136,7 @@ class CNNModel(Model):
             test_set,
             batch_size=self.batch_size,
             shuffle=False,
-            num_workers=self.num_workers,
+            num_workers=self.n_jobs,
         )
 
     def reset_test(self, df_test, feats_test):
