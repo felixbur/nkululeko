@@ -71,7 +71,7 @@ class MLPModel(Model):
         # batch size
         self.batch_size = int(self.util.config_val("MODEL", "batch_size", 8))
         # number of parallel processes
-        self.num_workers = int(self.util.config_val("MODEL", "num_workers", 5))
+        self.num_workers = self.n_jobs
         if feats_train.isna().to_numpy().any():
             self.util.debug(
                 f"Model, train: replacing {feats_train.isna().sum().sum()} NANs"

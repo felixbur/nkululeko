@@ -22,17 +22,15 @@ class Openxbow(Featureset):
         self.feature_set = eval(f"opensmile.FeatureSet.{self.featset}")
         store = self.util.get_path("store")
         storage = f"{store}{self.name}_{self.featset}.pkl"
-        extract = self.util.config_val(
-            "FEATS", "needs_feature_extraction", False)
+        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             # extract smile features first
-            self.util.debug(
-                "extracting openSmile features, this might take a while...")
+            self.util.debug("extracting openSmile features, this might take a while...")
             smile = opensmile.Smile(
                 feature_set=self.feature_set,
                 feature_level=opensmile.FeatureLevel.LowLevelDescriptors,
-                num_workers=5,
+                num_workers=self.n_jobs,
             )
             if isinstance(self.data_df.index, pd.MultiIndex):
                 is_multi_index = True
@@ -51,13 +49,11 @@ class Openxbow(Featureset):
             # save the smile features
             smile_df.to_csv(lld_name, sep=";", header=False)
             # get the path of the xbow java jar file
-            xbow_path = self.util.config_val(
-                "FEATS", "xbow.model", "openXBOW")
+            xbow_path = self.util.config_val("FEATS", "xbow.model", "openXBOW")
             # check if JAR file exist
             if not os.path.isfile(f"{xbow_path}/openXBOW.jar"):
                 # download using wget if not exist and locate in xbow_path
-                os.system(
-                    f"git clone https://github.com/openXBOW/openXBOW")
+                os.system(f"git clone https://github.com/openXBOW/openXBOW")
             # get the size of the codebook
             size = self.util.config_val("FEATS", "size", 500)
             # get the number of assignements
@@ -87,7 +83,7 @@ class Openxbow(Featureset):
                 smile = opensmile.Smile(
                     feature_set=opensmile.FeatureSet.eGeMAPSv02,  # always use eGemaps for this
                     feature_level=opensmile.FeatureLevel.Functionals,
-                    num_workers=5,
+                    num_workers=self.n_jobs,
                 )
                 if isinstance(self.data_df.index, pd.MultiIndex):
                     is_multi_index = True

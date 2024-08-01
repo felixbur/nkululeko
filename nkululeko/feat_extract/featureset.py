@@ -16,6 +16,7 @@ class Featureset:
         self.data_df = data_df
         self.util = Util("featureset")
         self.feats_type = feats_type
+        self.n_jobs = int(self.util.config_val("MODEL", "n_jobs", "8"))
 
     def extract(self):
         pass
