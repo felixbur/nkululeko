@@ -475,9 +475,9 @@ Version 0.66.3
 
 Version 0.66.2
 --------------
-* enabled data-pathes with quotes 
+* enabled data-pacthes with quotes 
 * enabled missing category labels
-* used tgdm for progress display
+* used tqdm for progress display
 
 Version 0.66.1
 --------------

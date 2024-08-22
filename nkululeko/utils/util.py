@@ -175,7 +175,7 @@ class Util:
         """Get the experiment directory."""
         root = os.path.join(self.config["EXP"]["root"], "")
         name = self.config["EXP"]["name"]
-        dir_name = f"{root}{name}"
+        dir_name = f"{root}/{name}"
         audeer.mkdir(dir_name)
         return dir_name
 
