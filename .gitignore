@@ -121,6 +121,7 @@ data/*/**
 # Ignore exp folders
 exp_*/
 results/
+results_*
 *_orig/
 *_test/
 *_tests/
@@ -132,10 +133,11 @@ results/
 ./openXBOW/
 ./pretrained_models/
 
-# ignore specific files
+# ignore specific files/folders
 results_*
 result_*
 test_*
+tests_*
 run_*.sh
 tmp*
 test*
