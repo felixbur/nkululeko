@@ -13,4 +13,10 @@ F: A, age of the speaker at the time of recording
 G: Pathologies  
 H: Remark with regard to diagnosis  
 
+```bash
+$ python3 process_database.py
+# Download and extract SVD dataset, see exp.ini for configuration
+$ cd ../..
+$ python3 -m nkululeko.nkululeko --config data/svd/exp.ini
+```
 [1] https://stimmdb.coli.uni-saarland.de/index.php4
