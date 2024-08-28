@@ -412,7 +412,7 @@ class Reporter:
                     c_ress[i] = float(f"{c_res:.3f}")
                 self.util.debug(f"labels: {labels}")
                 f1_per_class = (
-                    f"result per class (F1 score): {c_ress}, avg={np.mean(c_ress)} from epoch: {epoch}"
+                    f"result per class (F1 score): {c_ress}, avg={np.mean(c_ress)}, from epoch: {epoch}"
                 )
                 if len(np.unique(self.truths)) == 2:
                     fpr, tpr, _ = roc_curve(self.truths, self.preds)
