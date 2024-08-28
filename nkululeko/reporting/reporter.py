@@ -399,6 +399,8 @@ class Reporter:
                     target_names=labels,
                     output_dict=True,
                 )
+                # print classifcation report in console
+                self.util.debug(f"\n {classification_report(self.truths, self.preds, target_names=labels)}")
             except ValueError as e:
                 self.util.debug(
                     "Reporter: caught a ValueError when trying to get"
@@ -412,7 +414,7 @@ class Reporter:
                     c_ress[i] = float(f"{c_res:.3f}")
                 self.util.debug(f"labels: {labels}")
                 f1_per_class = (
-                    f"result per class (F1 score): {c_ress}, avg={np.mean(c_ress)}, from epoch: {epoch}"
+                    f"result per class (F1 score): {c_ress} from epoch: {epoch}"
                 )
                 if len(np.unique(self.truths)) == 2:
                     fpr, tpr, _ = roc_curve(self.truths, self.preds)
@@ -421,7 +423,7 @@ class Reporter:
                         roc_auc=auc_score, 
                         estimator_name=f'{self.model_type} estimator')
                     # save plot
-                    plot_path = f'{res_dir}{self.util.get_exp_name()}_{epoch}{self.filenameadd}_roc.png'
+                    plot_path = f'{res_dir}{self.util.get_exp_name()}_{epoch}{self.filenameadd}_roc.{self.format}'
                     display.plot(ax=None)
                     plt.savefig(plot_path)
                     self.util.debug(f'Saved ROC curve to {plot_path}')

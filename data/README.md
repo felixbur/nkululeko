@@ -11,6 +11,8 @@ The column `access` in the table below indicates the database's accessability. T
 - `restricted`: the database is publicly available on the internet but requires registration or other restrictions to download.
 - `private`: the database is not publicly available on the internet and requires the private information of the owner of the dataset.
 
+To support open science and reproducible research, we only accept PR and recipes for public dataset for now on. 
+
 ## Databases
 
 | #   | name               | target                      | access     | descr.                                  |
@@ -57,7 +59,19 @@ The column `access` in the table below indicates the database's accessability. T
 | 40  | vivae              | emotion                     | public     | English vocal bursts                    |
 | 41  | clac               | healthy speech, age, gender | public     | English                                 |
 | 42  | gerparas           | valence, arousal, dominance | restricted | German                                  |
-
+| 43 | SVD      | pathological speech | public | German |
+| 44 | nEMO | emotion, VAD | public | Polish |
+| 45 | emoUERJ	| emotion |  public | Portuguese |
+| 46 | TTH	| emotion |  public | Vietnamese |
+| 47 | jnv	| emotion |  public | Japanese, non-verbals |
+| 48 | jnvv	| emotion |  public | Japanese, verbal and non-verbal|
+| 49 | kbes	| emotion |  public | Bengali |
+| 50 | eaed	| emotion |  public | Arabic |
+| 51 | banglaser | emotion |  public | Bengali |
+| 52 | kia	| emotion |  public | Korean, wake-up word |
+| 53 | polish | emotion |  public | Polish |
+| 54 | erysac | emotion |  public | Russian, children |
+| 55 | turev-db	| emotion |  public | Turkish |
 # Performance 
 <!-- include performance from images directory -->
 ![Nkululeko performance](../meta/images/nkululeko_ser_20240719.png)
