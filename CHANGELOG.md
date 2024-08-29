@@ -1,8 +1,13 @@
 Changelog
 =========
 
-Version 0.88.12
+Version 0.89.0
 --------------
+* added Roc plots and classification report on Debug
+
+
+Version 0.88.12
+---------------
 * added n_jobs for sklearn processing
 * re_named num_workers n_jobs
 

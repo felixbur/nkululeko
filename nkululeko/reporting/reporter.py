@@ -389,6 +389,7 @@ class Reporter:
             epoch = self.epoch
         """Print all evaluation values to text file."""
         res_dir = self.util.get_path("res_dir")
+        fig_dir = self.util.get_path("fig_dir")
         file_name = f"{res_dir}{self.util.get_exp_name()}_{epoch}{self.filenameadd}.txt"
         if self.util.exp_is_classification():
             labels = glob_conf.labels
@@ -400,7 +401,9 @@ class Reporter:
                     output_dict=True,
                 )
                 # print classifcation report in console
-                self.util.debug(f"\n {classification_report(self.truths, self.preds, target_names=labels)}")
+                self.util.debug(
+                    f"\n {classification_report(self.truths, self.preds, target_names=labels)}"
+                )
             except ValueError as e:
                 self.util.debug(
                     "Reporter: caught a ValueError when trying to get"
@@ -419,14 +422,17 @@ class Reporter:
                 if len(np.unique(self.truths)) == 2:
                     fpr, tpr, _ = roc_curve(self.truths, self.preds)
                     auc_score = auc(fpr, tpr)
-                    display = RocCurveDisplay(fpr=fpr, tpr=tpr,         
-                        roc_auc=auc_score, 
-                        estimator_name=f'{self.model_type} estimator')
+                    display = RocCurveDisplay(
+                        fpr=fpr,
+                        tpr=tpr,
+                        roc_auc=auc_score,
+                        estimator_name=f"{self.model_type} estimator",
+                    )
                     # save plot
-                    plot_path = f'{res_dir}{self.util.get_exp_name()}_{epoch}{self.filenameadd}_roc.{self.format}'
+                    plot_path = f"{fig_dir}{self.util.get_exp_name()}_{epoch}{self.filenameadd}_roc.{self.format}"
                     display.plot(ax=None)
                     plt.savefig(plot_path)
-                    self.util.debug(f'Saved ROC curve to {plot_path}')
+                    self.util.debug(f"Saved ROC curve to {plot_path}")
                     pauc_score = roc_auc_score(self.truths, self.preds, max_fpr=0.1)
                     auc_pauc = f"auc: {auc_score:.3f}, pauc: {pauc_score:.3f} from epoch: {epoch}"
                     self.util.debug(auc_pauc)
