@@ -160,7 +160,7 @@ All of them take *--config <my_config.ini>* as an argument.
   * *configurations*: which experiments to combine
   * *--method* (optional): majority_voting, mean (default), max, sum, uncertainty, uncertainty_weighted, confidence_weighted, performance_weighted  
   * *--threshold*: uncertainty threshold (1.0 means no threshold)
-  * *--weightes*: weights for performance_weighted method (could be from previous UAR, ACC)
+  * *--weights*: weights for performance_weighted method (could be from previous UAR, ACC)
   * *--outfile* (optional): name of CSV file for output (default: ensemble_result.csv)
   * *--no_labels* (optional): indicate that no ground truth is given 
 * **nkululeko.multidb**: do [multiple experiments](http://blog.syntheticspeech.de/2024/01/02/nkululeko-compare-several-databases/), comparing several databases cross and in itself
@@ -176,14 +176,11 @@ All of them take *--config <my_config.ini>* as an argument.
 * **nkululeko.predict**: [predict features](http://blog.syntheticspeech.de/2023/08/16/nkululeko-how-to-predict-labels-for-your-data-from-existing-models-and-check-them/) like SNR, MOS, arousal/valence, age/gender, with DNN models
 * **nkululeko.segment**: [segment a database](http://blog.syntheticspeech.de/2023/07/14/nkululeko-segmenting-a-database/) based on VAD (voice activity detection)
 * **nkululeko.resample**: check on all [sampling rates and change](http://blog.syntheticspeech.de/2023/08/31/how-to-fix-different-sampling-rates-in-a-dataset-with-nkululeko/) to 16kHz 
-* **nkululeko.nkuluflag**: a convenient module to specify configuration parameters on the command-line.
-  * usage: nkuluflag.py [-h] [--config CONFIG] [--data [DATA ...]] [--label [LABEL ...]] [--tuning_params [TUNING_PARAMS ...]] [--layers [LAYERS ...]] [--model MODEL] [--feat FEAT] [--set SET]
-                    [--with_os WITH_OS] [--target TARGET] [--epochs EPOCHS] [--runs RUNS] [--learning_rate LEARNING_RATE] [--drop DROP]
- 
+* **nkululeko.nkuluflag**: a convenient module to specify configuration parameters on the command-line. Usage:
 
-
-
-
+  ```bash
+  $ python -m nkululeko.nkuluflag.py [-h] [--config CONFIG] [--data [DATA ...]] [--label [LABEL ...]] [--tuning_params [TUNING_PARAMS ...]] [--layers [LAYERS ...]] [--model MODEL] [--feat FEAT] [--set SET] [--with_os WITH_OS] [--target TARGET] [--epochs EPOCHS] [--runs RUNS] [--learning_rate LEARNING_RATE] [--drop DROP]
+  ```
 
 There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
 * [Introduction](http://blog.syntheticspeech.de/2021/08/04/machine-learning-experiment-framework/)

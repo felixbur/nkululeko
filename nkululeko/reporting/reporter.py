@@ -27,6 +27,7 @@ from sklearn.metrics import (
     r2_score,
     roc_auc_score,
     roc_curve,
+    RocCurveDisplay,
 )
 
 import nkululeko.glob_conf as glob_conf
@@ -75,6 +76,7 @@ class Reporter:
         self.result = Result(0, 0, 0, 0, "unknown")
         self.run = run
         self.epoch = epoch
+        self.model_type = self.util.get_model_type()
         self._set_metric()
         self.filenameadd = ""
         self.cont_to_cat = False
@@ -397,6 +399,8 @@ class Reporter:
                     target_names=labels,
                     output_dict=True,
                 )
+                # print classifcation report in console
+                self.util.debug(f"\n {classification_report(self.truths, self.preds, target_names=labels)}")
             except ValueError as e:
                 self.util.debug(
                     "Reporter: caught a ValueError when trying to get"
@@ -415,6 +419,14 @@ class Reporter:
                 if len(np.unique(self.truths)) == 2:
                     fpr, tpr, _ = roc_curve(self.truths, self.preds)
                     auc_score = auc(fpr, tpr)
+                    display = RocCurveDisplay(fpr=fpr, tpr=tpr,         
+                        roc_auc=auc_score, 
+                        estimator_name=f'{self.model_type} estimator')
+                    # save plot
+                    plot_path = f'{res_dir}{self.util.get_exp_name()}_{epoch}{self.filenameadd}_roc.{self.format}'
+                    display.plot(ax=None)
+                    plt.savefig(plot_path)
+                    self.util.debug(f'Saved ROC curve to {plot_path}')
                     pauc_score = roc_auc_score(self.truths, self.preds, max_fpr=0.1)
                     auc_pauc = f"auc: {auc_score:.3f}, pauc: {pauc_score:.3f} from epoch: {epoch}"
                     self.util.debug(auc_pauc)
