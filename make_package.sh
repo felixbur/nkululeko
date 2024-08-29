@@ -17,15 +17,15 @@
    git add data/README.md
    git add tests/*.ini
    git add CHANGELOG.md ini_file.md setup.cfg
-if [ "$1" == "--tag" ]; then
+if [ "$1" == "--notag" ]; then
+   git commit -m  update
+else
    source nkululeko/constants.py
    git commit -m  $VERSION
    git tag $VERSION
-else
-   git commit -m  update
 fi
 git push 
 
-if [ "$1" == "--tag" ]; then
+if ! [ "$1" == "--notag" ]; then
    git push --tags
 fi
