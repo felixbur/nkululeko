@@ -205,7 +205,7 @@ class FeatureAnalyser:
                         model, permutation
                     )
                 elif model_s == "xgr":
-                    from xgboost import XGBClassifier
+                    from xgboost import XGBRegressor
 
                     model = XGBRegressor()
                     result_importances[model_s] = self._get_importance(
@@ -270,9 +270,14 @@ class FeatureAnalyser:
             )
         )
 
+        # print feature importance values to file and debug and save to result
+        self.util.debug(f"List of importance feature {model_name}: \n{df_imp['feats'].values.tolist()}")
         # result file
         res_dir = self.util.get_path("res_dir")
         filename = f"_EXPL_{model_name}"
+        feats_path = f"{res_dir}{self.util.get_exp_name()}_{filename}_fi.txt"
+        df_imp.to_csv(feats_path)
+        self.util.debug(f"Saved feature importance values to {feats_path}")
         if permutation:
             filename += "_perm"
         filename = f"{res_dir}{self.util.get_exp_name(only_data=True)}{filename}_{model_name}.txt"
