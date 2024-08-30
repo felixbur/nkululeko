@@ -271,7 +271,7 @@ class FeatureAnalyser:
         )
 
         # print feature importance values to file and debug and save to result
-        self.util.debug(f"List of importance feature {model_name}: \n{df_imp['feats'].values.tolist()}")
+        self.util.debug(f"List of importance feature {model_name}: features = \n{df_imp['feats'].values.tolist()}")
         # result file
         res_dir = self.util.get_path("res_dir")
         filename = f"_EXPL_{model_name}"
