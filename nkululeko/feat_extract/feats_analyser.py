@@ -139,7 +139,7 @@ class FeatureAnalyser:
                 elif model_s == "svm":
                     from sklearn.svm import SVC
 
-                    c = float(self.util.config_val("MODEL", "C_val", "0.001"))
+                    c = float(self.util.config_val("MODEL", "C_val", "1.0"))
                     model = SVC(kernel="linear", C=c, gamma="scale")
                     result_importances[model_s] = self._get_importance(
                         model, permutation
@@ -275,12 +275,9 @@ class FeatureAnalyser:
         # result file
         res_dir = self.util.get_path("res_dir")
         filename = f"_EXPL_{model_name}"
-        feats_path = f"{res_dir}{self.util.get_exp_name()}_{filename}_fi.txt"
-        df_imp.to_csv(feats_path)
-        self.util.debug(f"Saved feature importance values to {feats_path}")
         if permutation:
             filename += "_perm"
-        filename = f"{res_dir}{self.util.get_exp_name(only_data=True)}{filename}_{model_name}.txt"
+        filename = f"{res_dir}{self.util.get_exp_name(only_data=True)}{filename}_{max_feat_num}_fi.txt"
         with open(filename, "w") as text_file:
             text_file.write(
                 "features in order of decreasing importance according to model"
@@ -288,7 +285,8 @@ class FeatureAnalyser:
             )
 
         df_imp.to_csv(filename, mode="a")
-
+        self.util.debug(f"Saved feature importance values to {filename}")
+        
         # check if feature distributions should be plotted
         plot_feats = self.util.config_val("EXPL", "feature_distributions", False)
         if plot_feats:
