@@ -26,7 +26,11 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import balanced_accuracy_score
+from sklearn.metrics import(
+    balanced_accuracy_score, 
+    classification_report,
+    f1_score
+)
 
 from nkululeko.constants import VERSION
 from nkululeko.experiment import Experiment
@@ -284,6 +288,10 @@ def ensemble_predictions(
     predicted = ensemble_preds["predicted"]
     uar = balanced_accuracy_score(truth, predicted)
     acc = (truth == predicted).mean()
+    # print classification report
+    Util("ensemble").debug(f"\n {classification_report(truth, predicted)}")
+    # f1 = f1_score(truth, predicted, pos_label='p')
+    # Util("ensemble").debug(f"F1: {f1:.3f}")
     Util("ensemble").debug(f"{method}: UAR: {uar:.3f}, ACC: {acc:.3f}")
 
     return ensemble_preds
