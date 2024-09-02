@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.89.1
+--------------
+* print and save result of feature importance
+
 Version 0.89.0
 --------------
 * added Roc plots and classification report on Debug
