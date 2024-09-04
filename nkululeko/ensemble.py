@@ -289,7 +289,7 @@ def ensemble_predictions(
     uar = balanced_accuracy_score(truth, predicted)
     acc = (truth == predicted).mean()
     # print classification report
-    Util("ensemble").debug(f"\n {classification_report(truth, predicted)}")
+    Util("ensemble").debug(f"\n {classification_report(truth, predicted, digits=4)}")
     # f1 = f1_score(truth, predicted, pos_label='p')
     # Util("ensemble").debug(f"F1: {f1:.3f}")
     Util("ensemble").debug(f"{method}: UAR: {uar:.3f}, ACC: {acc:.3f}")

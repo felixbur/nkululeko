@@ -92,6 +92,9 @@ def main(src_dir):
             expr.extract_feats()
             needs_feats = True
         # explore
+    expr.init_runmanager()
+    expr.fill_train_and_tests()
+    expr.runmgr.do_runs()
     expr.analyse_features(needs_feats)
     expr.store_report()
     print("DONE")

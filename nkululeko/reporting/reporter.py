@@ -402,7 +402,7 @@ class Reporter:
                 )
                 # print classifcation report in console
                 self.util.debug(
-                    f"\n {classification_report(self.truths, self.preds, target_names=labels)}"
+                    f"\n {classification_report(self.truths, self.preds, target_names=labels, digits=4)}"
                 )
             except ValueError as e:
                 self.util.debug(

@@ -50,14 +50,21 @@ class FeatureAnalyser:
 
         name = "my_shap_values"
         if not self.util.exist_pickle(name):
-
-            explainer = shap.Explainer(
+            # get model name
+            model_name = self.util.get_model_type()
+            if model_name == "mlp":
+                self.util.debug("using SHAP explainer for MLP model")
+                explainer = shap.Explainer(
                 model.predict_shap,
                 self.features,
                 output_names=glob_conf.labels,
                 algorithm="permutation",
                 npermutations=5,
             )
+            else:
+                self.util.debug(f"using SHAP explainer for {model_name} model")
+                explainer = shap.Explainer(model)
+        
             self.util.debug("computing SHAP values...")
             shap_values = explainer(self.features)
             self.util.to_pickle(shap_values, name)
