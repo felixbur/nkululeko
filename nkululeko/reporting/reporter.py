@@ -422,16 +422,17 @@ class Reporter:
                 if len(np.unique(self.truths)) == 2:
                     fpr, tpr, _ = roc_curve(self.truths, self.preds)
                     auc_score = auc(fpr, tpr)
+                    plot_path = f"{fig_dir}{self.util.get_exp_name()}_{epoch}{self.filenameadd}_roc.{self.format}"
+                    plt.figure()
                     display = RocCurveDisplay(
                         fpr=fpr,
                         tpr=tpr,
                         roc_auc=auc_score,
                         estimator_name=f"{self.model_type} estimator",
                     )
-                    # save plot
-                    plot_path = f"{fig_dir}{self.util.get_exp_name()}_{epoch}{self.filenameadd}_roc.{self.format}"
                     display.plot(ax=None)
                     plt.savefig(plot_path)
+                    plt.close()
                     self.util.debug(f"Saved ROC curve to {plot_path}")
                     pauc_score = roc_auc_score(self.truths, self.preds, max_fpr=0.1)
                     auc_pauc = f"auc: {auc_score:.3f}, pauc: {pauc_score:.3f} from epoch: {epoch}"
