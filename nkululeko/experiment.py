@@ -501,12 +501,6 @@ class Experiment:
         randomsplicer = Randomsplicer(df)
         df_ret = randomsplicer.run(sample_selection)
         return df_ret
-        
-    def init_runmanager(self):
-        """Initialize the manager object for the runs."""
-        self.runmgr = Runmanager(
-            self.df_train, self.df_test, self.feats_train, self.feats_test
-        )
 
     def analyse_features(self, needs_feats):
         """Do a feature exploration."""
@@ -609,7 +603,11 @@ class Experiment:
             self.util.save_to_store(self.feats_train, "feats_train_scaled")
             self.util.save_to_store(self.feats_test, "feats_test_scaled")
 
-
+    def init_runmanager(self):
+        """Initialize the manager object for the runs."""
+        self.runmgr = Runmanager(
+            self.df_train, self.df_test, self.feats_train, self.feats_test
+        )
 
     def run(self):
         """Do the runs."""

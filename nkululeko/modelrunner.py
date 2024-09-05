@@ -246,7 +246,7 @@ class Modelrunner:
                 from imblearn.over_sampling import SMOTE
 
                 sampler = SMOTE(random_state=42)
-                X_res, y_res = sampler.fit_resample(
+                X_res, y_res, = sampler.fit_resample(
                     self.feats_train, self.df_train[self.target]
                 )
             elif balancing == "adasyn":

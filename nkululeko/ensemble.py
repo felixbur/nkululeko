@@ -18,6 +18,7 @@ Raises:
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+
 from typing import List
 import configparser
 import time
@@ -26,10 +27,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+
 from sklearn.metrics import(
+    RocCurveDisplay,
     balanced_accuracy_score, 
     classification_report,
-    f1_score
+    auc,
+    roc_auc_score,
+    roc_curve
 )
 
 from nkululeko.constants import VERSION
@@ -290,8 +296,6 @@ def ensemble_predictions(
     acc = (truth == predicted).mean()
     # print classification report
     Util("ensemble").debug(f"\n {classification_report(truth, predicted, digits=4)}")
-    # f1 = f1_score(truth, predicted, pos_label='p')
-    # Util("ensemble").debug(f"F1: {f1:.3f}")
     Util("ensemble").debug(f"{method}: UAR: {uar:.3f}, ACC: {acc:.3f}")
 
     return ensemble_preds
