@@ -135,7 +135,7 @@ if [ "$1" == "all" ]; then
     modules=(nkululeko augment predict demo test multidb explore)
 elif [ "$1" == "-spotlight" ]; then
     modules=(nkululeko augment predict demo test multidb explore)
-    unset explore_ini_files[-1]  # Exclude INI file for spotlight
+    unset explore_ini_files[-2]  # Exclude INI file for spotlight and shap
 else
     modules=("$@")
 fi
