@@ -91,10 +91,9 @@ def main(src_dir):
             # these investigations need features to explore
             expr.extract_feats()
             needs_feats = True
-        # explore
-    expr.init_runmanager()
-    expr.fill_train_and_tests()
-    expr.runmgr.do_runs()
+            # explore
+            expr.init_runmanager()
+            expr.runmgr.do_runs()
     expr.analyse_features(needs_feats)
     expr.store_report()
     print("DONE")
