@@ -50,19 +50,32 @@ class FeatureAnalyser:
 
         name = "my_shap_values"
         if not self.util.exist_pickle(name):
-
+            # get model name
+            model_name = self.util.get_model_type()
+            if hasattr(model, "predict_shap"):
+                model_func = model.predict_shap
+            elif hasattr(model, "clf"):
+                model_func = model.clf.predict
+            else:
+                raise Exception("Model not supported for SHAP analysis")
+            
+            self.util.debug(f"using SHAP explainer for {model_name} model")
+            
             explainer = shap.Explainer(
-                model.predict_shap,
+                model_func,
                 self.features,
                 output_names=glob_conf.labels,
                 algorithm="permutation",
                 npermutations=5,
             )
+ 
             self.util.debug("computing SHAP values...")
             shap_values = explainer(self.features)
             self.util.to_pickle(shap_values, name)
         else:
             shap_values = self.util.from_pickle(name)
+        # plt.figure()
+        plt.close('all')
         plt.tight_layout()
         shap.plots.bar(shap_values)
         fig_dir = self.util.get_path("fig_dir") + "../"  # one up because of the runs
@@ -71,7 +84,8 @@ class FeatureAnalyser:
         filename = f"_SHAP_{model.name}"
         filename = f"{fig_dir}{exp_name}{filename}.{format}"
         plt.savefig(filename)
-        self.util.debug(f"plotted SHAP feature importance tp {filename}")
+        plt.close()
+        self.util.debug(f"plotted SHAP feature importance to {filename}")
 
     def analyse(self):
         models = ast.literal_eval(self.util.config_val("EXPL", "model", "['log_reg']"))

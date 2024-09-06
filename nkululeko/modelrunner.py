@@ -53,8 +53,8 @@ class Modelrunner:
             # epochs are handled by Huggingface API
             self.model.train()
             report = self.model.predict()
-            # todo: findout the best epoch, no need
-            # since oad_best_model_at_end is given in training args
+            # todo: findout the best epoch -> no need
+            # since load_best_model_at_end is given in training args
             epoch = epoch_num
             report.set_id(self.run, epoch)
             plot_name = self.util.get_plot_name() + f"_{self.run}_{epoch:03d}_cnf"

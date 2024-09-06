@@ -47,6 +47,10 @@ function RunTest {
     fi
 }
 
+# resample before performing other tests
+resample_ini_files=(
+    exp_polish_gmm.ini
+)
 # test basic nkululeko
 nkululeko_ini_files=(
     exp_emodb_os_praat_xgb.ini
@@ -70,6 +74,7 @@ nkululeko_ini_files=(
     exp_emodb_os_mlp.ini
     exp_agedb_os_xgr.ini
     exp_agedb_os_mlp.ini
+    exp_polish_gmm.ini
 )
 
 # test augmentation
@@ -114,6 +119,7 @@ explore_ini_files=(
     exp_emodb_explore_scatter.ini
     exp_emodb_explore_features.ini
     exp_agedb_explore_data.ini
+    exp_polish_gmm.ini  # shap
     exp_explore.ini # test splotlight
 )
 
@@ -132,8 +138,10 @@ start_time=$(date +%s)
 if [ "$1" == "all" ]; then
     modules=(nkululeko augment predict demo test multidb explore)
 elif [ "$1" == "-spotlight" ]; then
-    modules=(nkululeko augment predict demo test multidb explore)
-    unset explore_ini_files[-1]  # Exclude INI file for spotlight
+    modules=(resample nkululeko augment predict demo test multidb explore)
+    # unset last two ini files to exclude spotlight and shap
+    unset explore_ini_files[-1]  # Exclude INI file for spotlight 
+    unset explore_ini_files[-1]  # and shap
 else
     modules=("$@")
 fi
