@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.89.2
+--------------
+* fix shap value calculation
+  
 Version 0.89.1
 --------------
 * print and save result of feature importance
