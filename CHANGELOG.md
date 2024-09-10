@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 0.90.0
+--------------
+* augmentation can now be done without target
+* random splicing params configurable
+* made kde default for plot continous/categorical plots
+
 Version 0.89.2
 --------------
 * fix shap value calculation

@@ -30,8 +30,8 @@ class Dataset:
     def __init__(self, name):
         """Constructor setting up name and configuration"""
         self.name = name
-        self.target = glob_conf.config["DATA"]["target"]
         self.util = Util("dataset")
+        self.target = self.util.config_val("DATA", "target", "none")
         self.plot = Plots()
         self.limit = int(self.util.config_val_data(self.name, "limit", 0))
         self.start_fresh = eval(self.util.config_val("DATA", "no_reuse", "False"))
@@ -127,6 +127,9 @@ class Dataset:
             self.got_gender,
             self.got_age,
         ) = self._get_df_for_lists(self.db, df_files_tables)
+        if df.shape[0] > 0 and self.target == "none":
+            self.df = df
+            return
         if False in {
             self.is_labeled,
             self.got_speaker,
@@ -553,7 +556,10 @@ class Dataset:
             " samples in train/test"
         )
         # because this generates new train/test sample quantaties, the feature extraction has to be done again
-        glob_conf.config["FEATS"]["needs_feature_extraction"] = "True"
+        try:
+            glob_conf.config["FEATS"]["needs_feature_extraction"] = "True"
+        except KeyError:
+            pass
 
     def random_split(self):
         """One way to split train and eval sets: Specify percentage of random samples"""

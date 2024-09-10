@@ -101,12 +101,15 @@ class Experiment:
             if data.got_speaker:
                 self.got_speaker = True
             self.datasets.update({d: data})
-        self.target = self.util.config_val("DATA", "target", "emotion")
+        self.target = self.util.config_val("DATA", "target", "none")
         glob_conf.set_target(self.target)
         # print target via debug
         self.util.debug(f"target: {self.target}")
         # print keys/column
         dbs = ",".join(list(self.datasets.keys()))
+        if self.target == "none":
+            self.util.debug(f"loaded databases {dbs}")
+            return
         labels = self.util.config_val("DATA", "labels", False)
         auto_labels = list(next(iter(self.datasets.values())).df[self.target].unique())
         if labels:
@@ -191,7 +194,8 @@ class Experiment:
             self.df_train, self.df_test = pd.DataFrame(), pd.DataFrame()
             for d in self.datasets.values():
                 d.split()
-                d.prepare_labels()
+                if self.target != "none":
+                    d.prepare_labels()
                 if d.df_train.shape[0] == 0:
                     self.util.debug(f"warn: {d.name} train empty")
                 self.df_train = pd.concat([self.df_train, d.df_train])
@@ -207,6 +211,8 @@ class Experiment:
             self.df_test.to_csv(storage_test)
             self.df_train.to_csv(storage_train)
 
+        if self.target == "none":
+            return
         self.util.copy_flags(self, self.df_test)
         self.util.copy_flags(self, self.df_train)
         # Try data checks

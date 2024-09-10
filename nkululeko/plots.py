@@ -263,7 +263,7 @@ class Plots:
 
     def plotcatcont(self, df, cat_col, cont_col, xlab, ylab):
         """Plot relation of categorical distribution with continuous."""
-        dist_type = self.util.config_val("EXPL", "dist_type", "hist")
+        dist_type = self.util.config_val("EXPL", "dist_type", "kde")
         cats, cat_str, es = su.get_effect_size(df, cat_col, cont_col)
         model_type = self.util.get_model_type()
         if dist_type == "hist" and model_type != "tree":

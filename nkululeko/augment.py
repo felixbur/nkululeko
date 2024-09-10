@@ -37,8 +37,8 @@ def doit(config_file):
 
     filename = util.config_val("AUGMENT", "result", "augmented.csv")
     filename = f"{expr.data_dir}/{filename}"
-
-    if os.path.exists(filename):
+    no_reuse = eval(util.config_val("DATA", "no_reuse", "False"))
+    if os.path.exists(filename) and not no_reuse:
         util.debug("files already augmented")
     else:
         # load the data
