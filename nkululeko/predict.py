@@ -26,9 +26,9 @@ from nkululeko.utils.util import Util
 
 def main(src_dir):
     parser = argparse.ArgumentParser(
-        description="Call the nkululeko PREDICT framework.")
-    parser.add_argument("--config", default="exp.ini",
-                        help="The base configuration")
+        description="Call the nkululeko PREDICT framework."
+    )
+    parser.add_argument("--config", default="exp.ini", help="The base configuration")
     args = parser.parse_args()
     if args.config is not None:
         config_file = args.config
@@ -58,8 +58,7 @@ def main(src_dir):
 
     # split into train and test
     expr.fill_train_and_tests()
-    util.debug(
-        f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}")
+    util.debug(f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}")
 
     # process the data
     df = expr.autopredict()

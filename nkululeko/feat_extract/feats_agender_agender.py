@@ -1,13 +1,13 @@
 # feats_audmodel_dim.py
 from nkululeko.feat_extract.featureset import Featureset
 import os
-import pandas as pd
 import audeer
 import nkululeko.glob_conf as glob_conf
 import audonnx
 import numpy as np
 import audinterface
 import torch
+
 
 class Agender_agenderSet(Featureset):
     """
@@ -29,8 +29,7 @@ class Agender_agenderSet(Featureset):
         if not os.path.isdir(model_root):
             cache_root = audeer.mkdir("cache")
             model_root = audeer.mkdir(model_root)
-            archive_path = audeer.download_url(
-                model_url, cache_root, verbose=True)
+            archive_path = audeer.download_url(model_url, cache_root, verbose=True)
             audeer.extract_archive(archive_path, model_root)
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         device = self.util.config_val("MODEL", "device", cuda)

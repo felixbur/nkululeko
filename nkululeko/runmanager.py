@@ -50,7 +50,9 @@ class Runmanager:
         self.last_epochs = []  # keep the epoch of best result per run
         # for all runs
         for run in range(int(self.util.config_val("EXP", "runs", 1))):
-            self.util.debug(f"run {run} using model {glob_conf.config['MODEL']['type']}")
+            self.util.debug(
+                f"run {run} using model {glob_conf.config['MODEL']['type']}"
+            )
             # set the run index as global variable for reporting
             self.util.set_config_val("EXP", "run", run)
             self.modelrunner = Modelrunner(

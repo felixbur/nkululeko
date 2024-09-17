@@ -46,7 +46,7 @@ class Demo_predictor:
                         )
                     else:
                         file_list = in_df.index.values
-                except (ValueError, AttributeError) as error:
+                except (ValueError, AttributeError):
                     with open(self.file) as f:
                         first = True
                         for index, line in enumerate(f):

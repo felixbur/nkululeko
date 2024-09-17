@@ -6,7 +6,6 @@ import audinterface
 import audonnx
 import nkululeko.glob_conf as glob_conf
 import numpy as np
-import pandas as pd
 import torch
 from nkululeko.feat_extract.featureset import Featureset
 

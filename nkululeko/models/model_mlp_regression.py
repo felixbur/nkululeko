@@ -1,7 +1,6 @@
 # model_mlp.py
 import ast
 from collections import OrderedDict
-import os
 
 import numpy as np
 import torch
@@ -9,7 +8,6 @@ import torch
 from audmetric import concordance_cc
 from audmetric import mean_absolute_error
 from audmetric import mean_squared_error
-from traitlets import default
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.losses.loss_ccc import ConcordanceCorCoeff

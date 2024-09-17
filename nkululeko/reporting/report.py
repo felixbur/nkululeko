@@ -5,7 +5,6 @@ Collector class for report items collected during module processing.
 
 """
 from nkululeko.utils.util import Util
-from nkululeko.reporting.report_item import ReportItem
 from nkululeko.reporting.latex_writer import LatexWriter
 
 

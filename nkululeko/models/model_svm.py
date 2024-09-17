@@ -1,6 +1,5 @@
 # model_svm.py
 
-import random
 from sklearn import svm
 from nkululeko.models.model import Model
 
@@ -25,7 +24,7 @@ class SVM_model(Model):
             gamma="scale",
             probability=True,
             class_weight=class_weight,
-            random_state=42,    # for consistent result
+            random_state=42,  # for consistent result
         )  # set up the classifier
 
     def set_c(self, c):

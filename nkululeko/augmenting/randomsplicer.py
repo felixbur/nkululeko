@@ -16,9 +16,7 @@ F. Burkhardt, Anna Derington, Matthias Kahlau, Klaus Scherer, Florian Eyben and 
 import pandas as pd
 from tqdm import tqdm
 import os
-import numpy as np
 import audiofile as af
-from audformat.utils import map_file_path
 import audeer
 from nkululeko.utils.util import Util
 import nkululeko.augmenting.randomsplicing as rsp

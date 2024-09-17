@@ -4,6 +4,7 @@ a basic report snippet.
 
 import os.path
 
+
 class ReportItem:
     def __init__(self, topic, caption, contents, image=None):
         self.topic = topic

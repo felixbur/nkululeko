@@ -3,7 +3,6 @@ import pandas as pd
 
 # segment the data
 from inaSpeechSegmenter import Segmenter
-from audformat.utils import to_filewise_index
 from audformat import segmented_index
 import warnings
 

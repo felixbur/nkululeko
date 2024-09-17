@@ -49,16 +49,12 @@ class Spkrec(Featureset):
         """Extract the features or load them from disk if present."""
         store = self.util.get_path("store")
         storage = f"{store}{self.name}.pkl"
-        extract = self.util.config_val(
-            "FEATS", "needs_feature_extraction", False
-        )
+        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             if not self.classifier_initialized:
                 self.init_model()
-            self.util.debug(
-                "extracting Spkrec embeddings, this might take a while..."
-            )
+            self.util.debug("extracting Spkrec embeddings, this might take a while...")
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
             length = len(self.data_df.index)
             for idx, (file, start, end) in enumerate(
@@ -77,9 +73,7 @@ class Spkrec(Featureset):
                 # fill series with embeddings
                 emb_series.iloc[idx] = emb
             # print(f"emb_series shape: {emb_series.shape}")
-            self.df = pd.DataFrame(
-                emb_series.values.tolist(), index=self.data_df.index
-            )
+            self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
             print(f"df shape: {self.df.shape}")
             self.df.to_pickle(storage)
             try:

@@ -10,7 +10,6 @@ import audiofile as af
 
 from nkululeko.feat_extract.featureset import Featureset
 import nkululeko.glob_conf as glob_conf
-from nkululeko.utils.util import Util
 
 
 # Import TF 2.X and make sure we're running eager.

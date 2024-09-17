@@ -119,7 +119,7 @@ class Model:
         # get unique list of speakers
         speakers = annos["speaker"].unique()
         # check for folds columns
-        if not "fold" in annos.columns:
+        if "fold" not in annos.columns:
             self.util.debug(f"creating random folds for {logo} groups")
             # create a random dictionary of groups
             sdict = {}

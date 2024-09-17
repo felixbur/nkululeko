@@ -81,7 +81,7 @@ class Dataset_CSV(Dataset):
         self.start_fresh = eval(self.util.config_val("DATA", "no_reuse", "False"))
         is_index = False
         try:
-            if self.is_labeled and not "class_label" in self.df.columns:
+            if self.is_labeled and "class_label" not in self.df.columns:
                 self.df["class_label"] = self.df[self.target]
         except AttributeError:
             is_index = True

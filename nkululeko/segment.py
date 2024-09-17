@@ -75,7 +75,6 @@ def main(src_dir):
         util.error(f"unkown segmenter: {segmenter}")
 
     def calc_dur(x):
-        from datetime import datetime
 
         starts = x[1]
         ends = x[2]

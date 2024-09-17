@@ -37,7 +37,7 @@ class AgenderSet(Featureset):
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         device = self.util.config_val("MODEL", "device", cuda)
         self.model = audonnx.load(model_root, device=device)
-        self.util.debug(f"initialized agender model")
+        self.util.debug("initialized agender model")
         self.model_loaded = True
 
     def extract(self):

@@ -744,7 +744,6 @@ class Experiment:
         if model.is_ann():
             print("converting to onnx from torch")
         else:
-
             print("converting to onnx from sklearn")
         # save the rest
         f = open(filename, "wb")

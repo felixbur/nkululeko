@@ -24,7 +24,6 @@ import audiofile
 
 from nkululeko.feat_extract.featureset import Featureset
 import nkululeko.glob_conf as glob_conf
-from nkululeko.utils.util import Util
 
 
 class SquimSet(Featureset):

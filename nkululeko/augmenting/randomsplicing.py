@@ -12,7 +12,6 @@ F. Burkhardt, Anna Derington, Matthias Kahlau, Klaus Scherer, Florian Eyben and 
 """
 import numpy as np
 import librosa
-import audiofile as af
 
 
 def random_splicing(
@@ -54,7 +53,6 @@ def split_wav_naive(wav, top_db=12):
 
 
 def remix_random_reverse(wav, indices, p_reverse=0):
-    import random
 
     wav_remix = []
 

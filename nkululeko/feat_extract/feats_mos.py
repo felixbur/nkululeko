@@ -20,7 +20,6 @@ from torchaudio.pipelines import SQUIM_SUBJECTIVE
 from torchaudio.utils import download_asset
 import audiofile
 import nkululeko.glob_conf as glob_conf
-from nkululeko.utils.util import Util
 from nkululeko.feat_extract.featureset import Featureset
 
 

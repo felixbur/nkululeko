@@ -1,0 +1,37 @@
+DEBUG nkululeko: running results/exp_emodb_os_svm from config data/emodb/exp_os_svm.ini, nkululeko version 0.66.12
+DEBUG experiment: value for type not found, using default: audformat
+DEBUG dataset: emodb: loading from ./data/emodb/emodb
+DEBUG dataset: emodb: reusing previously stored file ./results/exp_emodb_os_svm/./store/emodb.pkl
+DEBUG dataset: emodb: loaded with 535 samples: got targets: True, got speakers: True (10), got sexes: True
+DEBUG experiment: target: emotion
+DEBUG experiment: Target labels (user defined): ['angry', 'happy', 'neutral', 'sad']
+DEBUG experiment: loaded databases emodb
+DEBUG experiment: reusing previously stored ./results/exp_emodb_os_svm/./store/testdf.csv and ./results/exp_emodb_os_svm/./store/traindf.csv
+DEBUG experiment: value for filter.sample_selection not found, using default: all
+DEBUG experiment: value for type not found, using default: dummy
+DEBUG experiment: Categories test (nd.array): ['happy' 'neutral' 'angry' 'sad']
+DEBUG experiment: Categories train (nd.array): ['happy' 'neutral' 'angry' 'sad']
+DEBUG experiment: 4 speakers in test and 6 speakers in train
+DEBUG nkululeko: train shape : (203, 6), test shape:(136, 6)
+DEBUG featureset: value for set not found, using default: eGeMAPSv02
+DEBUG featureset: value for level not found, using default: functionals
+DEBUG featureset: value for store_format not found, using default: pkl
+DEBUG featureset: reusing extracted OS features: ./results/exp_emodb_os_svm/./store/emodb_os_train.pkl.
+DEBUG feature_extractor: os: shape : (203, 88)
+DEBUG featureset: value for set not found, using default: eGeMAPSv02
+DEBUG featureset: value for level not found, using default: functionals
+DEBUG featureset: value for store_format not found, using default: pkl
+DEBUG featureset: reusing extracted OS features: ./results/exp_emodb_os_svm/./store/emodb_os_test.pkl.
+DEBUG feature_extractor: os: shape : (136, 88)
+DEBUG experiment: All features: train shape : (203, 88), test shape:(136, 88)
+DEBUG scaler: scaling features based on training set
+DEBUG runmanager: run 0
+DEBUG model: value for C_val not found, using default: 0.001
+DEBUG modelrunner: run: 0 epoch: 0: result: test: 0.681 UAR
+DEBUG modelrunner: plotting confusion matrix to emodb_svm_os__0_000_cnf
+DEBUG reporter: epoch: 0, UAR: 0.6808080808080808, ACC: 0.7352941176470589
+DEBUG runmanager: value for measure not found, using default: uar
+DEBUG reporter: labels: ['angry', 'happy', 'neutral', 'sad']
+DEBUG reporter: result per class (F1 score): [0.794, 0.0, 0.812, 0.88]
+DEBUG experiment: Done, used 1.659 seconds
+DONE

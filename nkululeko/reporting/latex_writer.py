@@ -4,8 +4,7 @@ print out report as latex file and pdf
 """
 
 from pylatex import Document, Section, Subsection, Command, Figure
-from pylatex.utils import italic, NoEscape
-from nkululeko.reporting.report_item import ReportItem
+from pylatex.utils import NoEscape
 from nkululeko.utils.util import Util
 
 

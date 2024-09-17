@@ -9,7 +9,6 @@ import torch
 import pandas as pd
 from tqdm import tqdm
 import audformat
-from audformat.utils import to_filewise_index
 from audformat import segmented_index
 from nkululeko.utils.util import Util
 
