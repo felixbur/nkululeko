@@ -4,10 +4,10 @@ from mdutils import MdUtils
 import yaml
 
 
-root = "./data"
-root = ""
+# root = "./data"
+root = "."
 
-mdFile = MdUtils(file_name="Readme_test.md", title="Nkululeko database repository")
+mdFile = MdUtils(file_name="README.md", title="Nkululeko database repository")
 mdFile.create_md_file()
 mdFile.new_header(level=1, title="Data")
 mdFile.new_paragraph(
