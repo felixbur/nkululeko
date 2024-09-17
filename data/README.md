@@ -19,7 +19,7 @@ To support open science and reproducible research, we only accept PR and recipes
 ## Databases
 
 |Name|Target|Description|Access|
-| :---: | :---: | :---: | :---: |
+| :--- | :--- | :--- | :--- |
 |emorynlp|emotion|English, From Friends TV|public|
 |emns|emotion,intensity|British, singles peaker, UAR=.479|public|
 |test|none|Test data for nkululeko|public|
@@ -78,3 +78,5 @@ To support open science and reproducible research, we only accept PR and recipes
 |esd|emotion|English,Chinese|public|
 
 ## Performance
+  
+![Nkululeko performance](../meta/images/nkululeko_ser_20240719.png)  

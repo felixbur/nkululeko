@@ -63,11 +63,13 @@ for f in db_folders:
         db_num += 1
     else:
         print(f"error on {dir}")
-mdFile.new_table(columns=4, rows=db_num + 1, text=table_list, text_align="center")
+mdFile.new_table(columns=4, rows=db_num + 1, text=table_list, text_align="left")
 
 mdFile.new_header(level=2, title="Performance")
-mdFile.new_inline_image(
-    "Nkululeko performance", "../meta/images/nkululeko_ser_20240719.png"
+mdFile.new_line(
+    mdFile.new_inline_image(
+        text="Nkululeko performance", path="../meta/images/nkululeko_ser_20240719.png"
+    )
 )
-
+mdFile.new_line()
 mdFile.create_md_file()
