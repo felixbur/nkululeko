@@ -20,16 +20,16 @@ To support open science and reproducible research, we only accept PR and recipes
 
 |Name|Target|Description|Access|
 | :---: | :---: | :---: | :---: |
-|emorynlp|emotion|English,FromFriendsTV|public|
-|emns|emotion,intensity|British,singlespeaker,UAR=0.479|public|
+|emorynlp|emotion|English, From Friends TV|public|
+|emns|emotion,intensity|British, singles peaker, UAR=.479|public|
 |test|none|Test data for nkululeko|public|
 |catsvsdogs|cats_dogs|kaggle test set|public|
 |clac|healthyspeech,age,gender|English|public|
-|vivae|emotion|Englishvocalbursts|public|
-|emofilm|emotion|English,Spanish,Italian|restricted|
+|vivae|emotion|English vocal bursts|public|
+|emofilm|emotion|English, Spanish, Italian|restricted|
 |emozionalmente|emotion|Italian|public|
-|laughter-types|laughter|MasterThesisfromTUBerlin|public|
-|savee|emotion|English,fromtfds|restricted|
+|laughter-types|laughter|Master Thesis from TUBerlin|public|
+|savee|emotion|English, from tfds|restricted|
 |emovo|emotion|Italian|restricted|
 |subesco|emotion|Bangla|public|
 |oreau2|emotion|French|public|
@@ -37,41 +37,41 @@ To support open science and reproducible research, we only accept PR and recipes
 |emov-db|emotion|English|public|
 |odyssey-cat-2024|emotion|Data for Odyssey 2024 challenge, needs MSPPodcast|restricted|
 |ravdess|emotion,speaker|English|public|
-|erysac|emotion|Russian,children|public|
+|erysac|emotion|Russian, children|public|
 |demos|emotion|Italian|restricted|
 |emodb|emotion|German|public|
-|jnv|emotion|Japanese,non-verbals|public|
-|aesdd|emotion|amhariclanguage|public|
+|jnv|emotion|Japanese, non-verbals|public|
+|aesdd|emotion|amharic language|public|
 |msp-podcast|emotion,VAD|English|restricted|
 |baved|emotion|Arabic|public|
-|asvp-esd|emotion|Multilingual,alsocontainvocalbursts|public|
+|asvp-esd|emotion|Multilingual, also contain vocal bursts|public|
 |ekorpus|emotion|Estonian|public|
 |iemocap|emotion,VAD|English|restriced|
 |jl|emotion|English|public|
-|syntact|emotion|SynthesizedGermanspeech|public|
-|kia|emotion|Korean,wake-upword|public|
+|syntact|emotion|Synthesized German speech|public|
+|kia|emotion|Korean, wake-up word|public|
 |portuguese|emotion|Portuguese|public|
-|crema-d|emotion|English,adoptedfromtfds|public|
+|crema-d|emotion|English,adopted from tfds|public|
 |thorsten-emotional|emotion|German|public|
-|jvnv|emotion|Japanese,verbalandnon-verbal|public|
+|jvnv|emotion|Japanese, verbal and non-verbal|public|
 |mesd|emotion|Mexican|public|
 |enterface|emotion|Multilingual|public|
 |turev|emotion|Turkish|public|
 |nEMO|emotion,VAD|Polish|public|
 |eaed|emotion|Arabic|public|
 |ased|emotion|Greek|public|
-|cafe|emotion|Childrenspeech,CanadianFrench|public|
+|cafe|emotion|Childrenspeech, CanadianFrench|public|
 |banglaser|emotion|Bengali|public|
 |mlendsnd|emotion|English|public|
 |gerparas|valence,arousal,dominance|German|restricted|
 |androids|depression|English|public|
 |kbes|emotion|Bengali|public|
-|tess|emotion|BritishEnglish(Toronto)|public|
+|tess|emotion|British English (Toronto)|public|
 |jtes|emotion|Japanese|private|
-|meld|emotion|English,FromFriendsTV|public|
+|meld|emotion|English, From Friends TV|public|
 |urdu|emotion|Urdu|public|
 |polish|emotion|Polish|public|
-|cmu-mosei|sentiment,emotion|English,originallinkdead|public|
+|cmu-mosei|sentiment,emotion|English, original link dead|public|
 |SVD|pathologicalspeech|German|public|
 |msp-improv|emotion,VAD,naturalness|English|restricted|
 |shemo|emotion|Persian|public|
