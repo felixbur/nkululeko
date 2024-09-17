@@ -23,7 +23,6 @@ import nkululeko.glob_conf as glob_conf
 from nkululeko.models.model import Model as BaseModel
 from nkululeko.reporting.reporter import Reporter
 
-
 class TunedModel(BaseModel):
     def __init__(self, df_train, df_test, feats_train, feats_test):
         """Constructor taking the configuration and all dataframes."""
@@ -63,6 +62,7 @@ class TunedModel(BaseModel):
             self.drop = float(drop)
         self.util.debug(f"init: training with dropout: {self.drop}")
         self.push = eval(self.util.config_val("MODEL", "push_to_hub", "False"))
+        self.balancing = self.util.config_val("MODEL", "balancing", False)
         self._init_model()
 
     def _init_model(self):
@@ -91,6 +91,29 @@ class TunedModel(BaseModel):
             df = y.reset_index()
             df.start = df.start.dt.total_seconds()
             df.end = df.end.dt.total_seconds()
+        #     ds = datasets.Dataset.from_pandas(df)
+        #     dataset[split] = ds
+
+        # self.dataset = datasets.DatasetDict(dataset)
+            if split == "train" and self.balancing:
+                if self.balancing == "ros":
+                    from imblearn.over_sampling import RandomOverSampler
+                    sampler = RandomOverSampler(random_state=42)
+                elif self.balancing == "smote":
+                    from imblearn.over_sampling import SMOTE
+                    sampler = SMOTE(random_state=42)
+                elif self.balancing == "adasyn":
+                    from imblearn.over_sampling import ADASYN
+                    sampler = ADASYN(random_state=42)
+                else:
+                    self.util.error(f"Unknown balancing algorithm: {self.balancing}")
+                
+                X_resampled, y_resampled = sampler.fit_resample(df[['start', 'end']], df['targets'])
+                df = pd.DataFrame({'start': X_resampled['start'], 'end': X_resampled['end'], 'targets': y_resampled})
+
+                # print the before and after class distribution
+                self.util.debug(f"balanced with: {self.balancing}, new size: {len(df)}, was {len(data_sources[split])}")
+            
             ds = datasets.Dataset.from_pandas(df)
             dataset[split] = ds
 
@@ -600,3 +623,4 @@ class ConcordanceCorCoeff(torch.nn.Module):
         ccc = numerator / denominator
 
         return 1 - ccc
+
