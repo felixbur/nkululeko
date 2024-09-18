@@ -7,6 +7,7 @@ taken June 23rd 2022.
 import math
 import statistics
 
+import audiofile
 import numpy as np
 import pandas as pd
 import parselmouth
@@ -14,9 +15,6 @@ from parselmouth.praat import call
 from scipy.stats.mstats import zscore
 from sklearn.decomposition import PCA
 from tqdm import tqdm
-
-import audiofile
-
 
 # This is the function to measure source acoustics using default male parameters.
 

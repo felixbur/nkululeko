@@ -5,11 +5,12 @@ segment a dataset with the Silero segmenter
 
 """
 
-import torch
-import pandas as pd
-from tqdm import tqdm
 import audformat
+import pandas as pd
+import torch
 from audformat import segmented_index
+from tqdm import tqdm
+
 from nkululeko.utils.util import Util
 
 # from nkululeko.constants import SAMPLING_RATE

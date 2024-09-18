@@ -1,11 +1,14 @@
 """"
 A predictor for PESQ - Perceptual Evaluation of Speech Quality.
 """
-from nkululeko.utils.util import Util
+
 import ast
+
+import numpy as np
+
 import nkululeko.glob_conf as glob_conf
 from nkululeko.feature_extractor import FeatureExtractor
-import numpy as np
+from nkululeko.utils.util import Util
 
 
 class PESQPredictor:

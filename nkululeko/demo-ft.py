@@ -1,8 +1,9 @@
-from sklearn import pipeline
-from transformers import pipelines
 import argparse
 import configparser
 import os
+
+from sklearn import pipeline
+from transformers import pipelines
 
 from nkululeko.utils.util import get_exp_dir
 

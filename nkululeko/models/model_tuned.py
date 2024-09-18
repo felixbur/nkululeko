@@ -7,21 +7,21 @@ import os
 import pickle
 import typing
 
+import audeer
+import audiofile
+import audmetric
 import datasets
 import numpy as np
 import pandas as pd
 import torch
 import transformers
-from transformers.models.wav2vec2.modeling_wav2vec2 import Wav2Vec2Model
-from transformers.models.wav2vec2.modeling_wav2vec2 import Wav2Vec2PreTrainedModel
-
-import audeer
-import audiofile
-import audmetric
+from transformers.models.wav2vec2.modeling_wav2vec2 import (
+    Wav2Vec2Model, Wav2Vec2PreTrainedModel)
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.models.model import Model as BaseModel
 from nkululeko.reporting.reporter import Reporter
+
 
 class TunedModel(BaseModel):
     def __init__(self, df_train, df_test, feats_train, feats_test):
@@ -91,29 +91,42 @@ class TunedModel(BaseModel):
             df = y.reset_index()
             df.start = df.start.dt.total_seconds()
             df.end = df.end.dt.total_seconds()
-        #     ds = datasets.Dataset.from_pandas(df)
-        #     dataset[split] = ds
+            #     ds = datasets.Dataset.from_pandas(df)
+            #     dataset[split] = ds
 
-        # self.dataset = datasets.DatasetDict(dataset)
+            # self.dataset = datasets.DatasetDict(dataset)
             if split == "train" and self.balancing:
                 if self.balancing == "ros":
                     from imblearn.over_sampling import RandomOverSampler
+
                     sampler = RandomOverSampler(random_state=42)
                 elif self.balancing == "smote":
                     from imblearn.over_sampling import SMOTE
+
                     sampler = SMOTE(random_state=42)
                 elif self.balancing == "adasyn":
                     from imblearn.over_sampling import ADASYN
+
                     sampler = ADASYN(random_state=42)
                 else:
                     self.util.error(f"Unknown balancing algorithm: {self.balancing}")
-                
-                X_resampled, y_resampled = sampler.fit_resample(df[['start', 'end']], df['targets'])
-                df = pd.DataFrame({'start': X_resampled['start'], 'end': X_resampled['end'], 'targets': y_resampled})
+
+                X_resampled, y_resampled = sampler.fit_resample(
+                    df[["start", "end"]], df["targets"]
+                )
+                df = pd.DataFrame(
+                    {
+                        "start": X_resampled["start"],
+                        "end": X_resampled["end"],
+                        "targets": y_resampled,
+                    }
+                )
 
                 # print the before and after class distribution
-                self.util.debug(f"balanced with: {self.balancing}, new size: {len(df)}, was {len(data_sources[split])}")
-            
+                self.util.debug(
+                    f"balanced with: {self.balancing}, new size: {len(df)}, was {len(data_sources[split])}"
+                )
+
             ds = datasets.Dataset.from_pandas(df)
             dataset[split] = ds
 
@@ -623,4 +636,3 @@ class ConcordanceCorCoeff(torch.nn.Module):
         ccc = numerator / denominator
 
         return 1 - ccc
-

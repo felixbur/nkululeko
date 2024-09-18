@@ -1,24 +1,23 @@
 # test_pretrain.py
 import argparse
 import configparser
+import json
 import os.path
 
+import audeer
+import audiofile
+import audmetric
 import datasets
 import numpy as np
 import pandas as pd
 import torch
 import transformers
 
-import audeer
-import audiofile
-import audmetric
-
-from nkululeko.constants import VERSION
 import nkululeko.experiment as exp
-import nkululeko.models.finetune_model as fm
 import nkululeko.glob_conf as glob_conf
+import nkululeko.models.finetune_model as fm
+from nkululeko.constants import VERSION
 from nkululeko.utils.util import Util
-import json
 
 
 def doit(config_file):

@@ -1,11 +1,10 @@
 # demo_predictor.py
 import os
 
-import numpy as np
-import pandas as pd
-
 import audformat
 import audiofile
+import numpy as np
+import pandas as pd
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.util import Util

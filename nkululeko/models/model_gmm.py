@@ -1,8 +1,9 @@
 # model_gmm.py
 
-from sklearn import mixture
-from nkululeko.models.model import Model
 import pandas as pd
+from sklearn import mixture
+
+from nkululeko.models.model import Model
 
 
 class GMM_model(Model):

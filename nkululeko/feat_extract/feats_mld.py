@@ -1,8 +1,9 @@
 # mld_fset.py
-from nkululeko.feat_extract.featureset import Featureset
-import sys
 import os
+import sys
+
 import nkululeko.glob_conf as glob_conf
+from nkululeko.feat_extract.featureset import Featureset
 
 
 class MLD_set(Featureset):

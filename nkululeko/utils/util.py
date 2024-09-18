@@ -6,11 +6,10 @@ import os.path
 import pickle
 import sys
 
-import numpy as np
-import pandas as pd
-
 import audeer
 import audformat
+import numpy as np
+import pandas as pd
 
 
 class Util:

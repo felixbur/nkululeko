@@ -1,9 +1,11 @@
 # feats_import.py
 
-import os
 import ast
+import os
+
 import audformat
 import pandas as pd
+
 from nkululeko.feat_extract.featureset import Featureset
 
 

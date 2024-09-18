@@ -15,23 +15,20 @@ Raises:
     ValueError: If an unknown ensemble method is provided.
     AssertionError: If the number of config files is less than 2 for majority voting.
 """
+
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 
-from typing import List
 import configparser
 import time
 from argparse import ArgumentParser
 from pathlib import Path
+from typing import List
 
 import numpy as np
 import pandas as pd
-
-from sklearn.metrics import (
-    balanced_accuracy_score,
-    classification_report,
-)
+from sklearn.metrics import balanced_accuracy_score, classification_report
 
 from nkululeko.constants import VERSION
 from nkululeko.experiment import Experiment

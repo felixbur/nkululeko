@@ -1,9 +1,11 @@
 # feats_oxbow.py
 
-from nkululeko.feat_extract.featureset import Featureset
 import os
-import pandas as pd
+
 import opensmile
+import pandas as pd
+
+from nkululeko.feat_extract.featureset import Featureset
 
 
 class Openxbow(Featureset):

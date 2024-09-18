@@ -1,6 +1,7 @@
 # model_tree.py
 
 from sklearn.tree import DecisionTreeClassifier
+
 from nkululeko.models.model import Model
 
 

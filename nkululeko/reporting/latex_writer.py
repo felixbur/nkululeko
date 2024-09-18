@@ -3,8 +3,9 @@ latex_writer.py
 print out report as latex file and pdf
 """
 
-from pylatex import Document, Section, Subsection, Command, Figure
+from pylatex import Command, Document, Figure, Section, Subsection
 from pylatex.utils import NoEscape
+
 from nkululeko.utils.util import Util
 
 

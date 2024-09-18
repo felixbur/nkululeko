@@ -1,8 +1,10 @@
 # featureset.py
-import pandas as pd
-from nkululeko.utils.util import Util
-import nkululeko.glob_conf as glob_conf
 import ast
+
+import pandas as pd
+
+import nkululeko.glob_conf as glob_conf
+from nkululeko.utils.util import Util
 
 
 class Featureset:

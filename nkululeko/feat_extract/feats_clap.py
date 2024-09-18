@@ -1,12 +1,14 @@
 # feats_clap.py
 
-from nkululeko.feat_extract.featureset import Featureset
 import os
+
+import audiofile
+import laion_clap
 import pandas as pd
 from tqdm import tqdm
+
 import nkululeko.glob_conf as glob_conf
-import laion_clap
-import audiofile
+from nkululeko.feat_extract.featureset import Featureset
 
 
 class ClapSet(Featureset):

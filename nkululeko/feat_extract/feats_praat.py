@@ -4,9 +4,9 @@ import os
 import numpy as np
 import pandas as pd
 
+import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract import feinberg_praat
 from nkululeko.feat_extract.featureset import Featureset
-import nkululeko.glob_conf as glob_conf
 
 
 class PraatSet(Featureset):
@@ -51,8 +51,8 @@ class PraatSet(Featureset):
         self.df = self.df.astype(float)
 
     def extract_sample(self, signal, sr):
-        import audiofile
         import audformat
+        import audiofile
 
         tmp_audio_names = ["praat_audio_tmp.wav"]
         audiofile.write(tmp_audio_names[0], signal, sr)

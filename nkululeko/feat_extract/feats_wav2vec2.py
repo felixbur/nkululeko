@@ -7,14 +7,16 @@ Currently only supports wav2vec2
 """
 
 import os
-from tqdm import tqdm
+
 import pandas as pd
 import torch
 import torchaudio
-from transformers import Wav2Vec2FeatureExtractor, Wav2Vec2Model
 import transformers
-from nkululeko.feat_extract.featureset import Featureset
+from tqdm import tqdm
+from transformers import Wav2Vec2FeatureExtractor, Wav2Vec2Model
+
 import nkululeko.glob_conf as glob_conf
+from nkululeko.feat_extract.featureset import Featureset
 
 
 class Wav2vec2(Featureset):

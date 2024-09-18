@@ -1,6 +1,7 @@
 # model_svm.py
 
 from sklearn import svm
+
 from nkululeko.models.model import Model
 
 

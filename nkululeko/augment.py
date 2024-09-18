@@ -2,13 +2,15 @@
 # augment the training sets
 
 import argparse
-import pandas as pd
-import os
 import ast
-from nkululeko.experiment import Experiment
 import configparser
-from nkululeko.utils.util import Util
+import os
+
+import pandas as pd
+
 from nkululeko.constants import VERSION
+from nkululeko.experiment import Experiment
+from nkululeko.utils.util import Util
 
 
 def doit(config_file):

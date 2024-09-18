@@ -1,12 +1,14 @@
 # transformer_feature_extractor.py
 
 import os
+
 import pandas as pd
 import torch
 import torchaudio
 from tqdm import tqdm
-from nkululeko.feat_extract.featureset import Featureset
+
 import nkululeko.glob_conf as glob_conf
+from nkululeko.feat_extract.featureset import Featureset
 
 
 class TransformerFeatureExtractor(Featureset):

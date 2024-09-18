@@ -1,5 +1,6 @@
-from nkululeko.utils.util import Util
 import os
+
+from nkululeko.utils.util import Util
 
 
 class FileChecker:

@@ -2,10 +2,12 @@
 import ast
 import os
 import os.path
-import pandas as pd
+
 import audformat.utils
-from nkululeko.data.dataset import Dataset
+import pandas as pd
+
 import nkululeko.glob_conf as glob_conf
+from nkululeko.data.dataset import Dataset
 from nkululeko.reporting.report_item import ReportItem
 
 

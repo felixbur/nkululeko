@@ -10,8 +10,9 @@ Evaluated in:
 F. Burkhardt, Anna Derington, Matthias Kahlau, Klaus Scherer, Florian Eyben and Björn Schuller: Masking Speech Contents by Random Splicing: is Emotional Expression Preserved?, Proc. ICASSP, 2023
 
 """
-import numpy as np
+
 import librosa
+import numpy as np
 
 
 def random_splicing(

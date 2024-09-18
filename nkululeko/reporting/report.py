@@ -4,8 +4,9 @@ report.py
 Collector class for report items collected during module processing.
 
 """
-from nkululeko.utils.util import Util
+
 from nkululeko.reporting.latex_writer import LatexWriter
+from nkululeko.utils.util import Util
 
 
 class Report:

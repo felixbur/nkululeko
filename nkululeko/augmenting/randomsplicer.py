@@ -13,13 +13,15 @@ F. Burkhardt, Anna Derington, Matthias Kahlau, Klaus Scherer, Florian Eyben and 
 
 """
 
+import os
+
+import audeer
+import audiofile as af
 import pandas as pd
 from tqdm import tqdm
-import os
-import audiofile as af
-import audeer
-from nkululeko.utils.util import Util
+
 import nkululeko.augmenting.randomsplicing as rsp
+from nkululeko.utils.util import Util
 
 
 class Randomsplicer:

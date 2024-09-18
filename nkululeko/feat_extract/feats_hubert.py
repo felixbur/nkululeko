@@ -10,11 +10,10 @@ import pandas as pd
 import torch
 import torchaudio
 from tqdm import tqdm
-from transformers import HubertModel
-from transformers import Wav2Vec2FeatureExtractor
+from transformers import HubertModel, Wav2Vec2FeatureExtractor
 
-from nkululeko.feat_extract.featureset import Featureset
 import nkululeko.glob_conf as glob_conf
+from nkululeko.feat_extract.featureset import Featureset
 
 
 class Hubert(Featureset):

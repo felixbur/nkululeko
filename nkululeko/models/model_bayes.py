@@ -1,6 +1,7 @@
 # model_bayes.py
 
 from sklearn.naive_bayes import GaussianNB
+
 from nkululeko.models.model import Model
 
 

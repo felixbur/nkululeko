@@ -6,19 +6,20 @@ Inspired by code from Su Lei
 """
 
 import os
+import pathlib
+
+import audeer
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import torchaudio
 import torchaudio.transforms as T
 from PIL import Image, ImageOps
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 from tqdm import tqdm
-import pathlib
-import audeer
 
-from nkululeko.feat_extract.featureset import Featureset
-from nkululeko.constants import SAMPLING_RATE
 import nkululeko.glob_conf as glob_conf
+from nkululeko.constants import SAMPLING_RATE
+from nkululeko.feat_extract.featureset import Featureset
 
 
 class Spectraloader(Featureset):

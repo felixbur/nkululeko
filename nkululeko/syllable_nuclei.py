@@ -62,12 +62,12 @@
 
 
 import math
+from glob import glob
+
 import pandas as pd
 import parselmouth
-from tqdm import tqdm
-
-from glob import glob
 from parselmouth.praat import call
+from tqdm import tqdm
 
 
 def speech_rate(filename):

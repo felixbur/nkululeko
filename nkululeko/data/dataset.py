@@ -3,10 +3,10 @@ import ast
 import os
 import os.path
 from random import sample
-import numpy as np
-import pandas as pd
 
 import audformat
+import numpy as np
+import pandas as pd
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.filter_data import DataFilter
@@ -461,8 +461,7 @@ class Dataset:
 
     def balanced_split(self):
         """One way to split train and eval sets: Generate split dataframes for some balancing criterion"""
-        from splitutils import binning
-        from splitutils import optimize_traintest_split
+        from splitutils import binning, optimize_traintest_split
 
         seed = 42
         k = 30

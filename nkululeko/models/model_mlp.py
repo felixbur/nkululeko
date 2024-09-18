@@ -4,8 +4,8 @@ from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import recall_score
 import torch
+from sklearn.metrics import recall_score
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.losses.loss_softf1loss import SoftF1Loss

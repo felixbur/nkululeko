@@ -6,8 +6,8 @@ import os.path
 
 import numpy as np
 
-from nkululeko.constants import VERSION
 import nkululeko.experiment as exp
+from nkululeko.constants import VERSION
 from nkululeko.utils.util import Util
 
 

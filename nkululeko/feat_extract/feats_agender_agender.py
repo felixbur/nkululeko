@@ -1,12 +1,14 @@
 # feats_audmodel_dim.py
-from nkululeko.feat_extract.featureset import Featureset
 import os
+
 import audeer
-import nkululeko.glob_conf as glob_conf
+import audinterface
 import audonnx
 import numpy as np
-import audinterface
 import torch
+
+import nkululeko.glob_conf as glob_conf
+from nkululeko.feat_extract.featureset import Featureset
 
 
 class Agender_agenderSet(Featureset):

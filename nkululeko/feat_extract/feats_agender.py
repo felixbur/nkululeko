@@ -1,15 +1,16 @@
 # feats_agender.py
 
-from nkululeko.feat_extract.featureset import Featureset
 import os
 
 # import pandas as pd
 import audeer
-import nkululeko.glob_conf as glob_conf
+import audinterface
 import audonnx
 import numpy as np
-import audinterface
 import torch
+
+import nkululeko.glob_conf as glob_conf
+from nkululeko.feat_extract.featureset import Featureset
 
 
 class AgenderSet(Featureset):

@@ -1,10 +1,12 @@
 # augmenter.py
 import os
+
+import audeer
+import audiofile
 import pandas as pd
 from audiomentations import *
 from tqdm import tqdm
-import audeer
-import audiofile
+
 from nkululeko.utils.util import Util
 
 

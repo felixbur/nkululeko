@@ -1,6 +1,7 @@
 # model_tree_reg.py
 
 from sklearn.tree import DecisionTreeRegressor
+
 from nkululeko.models.model import Model
 
 

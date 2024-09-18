@@ -47,12 +47,14 @@ db_num = 0
 
 for dataset_name in descr.keys():
     # print(dataset_name)
-    table_list.extend([
-        descr[dataset_name][0]['name'],
-        descr[dataset_name][1]['target'],
-        descr[dataset_name][2]['descr'],
-        descr[dataset_name][3]['access']
-    ])
+    table_list.extend(
+        [
+            descr[dataset_name][0]["name"],
+            descr[dataset_name][1]["target"],
+            descr[dataset_name][2]["descr"],
+            descr[dataset_name][3]["access"],
+        ]
+    )
     db_num += 1
 
 mdFile.new_table(columns=4, rows=db_num + 1, text=table_list, text_align="left")

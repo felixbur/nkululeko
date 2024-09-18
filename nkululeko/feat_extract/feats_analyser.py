@@ -1,18 +1,18 @@
 # feats_analyser.py
 import ast
+
+import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.inspection import permutation_importance
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.linear_model import LinearRegression
-from sklearn.tree import DecisionTreeRegressor
-import matplotlib.pyplot as plt
-from nkululeko.utils.util import Util
-from nkululeko.utils.stats import normalize
-from nkululeko.plots import Plots
+from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+
 import nkululeko.glob_conf as glob_conf
-from nkululeko.reporting.report_item import ReportItem
+from nkululeko.plots import Plots
 from nkululeko.reporting.defines import Header
+from nkululeko.reporting.report_item import ReportItem
+from nkululeko.utils.stats import normalize
+from nkululeko.utils.util import Util
 
 
 class FeatureAnalyser:

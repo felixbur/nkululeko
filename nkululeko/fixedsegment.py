@@ -10,10 +10,11 @@ Args:
 This function will recursively search the input directory for all .wav audio files, and then segment each file into smaller chunks with the specified length and overlap. The segmented audio files will be saved in the output directory, preserving the relative directory structure from the input directory.
 """
 
-from pathlib import Path
-from pydub import AudioSegment
-import glob
 import argparse
+import glob
+from pathlib import Path
+
+from pydub import AudioSegment
 
 
 # list audio files given a directory

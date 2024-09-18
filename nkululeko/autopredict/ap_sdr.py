@@ -2,11 +2,14 @@
 A predictor for SDR - Signal to Distortion Ratio.
 as estimated by Scale-Invariant Signal-to-Distortion Ratio (SI-SDR) 
 """
-from nkululeko.utils.util import Util
+
 import ast
+
+import numpy as np
+
 import nkululeko.glob_conf as glob_conf
 from nkululeko.feature_extractor import FeatureExtractor
-import numpy as np
+from nkululeko.utils.util import Util
 
 
 class SDRPredictor:

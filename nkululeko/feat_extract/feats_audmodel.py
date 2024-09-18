@@ -4,9 +4,10 @@ import os
 import audeer
 import audinterface
 import audonnx
-import nkululeko.glob_conf as glob_conf
 import numpy as np
 import torch
+
+import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
 
 

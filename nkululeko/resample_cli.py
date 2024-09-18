@@ -1,13 +1,14 @@
 import argparse
 import configparser
 import os
-import pandas as pd
-import audformat
-from nkululeko.augmenting.resampler import Resampler
-from nkululeko.utils.util import Util
 
+import audformat
+import pandas as pd
+
+from nkululeko.augmenting.resampler import Resampler
 from nkululeko.constants import VERSION
 from nkululeko.experiment import Experiment
+from nkululeko.utils.util import Util
 
 
 def main(src_dir):

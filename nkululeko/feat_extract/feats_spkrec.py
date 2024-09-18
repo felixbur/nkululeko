@@ -7,13 +7,14 @@
 
 import os
 
-import nkululeko.glob_conf as glob_conf
 import pandas as pd
 import torch
 import torchaudio
-from nkululeko.feat_extract.featureset import Featureset
 from speechbrain.inference import EncoderClassifier
 from tqdm import tqdm
+
+import nkululeko.glob_conf as glob_conf
+from nkululeko.feat_extract.featureset import Featureset
 
 # from transformers import HubertModel, Wav2Vec2FeatureExtractor
 
