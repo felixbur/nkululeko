@@ -1,8 +1,8 @@
 # scaler.py
 
 import numpy as np
-from sklearn.preprocessing import StandardScaler, RobustScaler
 import pandas as pd
+from sklearn.preprocessing import RobustScaler, StandardScaler
 
 from nkululeko.utils.util import Util
 

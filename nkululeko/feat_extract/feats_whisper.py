@@ -1,16 +1,14 @@
 # feats_whisper.py
 import os
 
-import pandas as pd
-import torch
-from transformers import AutoFeatureExtractor
-from transformers import WhisperModel
-
 import audeer
 import audiofile
+import pandas as pd
+import torch
+from transformers import AutoFeatureExtractor, WhisperModel
 
-from nkululeko.feat_extract.featureset import Featureset
 import nkululeko.glob_conf as glob_conf
+from nkululeko.feat_extract.featureset import Featureset
 
 
 class Whisper(Featureset):

@@ -1,6 +1,7 @@
 # model_knn.py
 
 from sklearn.neighbors import KNeighborsClassifier
+
 from nkululeko.models.model import Model
 
 

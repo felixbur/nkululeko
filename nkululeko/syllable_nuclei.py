@@ -62,12 +62,12 @@
 
 
 import math
+from glob import glob
+
 import pandas as pd
 import parselmouth
-from tqdm import tqdm
-
-from glob import glob
 from parselmouth.praat import call
+from tqdm import tqdm
 
 
 def speech_rate(filename):
@@ -120,9 +120,7 @@ def speech_rate(filename):
     # use total duration, not end time, to find out duration of intdur (intensity_duration)
     # in order to allow nonzero starting times.
     intensity_duration = call(sound_from_intensity_matrix, "Get total duration")
-    intensity_max = call(
-        sound_from_intensity_matrix, "Get maximum", 0, 0, "Parabolic"
-    )
+    intensity_max = call(sound_from_intensity_matrix, "Get maximum", 0, 0, "Parabolic")
     point_process = call(
         sound_from_intensity_matrix,
         "To PointProcess (extrema)",
@@ -133,19 +131,14 @@ def speech_rate(filename):
     )
     # estimate peak positions (all peaks)
     numpeaks = call(point_process, "Get number of points")
-    t = [
-        call(point_process, "Get time from index", i + 1)
-        for i in range(numpeaks)
-    ]
+    t = [call(point_process, "Get time from index", i + 1) for i in range(numpeaks)]
 
     # fill array with intensity values
     timepeaks = []
     peakcount = 0
     intensities = []
     for i in range(numpeaks):
-        value = call(
-            sound_from_intensity_matrix, "Get value at time", t[i], "Cubic"
-        )
+        value = call(sound_from_intensity_matrix, "Get value at time", t[i], "Cubic")
         if value > threshold:
             peakcount += 1
             intensities.append(value)
@@ -161,22 +154,16 @@ def speech_rate(filename):
     for p in range(peakcount - 1):
         following = p + 1
         followingtime = timepeaks[p + 1]
-        dip = call(
-            intensity, "Get minimum", currenttime, timepeaks[p + 1], "None"
-        )
+        dip = call(intensity, "Get minimum", currenttime, timepeaks[p + 1], "None")
         diffint = abs(currentint - dip)
         if diffint > mindip:
             validpeakcount += 1
             validtime.append(timepeaks[p])
         currenttime = timepeaks[following]
-        currentint = call(
-            intensity, "Get value at time", timepeaks[following], "Cubic"
-        )
+        currentint = call(intensity, "Get value at time", timepeaks[following], "Cubic")
 
     # Look for only voiced parts
-    pitch = sound.to_pitch_ac(
-        0.02, 30, 4, False, 0.03, 0.25, 0.01, 0.35, 0.25, 450
-    )
+    pitch = sound.to_pitch_ac(0.02, 30, 4, False, 0.03, 0.25, 0.01, 0.35, 0.25, 450)
     voicedcount = 0
     voicedpeak = []
 

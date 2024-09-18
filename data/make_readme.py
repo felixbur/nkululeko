@@ -1,8 +1,7 @@
 import os
 
-from mdutils import MdUtils
 import yaml
-
+from mdutils import MdUtils
 
 # root = "./data"
 root = "."
@@ -11,9 +10,9 @@ mdFile = MdUtils(file_name="README.md", title="Nkululeko database repository")
 mdFile.create_md_file()
 mdFile.new_header(level=1, title="Data")
 mdFile.new_paragraph(
-    "This is the default top directory for Nkululeko data import."
+    "This is the default top directory for Nkululeko data import. "
     "Each database should be in its own subfolder "
-    "(you can also use `ln -sf`` to soft link original database "
+    "(you can also use `ln -sf` to soft link original database "
     "path to these subfolders) "
     "and contain a README how to import the data to Nkululeko CSV or audformat."
 )
@@ -34,36 +33,33 @@ mdFile.new_list(
 )
 mdFile.new_paragraph(
     "To support open science and reproducible research, "
-    "we only accept PR and recipes for public dataset for "
+    "we encourage to submit PR and recipes for public dataset for "
     "now on."
 )
 
-mdFile.new_header(level=2, title="Databases")
-table_list = ["Name", "Target", "Description", "Access"]
+# read all lines in yaml file
+with open(os.path.join(root, "descr.yml")) as stream:
+    descr = yaml.safe_load(stream)
 
-db_folders = os.scandir(root)
+table_list = ["Name", "Target", "Description", "Access"]
 db_num = 0
-for f in db_folders:
-    if f.is_file():
-        continue
-    dir = f.name
-    descr = None
-    try:
-        with open(os.path.join(root, dir, "descr.yml")) as stream:
-            try:
-                descr = yaml.safe_load(stream)
-            except yaml.YAMLError as exc:
-                print(exc)
-    except FileNotFoundError as fnf:
-        pass
-    if descr != None:
-        table_list.extend(
-            [descr["name"], descr["target"], descr["descr"], descr["access"]]
-        )
-        db_num += 1
-    else:
-        print(f"error on {dir}")
+
+for dataset_name in descr.keys():
+    # print(dataset_name)
+    table_list.extend(
+        [
+            descr[dataset_name][0]["name"],
+            descr[dataset_name][1]["target"],
+            descr[dataset_name][2]["descr"],
+            descr[dataset_name][3]["access"],
+        ]
+    )
+    db_num += 1
+
 mdFile.new_table(columns=4, rows=db_num + 1, text=table_list, text_align="left")
+
+# add information about number of datasets
+mdFile.new_paragraph(f"This recipe contains information about {db_num} datasets.")
 
 mdFile.new_header(level=2, title="Performance")
 mdFile.new_line(

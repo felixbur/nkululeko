@@ -1,16 +1,18 @@
 # export.py
 # export the loaded training and test sets to it's own folder
 
-import os
-import pandas as pd
-import configparser
-import audeer
 import argparse
+import configparser
+import os
+import shutil
+
+import audeer
 import audiofile
+import pandas as pd
+
+from nkululeko.constants import VERSION
 from nkululeko.experiment import Experiment
 from nkululeko.utils.util import Util
-from nkululeko.constants import VERSION
-import shutil
 
 
 def main(src_dir):

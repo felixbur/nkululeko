@@ -1,10 +1,12 @@
 # process_database.py for KBES dataset
 
-import pandas as pd
 import argparse
-from nkululeko.utils.files import find_files
 import os
+
+import pandas as pd
 from sklearn.model_selection import train_test_split
+
+from nkululeko.utils.files import find_files
 
 
 def process_database(data_dir, output_dir):

@@ -21,13 +21,13 @@ from scipy.special import softmax
 from scipy.stats import entropy, pearsonr
 from sklearn.metrics import (
     ConfusionMatrixDisplay,
+    RocCurveDisplay,
     auc,
     classification_report,
     confusion_matrix,
     r2_score,
     roc_auc_score,
     roc_curve,
-    RocCurveDisplay,
 )
 
 import nkululeko.glob_conf as glob_conf
@@ -419,24 +419,25 @@ class Reporter:
                 f1_per_class = (
                     f"result per class (F1 score): {c_ress} from epoch: {epoch}"
                 )
-                if len(np.unique(self.truths)) == 2:
-                    fpr, tpr, _ = roc_curve(self.truths, self.preds)
-                    auc_score = auc(fpr, tpr)
-                    plot_path = f"{fig_dir}{self.util.get_exp_name()}_{epoch}{self.filenameadd}_roc.{self.format}"
-                    plt.figure()
-                    display = RocCurveDisplay(
-                        fpr=fpr,
-                        tpr=tpr,
-                        roc_auc=auc_score,
-                        estimator_name=f"{self.model_type} estimator",
-                    )
-                    display.plot(ax=None)
-                    plt.savefig(plot_path)
-                    plt.close()
-                    self.util.debug(f"Saved ROC curve to {plot_path}")
-                    pauc_score = roc_auc_score(self.truths, self.preds, max_fpr=0.1)
-                    auc_pauc = f"auc: {auc_score:.3f}, pauc: {pauc_score:.3f} from epoch: {epoch}"
-                    self.util.debug(auc_pauc)
+                # the following auc is buggy, preds should be probabilities
+                # if len(np.unique(self.truths)) == 2:
+                #     fpr, tpr, _ = roc_curve(self.truths, self.preds)
+                #     auc_score = auc(fpr, tpr)
+                #     plot_path = f"{fig_dir}{self.util.get_exp_name()}_{epoch}{self.filenameadd}_roc.{self.format}"
+                #     plt.figure()
+                #     display = RocCurveDisplay(
+                #         fpr=fpr,
+                #         tpr=tpr,
+                #         roc_auc=auc_score,
+                #         estimator_name=f"{self.model_type} estimator",
+                #     )
+                #     display.plot(ax=None)
+                #     plt.savefig(plot_path)
+                #     plt.close()
+                #     self.util.debug(f"Saved ROC curve to {plot_path}")
+                #     pauc_score = roc_auc_score(self.truths, self.preds, max_fpr=0.1)
+                #     auc_pauc = f"auc: {auc_score:.3f}, pauc: {pauc_score:.3f} from epoch: {epoch}"
+                #     self.util.debug(auc_pauc)
                 self.util.debug(f1_per_class)
                 rpt_str = f"{json.dumps(rpt)}\n{f1_per_class}"
                 # rpt_str += f"\n{auc_auc}"

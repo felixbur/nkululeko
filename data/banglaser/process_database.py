@@ -14,11 +14,13 @@ FF = Repetition, 01, 02, 03
 GG = Actor ID, 01-34 (odd: male, even: female)
 """
 
-import pandas as pd
-from nkululeko.utils.files import find_files
 import argparse
-from sklearn.model_selection import train_test_split
 from pathlib import Path
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
+from nkululeko.utils.files import find_files
 
 
 def process_database(data_dir, output_dir):

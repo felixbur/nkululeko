@@ -1,15 +1,16 @@
 # feats_agender.py
 
-from nkululeko.feat_extract.featureset import Featureset
 import os
 
 # import pandas as pd
 import audeer
-import nkululeko.glob_conf as glob_conf
+import audinterface
 import audonnx
 import numpy as np
-import audinterface
 import torch
+
+import nkululeko.glob_conf as glob_conf
+from nkululeko.feat_extract.featureset import Featureset
 
 
 class AgenderSet(Featureset):
@@ -37,7 +38,7 @@ class AgenderSet(Featureset):
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         device = self.util.config_val("MODEL", "device", cuda)
         self.model = audonnx.load(model_root, device=device)
-        self.util.debug(f"initialized agender model")
+        self.util.debug("initialized agender model")
         self.model_loaded = True
 
     def extract(self):

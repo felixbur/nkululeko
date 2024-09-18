@@ -5,7 +5,7 @@ Nkululeko database repository
 # Data
 
 
-This is the default top directory for Nkululeko data import.Each database should be in its own subfolder (you can also use `ln -sf`` to soft link original database path to these subfolders) and contain a README how to import the data to Nkululeko CSV or audformat.
+This is the default top directory for Nkululeko data import. Each database should be in its own subfolder (you can also use `ln -sf` to soft link original database path to these subfolders) and contain a README how to import the data to Nkululeko CSV or audformat.
 ## Accessibility
 
 
@@ -15,12 +15,10 @@ The column `access` in the table below indicates the database's accessability. T
 - `private`: the database is not publicly available on the internet and requires the private information of the owner of the dataset.
 
 
-To support open science and reproducible research, we only accept PR and recipes for public dataset for now on.
-## Databases
-
+To support open science and reproducible research, we encourage to submit PR and recipes for public dataset for now on.
 |Name|Target|Description|Access|
 | :--- | :--- | :--- | :--- |
-|emorynlp|emotion|English, From Friends TV|public|
+|emorynlp|emotion|English Emotion Dataset from Friends TV Show|public|
 |emns|emotion,intensity|British, singles peaker, UAR=.479|public|
 |test|none|Test data for nkululeko|public|
 |catsvsdogs|cats_dogs|kaggle test set|public|
@@ -72,11 +70,13 @@ To support open science and reproducible research, we only accept PR and recipes
 |urdu|emotion|Urdu|public|
 |polish|emotion|Polish|public|
 |cmu-mosei|sentiment,emotion|English, original link dead|public|
-|SVD|pathologicalspeech|German|public|
+|svd|pahtological speech|German speech data for detecting various pathological voices|public|
 |msp-improv|emotion,VAD,naturalness|English|restricted|
 |shemo|emotion|Persian|public|
 |esd|emotion|English,Chinese|public|
 
+
+This recipe contains information about 56 datasets.
 ## Performance
   
 ![Nkululeko performance](../meta/images/nkululeko_ser_20240719.png)  

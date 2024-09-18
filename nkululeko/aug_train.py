@@ -1,15 +1,17 @@
 # aug_train.py
 # train with augmentations
-import ast
-import os.path
-import numpy as np
-import configparser
 import argparse
+import ast
+import configparser
+import os.path
+
+import numpy as np
+
 import nkululeko.experiment as exp
-from nkululeko.utils.util import Util
-from nkululeko.constants import VERSION
 import nkululeko.glob_conf as glob_conf
 from nkululeko.augment import doit as augment
+from nkululeko.constants import VERSION
+from nkululeko.utils.util import Util
 
 
 def doit(config_file):

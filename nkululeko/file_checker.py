@@ -1,6 +1,6 @@
-import pandas as pd
-from nkululeko.utils.util import Util
 import os
+
+from nkululeko.utils.util import Util
 
 
 class FileChecker:
@@ -10,7 +10,7 @@ class FileChecker:
         self.util.copy_flags(df, self.df)
         check_vad = self.util.config_val("DATA", "check_vad", False)
         if check_vad:
-            self.util.debug(f"This may take a while downloading the VAD model")
+            self.util.debug("This may take a while downloading the VAD model")
             import torch
 
             torch.set_num_threads(1)

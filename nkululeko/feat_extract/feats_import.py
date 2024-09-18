@@ -1,10 +1,11 @@
 # feats_import.py
 
-import os
 import ast
+import os
+
 import audformat
 import pandas as pd
-from nkululeko.utils.util import Util
+
 from nkululeko.feat_extract.featureset import Featureset
 
 
@@ -20,11 +21,11 @@ class ImportSet(Featureset):
         try:
             feat_import_files = self.util.config_val("FEATS", "import_file", False)
             feat_import_files = ast.literal_eval(feat_import_files)
-        except ValueError as e:
+        except ValueError:
             self.util.error(
                 "feature type == import needs import_file = ['file1', 'filex']"
             )
-        except SyntaxError as se:
+        except SyntaxError:
             if type(feat_import_files) == str:
                 feat_import_files = [feat_import_files]
             else:

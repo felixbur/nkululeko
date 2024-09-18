@@ -15,28 +15,20 @@ Raises:
     ValueError: If an unknown ensemble method is provided.
     AssertionError: If the number of config files is less than 2 for majority voting.
 """
+
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 
-from typing import List
 import configparser
 import time
 from argparse import ArgumentParser
 from pathlib import Path
+from typing import List
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-
-from sklearn.metrics import(
-    RocCurveDisplay,
-    balanced_accuracy_score, 
-    classification_report,
-    auc,
-    roc_auc_score,
-    roc_curve
-)
+from sklearn.metrics import balanced_accuracy_score, classification_report
 
 from nkululeko.constants import VERSION
 from nkululeko.experiment import Experiment
@@ -169,17 +161,19 @@ def performance_weighted_ensemble(ensemble_preds_ls, labels, weights):
 
     # asserts weiths in decimal 0-1
     assert all(0 <= w <= 1 for w in weights), "Weights must be between 0 and 1"
-    
+
     # assert lenght of weights matches number of models
-    assert len(weights) == len(ensemble_preds_ls), "Number of weights must match number of models"
-    
+    assert len(weights) == len(
+        ensemble_preds_ls
+    ), "Number of weights must match number of models"
+
     # Normalize weights
     total_weight = sum(weights)
     weights = [weight / total_weight for weight in weights]
-    
+
     for idx in ensemble_preds_ls[0].index:
         class_probabilities = {label: 0 for label in labels}
-        
+
         for df, weight in zip(ensemble_preds_ls, weights):
             row = df.loc[idx]
             for label in labels:
@@ -192,10 +186,12 @@ def performance_weighted_ensemble(ensemble_preds_ls, labels, weights):
     return final_predictions, final_confidences
 
 
-
-
 def ensemble_predictions(
-    config_files: List[str], method: str, threshold: float, weights: List[float], no_labels: bool
+    config_files: List[str],
+    method: str,
+    threshold: float,
+    weights: List[float],
+    no_labels: bool,
 ) -> pd.DataFrame:
     """
     Ensemble predictions from multiple experiments.
@@ -261,17 +257,20 @@ def ensemble_predictions(
             ensemble_preds_ls, labels, threshold
         )
     elif method == "uncertainty_weighted":
-        ensemble_preds["predicted"], ensemble_preds["uncertainty"] = (
-            uncertainty_weighted_ensemble(ensemble_preds_ls, labels)
-        )
+        (
+            ensemble_preds["predicted"],
+            ensemble_preds["uncertainty"],
+        ) = uncertainty_weighted_ensemble(ensemble_preds_ls, labels)
     elif method == "confidence_weighted":
-        ensemble_preds["predicted"], ensemble_preds["confidence"] = (
-            confidence_weighted_ensemble(ensemble_preds_ls, labels)
-        )
+        (
+            ensemble_preds["predicted"],
+            ensemble_preds["confidence"],
+        ) = confidence_weighted_ensemble(ensemble_preds_ls, labels)
     elif method == "performance_weighted":
-        ensemble_preds["predicted"], ensemble_preds["confidence"] = (
-            performance_weighted_ensemble(ensemble_preds_ls, labels, weights)
-        )
+        (
+            ensemble_preds["predicted"],
+            ensemble_preds["confidence"],
+        ) = performance_weighted_ensemble(ensemble_preds_ls, labels, weights)
     else:
         raise ValueError(f"Unknown ensemble method: {method}")
 

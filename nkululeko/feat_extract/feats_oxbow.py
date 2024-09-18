@@ -1,10 +1,11 @@
 # feats_oxbow.py
 
-from nkululeko.utils.util import Util
-from nkululeko.feat_extract.featureset import Featureset
 import os
-import pandas as pd
+
 import opensmile
+import pandas as pd
+
+from nkululeko.feat_extract.featureset import Featureset
 
 
 class Openxbow(Featureset):
@@ -53,7 +54,7 @@ class Openxbow(Featureset):
             # check if JAR file exist
             if not os.path.isfile(f"{xbow_path}/openXBOW.jar"):
                 # download using wget if not exist and locate in xbow_path
-                os.system(f"git clone https://github.com/openXBOW/openXBOW")
+                os.system("git clone https://github.com/openXBOW/openXBOW")
             # get the size of the codebook
             size = self.util.config_val("FEATS", "size", 500)
             # get the number of assignements

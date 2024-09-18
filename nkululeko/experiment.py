@@ -5,13 +5,13 @@ import pickle
 import random
 import time
 
+import audeer
+import audformat
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
-import audeer
-import audformat
-
+import nkululeko.glob_conf as glob_conf
 from nkululeko.data.dataset import Dataset
 from nkululeko.data.dataset_csv import Dataset_CSV
 from nkululeko.demo_predictor import Demo_predictor
@@ -19,7 +19,6 @@ from nkululeko.feat_extract.feats_analyser import FeatureAnalyser
 from nkululeko.feature_extractor import FeatureExtractor
 from nkululeko.file_checker import FileChecker
 from nkululeko.filter_data import DataFilter
-import nkululeko.glob_conf as glob_conf
 from nkululeko.plots import Plots
 from nkululeko.reporting.report import Report
 from nkululeko.runmanager import Runmanager
@@ -744,7 +743,6 @@ class Experiment:
         if model.is_ann():
             print("converting to onnx from torch")
         else:
-
             print("converting to onnx from sklearn")
         # save the rest
         f = open(filename, "wb")

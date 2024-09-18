@@ -43,9 +43,7 @@ class SNREstimator:
     def frame_audio(self, signal):
         num_frames = 1 + (len(signal) - self.frame_length) // self.hop_length
         frames = [
-            signal[
-                i * self.hop_length: (i * self.hop_length) + self.frame_length
-            ]
+            signal[i * self.hop_length : (i * self.hop_length) + self.frame_length]
             for i in range(num_frames)
         ]
         return frames
@@ -64,11 +62,8 @@ class SNREstimator:
             for frame in frames
         ]
 
-        energy_threshold_low = np.percentile(
-            log_energies, 25)  # First quartile
-        energy_threshold_high = np.percentile(
-            log_energies, 75
-        )  # Third quartile
+        energy_threshold_low = np.percentile(log_energies, 25)  # First quartile
+        energy_threshold_high = np.percentile(log_energies, 75)  # Third quartile
 
         low_energy_frames = [
             log_energy
@@ -94,9 +89,7 @@ class SNREstimator:
             energy_threshold_high,
         )
 
-    def plot_energy(
-        self, log_energies, energy_threshold_low, energy_threshold_high
-    ):
+    def plot_energy(self, log_energies, energy_threshold_low, energy_threshold_high):
         plt.figure(figsize=(10, 6))
         plt.plot(log_energies, label="Log Energy")
         plt.axhline(
@@ -153,9 +146,12 @@ def main():
 
     signal, sr = audiofile.read(args.input)
     snr_estimator = SNREstimator(signal, sr, args.window_size, args.hop_size)
-    estimated_snr, log_energies, energy_threshold_low, energy_threshold_high = (
-        snr_estimator.estimate_snr()
-    )
+    (
+        estimated_snr,
+        log_energies,
+        energy_threshold_low,
+        energy_threshold_high,
+    ) = snr_estimator.estimate_snr()
 
     print("Estimated SNR:", estimated_snr)
 

@@ -1,9 +1,10 @@
 # process_database.py: for JVNV database
 # export PYTHONPATH="${PYTHONPATH}:/home/bagus/github/nkululeko"
 
-import os
-import csv
 import argparse
+import csv
+import os
+
 from nkululeko.utils.files import find_files
 
 

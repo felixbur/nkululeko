@@ -12,15 +12,16 @@ pip install --pre torch torchvision torchaudio --extra-index-url https://downloa
 """
 
 import os
+
+import audiofile
 import pandas as pd
-from tqdm import tqdm
 import torch
 import torchaudio
 from torchaudio.pipelines import SQUIM_SUBJECTIVE
 from torchaudio.utils import download_asset
-import audiofile
+from tqdm import tqdm
+
 import nkululeko.glob_conf as glob_conf
-from nkululeko.utils.util import Util
 from nkululeko.feat_extract.featureset import Featureset
 
 

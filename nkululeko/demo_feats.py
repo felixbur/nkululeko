@@ -1,12 +1,13 @@
 # demo_feats.py
 # Test some features extracted
 
-from nkululeko.experiment import Experiment
-import configparser
-from nkululeko.utils.util import Util
-from nkululeko.constants import VERSION
 import argparse
+import configparser
 import os
+
+from nkululeko.constants import VERSION
+from nkululeko.experiment import Experiment
+from nkululeko.utils.util import Util
 
 
 def main(src_dir):

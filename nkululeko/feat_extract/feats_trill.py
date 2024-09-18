@@ -1,17 +1,14 @@
 # feats_trill.py
 import os
 
+import audiofile as af
 import pandas as pd
 import tensorflow as tf
 import tensorflow_hub as hub
 from tqdm import tqdm
 
-import audiofile as af
-
-from nkululeko.feat_extract.featureset import Featureset
 import nkululeko.glob_conf as glob_conf
-from nkululeko.utils.util import Util
-
+from nkululeko.feat_extract.featureset import Featureset
 
 # Import TF 2.X and make sure we're running eager.
 assert tf.executing_eagerly()
