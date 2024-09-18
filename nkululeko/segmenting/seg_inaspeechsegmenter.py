@@ -3,6 +3,7 @@ import warnings
 import audformat
 import pandas as pd
 from audformat import segmented_index
+
 # segment the data
 from inaSpeechSegmenter import Segmenter
 

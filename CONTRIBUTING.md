@@ -45,7 +45,10 @@ The preferred way to contribute to nkululeko is to fork the [main repository](ht
 
 6.	Once you are done, make sure to format the code using black to fit Nkululeko's codestyle.
 
-	```black nkululeko
+	```bash
+	black nkululeko/
+	isort --profile black nkululeko/
+	# Alternatively and additionaly, use ruff:
 	ruff check --fix --output-format=full nkululeko
 	```
 

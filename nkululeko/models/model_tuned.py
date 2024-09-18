@@ -16,7 +16,9 @@ import pandas as pd
 import torch
 import transformers
 from transformers.models.wav2vec2.modeling_wav2vec2 import (
-    Wav2Vec2Model, Wav2Vec2PreTrainedModel)
+    Wav2Vec2Model,
+    Wav2Vec2PreTrainedModel,
+)
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.models.model import Model as BaseModel
