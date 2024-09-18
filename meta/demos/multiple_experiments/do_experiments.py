@@ -1,6 +1,5 @@
 import os
 
-
 classifiers = [
     {"--model": "mlp", "--layers": "\"{'l1':64,'l2':16}\"", "--epochs": 100},
     {

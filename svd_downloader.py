@@ -1,16 +1,16 @@
 # svd_downloader.py
 # copied from https://github.com/rijulg/svd-downloader
 
-import sys
-import logging
-from argparse import ArgumentParser
-
-import re
-import dask
 import json
-import requests
-from pathlib import Path
+import logging
+import re
+import sys
+from argparse import ArgumentParser
 from logging import Logger
+from pathlib import Path
+
+import dask
+import requests
 from bs4 import BeautifulSoup
 from dask.diagnostics.progress import ProgressBar
 

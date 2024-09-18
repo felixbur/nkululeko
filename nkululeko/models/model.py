@@ -7,7 +7,8 @@ import numpy as np
 import pandas as pd
 import sklearn.utils
 from joblib import parallel_backend
-from sklearn.model_selection import GridSearchCV, LeaveOneGroupOut, StratifiedKFold
+from sklearn.model_selection import (GridSearchCV, LeaveOneGroupOut,
+                                     StratifiedKFold)
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.reporting.reporter import Reporter

@@ -1,5 +1,6 @@
-import pandas as pd
 import argparse
+
+import pandas as pd
 
 # Use this code to create a .csv file with the necessary format needed for 
 # categorical emotion recognition model

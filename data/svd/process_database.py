@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 def process_database(output_path):
     # Read the list files
     train_normal = pd.read_csv('train_normal.lst', header=None)

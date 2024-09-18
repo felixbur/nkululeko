@@ -4,11 +4,12 @@
 import sys
 
 sys.path.append("./nkululeko/src")
-import experiment as exp
 import configparser
-from util import Util
 import os.path
+
 import constants
+import experiment as exp
+from util import Util
 
 
 def main(config_file):

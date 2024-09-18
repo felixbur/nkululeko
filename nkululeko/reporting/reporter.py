@@ -5,30 +5,16 @@ import math
 
 import matplotlib.pyplot as plt
 import numpy as np
-
 # from torch import is_tensor
-from audmetric import (
-    accuracy,
-    concordance_cc,
-    mean_absolute_error,
-    mean_squared_error,
-    unweighted_average_recall,
-)
-
+from audmetric import (accuracy, concordance_cc, mean_absolute_error,
+                       mean_squared_error, unweighted_average_recall)
 # import os
 from confidence_intervals import evaluate_with_conf_int
 from scipy.special import softmax
 from scipy.stats import entropy, pearsonr
-from sklearn.metrics import (
-    ConfusionMatrixDisplay,
-    RocCurveDisplay,
-    auc,
-    classification_report,
-    confusion_matrix,
-    r2_score,
-    roc_auc_score,
-    roc_curve,
-)
+from sklearn.metrics import (ConfusionMatrixDisplay, RocCurveDisplay, auc,
+                             classification_report, confusion_matrix, r2_score,
+                             roc_auc_score, roc_curve)
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.plots import Plots

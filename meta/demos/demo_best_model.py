@@ -4,8 +4,9 @@
 import sys
 
 sys.path.append("./src")
-import experiment as exp
 import configparser
+
+import experiment as exp
 from util import Util
 
 

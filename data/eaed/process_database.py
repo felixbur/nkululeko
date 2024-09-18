@@ -3,10 +3,12 @@
 file name format: <speaker>_<emotion>_<(number)>.wav
 """
 
-import pandas as pd
-from pathlib import Path
-from sklearn.model_selection import train_test_split
 import argparse
+from pathlib import Path
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
 from nkululeko.utils.files import find_files
 
 

@@ -2,7 +2,6 @@ import os
 
 import audb
 
-
 # set download directory to current
 cwd = os.getcwd()
 audb.config.CACHE_ROOT = cwd

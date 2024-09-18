@@ -4,9 +4,10 @@
 import sys
 
 sys.path.append("./src")
-from reporter import Reporter
-import experiment as exp
 import configparser
+
+import experiment as exp
+from reporter import Reporter
 from util import Util
 
 

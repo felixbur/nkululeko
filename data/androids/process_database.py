@@ -15,9 +15,10 @@ Usage: `python process_database.py`
 
 """
 
-import pandas as pd
 import os
+
 import audeer
+import pandas as pd
 
 dataset_name = 'androids'
 data_root = './Androids-Corpus/'

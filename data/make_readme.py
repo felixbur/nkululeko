@@ -1,8 +1,7 @@
 import os
 
-from mdutils import MdUtils
 import yaml
-
+from mdutils import MdUtils
 
 # root = "./data"
 root = "."

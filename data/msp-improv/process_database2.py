@@ -3,10 +3,11 @@
 # bagustris@yahoo.com, 2023-08-22
 
 
-import os
-import pandas as pd
-import csv
 import argparse
+import csv
+import os
+
+import pandas as pd
 
 train_list = []
 dev_list = []
