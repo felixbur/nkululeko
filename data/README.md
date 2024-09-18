@@ -16,11 +16,9 @@ The column `access` in the table below indicates the database's accessability. T
 
 
 To support open science and reproducible research, we only accept PR and recipes for public dataset for now on.
-## Databases
-
 |Name|Target|Description|Access|
 | :--- | :--- | :--- | :--- |
-|emorynlp|emotion|English, From Friends TV|public|
+|emorynlp|emotion|English Emotion Dataset from Friends TV Show|public|
 |emns|emotion,intensity|British, singles peaker, UAR=.479|public|
 |test|none|Test data for nkululeko|public|
 |catsvsdogs|cats_dogs|kaggle test set|public|
@@ -77,6 +75,8 @@ To support open science and reproducible research, we only accept PR and recipes
 |shemo|emotion|Persian|public|
 |esd|emotion|English,Chinese|public|
 
+
+This repository contains information about 56 datasets.
 ## Performance
   
 ![Nkululeko performance](../meta/images/nkululeko_ser_20240719.png)  
