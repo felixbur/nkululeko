@@ -5,7 +5,7 @@ Nkululeko database repository
 # Data
 
 
-This is the default top directory for Nkululeko data import.Each database should be in its own subfolder (you can also use `ln -sf`` to soft link original database path to these subfolders) and contain a README how to import the data to Nkululeko CSV or audformat.
+This is the default top directory for Nkululeko data import. Each database should be in its own subfolder (you can also use `ln -sf` to soft link original database path to these subfolders) and contain a README how to import the data to Nkululeko CSV or audformat.
 ## Accessibility
 
 
@@ -15,7 +15,7 @@ The column `access` in the table below indicates the database's accessability. T
 - `private`: the database is not publicly available on the internet and requires the private information of the owner of the dataset.
 
 
-To support open science and reproducible research, we only accept PR and recipes for public dataset for now on.
+To support open science and reproducible research, we encourage to submit PR and recipes for public dataset for now on.
 |Name|Target|Description|Access|
 | :--- | :--- | :--- | :--- |
 |emorynlp|emotion|English Emotion Dataset from Friends TV Show|public|

@@ -11,9 +11,9 @@ mdFile = MdUtils(file_name="README.md", title="Nkululeko database repository")
 mdFile.create_md_file()
 mdFile.new_header(level=1, title="Data")
 mdFile.new_paragraph(
-    "This is the default top directory for Nkululeko data import."
+    "This is the default top directory for Nkululeko data import. "
     "Each database should be in its own subfolder "
-    "(you can also use `ln -sf`` to soft link original database "
+    "(you can also use `ln -sf` to soft link original database "
     "path to these subfolders) "
     "and contain a README how to import the data to Nkululeko CSV or audformat."
 )
@@ -34,7 +34,7 @@ mdFile.new_list(
 )
 mdFile.new_paragraph(
     "To support open science and reproducible research, "
-    "we only accept PR and recipes for public dataset for "
+    "we encourage to submit PR and recipes for public dataset for "
     "now on."
 )
 
