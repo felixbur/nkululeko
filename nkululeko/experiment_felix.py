@@ -457,8 +457,7 @@ class Experiment:
                 predictor = ValencePredictor(df)
                 df = predictor.predict(sample_selection)
             elif target == "dominance":
-                from nkululeko.autopredict.ap_dominance import \
-                    DominancePredictor
+                from nkululeko.autopredict.ap_dominance import DominancePredictor
 
                 predictor = DominancePredictor(df)
                 df = predictor.predict(sample_selection)
