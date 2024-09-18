@@ -70,13 +70,13 @@ To support open science and reproducible research, we only accept PR and recipes
 |urdu|emotion|Urdu|public|
 |polish|emotion|Polish|public|
 |cmu-mosei|sentiment,emotion|English, original link dead|public|
-|SVD|pathologicalspeech|German|public|
+|svd|pahtological speech|German speech data for detecting various pathological voices|public|
 |msp-improv|emotion,VAD,naturalness|English|restricted|
 |shemo|emotion|Persian|public|
 |esd|emotion|English,Chinese|public|
 
 
-This repository contains information about 56 datasets.
+This recipe contains information about 56 datasets.
 ## Performance
   
 ![Nkululeko performance](../meta/images/nkululeko_ser_20240719.png)  

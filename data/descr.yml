@@ -389,3 +389,9 @@ ESD:
 - target: emotion
 - descr: English,Chinese
 - access: public
+
+SVD:
+- name: svd
+- target: pahtological speech
+- descr: German speech data for detecting various pathological voices
+- access: public

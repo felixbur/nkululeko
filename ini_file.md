@@ -284,6 +284,8 @@
     * **tree_reg**: Classification tree regressor
     * **xgb**: XG-Boost
     * **xgr**: XG-Boost Regression
+* **balancing**: balancing for **finetune** type; for other than finetune, set balancing in [FEATS].
+  * possible values: [ros, smote, adasyn]
 * **tuning_params**: possible tuning parameters for x-fold optimization (for Bayes, KNN, KNN_reg, Tree, Tree_reg, SVM, SVR, XGB and XGR)
   * tuning_params = ['subsample', 'n_estimators', 'max_depth']
     * subsample = [.5, .7]
