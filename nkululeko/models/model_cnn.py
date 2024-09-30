@@ -6,23 +6,21 @@ Inspired by code from Su Lei
 """
 
 import ast
-from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
-from PIL import Image
-from sklearn.metrics import recall_score
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import Dataset
 import torchvision.transforms as transforms
+from PIL import Image
+from sklearn.metrics import recall_score
+from torch.utils.data import Dataset
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.losses.loss_softf1loss import SoftF1Loss
 from nkululeko.models.model import Model
 from nkululeko.reporting.reporter import Reporter
-from nkululeko.utils.util import Util
 
 
 class CNNModel(Model):
@@ -55,7 +53,7 @@ class CNNModel(Model):
             )
         else:
             self.util.error(f"unknown loss function: {criterion}")
-        self.util.debug(f"using model with cross entropy loss function")
+        self.util.debug("using model with cross entropy loss function")
         # set up the model
         # cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", "cpu")

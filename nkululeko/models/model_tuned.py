@@ -7,17 +7,18 @@ import os
 import pickle
 import typing
 
+import audeer
+import audiofile
+import audmetric
 import datasets
 import numpy as np
 import pandas as pd
 import torch
 import transformers
-from transformers.models.wav2vec2.modeling_wav2vec2 import Wav2Vec2Model
-from transformers.models.wav2vec2.modeling_wav2vec2 import Wav2Vec2PreTrainedModel
-
-import audeer
-import audiofile
-import audmetric
+from transformers.models.wav2vec2.modeling_wav2vec2 import (
+    Wav2Vec2Model,
+    Wav2Vec2PreTrainedModel,
+)
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.models.model import Model as BaseModel
@@ -25,7 +26,6 @@ from nkululeko.reporting.reporter import Reporter
 
 
 class TunedModel(BaseModel):
-
     def __init__(self, df_train, df_test, feats_train, feats_test):
         """Constructor taking the configuration and all dataframes."""
         super().__init__(df_train, df_test, feats_train, feats_test)
@@ -54,8 +54,7 @@ class TunedModel(BaseModel):
         self.learning_rate = float(
             self.util.config_val("MODEL", "learning_rate", "0.0001")
         )
-        self.max_duration = float(
-            self.util.config_val("MODEL", "max_duration", "8.0"))
+        self.max_duration = float(self.util.config_val("MODEL", "max_duration", "8.0"))
         self.df_train, self.df_test = df_train, df_test
         self.epoch_num = int(self.util.config_val("EXP", "epochs", 1))
         self.util.debug(f"num of epochs: {self.epoch_num}")
@@ -65,12 +64,12 @@ class TunedModel(BaseModel):
             self.drop = float(drop)
         self.util.debug(f"init: training with dropout: {self.drop}")
         self.push = eval(self.util.config_val("MODEL", "push_to_hub", "False"))
+        self.balancing = self.util.config_val("MODEL", "balancing", False)
         self._init_model()
 
     def _init_model(self):
         model_path = "facebook/wav2vec2-large-robust-ft-swbd-300h"
-        pretrained_model = self.util.config_val(
-            "MODEL", "pretrained_model", model_path)
+        pretrained_model = self.util.config_val("MODEL", "pretrained_model", model_path)
         self.num_layers = None
         self.sampling_rate = 16000
         self.max_duration_sec = self.max_duration
@@ -94,6 +93,42 @@ class TunedModel(BaseModel):
             df = y.reset_index()
             df.start = df.start.dt.total_seconds()
             df.end = df.end.dt.total_seconds()
+            #     ds = datasets.Dataset.from_pandas(df)
+            #     dataset[split] = ds
+
+            # self.dataset = datasets.DatasetDict(dataset)
+            if split == "train" and self.balancing:
+                if self.balancing == "ros":
+                    from imblearn.over_sampling import RandomOverSampler
+
+                    sampler = RandomOverSampler(random_state=42)
+                elif self.balancing == "smote":
+                    from imblearn.over_sampling import SMOTE
+
+                    sampler = SMOTE(random_state=42)
+                elif self.balancing == "adasyn":
+                    from imblearn.over_sampling import ADASYN
+
+                    sampler = ADASYN(random_state=42)
+                else:
+                    self.util.error(f"Unknown balancing algorithm: {self.balancing}")
+
+                X_resampled, y_resampled = sampler.fit_resample(
+                    df[["start", "end"]], df["targets"]
+                )
+                df = pd.DataFrame(
+                    {
+                        "start": X_resampled["start"],
+                        "end": X_resampled["end"],
+                        "targets": y_resampled,
+                    }
+                )
+
+                # print the before and after class distribution
+                self.util.debug(
+                    f"balanced with: {self.balancing}, new size: {len(df)}, was {len(data_sources[split])}"
+                )
+
             ds = datasets.Dataset.from_pandas(df)
             dataset[split] = ds
 
@@ -101,7 +136,7 @@ class TunedModel(BaseModel):
 
         # load pre-trained model
         if self.is_classifier:
-            self.util.debug(f"Task is classification.")
+            self.util.debug("Task is classification.")
             le = glob_conf.label_encoder
             mapping = dict(zip(le.classes_, range(len(le.classes_))))
             target_mapping = {k: int(v) for k, v in mapping.items()}
@@ -116,7 +151,7 @@ class TunedModel(BaseModel):
                 finetuning_task=target_name,
             )
         else:
-            self.util.debug(f"Task is regression.")
+            self.util.debug("Task is regression.")
             self.config = transformers.AutoConfig.from_pretrained(
                 pretrained_model,
                 num_labels=1,
@@ -215,7 +250,6 @@ class TunedModel(BaseModel):
         return batch
 
     def compute_metrics(self, p: transformers.EvalPrediction):
-
         metrics = {
             "UAR": audmetric.unweighted_average_recall,
             "ACC": audmetric.accuracy,
@@ -268,8 +302,7 @@ class TunedModel(BaseModel):
                 else:
                     criterion = torch.nn.CrossEntropyLoss()
             else:
-                self.util.error(
-                    f"criterion {criterion} not supported for classifier")
+                self.util.error(f"criterion {criterion} not supported for classifier")
         else:
             self.criterion = self.util.config_val("MODEL", "loss", "ccc")
             if criterion == "1-ccc":
@@ -279,8 +312,7 @@ class TunedModel(BaseModel):
             elif criterion == "mae":
                 criterion = torch.nn.L1Loss()
             else:
-                self.util.error(
-                    f"criterion {criterion} not supported for regressor")
+                self.util.error(f"criterion {criterion} not supported for regressor")
 
         # set push_to_hub value, default false
         # push = eval(self.util.config_val("MODEL", "push_to_hub", "False"))
@@ -319,8 +351,7 @@ class TunedModel(BaseModel):
         elif metrics_for_best_model == "MAE":
             greater_is_better = False
         else:
-            self.util.error(
-                f"unknown metric/measure: {metrics_for_best_model}")
+            self.util.error(f"unknown metric/measure: {metrics_for_best_model}")
 
         training_args = transformers.TrainingArguments(
             output_dir=model_root,
@@ -453,17 +484,15 @@ class TunedModel(BaseModel):
             self.clf = pickle.load(handle)
 
 
-@ dataclasses.dataclass
+@dataclasses.dataclass
 class ModelOutput(transformers.file_utils.ModelOutput):
-
     logits: torch.FloatTensor = None
     hidden_states: typing.Tuple[torch.FloatTensor] = None
     cnn_features: torch.FloatTensor = None
 
 
-@ dataclasses.dataclass
+@dataclasses.dataclass
 class ModelOutputReg(transformers.file_utils.ModelOutput):
-
     logits: torch.FloatTensor
     hidden_states: typing.Tuple[torch.FloatTensor] = None
     attentions: typing.Tuple[torch.FloatTensor] = None
@@ -473,9 +502,7 @@ class ModelOutputReg(transformers.file_utils.ModelOutput):
 
 
 class ModelHead(torch.nn.Module):
-
     def __init__(self, config):
-
         super().__init__()
 
         self.dense = torch.nn.Linear(config.hidden_size, config.hidden_size)
@@ -483,7 +510,6 @@ class ModelHead(torch.nn.Module):
         self.out_proj = torch.nn.Linear(config.hidden_size, config.num_labels)
 
     def forward(self, features, **kwargs):
-
         x = features
         x = self.dropout(x)
         x = self.dense(x)
@@ -495,9 +521,7 @@ class ModelHead(torch.nn.Module):
 
 
 class Model(Wav2Vec2PreTrainedModel):
-
     def __init__(self, config):
-
         if not hasattr(config, "add_adapter"):
             setattr(config, "add_adapter", False)
 
@@ -516,7 +540,6 @@ class Model(Wav2Vec2PreTrainedModel):
         hidden_states,
         attention_mask,
     ):
-
         if attention_mask is None:  # For evaluation with batch_size==1
             outputs = torch.mean(hidden_states, dim=1)
         else:
@@ -532,8 +555,7 @@ class Model(Wav2Vec2PreTrainedModel):
             attention_sum = torch.sum(attention_mask, dim=1)
 
             epsilon = 1e-6  # to avoid division by zero and numerical instability
-            outputs = outputs / (torch.reshape(attention_sum, (-1, 1)) +
-                                 epsilon)
+            outputs = outputs / (torch.reshape(attention_sum, (-1, 1)) + epsilon)
 
         return outputs
 
@@ -590,7 +612,6 @@ class Model(Wav2Vec2PreTrainedModel):
 
 
 class ConcordanceCorCoeff(torch.nn.Module):
-
     def __init__(self):
         super().__init__()
         self.mean = torch.mean

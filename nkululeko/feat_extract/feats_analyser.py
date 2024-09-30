@@ -1,18 +1,18 @@
 # feats_analyser.py
 import ast
+
+import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.inspection import permutation_importance
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.linear_model import LinearRegression
-from sklearn.tree import DecisionTreeRegressor
-import matplotlib.pyplot as plt
-from nkululeko.utils.util import Util
-from nkululeko.utils.stats import normalize
-from nkululeko.plots import Plots
+from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+
 import nkululeko.glob_conf as glob_conf
-from nkululeko.reporting.report_item import ReportItem
+from nkululeko.plots import Plots
 from nkululeko.reporting.defines import Header
+from nkululeko.reporting.report_item import ReportItem
+from nkululeko.utils.stats import normalize
+from nkululeko.utils.util import Util
 
 
 class FeatureAnalyser:
@@ -50,19 +50,32 @@ class FeatureAnalyser:
 
         name = "my_shap_values"
         if not self.util.exist_pickle(name):
+            # get model name
+            model_name = self.util.get_model_type()
+            if hasattr(model, "predict_shap"):
+                model_func = model.predict_shap
+            elif hasattr(model, "clf"):
+                model_func = model.clf.predict
+            else:
+                raise Exception("Model not supported for SHAP analysis")
+
+            self.util.debug(f"using SHAP explainer for {model_name} model")
 
             explainer = shap.Explainer(
-                model.predict_shap,
+                model_func,
                 self.features,
                 output_names=glob_conf.labels,
                 algorithm="permutation",
                 npermutations=5,
             )
+
             self.util.debug("computing SHAP values...")
             shap_values = explainer(self.features)
             self.util.to_pickle(shap_values, name)
         else:
             shap_values = self.util.from_pickle(name)
+        # plt.figure()
+        plt.close("all")
         plt.tight_layout()
         shap.plots.bar(shap_values)
         fig_dir = self.util.get_path("fig_dir") + "../"  # one up because of the runs
@@ -71,7 +84,8 @@ class FeatureAnalyser:
         filename = f"_SHAP_{model.name}"
         filename = f"{fig_dir}{exp_name}{filename}.{format}"
         plt.savefig(filename)
-        self.util.debug(f"plotted SHAP feature importance tp {filename}")
+        plt.close()
+        self.util.debug(f"plotted SHAP feature importance to {filename}")
 
     def analyse(self):
         models = ast.literal_eval(self.util.config_val("EXPL", "model", "['log_reg']"))
@@ -139,7 +153,7 @@ class FeatureAnalyser:
                 elif model_s == "svm":
                     from sklearn.svm import SVC
 
-                    c = float(self.util.config_val("MODEL", "C_val", "0.001"))
+                    c = float(self.util.config_val("MODEL", "C_val", "1.0"))
                     model = SVC(kernel="linear", C=c, gamma="scale")
                     result_importances[model_s] = self._get_importance(
                         model, permutation
@@ -205,7 +219,7 @@ class FeatureAnalyser:
                         model, permutation
                     )
                 elif model_s == "xgr":
-                    from xgboost import XGBClassifier
+                    from xgboost import XGBRegressor
 
                     model = XGBRegressor()
                     result_importances[model_s] = self._get_importance(
@@ -258,7 +272,7 @@ class FeatureAnalyser:
         fig = ax.figure
         fig.clear()
         plt.close(fig)
-        caption = f"Feature importance"
+        caption = "Feature importance"
         if permutation:
             caption += " based on permutation of features."
         glob_conf.report.add_item(
@@ -270,12 +284,16 @@ class FeatureAnalyser:
             )
         )
 
+        # print feature importance values to file and debug and save to result
+        self.util.debug(
+            f"Importance features from {model_name}: features = \n{df_imp['feats'].values.tolist()}"
+        )
         # result file
         res_dir = self.util.get_path("res_dir")
         filename = f"_EXPL_{model_name}"
         if permutation:
             filename += "_perm"
-        filename = f"{res_dir}{self.util.get_exp_name(only_data=True)}{filename}_{model_name}.txt"
+        filename = f"{res_dir}{self.util.get_exp_name(only_data=True)}{filename}_{max_feat_num}_fi.txt"
         with open(filename, "w") as text_file:
             text_file.write(
                 "features in order of decreasing importance according to model"
@@ -283,6 +301,7 @@ class FeatureAnalyser:
             )
 
         df_imp.to_csv(filename, mode="a")
+        self.util.debug(f"Saved feature importance values to {filename}")
 
         # check if feature distributions should be plotted
         plot_feats = self.util.config_val("EXPL", "feature_distributions", False)

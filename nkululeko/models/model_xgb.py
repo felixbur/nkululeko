@@ -1,6 +1,7 @@
 # xgbmodel.py
 
 from xgboost import XGBClassifier
+
 from nkululeko.models.model import Model
 
 

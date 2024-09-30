@@ -1,8 +1,11 @@
-import os
-from os.path import basename, splitext, join as path_join
-import pandas as pd
-import glob
 import argparse
+import glob
+import os
+from os.path import basename
+from os.path import join as path_join
+from os.path import splitext
+
+import pandas as pd
 
 LABEL_DIR_PATH = 'Labels'
 WAV_DIR_PATH = 'Audios'

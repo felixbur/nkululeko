@@ -1,8 +1,10 @@
+import ast
+
 import audformat
 import pandas as pd
+
 import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.util import Util
-import ast
 
 
 class DataFilter:

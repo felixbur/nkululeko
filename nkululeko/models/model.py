@@ -3,13 +3,11 @@ import ast
 import pickle
 import random
 
-from joblib import parallel_backend
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import LeaveOneGroupOut
-from sklearn.model_selection import StratifiedKFold
 import sklearn.utils
+from joblib import parallel_backend
+from sklearn.model_selection import GridSearchCV, LeaveOneGroupOut, StratifiedKFold
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.reporting.reporter import Reporter
@@ -119,7 +117,7 @@ class Model:
         # get unique list of speakers
         speakers = annos["speaker"].unique()
         # check for folds columns
-        if not "fold" in annos.columns:
+        if "fold" not in annos.columns:
             self.util.debug(f"creating random folds for {logo} groups")
             # create a random dictionary of groups
             sdict = {}

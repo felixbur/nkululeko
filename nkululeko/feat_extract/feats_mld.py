@@ -1,11 +1,9 @@
 # mld_fset.py
-from nkululeko.feat_extract.featureset import Featureset
-import sys
 import os
-import pandas as pd
-import numpy as np
-from nkululeko.utils.util import Util
+import sys
+
 import nkululeko.glob_conf as glob_conf
+from nkululeko.feat_extract.featureset import Featureset
 
 
 class MLD_set(Featureset):

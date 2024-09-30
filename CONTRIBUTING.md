@@ -21,7 +21,7 @@ The preferred way to contribute to nkululeko is to fork the [main repository](ht
 
 	```bash
 	git clone https://github.com/YourLogin/nkululeko.git
-	cd spafe
+	cd nkululeko
 	```
 
 3.	Remove any previously installed nkululeko versions, then install your local copy with testing dependencies:
@@ -43,9 +43,14 @@ The preferred way to contribute to nkululeko is to fork the [main repository](ht
 	-> Please never work directly on the `master` branch!
 	```
 
-6.	Once you are done, make sure to format the code using black to fit spafe's codestyle.
+6.	Once you are done, make sure to format the code using black to fit Nkululeko's codestyle.
 
-	```black nkululeko/```
+	```bash
+	black nkululeko/
+	isort --profile black nkululeko/
+	# Alternatively and additionaly, use ruff:
+	ruff check --fix --output-format=full nkululeko
+	```
 
 7.	Make sure that the tests succeed and have enough coverage.
 

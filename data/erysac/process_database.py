@@ -2,8 +2,10 @@
 
 import argparse
 from pathlib import Path
-from nkululeko.utils.files import find_files
+
 import pandas as pd
+
+from nkululeko.utils.files import find_files
 
 gender_map = {"m": "male", "f": "female"}
 

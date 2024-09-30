@@ -2,12 +2,14 @@
 resample a data frame
 
 """
+
 import os
 import shutil
 
 import audformat
 import pandas as pd
 import torchaudio
+
 from nkululeko.utils.util import Util
 
 
@@ -18,8 +20,11 @@ class Resampler:
         self.util = Util("resampler", has_config=not_testing)
         self.util.warn(f"all files might be resampled to {self.SAMPLING_RATE}")
         self.not_testing = not_testing
-        self.replace = eval(self.util.config_val(
-            "RESAMPLE", "replace", "False")) if not not_testing else replace
+        self.replace = (
+            eval(self.util.config_val("RESAMPLE", "replace", "False"))
+            if not not_testing
+            else replace
+        )
 
     def resample(self):
         files = self.df.index.get_level_values(0).values
@@ -45,8 +50,7 @@ class Resampler:
                 continue
             if org_sr != self.SAMPLING_RATE:
                 self.util.debug(f"resampling {f} (sr = {org_sr})")
-                resampler = torchaudio.transforms.Resample(
-                    org_sr, self.SAMPLING_RATE)
+                resampler = torchaudio.transforms.Resample(org_sr, self.SAMPLING_RATE)
                 signal = resampler(signal)
                 if replace:
                     torchaudio.save(
@@ -63,8 +67,7 @@ class Resampler:
             self.df = self.df.set_index(
                 self.df.index.set_levels(new_files, level="file")
             )
-            target_file = self.util.config_val(
-                "RESAMPLE", "target", "resampled.csv")
+            target_file = self.util.config_val("RESAMPLE", "target", "resampled.csv")
             # remove encoded labels
             target = self.util.config_val("DATA", "target", "emotion")
             if "class_label" in self.df.columns:

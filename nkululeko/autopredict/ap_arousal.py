@@ -2,10 +2,12 @@
 A predictor for emotional arousal.
 Currently based on audEERING's emotional dimension model.
 """
-from nkululeko.utils.util import Util
-from nkululeko.feature_extractor import FeatureExtractor
+
 import ast
+
 import nkululeko.glob_conf as glob_conf
+from nkululeko.feature_extractor import FeatureExtractor
+from nkululeko.utils.util import Util
 
 
 class ArousalPredictor:

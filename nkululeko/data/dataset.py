@@ -3,13 +3,11 @@ import ast
 import os
 import os.path
 from random import sample
+
+import audformat
 import numpy as np
 import pandas as pd
 
-import audformat
-from audformat.utils import duration
-
-import nkululeko.filter_data as filter
 import nkululeko.glob_conf as glob_conf
 from nkululeko.filter_data import DataFilter
 from nkululeko.plots import Plots
@@ -30,8 +28,8 @@ class Dataset:
     def __init__(self, name):
         """Constructor setting up name and configuration"""
         self.name = name
-        self.target = glob_conf.config["DATA"]["target"]
         self.util = Util("dataset")
+        self.target = self.util.config_val("DATA", "target", "none")
         self.plot = Plots()
         self.limit = int(self.util.config_val_data(self.name, "limit", 0))
         self.start_fresh = eval(self.util.config_val("DATA", "no_reuse", "False"))
@@ -127,6 +125,9 @@ class Dataset:
             self.got_gender,
             self.got_age,
         ) = self._get_df_for_lists(self.db, df_files_tables)
+        if df.shape[0] > 0 and self.target == "none":
+            self.df = df
+            return
         if False in {
             self.is_labeled,
             self.got_speaker,
@@ -271,20 +272,20 @@ class Dataset:
                 # try to get the target values
                 df_local[self.target] = source_df[self.col_label]
                 is_labeled = True
-            except (KeyError, ValueError, audformat.errors.BadKeyError) as e:
+            except (KeyError, ValueError, audformat.errors.BadKeyError):
                 pass
             try:
                 # try to get the speaker values
                 df_local["speaker"] = source_df["speaker"]
                 got_speaker = True
-            except (KeyError, ValueError, audformat.errors.BadKeyError) as e:
+            except (KeyError, ValueError, audformat.errors.BadKeyError):
                 pass
             try:
                 # try to get the gender values
                 if "gender" in source_df:
                     df_local["gender"] = source_df["gender"]
                     got_gender = True
-            except (KeyError, ValueError, audformat.errors.BadKeyError) as e:
+            except (KeyError, ValueError, audformat.errors.BadKeyError):
                 pass
             try:
                 # try to get the age values
@@ -308,13 +309,13 @@ class Dataset:
                 # also it might be possible that the age is part of the speaker description
                 df_local["age"] = db[table]["speaker"].get(map="age").astype(int)
                 got_age = True
-            except (ValueError, audformat.errors.BadKeyError) as e:
+            except (ValueError, audformat.errors.BadKeyError):
                 pass
             try:
                 # same for the target, e.g. "age"
                 df_local[self.target] = db[table]["speaker"].get(map=self.target)
                 is_labeled = True
-            except (ValueError, audformat.core.errors.BadKeyError) as e:
+            except (ValueError, audformat.core.errors.BadKeyError):
                 pass
             # copy other column
             for column in source_df.columns:
@@ -460,8 +461,7 @@ class Dataset:
 
     def balanced_split(self):
         """One way to split train and eval sets: Generate split dataframes for some balancing criterion"""
-        from splitutils import binning
-        from splitutils import optimize_traintest_split
+        from splitutils import binning, optimize_traintest_split
 
         seed = 42
         k = 30
@@ -470,7 +470,7 @@ class Dataset:
         # split target
         targets = df[self.target].to_numpy()
         #
-        bins = self.util.config_val("DATA", f"bin", False)
+        bins = self.util.config_val("DATA", "bin", False)
         if bins:
             nbins = len(ast.literal_eval(bins))
             targets = binning(targets, nbins=nbins)
@@ -478,7 +478,7 @@ class Dataset:
         speakers = df["speaker"].to_numpy()
 
         # on which variables (targets, groupings) to stratify
-        stratif_vars = self.util.config_val("DATA", f"balance", False)
+        stratif_vars = self.util.config_val("DATA", "balance", False)
         stratif_vars_array = {}
         if not stratif_vars:
             self.util.error("balanced split needs stratif_vars to stratify the splits")
@@ -497,7 +497,7 @@ class Dataset:
         # weights for all stratify_on variables and
         # and for test proportion match. Give target
         # variable EMOTION more weight than groupings.
-        size_diff = int(self.util.config_val("DATA", f"size_diff_weight", "1"))
+        size_diff = int(self.util.config_val("DATA", "size_diff_weight", "1"))
         weights = {
             "size_diff": size_diff,
         }
@@ -553,7 +553,10 @@ class Dataset:
             " samples in train/test"
         )
         # because this generates new train/test sample quantaties, the feature extraction has to be done again
-        glob_conf.config["FEATS"]["needs_feature_extraction"] = "True"
+        try:
+            glob_conf.config["FEATS"]["needs_feature_extraction"] = "True"
+        except KeyError:
+            pass
 
     def random_split(self):
         """One way to split train and eval sets: Specify percentage of random samples"""

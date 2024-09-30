@@ -1,6 +1,7 @@
 # xgrmodel.py
 
 from xgboost.sklearn import XGBRegressor
+
 from nkululeko.models.model import Model
 
 

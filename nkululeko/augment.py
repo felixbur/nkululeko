@@ -2,13 +2,15 @@
 # augment the training sets
 
 import argparse
-import pandas as pd
-import os
 import ast
-from nkululeko.experiment import Experiment
 import configparser
-from nkululeko.utils.util import Util
+import os
+
+import pandas as pd
+
 from nkululeko.constants import VERSION
+from nkululeko.experiment import Experiment
+from nkululeko.utils.util import Util
 
 
 def doit(config_file):
@@ -37,8 +39,8 @@ def doit(config_file):
 
     filename = util.config_val("AUGMENT", "result", "augmented.csv")
     filename = f"{expr.data_dir}/{filename}"
-
-    if os.path.exists(filename):
+    no_reuse = eval(util.config_val("DATA", "no_reuse", "False"))
+    if os.path.exists(filename) and not no_reuse:
         util.debug("files already augmented")
     else:
         # load the data

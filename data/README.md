@@ -1,63 +1,82 @@
+
+Nkululeko database repository
+=============================
+
 # Data
 
-This is the default top directory for Nkululeko data import.
 
-Each database should be in its own subfolder (you can also use `ln -sf`` to soft link original database path to these subfolders) and contain a README how to import the data to Nkululeko CSV or audformat.
-
+This is the default top directory for Nkululeko data import. Each database should be in its own subfolder (you can also use `ln -sf` to soft link original database path to these subfolders) and contain a README how to import the data to Nkululeko CSV or audformat.
 ## Accessibility
+
 
 The column `access` in the table below indicates the database's accessability. The following values are used:
 - `public`: the database is publicly available in the internet and can be downloaded directly without any restrictions.
 - `restricted`: the database is publicly available on the internet but requires registration or other restrictions to download.
 - `private`: the database is not publicly available on the internet and requires the private information of the owner of the dataset.
 
-## Databases
 
-| #   | name               | target                      | access     | descr.                                  |
-| --- | ------------------ | --------------------------- | ---------- | --------------------------------------- |
-| 1   | aesdd              | emotion                     | public     | amharic language                        |
-| 2   | androids           | depression                  | public     | English                                 |
-| 3   | ased               | emotion                     | public     | Greek                                   |
-| 4   | asvp-esd           | emotion                     | public     | Multilingual, also contain vocal bursts |
-| 5   | baved              | emotion                     | public     | Arabic                                  |
-| 6   | cafe               | emotion                     | public     | Children speech, Canadian French        |
-| 7   | cmu-mosei          | sentiment, emotion          | public     | English, original link dead             |
-| 8   | crema-d            | emotion                     | public     | English, adopted from tfds              |
-| 9   | demos              | emotion                     | restricted | Italian                                 |
-| 10  | ekorpus            | emotion                     | public     | Estonian                                |
-| 11  | emns               | emotion, intensity          | public     | British, single speaker, UAR=0.479      |
-| 12  | emodb              | emotion                     | public     | German                                  |
-| 13  | emofilm            | emotion                     | restricted | English, Spanish, Italian               |
-| 14  | emorynlp           | emotion                     | public     | English, From Friends TV                |
-| 15  | emov-db            | emotion                     | public     | English                                 |
-| 16  | emovo              | emotion                     | restricted | Italian                                 |
-| 17  | emozionalmente     | emotion                     | public     | Italian                                 |
-| 18  | enterface          | emotion                     | public     | Multilingual                            |
-| 19  | esd                | emotion                     | public     | English, Chinese                        |
-| 20  | iemocap            | emotion, VAD                | restriced  | English                                 |
-| 21  | jl                 | emotion                     | public     | English                                 |
-| 22  | jtes               | emotion                     | private    | Japanese                                |
-| 23  | laughter-types     | laughter                    | public     | Master Thesis from TU Berlin            |
-| 24  | meld               | emotion                     | public     | English, From Friends TV                |
-| 25  | mesd               | emotion                     | public     | Mexican                                 |
-| 26  | mess               | emotion                     | public     | English                                 |
-| 27  | mlendsnd           | emotion                     | public     | English                                 |
-| 28  | msp-improv         | emotion, VAD, naturalness   | restricted | English                                 |
-| 29  | msp-podcast        | emotion, VAD                | restricted | English                                 |
-| 30  | oreau2             | emotion                     | public     | French                                  |
-| 31  | portuguese         | emotion                     | public     | Portuguese                              |
-| 32  | ravdess            | emotion, speaker            | public     | English                                 |
-| 33  | savee              | emotion                     | restricted | English, from tfds                      |
-| 34  | shemo              | emotion                     | public     | Persian                                 |
-| 35  | subesco            | emotion                     | public     | Bangla                                  |
-| 36  | syntact            | emotion                     | public     | Synthesized German speech               |
-| 37  | tess               | emotion                     | public     | British English (Toronto)               |
-| 38  | thorsten-emotional | emotion                     | public     | German                                  |
-| 29  | urdu               | emotion                     | public     | Urdu                                    |
-| 40  | vivae              | emotion                     | public     | English vocal bursts                    |
-| 41  | clac               | healthy speech, age, gender | public     | English                                 |
-| 42  | gerparas           | valence, arousal, dominance | restricted | German                                  |
+To support open science and reproducible research, we encourage to submit PR and recipes for public dataset for now on.
+|Name|Target|Description|Access|
+| :--- | :--- | :--- | :--- |
+|emorynlp|emotion|English Emotion Dataset from Friends TV Show|public|
+|emns|emotion,intensity|British, singles peaker, UAR=.479|public|
+|test|none|Test data for nkululeko|public|
+|catsvsdogs|cats_dogs|kaggle test set|public|
+|clac|healthyspeech,age,gender|English|public|
+|vivae|emotion|English vocal bursts|public|
+|emofilm|emotion|English, Spanish, Italian|restricted|
+|emozionalmente|emotion|Italian|public|
+|laughter-types|laughter|Master Thesis from TUBerlin|public|
+|savee|emotion|English, from tfds|restricted|
+|emovo|emotion|Italian|restricted|
+|subesco|emotion|Bangla|public|
+|oreau2|emotion|French|public|
+|mess|emotion|English|public|
+|emov-db|emotion|English|public|
+|odyssey-cat-2024|emotion|Data for Odyssey 2024 challenge, needs MSPPodcast|restricted|
+|ravdess|emotion,speaker|English|public|
+|erysac|emotion|Russian, children|public|
+|demos|emotion|Italian|restricted|
+|emodb|emotion|German|public|
+|jnv|emotion|Japanese, non-verbals|public|
+|aesdd|emotion|amharic language|public|
+|msp-podcast|emotion,VAD|English|restricted|
+|baved|emotion|Arabic|public|
+|asvp-esd|emotion|Multilingual, also contain vocal bursts|public|
+|ekorpus|emotion|Estonian|public|
+|iemocap|emotion,VAD|English|restriced|
+|jl|emotion|English|public|
+|syntact|emotion|Synthesized German speech|public|
+|kia|emotion|Korean, wake-up word|public|
+|portuguese|emotion|Portuguese|public|
+|crema-d|emotion|English,adopted from tfds|public|
+|thorsten-emotional|emotion|German|public|
+|jvnv|emotion|Japanese, verbal and non-verbal|public|
+|mesd|emotion|Mexican|public|
+|enterface|emotion|Multilingual|public|
+|turev|emotion|Turkish|public|
+|nEMO|emotion,VAD|Polish|public|
+|eaed|emotion|Arabic|public|
+|ased|emotion|Greek|public|
+|cafe|emotion|Childrenspeech, CanadianFrench|public|
+|banglaser|emotion|Bengali|public|
+|mlendsnd|emotion|English|public|
+|gerparas|valence,arousal,dominance|German|restricted|
+|androids|depression|English|public|
+|kbes|emotion|Bengali|public|
+|tess|emotion|British English (Toronto)|public|
+|jtes|emotion|Japanese|private|
+|meld|emotion|English, From Friends TV|public|
+|urdu|emotion|Urdu|public|
+|polish|emotion|Polish|public|
+|cmu-mosei|sentiment,emotion|English, original link dead|public|
+|svd|pahtological speech|German speech data for detecting various pathological voices|public|
+|msp-improv|emotion,VAD,naturalness|English|restricted|
+|shemo|emotion|Persian|public|
+|esd|emotion|English,Chinese|public|
 
-# Performance 
-<!-- include performance from images directory -->
-![Nkululeko performance](../meta/images/nkululeko_ser_20240719.png)
+
+This recipe contains information about 56 datasets.
+## Performance
+  
+![Nkululeko performance](../meta/images/nkululeko_ser_20240719.png)  

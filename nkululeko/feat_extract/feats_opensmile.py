@@ -1,10 +1,11 @@
 # opensmileset.py
-from nkululeko.feat_extract.featureset import Featureset
 import os
-import pandas as pd
-import nkululeko.glob_conf as glob_conf
-import ast
+
 import opensmile
+import pandas as pd
+
+import nkululeko.glob_conf as glob_conf
+from nkululeko.feat_extract.featureset import Featureset
 
 
 class Opensmileset(Featureset):

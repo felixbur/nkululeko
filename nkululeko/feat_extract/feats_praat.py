@@ -1,13 +1,12 @@
 # feats_praat.py
-import ast
 import os
 
 import numpy as np
 import pandas as pd
 
+import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract import feinberg_praat
 from nkululeko.feat_extract.featureset import Featureset
-import nkululeko.glob_conf as glob_conf
 
 
 class PraatSet(Featureset):
@@ -26,12 +25,10 @@ class PraatSet(Featureset):
         store = self.util.get_path("store")
         store_format = self.util.config_val("FEATS", "store_format", "pkl")
         storage = f"{store}{self.name}.{store_format}"
-        extract = self.util.config_val(
-            "FEATS", "needs_feature_extraction", False)
+        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
-            self.util.debug(
-                "extracting Praat features, this might take a while...")
+            self.util.debug("extracting Praat features, this might take a while...")
             self.df = feinberg_praat.compute_features(self.data_df.index)
             self.df = self.df.set_index(self.data_df.index)
             for i, col in enumerate(self.df.columns):
@@ -54,8 +51,8 @@ class PraatSet(Featureset):
         self.df = self.df.astype(float)
 
     def extract_sample(self, signal, sr):
-        import audiofile
         import audformat
+        import audiofile
 
         tmp_audio_names = ["praat_audio_tmp.wav"]
         audiofile.write(tmp_audio_names[0], signal, sr)

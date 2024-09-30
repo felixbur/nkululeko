@@ -1,8 +1,27 @@
 Changelog
 =========
 
-Version 0.88.12
+Version 0.90.0
 --------------
+* augmentation can now be done without target
+* random splicing params configurable
+* made kde default for plot continous/categorical plots
+
+Version 0.89.2
+--------------
+* fix shap value calculation
+  
+Version 0.89.1
+--------------
+* print and save result of feature importance
+
+Version 0.89.0
+--------------
+* added Roc plots and classification report on Debug
+
+
+Version 0.88.12
+---------------
 * added n_jobs for sklearn processing
 * re_named num_workers n_jobs
 

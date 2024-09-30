@@ -2,10 +2,12 @@
 import ast
 import os
 import os.path
-import pandas as pd
+
 import audformat.utils
-from nkululeko.data.dataset import Dataset
+import pandas as pd
+
 import nkululeko.glob_conf as glob_conf
+from nkululeko.data.dataset import Dataset
 from nkululeko.reporting.report_item import ReportItem
 
 
@@ -81,7 +83,7 @@ class Dataset_CSV(Dataset):
         self.start_fresh = eval(self.util.config_val("DATA", "no_reuse", "False"))
         is_index = False
         try:
-            if self.is_labeled and not "class_label" in self.df.columns:
+            if self.is_labeled and "class_label" not in self.df.columns:
                 self.df["class_label"] = self.df[self.target]
         except AttributeError:
             is_index = True

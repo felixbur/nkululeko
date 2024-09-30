@@ -25,24 +25,23 @@ original files.
 import argparse
 import configparser
 import os
-import pandas as pd
-import audformat
-from nkululeko.augmenting.resampler import Resampler
-from nkululeko.utils.util import Util
 
+import audformat
+import pandas as pd
+
+from nkululeko.augmenting.resampler import Resampler
 from nkululeko.constants import VERSION
 from nkululeko.experiment import Experiment
 from nkululeko.utils.files import find_files
+from nkululeko.utils.util import Util
 
 
 def main(src_dir):
     parser = argparse.ArgumentParser(
         description="Call the nkululeko RESAMPLE framework."
     )
-    parser.add_argument("--config", default=None,
-                        help="The base configuration")
-    parser.add_argument("--file", default=None,
-                        help="The input audio file to resample")
+    parser.add_argument("--config", default=None, help="The base configuration")
+    parser.add_argument("--file", default=None, help="The input audio file to resample")
     parser.add_argument(
         "--folder",
         default=None,
@@ -55,9 +54,7 @@ def main(src_dir):
     args = parser.parse_args()
 
     if args.file is None and args.folder is None and args.config is None:
-        print(
-            "ERROR: Either --file, --folder, or --config argument must be provided."
-        )
+        print("ERROR: Either --file, --folder, or --config argument must be provided.")
         exit()
 
     if args.file is not None:
@@ -123,8 +120,7 @@ def main(src_dir):
             f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}"
         )
 
-        sample_selection = util.config_val(
-            "RESAMPLE", "sample_selection", "all")
+        sample_selection = util.config_val("RESAMPLE", "sample_selection", "all")
         if sample_selection == "all":
             df = pd.concat([expr.df_train, expr.df_test])
         elif sample_selection == "train":

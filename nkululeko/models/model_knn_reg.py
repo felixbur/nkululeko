@@ -1,6 +1,7 @@
 # model_knn_reg.py
 
 from sklearn.neighbors import KNeighborsRegressor
+
 from nkululeko.models.model import Model
 
 

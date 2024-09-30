@@ -231,7 +231,7 @@ There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
 
 
 ### <a name="helloworld">Hello World example</a>
-* NEW: [Here's a Google colab that runs this example out-of-the-box](https://colab.research.google.com/drive/1GYNBd5cdZQ1QC3Jm58qoeMaJg3UuPhjw?usp=sharing#scrollTo=4G_SjuF9xeQf), and here is the same [with Kaggle](https://www.kaggle.com/felixburk/nkululeko-hello-world-example)
+* NEW: [Here's a Google colab that runs this example out-of-the-box](https://colab.research.google.com/drive/1Up7t5Nn7VwDPCCEpTg2U7cpZ_PdoEgj-?usp=sharing), and here is the same [with Kaggle](https://www.kaggle.com/felixburk/nkululeko-hello-world-example)
 * [I made a video to show you how to do this on Windows](https://www.youtube.com/playlist?list=PLRceVavtxLg0y2jiLmpnUfiMtfvkK912D)
 * Set up Python on your computer, version >= 3.8
 * Open a terminal/commandline/console window

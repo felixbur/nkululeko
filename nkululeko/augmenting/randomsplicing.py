@@ -10,9 +10,9 @@ Evaluated in:
 F. Burkhardt, Anna Derington, Matthias Kahlau, Klaus Scherer, Florian Eyben and Björn Schuller: Masking Speech Contents by Random Splicing: is Emotional Expression Preserved?, Proc. ICASSP, 2023
 
 """
-import numpy as np
+
 import librosa
-import audiofile as af
+import numpy as np
 
 
 def random_splicing(
@@ -54,7 +54,6 @@ def split_wav_naive(wav, top_db=12):
 
 
 def remix_random_reverse(wav, indices, p_reverse=0):
-    import random
 
     wav_remix = []
 

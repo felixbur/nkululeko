@@ -2,9 +2,9 @@
 # arguments: input_dir, output_dir
 # sox must be installed
 
+import argparse
 import os
 import subprocess
-import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--input_dir', type=str, default='./EmoFilm/wav_corpus')

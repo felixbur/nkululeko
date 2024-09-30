@@ -1,6 +1,7 @@
 # model_knn_reg.py
 
 from sklearn.linear_model import LinearRegression
+
 from nkululeko.models.model import Model
 
 

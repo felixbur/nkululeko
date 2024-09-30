@@ -1,11 +1,10 @@
 # demo_predictor.py
 import os
 
-import numpy as np
-import pandas as pd
-
 import audformat
 import audiofile
+import numpy as np
+import pandas as pd
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.util import Util
@@ -46,7 +45,7 @@ class Demo_predictor:
                         )
                     else:
                         file_list = in_df.index.values
-                except (ValueError, AttributeError) as error:
+                except (ValueError, AttributeError):
                     with open(self.file) as f:
                         first = True
                         for index, line in enumerate(f):

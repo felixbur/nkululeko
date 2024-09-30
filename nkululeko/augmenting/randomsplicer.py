@@ -13,15 +13,15 @@ F. Burkhardt, Anna Derington, Matthias Kahlau, Klaus Scherer, Florian Eyben and 
 
 """
 
+import os
+
+import audeer
+import audiofile as af
 import pandas as pd
 from tqdm import tqdm
-import os
-import numpy as np
-import audiofile as af
-from audformat.utils import map_file_path
-import audeer
-from nkululeko.utils.util import Util
+
 import nkululeko.augmenting.randomsplicing as rsp
+from nkululeko.utils.util import Util
 
 
 class Randomsplicer:
@@ -41,14 +41,17 @@ class Randomsplicer:
             * top_db: top db level for silence to be recognized (default: 12)
         """
 
-        p_reverse = 0.3
-        top_db = 12
+        p_reverse = float(self.util.config_val("AUGMENT", "p_reverse", "0.3"))
+        top_db = float(self.util.config_val("AUGMENT", "top_db", "12"))
 
         files = self.df.index.get_level_values(0).values
         store = self.util.get_path("store")
         filepath = f"{store}randomspliced/"
         audeer.mkdir(filepath)
-        self.util.debug(f"random splicing {sample_selection} samples to {filepath}")
+        self.util.debug(
+            f"random splicing {sample_selection} samples to {filepath}, "
+            + f"p_reverse = {p_reverse}, top_db = {top_db}",
+        )
         newpath = ""
         index_map = {}
         for i, f in enumerate(tqdm(files)):

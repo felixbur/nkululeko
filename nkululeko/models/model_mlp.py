@@ -4,14 +4,13 @@ from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import recall_score
 import torch
+from sklearn.metrics import recall_score
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.losses.loss_softf1loss import SoftF1Loss
 from nkululeko.models.model import Model
 from nkululeko.reporting.reporter import Reporter
-from nkululeko.utils.util import Util
 
 
 class MLPModel(Model):
@@ -44,7 +43,7 @@ class MLPModel(Model):
             )
         else:
             self.util.error(f"unknown loss function: {criterion}")
-        self.util.debug(f"using model with cross entropy loss function")
+        self.util.debug("using model with cross entropy loss function")
         # set up the model, use GPU if availabe
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)

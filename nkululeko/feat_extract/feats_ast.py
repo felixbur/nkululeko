@@ -4,10 +4,9 @@ import os
 import numpy as np
 import pandas as pd
 import torch
-import torch.nn.functional as F
 import torchaudio
 from tqdm import tqdm
-from transformers import AutoProcessor, ASTModel
+from transformers import ASTModel, AutoProcessor
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
@@ -33,7 +32,6 @@ class Ast(Featureset):
         print(f"initialized AST model on {self.device}")
         self.model.eval()
         self.model_initialized = True
-
 
     def extract(self):
         """Extract the features or load them from disk if present."""
@@ -80,11 +78,12 @@ class Ast(Featureset):
                     f"got nan: {self.df.shape} {self.df.isnull().sum().sum()}"
                 )
 
-
     def get_embeddings(self, signal, sampling_rate, file):
         """Extract embeddings from raw audio signal."""
         try:
-            inputs = self.processor(signal.numpy(), sampling_rate=sampling_rate, return_tensors="pt")
+            inputs = self.processor(
+                signal.numpy(), sampling_rate=sampling_rate, return_tensors="pt"
+            )
 
             inputs = {k: v.to(self.device) for k, v in inputs.items()}
 
@@ -102,14 +101,16 @@ class Ast(Featureset):
 
             # print(f"hs shape: {embeddings.shape}")
             # hs shape: (1, 768)
-        
+
         except Exception as e:
-            self.util.error(f"Error extracting embeddings for file {file}: {str(e)}, fill with")
+            self.util.error(
+                f"Error extracting embeddings for file {file}: {str(e)}, fill with"
+            )
             return np.zeros(
                 self.model.config.hidden_size
             )  # Return zero vector on error
         return embeddings.ravel()
-    
+
     def extract_sample(self, signal, sr):
         self.init_model()
         feats = self.get_embeddings(signal, sr, "no file")

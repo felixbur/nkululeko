@@ -2,14 +2,16 @@
 # segment data splits
 
 import argparse
-import os
-import pandas as pd
 import configparser
-from nkululeko.experiment import Experiment
-from nkululeko.utils.util import Util
-from nkululeko.constants import VERSION
+import os
+
+import pandas as pd
+
 import nkululeko.glob_conf as glob_conf
+from nkululeko.constants import VERSION
+from nkululeko.experiment import Experiment
 from nkululeko.reporting.report_item import ReportItem
+from nkululeko.utils.util import Util
 
 
 def main(src_dir):
@@ -75,7 +77,6 @@ def main(src_dir):
         util.error(f"unkown segmenter: {segmenter}")
 
     def calc_dur(x):
-        from datetime import datetime
 
         starts = x[1]
         ends = x[2]

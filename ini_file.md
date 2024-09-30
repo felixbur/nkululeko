@@ -151,6 +151,8 @@
   * choices are:
     * *traditional*: uses the [audiomentations package](https://github.com/iver56/audiomentations)
     * *random_splice*: randomly re-orders short splices (obfuscates the words)
+* **p_reverse**: for random_splice: probability of some samples to be in reverse order (default: 0.3)
+* **top_db**: for random_splice: top db level for silence to be recognized (default: 12)
 * **sample_selection**: select the samples to augment: either *train*, *test*, or *all*
   * sample_selection = all
 * **result**: file name to store the augmented data (can then be added to training)
@@ -282,6 +284,8 @@
     * **tree_reg**: Classification tree regressor
     * **xgb**: XG-Boost
     * **xgr**: XG-Boost Regression
+* **balancing**: balancing for **finetune** type; for other than finetune, set balancing in [FEATS].
+  * possible values: [ros, smote, adasyn]
 * **tuning_params**: possible tuning parameters for x-fold optimization (for Bayes, KNN, KNN_reg, Tree, Tree_reg, SVM, SVR, XGB and XGR)
   * tuning_params = ['subsample', 'n_estimators', 'max_depth']
     * subsample = [.5, .7]
@@ -348,8 +352,8 @@
   * value_counts = [['gender'], ['age'], ['age', 'duration']]
 * **column.bin_reals**: If the column variable is real numbers (instead of categories), should it be binned? for any value in *value_counts* as well as the target variable
   * age.bin_reals = True
-* **dist_type**: type of plot for value counts, either histogram or density estimation (kde)
-  * dist_type = hist
+* **dist_type**: type of plot for value counts, either histogram (hist) or density estimation (kde)
+  * dist_type = kde
 * **spotlight**: open a web-browser window to inspect the data with the [spotlight software](https://github.com/Renumics/spotlight). Needs package *renumics-spotlight* to be installed!
   * spotlight = False
 * **shap**: comopute [SHAP](https://shap.readthedocs.io/en/latest/) values
