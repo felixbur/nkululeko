@@ -1,3 +1,24 @@
+"""
+Resample audio files or INI files (train, test, all) to change the sampling rate.
+
+This script provides a command-line interface to resample audio files or INI files
+containing train, test, and all data. It supports resampling a single file, a
+directory of files, or all files specified in an INI configuration file.
+
+The script uses the `Resampler` class from the `nkululeko.augmenting.resampler`
+module to perform the resampling operation. It can optionally replace the original
+audio files with the resampled versions.
+
+The script supports the following command-line arguments:
+- `--config`: The base configuration file (INI format) to use for resampling.
+- `--file`: The input audio file to resample.
+- `--folder`: The input directory containing audio files and subdirectories to resample.
+- `--replace`: Whether to replace the original audio files with the resampled versions.
+
+The script also supports loading configuration from an INI file, which can be used
+to specify the sample selection (all, train, or test) and whether to replace the
+original files.
+"""
 # resample.py
 # change the sampling rate for audio file or INI file (train, test, all)
 
