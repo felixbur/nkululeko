@@ -30,10 +30,16 @@ class TunedModel(BaseModel):
         """Constructor taking the configuration and all dataframes."""
         super().__init__(df_train, df_test, feats_train, feats_test)
         super().set_model_type("finetuned")
+        self.df_test, self.df_train, self.feats_test, self.feats_train = (
+            df_test,
+            df_train,
+            feats_test,
+            feats_train,
+        )
         self.name = "finetuned_wav2vec2"
         self.target = glob_conf.config["DATA"]["target"]
-        labels = glob_conf.labels
-        self.class_num = len(labels)
+        self.labels = glob_conf.labels
+        self.class_num = len(self.labels)
         device = self.util.config_val("MODEL", "device", False)
         if not device:
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -304,7 +310,7 @@ class TunedModel(BaseModel):
             else:
                 self.util.error(f"criterion {criterion} not supported for classifier")
         else:
-            self.criterion = self.util.config_val("MODEL", "loss", "ccc")
+            criterion = self.util.config_val("MODEL", "loss", "1-ccc")
             if criterion == "1-ccc":
                 criterion = ConcordanceCorCoeff()
             elif criterion == "mse":
@@ -402,7 +408,7 @@ class TunedModel(BaseModel):
         self.load(self.run, self.epoch)
 
     def get_predictions(self):
-        results = []
+        results = [[]].pop(0)
         for (file, start, end), _ in audeer.progress_bar(
             self.df_test.iterrows(),
             total=len(self.df_test),
@@ -415,18 +421,37 @@ class TunedModel(BaseModel):
                     file, duration=end - start, offset=start, always_2d=True
                 )
             assert sr == self.sampling_rate
-            predictions = self.model.predict(signal)
-            results.append(predictions.argmax())
-        return results
+            prediction = self.model.predict(signal)
+            results.append(prediction)
+            # results.append(predictions.argmax())
+        predictions = np.asarray(results)
+        if self.util.exp_is_classification():
+            # make a dataframe for the class probabilities
+            proba_d = {}
+            for c in range(self.class_num):
+                proba_d[c] = []
+            # get the class probabilities
+            # predictions = self.clf.predict_proba(self.feats_test.to_numpy())
+            # pred = self.clf.predict(features)
+            for i in range(self.class_num):
+                proba_d[i] = list(predictions.T[i])
+            probas = pd.DataFrame(proba_d)
+            probas = probas.set_index(self.df_test.index)
+            predictions = probas.idxmax(axis=1).values
+        else:
+            predictions = predictions.flatten()
+            probas = None
+        return predictions, probas
 
     def predict(self):
         """Predict the whole eval feature set"""
-        predictions = self.get_predictions()
+        predictions, probas = self.get_predictions()
         report = Reporter(
             self.df_test[self.target].to_numpy().astype(float),
             predictions,
             self.run,
             self.epoch_num,
+            probas=probas,
         )
         self._plot_epoch_progression(report)
         return report
@@ -438,6 +463,7 @@ class TunedModel(BaseModel):
         )
         with open(log_file, "r") as file:
             data = file.read()
+        data = data.strip().replace("nan", "0")
         list = ast.literal_eval(data)
         epochs, vals, loss = [], [], []
         for index, tp in enumerate(list):

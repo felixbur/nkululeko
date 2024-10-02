@@ -1,6 +1,15 @@
 Changelog
 =========
 
+Version 0.90.2
+--------------
+* added probability output to finetuning classification models
+* switched path to prob. output from "store" to "results"
+
+Version 0.90.1
+--------------
+* Add balancing for finetune and update data README
+
 Version 0.90.0
 --------------
 * augmentation can now be done without target

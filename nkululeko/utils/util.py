@@ -155,10 +155,10 @@ class Util:
         return f"{store}/{self.get_exp_name()}.pkl"
 
     def get_pred_name(self):
-        store = self.get_path("store")
+        results_dir = self.get_path("res_dir")
         target = self.get_target_name()
         pred_name = self.get_model_description()
-        return f"{store}/pred_{target}_{pred_name}.csv"
+        return f"{results_dir}/pred_{target}_{pred_name}.csv"
 
     def is_categorical(self, pd_series):
         """Check if a dataframe column is categorical."""
