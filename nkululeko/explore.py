@@ -25,33 +25,27 @@ for an `exp.ini` file in the same directory as the script.
 
 import argparse
 import configparser
-import os
+from pathlib import Path
 
 from nkululeko.constants import VERSION
 from nkululeko.experiment import Experiment
 from nkululeko.utils.util import Util
 
 
-def main(src_dir):
+def main():
     parser = argparse.ArgumentParser(
         description="Call the nkululeko EXPLORE framework."
     )
     parser.add_argument("--config", default="exp.ini", help="The base configuration")
     args = parser.parse_args()
-    if args.config is not None:
-        config_file = args.config
-    else:
-        config_file = f"{src_dir}/exp.ini"
+    config_file = args.config if args.config is not None else "exp.ini"
 
-    # test if the configuration file exists
-    if not os.path.isfile(config_file):
+    if not Path(config_file).is_file():
         print(f"ERROR: no such file: {config_file}")
         exit()
 
-    # load one configuration per experiment
     config = configparser.ConfigParser()
     config.read(config_file)
-    # create a new experiment
     expr = Experiment(config)
     module = "explore"
     expr.set_module(module)
@@ -101,5 +95,4 @@ def main(src_dir):
 
 
 if __name__ == "__main__":
-    cwd = os.path.dirname(os.path.abspath(__file__))
-    main(cwd)  # use this if you want to state the config file path on command line
+    main()
