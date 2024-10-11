@@ -6,7 +6,6 @@ from pathlib import Path
 
 import numpy as np
 
-
 import nkululeko.experiment as exp
 from nkululeko.constants import VERSION
 from nkululeko.utils.util import Util
@@ -61,7 +60,7 @@ def doit(config_file):
 def main():
     cwd = Path(__file__).parent.absolute()
     parser = argparse.ArgumentParser(description="Call the nkululeko framework.")
-    parser.add_argument('--version', action='version', version=f'Nkululeko {VERSION}')
+    parser.add_argument("--version", action="version", version=f"Nkululeko {VERSION}")
     parser.add_argument("--config", default="exp.ini", help="The base configuration")
     args = parser.parse_args()
     if args.config is not None:
@@ -69,6 +68,7 @@ def main():
     else:
         config_file = cwd / "exp.ini"
     doit(config_file)
+
 
 if __name__ == "__main__":
     main()  # use this if you want to state the config file path on command line

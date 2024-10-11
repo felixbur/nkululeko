@@ -147,4 +147,4 @@ def segment_dataframe(df):
 
 
 if __name__ == "__main__":
-    main() # use this if you want to state the config file path on command line
+    main()  # use this if you want to state the config file path on command line

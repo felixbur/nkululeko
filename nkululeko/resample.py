@@ -37,7 +37,7 @@ from nkululeko.utils.files import find_files
 from nkululeko.utils.util import Util
 
 
-def main(src_dir):
+def main():
     parser = argparse.ArgumentParser(
         description="Call the nkululeko RESAMPLE framework."
     )
@@ -140,5 +140,4 @@ def main(src_dir):
 
 
 if __name__ == "__main__":
-    cwd = os.path.dirname(os.path.abspath(__file__))
-    main(cwd)
+    main()
