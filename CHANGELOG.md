@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.90.4
+--------------
+* added plot format for multidb
+
 Version 0.90.3
 --------------
 * refactorings and documentations

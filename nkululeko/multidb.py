@@ -115,7 +115,11 @@ def main(src_dir):
     print(repr(results))
     print(repr(last_epochs))
     root = os.path.join(config["EXP"]["root"], "")
-    plot_name = f"{root}/heatmap.png"
+    try:
+        format = config["PLOT"]["format"]
+        plot_name = f"{root}/heatmap.{format}"
+    except KeyError:
+        plot_name = f"{root}/heatmap.png"
     plot_heatmap(results, last_epochs, datasets, plot_name, config, datasets)
 
 
