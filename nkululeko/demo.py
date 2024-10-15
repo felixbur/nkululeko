@@ -30,7 +30,7 @@ from nkululeko.experiment import Experiment
 from nkululeko.utils.util import Util
 
 
-def main(src_dir):
+def main():
     parser = argparse.ArgumentParser(description="Call the nkululeko DEMO framework.")
     parser.add_argument("--config", default="exp.ini", help="The base configuration")
     parser.add_argument(
@@ -142,5 +142,4 @@ def main(src_dir):
 
 
 if __name__ == "__main__":
-    cwd = os.path.dirname(os.path.abspath(__file__))
-    main(cwd)  # use this if you want to state the config file path on command line
+    main()

@@ -2,7 +2,7 @@
 # Entry script to do a Nkululeko experiment
 import argparse
 import configparser
-import os.path
+from pathlib import Path
 
 import numpy as np
 
@@ -13,7 +13,7 @@ from nkululeko.utils.util import Util
 
 def doit(config_file):
     # test if the configuration file exists
-    if not os.path.isfile(config_file):
+    if not Path(config_file).is_file():
         print(f"ERROR: no such file: {config_file}")
         exit()
 
@@ -57,17 +57,18 @@ def doit(config_file):
     return result, int(np.asarray(last_epochs).min())
 
 
-def main(src_dir):
+def main():
+    cwd = Path(__file__).parent.absolute()
     parser = argparse.ArgumentParser(description="Call the nkululeko framework.")
+    parser.add_argument("--version", action="version", version=f"Nkululeko {VERSION}")
     parser.add_argument("--config", default="exp.ini", help="The base configuration")
     args = parser.parse_args()
     if args.config is not None:
         config_file = args.config
     else:
-        config_file = f"{src_dir}/exp.ini"
+        config_file = cwd / "exp.ini"
     doit(config_file)
 
 
 if __name__ == "__main__":
-    cwd = os.path.dirname(os.path.abspath(__file__))
-    main(cwd)  # use this if you want to state the config file path on command line
+    main()  # use this if you want to state the config file path on command line

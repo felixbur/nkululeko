@@ -83,17 +83,13 @@ def doit(config_file):
         print("DONE")
 
 
-def main(src_dir):
+def main():
     parser = argparse.ArgumentParser(description="Call the nkululeko framework.")
     parser.add_argument("--config", default="exp.ini", help="The base configuration")
     args = parser.parse_args()
-    if args.config is not None:
-        config_file = args.config
-    else:
-        config_file = f"{src_dir}/exp.ini"
+    config_file = args.config if args.config is not None else "exp.ini"
     doit(config_file)
 
 
 if __name__ == "__main__":
-    cwd = os.path.dirname(os.path.abspath(__file__))
-    main(cwd)  # use this if you want to state the config file path on command line
+    main()
