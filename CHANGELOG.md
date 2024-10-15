@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.90.3
+--------------
+* refactorings and documentations
+
 Version 0.90.2
 --------------
 * added probability output to finetuning classification models
