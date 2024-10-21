@@ -32,8 +32,7 @@ class Silero_segmenter:
         self.no_testing = not_testing
         self.util = Util(has_config=not_testing)
 
-    def get_segmentation(self, file):
-        #    print(f'segmenting {file[0]}')
+    def get_segmentation_simple(self, file):
         (
             get_speech_timestamps,
             save_audio,
@@ -42,12 +41,29 @@ class Silero_segmenter:
             collect_chunks,
         ) = vad_utils
         SAMPLING_RATE = 16000
-        if self.no_testing:
-            min_length = float(self.util.config_val("SEGMENT", "min_length", 2))
-            max_length = float(self.util.config_val("SEGMENT", "max_length", 10))
-        else:
-            min_length = 2
-            max_length = 10
+        wav = read_audio(file[0], sampling_rate=SAMPLING_RATE)
+        speech_timestamps = get_speech_timestamps(
+            wav, vad_model, sampling_rate=SAMPLING_RATE
+        )
+        files, starts, ends = [], [], []
+        for entry in speech_timestamps:
+            start = float(entry["start"] / SAMPLING_RATE)
+            end = float(entry["end"] / SAMPLING_RATE)
+            files.append(file[0])
+            starts.append(start)
+            ends.append(end)
+        seg_index = segmented_index(files, starts, ends)
+        return seg_index
+
+    def get_segmentation(self, file, min_length, max_length):
+        (
+            get_speech_timestamps,
+            save_audio,
+            read_audio,
+            VADIterator,
+            collect_chunks,
+        ) = vad_utils
+        SAMPLING_RATE = 16000
         wav = read_audio(file[0], sampling_rate=SAMPLING_RATE)
         speech_timestamps = get_speech_timestamps(
             wav, vad_model, sampling_rate=SAMPLING_RATE
@@ -76,8 +92,18 @@ class Silero_segmenter:
 
     def segment_dataframe(self, df):
         dfs = []
+        max_length = eval(self.util.config_val("SEGMENT", "max_length", "False"))
+        if max_length:
+            if self.no_testing:
+                min_length = float(self.util.config_val("SEGMENT", "min_length", 2))
+            else:
+                min_length = 2
+            self.util.debug(f"segmenting with max length: {max_length+min_length}")
         for file, values in tqdm(df.iterrows()):
-            index = self.get_segmentation(file)
+            if max_length:
+                index = self.get_segmentation(file, min_length, max_length)
+            else:
+                index = self.get_segmentation_simple(file)
             dfs.append(
                 pd.DataFrame(
                     values.to_dict(),

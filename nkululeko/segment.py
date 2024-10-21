@@ -7,9 +7,9 @@ import os
 
 import pandas as pd
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.constants import VERSION
 from nkululeko.experiment import Experiment
+import nkululeko.glob_conf as glob_conf
 from nkululeko.reporting.report_item import ReportItem
 from nkululeko.utils.util import Util
 
@@ -78,6 +78,7 @@ def main():
 
     if "duration" not in df.columns:
         df["duration"] = df.index.to_series().map(lambda x: calc_dur(x))
+    df_seg["duration"] = df_seg.index.to_series().map(lambda x: calc_dur(x))
     num_before = df.shape[0]
     num_after = df_seg.shape[0]
     # plot distributions
@@ -113,37 +114,6 @@ def main():
     )
     expr.store_report()
     print("DONE")
-
-
-def get_segmentation(file):
-    #    print(f'segmenting {file[0]}')
-    print(".", end="")
-    wav = read_audio(file[0], sampling_rate=SAMPLING_RATE)
-    speech_timestamps = get_speech_timestamps(
-        wav, vad_model, sampling_rate=SAMPLING_RATE
-    )
-    files, starts, ends = [], [], []
-    for entry in speech_timestamps:
-        start = float(entry["start"] / 1000.0)
-        end = float(entry["end"] / 1000.0)
-        files.append(file[0])
-        starts.append(start)
-        ends.append(end)
-    seg_index = segmented_index(files, starts, ends)
-    return seg_index
-
-
-def segment_dataframe(df):
-    dfs = []
-    for file, values in df.iterrows():
-        index = get_segmentation(file)
-        dfs.append(
-            pd.DataFrame(
-                values.to_dict(),
-                index,
-            )
-        )
-    return audformat.utils.concat(dfs)
 
 
 if __name__ == "__main__":

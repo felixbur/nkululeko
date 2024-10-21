@@ -171,7 +171,7 @@
 * **min_length**: the minimum length of rest samples (in seconds)
   * min_length = 2
 * **max_length**: the maximum length of segments; longer ones are cut here.  (in seconds)
-  * max_length = 10
+  * max_length = 10 # if not set, original segmentation is used
 
 ### FEATS
 

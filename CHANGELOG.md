@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.91.0
+--------------
+* fixed duration display in segmentation
+* added possibility to use original segmentations (without max. duration)
+
 Version 0.90.4
 --------------
 * added plot format for multidb
