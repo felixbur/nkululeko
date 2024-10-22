@@ -105,6 +105,7 @@ One exception is Spotlight [@spotlight:2023], an open-source tool that visualise
 
 # Acknowledgements
 
-We acknowledge support from .
+We acknowledge support from the European SHIFT (*MetamorphoSis of cultural Heritage Into augmented hypermedia assets For enhanced accessibiliTy and inclusion*) project (Grant Agreement number: 101060660) and the European EASIER (*Intelligent Automatic Sign Language Translation*) project (Grant Agreement number: 101016982).
+We thank audEERING GmbH for partial funding.
 
 # References
