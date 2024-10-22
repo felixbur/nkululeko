@@ -1,5 +1,22 @@
-# segment.py
-# segment data splits
+"""
+Segments the samples in the dataset into chunks based on voice activity detection using SILERO VAD [1].
+
+The segmentation results are saved to a file, and the distributions of the original and
+segmented durations are plotted.
+
+The module also handles configuration options, such as the segmentation method and sample
+selection, and reports the segmentation results.
+
+Usage:
+    python3 -m nkululeko.segment [--config CONFIG_FILE]
+
+Example:
+    nkululeko.segment --config tests/exp_androids_segment.ini
+
+References:
+    [1] https://github.com/snakers4/silero-vad
+    
+"""
 
 import argparse
 import configparser
