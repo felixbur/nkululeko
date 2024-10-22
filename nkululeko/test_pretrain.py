@@ -216,7 +216,6 @@ def doit(config_file):
     )
 
     class Trainer(transformers.Trainer):
-
         def compute_loss(
             self,
             model,

@@ -9,14 +9,9 @@ Download and unzip the file Audio_Speech_Actors_01-24.zip e.g., `ravdess_speech`
 
 adapted from https://www.kaggle.com/code/shivamburnwal/speech-emotion-recognition
 
-<<<<<<< HEAD
-Usage: `python3 process_database.py /data/ravdess_speech/`
-
-=======
 Usage: `python3 process_database.py -d /data/ravdess_speech
 OR
 `python3 process_database.py /data/ravdess_speech`
->>>>>>> e639b1104ec3f50b3944440119f2416aea6e31ac
 """
 
  
@@ -25,12 +20,6 @@ import sys
 
 import pandas as pd
 
-<<<<<<< HEAD
-
-# ravdess source directory as argument
-# source_dir = './'
-source_dir = sys.argv[1]
-=======
 import argparse
 from pathlib import Path, PurePath
 
@@ -40,7 +29,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--dir', type=str, default='./', help='path to RAVDESS speech directory')
 args = parser.parse_args()
 source_dir = str(Path(args.dir))
->>>>>>> e639b1104ec3f50b3944440119f2416aea6e31ac
 database_name = 'ravdess'
 
 # check if directory (e.g., Actor_01) exists

@@ -157,7 +157,7 @@ All of them take *--config <my_config.ini>* as an argument.
 
 * **nkululeko.nkululeko**: do machine learning experiments combining features and learners
 * **nkululeko.ensemble**: [combine several nkululeko experiments](http://blog.syntheticspeech.de/2024/06/25/nkululeko-ensemble-classifiers-with-late-fusion/) and report on late fusion results
-  * *configurations*: which experiments to combine
+  * *--config*: which experiments (INI files) to combine
   * *--method* (optional): majority_voting, mean (default), max, sum, uncertainty, uncertainty_weighted, confidence_weighted, performance_weighted  
   * *--threshold*: uncertainty threshold (1.0 means no threshold)
   * *--weights*: weights for performance_weighted method (could be from previous UAR, ACC)
@@ -218,7 +218,7 @@ There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
 * [Predict new labels for your data from public models and check bias](http://blog.syntheticspeech.de/2023/08/16/nkululeko-how-to-predict-labels-for-your-data-from-existing-models-and-check-them/)
 * [Resample](http://blog.syntheticspeech.de/2023/08/31/how-to-fix-different-sampling-rates-in-a-dataset-with-nkululeko/)
 * [Get some statistics on correlation and effect-size](http://blog.syntheticspeech.de/2023/09/05/nkululeko-get-some-statistics-on-correlation-and-effect-size/)
-* [Automatic generation  of a latex / pdf report](http://blog.syntheticspeech.de/2023/09/26/nkululeko-generate-a-latex-pdf-report/) 
+* [Automatic generation of a latex / pdf report](http://blog.syntheticspeech.de/2023/09/26/nkululeko-generate-a-latex-pdf-report/) 
 * [Inspect your data with Spotlight](http://blog.syntheticspeech.de/2023/10/31/nkululeko-inspect-your-data-with-spotlight/)
 * [Automatically stratify your split sets](http://blog.syntheticspeech.de/2023/11/07/nkululeko-automatically-stratify-your-split-sets/)
 * [re-name data column names](http://blog.syntheticspeech.de/2023/11/16/nkululeko-re-name-data-column-names/)
