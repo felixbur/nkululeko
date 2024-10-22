@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.91.2
+--------------
+* making lint work by excluding constants from check
+
+Version 0.91.1
 --------------
 * minor refactoring in ensemble module
 
