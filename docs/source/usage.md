@@ -2,7 +2,7 @@
 
 The main usage of Nkululeko is as follows:
 
-``` {bash}
+```bash
 python -m nkululeko.[MODULE] --config [CONFIG_FILE.ini]
 # Example to run the experiment
 python -m nkululeko.nkululeko --config INI_FILE.ini
