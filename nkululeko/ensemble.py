@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Ensemble predictions from multiple experiments.
 
@@ -15,9 +16,6 @@ Raises:
     ValueError: If an unknown ensemble method is provided.
     AssertionError: If the number of config files is less than 2 for majority voting.
 """
-
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 
 import configparser
@@ -300,10 +298,10 @@ def ensemble_predictions(
     return ensemble_preds
 
 
-def main(src_dir: Path) -> None:
+def main():
     parser = ArgumentParser()
     parser.add_argument(
-        "configs",
+        "--config",
         nargs="+",
         help="Paths to the configuration files of the experiments to ensemble. \
              Can be INI files for Nkululeko.nkululeko or CSV files from Nkululeko.demo.",
@@ -356,7 +354,7 @@ def main(src_dir: Path) -> None:
     start = time.time()
 
     ensemble_preds = ensemble_predictions(
-        args.configs, args.method, args.threshold, args.weights, args.no_labels
+        args.config, args.method, args.threshold, args.weights, args.no_labels
     )
 
     # save to csv
@@ -368,5 +366,4 @@ def main(src_dir: Path) -> None:
 
 
 if __name__ == "__main__":
-    cwd = Path(__file__).parent
-    main(cwd)
+    main()
