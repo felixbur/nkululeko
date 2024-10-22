@@ -16,6 +16,7 @@ setup(
             "nkululeko.resample=nkululeko.resample:main",
             "nkululeko.segment=nkululeko.segment:main",
             "nkululeko.test=nkululeko.test:main",
+            "nkululeko.ensemble=nkululeko.ensemble:main",
         ],
     },
 )
