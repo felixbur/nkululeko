@@ -1,6 +1,9 @@
 Changelog
 =========
 
+--------------
+* minor refactoring in ensemble module
+
 Version 0.91.0
 --------------
 * fixed duration display in segmentation
