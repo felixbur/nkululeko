@@ -45,13 +45,13 @@ The program is intended for **novice** people interested in speaker characterist
 - Inference of speaker characteristics from a given audio file or streaming audio (can be said also as “weak” labeling for semi-supervised learning).
 
 <!-- module + INI file -->
-Hence, one should be able to use Nkululeko after installing and preparing/downloading their data in the correct format. 
+Hence, one should be able to use Nkululeko after installing and preparing/downloading their data in the correct format in a single line. 
 
 ```bash
 $ nkululeko.MODULE_NAME --config CONFIG_FILE.ini
 ```
 
-<!-- I think we should ship Nkululeko with built-in datasets in the future so user can directly run it without downloading any dataset. -->
+<!-- I think we should ship Nkululeko with built-in datasets in the future so user can directly run it without downloading any dataset -> added Polish dataset -->
 
 # How does it work?
 
@@ -153,7 +153,8 @@ $ nkululeko.nkululeko --config data/polish/exp.ini
 That's it! The results will be stored in the `results/exp_polish_os` folder as stated in `exp.ini`. Below is the example of the debug output of the command:
 
 ```bash
-DEBUG: nkululeko: running exp_polish_os from config data/polish/exp.ini, nkululeko version 0.91.0
+DEBUG: nkululeko: running exp_polish_os from config data/polish/exp.ini, 
+nkululeko version 0.91.0
 ...
 DEBUG: reporter: 
                precision    recall  f1-score   support
@@ -167,7 +168,8 @@ DEBUG: reporter:
 weighted avg     0.6124    0.6222    0.6142        90
 
 DEBUG: reporter: labels: ['anger', 'neutral', 'fear']
-DEBUG: reporter: result per class (F1 score): [0.758, 0.464, 0.621] from epoch: 0
+DEBUG: reporter: result per class (F1 score): [0.758, 0.464, 0.621] 
+from epoch: 0
 DEBUG: experiment: Done, used 7.439 seconds
 DONE
 ```
@@ -186,7 +188,7 @@ Nkululeko follows these principles:
 
 - *High-level interface*: the user specifies the experiment in an INI file, which is a simple text file that can be edited with any text editor. The user does not need to write Python code for experiments.
 
-- *Transparency*: as CLI, nkululeko *always output debug*, in which info, warning, and error will be displayed in terminal (and should be easily understood). The results are stored in the experiment folder for further investigations and are represented as images, texts, and even a fully automatically compiled PDF report written in latex.
+- *Transparency*: as CLI, nkululeko *always output debug*, in which info, warning, and error will be obviously displayed in terminal (and should be easily understood). The results are stored in the experiment folder for further investigations and are represented as images, texts, and even a fully automatically compiled PDF report written in latex.
 
 # Usage in existing research
 <!-- list of papers used nkululeko -->
