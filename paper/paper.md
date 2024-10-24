@@ -1,5 +1,5 @@
 ---
-title: 'Nkululeko: A Python package to predict speaker characteristics with a high-level interface.'
+title: 'Nkululeko: A Python package to predict speaker characteristics with a high-level interface'
 tags:
   - Python
   - speech
@@ -80,7 +80,7 @@ We list the most important ones here:
 * **demo**: demo the current best model on the command line
 * **explore**: perform data exploration (used mainly in this paper)
 * **augment**: augment the current training data. This could also be used to reduce bias in the data, for example, by adding noise to audio samples that belong to a specific category.
-* ** **aug_train**: augment the training data and train the model with the augmented data.
+* **aug_train**: augment the training data and train the model with the augmented data.
 * **predict**: predict features like signal distortion ratio, mean opinion score, arousal/valence, age/gender (for databases that miss this information), with deep neural nets models, e.g. as a basis for the *explore* module.
 * **segment**: segment a database based on VAD (voice activity detection)
 * **ensemble**: ensemble several models to improve performance
@@ -146,9 +146,9 @@ Nkululeko has been used in several research projects since its first appearance 
 
 - [@burkhardt:2022-syntact]: this paper reported a database development of synthesized speech for basic emotions and its evaluation using Nkululeko toolkit.
 
-- [Burkhardt:2024]: this papers shows how to use Nkululeko to bias detection. The finding on two datasets, UACorpus and Androids, show that some features are correlated with the target label, e.g., depression, and can be used to detect bias in the database.
+- [@Burkhardt:2024]: this papers shows how to use Nkululeko to bias detection. The finding on two datasets, UACorpus and Androids, show that some features are correlated with the target label, e.g., depression, and can be used to detect bias in the database.
 
-- [Atmaja:2024a]: this papers shows Nkululeko's capability for ensemble learning with focus on uncertainty estimation. 
+- [@Atmaja:2024a]: this papers shows Nkululeko's capability for ensemble learning with focus on uncertainty estimation. 
 
 # Acknowledgements
 

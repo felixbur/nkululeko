@@ -143,6 +143,7 @@ tmp*
 test*
 log.*
 codemeta.json
+paper/paper.pdf
 
 # add exception for run_test?.sh
 !run_test?.sh
