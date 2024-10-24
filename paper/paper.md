@@ -1,5 +1,5 @@
 ---
-title: 'Nkululeko: A Python package to predict speaker characteristics with a high-level interface'
+title: 'Nkululeko 1.0: A Python package to predict speaker characteristics with a high-level interface'
 tags:
   - Python
   - speech
@@ -34,7 +34,7 @@ It is predominantly a framework for audio-based machine learning explorations wi
 The main features are: training and evaluation of labelled speech databases with state-of-the-art machine learning approach and acoustic feature extractors, a live demonstration interface, and the possibility to store databases with predicted 
 labels. Based on this, the framework can also be used to check on bias in databases by exploring correlations of target labels, like, e.g. depression or diagnosis, with predicted, or additionally given, labels like age, gender, signal distortion ratio or mean opinion score.
 
-# Design Choices 
+# Design choices 
 
 The program is intended for **novice** people interested in speaker characteristics detection (e.g., emotion, age, and gender) without proficient in (Python) programming language. Its main target is for **education** and **research** with the main features as follows:
 
@@ -80,14 +80,14 @@ We list the most important ones here:
 * **demo**: demo the current best model on the command line
 * **explore**: perform data exploration (used mainly in this paper)
 * **augment**: augment the current training data. This could also be used to reduce bias in the data, for example, by adding noise to audio samples that belong to a specific category.
-* **aug_train**: augment the training data and train the model with the augmented data.
+* **aug\_train**: augment the training data and train the model with the augmented data.
 * **predict**: predict features like signal distortion ratio, mean opinion score, arousal/valence, age/gender (for databases that miss this information), with deep neural nets models, e.g. as a basis for the *explore* module.
 * **segment**: segment a database based on VAD (voice activity detection)
 * **ensemble**: ensemble several models to improve performance
 
 The configuration (INI) file consists of a set of key-value pairs that are organised into several sections. Almost all keys have default values, so they do not have to be specified.
 
-Here is a sample listing of an INI file with database section:
+Here is a sample listing of an INI file (`conf.ini`) with database section:
 
 ```ini
 [EXP]
@@ -122,7 +122,55 @@ The `nkululeko` configuration can specify further sections:
 * **MODEL** to specify statistical models for regression or classification of audio data.
 
 
+# Example usage
+In the previous section, we have seen how to specify an experiment in an INI file which can be run with, for instance, `explore` and `segment` modules. Here, we show how to run the experiment (`nkululeko.nkululeko`) with built-in dataset (Polish Speech Emotions dataset) from the installation until getting the results. 
 
+First, novice could clone the github repository of nkululeko. 
+
+```bash
+$ git clone https://github.com/felixbur/nkululeko.git
+$ cd nkululeko
+```
+
+Then, install nkululeko with `pip`. It is recommended to use a virtual environment to avoid conflicts with other Python packages. 
+
+```bash
+$ python -m venv .env
+$ source .env/bin/activate
+$ pip install nkululeko
+```
+
+Next, extract `polish_speech_emotions.zip` inside nkululeko data folder (`nkululeko/data/polish`) with right click regardless of the operating system (or using `unzip` command in terminal like below). Then, run the following command in terminal:
+
+```bash
+$ cd data/polish
+$ unzip polish_speech_emotions.zip
+$ python3 process_database.py
+$ cd ../..
+$ nkululeko.nkululeko --config data/polish/exp.ini
+```
+
+That's it! The results will be stored in the `results/exp_polish_os` folder as stated in `exp.ini`. Below is the example of the debug output of the command:
+
+```bash
+DEBUG: nkululeko: running exp_polish_os from config data/polish/exp.ini, nkululeko version 0.91.0
+...
+DEBUG: reporter: 
+               precision    recall  f1-score   support
+
+       anger     0.6944    0.8333    0.7576        30
+     neutral     0.5000    0.4333    0.4643        30
+        fear     0.6429    0.6000    0.6207        30
+
+    accuracy                         0.6222        90
+   macro avg     0.6124    0.6222    0.6142        90
+weighted avg     0.6124    0.6222    0.6142        90
+
+DEBUG: reporter: labels: ['anger', 'neutral', 'fear']
+DEBUG: reporter: result per class (F1 score): [0.758, 0.464, 0.621] from epoch: 0
+DEBUG: experiment: Done, used 7.439 seconds
+DONE
+```
 # Statement of need
 Open-source tools are believed to be one of the reasons for accelerated science and technology. They are more secure, easy to customise and transparent. There are several open-source tools that exist for acoustic, sound, and audio analysis, such as librosa [@McFee:2015], TorchAudio [@Yang:2021], pyAudioAnalysis [@Giannakopoulos:2015], ESPNET [@Watanabe:2018], and SpeechBrain [@speechbrain:2021]. However, none of them are specialised in speech analysis with high-level interfaces for novices in the speech processing area. 
 
@@ -132,7 +180,7 @@ Nkululeko follows these principles:
 
 - *Minimum programming skills*: the only programming skills required are to prepare the data in the correct (CSV) format and to run the command line tool. For AUDFORMAT, no preparation is needed.
 
-- *Standardised data format and label*: the data format is based on CSV and AUFORMAT, which is a widely used format for data exchange. The standard headers are like 'file', 'speaker', 'emotion', 'age', and 'language' but also can be customised.
+- *Standardised data format and label*: the data format is based on CSV and AUFORMAT, which is a widely used format for data exchange. The standard headers are like 'file', 'speaker', 'emotion', 'age', and 'language' but also can be customised. Data could be saved anywhere in the computer, but recipe for the data preparation is advised to be saved in `nkululeko/data` folder (and make a soft link to the original data location).
 
 - *Replicability*: the experiments are specified in a configuration file, which can be shared with others including the splitting of training, development, and test partition. All results are stored in a folder with the same name as the experiment.
 
@@ -140,7 +188,7 @@ Nkululeko follows these principles:
 
 - *Transparency*: as CLI, nkululeko *always output debug*, in which info, warning, and error will be displayed in terminal (and should be easily understood). The results are stored in the experiment folder for further investigations and are represented as images, texts, and even a fully automatically compiled PDF report written in latex.
 
-# Usage in Existing Research
+# Usage in existing research
 <!-- list of papers used nkululeko -->
 Nkululeko has been used in several research projects since its first appearance in 2022 [@nkululeko:2022]. The following list gives an overview of the research papers that have used Nkululeko:
 
