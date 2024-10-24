@@ -12,7 +12,10 @@ Download link: <https://mostwiedzy.pl/en/open-research-data/emotions-in-polish-s
 
 ```bash
 mkdir POLISH
+# if downlading from original dataset
 unzip Speech_emotions.zip -d POLISH
+# if using the resampled version
+unzip polish_speech_emotions.zip
 python3 process_database.py
 cd ../..
 python3 -m nkululeko.resample --config data/polish/exp.ini
