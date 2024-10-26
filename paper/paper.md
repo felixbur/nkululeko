@@ -77,11 +77,12 @@ The functionality is encapsulated by software *modules* (interfaces) that are to
 We list the most important ones here:
 
 * **nkululeko**: do machine learning experiments combining features and learners
-* **demo**: demo the current best model on the command line
+* **demo**: demo the current best model on the command line or some files
+* **test**: run current best model on a specified test set
 * **explore**: perform data exploration (used mainly in this paper)
 * **augment**: augment the current training data. This could also be used to reduce bias in the data, for example, by adding noise to audio samples that belong to a specific category.
 * **aug\_train**: augment the training data and train the model with the augmented data.
-* **predict**: predict features like signal distortion ratio, mean opinion score, arousal/valence, age/gender (for databases that miss this information), with deep neural nets models, e.g. as a basis for the *explore* module.
+* **predict**: predict features like speaker diarization, signal distortion ratio, mean opinion score, arousal/valence, age/gender (for databases that miss this information), with deep neural nets models, e.g. as a basis for the *explore* module.
 * **segment**: segment a database based on VAD (voice activity detection)
 * **ensemble**: ensemble several models to improve performance
 
