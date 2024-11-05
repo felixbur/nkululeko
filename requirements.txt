@@ -18,11 +18,11 @@ opensmile
 pandas
 praat-parselmouth
 pylatex
-renumics-spotlight 
+# renumics-spotlight 
+# sliceguard
 scikit_learn
 scipy
 seaborn
-sliceguard
 sounddevice
 splitutils
 tensorflow
