@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.91.3
+--------------
+* some additions for robustness
+
 Version 0.91.2
 --------------
 * making lint work by excluding constants from check

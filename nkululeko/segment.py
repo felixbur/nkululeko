@@ -110,7 +110,7 @@ def main():
     )
     print("")
     # remove encoded labels
-    target = util.config_val("DATA", "target", "emotion")
+    target = util.config_val("DATA", "target", None)
     if "class_label" in df_seg.columns:
         df_seg = df_seg.drop(columns=[target])
         df_seg = df_seg.rename(columns={"class_label": target})

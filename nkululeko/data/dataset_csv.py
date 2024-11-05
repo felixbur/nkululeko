@@ -39,6 +39,8 @@ class Dataset_CSV(Dataset):
             df = audformat.utils.read_csv(data_file)
         if isinstance(df, pd.Series):
             df = df.to_frame()
+        elif isinstance(df, pd.Index):
+            df = pd.DataFrame(index=df)
         rename_cols = self.util.config_val_data(self.name, "colnames", False)
         if rename_cols:
             col_dict = ast.literal_eval(rename_cols)
@@ -78,7 +80,11 @@ class Dataset_CSV(Dataset):
 
         self.df = df
         self.db = None
-        self.got_target = True
+        target = self.util.config_val("DATA", "target", None)
+        if target is not None:
+            self.got_target = True
+        else:
+            self.got_target = False
         self.is_labeled = self.got_target
         self.start_fresh = eval(self.util.config_val("DATA", "no_reuse", "False"))
         is_index = False

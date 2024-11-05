@@ -305,6 +305,9 @@ class Plots:
         except AttributeError as ae:
             self.util.warn(ae)
             ax = sns.histplot(df, x="duration", kde=True)
+        except ValueError as error:
+            self.util.warn(error)
+            ax = sns.histplot(df, x="duration", kde=True)
         min = self.util.to_3_digits(df.duration.min())
         max = self.util.to_3_digits(df.duration.max())
         title = f"Duration distr. for {sample_selection} {df.shape[0]}. min={min}, max={max}"

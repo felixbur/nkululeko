@@ -125,7 +125,15 @@ class Experiment:
         # df = pd.read_csv(storage, header=0, index_col=[0,1,2])
         # df.index.set_levels(pd.to_timedelta(df.index.levels[1]), level=1)
         # df.index.set_levels(pd.to_timedelta(df.index.levels[2]), level=2)
-        df = audformat.utils.read_csv(storage)
+        try:
+            df = audformat.utils.read_csv(storage)
+        except ValueError:
+            # split might be empty
+            return pd.DataFrame()
+        if isinstance(df, pd.Series):
+            df = df.to_frame()
+        elif isinstance(df, pd.Index):
+            df = pd.DataFrame(index=df)
         df.is_labeled = True if self.target in df else False
         # print(df.head())
         return df
