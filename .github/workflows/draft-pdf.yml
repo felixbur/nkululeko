@@ -1,8 +1,12 @@
 name: Draft PDF
-on: [merge]
+# only trigger on pull request closed events
+on:
+  pull_request:
+    types: [ closed ]
 
 jobs:
   paper:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     name: Paper Draft
     steps:
