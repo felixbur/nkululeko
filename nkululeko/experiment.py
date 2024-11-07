@@ -439,7 +439,12 @@ class Experiment:
             )
         targets = self.util.config_val_list("PREDICT", "targets", ["gender"])
         for target in targets:
-            if target == "gender":
+            if target == "speaker":
+                from nkululeko.autopredict.ap_sid import SIDPredictor
+
+                predictor = SIDPredictor(df)
+                df = predictor.predict(sample_selection)
+            elif target == "gender":
                 from nkululeko.autopredict.ap_gender import GenderPredictor
 
                 predictor = GenderPredictor(df)

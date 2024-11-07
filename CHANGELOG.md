@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.92.0
+--------------
+* added first version of automatic speaker prediction/segmentation
+
 Version 0.91.3
 --------------
 * some additions for robustness

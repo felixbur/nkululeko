@@ -1,5 +1,4 @@
-"""
-Segments the samples in the dataset into chunks based on voice activity detection using SILERO VAD [1].
+"""Segments the samples in the dataset into chunks based on voice activity detection using SILERO VAD [1].
 
 The segmentation results are saved to a file, and the distributions of the original and
 segmented durations are plotted.
@@ -15,7 +14,7 @@ Example:
 
 References:
     [1] https://github.com/snakers4/silero-vad
-    
+    [2] https://github.com/pyannote/pyannote-audio
 """
 
 import argparse
@@ -83,12 +82,15 @@ def main():
 
         segmenter = Silero_segmenter()
         df_seg = segmenter.segment_dataframe(df)
+    elif segmenter == "pyannote":
+        from nkululeko.segmenting.seg_pyannote import Pyannote_segmenter
 
+        segmenter = Pyannote_segmenter(config)
+        df_seg = segmenter.segment_dataframe(df)
     else:
-        util.error(f"unkown segmenter: {segmenter}")
+        util.error(f"unknown segmenter: {segmenter}")
 
     def calc_dur(x):
-
         starts = x[1]
         ends = x[2]
         return (ends - starts).total_seconds()
@@ -115,8 +117,6 @@ def main():
         df_seg = df_seg.drop(columns=[target])
         df_seg = df_seg.rename(columns={"class_label": target})
     # save file
-    # dataname = "_".join(expr.datasets.keys())
-    # name = f"{dataname}{segment_target}"
     df_seg.to_csv(f"{expr.data_dir}/{segmented_file}")
     util.debug(
         f"saved {segmented_file} to {expr.data_dir}, {num_after} samples (was"

@@ -2,13 +2,12 @@
 A predictor for sid - Speaker ID.
 """
 
-from pyannote.audio import Pipeline
-
-
 import numpy as np
+from pyannote.audio import Pipeline
+import torch
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.feature_extractor import FeatureExtractor
+import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.util import Util
 
 
@@ -21,23 +20,29 @@ class SIDPredictor:
     def __init__(self, df):
         self.df = df
         self.util = Util("sidPredictor")
+        hf_token = self.util.config_val("Model", "hf_token", None)
+        if hf_token is None:
+            self.util.error(
+                "speaker id prediction needs huggingface token: [MODEL][hf_token]"
+            )
         self.pipeline = Pipeline.from_pretrained(
             "pyannote/speaker-diarization-3.1",
-            use_auth_token="HUGGINGFACE_ACCESS_TOKEN_GOES_HERE",
+            use_auth_token=hf_token,
         )
+        device = self.util.config_val("Model", "device", "cpu")
+        self.pipeline.to(torch.device(device))
 
     def predict(self, split_selection):
-        self.util.debug(f"estimating PESQ for {split_selection} samples")
+        self.util.debug(f"estimating speaker id for {split_selection} samples")
         return_df = self.df.copy()
-        feats_name = "_".join(ast.literal_eval(glob_conf.config["DATA"]["databases"]))
-        self.feature_extractor = FeatureExtractor(
-            self.df, ["squim"], feats_name, split_selection
-        )
-        result_df = self.feature_extractor.extract()
-        # replace missing values by 0
-        result_df = result_df.fillna(0)
-        result_df = result_df.replace(np.nan, 0)
-        result_df.replace([np.inf, -np.inf], 0, inplace=True)
-        pred_vals = result_df.pesq * 100
-        return_df["pesq_pred"] = pred_vals.astype("int") / 100
+        # @todo
+        # 1) concat all audio files
+        # 2) get segmentations with pyannote
+        # 3) map pyannote segments with orginal ones and assign speaker id
+
         return return_df
+
+    def concat_files(self, df):
+        pass
+        # todo
+        # please use https://audeering.github.io/audiofile/usage.html#read-a-file

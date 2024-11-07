@@ -2,7 +2,7 @@
 # use some model and add automatically predicted labels to train and test splits
 # then save as a new dataset
 
-"""This script is used to call the nkululeko PREDICT framework. 
+r"""This script is used to call the nkululeko PREDICT framework.
 
 It loads a configuration file, creates a new experiment,
 and performs automatic prediction on the train and test datasets. The predicted labels are added to the datasets and
