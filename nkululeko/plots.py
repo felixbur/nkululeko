@@ -4,14 +4,14 @@ import ast
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
 from scipy import stats
+import seaborn as sns
 from sklearn.manifold import TSNE
 
 import nkululeko.glob_conf as glob_conf
-import nkululeko.utils.stats as su
 from nkululeko.reporting.defines import Header
 from nkululeko.reporting.report_item import ReportItem
+import nkululeko.utils.stats as su
 from nkululeko.utils.util import Util
 
 
@@ -30,8 +30,6 @@ class Plots:
             df_speaker["samplenum"] = df_speaker.shape[0]
             df_speakers = pd.concat([df_speakers, df_speaker.head(1)])
         # plot the distribution of samples per speaker
-        # one up because of the runs
-        fig_dir = self.util.get_path("fig_dir") + "../"
         self.util.debug("plotting samples per speaker")
         if "gender" in df_speakers:
             filename = "samples_value_counts"
@@ -319,6 +317,31 @@ class Plots:
         img_path = f"{fig_dir}{filename}_{sample_selection}.{self.format}"
         plt.savefig(img_path)
         plt.close(fig)
+        self.util.debug(f"plotted durations to {img_path}")
+        glob_conf.report.add_item(
+            ReportItem(
+                Header.HEADER_EXPLORE,
+                caption,
+                title,
+                img_path,
+            )
+        )
+
+    def plot_speakers(self, df, sample_selection):
+        filename = "speakers"
+        caption = "speakers"
+        # one up because of the runs
+        fig_dir = self.util.get_path("fig_dir") + "../"
+        sns.set_style("whitegrid")  # Set style for chart
+        ax = df["speaker"].value_counts().plot(kind="pie")
+        title = f"Speaker distr. for {sample_selection} {df.shape[0]}."
+        ax.set_title(title)
+        fig = ax.figure
+        # plt.tight_layout()
+        img_path = f"{fig_dir}{filename}_{sample_selection}.{self.format}"
+        plt.savefig(img_path)
+        plt.close(fig)
+        self.util.debug(f"plotted speakers to {img_path}")
         glob_conf.report.add_item(
             ReportItem(
                 Header.HEADER_EXPLORE,

@@ -63,7 +63,7 @@ def main():
     # segment
     segmented_file = util.config_val("SEGMENT", "result", "segmented.csv")
 
-    segmenter = util.config_val("SEGMENT", "method", "silero")
+    method = util.config_val("SEGMENT", "method", "silero")
     sample_selection = util.config_val("SEGMENT", "sample_selection", "all")
     if sample_selection == "all":
         df = pd.concat([expr.df_train, expr.df_test])
@@ -76,19 +76,19 @@ def main():
             f"unknown segmentation selection specifier {sample_selection},"
             " should be [all | train | test]"
         )
-    util.debug(f"segmenting {sample_selection}: {df.shape[0]} samples with {segmenter}")
-    if segmenter == "silero":
+    util.debug(f"segmenting {sample_selection}: {df.shape[0]} samples with {method}")
+    if method == "silero":
         from nkululeko.segmenting.seg_silero import Silero_segmenter
 
         segmenter = Silero_segmenter()
         df_seg = segmenter.segment_dataframe(df)
-    elif segmenter == "pyannote":
+    elif method == "pyannote":
         from nkululeko.segmenting.seg_pyannote import Pyannote_segmenter
 
         segmenter = Pyannote_segmenter(config)
         df_seg = segmenter.segment_dataframe(df)
     else:
-        util.error(f"unknown segmenter: {segmenter}")
+        util.error(f"unknown segmenter: {method}")
 
     def calc_dur(x):
         starts = x[1]
@@ -110,6 +110,9 @@ def main():
     plots.plot_durations(
         df_seg, "segmented_durations", sample_selection, caption="Segmented durations"
     )
+    if method == "pyannote":
+        plots.plot_speakers(df_seg, sample_selection)
+
     print("")
     # remove encoded labels
     target = util.config_val("DATA", "target", None)

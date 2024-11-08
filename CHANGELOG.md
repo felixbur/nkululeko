@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.92.1
+--------------
+* added a speaker plot to pyannote results 
+
 Version 0.92.0
 --------------
 * added first version of automatic speaker prediction/segmentation
