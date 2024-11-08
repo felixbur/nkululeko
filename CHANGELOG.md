@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.92.2
+--------------
+* added some output to automatic speaker id
+
 Version 0.92.1
 --------------
 * added a speaker plot to pyannote results 

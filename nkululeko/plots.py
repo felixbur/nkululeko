@@ -333,7 +333,7 @@ class Plots:
         # one up because of the runs
         fig_dir = self.util.get_path("fig_dir") + "../"
         sns.set_style("whitegrid")  # Set style for chart
-        ax = df["speaker"].value_counts().plot(kind="pie")
+        ax = df["speaker"].value_counts().plot(kind="pie", autopct="%1.1f%%")
         title = f"Speaker distr. for {sample_selection} {df.shape[0]}."
         ax.set_title(title)
         fig = ax.figure

@@ -23,6 +23,8 @@ import os
 
 import pandas as pd
 
+import audformat
+
 from nkululeko.constants import VERSION
 from nkululeko.experiment import Experiment
 import nkululeko.glob_conf as glob_conf
@@ -76,19 +78,33 @@ def main():
             f"unknown segmentation selection specifier {sample_selection},"
             " should be [all | train | test]"
         )
-    util.debug(f"segmenting {sample_selection}: {df.shape[0]} samples with {method}")
-    if method == "silero":
-        from nkululeko.segmenting.seg_silero import Silero_segmenter
-
-        segmenter = Silero_segmenter()
-        df_seg = segmenter.segment_dataframe(df)
-    elif method == "pyannote":
-        from nkululeko.segmenting.seg_pyannote import Pyannote_segmenter
-
-        segmenter = Pyannote_segmenter(config)
-        df_seg = segmenter.segment_dataframe(df)
+    result_file = f"{expr.data_dir}/{segmented_file}"
+    if os.path.exists(result_file):
+        util.debug(f"reusing existing result file: {result_file}")
+        df_seg = audformat.utils.read_csv(result_file)
     else:
-        util.error(f"unknown segmenter: {method}")
+        util.debug(
+            f"segmenting {sample_selection}: {df.shape[0]} samples with {method}"
+        )
+        if method == "silero":
+            from nkululeko.segmenting.seg_silero import Silero_segmenter
+
+            segmenter = Silero_segmenter()
+            df_seg = segmenter.segment_dataframe(df)
+        elif method == "pyannote":
+            from nkululeko.segmenting.seg_pyannote import Pyannote_segmenter
+
+            segmenter = Pyannote_segmenter(config)
+            df_seg = segmenter.segment_dataframe(df)
+        else:
+            util.error(f"unknown segmenter: {method}")
+        # remove encoded labels
+        target = util.config_val("DATA", "target", None)
+        if "class_label" in df_seg.columns:
+            df_seg = df_seg.drop(columns=[target])
+            df_seg = df_seg.rename(columns={"class_label": target})
+        # save file
+        df_seg.to_csv(f"{expr.data_dir}/{segmented_file}")
 
     def calc_dur(x):
         starts = x[1]
@@ -100,6 +116,11 @@ def main():
     df_seg["duration"] = df_seg.index.to_series().map(lambda x: calc_dur(x))
     num_before = df.shape[0]
     num_after = df_seg.shape[0]
+    util.debug(
+        f"saved {segmented_file} to {expr.data_dir}, {num_after} samples (was"
+        f" {num_before})"
+    )
+
     # plot distributions
     from nkululeko.plots import Plots
 
@@ -111,20 +132,9 @@ def main():
         df_seg, "segmented_durations", sample_selection, caption="Segmented durations"
     )
     if method == "pyannote":
+        util.debug(df_seg[["speaker", "duration"]].groupby(["speaker"]).sum())
         plots.plot_speakers(df_seg, sample_selection)
 
-    print("")
-    # remove encoded labels
-    target = util.config_val("DATA", "target", None)
-    if "class_label" in df_seg.columns:
-        df_seg = df_seg.drop(columns=[target])
-        df_seg = df_seg.rename(columns={"class_label": target})
-    # save file
-    df_seg.to_csv(f"{expr.data_dir}/{segmented_file}")
-    util.debug(
-        f"saved {segmented_file} to {expr.data_dir}, {num_after} samples (was"
-        f" {num_before})"
-    )
     glob_conf.report.add_item(
         ReportItem(
             "Data",
