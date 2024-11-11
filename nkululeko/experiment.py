@@ -422,9 +422,7 @@ class Experiment:
         return df_ret
 
     def autopredict(self):
-        """
-        Predict labels for samples with existing models and add to the dataframe.
-        """
+        """Predict labels for samples with existing models and add to the dataframe."""
         sample_selection = self.util.config_val("PREDICT", "split", "all")
         if sample_selection == "all":
             df = pd.concat([self.df_train, self.df_test])

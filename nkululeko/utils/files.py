@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# copied from librosa.util.files.py
+# find_files copied from librosa.util.files.py
 
 """Utility functions for dealing with files"""
 from __future__ import annotations
@@ -8,11 +8,22 @@ from __future__ import annotations
 import glob
 import os
 from pathlib import Path
-from typing import Any, List, Optional, Set, Union
+from typing import Any
+from typing import List
+from typing import Optional
+from typing import Set
+from typing import Union
+
+import numpy as np
+from tqdm import tqdm
+
+import audiofile
+
 
 # add new function here
 __all__ = [
     "find_files",
+    "concat_files",
 ]
 
 
@@ -143,3 +154,16 @@ def __get_files(dir_name: Union[str, os.PathLike[Any]], extensions: Set[str]):
         myfiles |= set(glob.glob(globstr))
 
     return myfiles
+
+
+def concat_files(index, outfile_path):
+    buffer = np.asarray([])
+    sr = 16000
+    for idx, (file, start, end) in enumerate(tqdm(index.to_list())):
+        signal, sr = audiofile.read(
+            file,
+            offset=start.total_seconds(),
+            duration=(end - start).total_seconds(),
+        )
+        buffer = np.concatenate([buffer, signal])
+    audiofile.write(outfile_path, buffer, sr)

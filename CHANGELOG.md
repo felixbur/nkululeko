@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.93.0
+--------------
+* integrated pyannote for speaker prediction for predict module
+
 Version 0.92.2
 --------------
 * added some output to automatic speaker id
@@ -11,7 +15,7 @@ Version 0.92.1
 
 Version 0.92.0
 --------------
-* added first version of automatic speaker prediction/segmentation
+* added first version of automatic speaker prediction for segment module
 
 Version 0.91.3
 --------------

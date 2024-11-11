@@ -362,7 +362,7 @@
 ### [PREDICT](#predict)
 
 * **targets**: Speaker/speech characteristics to be predicted by some models
-  * targets = ['gender', 'age', 'snr', 'arousal', 'valence', 'dominance', 'pesq', 'mos']
+  * targets = ['speaker', 'gender', 'age', 'snr', 'arousal', 'valence', 'dominance', 'pesq', 'mos']
 * **sample_selection**: which split: [train, test, all]
   * sample_selection = all
 

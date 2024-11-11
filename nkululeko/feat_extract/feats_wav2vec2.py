@@ -1,4 +1,4 @@
-""" feats_wav2vec2.py
+"""feats_wav2vec2.py.
 feat_types example = [wav2vec2-large-robust-ft-swbd-300h,
 wav2vec2-xls-r-2b, wav2vec2-large, wav2vec2-large-xlsr-53, wav2vec2-base]
 
@@ -11,12 +11,13 @@ import os
 import pandas as pd
 import torch
 import torchaudio
-import transformers
 from tqdm import tqdm
-from transformers import Wav2Vec2FeatureExtractor, Wav2Vec2Model
+import transformers
+from transformers import Wav2Vec2FeatureExtractor
+from transformers import Wav2Vec2Model
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
+import nkululeko.glob_conf as glob_conf
 
 
 class Wav2vec2(Featureset):
