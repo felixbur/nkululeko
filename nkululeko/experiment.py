@@ -197,6 +197,8 @@ class Experiment:
             )
             self.df_test = self._import_csv(storage_test)
             self.df_train = self._import_csv(storage_train)
+            self.train_empty = True if self.df_train.shape[0] == 0 else False
+            self.test_empty = True if self.df_test.shape[0] == 0 else False
         else:
             self.df_train, self.df_test = pd.DataFrame(), pd.DataFrame()
             for d in self.datasets.values():
@@ -212,6 +214,8 @@ class Experiment:
                     self.util.debug(f"warn: {d.name} test empty")
                 self.df_test = pd.concat([self.df_test, d.df_test])
                 self.util.copy_flags(d, self.df_test)
+            self.train_empty = True if self.df_train.shape[0] == 0 else False
+            self.test_empty = True if self.df_test.shape[0] == 0 else False
             store = self.util.get_path("store")
             storage_test = f"{store}testdf.csv"
             storage_train = f"{store}traindf.csv"
@@ -253,50 +257,49 @@ class Experiment:
         if self.util.exp_is_classification():
             datatype = self.util.config_val("DATA", "type", "dummy")
             if datatype == "continuous":
-                # if self.df_test.is_labeled:
-                #     # remember the target in case they get labelencoded later
-                #     self.df_test["class_label"] = self.df_test[self.target]
-                test_cats = self.df_test["class_label"].unique()
-                # else:
-                #     # if there is no target, copy a dummy label
-                #     self.df_test = self._add_random_target(self.df_test)
-                # if self.df_train.is_labeled:
-                #     # remember the target in case they get labelencoded later
-                #     self.df_train["class_label"] = self.df_train[self.target]
-                train_cats = self.df_train["class_label"].unique()
-
+                if not self.test_empty:
+                    test_cats = self.df_test["class_label"].unique()
+                if not self.train_empty:
+                    train_cats = self.df_train["class_label"].unique()
             else:
-                if self.df_test.is_labeled:
-                    test_cats = self.df_test[self.target].unique()
-                else:
-                    # if there is no target, copy a dummy label
-                    self.df_test = self._add_random_target(self.df_test).astype("str")
-                train_cats = self.df_train[self.target].unique()
-                # print(f"df_train: {pd.DataFrame(self.df_train[self.target])}")
-                # print(f"train_cats with target {self.target}: {train_cats}")
-            if self.df_test.is_labeled:
-                if type(test_cats) == np.ndarray:
-                    self.util.debug(f"Categories test (nd.array): {test_cats}")
-                else:
-                    self.util.debug(f"Categories test (list): {list(test_cats)}")
-            if type(train_cats) == np.ndarray:
-                self.util.debug(f"Categories train (nd.array): {train_cats}")
-            else:
-                self.util.debug(f"Categories train (list): {list(train_cats)}")
-
+                if not self.test_empty:
+                    if self.df_test.is_labeled:
+                        test_cats = self.df_test[self.target].unique()
+                    else:
+                        # if there is no target, copy a dummy label
+                        self.df_test = self._add_random_target(self.df_test).astype(
+                            "str"
+                        )
+                if not self.train_empty:
+                    train_cats = self.df_train[self.target].unique()
             # encode the labels as numbers
             self.label_encoder = LabelEncoder()
-            self.df_train[self.target] = self.label_encoder.fit_transform(
-                self.df_train[self.target]
-            )
-            self.df_test[self.target] = self.label_encoder.transform(
-                self.df_test[self.target]
-            )
             glob_conf.set_label_encoder(self.label_encoder)
+            if not self.train_empty:
+                if type(train_cats) == np.ndarray:
+                    self.util.debug(f"Categories train (nd.array): {train_cats}")
+                else:
+                    self.util.debug(f"Categories train (list): {list(train_cats)}")
+
+                self.df_train[self.target] = self.label_encoder.fit_transform(
+                    self.df_train[self.target]
+                )
+            if not self.test_empty:
+                if self.df_test.is_labeled:
+                    if type(test_cats) == np.ndarray:
+                        self.util.debug(f"Categories test (nd.array): {test_cats}")
+                    else:
+                        self.util.debug(f"Categories test (list): {list(test_cats)}")
+                if not self.train_empty:
+                    self.df_test[self.target] = self.label_encoder.transform(
+                        self.df_test[self.target]
+                    )
         if self.got_speaker:
+            speakers_train = 0 if self.train_empty else self.df_train.speaker.nunique()
+            speakers_test = 0 if self.test_empty else self.df_test.speaker.nunique()
             self.util.debug(
-                f"{self.df_test.speaker.nunique()} speakers in test and"
-                f" {self.df_train.speaker.nunique()} speakers in train"
+                f"{speakers_test} speakers in test and"
+                f" {speakers_train} speakers in train"
             )
 
         target_factor = self.util.config_val("DATA", "target_divide_by", False)
@@ -363,14 +366,16 @@ class Experiment:
             self.util.debug("no feature extractor specified.")
             self.feats_train, self.feats_test = pd.DataFrame(), pd.DataFrame()
             return
-        self.feature_extractor = FeatureExtractor(
-            df_train, feats_types, feats_name, "train"
-        )
-        self.feats_train = self.feature_extractor.extract()
-        self.feature_extractor = FeatureExtractor(
-            df_test, feats_types, feats_name, "test"
-        )
-        self.feats_test = self.feature_extractor.extract()
+        if not self.train_empty:
+            self.feature_extractor = FeatureExtractor(
+                df_train, feats_types, feats_name, "train"
+            )
+            self.feats_train = self.feature_extractor.extract()
+        if not self.test_empty:
+            self.feature_extractor = FeatureExtractor(
+                df_test, feats_types, feats_name, "test"
+            )
+            self.feats_test = self.feature_extractor.extract()
         self.util.debug(
             f"All features: train shape : {self.feats_train.shape}, test"
             f" shape:{self.feats_test.shape}"
@@ -393,12 +398,6 @@ class Experiment:
             self.util.warn(f"new test labels shape: {self.df_test.shape[0]}")
 
         self._check_scale()
-        # store = self.util.get_path("store")
-        # store_format = self.util.config_val("FEATS", "store_format", "pkl")
-        # storage = f"{store}test_feats.{store_format}"
-        # self.util.write_store(self.feats_test, storage, store_format)
-        # storage = f"{store}train_feats.{store_format}"
-        # self.util.write_store(self.feats_train, storage, store_format)
 
     def augment(self):
         """Augment the selected samples."""

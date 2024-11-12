@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.93.1
+--------------
+* made explore module more robust
+
 Version 0.93.0
 --------------
 * integrated pyannote for speaker prediction for predict module

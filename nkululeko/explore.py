@@ -1,5 +1,4 @@
-"""
-Explore the feature sets of a machine learning experiment.
+"""Explore the feature sets of a machine learning experiment.
 
 This script is the entry point for the 'explore' module of the nkululeko framework.
 It handles loading the experiment configuration, setting up the experiment, and
@@ -77,7 +76,6 @@ def main():
         plot_feats = eval(util.config_val("EXPL", "feature_distributions", "False"))
         tsne = eval(util.config_val("EXPL", "tsne", "False"))
         scatter = eval(util.config_val("EXPL", "scatter", "False"))
-        spotlight = eval(util.config_val("EXPL", "spotlight", "False"))
         shap = eval(util.config_val("EXPL", "shap", "False"))
         model_type = util.config_val("EXPL", "model", False)
         plot_tree = eval(util.config_val("EXPL", "plot_tree", "False"))
@@ -87,8 +85,8 @@ def main():
             expr.extract_feats()
             needs_feats = True
             # explore
-            expr.init_runmanager()
-            expr.runmgr.do_runs()
+            # expr.init_runmanager()
+            # expr.runmgr.do_runs()
     expr.analyse_features(needs_feats)
     expr.store_report()
     print("DONE")

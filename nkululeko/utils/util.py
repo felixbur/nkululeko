@@ -230,7 +230,11 @@ class Util:
 
     def get_model_description(self):
         mt = ""
-        mt = f'{self.config["MODEL"]["type"]}'
+        try:
+            mt = f'{self.config["MODEL"]["type"]}'
+        except KeyError:
+            # no model type given
+            pass
         # ft = "_".join(ast.literal_eval(self.config["FEATS"]["type"]))
         ft_value = self.config["FEATS"]["type"]
         if (
