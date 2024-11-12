@@ -55,7 +55,7 @@ $ nkululeko.MODULE_NAME --config CONFIG_FILE.ini
 
 # How does it work?
 
-`nkululeko` is a command line tool written in Python, best used in conjunction with the Visual Studio code editor (but can be run stand-alone). To use it, a text editor is needed to edit the experiment configuration. You would then run `nkululeko` like this: 
+`nkululeko` is a command line tool written in Python, best used in conjunction with the Visual Studio Code editor (but can be run stand-alone). To use it, a text editor is needed to edit the experiment configuration. You would then run `nkululeko` like this: 
 
 ```bash
 $ nkululeko.explore --config conf.ini
@@ -123,7 +123,7 @@ The `nkululeko` configuration can specify further sections:
 * **MODEL** to specify statistical models for regression or classification of audio data.
 
 
-# Example usage
+# Example of usage
 In the previous section, we have seen how to specify an experiment in an INI file which can be run with, for instance, `explore` and `segment` modules. Here, we show how to run the experiment (`nkululeko.nkululeko`) with built-in dataset (Polish Speech Emotions dataset) from the installation until getting the results. 
 
 First, novice could clone the github repository of nkululeko. 
@@ -183,7 +183,7 @@ Nkululeko follows these principles:
 
 - *Minimum programming skills*: the only programming skills required are to prepare the data in the correct (CSV) format and to run the command line tool. For AUDFORMAT, no preparation is needed.
 
-- *Standardised data format and label*: the data format is based on CSV and AUFORMAT, which is a widely used format for data exchange. The standard headers are like 'file', 'speaker', 'emotion', 'age', and 'language' but also can be customised. Data could be saved anywhere in the computer, but recipe for the data preparation is advised to be saved in `nkululeko/data` folder (and make a soft link to the original data location).
+- *Standardised data format and label*: the data format is based on CSV and AUDFORMAT, which is a widely used format for data exchange. The standard headers are like 'file', 'speaker', 'emotion', 'age', and 'language' but also can be customised. Data could be saved anywhere in the computer, but recipe for the data preparation is advised to be saved in `nkululeko/data` folder (and make a soft link to the original data location).
 
 - *Replicability*: the experiments are specified in a configuration file, which can be shared with others including the splitting of training, development, and test partition. All results are stored in a folder with the same name as the experiment.
 
@@ -209,7 +209,7 @@ We acknowledge support from these various projects:
 
 - European EASIER (*Intelligent Automatic Sign Language Translation*) project (Grant Agreement number: 101016982);
 
-- Project JPNP20006 commisioned by the New Energy and Industrial Technology Development Organization (NEDO), Japan;
+- Project JPNP20006 commissioned by the New Energy and Industrial Technology Development Organization (NEDO), Japan;
 
 - Project 24K02967 from the Japan Society for the Promotion of Science (JSPS).
 
