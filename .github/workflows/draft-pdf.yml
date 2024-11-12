@@ -1,14 +1,18 @@
 name: Draft PDF
 # only trigger on pull request closed events
 on:
+  push:
+    branches: main
   pull_request:
     types: [ closed ]
 
 jobs:
   paper:
-    if: github.event.pull_request.merged == true
+    if: github.event_name == 'push' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     name: Paper Draft
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
