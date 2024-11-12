@@ -57,22 +57,22 @@ And can show the distribution of specific features per category:
 <img src="meta/images/feat_dist.png" width="500px"/>
 
 ### t-SNE plots
-A t-SNE plot can give you an estimate wether your acoustic features are useful at all:
+A t-SNE plot can give you an estimate of whether your acoustic features are useful at all:
 
 <img src="meta/images/tsne.png" width="500px"/>
 
 ### Data distribution
-Sometimes you only want to take a look at your data:
+Sometimes, you only want to take a look at your data:
 
 <img src="meta/images/data_plot.png" width="500px"/>
 
 ### Bias checking
-In cases you might wonder if there's bias in your data. You can try to detect this with automatically estimated speech properties, by visualizing the correlation of target label and predicted labels.
+In some cases, you might wonder if there's bias in your data. You can try to detect this with automatically estimated speech properties by visualizing the correlation of target labels and predicted labels.
 
 <img src="meta/images/emotion-pesq.png" width="500px"/>
 
 ### Uncertainty
-Nkululeko estimates uncertainty of model decision (only for classifiers) with entropy over the class-probabilities or logits per sample.
+Nkululeko estimates the uncertainty of model decisions (only for classifiers) with entropy over the class probabilities or logits per sample.
 
 <img src="meta/images/uncertainty.png" width="500px"/>
 
@@ -95,7 +95,7 @@ appears, please try
 ```
 pip install x
 ```
-For many packages you will need the missing torch package.
+For many packages, you will need the missing torch package.
 If you don't have a GPU (which is probably true if you don't know what that is), please use
 ```
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
@@ -176,7 +176,7 @@ All of them take *--config <my_config.ini>* as an argument.
 * **nkululeko.predict**: [predict features](http://blog.syntheticspeech.de/2023/08/16/nkululeko-how-to-predict-labels-for-your-data-from-existing-models-and-check-them/) like SNR, MOS, arousal/valence, age/gender, with DNN models
 * **nkululeko.segment**: [segment a database](http://blog.syntheticspeech.de/2023/07/14/nkululeko-segmenting-a-database/) based on VAD (voice activity detection)
 * **nkululeko.resample**: check on all [sampling rates and change](http://blog.syntheticspeech.de/2023/08/31/how-to-fix-different-sampling-rates-in-a-dataset-with-nkululeko/) to 16kHz 
-* **nkululeko.nkuluflag**: a convenient module to specify configuration parameters on the command-line. Usage:
+* **nkululeko.nkuluflag**: a convenient module to specify configuration parameters on the command line. Usage:
 
   ```bash
   $ python -m nkululeko.nkuluflag.py [-h] [--config CONFIG] [--data [DATA ...]] [--label [LABEL ...]] [--tuning_params [TUNING_PARAMS ...]] [--layers [LAYERS ...]] [--model MODEL] [--feat FEAT] [--set SET] [--with_os WITH_OS] [--target TARGET] [--epochs EPOCHS] [--runs RUNS] [--learning_rate LEARNING_RATE] [--drop DROP]
@@ -193,7 +193,7 @@ There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
 * [Combine feature sets](http://blog.syntheticspeech.de/2022/06/30/how-to-combine-feature-sets-with-nkululeko/)
 * [Classifying continuous variables](http://blog.syntheticspeech.de/2022/01/26/nkululeko-classifying-continuous-variables/) 
 * [Try out / demo a trained model](http://blog.syntheticspeech.de/2022/01/24/nkululeko-try-out-demo-a-trained-model/) 
-* [Perform cross database experiments](http://blog.syntheticspeech.de/2021/10/05/nkululeko-perform-cross-database-experiments/)
+* [Perform cross-database experiments](http://blog.syntheticspeech.de/2021/10/05/nkululeko-perform-cross-database-experiments/)
 * [Meta parameter optimization](http://blog.syntheticspeech.de/2021/09/03/perform-optimization-with-nkululeko/)
 * [How to set up wav2vec embedding](http://blog.syntheticspeech.de/2021/12/03/how-to-set-up-wav2vec-embedding-for-nkululeko/)
 * [How to soft-label a database](http://blog.syntheticspeech.de/2022/01/24/how-to-soft-label-a-database-with-nkululeko/) 
@@ -218,7 +218,7 @@ There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
 * [Predict new labels for your data from public models and check bias](http://blog.syntheticspeech.de/2023/08/16/nkululeko-how-to-predict-labels-for-your-data-from-existing-models-and-check-them/)
 * [Resample](http://blog.syntheticspeech.de/2023/08/31/how-to-fix-different-sampling-rates-in-a-dataset-with-nkululeko/)
 * [Get some statistics on correlation and effect-size](http://blog.syntheticspeech.de/2023/09/05/nkululeko-get-some-statistics-on-correlation-and-effect-size/)
-* [Automatic generation of a latex / pdf report](http://blog.syntheticspeech.de/2023/09/26/nkululeko-generate-a-latex-pdf-report/) 
+* [Automatic generation of a latex/pdf report](http://blog.syntheticspeech.de/2023/09/26/nkululeko-generate-a-latex-pdf-report/) 
 * [Inspect your data with Spotlight](http://blog.syntheticspeech.de/2023/10/31/nkululeko-inspect-your-data-with-spotlight/)
 * [Automatically stratify your split sets](http://blog.syntheticspeech.de/2023/11/07/nkululeko-automatically-stratify-your-split-sets/)
 * [re-name data column names](http://blog.syntheticspeech.de/2023/11/16/nkululeko-re-name-data-column-names/)
@@ -234,7 +234,7 @@ There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
 * NEW: [Here's a Google colab that runs this example out-of-the-box](https://colab.research.google.com/drive/1Up7t5Nn7VwDPCCEpTg2U7cpZ_PdoEgj-?usp=sharing), and here is the same [with Kaggle](https://www.kaggle.com/felixburk/nkululeko-hello-world-example)
 * [I made a video to show you how to do this on Windows](https://www.youtube.com/playlist?list=PLRceVavtxLg0y2jiLmpnUfiMtfvkK912D)
 * Set up Python on your computer, version >= 3.8
-* Open a terminal/commandline/console window
+* Open a terminal/command line/console window
 * Test python by typing ```python```, python should start with version >3 (NOT 2!). You can leave the Python Interpreter by typing *exit()*
 * Create a folder on your computer for this example, let's call it `nkulu_work`
 * Get a copy of the [Berlin emodb in audformat](https://zenodo.org/records/7447302/files/emodb.zip?download=1) and unpack inside the folder you just created (`nkulu_work`)
@@ -250,7 +250,7 @@ There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
     * if that worked, you should see a ```(venv)``` in front of your prompt
   * Install the required packages in your environment
     * ```pip install nkululeko```
-    * Repeat until all error messages vanished (or fix them, or try to ignore them)...
+    * Repeat until all error messages vanish (or fix them, or try to ignore them)...
 * Now you should have two folders in your *nkulu_work* folder:
   * *emodb* and *venv*
 * Download a copy of the file [exp_emodb.ini](meta/demos/exp_emodb.ini) to the current working directory (```nkulu_work```)
@@ -258,9 +258,9 @@ There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
   * ```python -m nkululeko.nkululeko --config exp_emodb.ini```
 * Find the results in the newly created folder exp_emodb 
   * Inspect ```exp_emodb/images/run_0/emodb_xgb_os_0_000_cnf.png```
-  * This is the main result of you experiment: a confusion matrix for the emodb emotional categories
+  * This is the main result of your experiment: a confusion matrix for the emodb emotional categories
 * Inspect and play around with the [demo configuration file](meta/demos/exp_emodb.ini) that defined your experiment, then re-run.
-* There are many ways to experiment with different classifiers and acoustic features sets, [all described here](https://github.com/felixbur/nkululeko/blob/main/ini_file.md)
+* There are many ways to experiment with different classifiers and acoustic feature sets, [all described here](https://github.com/felixbur/nkululeko/blob/main/ini_file.md)
   
 ### Features
 The framework is targeted at the speech domain and supports experiments where different classifiers are combined with different feature extractors.
@@ -288,7 +288,7 @@ Nkululeko can be used under the [MIT license](https://choosealicense.com/license
 
 
 ## Contributing
-Contributions are welcome and encouraged. To learn more about how to contribute to nkululeko please refer to the [Contributing guidelines](./CONTRIBUTING.md).
+Contributions are welcome and encouraged. To learn more about how to contribute to nkululeko, please refer to the [Contributing guidelines](./CONTRIBUTING.md).
 
 ## Citing
 If you use it, please mention the Nkululeko paper:
