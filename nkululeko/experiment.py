@@ -434,7 +434,9 @@ class Experiment:
                 f"unknown augmentation selection specifier {sample_selection},"
                 " should be [all | train | test]"
             )
-        targets = self.util.config_val_list("PREDICT", "targets", ["gender"])
+        targets = self.util.config_val_list("PREDICT", "targets", None)
+        if targets is None:
+            self.util.error("no prediction target specified")
         for target in targets:
             if target == "speaker":
                 from nkululeko.autopredict.ap_sid import SIDPredictor

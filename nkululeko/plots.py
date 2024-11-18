@@ -8,6 +8,8 @@ from scipy import stats
 import seaborn as sns
 from sklearn.manifold import TSNE
 
+from audmetric import concordance_cc as ccc
+
 import nkululeko.glob_conf as glob_conf
 from nkululeko.reporting.defines import Header
 from nkululeko.reporting.report_item import ReportItem
@@ -239,28 +241,54 @@ class Plots:
 
     def _plot2cont_cat(self, df, cont1, cont2, cat, ylab):
         """Plot relation of two continuous distributions with one categorical."""
+        if cont2 == "class_label":
+            df.rename(columns={cont2: self.target})
+            cont2 = self.target
+        if cont1 == "class_label":
+            df.rename(columns={cont1: self.target})
+            cont1 = self.target
+        if cat == "class_label":
+            df.rename(columns={cat: self.target})
+            cat = self.target
         pearson = stats.pearsonr(df[cont1], df[cont2])
         # trunc to three digits
         pearson = int(pearson[0] * 1000) / 1000
         pearson_string = f"PCC: {pearson}"
+        ccc_val = ccc(df[cont1], df[cont2])
+        ccc_val = int(ccc_val * 1000) / 1000
+        ccc_string = f"CCC: {ccc_val}"
         ax = sns.lmplot(data=df, x=cont1, y=cont2, hue=cat)
-        caption = f"{ylab} {df.shape[0]}. {pearson_string}"
+        caption = f"{ylab} {df.shape[0]}. {pearson_string} {ccc_string}"
         ax.figure.suptitle(caption)
         return ax, caption
 
     def _plot2cont(self, df, col1, col2, ylab):
         """Plot relation of two continuous distributions."""
+        # rename "class_label" to the original target
+        if col2 == "class_label":
+            df.rename(columns={col2: self.target})
+            col2 = self.target
+        if col1 == "class_label":
+            df.rename(columns={col1: self.target})
+            col1 = self.target
         pearson = stats.pearsonr(df[col1], df[col2])
         # trunc to three digits
         pearson = int(pearson[0] * 1000) / 1000
         pearson_string = f"PCC: {pearson}"
+        ccc_val = ccc(df[cont1], df[cont2])
+        ccc_val = int(ccc_val * 1000) / 1000
+        ccc_string = f"CCC: {ccc_val}"
         ax = sns.lmplot(data=df, x=col1, y=col2)
-        caption = f"{ylab} {df.shape[0]}. {pearson_string}"
+        caption = f"{ylab} {df.shape[0]}. {pearson_string} {ccc_string}"
         ax.figure.suptitle(caption)
         return ax, caption
 
     def plotcatcont(self, df, cat_col, cont_col, xlab, ylab):
         """Plot relation of categorical distribution with continuous."""
+        # rename "class_label" to the original target
+        if cat_col == "class_label":
+            df.rename(columns={cat_col: self.target})
+            cat_col = self.target
         dist_type = self.util.config_val("EXPL", "dist_type", "kde")
         cats, cat_str, es = su.get_effect_size(df, cat_col, cont_col)
         model_type = self.util.get_model_type()

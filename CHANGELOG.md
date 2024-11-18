@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.93.2
+--------------
+* changed class_label in plots to actual target
+
 Version 0.93.1
 --------------
 * made explore module more robust

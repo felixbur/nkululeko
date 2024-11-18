@@ -226,7 +226,10 @@ class Util:
         return self.config["DATA"]["target"]
 
     def get_model_type(self):
-        return self.config["MODEL"]["type"]
+        try:
+            return self.config["MODEL"]["type"]
+        except KeyError:
+            return ""
 
     def get_model_description(self):
         mt = ""
