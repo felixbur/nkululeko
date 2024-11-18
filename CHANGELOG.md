@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.93.3
+--------------
+* bugfix in plot
+  
 Version 0.93.2
 --------------
 * changed class_label in plots to actual target

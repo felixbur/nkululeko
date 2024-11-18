@@ -275,7 +275,7 @@ class Plots:
         # trunc to three digits
         pearson = int(pearson[0] * 1000) / 1000
         pearson_string = f"PCC: {pearson}"
-        ccc_val = ccc(df[cont1], df[cont2])
+        ccc_val = ccc(df[col1], df[col2])
         ccc_val = int(ccc_val * 1000) / 1000
         ccc_string = f"CCC: {ccc_val}"
         ax = sns.lmplot(data=df, x=col1, y=col2)
