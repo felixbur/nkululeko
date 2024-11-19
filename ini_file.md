@@ -400,7 +400,9 @@
   * combine_per_speaker = mode
 * **format**: format for plots, either *png* or *eps* (for scalable graphics)
   * format = png
-
+* **ccc**: show concordance correlation coefficient in plot headings
+  * ccc = False
+  
 ### RESAMPLE
 
 * **sample_selection**: which split: [train, test, all]

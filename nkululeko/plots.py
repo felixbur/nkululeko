@@ -23,6 +23,7 @@ class Plots:
         self.util = Util("plots")
         self.format = self.util.config_val("PLOT", "format", "png")
         self.target = self.util.config_val("DATA", "target", "emotion")
+        self.with_ccc = eval(self.util.config_val("PLOT", "ccc", "False"))
 
     def plot_distributions_speaker(self, df):
         df_speakers = pd.DataFrame()
@@ -254,9 +255,11 @@ class Plots:
         # trunc to three digits
         pearson = int(pearson[0] * 1000) / 1000
         pearson_string = f"PCC: {pearson}"
-        ccc_val = ccc(df[cont1], df[cont2])
-        ccc_val = int(ccc_val * 1000) / 1000
-        ccc_string = f"CCC: {ccc_val}"
+        ccc_string = ""
+        if self.with_ccc:
+            ccc_val = ccc(df[cont1], df[cont2])
+            ccc_val = int(ccc_val * 1000) / 1000
+            ccc_string = f"CCC: {ccc_val}"
         ax = sns.lmplot(data=df, x=cont1, y=cont2, hue=cat)
         caption = f"{ylab} {df.shape[0]}. {pearson_string} {ccc_string}"
         ax.figure.suptitle(caption)
@@ -275,9 +278,11 @@ class Plots:
         # trunc to three digits
         pearson = int(pearson[0] * 1000) / 1000
         pearson_string = f"PCC: {pearson}"
-        ccc_val = ccc(df[col1], df[col2])
-        ccc_val = int(ccc_val * 1000) / 1000
-        ccc_string = f"CCC: {ccc_val}"
+        ccc_string = ""
+        if self.with_ccc:
+            ccc_val = ccc(df[col1], df[col2])
+            ccc_val = int(ccc_val * 1000) / 1000
+            ccc_string = f"CCC: {ccc_val}"
         ax = sns.lmplot(data=df, x=col1, y=col2)
         caption = f"{ylab} {df.shape[0]}. {pearson_string} {ccc_string}"
         ax.figure.suptitle(caption)

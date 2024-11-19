@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.93.4
+--------------
+* ccc in plots now configurable
+
 Version 0.93.3
 --------------
 * bugfix in plot
