@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.93.5
+--------------
+* fixed bug in dataset loading
+
 Version 0.93.4
 --------------
 * ccc in plots now configurable

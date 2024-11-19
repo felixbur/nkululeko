@@ -4,12 +4,13 @@ import os
 import os.path
 from random import sample
 
-import audformat
 import numpy as np
 import pandas as pd
 
-import nkululeko.glob_conf as glob_conf
+import audformat
+
 from nkululeko.filter_data import DataFilter
+import nkululeko.glob_conf as glob_conf
 from nkululeko.plots import Plots
 from nkululeko.reporting.report_item import ReportItem
 from nkululeko.utils.util import Util
@@ -32,6 +33,9 @@ class Dataset:
         self.target = self.util.config_val("DATA", "target", "none")
         self.plot = Plots()
         self.limit = int(self.util.config_val_data(self.name, "limit", 0))
+        self.target_tables_append = eval(
+            self.util.config_val_data(self.name, "target_tables_append", "False")
+        )
         self.start_fresh = eval(self.util.config_val("DATA", "no_reuse", "False"))
         self.is_labeled, self.got_speaker, self.got_gender, self.got_age = (
             False,
@@ -321,7 +325,12 @@ class Dataset:
             for column in source_df.columns:
                 if column not in [self.target, "age", "speaker", "gender"]:
                     df_local[column] = source_df[column]
-            df = pd.concat([df, df_local])
+            # ensure segmented index
+            df_local = self.util.make_segmented_index(df_local)
+            if self.target_tables_append:
+                df = pd.concat([df, df_local], axis=0)
+            else:
+                df = pd.concat([df, df_local], axis=1)
         return df, is_labeled, got_speaker, got_gender, got_age
 
     def split(self):

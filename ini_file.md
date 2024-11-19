@@ -95,6 +95,8 @@
     * **test**: use the entire database for evaluation
 * **db_name.target_tables**: tables that contain the target / speaker / sex labels
   * emodb.target_tables = ['emotion']
+* **target_tables_append**: set this to True if the multiple tables should be combined row-wise, else they are combined column-wise
+  * target_tables_append = False
 * **db_name.files_tables**: tables that contain the audio file names
   * emodb.files_tables = ['files']
 * **db_name.test_tables**: tables that should be used for testing
