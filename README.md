@@ -29,7 +29,7 @@ The idea is to have a framework (based on e.g. sklearn and torch) that can be us
 * The latest features can be seen in [the ini-file](./ini_file.md) options that are used to control Nkululeko
 * Below is a [Hello World example](#helloworld) that should set you up fastly, also on [Google Colab](https://colab.research.google.com/drive/1GYNBd5cdZQ1QC3Jm58qoeMaJg3UuPhjw?usp=sharing#scrollTo=4G_SjuF9xeQf), and [with Kaggle](https://www.kaggle.com/felixburk/nkululeko-hello-world-example)
 * [Here's a blog post on how to set up nkululeko on your computer.](http://blog.syntheticspeech.de/2021/08/30/how-to-set-up-your-first-nkululeko-project/)
-* [Here is a slack channel to discuss issues related to nkululeko](https://join.slack.com/t/nkululekoworkspace/shared_invite/zt-1wtvbxtwz-P5YoRJq8whxKSee86ebhJg). Please click the link if interested in contributing.
+* [Here is a slack channel to discuss issues related to nkululeko](https://join.slack.com/t/nkululekoworkspace/shared_invite/zt-2v3q3yfzk-XfNGoqLfp3ts9KfCZpfTyg). Please click the link if interested in contributing.
 * [Here's a slide presentation about nkululeko](docs/nkululeko.pdf)
 * [Here's a video presentation about nkululeko](https://www.youtube.com/playlist?list=PLRceVavtxLg0y2jiLmpnUfiMtfvkK912D)
 * [Here's the 2022 LREC article on nkululeko](http://felix.syntheticspeech.de/publications/Nkululeko_LREC.pdf)
