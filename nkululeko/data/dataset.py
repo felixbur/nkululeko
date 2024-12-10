@@ -655,6 +655,8 @@ class Dataset:
         if mappings:
             mapping = ast.literal_eval(mappings)
             df[target] = df[target].map(mapping)
+            # remove any exiting nan values after mapping
+            df = df.dropna()
             self.util.debug(f"{self.name}: mapped {mapping}")
         # remove labels that are not in the labels list
         labels = self.util.config_val("DATA", "labels", False)

@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.93.7
+--------------
+* added a safety to remove nan values after mapping
+
 Version 0.93.6
 --------------
 * added error message and hint for data.target_tables_append
