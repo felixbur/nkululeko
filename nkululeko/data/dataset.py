@@ -162,14 +162,20 @@ class Dataset:
                     except KeyError:
                         # just a try...
                         pass
-                if got_target2:
-                    df[self.target] = df_target[self.target]
-                if got_speaker2:
-                    df["speaker"] = df_target["speaker"]
-                if got_gender2:
-                    df["gender"] = df_target["gender"]
-                if got_age2:
-                    df["age"] = df_target["age"].astype(int)
+                try:
+                    if got_target2:
+                        df[self.target] = df_target[self.target]
+                    if got_speaker2:
+                        df["speaker"] = df_target["speaker"]
+                    if got_gender2:
+                        df["gender"] = df_target["gender"]
+                    if got_age2:
+                        df["age"] = df_target["age"].astype(int)
+                except ValueError as ve:
+                    self.util.error(
+                        f"{ve}\nYou might need to set "
+                        + "data.target_tables_append = True"
+                    )
                 # copy other column
                 for column in df_target.columns:
                     if column not in [self.target, "age", "speaker", "gender"]:

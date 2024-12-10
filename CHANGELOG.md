@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.93.6
+--------------
+* added error message and hint for data.target_tables_append
+
 Version 0.93.5
 --------------
 * fixed bug in dataset loading

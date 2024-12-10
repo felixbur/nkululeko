@@ -1,5 +1,4 @@
-"""
-Resample audio files or INI files (train, test, all) to change the sampling rate.
+"""Resample audio files or INI files (train, test, all) to change the sampling rate.
 
 This script provides a command-line interface to resample audio files or INI files
 containing train, test, and all data. It supports resampling a single file, a
@@ -27,8 +26,9 @@ import argparse
 import configparser
 import os
 
-import audformat
 import pandas as pd
+
+import audformat
 
 from nkululeko.augmenting.resampler import Resampler
 from nkululeko.constants import VERSION
