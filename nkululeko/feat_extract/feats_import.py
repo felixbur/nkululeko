@@ -18,6 +18,10 @@ class ImportSet(Featureset):
     def extract(self):
         """Import the features."""
         self.util.debug(f"importing features for {self.name}")
+        # import_files_append: set this to True if the multiple tables should be combined row-wise, else they are combined column-wise
+        import_files_append = eval(
+            self.util.config_val("FEATS", "import_files_append", "True")
+        )
         try:
             feat_import_files = self.util.config_val("FEATS", "import_file", False)
             feat_import_files = ast.literal_eval(feat_import_files)
@@ -38,7 +42,10 @@ class ImportSet(Featureset):
             df = audformat.utils.read_csv(feat_import_file)
             df = self.util.make_segmented_index(df)
             df = df[df.index.isin(self.data_df.index)]
-            feat_df = pd.concat([feat_df, df])
+            if import_files_append:
+                feat_df = pd.concat([feat_df, df], axis=0)
+            else:
+                feat_df = pd.concat([feat_df, df], axis=1)
         if feat_df.shape[0] == 0:
             self.util.error(f"Imported features for data set {self.name} not found!")
         # and assign to be the "official" feature set

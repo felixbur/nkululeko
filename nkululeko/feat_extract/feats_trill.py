@@ -3,15 +3,16 @@ import os
 
 import audiofile as af
 import pandas as pd
-import tensorflow as tf
-import tensorflow_hub as hub
+
+# import tensorflow as tf
+# import tensorflow_hub as hub
 from tqdm import tqdm
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
 
 # Import TF 2.X and make sure we're running eager.
-assert tf.executing_eagerly()
+# assert tf.executing_eagerly()
 
 
 class TRILLset(Featureset):
@@ -39,7 +40,7 @@ class TRILLset(Featureset):
             "trill.model",
             "https://tfhub.dev/google/nonsemantic-speech-benchmark/trill/3",
         )
-        self.model = hub.load(model_path)
+        # self.model = hub.load(model_path)
         self.feats_type = feats_type
 
     def extract(self):

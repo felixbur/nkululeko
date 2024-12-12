@@ -23,10 +23,11 @@ pylatex
 scikit_learn
 scipy
 seaborn
+shap
 sounddevice
 splitutils
-tensorflow
-tensorflow_hub
+# tensorflow
+# tensorflow_hub
 torch
 torchaudio
 torchvision

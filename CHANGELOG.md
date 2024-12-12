@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.93.8
+--------------
+* fixed bugs in plot
+* added import_files_append=False
+
 Version 0.93.7
 --------------
 * added a safety to remove nan values after mapping

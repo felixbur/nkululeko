@@ -183,6 +183,8 @@
     * **import**: [already computed features](http://blog.syntheticspeech.de/2022/10/18/how-to-import-features-from-outside-the-nkululeko-software/)
       * **import_file** = pathes to files with features in CSV format
         * import_file = ['path1/file1.csv', 'path2/file1.csv2']  
+      * **import_files_append** = set this to False if you want the files to be concatenated column-wise, else it's done row-wise
+        * import_files_append = True  
     * **mld**: [mid-level-descriptors](http://www.essv.de/paper.php?id=447)
       * **mld.model** = *path to the mld sources folder*
       * **min_syls** = *minimum number of syllables*
@@ -197,8 +199,8 @@
       * **fft_hop_dur** = 10 *(msec hop duration)*
       * **fft_nbands** = 64 *(number of frequency bands)*
     * **ast**: [audio spectrogram transformer](https://arxiv.org/abs/2104.01778) features from MIT
-    * **trill**: [TRILL embeddings](https://ai.googleblog.com/2020/06/improving-speech-representations-and.html) from Google
-      * **trill.model** = *path to the TRILL model folder, optional*
+    <!-- * **trill**: [TRILL embeddings](https://ai.googleblog.com/2020/06/improving-speech-representations-and.html) from Google
+      * **trill.model** = *path to the TRILL model folder, optional* -->
     * **wav2vec variants**: [wav2vec2 embeddings](https://huggingface.co/facebook/wav2vec2-large-robust-ft-swbd-300h) from facebook
       * "wav2vec2-large-robust-ft-swbd-300h"
       * **wav2vec.model** = *path to the wav2vec2 model folder*

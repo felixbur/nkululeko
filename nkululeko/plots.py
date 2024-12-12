@@ -242,84 +242,100 @@ class Plots:
 
     def _plot2cont_cat(self, df, cont1, cont2, cat, ylab):
         """Plot relation of two continuous distributions with one categorical."""
+        plot_df = df[[cont1, cont2, cat]].copy()
         if cont2 == "class_label":
-            df.rename(columns={cont2: self.target})
+            plot_df = plot_df.rename(columns={cont2: self.target})
             cont2 = self.target
         if cont1 == "class_label":
-            df.rename(columns={cont1: self.target})
+            plot_df = plot_df.rename(columns={cont1: self.target})
             cont1 = self.target
         if cat == "class_label":
-            df.rename(columns={cat: self.target})
+            plot_df = plot_df.rename(columns={cat: self.target})
             cat = self.target
-        pearson = stats.pearsonr(df[cont1], df[cont2])
+        pearson = stats.pearsonr(plot_df[cont1], plot_df[cont2])
         # trunc to three digits
         pearson = int(pearson[0] * 1000) / 1000
         pearson_string = f"PCC: {pearson}"
         ccc_string = ""
         if self.with_ccc:
-            ccc_val = ccc(df[cont1], df[cont2])
+            ccc_val = ccc(plot_df[cont1], plot_df[cont2])
             ccc_val = int(ccc_val * 1000) / 1000
             ccc_string = f"CCC: {ccc_val}"
-        ax = sns.lmplot(data=df, x=cont1, y=cont2, hue=cat)
-        caption = f"{ylab} {df.shape[0]}. {pearson_string} {ccc_string}"
+        ax = sns.lmplot(data=plot_df, x=cont1, y=cont2, hue=cat)
+        caption = f"{ylab} {plot_df.shape[0]}. {pearson_string} {ccc_string}"
         ax.figure.suptitle(caption)
         return ax, caption
 
     def _plot2cont(self, df, col1, col2, ylab):
         """Plot relation of two continuous distributions."""
+        plot_df = df[[col1, col2]].copy()
         # rename "class_label" to the original target
         if col2 == "class_label":
-            df.rename(columns={col2: self.target})
+            plot_df = plot_df.rename(columns={col2: self.target})
             col2 = self.target
         if col1 == "class_label":
-            df.rename(columns={col1: self.target})
+            plot_df = plot_df.rename(columns={col1: self.target})
             col1 = self.target
-        pearson = stats.pearsonr(df[col1], df[col2])
+        pearson = stats.pearsonr(plot_df[col1], plot_df[col2])
         # trunc to three digits
         pearson = int(pearson[0] * 1000) / 1000
         pearson_string = f"PCC: {pearson}"
         ccc_string = ""
         if self.with_ccc:
-            ccc_val = ccc(df[col1], df[col2])
+            ccc_val = ccc(plot_df[col1], plot_df[col2])
             ccc_val = int(ccc_val * 1000) / 1000
             ccc_string = f"CCC: {ccc_val}"
-        ax = sns.lmplot(data=df, x=col1, y=col2)
-        caption = f"{ylab} {df.shape[0]}. {pearson_string} {ccc_string}"
+        ax = sns.lmplot(data=plot_df, x=col1, y=col2)
+        caption = f"{ylab} {plot_df.shape[0]}. {pearson_string} {ccc_string}"
         ax.figure.suptitle(caption)
         return ax, caption
 
     def plotcatcont(self, df, cat_col, cont_col, xlab, ylab):
         """Plot relation of categorical distribution with continuous."""
         # rename "class_label" to the original target
+        plot_df = df[[cat_col, cont_col]].copy()
         if cat_col == "class_label":
-            df.rename(columns={cat_col: self.target})
+            plot_df = plot_df.rename(columns={cat_col: self.target})
             cat_col = self.target
         dist_type = self.util.config_val("EXPL", "dist_type", "kde")
-        cats, cat_str, es = su.get_effect_size(df, cat_col, cont_col)
+        cats, cat_str, es = su.get_effect_size(plot_df, cat_col, cont_col)
         model_type = self.util.get_model_type()
         if dist_type == "hist" and model_type != "tree":
-            ax = sns.histplot(df, x=cont_col, hue=cat_col, kde=True)
-            caption = f"{ylab} {df.shape[0]}. {cat_str} ({cats}):" f" {es}"
+            ax = sns.histplot(plot_df, x=cont_col, hue=cat_col, kde=True)
+            caption = f"{ylab} {plot_df.shape[0]}. {cat_str} ({cats}):" f" {es}"
             ax.set_title(caption)
             ax.set_xlabel(f"{cont_col}")
             ax.set_ylabel(f"number of {ylab}")
         else:
             ax = sns.displot(
-                df, x=cont_col, hue=cat_col, kind="kde", fill=True, warn_singular=False
+                plot_df,
+                x=cont_col,
+                hue=cat_col,
+                kind="kde",
+                fill=True,
+                warn_singular=False,
             )
             ax.set(xlabel=f"{cont_col}")
-            caption = f"{ylab} {df.shape[0]}. {cat_str} ({cats}):" f" {es}"
+            caption = f"{ylab} {plot_df.shape[0]}. {cat_str} ({cats}):" f" {es}"
             ax.figure.suptitle(caption)
         return ax, caption
 
     def _plot2cat(self, df, col1, col2, xlab, ylab):
         """Plot relation of 2 categorical distributions."""
-        crosstab = pd.crosstab(index=df[col1], columns=df[col2])
+        plot_df = df[[col1, col2]].copy()
+        # rename "class_label" to the original target
+        if col2 == "class_label":
+            plot_df = plot_df.rename(columns={col2: self.target})
+            col2 = self.target
+        if col1 == "class_label":
+            plot_df = plot_df.rename(columns={col1: self.target})
+            col1 = self.target
+        crosstab = pd.crosstab(index=plot_df[col1], columns=plot_df[col2])
         res_pval = stats.chi2_contingency(crosstab)
         res_pval = int(res_pval[1] * 1000) / 1000
-        caption = f"{ylab} {df.shape[0]}. P-val chi2: {res_pval}"
+        caption = f"{ylab} {plot_df.shape[0]}. P-val chi2: {res_pval}"
         ax = (
-            df.groupby(col1, observed=False)[col2]
+            plot_df.groupby(col1, observed=False)[col2]
             .value_counts()
             .unstack()
             .plot(kind="bar", stacked=True, title=caption, rot=0)

@@ -3,32 +3,28 @@ import glob
 import json
 import math
 
-import matplotlib.pyplot as plt
-import numpy as np
-
-# from torch import is_tensor
-from audmetric import (
-    accuracy,
-    concordance_cc,
-    mean_absolute_error,
-    mean_squared_error,
-    unweighted_average_recall,
-)
-
 # import os
 from confidence_intervals import evaluate_with_conf_int
+import matplotlib.pyplot as plt
+import numpy as np
 from scipy.special import softmax
-from scipy.stats import entropy, pearsonr
-from sklearn.metrics import (
-    ConfusionMatrixDisplay,
-    RocCurveDisplay,
-    auc,
-    classification_report,
-    confusion_matrix,
-    r2_score,
-    roc_auc_score,
-    roc_curve,
-)
+from scipy.stats import entropy
+from scipy.stats import pearsonr
+from sklearn.metrics import ConfusionMatrixDisplay
+from sklearn.metrics import RocCurveDisplay
+from sklearn.metrics import auc
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import r2_score
+from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_curve
+
+# from torch import is_tensor
+from audmetric import accuracy
+from audmetric import concordance_cc
+from audmetric import mean_absolute_error
+from audmetric import mean_squared_error
+from audmetric import unweighted_average_recall
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.plots import Plots
