@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.93.9
+--------------
+* added manual seed to torch models
+
 Version 0.93.8
 --------------
 * fixed bugs in plot

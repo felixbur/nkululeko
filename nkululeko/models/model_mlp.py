@@ -31,6 +31,10 @@ class MLPModel(Model):
         super().set_model_type("ann")
         self.name = "mlp"
         self.target = glob_conf.config["DATA"]["target"]
+        manual_seed = eval(self.util.config_val("MODEL", "manual_seed", "True"))
+        if manual_seed:
+            self.util.debug(f"seeding random to {23}")
+            torch.manual_seed(23)
         labels = glob_conf.labels
         self.class_num = len(labels)
         # set up loss criterion
