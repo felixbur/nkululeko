@@ -380,6 +380,18 @@ class Reporter:
     def set_filename_add(self, my_string):
         self.filenameadd = f"_{my_string}"
 
+    def print_logo(self, results):
+        res_dir = self.util.get_path("res_dir")
+        result_str = f"LOGO results: [{','.join(results.astype(str))}]"
+        file_name = f"{res_dir}/logo_results.txt"
+        with open(file_name, "w") as text_file:
+            text_file.write(
+                f"LOGO: mean {results.mean():.3f},  std: " + f"{results.std():.3f}"
+            )
+            text_file.write("\n")
+            text_file.write(result_str)
+        self.util.debug(result_str)
+
     def print_results(self, epoch=None):
         if epoch is None:
             epoch = self.epoch

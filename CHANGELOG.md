@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.93.10
+--------------
+* added nan check for imported features
+* added LOGO result output
+
 Version 0.93.9
 --------------
 * added manual seed to torch models

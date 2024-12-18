@@ -171,6 +171,7 @@ class Model:
             f"LOGO: {self.logo} folds: mean {results.mean():.3f}, std:"
             f" {results.std():.3f}"
         )
+        report.print_logo(results)
 
     def train(self):
         """Train the model."""
