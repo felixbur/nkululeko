@@ -78,7 +78,7 @@ We list the most important ones here:
 
 * **nkululeko**: do machine learning experiments combining features and learners
 * **demo**: demo the current best model on the command line or some files
-* **test**: run current best model on a specified test set
+* **test**: run the current best model on a specified test set
 * **explore**: perform data exploration (used mainly in this paper)
 * **augment**: augment the current training data. This could also be used to reduce bias in the data, for example, by adding noise to audio samples that belong to a specific category.
 * **aug\_train**: augment the training data and train the model with the augmented data.
@@ -88,7 +88,7 @@ We list the most important ones here:
 
 The configuration (INI) file consists of a set of key-value pairs that are organised into several sections. Almost all keys have default values, so they do not have to be specified.
 
-Here is a sample listing of an INI file (`conf.ini`) with database section:
+Here is a sample listing of an INI file (`conf.ini`) with a database section:
 
 ```ini
 [EXP]
@@ -126,14 +126,14 @@ The `nkululeko` configuration can specify further sections:
 # Example of usage
 In the previous section, we have seen how to specify an experiment in an INI file which can be run with, for instance, `explore` and `segment` modules. Here, we show how to run the experiment (`nkululeko.nkululeko`) with built-in dataset (Polish Speech Emotions dataset) from the installation until getting the results. 
 
-First, novice could clone the github repository of nkululeko. 
+First, novices could clone the GitHub repository of nkululeko. 
 
 ```bash
 $ git clone https://github.com/felixbur/nkululeko.git
 $ cd nkululeko
 ```
 
-Then, install nkululeko with `pip`. It is recommended to use a virtual environment to avoid conflicts with other Python packages. 
+Then, install nkululeko with `pip`. It is recommended that a virtual environment be used to avoid conflicts with other Python packages. 
 
 ```bash
 $ python -m venv .env
@@ -141,7 +141,7 @@ $ source .env/bin/activate
 $ pip install nkululeko
 ```
 
-Next, extract `polish_speech_emotions.zip` inside nkululeko data folder (`nkululeko/data/polish`) with right click regardless of the operating system (or using `unzip` command in terminal like below). Then, run the following command in terminal:
+Next, extract `polish_speech_emotions.zip` inside the nkululeko data folder (`nkululeko/data/polish`) with right click regardless of the operating system (or using `unzip` command in the terminal like below). Then, run the following command in the terminal:
 
 ```bash
 $ cd data/polish
@@ -151,7 +151,7 @@ $ cd ../..
 $ nkululeko.nkululeko --config data/polish/exp.ini
 ```
 
-That's it! The results will be stored in the `results/exp_polish_os` folder as stated in `exp.ini`. Below is the example of the debug output of the command:
+That's it! The results will be stored in the `results/exp_polish_os` folder as stated in `exp.ini`. Below is an example of the debug output of the command:
 
 ```bash
 DEBUG: nkululeko: running exp_polish_os from config data/polish/exp.ini, 
@@ -175,32 +175,34 @@ DEBUG: experiment: Done, used 7.439 seconds
 DONE
 ```
 # Statement of need
-Open-source tools are believed to be one of the reasons for accelerated science and technology. They are more secure, easy to customise and transparent. There are several open-source tools that exist for acoustic, sound, and audio analysis, such as librosa [@McFee:2015], TorchAudio [@Yang:2021], pyAudioAnalysis [@Giannakopoulos:2015], ESPNET [@Watanabe:2018], and SpeechBrain [@speechbrain:2021]. However, none of them are specialised in speech analysis with high-level interfaces for novices in the speech processing area. 
+Open-source tools are believed to be one of the reasons for accelerated science and technology. They are more secure, easy to customise, and transparent. There are several open-source tools that exist for acoustic, sound, and audio analysis, such as librosa [@McFee:2015], TorchAudio [@Yang:2021], pyAudioAnalysis [@Giannakopoulos:2015], ESPNET [@Watanabe:2018], and SpeechBrain [@speechbrain:2021]. However, none of them are specialised in speech analysis with high-level interfaces for novices in the speech processing area. 
 
 One exception is Spotlight [@spotlight:2023], an open-source tool that visualises metadata distributions in audio data. An existing interface between `nkululeko` and Spotlight can be used to combine the visualisations of Spotlight with the functionalities of Nkululeko.
 
 Nkululeko follows these principles:
 
-- *Minimum programming skills*: the only programming skills required are to prepare the data in the correct (CSV) format and to run the command line tool. For AUDFORMAT, no preparation is needed.
+- *Minimum programming skills*: The only programming skills required are preparing the data in the correct (CSV) format and running the command line tool. For AUDFORMAT, no preparation is needed.
 
-- *Standardised data format and label*: the data format is based on CSV and AUDFORMAT, which is a widely used format for data exchange. The standard headers are like 'file', 'speaker', 'emotion', 'age', and 'language' but also can be customised. Data could be saved anywhere in the computer, but recipe for the data preparation is advised to be saved in `nkululeko/data` folder (and make a soft link to the original data location).
+- *Standardised data format and label*: The data format is based on CSV and AUDFORMAT, which are widely used formats for data exchange. The standard headers are like 'file', 'speaker', 'emotion', 'age', and 'language' but also can be customised. Data could be saved anywhere on the computer, but the recipe for the data preparation is advised to be saved in `nkululeko/data` folder (and/or make a soft link to the original data location).
 
 - *Replicability*: the experiments are specified in a configuration file, which can be shared with others including the splitting of training, development, and test partition. All results are stored in a folder with the same name as the experiment.
 
 - *High-level interface*: the user specifies the experiment in an INI file, which is a simple text file that can be edited with any text editor. The user does not need to write Python code for experiments.
 
-- *Transparency*: as CLI, nkululeko *always output debug*, in which info, warning, and error will be obviously displayed in terminal (and should be easily understood). The results are stored in the experiment folder for further investigations and are represented as images, texts, and even a fully automatically compiled PDF report written in latex.
+- *Transparency*: as CLI, nkululeko *always output debug*, in which info, warning, and error will be obviously displayed in the terminal (and should be easily understood). The results are stored in the experiment folder for further investigations and are represented as images, texts, and even a fully automatically compiled PDF report written in latex.
 
 # Usage in existing research
 <!-- list of papers used nkululeko -->
 Nkululeko has been used in several research projects since its first appearance in 2022 [@nkululeko:2022]. The following list gives an overview of the research papers that have used Nkululeko:
 
-- [@burkhardt:2022-syntact]: this paper reported a database development of synthesized speech for basic emotions and its evaluation using Nkululeko toolkit.
+- [@burkhardt:2022-syntact]: this paper reported a database development of synthesized speech for basic emotions and its evaluation using the Nkululeko toolkit.
 
-- [@Burkhardt:2024]: this papers shows how to use Nkululeko to bias detection. The finding on two datasets, UACorpus and Androids, show that some features are correlated with the target label, e.g., depression, and can be used to detect bias in the database.
+- [@Burkhardt:2024]: this paper shows how to use Nkululeko for bias detection. The findings on two datasets, UACorpus and Androids, show that some features are correlated with the target label, e.g., depression, and can be used to detect bias in the database.
 
-- [@Atmaja:2024a]: this papers shows Nkululeko's capability for ensemble learning with focus on uncertainty estimation. 
+- [@Atmaja:2024a]: this paper shows Nkululeko's capability for ensemble learning with a focus on uncertainty estimation.
 
+- [@Atmaja:2025]: in this paper, evaluations of different handcrafted acoustic features and SSL approaches for pathological voice detection tasks were reported, highlighting the ease of using Nkululeko to perform extensive experiments including combinations of different features at different levels (early and late fusions) 
+ 
 # Acknowledgements
 
 We acknowledge support from these various projects: 
