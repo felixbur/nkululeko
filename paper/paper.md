@@ -203,7 +203,7 @@ Nkululeko has been used in several research projects since its first appearance 
 
 - [@Atmaja:2025]: in this paper, evaluations of different handcrafted acoustic features and SSL approaches for pathological voice detection tasks were reported, highlighting the ease of using Nkululeko to perform extensive experiments including combinations of different features at different levels (early and late fusions).
 
--[@Atmaja:2025b]: this paper extends the previous ensemble learning evaluations with performance weighting (using weighted and unweighted accuracies) on ﬁve tasks and ten datasets.
+- [@Atmaja:2025b]: this paper extends the previous ensemble learning evaluations with performance weighting (using weighted and unweighted accuracies) on ﬁve tasks and ten datasets.
  
 # Acknowledgements
 
