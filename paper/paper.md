@@ -22,7 +22,7 @@ affiliations:
    index: 2
  - name: National Institute of Advanced Industrial Science and Technology (AIST), Japan
    index: 3
-date: 22 October 2024
+date: 24 December 2024
 bibliography: paper.bib
 
 ---
@@ -36,7 +36,7 @@ labels. Based on this, the framework can also be used to check on bias in databa
 
 # Design choices 
 
-The program is intended for **novice** people interested in speaker characteristics detection (e.g., emotion, age, and gender) without proficient in (Python) programming language. Its main target is for **education** and **research** with the main features as follows:
+The program is intended for **novice** people interested in speaker characteristics detection (e.g., emotion, age, and gender) without being proficient in (Python) programming language. Its main target is for **education** and **research** with the main features as follows:
 
 - Finding good combinations of variables, e.g., acoustic features, models (classifier or regressor), feature standardization, augmentation, etc., for speaker characteristics detection (e.g., emotion);
 
@@ -124,7 +124,7 @@ The `nkululeko` configuration can specify further sections:
 
 
 # Example of usage
-In the previous section, we have seen how to specify an experiment in an INI file which can be run with, for instance, `explore` and `segment` modules. Here, we show how to run the experiment (`nkululeko.nkululeko`) with built-in dataset (Polish Speech Emotions dataset) from the installation until getting the results. 
+In the previous section, we have seen how to specify an experiment in an INI file that can be run with, for instance, `explore` and `segment` modules. Here, we show how to run the experiment (`nkululeko.nkululeko`) with built-in dataset (Polish Speech Emotions dataset) from the installation until getting the results. 
 
 First, novices could clone the GitHub repository of nkululeko. 
 
@@ -183,7 +183,7 @@ Nkululeko follows these principles:
 
 - *Minimum programming skills*: The only programming skills required are preparing the data in the correct (CSV) format and running the command line tool. For AUDFORMAT, no preparation is needed.
 
-- *Standardised data format and label*: The data format is based on CSV and AUDFORMAT, which are widely used formats for data exchange. The standard headers are like 'file', 'speaker', 'emotion', 'age', and 'language' but also can be customised. Data could be saved anywhere on the computer, but the recipe for the data preparation is advised to be saved in `nkululeko/data` folder (and/or make a soft link to the original data location).
+- *Standardised data format and label*: The data format is based on CSV and AUDFORMAT, which are widely used formats for data exchange. The standard headers are like 'file', 'speaker', 'emotion', 'age', and 'language' and can be customised. Data could be saved anywhere on the computer, but the recipe for the data preparation is advised to be saved in `nkululeko/data` folder (and/or make a soft link to the original data location).
 
 - *Replicability*: the experiments are specified in a configuration file, which can be shared with others including the splitting of training, development, and test partition. All results are stored in a folder with the same name as the experiment.
 
@@ -201,7 +201,9 @@ Nkululeko has been used in several research projects since its first appearance 
 
 - [@Atmaja:2024a]: this paper shows Nkululeko's capability for ensemble learning with a focus on uncertainty estimation.
 
-- [@Atmaja:2025]: in this paper, evaluations of different handcrafted acoustic features and SSL approaches for pathological voice detection tasks were reported, highlighting the ease of using Nkululeko to perform extensive experiments including combinations of different features at different levels (early and late fusions) 
+- [@Atmaja:2025]: in this paper, evaluations of different handcrafted acoustic features and SSL approaches for pathological voice detection tasks were reported, highlighting the ease of using Nkululeko to perform extensive experiments including combinations of different features at different levels (early and late fusions).
+
+-[@Atmaja:2025b]: this paper extends the previous ensemble learning evaluations with performance weighting (using weighted and unweighted accuracies) on ﬁve tasks and ten datasets.
  
 # Acknowledgements
 
