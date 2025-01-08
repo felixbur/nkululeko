@@ -628,8 +628,7 @@ class Plots:
         # one up because of the runs
         fig_dir = self.util.get_path("fig_dir") + "../"
         exp_name = self.util.get_exp_name(only_data=True)
-        format = self.util.config_val("PLOT", "format", "png")
-        filename = f"{fig_dir}{exp_name}EXPL_tree-plot.{format}"
+        filename = f"{fig_dir}{exp_name}EXPL_tree-plot.{self.format}"
         fig = ax.figure
         fig.savefig(filename)
         fig.clear()

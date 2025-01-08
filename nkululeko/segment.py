@@ -62,6 +62,11 @@ def main():
     expr.fill_train_and_tests()
     util.debug(f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}")
 
+    def calc_dur(x):
+        starts = x[1]
+        ends = x[2]
+        return (ends - starts).total_seconds()
+
     # segment
     segmented_file = util.config_val("SEGMENT", "result", "segmented.csv")
 
@@ -104,16 +109,11 @@ def main():
             df_seg = df_seg.drop(columns=[target])
             df_seg = df_seg.rename(columns={"class_label": target})
         # save file
+        df_seg["duration"] = df_seg.index.to_series().map(lambda x: calc_dur(x))
         df_seg.to_csv(f"{expr.data_dir}/{segmented_file}")
-
-    def calc_dur(x):
-        starts = x[1]
-        ends = x[2]
-        return (ends - starts).total_seconds()
 
     if "duration" not in df.columns:
         df["duration"] = df.index.to_series().map(lambda x: calc_dur(x))
-    df_seg["duration"] = df_seg.index.to_series().map(lambda x: calc_dur(x))
     num_before = df.shape[0]
     num_after = df_seg.shape[0]
     util.debug(

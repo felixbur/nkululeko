@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.93.11
+--------------
+* bugfix: silero segmenter assigned file duration values
+
 Version 0.93.10
 --------------
 * added nan check for imported features
