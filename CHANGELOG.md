@@ -1,12 +1,16 @@
 Changelog
 =========
 
+Version 0.93.12
+---------------
+* bugfix: map_continuous_to_cat crashed on empty data
+
 Version 0.93.11
---------------
+---------------
 * bugfix: silero segmenter assigned file duration values
 
 Version 0.93.10
---------------
+---------------
 * added nan check for imported features
 * added LOGO result output
 

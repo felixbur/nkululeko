@@ -676,6 +676,8 @@ class Dataset:
 
     def map_continuous_classification(self, df):
         """Map labels to bins for continuous data that should be classified"""
+        if df.empty:
+            return
         if self.check_continuous_classification():
             self.util.debug(f"{self.name}: binning continuous variable to categories")
             cat_vals = self.util.continuous_to_categorical(df[self.target])

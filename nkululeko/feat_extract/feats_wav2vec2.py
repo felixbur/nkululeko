@@ -49,6 +49,7 @@ class Wav2vec2(Featureset):
         hidden_layer = int(self.util.config_val("FEATS", "wav2vec2.layer", "0"))
         config.num_hidden_layers = layer_num - hidden_layer
         self.util.debug(f"using hidden layer #{config.num_hidden_layers}")
+
         self.processor = Wav2Vec2FeatureExtractor.from_pretrained(model_path)
         self.model = Wav2Vec2Model.from_pretrained(model_path, config=config).to(
             self.device

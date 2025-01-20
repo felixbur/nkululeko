@@ -4,8 +4,10 @@ import ast
 import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.inspection import permutation_importance
-from sklearn.linear_model import LinearRegression, LogisticRegression
-from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeRegressor
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.plots import Plots
