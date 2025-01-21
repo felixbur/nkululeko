@@ -8,8 +8,8 @@ audiomentations==0.31.0
 audonnx
 confidence-intervals
 cylimiter
-# audtorch
-# datasets
+audtorch
+datasets
 imageio
 imblearn
 matplotlib
@@ -18,8 +18,8 @@ opensmile
 pandas
 praat-parselmouth
 pylatex
-# renumics-spotlight 
-# sliceguard
+renumics-spotlight 
+sliceguard
 scikit_learn
 scipy
 seaborn
