@@ -145,7 +145,8 @@
   * check_size = 1000
 * **check_vad**: check if the files contain speech, using [silero VAD](https://github.com/snakers4/silero-vad)
   * check_vad = True
-
+* **filter.sample_selection**: restrict the filters to either [train, test, all]
+  * filter.sample_selection=all
 ### AUGMENT
 
 * **augment**: select the methods to augment: either *traditional* or *random_splice*
