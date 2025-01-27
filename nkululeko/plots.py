@@ -297,6 +297,9 @@ class Plots:
         if cat_col == "class_label":
             plot_df = plot_df.rename(columns={cat_col: self.target})
             cat_col = self.target
+        elif cont_col == "class_label":
+            plot_df = plot_df.rename(columns={cont_col: self.target})
+            cont_col = self.target
         dist_type = self.util.config_val("EXPL", "dist_type", "kde")
         cats, cat_str, es = su.get_effect_size(plot_df, cat_col, cont_col)
         model_type = self.util.get_model_type()
@@ -327,7 +330,7 @@ class Plots:
         if col2 == "class_label":
             plot_df = plot_df.rename(columns={col2: self.target})
             col2 = self.target
-        if col1 == "class_label":
+        elif col1 == "class_label":
             plot_df = plot_df.rename(columns={col1: self.target})
             col1 = self.target
         crosstab = pd.crosstab(index=plot_df[col1], columns=plot_df[col2])
