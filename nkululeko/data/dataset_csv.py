@@ -3,19 +3,20 @@ import ast
 import os
 import os.path
 
-import audformat.utils
 import pandas as pd
 
-import nkululeko.glob_conf as glob_conf
+import audformat.utils
+
 from nkululeko.data.dataset import Dataset
+import nkululeko.glob_conf as glob_conf
 from nkululeko.reporting.report_item import ReportItem
 
 
 class Dataset_CSV(Dataset):
-    """Class to represent datasets stored as a csv file"""
+    """Class to represent datasets stored as a csv file."""
 
     def load(self):
-        """Load the dataframe with files, speakers and task labels"""
+        """Load the dataframe with files, speakers and task labels."""
         self.util.debug(f"loading {self.name}")
         self.got_target, self.got_speaker, self.got_gender = False, False, False
         data_file = self.util.config_val_data(self.name, "", "")

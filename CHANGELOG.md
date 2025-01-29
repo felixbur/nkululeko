@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.93.14 (24-01-27)
+--------------------------
+* print cohen's d results to store
+
 Version 0.93.13 (24-01-27)
 --------------------------
 * plot: replaced "class_label" by target name for continuous distributions

@@ -24,8 +24,10 @@ class Plots:
         self.format = self.util.config_val("PLOT", "format", "png")
         self.target = self.util.config_val("DATA", "target", "emotion")
         self.with_ccc = eval(self.util.config_val("PLOT", "ccc", "False"))
+        self.type_s = "samples"
 
     def plot_distributions_speaker(self, df):
+        self.type_s = "speaker"
         df_speakers = pd.DataFrame()
         pd.options.mode.chained_assignment = None  # default='warn'
         for s in df.speaker.unique():
@@ -301,11 +303,18 @@ class Plots:
             plot_df = plot_df.rename(columns={cont_col: self.target})
             cont_col = self.target
         dist_type = self.util.config_val("EXPL", "dist_type", "kde")
-        cats, cat_str, es = su.get_effect_size(plot_df, cat_col, cont_col)
+        max_cat, cat_str, effect_results = su.get_effect_size(
+            plot_df, cat_col, cont_col
+        )
+        self.util.debug(effect_results)
+        self.util.print_results_to_store(
+            f"cohens-d_{self.type_s}", str(effect_results) + "\n"
+        )
+        es = effect_results[max_cat]
         model_type = self.util.get_model_type()
         if dist_type == "hist" and model_type != "tree":
             ax = sns.histplot(plot_df, x=cont_col, hue=cat_col, kde=True)
-            caption = f"{ylab} {plot_df.shape[0]}. {cat_str} ({cats}):" f" {es}"
+            caption = f"{ylab} {plot_df.shape[0]}. {cat_str} ({max_cat}):" f" {es}"
             ax.set_title(caption)
             ax.set_xlabel(f"{cont_col}")
             ax.set_ylabel(f"number of {ylab}")
@@ -319,7 +328,7 @@ class Plots:
                 warn_singular=False,
             )
             ax.set(xlabel=f"{cont_col}")
-            caption = f"{ylab} {plot_df.shape[0]}. {cat_str} ({cats}):" f" {es}"
+            caption = f"{ylab} {plot_df.shape[0]}. {cat_str} ({max_cat}):" f" {es}"
             ax.figure.suptitle(caption)
         return ax, caption
 

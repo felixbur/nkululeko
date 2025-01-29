@@ -160,6 +160,21 @@ class Util:
         pred_name = self.get_model_description()
         return f"{results_dir}/pred_{target}_{pred_name}.csv"
 
+    def print_results_to_store(self, name: str, contents: str) -> str:
+        """Write contents to a result file.
+
+        Args:
+            name (str): the (sub) name of the file_
+
+        Returns:
+            str: The path to the file
+        """
+        results_dir = self.get_path("res_dir")
+        pred_name = self.get_model_description()
+        path = os.path.join(results_dir, f"{name}_{pred_name}.txt")
+        with open(path, "a") as f:
+            f.write(contents)
+
     def is_categorical(self, pd_series):
         """Check if a dataframe column is categorical."""
         return pd_series.dtype.name == "object" or isinstance(
