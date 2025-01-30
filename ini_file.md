@@ -280,7 +280,7 @@
     * **mlp**: Multi-Layer-Perceptron for classification
     * **mlp_reg**: Multi-Layer-Perceptron for regression
     * **svm**: Support Vector Machine
-      * C_val = 0.001
+      * C_val = 1.0
       * kernel = rbf # ‘linear’, ‘poly’, ‘rbf’, ‘sigmoid’, ‘precomputed’
     * **svr**: Support Vector Regression
       * C_val = 0.001

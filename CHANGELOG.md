@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.93.15 (24-01-30)
+--------------------------
+* fixed bug that last confusion matrix was not plotted
+
 Version 0.93.14 (24-01-27)
 --------------------------
 * print cohen's d results to store

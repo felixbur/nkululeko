@@ -68,7 +68,7 @@ class Modelrunner:
                 report.plot_confmatrix(plot_name, epoch)
         else:
             # for all epochs
-            for epoch in range(epoch_num):
+            for epoch_index, epoch in enumerate(range(epoch_num)):
                 if only_test:
                     self.model.load(self.run, epoch)
                     self.util.debug(f"reusing model: {self.model.store_path}")
@@ -119,13 +119,13 @@ class Modelrunner:
                         )
                         break
         # After training, report the best performance and epoch
-        best_report = reports[self.best_epoch]
+        last_report = reports[-1]
         # self.util.debug(f"Best score at epoch: {self.best_epoch}, UAR: {self.best_performance}") # move to reporter below
 
         if not plot_epochs:
             # Do at least one confusion matrix plot
-            self.util.debug(f"plotting confusion matrix to {plot_name}")
-            best_report.plot_confmatrix(plot_name, self.best_epoch)
+            self.util.debug(f"plotting last confusion matrix to {plot_name}")
+            last_report.plot_confmatrix(plot_name, epoch_index)
         return reports, epoch
 
     def _select_model(self, model_type):
