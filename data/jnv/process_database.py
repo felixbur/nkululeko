@@ -28,6 +28,12 @@ def main(args):
     train_df, dev_df, test_df = np.split(df.sample(frac=1, random_state=42), [
                                          int(.8 * len(df)), int(.9 * len(df))])
 
+    # print number of files in each set
+    print(f"Number of files in train set: {len(train_df)}")
+    print(f"Number of files in dev set: {len(dev_df)}")
+    print(f"Number of files in test set: {len(test_df)}")
+    print(f"Number of files in total: {len(df)}")
+
     train_df.to_csv(os.path.join(output_dir, "jnv_train.csv"), index=False)
     dev_df.to_csv(os.path.join(output_dir, "jnv_dev.csv"), index=False)
     test_df.to_csv(os.path.join(output_dir, "jnv_test.csv"), index=False)
@@ -38,7 +44,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--data_dir",
         type=str,
-        default="jnv_corpus_ver2/JNV/",
+        default="JNV/",
         help="Directory containing audio files")
     parser.add_argument(
         "--output_dir",

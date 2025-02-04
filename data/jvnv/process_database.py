@@ -48,6 +48,9 @@ def process_database(data_dir, output_dir):
             writer.writerow(["file", "emotion", "gender"])
             writer.writerows(set_data)
 
+    # print number of files in each set
+    for set_name, set_data in data.items():
+        print(f"Number of files in {set_name} set: {len(set_data)}")
     print("Database processing completed.")
 
 
