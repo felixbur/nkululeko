@@ -303,6 +303,7 @@ class Plots:
             plot_df = plot_df.rename(columns={cont_col: self.target})
             cont_col = self.target
         dist_type = self.util.config_val("EXPL", "dist_type", "kde")
+        fill_areas = eval(self.util.config_val("PLOT", "fill_areas", "False"))
         max_cat, cat_str, effect_results = su.get_effect_size(
             plot_df, cat_col, cont_col
         )
@@ -324,7 +325,7 @@ class Plots:
                 x=cont_col,
                 hue=cat_col,
                 kind="kde",
-                fill=True,
+                fill=fill_areas,
                 warn_singular=False,
             )
             ax.set(xlabel=f"{cont_col}")
@@ -604,9 +605,17 @@ class Plots:
             df_plot = pd.DataFrame(
                 {label: df_labels[label], feature: df_features[feature]}
             )
+            p_val = ""
+            if df_labels[label].nunique() == 2:
+                label_1 = df_labels[label].unique()[0]
+                label_2 = df_labels[label].unique()[1]
+                vals_1 = df_plot[df_plot[label] == label_1][feature].values
+                vals_2 = df_plot[df_plot[label] == label_2][feature].values
+                r_stats = stats.mannwhitneyu(vals_1, vals_2, alternative="two-sided")
+                p_val = f", Mann-Whitney p-val: {r_stats.pvalue:.3f}"
             ax = sns.violinplot(data=df_plot, x=label, y=feature)
             label = self.util.config_val("DATA", "target", "class_label")
-            ax.set(title=f"{title} samples", xlabel=label)
+            ax.set(title=f"{title} samples {p_val}", xlabel=label)
         else:
             plot_df = pd.concat([df_labels, df_features], axis=1)
             ax, caption = self._plot2cont(plot_df, label, feature, feature)

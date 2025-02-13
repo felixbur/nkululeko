@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.93.16 (24-02-13)
+--------------------------
+* added possibilty to omit area filling in plots
+* added Mann-Whitney U test for binary category feature importance plots
+
 Version 0.93.15 (24-01-30)
 --------------------------
 * fixed bug that last confusion matrix was not plotted
