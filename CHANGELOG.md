@@ -1,15 +1,20 @@
 Changelog
 =========
 
-Version 0.93.15 (24-01-30)
+Version 0.93.16 (25-02-13)
+--------------------------
+* added possibilty to omit area filling in plots
+* added Mann-Whitney U test for binary category feature importance plots
+
+Version 0.93.15 (25-01-30)
 --------------------------
 * fixed bug that last confusion matrix was not plotted
 
-Version 0.93.14 (24-01-27)
+Version 0.93.14 (25-01-27)
 --------------------------
 * print cohen's d results to store
 
-Version 0.93.13 (24-01-27)
+Version 0.93.13 (25-01-27)
 --------------------------
 * plot: replaced "class_label" by target name for continuous distributions
 

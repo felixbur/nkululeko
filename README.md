@@ -56,6 +56,10 @@ And can show the distribution of specific features per category:
 
 <img src="meta/images/feat_dist.png" width="500px"/>
 
+If there are only two categories, a Mann-Whitney U test for significance is given:
+
+<img src="meta/images/feat_dist_2.png" width="500px"/>
+
 ### t-SNE plots
 A t-SNE plot can give you an estimate of whether your acoustic features are useful at all:
 

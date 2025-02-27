@@ -205,6 +205,18 @@ Nkululeko has been used in several research projects since its first appearance 
 
 - [@Atmaja:2025b]: this paper extends the previous ensemble learning evaluations with performance weighting (using weighted and unweighted accuracies) on ﬁve tasks and ten datasets.
  
+# Changes
+Nkululeko has been described in three papers so far, we give a short overview on the updates since then.
+
+* **2022 Paper:** F. Burkhardt, Johannes Wagner, Hagen Wierstorf, Florian Eyben and Björn Schuller: Nkululeko: A Tool For Rapid Speaker Characteristics Detection, Proc. Proc. LREC, 2022. **New features:** First version mainly focussing on basic machinelearning experiments that combine *expert* acoustic features (like Praat or opensmile features) with traditional learning approaches.
+
+* **2023 Paper:** F. Burkhardt, Florian Eyben and Björn Schuller: Nkululeko: Machine Learning Experiments on Speaker Characteristics Without Programming, Proc. Interspeech, 2023. **New features:** Mainly extending the acoustic features to deep-learning based (like TRILL, Hubert or wav2vec2) and the models by neural net architectures like MLP or CNN.
+
+* **2024 Paper:** F. Burkhardt, Bagus Tris Atmaja, Anna Derington, Florian Eyben and Björn Schuller: Check Your Audio Data: Nkululeko for Bias Detection, Proc. Oriental COCOSDA, 2024. **New features:** Introducing the concept of interfaces (or *modules*), focusing on the *explore-module* that features automatic data statistics and and bias analysis.
+
+* **Since then:** Besides many minor enhancements; ensemble learning, Wav2vec2 model finetuning, adding automatic speaker identification, extending augmentation and segmentation.
+
+
 # Acknowledgements
 
 We acknowledge support from these various projects: 

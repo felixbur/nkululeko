@@ -335,14 +335,14 @@
 
 ### EXPL
 
+* **feature_distributions**: plot distributions for features and analyze importance
+  * feature_distributions = False
 * **model**: Which model to use to estimate feature importance.
   * model = ['log_reg'] # can be all models from the [MODEL](#model) section, If they are combined, the mean result is used.
 * **max_feats**: Maximal number of important features
   * max_feats = 10
 * **sample_selection**: Which sample set/split to use for feature importance, sample distribution, spotlight and feature distributions
   * sample_selection = all # either all, train or test
-* **feature_distributions**: plot distributions for features and analyze importance
-  * feature_distributions = True
 * **permutation**: use [feature permutation](https://scikit-learn.org/stable/modules/permutation_importance.html) to determine the best features. Make sure to test the models before.
   * permutation = True
 * **scatter**: make a scatter plot of combined train and test data, colored by label.
@@ -407,6 +407,8 @@
   * format = png
 * **ccc**: show concordance correlation coefficient in plot headings
   * ccc = False
+* **fill_areas**: should areas, e.g. in distribution plots, be filled?
+  * fill_areas = False
   
 ### RESAMPLE
 
