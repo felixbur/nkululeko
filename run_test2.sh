@@ -66,7 +66,6 @@ nkululeko_ini_files=(
     exp_emodb_whisper_xgb.ini
     emodb_demo.ini
     exp_emodb_os_xgb_test.ini
-    exp_emodb_trill_test.ini
     exp_emodb_wav2vec2_test.ini
     exp_emodb_os_xgb.ini
     exp_emodb_os_svm.ini
@@ -103,7 +102,6 @@ demo_ini_files=(
 # test test module
 test_ini_files=(
     exp_emodb_os_xgb_test.ini
-    exp_emodb_trill_test.ini
     exp_emodb_wav2vec2_test.ini
 )
 
