@@ -55,6 +55,7 @@
   * databases = ['emodb', 'timit']
 * **use_splits**: can be used for multidb module to use the orginal split sets when train or test database. Else the whole database is used.
   * use_splits = True
+  
 ### DATA
 
 * **type**: just a flag now to mark continuous data, so it can be binned to categorical data (using *bins* and *labels*)
@@ -103,6 +104,10 @@
   * emodb.test_tables = ['emotion.categories.test.gold_standard']
 * **db_name.train_tables**: tables that should be used for training
   * emodb.train_tables = ['emotion.categories.train.gold_standard']
+* **db_name.as_test**: use only the test split (for automatic experiments)
+  * emodb.as_test = False
+* **db_name.as_train**: use only the train split (for automatic experiments)
+  * emodb.as_train = False
 * **db_name.limit_samples**: maximum number of random N samples per table (for testing with very large data mainly)
   * emodb.limit_samples = 20
 * **db_name.required**: force a data set to have a specific feature (for example, filter all sets that have gender labeled in a database where this is not the case for all samples, e.g. MozillaCommonVoice)

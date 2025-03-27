@@ -43,6 +43,7 @@ class Experiment:
         audeer.mkdir(self.data_dir)  # create the experiment directory
         self.util = Util("experiment")
         glob_conf.set_util(self.util)
+        self.split3 = eval(self.util.config_val("EXP", "traindevtest", "False"))
         fresh_report = eval(self.util.config_val("REPORT", "fresh", "False"))
         if not fresh_report:
             try:
@@ -75,11 +76,11 @@ class Experiment:
     #     return self.util.get_exp_name()
 
     def set_globals(self, config_obj):
-        """install a config object in the global space"""
+        """Install a config object in the global space."""
         glob_conf.init_config(config_obj)
 
     def load_datasets(self):
-        """Load all databases specified in the configuration and map the labels"""
+        """Load all databases specified in the configuration and map the labels."""
         ds = ast.literal_eval(glob_conf.config["DATA"]["databases"])
         self.datasets = {}
         self.got_speaker, self.got_gender, self.got_age = False, False, False
@@ -186,6 +187,10 @@ class Experiment:
         store = self.util.get_path("store")
         storage_test = f"{store}testdf.csv"
         storage_train = f"{store}traindf.csv"
+        self.df_dev = None
+        self.feats_dev = None
+        if self.split3:
+            storage_dev = f"{store}devdf.csv"
         start_fresh = eval(self.util.config_val("DATA", "no_reuse", "False"))
         if (
             os.path.isfile(storage_train)
@@ -199,10 +204,20 @@ class Experiment:
             self.df_train = self._import_csv(storage_train)
             self.train_empty = True if self.df_train.shape[0] == 0 else False
             self.test_empty = True if self.df_test.shape[0] == 0 else False
+            if self.split3:
+                self.df_dev = self._import_csv(storage_dev)
+                self.dev_empty = True if self.df_dev.shape[0] == 0 else False
         else:
             self.df_train, self.df_test = pd.DataFrame(), pd.DataFrame()
+            if self.split3:
+                self.df_dev = pd.DataFrame()
+            else:
+                self.df_dev = None
             for d in self.datasets.values():
-                d.split()
+                if self.split3:
+                    d.split_3()
+                else:
+                    d.split()
                 if self.target != "none":
                     d.prepare_labels()
                 if d.df_train.shape[0] == 0:
@@ -214,23 +229,38 @@ class Experiment:
                     self.util.debug(f"warn: {d.name} test empty")
                 self.df_test = pd.concat([self.df_test, d.df_test])
                 self.util.copy_flags(d, self.df_test)
+                if self.split3:
+                    if d.df_dev.shape[0] == 0:
+                        self.util.debug(f"warn: {d.name} dev empty")
+                    self.df_dev = pd.concat([self.df_dev, d.df_dev])
+                    self.util.copy_flags(d, self.df_dev)
             self.train_empty = True if self.df_train.shape[0] == 0 else False
             self.test_empty = True if self.df_test.shape[0] == 0 else False
+            if self.split3:
+                self.dev_empty = True if self.df_dev.shape[0] == 0 else False
             store = self.util.get_path("store")
             storage_test = f"{store}testdf.csv"
             storage_train = f"{store}traindf.csv"
             self.df_test.to_csv(storage_test)
             self.df_train.to_csv(storage_train)
+            if self.split3:
+                storage_dev = f"{store}devdf.csv"
+                self.df_dev.to_csv(storage_dev)
 
         if self.target == "none":
             return
         self.util.copy_flags(self, self.df_test)
         self.util.copy_flags(self, self.df_train)
+        if self.split3:
+            self.util.copy_flags(self, self.df_dev)
         # Try data checks
         datachecker = FileChecker(self.df_train)
         self.df_train = datachecker.all_checks()
         datachecker.set_data(self.df_test)
         self.df_test = datachecker.all_checks()
+        if self.split3:
+            datachecker.set_data(self.df_dev)
+            self.df_dev = datachecker.all_checks()
 
         # Check for filters
         filter_sample_selection = self.util.config_val(
@@ -241,6 +271,9 @@ class Experiment:
             self.df_train = datafilter.all_filters()
             datafilter = DataFilter(self.df_test)
             self.df_test = datafilter.all_filters()
+            if self.split3:
+                datafilter = DataFilter(self.df_dev)
+                self.df_dev = datafilter.all_filters()
         elif filter_sample_selection == "train":
             datafilter = DataFilter(self.df_train)
             self.df_train = datafilter.all_filters()
@@ -248,10 +281,11 @@ class Experiment:
             datafilter = DataFilter(self.df_test)
             self.df_test = datafilter.all_filters()
         else:
-            self.util.error(
+            msg = (
                 "unkown filter sample selection specifier"
                 f" {filter_sample_selection}, should be [all | train | test]"
             )
+            self.util.error(msg)
 
         # encode the labels
         if self.util.exp_is_classification():
@@ -261,6 +295,8 @@ class Experiment:
                     test_cats = self.df_test["class_label"].unique()
                 if not self.train_empty:
                     train_cats = self.df_train["class_label"].unique()
+                if self.split3 and not self.dev_empty:
+                    dev_cats = self.df_dev["class_label"].unique()
             else:
                 if not self.test_empty:
                     if self.df_test.is_labeled:
@@ -272,11 +308,13 @@ class Experiment:
                         )
                 if not self.train_empty:
                     train_cats = self.df_train[self.target].unique()
+                if self.split3 and not self.dev_empty:
+                    dev_cats = self.df_dev[self.target].unique()
             # encode the labels as numbers
             self.label_encoder = LabelEncoder()
             glob_conf.set_label_encoder(self.label_encoder)
             if not self.train_empty:
-                if type(train_cats) == np.ndarray:
+                if isinstance(train_cats, np.ndarray):
                     self.util.debug(f"Categories train (nd.array): {train_cats}")
                 else:
                     self.util.debug(f"Categories train (list): {list(train_cats)}")
@@ -286,13 +324,22 @@ class Experiment:
                 )
             if not self.test_empty:
                 if self.df_test.is_labeled:
-                    if type(test_cats) == np.ndarray:
+                    if isinstance(test_cats, np.ndarray):
                         self.util.debug(f"Categories test (nd.array): {test_cats}")
                     else:
                         self.util.debug(f"Categories test (list): {list(test_cats)}")
                 if not self.train_empty:
                     self.df_test[self.target] = self.label_encoder.transform(
                         self.df_test[self.target]
+                    )
+            if self.split3 and not self.dev_empty:
+                if isinstance(dev_cats, np.ndarray):
+                    self.util.debug(f"Categories dev (nd.array): {dev_cats}")
+                else:
+                    self.util.debug(f"Categories dev (list): {list(dev_cats)}")
+                if not self.train_empty:
+                    self.df_dev[self.target] = self.label_encoder.transform(
+                        self.df_dev[self.target]
                     )
         if self.got_speaker:
             speakers_train = 0 if self.train_empty else self.df_train.speaker.nunique()
@@ -301,6 +348,9 @@ class Experiment:
                 f"{speakers_test} speakers in test and"
                 f" {speakers_train} speakers in train"
             )
+            if self.split3:
+                speakers_dev = 0 if self.dev_empty else self.df_dev.speaker.nunique()
+                self.util.debug(f"{speakers_dev} speakers in dev")
 
         target_factor = self.util.config_val("DATA", "target_divide_by", False)
         if target_factor:
@@ -308,6 +358,10 @@ class Experiment:
             self.df_train[self.target] = self.df_train[self.target] / float(
                 target_factor
             )
+            if self.split3:
+                self.df_dev[self.target] = self.df_dev[self.target] / float(
+                    target_factor
+                )
             if not self.util.exp_is_classification():
                 self.df_test["class_label"] = self.df_test["class_label"] / float(
                     target_factor
@@ -315,7 +369,17 @@ class Experiment:
                 self.df_train["class_label"] = self.df_train["class_label"] / float(
                     target_factor
                 )
-
+                if self.split3:
+                    self.df_dev["class_label"] = self.df_dev["class_label"] / float(
+                        target_factor
+                    )
+        if self.split3:
+            shapes = f"{self.df_train.shape}/{self.df_dev.shape}/{self.df_test.shape}"
+            self.util.debug(f"train/dev/test shape: {shapes}")
+        else:
+            self.util.debug(
+                f"train/test shape: {self.df_train.shape}/{self.df_test.shape}"
+            )
     def _add_random_target(self, df):
         labels = glob_conf.labels
         a = [None] * len(df)
@@ -325,9 +389,11 @@ class Experiment:
         return df
 
     def plot_distribution(self, df_labels):
-        """Plot the distribution of samples and speaker per target class and biological sex"""
+        """Plot the distribution of samples and speakers.
+
+        Per target class and biological sex.
+        """
         plot = Plots()
-        sample_selection = self.util.config_val("EXPL", "sample_selection", "all")
         plot.plot_distributions(df_labels)
         if self.got_speaker:
             plot.plot_distributions_speaker(df_labels)
@@ -351,8 +417,16 @@ class Experiment:
 
         """
         df_train, df_test = self.df_train, self.df_test
+        if self.split3:
+            df_dev = self.df_dev
+        else:
+            df_dev = None
         feats_name = "_".join(ast.literal_eval(glob_conf.config["DATA"]["databases"]))
         self.feats_test, self.feats_train = pd.DataFrame(), pd.DataFrame()
+        if self.split3:
+            self.feats_dev = pd.DataFrame()
+        else:
+            self.feats_dev = None
         feats_types = self.util.config_val("FEATS", "type", "os")
         # Ensure feats_types is always a list of strings
         if isinstance(feats_types, str):
@@ -364,7 +438,6 @@ class Experiment:
         # for some models no features are needed
         if len(feats_types) == 0:
             self.util.debug("no feature extractor specified.")
-            self.feats_train, self.feats_test = pd.DataFrame(), pd.DataFrame()
             return
         if not self.train_empty:
             self.feature_extractor = FeatureExtractor(
@@ -376,10 +449,19 @@ class Experiment:
                 df_test, feats_types, feats_name, "test"
             )
             self.feats_test = self.feature_extractor.extract()
-        self.util.debug(
-            f"All features: train shape : {self.feats_train.shape}, test"
-            f" shape:{self.feats_test.shape}"
-        )
+        if self.split3:
+            if not self.dev_empty:
+                self.feature_extractor = FeatureExtractor(
+                    df_dev, feats_types, feats_name, "dev"
+                )
+                self.feats_dev = self.feature_extractor.extract()
+                shps = f"{self.feats_train.shape}/{self.feats_dev.shape}/{self.feats_test.shape}"
+                self.util.debug(f"Train/dev/test features:{shps}")
+        else:
+            self.util.debug(
+                f"All features: train shape : {self.feats_train.shape}, test"
+                f" shape:{self.feats_test.shape}"
+            )
         if self.feats_train.shape[0] < self.df_train.shape[0]:
             self.util.warn(
                 f"train feats ({self.feats_train.shape[0]}) != train labels"
@@ -396,6 +478,14 @@ class Experiment:
             )
             self.df_test = self.df_test[self.df_test.index.isin(self.feats_test.index)]
             self.util.warn(f"new test labels shape: {self.df_test.shape[0]}")
+        if self.split3:
+            if self.feats_dev.shape[0] < self.df_dev.shape[0]:
+                self.util.warn(
+                    f"dev feats ({self.feats_dev.shape[0]}) != dev labels"
+                    f" ({self.df_dev.shape[0]})"
+                )
+                self.df_dev = self.df_dev[self.df_dev.index.isin(self.feats_dev.index)]
+                self.util.warn(f"new dev labels shape: {self.df_dev.shape[0]}")
 
         self._check_scale()
 
@@ -604,6 +694,8 @@ class Experiment:
     def _check_scale(self):
         self.util.save_to_store(self.feats_train, "feats_train")
         self.util.save_to_store(self.feats_test, "feats_test")
+        if self.split3:
+            self.util.save_to_store(self.feats_dev, "feats_dev")
         scale_feats = self.util.config_val("FEATS", "scale", False)
         # print the scale
         self.util.debug(f"scaler: {scale_feats}")
@@ -614,6 +706,8 @@ class Experiment:
                 self.feats_train,
                 self.feats_test,
                 scale_feats,
+                dev_x=self.df_dev,
+                dev_y=self.feats_dev,
             )
             self.feats_train, self.feats_test = self.scaler_feats.scale()
             # store versions
@@ -622,9 +716,19 @@ class Experiment:
 
     def init_runmanager(self):
         """Initialize the manager object for the runs."""
-        self.runmgr = Runmanager(
-            self.df_train, self.df_test, self.feats_train, self.feats_test
-        )
+        if self.split3:
+            self.runmgr = Runmanager(
+                self.df_train,
+                self.df_test,
+                self.feats_train,
+                self.feats_test,
+                dev_x=self.df_dev,
+                dev_y=self.feats_dev,
+            )
+        else:
+            self.runmgr = Runmanager(
+                self.df_train, self.df_test, self.feats_train, self.feats_test
+            )
 
     def run(self):
         """Do the runs."""

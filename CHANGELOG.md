@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.94.0 (25-03-26)
+--------------------------
+* added train/dev/test experiments
+
 Version 0.93.16 (25-02-13)
 --------------------------
 * added possibilty to omit area filling in plots

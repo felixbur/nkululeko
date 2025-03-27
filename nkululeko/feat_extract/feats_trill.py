@@ -4,8 +4,8 @@ import os
 import audiofile as af
 import pandas as pd
 
-# import tensorflow as tf
-# import tensorflow_hub as hub
+import tensorflow as tf
+import tensorflow_hub as hub
 from tqdm import tqdm
 
 import nkululeko.glob_conf as glob_conf

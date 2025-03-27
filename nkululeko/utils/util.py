@@ -158,7 +158,7 @@ class Util:
         results_dir = self.get_path("res_dir")
         target = self.get_target_name()
         pred_name = self.get_model_description()
-        return f"{results_dir}/pred_{target}_{pred_name}.csv"
+        return f"{results_dir}/pred_{target}_{pred_name}"
 
     def print_results_to_store(self, name: str, contents: str) -> str:
         """Write contents to a result file.
