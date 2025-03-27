@@ -55,6 +55,8 @@
   * databases = ['emodb', 'timit']
 * **use_splits**: can be used for multidb module to use the orginal split sets when train or test database. Else the whole database is used.
   * use_splits = True
+* **traindevtest**: set to true if you want to specify an extra dev set, that will be used for early stopping (patience) in neural net experiments.
+  * traindevtest = False
   
 ### DATA
 
