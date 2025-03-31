@@ -83,11 +83,12 @@
 * **db_name.split_strategy**: How to identify sets for train/development data splits within one database
   * emodb.split_strategy = reuse
   * Possible values:
-    * **database**: default (*task*.train and *task*.test)
+    * **database**: default (*task*.train, *task*.dev and *task*.test)
     * **specified**: specify the tables (an opportunity to assign multiple or no tables to train or dev set)
       * emodb.train_tables = ['emotion.categories.train.gold_standard']
+      * emodb.dev_tables = ['emotion.categories.dev.gold_standard']
       * emodb.test_tables = ['emotion.categories.test.gold_standard']
-    * **speaker_split**: split samples randomly but speaker disjunct, given a percentage of speakers for the test set.
+    * **speaker_split**: split samples randomly but speaker disjunct, given a percentage of speakers for the test (and dev) set.
       * emodb.test_size = 50 (default:20)
     * **list of test speakers**: you can simply provide a list of test ids
       * emodb.split_strategy = [12, 14, 15, 16]
@@ -95,7 +96,8 @@
       * emodb.tests_size = 50 (default:20)
     * **reuse**: reuse the splits after a *speaker_split* run to save time with feature extraction.
     * **train**: use the entire database for training
-    * **test**: use the entire database for evaluation
+    * **test**: use the entire database for evaluation / testing
+    * **dev**: use the entire database for evaluation / development
 * **db_name.target_tables**: tables that contain the target / speaker / sex labels
   * emodb.target_tables = ['emotion']
 * **target_tables_append**: set this to True if the multiple tables should be combined row-wise, else they are combined column-wise
