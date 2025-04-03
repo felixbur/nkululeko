@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.94.1 (25-04-03)
+--------------------------
+* fixed bug: plot uncertainties had wrong file path
+* added possibility to filter several values for type, e.g. [type = [a, b]]
+  
 Version 0.94.0 (25-03-26)
 --------------------------
 * added train/dev/test experiments

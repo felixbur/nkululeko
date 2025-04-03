@@ -137,7 +137,9 @@ class DataFilter:
                 col = f[0]
                 val = f[1]
                 pre = df.shape[0]
-                df = df[df[col] == val]
+                if not isinstance(val, list):
+                    val = [val]
+                df = df[df[col].isin(val)]
                 post = df.shape[0]
                 self.util.debug(
                     f"{data_name}: filtered {col}={val}, reduced samples from"

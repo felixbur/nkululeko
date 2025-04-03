@@ -138,7 +138,7 @@ class Reporter:
             self.util.error(f"unknown metric: {self.metric}")
         return test_result, upper, lower
 
-    def print_probabilities(self, file_name = None):
+    def print_probabilities(self, file_name=None):
         """Print the probabilities per class to a file in the store."""
         if (
             self.util.exp_is_classification()
@@ -169,7 +169,7 @@ class Reporter:
             probas["uncertainty"] = uncertainty
             probas["correct"] = probas.predicted == probas.truth
             if file_name is None:
-                file_name = self.util.get_pred_name()+".csv"
+                file_name = self.util.get_pred_name() + ".csv"
             self.probas = probas
             probas.to_csv(file_name)
             self.util.debug(f"Saved probabilities to {file_name}")
@@ -182,7 +182,7 @@ class Reporter:
                 caption,
                 "Uncertainty",
                 "uncertainty_samples",
-                file_name,
+                "samples",
             )
 
     def set_id(self, run, epoch):
@@ -392,13 +392,15 @@ class Reporter:
             text_file.write(result_str)
         self.util.debug(result_str)
 
-    def print_results(self, epoch=None, file_name = None):
+    def print_results(self, epoch=None, file_name=None):
         if epoch is None:
             epoch = self.epoch
         """Print all evaluation values to text file."""
         res_dir = self.util.get_path("res_dir")
         if file_name is None:
-            file_name = f"{res_dir}{self.util.get_exp_name()}_{epoch}{self.filenameadd}.txt"
+            file_name = (
+                f"{res_dir}{self.util.get_exp_name()}_{epoch}{self.filenameadd}.txt"
+            )
         else:
             self.util.debug(f"####->{file_name}<-####")
             file_name = f"{res_dir}{file_name}{self.filenameadd}.txt"
@@ -515,10 +517,10 @@ class Reporter:
         plt.savefig(f"{fig_dir}{out_name}.{self.format}")
         plt.close()
 
-    def _scaleresults(self, results:np.ndarray) -> np.ndarray:
+    def _scaleresults(self, results: np.ndarray) -> np.ndarray:
         results = results.copy()
         """Scale results to fit on the plot."""
         if np.any((results > 1)):
-        # scale down values
+            # scale down values
             results = results / 100.0
         return results
