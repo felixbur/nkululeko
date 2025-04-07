@@ -55,6 +55,9 @@
   * databases = ['emodb', 'timit']
 * **use_splits**: can be used for multidb module to use the orginal split sets when train or test database. Else the whole database is used.
   * use_splits = True
+* **traindevtest**: set to true if you want to specify an extra dev set, that will be used for early stopping (patience) in neural net experiments.
+  * traindevtest = False
+  
 ### DATA
 
 * **type**: just a flag now to mark continuous data, so it can be binned to categorical data (using *bins* and *labels*)
@@ -80,11 +83,12 @@
 * **db_name.split_strategy**: How to identify sets for train/development data splits within one database
   * emodb.split_strategy = reuse
   * Possible values:
-    * **database**: default (*task*.train and *task*.test)
+    * **database**: default (*task*.train, *task*.dev and *task*.test)
     * **specified**: specify the tables (an opportunity to assign multiple or no tables to train or dev set)
       * emodb.train_tables = ['emotion.categories.train.gold_standard']
+      * emodb.dev_tables = ['emotion.categories.dev.gold_standard']
       * emodb.test_tables = ['emotion.categories.test.gold_standard']
-    * **speaker_split**: split samples randomly but speaker disjunct, given a percentage of speakers for the test set.
+    * **speaker_split**: split samples randomly but speaker disjunct, given a percentage of speakers for the test (and dev) set.
       * emodb.test_size = 50 (default:20)
     * **list of test speakers**: you can simply provide a list of test ids
       * emodb.split_strategy = [12, 14, 15, 16]
@@ -92,7 +96,8 @@
       * emodb.tests_size = 50 (default:20)
     * **reuse**: reuse the splits after a *speaker_split* run to save time with feature extraction.
     * **train**: use the entire database for training
-    * **test**: use the entire database for evaluation
+    * **test**: use the entire database for evaluation / testing
+    * **dev**: use the entire database for evaluation / development
 * **db_name.target_tables**: tables that contain the target / speaker / sex labels
   * emodb.target_tables = ['emotion']
 * **target_tables_append**: set this to True if the multiple tables should be combined row-wise, else they are combined column-wise
@@ -103,6 +108,10 @@
   * emodb.test_tables = ['emotion.categories.test.gold_standard']
 * **db_name.train_tables**: tables that should be used for training
   * emodb.train_tables = ['emotion.categories.train.gold_standard']
+* **db_name.as_test**: use only the test split (for automatic experiments)
+  * emodb.as_test = False
+* **db_name.as_train**: use only the train split (for automatic experiments)
+  * emodb.as_train = False
 * **db_name.limit_samples**: maximum number of random N samples per table (for testing with very large data mainly)
   * emodb.limit_samples = 20
 * **db_name.required**: force a data set to have a specific feature (for example, filter all sets that have gender labeled in a database where this is not the case for all samples, e.g. MozillaCommonVoice)

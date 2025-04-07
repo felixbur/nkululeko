@@ -41,7 +41,6 @@ def doit(config_file):
 
     # split into train and test
     expr.fill_train_and_tests()
-    util.debug(f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}")
 
     # extract features
     expr.extract_feats()

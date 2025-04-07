@@ -53,8 +53,6 @@ class Modelrunner:
             # epochs are handled by Huggingface API
             self.model.train()
             report = self.model.predict()
-            # todo: findout the best epoch -> no need
-            # since load_best_model_at_end is given in training args
             epoch = epoch_num
             report.set_id(self.run, epoch)
             plot_name = self.util.get_plot_name() + f"_{self.run}_{epoch:03d}_cnf"
@@ -118,15 +116,30 @@ class Modelrunner:
                             f"reached patience ({str(patience)}): early stopping"
                         )
                         break
-        # After training, report the best performance and epoch
-        last_report = reports[-1]
-        # self.util.debug(f"Best score at epoch: {self.best_epoch}, UAR: {self.best_performance}") # move to reporter below
-
-        if not plot_epochs:
-            # Do at least one confusion matrix plot
-            self.util.debug(f"plotting last confusion matrix to {plot_name}")
-            last_report.plot_confmatrix(plot_name, epoch_index)
         return reports, epoch
+
+    def eval_last_model(self, df_test, feats_test):
+        self.model.reset_test(df_test, feats_test)
+        report = self.model.predict()
+        report.set_id(self.run, 0)
+        return report
+
+    def eval_specific_model(self, model, df_test, feats_test):
+        self.model = model
+        self.util.debug(f"evaluating model: {self.model.store_path}")
+        self.model.reset_test(df_test, feats_test)
+        report = self.model.predict()
+        report.set_id(self.run, 0)
+        return report
+
+    def _check_balancing(self):
+        if self.util.config_val("EXP", "balancing", False):
+            self.util.debug("balancing data")
+            self.df_train, self.df_test = self.util.balance_data(
+                self.df_train, self.df_test
+            )
+            self.util.debug(f"new train size: {self.df_train.shape}")
+            self.util.debug(f"new test size: {self.df_test.shape}")
 
     def _select_model(self, model_type):
         self._check_balancing()

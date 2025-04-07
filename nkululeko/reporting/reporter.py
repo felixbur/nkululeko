@@ -138,7 +138,7 @@ class Reporter:
             self.util.error(f"unknown metric: {self.metric}")
         return test_result, upper, lower
 
-    def print_probabilities(self):
+    def print_probabilities(self, file_name=None):
         """Print the probabilities per class to a file in the store."""
         if (
             self.util.exp_is_classification()
@@ -168,11 +168,11 @@ class Reporter:
             )
             probas["uncertainty"] = uncertainty
             probas["correct"] = probas.predicted == probas.truth
-            sp = self.util.get_pred_name()
-
+            if file_name is None:
+                file_name = self.util.get_pred_name() + ".csv"
             self.probas = probas
-            probas.to_csv(sp)
-            self.util.debug(f"Saved probabilities to {sp}")
+            probas.to_csv(file_name)
+            self.util.debug(f"Saved probabilities to {file_name}")
             plots = Plots()
             ax, caption = plots.plotcatcont(
                 probas, "correct", "uncertainty", "uncertainty", "correct"
@@ -182,7 +182,7 @@ class Reporter:
                 caption,
                 "Uncertainty",
                 "uncertainty_samples",
-                self.util.get_exp_name(),
+                "samples",
             )
 
     def set_id(self, run, epoch):
@@ -368,7 +368,7 @@ class Reporter:
 
         res_dir = self.util.get_path("res_dir")
         rpt = (
-            f"Best score at epoch: {epoch}, UAR: {uar_str}"
+            f"Confusion matrix result for epoch: {epoch}, UAR: {uar_str}"
             + f", (+-{up_str}/{low_str}), ACC: {acc_str}"
         )
         # print(rpt)
@@ -392,13 +392,18 @@ class Reporter:
             text_file.write(result_str)
         self.util.debug(result_str)
 
-    def print_results(self, epoch=None):
+    def print_results(self, epoch=None, file_name=None):
         if epoch is None:
             epoch = self.epoch
         """Print all evaluation values to text file."""
         res_dir = self.util.get_path("res_dir")
-        fig_dir = self.util.get_path("fig_dir")
-        file_name = f"{res_dir}{self.util.get_exp_name()}_{epoch}{self.filenameadd}.txt"
+        if file_name is None:
+            file_name = (
+                f"{res_dir}{self.util.get_exp_name()}_{epoch}{self.filenameadd}.txt"
+            )
+        else:
+            self.util.debug(f"####->{file_name}<-####")
+            file_name = f"{res_dir}{file_name}{self.filenameadd}.txt"
         if self.util.exp_is_classification():
             labels = glob_conf.labels
             try:
@@ -427,25 +432,6 @@ class Reporter:
                 f1_per_class = (
                     f"result per class (F1 score): {c_ress} from epoch: {epoch}"
                 )
-                # the following auc is buggy, preds should be probabilities
-                # if len(np.unique(self.truths)) == 2:
-                #     fpr, tpr, _ = roc_curve(self.truths, self.preds)
-                #     auc_score = auc(fpr, tpr)
-                #     plot_path = f"{fig_dir}{self.util.get_exp_name()}_{epoch}{self.filenameadd}_roc.{self.format}"
-                #     plt.figure()
-                #     display = RocCurveDisplay(
-                #         fpr=fpr,
-                #         tpr=tpr,
-                #         roc_auc=auc_score,
-                #         estimator_name=f"{self.model_type} estimator",
-                #     )
-                #     display.plot(ax=None)
-                #     plt.savefig(plot_path)
-                #     plt.close()
-                #     self.util.debug(f"Saved ROC curve to {plot_path}")
-                #     pauc_score = roc_auc_score(self.truths, self.preds, max_fpr=0.1)
-                #     auc_pauc = f"auc: {auc_score:.3f}, pauc: {pauc_score:.3f} from epoch: {epoch}"
-                #     self.util.debug(auc_pauc)
                 self.util.debug(f1_per_class)
                 rpt_str = f"{json.dumps(rpt)}\n{f1_per_class}"
                 # rpt_str += f"\n{auc_auc}"
@@ -514,18 +500,12 @@ class Reporter:
         # do a plot per run
         # scale the losses so they fit on the picture
         losses, results, train_results, losses_eval = (
-            np.asarray(losses),
-            np.asarray(results),
-            np.asarray(train_results),
-            np.asarray(losses_eval),
+            self._scaleresults(np.asarray(losses)),
+            self._scaleresults(np.asarray(results)),
+            self._scaleresults(np.asarray(train_results)),
+            self._scaleresults(np.asarray(losses_eval)),
         )
 
-        if np.all((results > 1)):
-            # scale down values
-            results = results / 100.0
-            train_results = train_results / 100.0
-        # if np.all((losses < 1)):
-        # scale up values
         plt.figure(dpi=200)
         plt.plot(train_results, "green", label="train set")
         plt.plot(results, "red", label="dev set")
@@ -536,3 +516,11 @@ class Reporter:
         plt.legend()
         plt.savefig(f"{fig_dir}{out_name}.{self.format}")
         plt.close()
+
+    def _scaleresults(self, results: np.ndarray) -> np.ndarray:
+        results = results.copy()
+        """Scale results to fit on the plot."""
+        if np.any((results > 1)):
+            # scale down values
+            results = results / 100.0
+        return results

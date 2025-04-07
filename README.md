@@ -232,7 +232,7 @@ There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
 * [How to run multiple experiments in one go](http://blog.syntheticspeech.de/2022/03/28/how-to-run-multiple-experiments-in-one-go-with-nkululeko/)
 * [How to finetune a transformer-model](http://blog.syntheticspeech.de/2024/05/29/nkululeko-how-to-finetune-a-transformer-model/)
 * [Ensemble (combine) classifiers with late-fusion](http://blog.syntheticspeech.de/2024/06/25/nkululeko-ensemble-classifiers-with-late-fusion/)
-
+* [Use train, dev and test splits](https://blog.syntheticspeech.de/2025/03/31/nkululeko-how-to-use-train-dev-test-splits/)
 
 ### <a name="helloworld">Hello World example</a>
 * NEW: [Here's a Google colab that runs this example out-of-the-box](https://colab.research.google.com/drive/1Up7t5Nn7VwDPCCEpTg2U7cpZ_PdoEgj-?usp=sharing), and here is the same [with Kaggle](https://www.kaggle.com/felixburk/nkululeko-hello-world-example)

@@ -7,10 +7,10 @@ import os.path
 
 import numpy as np
 
-import nkululeko.experiment as exp
-import nkululeko.glob_conf as glob_conf
 from nkululeko.augment import doit as augment
 from nkululeko.constants import VERSION
+import nkululeko.experiment as exp
+import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.util import Util
 
 
@@ -85,6 +85,17 @@ def doit(config_file):
 
 
 def main(src_dir):
+    """Entrypoint for the nkululeko framework.
+
+    This function parses command line arguments to determine the configuration file to use,
+    and then calls the `doit` function with the specified configuration file.
+
+    Args:
+        src_dir (str): The directory containing the source code.
+
+    Returns:
+        None
+    """
     parser = argparse.ArgumentParser(description="Call the nkululeko framework.")
     parser.add_argument("--config", default="exp.ini", help="The base configuration")
     args = parser.parse_args()
