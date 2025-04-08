@@ -246,6 +246,7 @@ tests/exp_emodb_wav2vec_xgb.in
 and would then get the results for a majority voting of the three results for Praat, AST and Wav2vec2 features.
 
 Other  methods are *mean*, *max*, *sum*, *max_class*, *uncertainty_threshold*, *uncertainty_weighted*, *confidence_weighted*:
+
 * **majority_voting**: The modality function for classification: predict the category that most classifiers agree on.
 * **mean**: For classification: compute the arithmetic mean of probabilities from all predictors for each labels, use highest probability to infer the label.
 * **max**: For classification: use the maximum value of probabilities from all predictors for each labels, use highest probability to infer the label.
