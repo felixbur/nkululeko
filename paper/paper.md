@@ -184,12 +184,6 @@ Besides many small changes, mainly three big additions extended nkululeko's func
 
 With [nkululeko](https://github.com/felixbur/nkululeko) since version 0.85.0 you can finetune a transformer model with [huggingface](https://huggingface.co/docs/transformers/training) (and even  [publish it there if you like](https://huggingface.co/docs/hub/models-uploading)).
 
-If you like to have your model published, set:
-```
-[MODEL]
-push_to_hub = True
-```
-
 Finetuning in this context means to train the (pre-trained) transformer layers with your new training data labels, as opposed to only using the last layer as embeddings.
 
 The only thing you need to do is to set your MODEL type to *finetune*:
@@ -199,7 +193,7 @@ type = []
 [MODEL]
 type = finetune
 ```
-The acoustic features can/should be empty, because the transformer model starts with CNN layers to model the acoustics frame-wise.  The frames are then getting pooled by the model for the whole utterance (max. duration the first 8 seconds, the rest is ignored).
+The acoustic features can/should be empty, because the transformer model starts with CNN layers to model the acoustics frame-wise.  The frames are then getting pooled by the model for the whole utterance.
 
 The default base model is the one from [facebook](https://huggingface.co/facebook/wav2vec2-large-robust-ft-swbd-300h), but you can specify a different one like this:
 ```
@@ -223,10 +217,17 @@ loss = mse
 but all of them have defaults.
 
 The loss function is fixed to 
+
 * weighted cross entropy for classification
 * concordance correlation coefficient for regression
 
 The resulting best model and the huggingface logs (which can be read by [tensorboard](https://www.tensorflow.org/tensorboard)) are stored in the project folder.
+
+If you like to have your model published, set:
+```
+[MODEL]
+push_to_hub = True
+```
 
 
 ## Ensemble classification
