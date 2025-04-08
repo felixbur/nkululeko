@@ -263,6 +263,7 @@ To have labels for the individual speakers in a database is extremely important,
 With [nkululeko](https://github.com/felixbur/nkululeko) since version 0.93.0 the [pyannote](https://github.com/pyannote/pyannote-audio) segmentation package is interfaced (as an alternative to [silero](https://github.com/snakers4/silero-vad))
 
 There are two modules that you can use for this:
+
 * SEGMENT
 * PREDICT
 
