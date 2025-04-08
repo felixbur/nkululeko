@@ -174,6 +174,126 @@ from epoch: 0
 DEBUG: experiment: Done, used 7.439 seconds
 DONE
 ```
+
+# What has been added since the last publication
+
+Besides many small changes, mainly three big additions extended nkululeko's functionality since the last published publications. We introduce them in the next subsections.
+
+
+## Finetune transformer models
+
+With [nkululeko](https://github.com/felixbur/nkululeko) since version 0.85.0 you can finetune a transformer model with [huggingface](https://huggingface.co/docs/transformers/training) (and even  [publish it there if you like](https://huggingface.co/docs/hub/models-uploading)).
+
+If you like to have your model published, set:
+```
+[MODEL]
+push_to_hub = True
+```
+
+Finetuning in this context means to train the (pre-trained) transformer layers with your new training data labels, as opposed to only using the last layer as embeddings.
+
+The only thing you need to do is to set your MODEL type to *finetune*:
+```
+[FEATS]
+type = []
+[MODEL]
+type = finetune
+```
+The acoustic features can/should be empty, because the transformer model starts with CNN layers to model the acoustics frame-wise.  The frames are then getting pooled by the model for the whole utterance (max. duration the first 8 seconds, the rest is ignored).
+
+The default base model is the one from [facebook](https://huggingface.co/facebook/wav2vec2-large-robust-ft-swbd-300h), but you can specify a different one like this:
+```
+[MODEL]
+type = finetune
+pretrained_model = microsoft/wavlm-base
+
+duration = 10.5
+```
+The parameter *max_duration* is also optional (default=8) and means the maximum duration of your samples / segments (in seconds) that will be used, starting from 0. The rest is disregarded. 
+
+You can use the usual deep learning parameters:
+```
+[MODEL]
+learning_rate = .001
+batch_size = 16
+device = cuda:3
+measure = mse
+loss = mse
+```
+but all of them have defaults.
+
+The loss function is fixed to 
+* weighted cross entropy for classification
+* concordance correlation coefficient for regression
+
+The resulting best model and the huggingface logs (which can be read by [tensorboard](https://www.tensorflow.org/tensorboard)) are stored in the project folder.
+
+
+## Ensemble classification
+
+With [nkululeko](https://github.com/felixbur/nkululeko) since version 0.88.0  you can combine experiment results and report on the outcome, by using the **ensemble** module.
+
+For example, you would like to know if the combination of expert features and learned embeddings works better than one of those. You could then do
+```
+python -m nkululeko.ensemble \
+--method max_class \
+tests/exp_emodb_praat_xgb.ini \
+tests/exp_emodb_ast_xgb.ini \
+tests/exp_emodb_wav2vec_xgb.in
+```
+(all in one line)
+and would then get the results for a majority voting of the three results for Praat, AST and Wav2vec2 features.
+
+Other  methods are *mean*, *max*, *sum*, *max_class*, *uncertainty_threshold*, *uncertainty_weighted*, *confidence_weighted*:
+* **majority_voting**: The modality function for classification: predict the category that most classifiers agree on.
+* **mean**: For classification: compute the arithmetic mean of probabilities from all predictors for each labels, use highest probability to infer the label.
+* **max**: For classification: use the maximum value of probabilities from all predictors for each labels, use highest probability to infer the label.
+* **sum**: For classification: use the sum of probabilities from all predictors for each labels, use highest probability to infer the label.
+* **max_class**: For classification: compare the highest probabilities of all models across classes (instead of same class as in max_ensemble) and return the highest probability and the class
+* **uncertainty_threshold**: For classification: predict the class with the lowest uncertainty if lower than a threshold (default to 1.0, meaning no threshold), else calculate the mean of uncertainties for all models per class and predict the lowest.
+* **uncertainty_weighted**: For classification: weigh each class with the inverse of its uncertainty (1/uncertainty), normalize the weights per model, then multiply each class model probability with their normalized weights and use the maximum one to infer the label.
+* **confidence_weighted**: Weighted ensemble based on confidence (1-uncertainty), normalized for all samples per model. Like before, but use confidence (instead of inverse of uncertainty) as weights.
+
+## Predicting Speaker ID  
+
+To have labels for the individual speakers in a database is extremely important, because if you mix the same speakers in training and testing data splits, it is very possible that your model simply learned some speaker idiosyncrasies instead of some underlying principle. If you don't have this labels, you could at least try to infer them with a pre-trained model.
+
+With [nkululeko](https://github.com/felixbur/nkululeko) since version 0.93.0 the [pyannote](https://github.com/pyannote/pyannote-audio) segmentation package is interfaced (as an alternative to [silero](https://github.com/snakers4/silero-vad))
+
+There are two modules that you can use for this:
+* SEGMENT
+* PREDICT
+
+The (huge) difference is, that the SEGMENT module looks at each file in the input data and looks for speakers per file (can be only one large file), while the PREDICT module concatenates all input data and looks for different speakers in the whole database.
+
+In any case best run it on a GPU, as CPU will be very slow (and there is no progress bar).
+
+If you specify the *method* in [SEGMENT] section and the [*hf_token* ](https://huggingface.co/docs/hub/security-tokens) (needed for the pyannote model) in the [MODEL] section
+
+```
+[SEGMENT]
+method = pyannote
+segment_target = _segmented
+sample_selection = all
+[MODEL]
+hf_token = <my hugging face token>
+```
+your resulting segmentations will have predicted speaker id attachched.. Be aware that this is really slow on CPU, so best run on GPU and declare so in the [MODEL] section:
+```
+[MODEL]
+hf_token = <my hugging face token>
+device=gpu # or cuda:0
+```
+As a result a new plot would appear in the image folder: the distribution of speakers that were found.
+
+Simply select *speaker* as the prediction target:
+```
+[PREDICT]
+targets = ["speaker"]
+```
+Generally, the [PREDICT module is described here](https://blog.syntheticspeech.de/2023/08/16/nkululeko-how-to-predict-labels-for-your-data-from-existing-models-and-check-them/)
+
+
 # Statement of need
 Open-source tools are believed to be one of the reasons for accelerated science and technology. They are more secure, easy to customise, and transparent. There are several open-source tools that exist for acoustic, sound, and audio analysis, such as librosa [@McFee:2015], TorchAudio [@Yang:2021], pyAudioAnalysis [@Giannakopoulos:2015], ESPNET [@Watanabe:2018], and SpeechBrain [@speechbrain:2021]. However, none of them are specialised in speech analysis with high-level interfaces for novices in the speech processing area. 
 
