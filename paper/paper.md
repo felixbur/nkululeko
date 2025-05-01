@@ -20,9 +20,9 @@ affiliations:
    index: 1
  - name: TU Berlin, Germany
    index: 2
- - name: National Institute of Advanced Industrial Science and Technology (AIST), Japan
+ - name: Nara Institute of Science and Technology (NAIST), Japan
    index: 3
-date: 24 December 2024
+date: 15 April 2025  # Date of JOSS Review, submitted 2024-12-24
 bibliography: paper.bib
 
 ---
@@ -196,7 +196,8 @@ type = finetune
 The acoustic features can/should be empty, because the transformer model starts with CNN layers to model the acoustics frame-wise.  The frames are then getting pooled by the model for the whole utterance.
 
 The default base model is the one from [facebook](https://huggingface.co/facebook/wav2vec2-large-robust-ft-swbd-300h), but you can specify a different one like this:
-```
+
+```ini
 [MODEL]
 type = finetune
 pretrained_model = microsoft/wavlm-base
@@ -206,7 +207,8 @@ duration = 10.5
 The parameter *max_duration* is also optional (default=8) and means the maximum duration of your samples / segments (in seconds) that will be used, starting from 0. The rest is disregarded. 
 
 You can use the usual deep learning parameters:
-```
+
+```ini
 [MODEL]
 learning_rate = .001
 batch_size = 16
@@ -224,7 +226,8 @@ The loss function is fixed to
 The resulting best model and the huggingface logs (which can be read by [tensorboard](https://www.tensorflow.org/tensorboard)) are stored in the project folder.
 
 If you like to have your model published, set:
-```
+
+```ini
 [MODEL]
 push_to_hub = True
 ```
@@ -232,10 +235,11 @@ push_to_hub = True
 
 ## Ensemble classification
 
-With [nkululeko](https://github.com/felixbur/nkululeko) since version 0.88.0  you can combine experiment results and report on the outcome, by using the **ensemble** module.
+With [nkululeko](https://github.com/felixbur/nkululeko) since version 0.88.0 you can combine experiment results and report on the outcome, by using the **ensemble** module.
 
-For example, you would like to know if the combination of expert features and learned embeddings works better than one of those. You could then do
-```
+For example, you would like to know if the combination of expert features and learned embeddings works better than one of those. You could then do: 
+
+```bash
 python -m nkululeko.ensemble \
 --method max_class \
 tests/exp_emodb_praat_xgb.ini \
@@ -248,9 +252,9 @@ and would then get the results for a majority voting of the three results for Pr
 Other  methods to combine the different predictors, are *mean*, *max*, *sum*, *max_class*, *uncertainty_threshold*, *uncertainty_weighted*, *confidence_weighted*:
 
 * **majority_voting**: The modality function for classification: predict the category that most classifiers agree on.
-* **mean**: For classification: compute the arithmetic mean of probabilities from all predictors for each labels, use highest probability to infer the label.
-* **max**: For classification: use the maximum value of probabilities from all predictors for each labels, use highest probability to infer the label.
-* **sum**: For classification: use the sum of probabilities from all predictors for each labels, use highest probability to infer the label.
+* **mean**: For classification: compute the arithmetic mean of probabilities from all predictors for each label, use the highest probability to infer the label.
+* **max**: For classification: use the maximum value of probabilities from all predictors for each label, use the highest probability to infer the label.
+* **sum**: For classification: use the sum of probabilities from all predictors for each label, use the highest probability to infer the label.
 * **max_class**: For classification: compare the highest probabilities of all models across classes (instead of same class as in max_ensemble) and return the highest probability and the class
 * **uncertainty_threshold**: For classification: predict the class with the lowest uncertainty if lower than a threshold (default to 1.0, meaning no threshold), else calculate the mean of uncertainties for all models per class and predict the lowest.
 * **uncertainty_weighted**: For classification: weigh each class with the inverse of its uncertainty (1/uncertainty), normalize the weights per model, then multiply each class model probability with their normalized weights and use the maximum one to infer the label.
@@ -260,7 +264,7 @@ Other  methods to combine the different predictors, are *mean*, *max*, *sum*, *m
 
 To have labels for the individual speakers in a database is extremely important, because if you mix the same speakers in training and testing data splits, it is very possible that your model simply learned some speaker idiosyncrasies instead of some underlying principle. If you don't have this labels, you could at least try to infer them with a pre-trained model.
 
-With [nkululeko](https://github.com/felixbur/nkululeko) since version 0.93.0 the [pyannote](https://github.com/pyannote/pyannote-audio) segmentation package is interfaced (as an alternative to [silero](https://github.com/snakers4/silero-vad))
+With [nkululeko](https://github.com/felixbur/nkululeko) since version 0.93.0 the [pyannote](https://github.com/pyannote/pyannote-audio) segmentation package is interfaced (as an alternative to [silero](https://github.com/snakers4/silero-vad)).
 
 There are two modules that you can use for this:
 
@@ -273,7 +277,7 @@ In any case best run it on a GPU, as CPU will be very slow (and there is no prog
 
 If you specify the *method* in [SEGMENT] section and the [*hf_token* ](https://huggingface.co/docs/hub/security-tokens) (needed for the pyannote model) in the [MODEL] section
 
-```
+```ini
 [SEGMENT]
 method = pyannote
 segment_target = _segmented
@@ -282,7 +286,7 @@ sample_selection = all
 hf_token = <my hugging face token>
 ```
 your resulting segmentations will have predicted speaker id attachched.. Be aware that this is really slow on CPU, so best run on GPU and declare so in the [MODEL] section:
-```
+```ini
 [MODEL]
 hf_token = <my hugging face token>
 device=gpu # or cuda:0
@@ -290,11 +294,11 @@ device=gpu # or cuda:0
 As a result a new plot would appear in the image folder: the distribution of speakers that were found.
 
 Simply select *speaker* as the prediction target:
-```
+```ini
 [PREDICT]
 targets = ["speaker"]
 ```
-Generally, the [PREDICT module is described here](https://blog.syntheticspeech.de/2023/08/16/nkululeko-how-to-predict-labels-for-your-data-from-existing-models-and-check-them/)
+Generally, the [PREDICT module is described here](https://blog.syntheticspeech.de/2023/08/16/nkululeko-how-to-predict-labels-for-your-data-from-existing-models-and-check-them/).
 
 
 # Statement of need
@@ -312,7 +316,7 @@ Nkululeko follows these principles:
 
 - *High-level interface*: the user specifies the experiment in an INI file, which is a simple text file that can be edited with any text editor. The user does not need to write Python code for experiments.
 
-- *Transparency*: as CLI, nkululeko *always output debug*, in which info, warning, and error will be obviously displayed in the terminal (and should be easily understood). The results are stored in the experiment folder for further investigations and are represented as images, texts, and even a fully automatically compiled PDF report written in latex.
+- *Transparency*: as CLI, nkululeko *always output debug*, in which info, warning, and error will be obviously displayed in the terminal (and should be easily understood). The results are stored in the experiment folder for further investigations and are represented as images, texts, and even a fully automatically compiled PDF report written in Latex.
 
 # Usage in existing research
 <!-- list of papers used nkululeko -->
@@ -326,7 +330,7 @@ Nkululeko has been used in several research projects since its first appearance 
 
 - [@Atmaja:2025]: in this paper, evaluations of different handcrafted acoustic features and SSL approaches for pathological voice detection tasks were reported, highlighting the ease of using Nkululeko to perform extensive experiments including combinations of different features at different levels (early and late fusions).
 
-- [@Atmaja:2025b]: this paper extends the previous ensemble learning evaluations with performance weighting (using weighted and unweighted accuracies) on ﬁve tasks and ten datasets.
+- [@Atmaja:2025b]: this paper extends the previous ensemble learning evaluations with performance weighting (using weighted and unweighted accuracies) on five tasks and ten datasets.
  
 # Changes
 Nkululeko has been described in three papers so far, we give a short overview on the updates since then.

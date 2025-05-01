@@ -1,4 +1,4 @@
-# experiment.py: Main class for an experiment (nkululeko.nkululeko)
+# nkululeko/experiment.py: Main class for an experiment (nkululeko.nkululeko)
 import ast
 import os
 import pickle
@@ -380,6 +380,7 @@ class Experiment:
             self.util.debug(
                 f"train/test shape: {self.df_train.shape}/{self.df_test.shape}"
             )
+
     def _add_random_target(self, df):
         labels = glob_conf.labels
         a = [None] * len(df)
