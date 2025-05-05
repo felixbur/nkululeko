@@ -2,6 +2,7 @@
 
 ```bash
 wget https://ss-takashi.sakura.ne.jp/corpus/jvnv/jvnv_ver1.zip
+unzip jvnv_ver1.zip
 # process the database, need to add nkululeko to use find_files function
 python3 process_database.py
 cd ../..
