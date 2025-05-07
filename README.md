@@ -1,89 +1,14 @@
 
-- [Overview](#overview)
-  - [Confusion matrix](#confusion-matrix)
-  - [Epoch progression](#epoch-progression)
-  - [Feature importance](#feature-importance)
-  - [Feature distribution](#feature-distribution)
-  - [t-SNE plots](#t-sne-plots)
-  - [Data distribution](#data-distribution)
-  - [Bias checking](#bias-checking)
-  - [Uncertainty](#uncertainty)
-- [Documentation](#documentation)
-- [Installation](#installation)
-- [Usage](#usage)
-  - [ini-file values](#ini-file-values)
-  - [Hello World example](#hello-world-example)
-  - [Features](#features)
-- [License](#license)
-- [Contributing](#contributing)
-- [Citing](#citing)
+# Nkululeko
 
- 
-## Overview
-A project to detect speaker characteristics by machine learning experiments with a high-level interface.
+Nkululeko is a project to detect speaker characteristics by machine learning experiments with a high-level interface.
 
 The idea is to have a framework (based on e.g. sklearn and torch) that can be used to rapidly and automatically analyse audio data and explore machine learning models based on that data. 
 
-* NEW with nkululeko: [Ensemble learning](http://blog.syntheticspeech.de/2024/06/25/nkululeko-ensemble-classifiers-with-late-fusion/)
-* NEW: [Finetune transformer-models](http://blog.syntheticspeech.de/2024/05/29/nkululeko-how-to-finetune-a-transformer-model/)
-* The latest features can be seen in [the ini-file](./ini_file.md) options that are used to control Nkululeko
-* Below is a [Hello World example](#helloworld) that should set you up fastly, also on [Google Colab](https://colab.research.google.com/drive/1GYNBd5cdZQ1QC3Jm58qoeMaJg3UuPhjw?usp=sharing#scrollTo=4G_SjuF9xeQf), and [with Kaggle](https://www.kaggle.com/felixburk/nkululeko-hello-world-example)
-* [Thanks to deepwiki, here's an analysis of the source code](https://deepwiki.com/felixbur/nkululeko)
-* [Here's a blog post on how to set up nkululeko on your computer.](http://blog.syntheticspeech.de/2021/08/30/how-to-set-up-your-first-nkululeko-project/)
-* [Here's a slide presentation about nkululeko](docs/nkululeko.pdf)
-* [Here's a video presentation about nkululeko](https://www.youtube.com/playlist?list=PLRceVavtxLg0y2jiLmpnUfiMtfvkK912D)
-* [Here's the 2022 LREC article on nkululeko](http://felix.syntheticspeech.de/publications/Nkululeko_LREC.pdf)
+Some abilities that Nkululeko provides: combines acoustic features and machine learning models (including feature selection and features concatenation); performs data exploration, selection and visualizes the results; finetuning; ensemble learning models; soft labeling (predicting labels with pre-trained model); and inference the model on a test set.
 
-Here are some examples of typical output:
-
-### Confusion matrix
-Per default, Nkululeko displays results as a confusion matrix using binning with regression.
-
-<img src="meta/images/conf_mat.png" width="500px"/>
-
-### Epoch progression
-The point when overfitting starts can sometimes be seen by looking at the results per epoch:
-
-<img src="meta/images/epoch_progression.png" width="500px"/>
-
-### Feature importance
-Using the *explore* interface, Nkululeko analyses the importance of acoustic features:
- 
-<img src="meta/images/feat_importance.png" width="500px"/>
-
-### Feature distribution
-And can show the distribution of specific features per category:
-
-<img src="meta/images/feat_dist.png" width="500px"/>
-
-If there are only two categories, a Mann-Whitney U test for significance is given:
-
-<img src="meta/images/feat_dist_2.png" width="500px"/>
-
-### t-SNE plots
-A t-SNE plot can give you an estimate of whether your acoustic features are useful at all:
-
-<img src="meta/images/tsne.png" width="500px"/>
-
-### Data distribution
-Sometimes, you only want to take a look at your data:
-
-<img src="meta/images/data_plot.png" width="500px"/>
-
-### Bias checking
-In some cases, you might wonder if there's bias in your data. You can try to detect this with automatically estimated speech properties by visualizing the correlation of target labels and predicted labels.
-
-<img src="meta/images/emotion-pesq.png" width="500px"/>
-
-### Uncertainty
-Nkululeko estimates the uncertainty of model decisions (only for classifiers) with entropy over the class probabilities or logits per sample.
-
-<img src="meta/images/uncertainty.png" width="500px"/>
-
-
-
-## Documentation
-The documentation, along with extensions of installation, usage, INI file format, and examples, can be found [nkululeko.readthedocs.io](https://nkululeko.readthedocs.io).
+## Who is this for?
+Nkululeko is for speech processing learners, researchers and ML practitioners focused on speaker characteristics, e.g., emotion, age, gender, or disorder detection.
 
 ## Installation
 
@@ -111,12 +36,12 @@ pip install torch torchvision torchaudio
 
 Some functionalities require extra packages to be installed, which we didn't include automatically:
 * the SQUIM model needs a special torch version:
-  ```
+  ```bash
   pip uninstall -y torch torchvision torchaudio
   pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
   ```
 * the spotlight adapter needs spotlight:
-  ```
+  ```bash
   pip install renumics-spotlight sliceguard 
   ```
 
@@ -124,18 +49,24 @@ Some functionalities require extra packages to be installed, which we didn't inc
 Some examples for *ini*-files (which you use to control nkululeko) are in the [tests folder](https://github.com/felixbur/nkululeko/tree/main/tests).
 
 
+
+## Documentation
+The documentation, along with extensions of installation, usage, INI file format, and examples, can be found [nkululeko.readthedocs.io](https://nkululeko.readthedocs.io).
+
+
 ## Usage
 
 ### [ini-file values](./ini_file.md)
 
-Nkululeko works by specifiying 
-
-
 Basically, you specify your experiment in an ["ini" file](./ini_file.md) (e.g. *experiment.ini*) and then call one of the Nkululeko interfaces to run the experiment like this:
-  * ```python -m nkululeko.nkululeko --config experiment.ini```
+
+  ```bash
+  python -m nkululeko.nkululeko --config experiment.ini
+  ```
 
 A basic configuration looks like this:
-```
+
+```ini
 [EXP]
 root = ./
 name = exp_emodb
@@ -186,7 +117,81 @@ All of them take *--config <my_config.ini>* as an argument.
   $ python -m nkululeko.nkuluflag.py [-h] [--config CONFIG] [--data [DATA ...]] [--label [LABEL ...]] [--tuning_params [TUNING_PARAMS ...]] [--layers [LAYERS ...]] [--model MODEL] [--feat FEAT] [--set SET] [--with_os WITH_OS] [--target TARGET] [--epochs EPOCHS] [--runs RUNS] [--learning_rate LEARNING_RATE] [--drop DROP]
   ```
 
-There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
+## <a name="helloworld">Hello World example</a>
+* NEW: [Here's a Google colab that runs this example out-of-the-box](https://colab.research.google.com/drive/1Up7t5Nn7VwDPCCEpTg2U7cpZ_PdoEgj-?usp=sharing), and here is the same [with Kaggle](https://www.kaggle.com/felixburk/nkululeko-hello-world-example)
+* [I made a video to show you how to do this on Windows](https://www.youtube.com/playlist?list=PLRceVavtxLg0y2jiLmpnUfiMtfvkK912D)
+* Set up Python on your computer, version >= 3.8
+* Open a terminal/command line/console window
+* Test python by typing ```python```, python should start with version >3 (NOT 2!). You can leave the Python Interpreter by typing *exit()*
+* Create a folder on your computer for this example, let's call it `nkulu_work`
+* Get a copy of the [Berlin emodb in audformat](https://zenodo.org/records/7447302/files/emodb.zip?download=1) and unpack inside the folder you just created (`nkulu_work`)
+* Make sure the folder is called "emodb" and does contain the database files directly (not box-in-a-box)
+* Also, in the `nkulu_work` folder: 
+  * Create a Python environment
+    * ```python -m venv venv```
+  * Then, activate it:
+    * under Linux / mac
+      * ```source venv/bin/activate```
+    * under Windows
+      * ```venv\Scripts\activate.bat```
+    * if that worked, you should see a ```(venv)``` in front of your prompt
+  * Install the required packages in your environment
+    * ```pip install nkululeko```
+    * Repeat until all error messages vanish (or fix them, or try to ignore them)...
+* Now you should have two folders in your *nkulu_work* folder:
+  * *emodb* and *venv*
+* Download a copy of the file [exp_emodb.ini](meta/demos/exp_emodb.ini) to the current working directory (```nkulu_work```)
+* Run the demo
+  * ```python -m nkululeko.nkululeko --config exp_emodb.ini```
+* Find the results in the newly created folder exp_emodb 
+  * Inspect ```exp_emodb/images/run_0/emodb_xgb_os_0_000_cnf.png```
+  * This is the main result of your experiment: a confusion matrix for the emodb emotional categories
+* Inspect and play around with the [demo configuration file](meta/demos/exp_emodb.ini) that defined your experiment, then re-run.
+* There are many ways to experiment with different classifiers and acoustic feature sets, [all described here](https://github.com/felixbur/nkululeko/blob/main/ini_file.md)
+  
+## Features
+The framework is targeted at the speech domain and supports experiments where different classifiers are combined with different feature extractors.
+
+* Classifiers: Naive Bayes, KNN, Tree, XGBoost, SVM, MLP
+* Feature extractors: Praat, Opensmile, openXBOW BoAW, TRILL embeddings, Wav2vec2 embeddings, audModel embeddings, ...
+* Feature scaling
+* Label encoding
+* Binning (continuous to categorical)
+* Online demo interface for trained models 
+* Visualization: confusion matrix, feature importance, feature distribution, epoch progression, t-SNE plot, data distribution, bias checking, uncertainty estimation
+
+Here's a rough UML-like sketch of the framework (and [here's the real one done with pyreverse](meta/images/classes.png)).
+![sketch](meta/images/class_diagram.png)
+
+Currently, the following linear classifiers are implemented (integrated from sklearn):
+* SVM, SVR, XGB, XGR, Tree, Tree_regressor, KNN, KNN_regressor, NaiveBayes, GMM
+  and the following ANNs (artificial neural networks)
+* MLP (multi-layer perceptron), CNN (convolutional neural network)
+
+For visualization, besides confusion matrix, feature importance, feature distribution, and epoch progression, t-SNE plot, data distribution (just names a few), Nkululeko can also be used for  bias checking and uncertainty estimation.
+
+### Bias checking
+In some cases, you might wonder if there's bias in your data. You can try to detect this with automatically estimated speech properties by visualizing the correlation of target labels and predicted labels.
+
+<img src="meta/images/emotion-pesq.png" width="500px"/>
+
+### Uncertainty
+Nkululeko estimates the uncertainty of model decisions (only for classifiers) with entropy over the class probabilities or logits per sample.
+
+<img src="meta/images/uncertainty.png" width="500px"/>
+
+Here's [an animation that shows the progress of classification done with nkululeko](https://youtu.be/6Y0M382GjvM).
+
+## <summary>News</summary>
+There's Felix [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
+* [Ensemble learning with Nkululeko](http://blog.syntheticspeech.de/2024/06/25/nkululeko-ensemble-classifiers-with-late-fusion/)
+* [Finetune transformer-models with Nkululeko](http://blog.syntheticspeech.de/2024/05/29/nkululeko-how-to-finetune-a-transformer-model/)
+* Below is a [Hello World example for Nkululeko](#helloworld) that should set you up fastly, also on [Google Colab](https://colab.research.google.com/drive/1GYNBd5cdZQ1QC3Jm58qoeMaJg3UuPhjw?usp=sharing#scrollTo=4G_SjuF9xeQf), and [with Kaggle](https://www.kaggle.com/felixburk/nkululeko-hello-world-example)
+* [Thanks to deepwiki, here's an analysis of the source code](https://deepwiki.com/felixbur/nkululeko)
+* [Here's a blog post on how to set up nkululeko on your computer.](http://blog.syntheticspeech.de/2021/08/30/how-to-set-up-your-first-nkululeko-project/)
+* [Here's a slide presentation about nkululeko](docs/nkululeko.pdf)
+* [Here's a video presentation about nkululeko](https://www.youtube.com/playlist?list=PLRceVavtxLg0y2jiLmpnUfiMtfvkK912D)
+* [Here's the 2022 LREC article on nkululeko](http://felix.syntheticspeech.de/publications/Nkululeko_LREC.pdf)
 * [Introduction](http://blog.syntheticspeech.de/2021/08/04/machine-learning-experiment-framework/)
 * [Nkulueko FAQ](http://blog.syntheticspeech.de/2022/07/07/nkululeko-faq/)
 * [How to set up your first nkululeko project](http://blog.syntheticspeech.de/2021/08/30/how-to-set-up-your-first-nkululeko-project/)
@@ -234,59 +239,6 @@ There's my [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
 * [Ensemble (combine) classifiers with late-fusion](http://blog.syntheticspeech.de/2024/06/25/nkululeko-ensemble-classifiers-with-late-fusion/)
 * [Use train, dev and test splits](https://blog.syntheticspeech.de/2025/03/31/nkululeko-how-to-use-train-dev-test-splits/)
 
-### <a name="helloworld">Hello World example</a>
-* NEW: [Here's a Google colab that runs this example out-of-the-box](https://colab.research.google.com/drive/1Up7t5Nn7VwDPCCEpTg2U7cpZ_PdoEgj-?usp=sharing), and here is the same [with Kaggle](https://www.kaggle.com/felixburk/nkululeko-hello-world-example)
-* [I made a video to show you how to do this on Windows](https://www.youtube.com/playlist?list=PLRceVavtxLg0y2jiLmpnUfiMtfvkK912D)
-* Set up Python on your computer, version >= 3.8
-* Open a terminal/command line/console window
-* Test python by typing ```python```, python should start with version >3 (NOT 2!). You can leave the Python Interpreter by typing *exit()*
-* Create a folder on your computer for this example, let's call it `nkulu_work`
-* Get a copy of the [Berlin emodb in audformat](https://zenodo.org/records/7447302/files/emodb.zip?download=1) and unpack inside the folder you just created (`nkulu_work`)
-* Make sure the folder is called "emodb" and does contain the database files directly (not box-in-a-box)
-* Also, in the `nkulu_work` folder: 
-  * Create a Python environment
-    * ```python -m venv venv```
-  * Then, activate it:
-    * under Linux / mac
-      * ```source venv/bin/activate```
-    * under Windows
-      * ```venv\Scripts\activate.bat```
-    * if that worked, you should see a ```(venv)``` in front of your prompt
-  * Install the required packages in your environment
-    * ```pip install nkululeko```
-    * Repeat until all error messages vanish (or fix them, or try to ignore them)...
-* Now you should have two folders in your *nkulu_work* folder:
-  * *emodb* and *venv*
-* Download a copy of the file [exp_emodb.ini](meta/demos/exp_emodb.ini) to the current working directory (```nkulu_work```)
-* Run the demo
-  * ```python -m nkululeko.nkululeko --config exp_emodb.ini```
-* Find the results in the newly created folder exp_emodb 
-  * Inspect ```exp_emodb/images/run_0/emodb_xgb_os_0_000_cnf.png```
-  * This is the main result of your experiment: a confusion matrix for the emodb emotional categories
-* Inspect and play around with the [demo configuration file](meta/demos/exp_emodb.ini) that defined your experiment, then re-run.
-* There are many ways to experiment with different classifiers and acoustic feature sets, [all described here](https://github.com/felixbur/nkululeko/blob/main/ini_file.md)
-  
-### Features
-The framework is targeted at the speech domain and supports experiments where different classifiers are combined with different feature extractors.
-
-* Classifiers: Naive Bayes, KNN, Tree, XGBoost, SVM, MLP
-* Feature extractors: Praat, Opensmile, openXBOW BoAW, TRILL embeddings, Wav2vec2 embeddings, audModel embeddings, ...
-* Feature scaling
-* Label encoding
-* Binning (continuous to categorical)
-* Online demo interface for trained models 
-
-Here's a rough UML-like sketch of the framework (and [here's the real one done with pyreverse](meta/images/classes.png)).
-![sketch](meta/images/class_diagram.png)
-
-Currently, the following linear classifiers are implemented (integrated from sklearn):
-* SVM, SVR, XGB, XGR, Tree, Tree_regressor, KNN, KNN_regressor, NaiveBayes, GMM
-  and the following ANNs (artificial neural networks)
-* MLP (multi-layer perceptron), CNN (convolutional neural network)
-
-Here's [an animation that shows the progress of classification done with nkululeko](https://youtu.be/6Y0M382GjvM)
-
-
 ## License
 Nkululeko can be used under the [MIT license](https://choosealicense.com/licenses/mit/).
 
@@ -294,8 +246,8 @@ Nkululeko can be used under the [MIT license](https://choosealicense.com/license
 ## Contributing
 Contributions are welcome and encouraged. To learn more about how to contribute to nkululeko, please refer to the [Contributing guidelines](./CONTRIBUTING.md).
 
-## Citing
-If you use it, please mention the Nkululeko paper:
+## Citation
+If you use Nkululeko, please cite the paper:
 
 > F. Burkhardt, Johannes Wagner, Hagen Wierstorf, Florian Eyben and Björn Schuller: Nkululeko: A Tool For Rapid Speaker Characteristics Detection, Proc. Proc. LREC, 2022
 
