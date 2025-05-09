@@ -51,6 +51,8 @@ The examples only covers some important features of Nkululeko. For more details,
    test.md
    demo.md
    multidb.md
+   ensemble.md
+   nkuluflag.md
 
 .. toctree::
    :maxdepth: 2

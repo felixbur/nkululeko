@@ -91,18 +91,8 @@ All of them take *--config <my_config.ini>* as an argument.
 
 * **nkululeko.nkululeko**: do machine learning experiments combining features and learners
 * **nkululeko.ensemble**: [combine several nkululeko experiments](http://blog.syntheticspeech.de/2024/06/25/nkululeko-ensemble-classifiers-with-late-fusion/) and report on late fusion results
-  * *--config*: which experiments (INI files) to combine
-  * *--method* (optional): majority_voting, mean (default), max, sum, uncertainty, uncertainty_weighted, confidence_weighted, performance_weighted  
-  * *--threshold*: uncertainty threshold (1.0 means no threshold)
-  * *--weights*: weights for performance_weighted method (could be from previous UAR, ACC)
-  * *--outfile* (optional): name of CSV file for output (default: ensemble_result.csv)
-  * *--no_labels* (optional): indicate that no ground truth is given 
 * **nkululeko.multidb**: do [multiple experiments](http://blog.syntheticspeech.de/2024/01/02/nkululeko-compare-several-databases/), comparing several databases cross and in itself
 * **nkululeko.demo**: [demo the current best model](http://blog.syntheticspeech.de/2022/01/24/nkululeko-try-out-demo-a-trained-model/) on the command line
-  * *--list* (optional) list of input files
-  * *--file* (optional) name of input file
-  * *--folder* (optional) parent folder for input files
-  * *--outfile* (optional) name of CSV file for output
 * **nkululeko.test**: predict a [given data set](http://blog.syntheticspeech.de/2022/09/01/nkululeko-how-to-evaluate-a-test-set-with-a-given-best-model/) with the current best model
 * **nkululeko.explore**: perform [data exploration](http://blog.syntheticspeech.de/2023/05/11/nkululeko-how-to-visualize-your-data-distribution/)
 * **nkululeko.augment**: [augment](http://blog.syntheticspeech.de/2023/03/13/nkululeko-how-to-augment-the-training-set/) the current training data
@@ -111,10 +101,6 @@ All of them take *--config <my_config.ini>* as an argument.
 * **nkululeko.segment**: [segment a database](http://blog.syntheticspeech.de/2023/07/14/nkululeko-segmenting-a-database/) based on VAD (voice activity detection)
 * **nkululeko.resample**: check on all [sampling rates and change](http://blog.syntheticspeech.de/2023/08/31/how-to-fix-different-sampling-rates-in-a-dataset-with-nkululeko/) to 16kHz 
 * **nkululeko.nkuluflag**: a convenient module to specify configuration parameters on the command line. Usage:
-
-  ```bash
-  $ python -m nkululeko.nkuluflag.py [-h] [--config CONFIG] [--data [DATA ...]] [--label [LABEL ...]] [--tuning_params [TUNING_PARAMS ...]] [--layers [LAYERS ...]] [--model MODEL] [--feat FEAT] [--set SET] [--with_os WITH_OS] [--target TARGET] [--epochs EPOCHS] [--runs RUNS] [--learning_rate LEARNING_RATE] [--drop DROP]
-  ```
 
 ## <a name="helloworld">Hello World example</a>
 * NEW: [Here's a Google colab that runs this example out-of-the-box](https://colab.research.google.com/drive/1Up7t5Nn7VwDPCCEpTg2U7cpZ_PdoEgj-?usp=sharing), and here is the same [with Kaggle](https://www.kaggle.com/felixburk/nkululeko-hello-world-example)
@@ -167,17 +153,25 @@ Currently, the following linear classifiers are implemented (integrated from skl
   and the following ANNs (artificial neural networks)
 * MLP (multi-layer perceptron), CNN (convolutional neural network)
 
-For visualization, besides confusion matrix, feature importance, feature distribution, and epoch progression, t-SNE plot, data distribution (just names a few), Nkululeko can also be used for  bias checking and uncertainty estimation.
+For visualization, besides confusion matrix, feature importance, feature distribution, t-SNE plot, data distribution (just names a few), Nkululeko can also be used for bias checking, uncertainty estimation, and epoch progression.
 
 ### Bias checking
+
+<details>
 In some cases, you might wonder if there's bias in your data. You can try to detect this with automatically estimated speech properties by visualizing the correlation of target labels and predicted labels.
 
 <img src="meta/images/emotion-pesq.png" width="500px"/>
 
+</details>
+
 ### Uncertainty
+
+<details>
 Nkululeko estimates the uncertainty of model decisions (only for classifiers) with entropy over the class probabilities or logits per sample.
 
 <img src="meta/images/uncertainty.png" width="500px"/>
+
+</details>
 
 Here's [an animation that shows the progress of classification done with nkululeko](https://youtu.be/6Y0M382GjvM).
 
@@ -247,7 +241,7 @@ Nkululeko can be used under the [MIT license](https://choosealicense.com/license
 
 
 ## Contributing
-Contributions are welcome and encouraged. To learn more about how to contribute to nkululeko, please refer to the [Contributing guidelines](./CONTRIBUTING.md).
+Contributions are welcome and encouragoed. To learn more about how to contribute to nkululeko, please refer to the [Contributing guidelines](./CONTRIBUTING.md).
 
 ## Citation
 If you use Nkululeko, please cite the paper:
