@@ -178,6 +178,7 @@ Here's [an animation that shows the progress of classification done with nkulule
 ## News
 
 <details> 
+
 There's Felix [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials below:  
 * [Ensemble learning with Nkululeko](http://blog.syntheticspeech.de/2024/06/25/nkululeko-ensemble-classifiers-with-late-fusion/)
 * [Finetune transformer-models with Nkululeko](http://blog.syntheticspeech.de/2024/05/29/nkululeko-how-to-finetune-a-transformer-model/)
