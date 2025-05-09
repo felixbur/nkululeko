@@ -1,5 +1,4 @@
-
-# Nkululeko
+## Nkululeko
 
 Nkululeko is a project to detect speaker characteristics by machine learning experiments with a high-level interface.
 
@@ -182,8 +181,10 @@ Nkululeko estimates the uncertainty of model decisions (only for classifiers) wi
 
 Here's [an animation that shows the progress of classification done with nkululeko](https://youtu.be/6Y0M382GjvM).
 
-## <summary>News</summary>
-There's Felix [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials:
+## News
+
+<details> 
+<summary> There's Felix [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials below: </summary> 
 * [Ensemble learning with Nkululeko](http://blog.syntheticspeech.de/2024/06/25/nkululeko-ensemble-classifiers-with-late-fusion/)
 * [Finetune transformer-models with Nkululeko](http://blog.syntheticspeech.de/2024/05/29/nkululeko-how-to-finetune-a-transformer-model/)
 * Below is a [Hello World example for Nkululeko](#helloworld) that should set you up fastly, also on [Google Colab](https://colab.research.google.com/drive/1GYNBd5cdZQ1QC3Jm58qoeMaJg3UuPhjw?usp=sharing#scrollTo=4G_SjuF9xeQf), and [with Kaggle](https://www.kaggle.com/felixburk/nkululeko-hello-world-example)
@@ -238,6 +239,8 @@ There's Felix [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials
 * [How to finetune a transformer-model](http://blog.syntheticspeech.de/2024/05/29/nkululeko-how-to-finetune-a-transformer-model/)
 * [Ensemble (combine) classifiers with late-fusion](http://blog.syntheticspeech.de/2024/06/25/nkululeko-ensemble-classifiers-with-late-fusion/)
 * [Use train, dev and test splits](https://blog.syntheticspeech.de/2025/03/31/nkululeko-how-to-use-train-dev-test-splits/)
+
+</details>
 
 ## License
 Nkululeko can be used under the [MIT license](https://choosealicense.com/licenses/mit/).
