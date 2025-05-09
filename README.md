@@ -4,7 +4,7 @@ Nkululeko is a project to detect speaker characteristics by machine learning exp
 
 The idea is to have a framework (based on e.g. sklearn and torch) that can be used to rapidly and automatically analyse audio data and explore machine learning models based on that data. 
 
-Some abilities that Nkululeko provides: combines acoustic features and machine learning models (including feature selection and features concatenation); performs data exploration, selection and visualizes the results; finetuning; ensemble learning models; soft labeling (predicting labels with pre-trained model); and inference the model on a test set.
+Some abilities that Nkululeko provides: combines acoustic features and machine learning models (including feature selection and features concatenation); performs data exploration, selection and visualization the results; finetuning; ensemble learning models; soft labeling (predicting labels with pre-trained model); and inference the model on a test set.
 
 ## Who is this for?
 Nkululeko is for speech processing learners, researchers and ML practitioners focused on speaker characteristics, e.g., emotion, age, gender, or disorder detection.
@@ -12,24 +12,24 @@ Nkululeko is for speech processing learners, researchers and ML practitioners fo
 ## Installation
 
 Create and activate a virtual Python environment and simply run
-```
+```bash
 pip install nkululeko
 ```
 We excluded some packages from the automatic installation because they might depend on your computer and some of them are only needed in special cases. So if the error
-```
+```bash
 module x not found
 ```
 appears, please try
-```
+```bash
 pip install x
 ```
 For many packages, you will need the missing torch package.
 If you don't have a GPU (which is probably true if you don't know what that is), please use
-```
+```bash
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 ```
 else, you can use the default:
-```
+```bash
 pip install torch torchvision torchaudio
 ```
 
@@ -178,7 +178,7 @@ Here's [an animation that shows the progress of classification done with nkulule
 ## News
 
 <details> 
-<summary> There's Felix [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials below: </summary> 
+There's Felix [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials below:  
 * [Ensemble learning with Nkululeko](http://blog.syntheticspeech.de/2024/06/25/nkululeko-ensemble-classifiers-with-late-fusion/)
 * [Finetune transformer-models with Nkululeko](http://blog.syntheticspeech.de/2024/05/29/nkululeko-how-to-finetune-a-transformer-model/)
 * Below is a [Hello World example for Nkululeko](#helloworld) that should set you up fastly, also on [Google Colab](https://colab.research.google.com/drive/1GYNBd5cdZQ1QC3Jm58qoeMaJg3UuPhjw?usp=sharing#scrollTo=4G_SjuF9xeQf), and [with Kaggle](https://www.kaggle.com/felixburk/nkululeko-hello-world-example)
@@ -241,7 +241,7 @@ Nkululeko can be used under the [MIT license](https://choosealicense.com/license
 
 
 ## Contributing
-Contributions are welcome and encouragoed. To learn more about how to contribute to nkululeko, please refer to the [Contributing guidelines](./CONTRIBUTING.md).
+Contributions are welcome and encouraged. To learn more about how to contribute to nkululeko, please refer to the [Contributing guidelines](./CONTRIBUTING.md).
 
 ## Citation
 If you use Nkululeko, please cite the paper:
