@@ -34,6 +34,12 @@ The examples only covers some important features of Nkululeko. For more details,
    ini_file.md
 
 .. toctree::
+   :maxdepth: 1
+   :caption: Visualization
+
+   visualization.md
+
+.. toctree::
    :maxdepth: 2
    :caption: Tutorials
 
@@ -45,6 +51,8 @@ The examples only covers some important features of Nkululeko. For more details,
    test.md
    demo.md
    multidb.md
+   ensemble.md
+   nkuluflag.md
 
 .. toctree::
    :maxdepth: 2

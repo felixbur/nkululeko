@@ -76,3 +76,10 @@ file,angry,happy,neutral,sad,predicted
 ./Actor_21/03-01-06-01-02-02-21.wav,0.314,0.313,0.041,0.332,sad
 ./Actor_21/03-01-06-02-01-02-21.wav,0.314,0.316,0.037,0.332,sad
 ```
+
+List of arguments for `demo` module is given below.
+
+  * *--list* (optional) list of input files
+  * *--file* (optional) name of input file
+  * *--folder* (optional) parent folder for input files
+  * *--outfile* (optional) name of CSV file for output

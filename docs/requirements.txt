@@ -5,27 +5,3 @@ readthedocs-sphinx-search==0.1.1
 # nbsphinx==0.8.6
 # sphinx-material
 myst-parser
-numpy
-pandas
-matplotlib
-audiofile
-scikit-learn
-torch
-tqdm
-tensorflow
-xgboost
-pylatex
-audformat
-audeer
-confidence_intervals
-seaborn
-torchaudio
-praat-parselmouth
-audmetric
-librosa
-audiomentations
-audonnx
-audinterface
-laion_clap
-opensmile
-inaSpeechSegmenter
