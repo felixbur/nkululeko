@@ -34,14 +34,10 @@ pip install torch torchvision torchaudio
 ```
 
 Some functionalities require extra packages to be installed, which we didn't include automatically:
-* the SQUIM model needs a special torch version:
-  ```bash
-  pip uninstall -y torch torchvision torchaudio
-  pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
-  ```
+
 * the spotlight adapter needs spotlight:
   ```bash
-  pip install renumics-spotlight sliceguard 
+  pip install nkululeko[spotlight]
   ```
 
 
