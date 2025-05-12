@@ -21,30 +21,55 @@ Current version: **0.94.1**
 
 ### Optional Dependencies
 
-Some functionalities require additional packages:
+Nkululeko supports optional dependencies through extras:
 
-#### PyTorch Installation
+```bash
+# Install with PyTorch support
+pip install nkululeko[torch]
+
+# Install with CPU-only PyTorch
+pip install nkululeko[torch-cpu]
+
+# Install with Spotlight support
+pip install nkululeko[spotlight]
+
+# Install with TensorFlow support
+pip install nkululeko[tensorflow]
+
+# Install all optional dependencies
+pip install nkululeko[all]
+```
+
+#### Manual Installation Options
+
+You can also install dependencies manually:
+
+##### PyTorch Installation
 
 For CPU-only installation (recommended for most users):
 ```bash
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+pip install torch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 --index-url https://download.pytorch.org/whl/cpu
 ```
 
 For GPU support:
 ```bash
-pip install torch torchvision torchaudio
+pip install torch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1
 ```
 
-#### Special Models
+##### Special Models
 
-* For SQUIM model:
+* For SQUIM model (requires nightly PyTorch):
   ```bash
+  pip install nkululeko[torch-nightly]
+  # Or manually:
   pip uninstall -y torch torchvision torchaudio
   pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
   ```
 * For spotlight adapter:
   ```bash
-  pip install renumics-spotlight sliceguard 
+  pip install nkululeko[spotlight]
+  # Or manually:
+  pip install renumics-spotlight==0.1.0 sliceguard==0.1.0
   ```
 
 
