@@ -58,7 +58,7 @@ setup(
         ],
         "spotlight": [
             "renumics-spotlight>=0.1.0",
-            "sliceguard>=0.1.0",
+            "sliceguard>=0.0.35",
         ],
         "tensorflow": [
             "tensorflow>=2.0.0",
