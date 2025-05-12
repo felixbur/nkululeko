@@ -1,4 +1,9 @@
-from nkululeko.constants import VERSION
+with open('nkululeko/constants.py', 'r') as f:
+    for line in f:
+        if line.startswith('VERSION'):
+            VERSION = line.split('=')[1].strip().strip('"\'')
+            break
+
 from setuptools import setup, find_packages
 
 setup(
