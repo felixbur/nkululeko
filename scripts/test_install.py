@@ -1,0 +1,110 @@
+"""
+Test script for verifying nkululeko installation.
+This script creates a virtual environment, installs nkululeko,
+and runs basic tests to ensure the installation works correctly.
+"""
+
+import os
+import subprocess
+import sys
+import argparse
+from pathlib import Path
+
+
+def run_command(cmd):
+    """Run a command and return its output"""
+    process = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    return process.stdout, process.stderr, process.returncode
+
+
+def main(python_version=None):
+    """
+    Test nkululeko installation in a virtual environment.
+    
+    Args:
+        python_version: Optional Python version to use (e.g., "3.10", "3.11", "3.12")
+    """
+    repo_root = Path(__file__).resolve().parent.parent
+    
+    test_dir = repo_root / "build" / "test_venv"
+    print(f"Creating test directory: {test_dir}")
+    os.makedirs(test_dir, exist_ok=True)
+    os.chdir(test_dir)
+    
+    python_cmd = f"python{python_version}" if python_version else "python"
+    print(f"Using Python: {python_cmd}")
+    
+    print("Creating virtual environment...")
+    stdout, stderr, returncode = run_command(f"{python_cmd} -m venv testvenv")
+    if returncode != 0:
+        print(f"Failed to create virtual environment: {stderr}")
+        return 1
+    
+    if sys.platform == 'win32':
+        pip_cmd = ".\\testvenv\\Scripts\\pip"
+        venv_python = ".\\testvenv\\Scripts\\python"
+    else:
+        pip_cmd = "./testvenv/bin/pip"
+        venv_python = "./testvenv/bin/python"
+    
+    print("Installing nkululeko...")
+    stdout, stderr, returncode = run_command(f"{pip_cmd} install -e {repo_root}")
+    if returncode != 0:
+        print(f"Failed to install nkululeko: {stderr}")
+        return 1
+    
+    print("Basic installation successful")
+    
+    with open("test_import.py", "w") as f:
+        f.write("import nkululeko\nprint(f'Nkululeko version: {nkululeko.__version__}')")
+    
+    print("Testing import...")
+    stdout, stderr, returncode = run_command(f"{venv_python} test_import.py")
+    if returncode != 0:
+        print(f"Failed to import nkululeko: {stderr}")
+        return 1
+    
+    print(f"Import test output: {stdout.strip()}")
+    
+    print("Installing spotlight dependencies...")
+    stdout, stderr, returncode = run_command(f"{pip_cmd} install renumics-spotlight>=0.1.0 sliceguard>=0.1.0")
+    if returncode != 0:
+        print(f"Failed to install spotlight dependencies: {stderr}")
+        return 1
+    
+    print("Spotlight dependencies installed successfully")
+    
+    print("Installing torch dependencies for tests...")
+    stdout, stderr, returncode = run_command(f"{pip_cmd} install torch>=1.0.0 torchvision>=0.10.0 torchaudio>=0.10.0")
+    if returncode != 0:
+        print(f"Failed to install torch dependencies: {stderr}")
+    
+    with open("run_tests.py", "w") as f:
+        f.write(f"""
+import unittest
+import sys
+import os
+sys.path.insert(0, os.path.expanduser('{repo_root}'))
+from tests.test_basic import TestBasic
+
+if __name__ == '__main__':
+    unittest.main()
+""")
+    
+    print("Running unit tests...")
+    stdout, stderr, returncode = run_command(f"{venv_python} run_tests.py")
+    if returncode != 0:
+        print(f"Unit tests failed: {stderr}")
+        return 1
+    
+    print("Unit tests passed")
+    print("All tests completed successfully!")
+    return 0
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Test nkululeko installation")
+    parser.add_argument("--python", help="Python version to use (e.g., 3.10, 3.11, 3.12)")
+    args = parser.parse_args()
+    
+    sys.exit(main(args.python))
