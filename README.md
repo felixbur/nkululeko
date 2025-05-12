@@ -11,35 +11,38 @@ Nkululeko is for speech processing learners, researchers and ML practitioners fo
 
 ## Installation
 
-Create and activate a virtual Python environment and simply run
+Nkululeko requires Python 3.9 or higher. Create and activate a virtual Python environment and simply run:
+
 ```bash
 pip install nkululeko
 ```
-We excluded some packages from the automatic installation because they might depend on your computer and some of them are only needed in special cases. So if the error
-```bash
-module x not found
-```
-appears, please try
-```bash
-pip install x
-```
-For many packages, you will need the missing torch package.
-If you don't have a GPU (which is probably true if you don't know what that is), please use
+
+Current version: **0.94.1**
+
+### Optional Dependencies
+
+Some functionalities require additional packages:
+
+#### PyTorch Installation
+
+For CPU-only installation (recommended for most users):
 ```bash
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 ```
-else, you can use the default:
+
+For GPU support:
 ```bash
 pip install torch torchvision torchaudio
 ```
 
-Some functionalities require extra packages to be installed, which we didn't include automatically:
-* the SQUIM model needs a special torch version:
+#### Special Models
+
+* For SQUIM model:
   ```bash
   pip uninstall -y torch torchvision torchaudio
   pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
   ```
-* the spotlight adapter needs spotlight:
+* For spotlight adapter:
   ```bash
   pip install renumics-spotlight sliceguard 
   ```

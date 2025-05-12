@@ -1,12 +1,45 @@
-# from nkululeko.constants import VERSION
-from setuptools import setup
+from nkululeko.constants import VERSION
+from setuptools import setup, find_packages
 
 setup(
-    use_scm_version=True,
-    # version=VERSION,
+    name="nkululeko",
+    version=VERSION,
+    description="Machine learning audio prediction experiments based on templates",
+    author="Felix Burkhardt",
+    author_email="fxburk@gmail.com",
+    url="https://github.com/felixbur/nkululeko",
+    packages=find_packages(),
+    python_requires=">=3.9",
+    install_requires=[
+        "audeer",
+        "audformat",
+        "audinterface",
+        "audiofile",
+        "audiomentations",
+        "audmetric",
+        "audonnx",
+        "confidence_intervals",
+        "datasets",
+        "imageio",
+        "matplotlib",
+        "numpy",
+        "opensmile",
+        "pandas",
+        "praat-parselmouth",
+        "scikit_learn",
+        "scipy",
+        "seaborn",
+        "sounddevice",
+        "torch",
+        "torchvision",
+        "torchaudio",
+        "transformers",
+        "umap-learn",
+        "xgboost",
+        "pylatex",
+    ],
     entry_points={
         "console_scripts": [
-            # 'nkululeko=nkululeko.nkululeko:main',
             "nkululeko.explore=nkululeko.explore:main",
             "nkululeko.nkululeko=nkululeko.nkululeko:main",
             "nkululeko.augment=nkululeko.augment:main",
