@@ -1,5 +1,5 @@
 audeer
-audobject
+audobject==0.7.11
 audformat
 audinterface
 audiofile
