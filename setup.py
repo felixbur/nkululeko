@@ -22,7 +22,7 @@ setup(
         "audiofile>=1.0.0",
         "audiomentations==0.31.0",
         "audmetric>=1.0.0",
-        "audonnx>=1.0.0",
+        "audonnx>=0.7.0",
         "confidence_intervals>=0.1.0",
         "datasets>=2.0.0",
         "imageio>=2.0.0",
