@@ -1,5 +1,5 @@
 # Core dependencies
-audeer>=1.0.0
+audeer>=0.7.11
 audformat>=1.3.1
 audinterface>=1.0.0
 audiofile>=1.0.0
@@ -29,8 +29,8 @@ torchaudio>=0.10.0
 torchvision>=0.10.0
 
 # Optional dependencies - Spotlight
-renumics-spotlight>=0.1.0
-sliceguard>=0.0.35
+# renumics-spotlight>=0.1.0
+# sliceguard>=0.0.35
 
 # Optional dependencies - TensorFlow (commented by default)
 # tensorflow>=2.0.0

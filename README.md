@@ -56,22 +56,12 @@ For GPU support:
 pip install torch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1
 ```
 
-##### Special Models
+Some functionalities require extra packages to be installed, which we didn't include automatically:
 
-* For SQUIM model (requires nightly PyTorch):
-  ```bash
-  pip install nkululeko[torch-nightly]
-  # Or manually:
-  pip uninstall -y torch torchvision torchaudio
-  pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
-  ```
 * For spotlight adapter:
   ```bash
   pip install nkululeko[spotlight]
-  # Or manually:
-  pip install renumics-spotlight==0.1.0 sliceguard==0.1.0
   ```
-
 
 Some examples for *ini*-files (which you use to control nkululeko) are in the [tests folder](https://github.com/felixbur/nkululeko/tree/main/tests).
 
