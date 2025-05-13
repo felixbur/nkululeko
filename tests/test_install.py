@@ -78,12 +78,11 @@ def main(python_version=None):
     print(f"Import test output: {stdout.strip()}")
 
     # ensure python version is 3.12 or lower
-    if python_version >= "3.12":
+    if python_ver >= "3.13":
         print(
-            f"Python version {python_version} is not supported for spotlight dependencies."
+            f"Python version {python_ver} is not supported for spotlight dependencies."
         )
         return 1
-
     else:
         print("Installing spotlight dependencies...")
         stdout, stderr, returncode = run_command(
