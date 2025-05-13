@@ -59,9 +59,9 @@ For CPU-only installation (recommended for most users):
 pip install torch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 --index-url https://download.pytorch.org/whl/cpu
 ```
 
-For GPU support:
+For GPU support (cuda 12.6):
 ```bash
-pip install torch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1
+pip install torch torchvision torchaudio
 ```
 
 Some functionalities require extra packages to be installed, which we didn't include automatically:
