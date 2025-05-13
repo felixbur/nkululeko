@@ -26,12 +26,12 @@ def main(python_version=None):
     """
     repo_root = Path(__file__).resolve().parent.parent
 
-    test_dir = repo_root / "build" / "test_venv"
+    test_dir = repo_root / "build"
     print(f"Creating test directory: {test_dir}")
     # check if the directory exists, give message to reuse
     if test_dir.exists():
         print(
-            f"Test directory {test_dir} is exist and will be reused. "
+            f"Test directory {test_dir} exists and will be reused. "
             "If you want to start fresh, please delete it first."
         )
     os.makedirs(test_dir, exist_ok=True)
@@ -46,16 +46,14 @@ def main(python_version=None):
     python_ver = stdout.strip().split()[1]  # Extract version number from "Python X.Y.Z"
 
     print("Creating virtual environment...")
-    stdout, stderr, returncode = run_command(
-        f"{python_cmd} -m venv testvenv_py{python_ver}"
-    )
+    stdout, stderr, returncode = run_command(f"{python_cmd} -m venv {python_ver}")
     if returncode != 0:
-        print(f"Failed to create virtual environment: {stderr}")
+        print(f"Failed to create virtual environment ({python_ver} exists): {stderr}")
         return 1
 
-    pip_cmd = f"./testvenv_py{python_ver}/bin/pip"
+    pip_cmd = f"./{python_ver}/bin/pip"
 
-    venv_python = f"./testvenv_py{python_ver}/bin/python"
+    venv_python = f"./{python_ver}/bin/python"
     print("Installing nkululeko...")
     stdout, stderr, returncode = run_command(f"{pip_cmd} install -e {repo_root}")
     if returncode != 0:
@@ -79,7 +77,7 @@ def main(python_version=None):
 
     print("Installing spotlight dependencies...")
     stdout, stderr, returncode = run_command(
-        f"{pip_cmd} install renumics-spotlight>=1.16.13 sliceguard>=0.0.35"
+        f'{pip_cmd} install "renumics-spotlight>=1.16.13" "sliceguard>=0.0.35"'
     )
     if returncode != 0:
         print(f"Failed to install spotlight dependencies: {stderr}")
@@ -89,7 +87,7 @@ def main(python_version=None):
 
     print("Installing torch dependencies for tests...")
     stdout, stderr, returncode = run_command(
-        f"{pip_cmd} install torch>=1.0.0 torchvision>=0.10.0 torchaudio>=0.10.0"
+        f'{pip_cmd} install "torch>=1.0.0" "torchvision>=0.10.0" "torchaudio>=0.10.0"'
     )
     if returncode != 0:
         print(f"Failed to install torch dependencies: {stderr}")
@@ -101,7 +99,7 @@ import unittest
 import sys
 import os
 sys.path.insert(0, os.path.expanduser('{repo_root}'))
-from tests.test_basic import TestBasic
+from tests.test_modules import TestModules
 
 if __name__ == '__main__':
     unittest.main()
