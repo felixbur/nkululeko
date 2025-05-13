@@ -29,7 +29,7 @@ torchaudio>=0.10.0
 torchvision>=0.10.0
 
 # Optional dependencies - Spotlight
-# renumics-spotlight>=0.1.0
+# renumics-spotlight>1.16.13
 # sliceguard>=0.0.35
 
 # Optional dependencies - TensorFlow (commented by default)

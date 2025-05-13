@@ -29,10 +29,7 @@ bibliography: paper.bib
 
 # Summary
 
-`Nkululeko` [@nkululeko:2022] is open-source software written in Python and hosted on GitHub.
-It is predominantly a framework for audio-based machine learning explorations without the need to write Python code, and is strongly based on machine learning packages like sklearn [@scikit-learn:2011] and pytorch [@torch:2020].
-The main features are: training and evaluation of labelled speech databases with state-of-the-art machine learning approach and acoustic feature extractors, a live demonstration interface, and the possibility to store databases with predicted 
-labels. Based on this, the framework can also be used to check on bias in databases by exploring correlations of target labels, like, e.g. depression or diagnosis, with predicted, or additionally given, labels like age, gender, signal distortion ratio or mean opinion score.
+`Nkululeko` [@nkululeko:2022] is a framework for audio-based machine learning explorations using command line interface and a configuration file, based on machine learning packages like sklearn [@scikit-learn:2011] and pytorch [@torch:2020]. It is written in Python without the need to write Python code by the users. The main features are: training and evaluation of labelled speech databases with state-of-the-art machine learning approach and acoustic feature extractors, a live demonstration interface, and the possibility to store databases with predicted labels. Based on this, the framework can also be used to check on bias in databases by exploring correlations of target labels, like, e.g. depression or diagnosis, with predicted, or additionally given, labels like age, gender, signal distortion ratio or mean opinion score in.
 
 # Design choices 
 
@@ -55,7 +52,7 @@ $ nkululeko.MODULE_NAME --config CONFIG_FILE.ini
 
 # How does it work?
 
-`nkululeko` is a command line tool written in Python, best used in conjunction with the Visual Studio Code editor (but can be run stand-alone). To use it, a text editor is needed to edit the experiment configuration. You would then run `nkululeko` like this: 
+`nkululeko` is a command line tool written in Python, best used in conjunction with the Visual Studio Code editor (but can be run stand-alone). To use it, a text editor is needed to edit the experiment configuration. You would then run `nkululeko` **experiment** like this: 
 
 ```bash
 $ nkululeko.explore --config conf.ini
@@ -63,8 +60,8 @@ $ nkululeko.explore --config conf.ini
 and inspect the results afterward; they are represented as images, texts, and even a fully automatically compiled PDF report written in latex.
 
 `nkululeko`'s data import format is based on a simple CSV formalism, or alternatively, for a more detailed representation including data schemata, audformat.\footnote{\url{https://audeering.github.io/audformat/}}
-Basically, to be used by `nkululeko`, the data format should include the audio file path and a task-specific label. Optionally, speaker ID and gender labels help with speech data. 
-An example of a database labelled with emotion is 
+Basically, to be used by `nkululeko`, the data format should include the audio file path of **speech dataset** (usually in WAV format) and a task-specific label. Optionally, speaker ID and gender labels help with speech data. 
+An example of a database (in **CSV** format) labelled with emotion is 
 
 ```text
 file, speaker, gender, emotion
@@ -86,7 +83,7 @@ We list the most important ones here:
 * **segment**: segment a database based on VAD (voice activity detection)
 * **ensemble**: ensemble several models to improve performance
 
-The configuration (INI) file consists of a set of key-value pairs that are organised into several sections. Almost all keys have default values, so they do not have to be specified.
+The **configuration file** (INI)  consists of a set of key-value pairs that are organised into several sections. Almost all keys have default values, so they do not have to be specified.
 
 Here is a sample listing of an INI file (`conf.ini`) with a database section:
 
@@ -110,7 +107,9 @@ latex = androids-report
 ```
 
 As can be seen, some of the values simply contain Python data structures like arrays or dictionaries.
-Within this example, an experiment is specified with the name *explore-androids*, and a result folder with this name will be created, containing all figures and textual results, including an automatically generated Latex and PDF report on the findings.
+Within this example, an experiment is specified with the name *explore-androids*, and a **result** folder with this name will be created, containing all figures and textual results, including an automatically generated Latex and PDF report on the findings. The overall flow of basic Nkululeko experiments can be shown in \autoref{fig:nkulu_flow}. 
+
+![Nkululeko’s workflow: from raw dataset into experiment results] \label{fig:nkulu_flow}(./assets/nkululeko_flow.pdf)
 
 The *DATA* section sets the location of the database and specifies filters on the sample, in this case limiting the data to 20 samples per speaker at most and at least 2 seconds long.
 In this section, the split sets (training, development, and test) are also specified. There is a special feature named *balance splits* that lets the user specify criteria that should be used to stratify the splits, for example, based on signal distortion ratio.
@@ -285,7 +284,7 @@ sample_selection = all
 [MODEL]
 hf_token = <my hugging face token>
 ```
-your resulting segmentations will have predicted speaker id attachched.. Be aware that this is really slow on CPU, so best run on GPU and declare so in the [MODEL] section:
+your resulting segmentations will have predicted `speaker id` attached. Be aware that this is really slow on CPU, so best run on GPU and declare so in the [MODEL] section:
 ```ini
 [MODEL]
 hf_token = <my hugging face token>
@@ -339,7 +338,7 @@ Nkululeko has been described in three papers so far, we give a short overview on
 
 * **2023 Paper:** F. Burkhardt, Florian Eyben and Björn Schuller: Nkululeko: Machine Learning Experiments on Speaker Characteristics Without Programming, Proc. Interspeech, 2023. **New features:** Mainly extending the acoustic features to deep-learning based (like TRILL, Hubert or wav2vec2) and the models by neural net architectures like MLP or CNN.
 
-* **2024 Paper:** F. Burkhardt, Bagus Tris Atmaja, Anna Derington, Florian Eyben and Björn Schuller: Check Your Audio Data: Nkululeko for Bias Detection, Proc. Oriental COCOSDA, 2024. **New features:** Introducing the concept of interfaces (or *modules*), focusing on the *explore-module* that features automatic data statistics and and bias analysis.
+* **2024 Paper:** F. Burkhardt, Bagus Tris Atmaja, Anna Derington, Florian Eyben and Björn Schuller: Check Your Audio Data: Nkululeko for Bias Detection, Proc. Oriental COCOSDA, 2024. **New features:** Introducing the concept of interfaces (or *modules*), focusing on the *explore-module* that features automatic data statistics and bias analysis.
 
 * **Since then:** Besides many minor enhancements; ensemble learning, Wav2vec2 model finetuning, adding automatic speaker identification, extending augmentation and segmentation.
 
