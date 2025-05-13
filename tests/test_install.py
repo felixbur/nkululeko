@@ -82,7 +82,8 @@ def main(python_version=None):
         print(
             f"Python version {python_ver} is not supported for spotlight dependencies."
         )
-        return 1
+        # skip spotlight installation
+
     else:
         print("Installing spotlight dependencies...")
         stdout, stderr, returncode = run_command(
