@@ -77,7 +77,7 @@ def main(python_version=None):
 
     print("Installing spotlight dependencies...")
     stdout, stderr, returncode = run_command(
-        f'{pip_cmd} install "renumics-spotlight>=1.16.13" "sliceguard>=0.0.35"'
+        f'{pip_cmd} install "renumics-spotlight>=1.6.13" "sliceguard>=0.0.35"'
     )
     if returncode != 0:
         print(f"Failed to install spotlight dependencies: {stderr}")
