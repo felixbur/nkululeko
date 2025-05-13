@@ -1,4 +1,4 @@
-name: Run nkululeko tests
+name: Run Nkululeko with Python 3.10 on RAVDESS+PRAAT+XGB 
 
 on: [push, pull_request]
 
