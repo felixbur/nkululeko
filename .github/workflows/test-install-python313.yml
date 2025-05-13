@@ -1,11 +1,6 @@
 name: Test Installation Python 3.13
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-
+on: [push, pull_request]
 jobs:
   test-install:
     runs-on: ubuntu-latest
