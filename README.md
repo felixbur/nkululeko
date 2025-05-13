@@ -38,9 +38,6 @@ pip install nkululeko[torch]
 # Install with CPU-only PyTorch
 pip install nkululeko[torch-cpu]
 
-# Install with Spotlight support
-pip install nkululeko[spotlight]
-
 # Install with TensorFlow support
 pip install nkululeko[tensorflow]
 
@@ -68,10 +65,11 @@ Some functionalities require extra packages to be installed, which we didn't inc
 
 * For spotlight adapter:
   ```bash
+  pip install PyYAML  # Install PyYAML first to avoid dependency issues
   pip install nkululeko[spotlight]
   ```
 
-Some examples for *ini*-files (which you use to control nkululeko) are in the [tests folder](https://github.com/felixbur/nkululeko/tree/main/tests).
+Some examples for *ini*-files (which you use to control nkululeko) are in the [examples folder](https://github.com/felixbur/nkululeko/tree/main/examples).
 
 
 
