@@ -17,4 +17,4 @@ jobs:
         python-version: '3.11'
     - name: Test installation
       run: |
-        python scripts/test_install.py
+        python tests/test_install.py
