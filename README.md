@@ -13,9 +13,10 @@ Nkululeko is for speech processing learners, researchers and ML practitioners fo
 
 Nkululeko requires Python 3.9 or higher with the following build status:  
 
-![Python 3.10](https://github.com/bagustris/nkululeko/actions/workflows/test-install-python310.yml/badge.svg)  
-![Python 3.11](https://github.com/bagustris/nkululeko/actions/workflows/test-install-python311.yml/badge.svg)    
-![Python 3.12](https://github.com/bagustris/nkululeko/actions/workflows/test-install-python312.yml/badge.svg)    
+![Python 3.10](https://github.com/bagustris/nkululeko/actions/workflows/py310-aud-csv.yml/badge.svg)  
+![Python 3.11](https://github.com/bagustris/nkululeko/actions/workflows/py311.yml/badge.svg)    
+![Python 3.12](https://github.com/bagustris/nkululeko/actions/workflows/py312.yml/badge.svg)
+![Python 3.13](https://github.com/bagustris/nkululeko/actions/workflows/py313.yml/badge.svg)    
 
 Create and activate a virtual Python environment and simply install Nkululeko:
 
