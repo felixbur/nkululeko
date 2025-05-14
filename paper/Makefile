@@ -41,7 +41,7 @@ $(output): $(input) $(bib) Makefile
 	-V graphics="true" \
 	-V geometry:margin=1in \
 	-V logo_path=$(assets)/logo.png \
-	--filter pandoc-citeproc --csl $(assets)/$(bibstyle) \
+	--citeproc --csl $(assets)/$(bibstyle) \
 	--template $(assets)/latex.template \
 	$< -o $@ \
 

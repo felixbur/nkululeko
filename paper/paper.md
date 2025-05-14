@@ -109,7 +109,7 @@ latex = androids-report
 As can be seen, several values simply contain Python data structures like arrays or dictionaries.
 Within this example, an experiment is specified with the name *explore-androids*, and a **result** folder with this name will be created, containing all figures and textual results, including an automatically generated Latex and PDF report on the findings. The overall flow of basic Nkululeko experiments can be shown in \autoref{fig:nkulu_flow}. 
 
-![Nkululeko’s workflow: from a raw dataset into experiment results \label{fig:nkulu_flow}](./assets/nkulu_flow.svg)
+![Nkululeko’s workflow: from a raw dataset into experiment results \label{fig:nkulu_flow}](./assets/nkulu_flow-crop.pdf)
 
 The *DATA* section sets the location of the database and specifies filters on the sample, in this case limiting the data to 20 samples per speaker at most and at least 2 seconds long.
 In this section, the split sets (training, development, and test) are also specified. There is a special feature named *balance splits* that lets the user specify criteria that should be used to stratify the splits, for example, based on signal distortion ratio.
