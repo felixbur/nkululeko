@@ -1,5 +1,7 @@
-# nkululeko.py
-# Entry script to do a Nkululeko experiment
+#!/usr/bin/env python3
+
+# nkululeko.py: Entry script to do a Nkululeko experiment
+
 import argparse
 import configparser
 from pathlib import Path

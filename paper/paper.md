@@ -29,7 +29,7 @@ bibliography: paper.bib
 
 # Summary
 
-`Nkululeko` [@nkululeko:2022] is a framework for audio-based machine learning explorations using command line interface and a configuration file, based on machine learning packages like sklearn [@scikit-learn:2011] and pytorch [@torch:2020]. It is written in Python without the need to write Python code by the users. The main features are: training and evaluation of labelled speech databases with state-of-the-art machine learning approach and acoustic feature extractors, a live demonstration interface, and the possibility to store databases with predicted labels. Based on this, the framework can also be used to check on bias in databases by exploring correlations of target labels, like, e.g. depression or diagnosis, with predicted, or additionally given, labels like age, gender, signal distortion ratio or mean opinion score in.
+`Nkululeko` [@nkululeko:2022] is a toolkit for audio-based machine learning explorations using command line interface and a configuration file, based on machine learning packages like sklearn [@scikit-learn:2011] and pytorch [@torch:2020]. It is written in Python without the need to write Python code by the users. The main features are: training and evaluation of labelled speech databases with state-of-the-art machine learning approach and acoustic feature extractors, a live demonstration interface, and the possibility to store databases with predicted labels. Based on this, the framework can also be used to check on bias in databases by exploring correlations of target labels, like, e.g. depression or diagnosis, with predicted, or additionally given, labels like age, gender, signal distortion ratio or mean opinion score in.
 
 # Design choices 
 
@@ -42,7 +42,7 @@ The program is intended for **novice** people interested in speaker characterist
 - Inference of speaker characteristics from a given audio file or streaming audio (can be said also as “weak” labeling for semi-supervised learning).
 
 <!-- module + INI file -->
-Hence, one should be able to use Nkululeko after installing and preparing/downloading their data in the correct format in a single line. 
+Hence, one should be able to use Nkululeko after installing and preparing/downloading their data in the correct format in a single line (add `python -m` if working in development environment without installing it). 
 
 ```bash
 $ nkululeko.MODULE_NAME --config CONFIG_FILE.ini
@@ -106,10 +106,10 @@ value_counts = [['gender'], ['age'], ['est_sdr'], ['est_pesq'], ['est_mos']]
 latex = androids-report
 ```
 
-As can be seen, some of the values simply contain Python data structures like arrays or dictionaries.
+As can be seen, several values simply contain Python data structures like arrays or dictionaries.
 Within this example, an experiment is specified with the name *explore-androids*, and a **result** folder with this name will be created, containing all figures and textual results, including an automatically generated Latex and PDF report on the findings. The overall flow of basic Nkululeko experiments can be shown in \autoref{fig:nkulu_flow}. 
 
-![Nkululeko’s workflow: from a raw dataset into experiment results]\label{fig:nkulu_flow}(./assets/nkulu_flow.png)
+![Nkululeko’s workflow: from a raw dataset into experiment results \label{fig:nkulu_flow}](./assets/nkulu_flow.png)
 
 The *DATA* section sets the location of the database and specifies filters on the sample, in this case limiting the data to 20 samples per speaker at most and at least 2 seconds long.
 In this section, the split sets (training, development, and test) are also specified. There is a special feature named *balance splits* that lets the user specify criteria that should be used to stratify the splits, for example, based on signal distortion ratio.
@@ -125,7 +125,7 @@ The `nkululeko` configuration can specify further sections:
 # Example of usage
 In the previous section, we have seen how to specify an experiment in an INI file that can be run with, for instance, `explore` and `segment` modules. Here, we show how to run the experiment (`nkululeko.nkululeko`) with built-in dataset (Polish Speech Emotions dataset) from the installation until getting the results. 
 
-First, novices could clone the GitHub repository of nkululeko. 
+First, novices could clone the GitHub repository of Nkululeko. 
 
 ```bash
 $ git clone https://github.com/felixbur/nkululeko.git
@@ -140,7 +140,7 @@ $ source .env/bin/activate
 $ pip install nkululeko
 ```
 
-Next, extract `polish_speech_emotions.zip` inside the nkululeko data folder (`nkululeko/data/polish`) with right click regardless of the operating system (or using `unzip` command in the terminal like below). Then, run the following command in the terminal:
+Next, extract `polish_speech_emotions.zip` inside the Nkululeko data folder (`nkululeko/data/polish`) with right click regardless of the operating system (or using `unzip` command in the terminal like below). Then, run the following command in the terminal:
 
 ```bash
 $ cd data/polish
@@ -176,12 +176,12 @@ DONE
 
 # What has been added since the last publication
 
-Besides many small changes, mainly three big additions extended nkululeko's functionality since the last published publications. We introduce them in the next subsections.
+Besides many small changes, mainly three big additions extended Nkululeko's functionality since the last published papers. We introduce them in the next subsections.
 
 
 ## Finetune transformer models
 
-With [nkululeko](https://github.com/felixbur/nkululeko) since version 0.85.0 you can finetune a transformer model with [huggingface](https://huggingface.co/docs/transformers/training) (and even  [publish it there if you like](https://huggingface.co/docs/hub/models-uploading)).
+With [nkululeko](https://github.com/felixbur/nkululeko) since version 0.85.0 you can finetune a transformer model with [huggingface](https://huggingface.co/docs/transformers/training) (and even [publish it there if you like](https://huggingface.co/docs/hub/models-uploading)).
 
 Finetuning in this context means to train the (pre-trained) transformer layers with your new training data labels, as opposed to only using the last layer as embeddings.
 
@@ -234,7 +234,7 @@ push_to_hub = True
 
 ## Ensemble classification
 
-With [nkululeko](https://github.com/felixbur/nkululeko) since version 0.88.0 you can combine experiment results and report on the outcome, by using the **ensemble** module.
+Since [nkululeko](https://github.com/felixbur/nkululeko) version 0.88.0 you can combine experiment results and report on the outcome, by using the **ensemble** module.
 
 For example, you would like to know if the combination of expert features and learned embeddings works better than one of those. You could then do: 
 
@@ -284,7 +284,9 @@ sample_selection = all
 [MODEL]
 hf_token = <my hugging face token>
 ```
-your resulting segmentations will have predicted `speaker id` attached. Be aware that this is really slow on CPU, so best run on GPU and declare so in the [MODEL] section:
+
+your resulting segmentation will have predicted `speaker id` attached. Be aware that this is really slow on CPU, so best run on GPU and declare so in the [MODEL] section:
+
 ```ini
 [MODEL]
 hf_token = <my hugging face token>
