@@ -1,0 +1,15 @@
+name: Test Installation Python 3.13
+
+on: [push, pull_request]
+jobs:
+  test-install:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.13
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.13'
+    - name: Test installation
+      run: |
+        python tests/test_install.py

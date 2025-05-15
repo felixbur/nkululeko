@@ -1,10 +1,10 @@
-with open('nkululeko/constants.py', 'r') as f:
+with open("nkululeko/constants.py", "r") as f:
     for line in f:
-        if line.startswith('VERSION'):
-            VERSION = line.split('=')[1].strip().strip('"\'')
+        if line.startswith("VERSION"):
+            VERSION = line.split("=")[1].strip().strip("\"'")
             break
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 setup(
     name="nkululeko",
@@ -57,7 +57,7 @@ setup(
             "torchaudio",
         ],
         "spotlight": [
-            "renumics-spotlight>=0.1.0",
+            "renumics-spotlight>=1.6.13",
             "sliceguard>=0.0.35",
         ],
         "tensorflow": [

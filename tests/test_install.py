@@ -77,15 +77,22 @@ def main(python_version=None):
 
     print(f"Import test output: {stdout.strip()}")
 
-    print("Installing spotlight dependencies...")
-    stdout, stderr, returncode = run_command(
-        f'{pip_cmd} install "renumics-spotlight>=1.6.13" "sliceguard>=0.0.35"'
-    )
-    if returncode != 0:
-        print(f"Failed to install spotlight dependencies: {stderr}")
-        return 1
+    # ensure python version is 3.12 or lower
+    if python_ver >= "3.13":
+        print(
+            f"Python version {python_ver} is not supported for spotlight dependencies."
+        )
+        # skip spotlight installation
 
-    print("Spotlight dependencies installed successfully")
+    else:
+        print("Installing spotlight dependencies...")
+        stdout, stderr, returncode = run_command(
+            f'{pip_cmd} install "renumics-spotlight>=1.6.13" "sliceguard>=0.0.35"'
+        )
+        if returncode != 0:
+            print(f"Failed to install spotlight dependencies: {stderr}")
+            return 1
+        print("Spotlight dependencies installed successfully")
 
     print("Installing torch dependencies for tests...")
     stdout, stderr, returncode = run_command(

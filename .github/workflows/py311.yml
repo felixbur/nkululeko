@@ -1,10 +1,6 @@
 name: Test Installation Python 3.11
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on: [push, pull_request]
 
 jobs:
   test-install:
@@ -17,4 +13,4 @@ jobs:
         python-version: '3.11'
     - name: Test installation
       run: |
-        python scripts/test_install.py
+        python tests/test_install.py
