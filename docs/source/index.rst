@@ -17,8 +17,9 @@ The examples only covers some important features of Nkululeko. For more details,
 
 .. toctree::
    :maxdepth: 1
-   :caption: Installation:
+   :caption: Getting Started:
 
+   overview.md
    installation
 
 .. toctree::
@@ -26,6 +27,13 @@ The examples only covers some important features of Nkululeko. For more details,
    :caption: Usage
 
    usage.md
+   
+.. toctree::
+   :maxdepth: 1
+   :caption: Architecture
+
+   architecture.md
+   glossary.md
 
 .. toctree::
    :maxdepth: 1
