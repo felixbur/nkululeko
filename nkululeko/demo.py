@@ -7,15 +7,15 @@
 And run it in demo mode.
 It requires the project config file to be run before.
 
-Usage:  
-python -m nkululeko.demo [--config CONFIG] [--file FILE] [--list LIST] [--folder FOLDER] [--outfile OUTFILE]  
+Usage:
+python -m nkululeko.demo [--config CONFIG] [--file FILE] [--list LIST] [--folder FOLDER] [--outfile OUTFILE]
 
 Options:   \n
---config CONFIG     The base configuration file (default: exp.ini) \n  
---file FILE         A file that should be processed (16kHz mono wav) \n  
---list LIST         A file with a list of files, one per line, that should be processed (16kHz mono wav) \n  
---folder FOLDER     A name of a folder where the files within the list are in   (default: ./) \n   
---outfile OUTFILE   A filename to store the results in CSV  (default: None)  
+--config CONFIG     The base configuration file (default: exp.ini) \n
+--file FILE         A file that should be processed (16kHz mono wav) \n
+--list LIST         A file with a list of files, one per line, that should be processed (16kHz mono wav) \n
+--folder FOLDER     A name of a folder where the files within the list are in   (default: ./) \n
+--outfile OUTFILE   A filename to store the results in CSV  (default: None)
 """
 import argparse
 import configparser

@@ -1,11 +1,11 @@
-""" feats_mos.py
+"""feats_mos.py
 predict MOS (mean opinion score)
 
 adapted from
 from https://pytorch.org/audio/main/tutorials/squim_tutorial.html#sphx-glr-tutorials-squim-tutorial-py
 paper: https://arxiv.org/pdf/2304.01448.pdf
 
-needs 
+needs
 pip uninstall -y torch torchvision torchaudio
 pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
 

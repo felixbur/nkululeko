@@ -1,4 +1,4 @@
-""""
+""" "
 A predictor for SNR - signal-to-noise ratio.
 """
 

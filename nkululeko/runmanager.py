@@ -1,6 +1,6 @@
 """Runmanager module.
 
-This module contains the Runmanager class which is responsible for managing the 
+This module contains the Runmanager class which is responsible for managing the
 runs of the experiment.
 """
 
@@ -22,8 +22,9 @@ class Runmanager:
     )  # The dataframes
     reports = []
 
-    def __init__(self, df_train, df_test, feats_train,
-                 feats_test, dev_x=None, dev_y=None):
+    def __init__(
+        self, df_train, df_test, feats_train, feats_test, dev_x=None, dev_y=None
+    ):
         """Constructor setting up the dataframes.
 
         Args:
@@ -121,7 +122,8 @@ class Runmanager:
             if self.split3:
                 best_model = self.get_best_model()
                 self.test_report = self.modelrunner.eval_specific_model(
-                    best_model, self.df_test, self.feats_test)
+                    best_model, self.df_test, self.feats_test
+                )
                 self.test_report.epoch = best_report.epoch
                 plot_name = (
                     self.util.config_val("PLOT", "name", plot_name_suggest)
@@ -171,10 +173,9 @@ class Runmanager:
         # self.load_model(report)
         # report = self.model.predict()
         self.util.debug(f"plotting conf matrix to {plot_name}")
-        report.plot_confmatrix(plot_name, epoch = report.epoch)
-        report.print_results(report.epoch, file_name = plot_name)
+        report.plot_confmatrix(plot_name, epoch=report.epoch)
+        report.print_results(report.epoch, file_name=plot_name)
         report.print_probabilities(file_name=plot_name)
-
 
     def load_model(self, report):
         """Load a model from disk for a specific run and epoch and evaluate it.

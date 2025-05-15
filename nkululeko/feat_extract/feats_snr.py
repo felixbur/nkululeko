@@ -1,4 +1,4 @@
-""" feats_snr.py is to estimate snr.
+"""feats_snr.py is to estimate snr.
 
 SNR (signal to noise ratio) is extracted as acoustic features.
 """

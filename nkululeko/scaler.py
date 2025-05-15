@@ -11,17 +11,24 @@ class Scaler:
     """Class to normalize speech features."""
 
     def __init__(
-        self, train_data_df, test_data_df, train_feats, test_feats, scaler_type, dev_x = None, dev_y = None
+        self,
+        train_data_df,
+        test_data_df,
+        train_feats,
+        test_feats,
+        scaler_type,
+        dev_x=None,
+        dev_y=None,
     ):
         """Constructor.
 
-            Parameters:
-                    train_data_df (pd.DataFrame): The training dataframe with speakers.
-                        only needed for speaker normalization
-                    test_data_df (pd.DataFrame): The test dataframe with speakers
-                        only needed for speaker normalization
-                    train_feats (pd.DataFrame): The train features dataframe
-                    test_feats (pd.DataFrame): The test features dataframe (can be None)
+        Parameters:
+                train_data_df (pd.DataFrame): The training dataframe with speakers.
+                    only needed for speaker normalization
+                test_data_df (pd.DataFrame): The test dataframe with speakers
+                    only needed for speaker normalization
+                train_feats (pd.DataFrame): The train features dataframe
+                test_feats (pd.DataFrame): The test features dataframe (can be None)
         """
         self.util = Util("scaler")
         if scaler_type == "standard":
@@ -45,12 +52,13 @@ class Scaler:
         else:
             self.feats_dev = None
             self.data_dev = None
+
     def scale(self):
         """Actually scales/normalizes.
 
-            Returns:
-                    train_feats (pd.DataFrame): The scaled train features dataframe
-                    test_feats (pd.DataFrame): The scaled test features dataframe (can be None)
+        Returns:
+                train_feats (pd.DataFrame): The scaled train features dataframe
+                test_feats (pd.DataFrame): The scaled test features dataframe (can be None)
         """
         if self.scaler_type != "speaker":
             self.util.debug("scaling features based on training set")
@@ -66,7 +74,7 @@ class Scaler:
             if self.feats_test is not None:
                 self.feats_test = self.scale_df(self.feats_test)
             if self.feats_dev is not None:
-                self.feats_dev = self.scale_df(self.feats_dev)  
+                self.feats_dev = self.scale_df(self.feats_dev)
         else:
             self.bin_to_three()
         if self.feats_dev is not None:
@@ -84,8 +92,8 @@ class Scaler:
         if self.feats_test is not None:
             self.feats_test = self.speaker_scale_df(self.data_test, self.feats_test)
         if self.feats_dev is not None:
-                self.feats_dev = self.speaker_scale_df(self.data_dev, self.feats_dev)
-                return [self.feats_train, self.feats_dev, self.feats_test]
+            self.feats_dev = self.speaker_scale_df(self.data_dev, self.feats_dev)
+            return [self.feats_train, self.feats_dev, self.feats_test]
         else:
             return [self.feats_train, self.feats_test]
 

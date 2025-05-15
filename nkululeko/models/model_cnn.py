@@ -1,4 +1,4 @@
-""" 
+"""
 model_cnn.py
 
 Inspired by code from Su Lei

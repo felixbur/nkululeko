@@ -1,6 +1,6 @@
 """test_predictor.py.
 
-    Predict targets from a model and save as csv file.
+Predict targets from a model and save as csv file.
 
 """
 

@@ -5,7 +5,7 @@ Code originally by Oliver Pauly
 
 Based on an idea by Klaus Scherer
 
-K. R. Scherer, “Randomized splicing: A note on a simple technique for masking speech content” 
+K. R. Scherer, “Randomized splicing: A note on a simple technique for masking speech content”
 Journal of Experimental Research in Personality, vol. 5, pp. 155–159, 1971.
 
 Evaluated in:
