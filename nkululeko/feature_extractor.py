@@ -1,6 +1,6 @@
 """Extract acoustic features from audio samples.
 
-Extract acoustic features using several feature extractors 
+Extract acoustic features using several feature extractors
 (appends the features column-wise)
 """
 

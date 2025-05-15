@@ -1,4 +1,4 @@
-""""
+""" "
 A predictor for emotional arousal.
 Currently based on audEERING's emotional dimension model.
 """

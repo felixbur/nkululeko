@@ -1,6 +1,6 @@
-""""
+""" "
 A predictor for SDR - Signal to Distortion Ratio.
-as estimated by Scale-Invariant Signal-to-Distortion Ratio (SI-SDR) 
+as estimated by Scale-Invariant Signal-to-Distortion Ratio (SI-SDR)
 """
 
 import ast

@@ -1,4 +1,4 @@
-""""
+""" "
 A predictor for STOI - Short-Time Objective Intelligibility (STOI)
 """
 
