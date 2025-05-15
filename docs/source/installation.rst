@@ -39,6 +39,7 @@ Nkululeko supports optional dependencies through extras. You can install them us
     $ pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 
     # Install with Spotlight support
+    $ pip install PyYAML  # Install PyYAML first to avoid dependency issues
     $ pip install nkululeko[spotlight]
 
     # Install with TensorFlow support
