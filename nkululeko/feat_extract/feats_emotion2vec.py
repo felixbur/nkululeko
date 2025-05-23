@@ -211,7 +211,8 @@ class Emotion2vec(Featureset):
             return np.array([0.0] * 768)
         finally:
             # Clean up temporary file
-            try:
-                os.unlink(tmp_file.name)
-            except:
-                pass
+            if tmp_file is not None:  # Check if tmp_file was created
+                try:
+                    os.unlink(tmp_file.name)
+                except:
+                    pass
