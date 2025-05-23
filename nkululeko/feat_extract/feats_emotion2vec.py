@@ -64,7 +64,7 @@ class Emotion2vec(Featureset):
         try:
             # Initialize the FunASR model for emotion2vec
             self.model = AutoModel(model=model_path)
-            print(f"initialized emotion2vec model: {model_path}")
+            self.util.debug(f"initialized emotion2vec model: {model_path}")
             self.model_initialized = True
         except Exception as e:
             self.util.error(f"Failed to load emotion2vec model: {str(e)}")
