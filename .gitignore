@@ -158,3 +158,6 @@ docs/_static/
 docs/_templates/
 docs/source/
 docs/build/
+
+# agent settings
+AGENT.md
