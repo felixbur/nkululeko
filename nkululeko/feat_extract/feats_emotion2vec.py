@@ -58,7 +58,7 @@ class Emotion2vec(Featureset):
         model_path = self.util.config_val(
             "FEATS",
             "emotion2vec.model",
-            model_mapping.get(self.feat_type, "iic/emotion2vec_plus_base"),
+            model_mapping.get(self.feat_type, "iic/emotion2vec_base"),
         )
 
         try:
