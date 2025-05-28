@@ -116,7 +116,16 @@ class Runmanager:
                 + f"_BEST-dev_{best_report.run}_{best_report.epoch:03d}"
             )
             # finally, print out the numbers for this run
-            self.print_report(best_report, plot_name)
+            # self.print_report(best_report, plot_name)
+            # remember the best run
+            # Only print if best_report is not the same as last_report
+            if best_report is not last_report:
+                plot_name = (
+                    self.util.config_val("PLOT", "name", plot_name_suggest)
+                    + f"_BEST-dev_{best_report.run}_{best_report.epoch:03d}"
+                )
+                self.print_report(best_report, plot_name)
+
             self.best_results.append(best_report)
             self.last_epochs.append(last_epoch)
             if self.split3:
