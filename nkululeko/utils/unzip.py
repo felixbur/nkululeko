@@ -5,8 +5,8 @@
 # source: https://askubuntu.com/questions/86849/how-to-unzip-a-zip-file-from-the-terminal
 
 import sys
-from zipfile import PyZipFile
+from zipfile import ZipFile
 
 for zip_file in sys.argv[1:]:
-    with PyZipFile(zip_file) as pzf:
+    with ZipFile(zip_file) as pzf:
         pzf.extractall()
