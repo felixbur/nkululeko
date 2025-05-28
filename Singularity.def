@@ -60,7 +60,7 @@ From: python:3.12-slim
         scikit-learn joblib tqdm configparser \
         librosa soundfile audiofile audformat audeer opensmile \
         audmetric xgboost transformers datasets accelerate \
-        pyannote.audio pylatex audiomentations audonnx audmetric \
+        pyannote.audio pylatex audiomentations audonnx \
         confidence_intervals imageio sounddevice umap-learn \
         black flake8 pytest ipython
 
