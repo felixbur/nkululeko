@@ -22,14 +22,6 @@ TEST:
 - access: public
 - license: unknown
 
-# Cats vs Dogs Dataset
-CATSVSDOGS:
-- name: catsvsdogs
-- target: cats_dogs
-- descr: kaggle test set
-- access: public
-- license: unknown
-
 # CLAC Dataset
 CLAC:
 - name: clac

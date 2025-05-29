@@ -56,8 +56,7 @@ for dataset_name in descr.keys():
             descr[dataset_name][1]["target"],
             descr[dataset_name][2]["descr"],
             descr[dataset_name][3]["access"],
-            descr[dataset_name][4].get("license", "unknown"),
-        ]
+            descr[dataset_name][4]["license"] if "license" in descr[dataset_name][4] else "unknown",        ]
     )
     db_num += 1
 

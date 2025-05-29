@@ -21,7 +21,6 @@ To support open science and reproducible research, we encourage to submit PR and
 |emorynlp|emotion|English Emotion Dataset from Friends TV Show|public|unknown|
 |emns|emotion,intensity|British, singles speaker, UAR=.479|public|CC BY 4.0|
 |test|none|Test data for nkululeko|public|unknown|
-|catsvsdogs|cats_dogs|kaggle test set|public|unknown|
 |clac|healthyspeech,age,gender|English|public|Custom academic/research use|
 |vivae|emotion|English vocal bursts|public|unknown|
 |emofilm|emotion|English, Spanish, Italian|restricted|unknown|
@@ -44,7 +43,7 @@ To support open science and reproducible research, we encourage to submit PR and
 |baved|emotion|Arabic|public|CC BY 4.0|
 |asvp-esd|emotion|Multilingual, also contain vocal bursts|public|Custom academic/research use|
 |ekorpus|emotion|Estonian|public|unknown|
-|iemocap|emotion,VAD|English|restriced|Custom academic/research use|
+|iemocap|emotion,VAD|English|restricted|Custom academic/research use|
 |jl|emotion|English|public|ODC-By|
 |syntact|emotion|Synthesized German speech|public|Custom academic/research use|
 |kia|emotion|Korean, wake-up word|public|unknown|
@@ -76,7 +75,7 @@ To support open science and reproducible research, we encourage to submit PR and
 |esd|emotion|English,Chinese|public|unknown|
 
 
-This recipe contains information about 56 datasets.
+This recipe contains information about 55 datasets.
 ## Performance
   
 ![Nkululeko performance](../meta/images/nkululeko_ser_20240719.png)  
