@@ -1,0 +1,84 @@
+Bootstrap: docker
+From: python:3.12-slim
+
+%labels
+    Author nkululeko developers
+    Version dev-safe
+    Description Minimal nkululeko environment with safe cleanup
+
+%help
+    This container provides a development environment for nkululeko development.
+    Size of the container is approximately 4 GB.
+    
+    Usage:
+        singularity shell nkululeko-dev.sif
+        singularity exec nkululeko-dev.sif python -m nkululeko.nkululeko --config your_config.ini
+    
+    The container includes:
+    - Python 3.12 (Ubuntu 22.04 default)
+    - All nkululeko dependencies
+    - Audio processing libraries
+    - Machine learning frameworks
+    - Development tools
+    
+    To mount directories at runtime:
+        singularity shell --bind /path/to/data:/data --bind /path/to/nkululeko:/workspace/nkululeko nkululeko-dev.sif
+    
+    Cuda version: 12.6 (as of 2025-05-28)
+
+%environment
+    export PYTHONPATH=/workspace/nkululeko:$PYTHONPATH
+
+%post
+    # Install system dependencies
+    apt-get update && apt-get install -y --no-install-recommends \
+        git \
+        wget \
+        unzip \
+        build-essential \
+        pkg-config \
+        libsndfile1-dev \
+        libfftw3-dev \
+        liblapack-dev \
+        libblas-dev \
+        libatlas-base-dev \
+        gfortran \
+        ffmpeg
+
+    # Clean apt lists
+    rm -rf /var/lib/apt/lists/*
+
+    # Upgrade pip
+    pip install --upgrade pip --no-cache-dir
+
+    # Install PyTorch first
+    pip install --no-cache-dir torch torchvision torchaudio
+
+    # Install other packages
+    pip install --no-cache-dir \
+        numpy scipy pandas matplotlib seaborn \
+        scikit-learn joblib tqdm configparser \
+        librosa soundfile audiofile audformat audeer opensmile \
+        audmetric xgboost transformers datasets accelerate \
+        pyannote.audio pylatex audiomentations audonnx \
+        confidence_intervals imageio sounddevice umap-learn \
+        black flake8 pytest ipython
+
+    # Optional packages
+    pip install --no-cache-dir praat-parselmouth || true
+    pip install --no-cache-dir silero || true
+
+    # Minimal cleanup
+    apt-get remove -y build-essential pkg-config gfortran
+    apt-get autoremove -y
+    pip cache purge
+    rm -rf /root/.cache
+
+    mkdir -p /workspace
+
+%runscript
+    exec "$@"
+
+%files
+    # Uncomment and modify if you want to copy local nkululeko source
+    # ./nkululeko /workspace/nkululeko
