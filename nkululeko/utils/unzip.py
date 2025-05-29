@@ -14,7 +14,12 @@ from zipfile import ZipFile
 # Set up argument parser
 parser = argparse.ArgumentParser(description="Extract files from zip archives.")
 parser.add_argument("zip_files", nargs="+", help="List of zip files to extract.")
-parser.add_argument("-d", "--directory", default=".", help="Directory to extract files to (default: current directory).")
+parser.add_argument(
+    "-d",
+    "--directory",
+    default=".",
+    help="Directory to extract files to (default: current directory).",
+)
 args = parser.parse_args()
 
 # Extract arguments
@@ -26,8 +31,8 @@ for zip_file in zip_files:
     try:
         with ZipFile(zip_file) as zf:
             zf.extractall(path=directory)
-        print(f"Extracting {zip_file} to {directory}.")
+        print(f"Extracting {zip_file} to {directory}")
     except FileNotFoundError:
-        print(f"Error: File {zip_file} not found.")
+        print(f"Error: File {zip_file} not found")
     except Exception as e:
         print(f"Error extracting {zip_file}: {e}")
