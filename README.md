@@ -214,7 +214,7 @@ There's Felix [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials
 * [Here's a video presentation about nkululeko](https://www.youtube.com/playlist?list=PLRceVavtxLg0y2jiLmpnUfiMtfvkK912D)
 * [Here's the 2022 LREC article on nkululeko](http://felix.syntheticspeech.de/publications/Nkululeko_LREC.pdf)
 * [Introduction](http://blog.syntheticspeech.de/2021/08/04/machine-learning-experiment-framework/)
-* [Nkulueko FAQ](http://blog.syntheticspeech.de/2022/07/07/nkululeko-faq/)
+* [Nkululeko FAQ](http://blog.syntheticspeech.de/2022/07/07/nkululeko-faq/)
 * [How to set up your first nkululeko project](http://blog.syntheticspeech.de/2021/08/30/how-to-set-up-your-first-nkululeko-project/)
 * [Setting up a base nkululeko experiment](http://blog.syntheticspeech.de/2021/10/05/setting-up-a-base-nkululeko-experiment/)
 * [How to import a database](http://blog.syntheticspeech.de/2022/01/27/nkululeko-how-to-import-a-database/) 
