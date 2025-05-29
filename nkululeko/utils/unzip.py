@@ -8,26 +8,26 @@
 # # To extract an archive to a specific directory:
 # unzip <archive>.zip -d <directory>
 
-import sys
+import argparse
 from zipfile import ZipFile
 
-# if no zip files are provided, print usage and exit
-if len(sys.argv) < 2:
-    print("Usage: python unzip.py file1.zip file2.zip -d <directory>")
-    sys.exit(1)
+# Set up argument parser
+parser = argparse.ArgumentParser(description="Extract files from zip archives.")
+parser.add_argument("zip_files", nargs="+", help="List of zip files to extract.")
+parser.add_argument("-d", "--directory", default=".", help="Directory to extract files to (default: current directory).")
+args = parser.parse_args()
 
-# Check if -d flag is provided and determine directory and zip files
-if len(sys.argv) >= 3 and sys.argv[-2] == "-d":
-    directory = sys.argv[-1]
-    zip_files = sys.argv[1:-2]
-else:
-    import os
-
-    directory = os.getcwd()
-    zip_files = sys.argv[1:]
+# Extract arguments
+directory = args.directory
+zip_files = args.zip_files
 
 # Process each zip file
 for zip_file in zip_files:
-    with ZipFile(zip_file) as zf:
-        zf.extractall(path=directory)
-    print(f"Extracting {zip_file} to {directory}.")
+    try:
+        with ZipFile(zip_file) as zf:
+            zf.extractall(path=directory)
+        print(f"Extracting {zip_file} to {directory}.")
+    except FileNotFoundError:
+        print(f"Error: File {zip_file} not found.")
+    except Exception as e:
+        print(f"Error extracting {zip_file}: {e}")
