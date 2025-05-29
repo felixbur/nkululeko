@@ -69,7 +69,7 @@ mdFile.new_paragraph(f"This recipe contains information about {db_num} datasets.
 mdFile.new_header(level=2, title="Performance")
 mdFile.new_line(
     mdFile.new_inline_image(
-        text="Nkululeko performance", path="../meta/images/nkululeko_ser_20240719.png"
+        text="Nkululeko performance", path="./meta/images/nkululeko_ser_20240719.png"
     )
 )
 mdFile.new_line()
