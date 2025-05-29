@@ -79,7 +79,7 @@ file,angry,happy,neutral,sad,predicted
 
 List of arguments for `demo` module is given below.
 
-  * *--list* (optional) list of input files
-  * *--file* (optional) name of input file
-  * *--folder* (optional) parent folder for input files
-  * *--outfile* (optional) name of CSV file for output
+  * `--list` (optional) list of input files
+  * `--file` (optional) name of input file
+  * `--folder` (optional) parent folder for input files
+  * `--outfile` (optional) name of CSV file for output

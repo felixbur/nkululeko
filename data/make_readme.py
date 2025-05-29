@@ -3,8 +3,7 @@ import os
 import yaml
 from mdutils import MdUtils
 
-# root = "./data"
-root = "."
+root = "./data"
 
 mdFile = MdUtils(file_name="README.md", title="Nkululeko database repository")
 mdFile.create_md_file()
@@ -41,7 +40,7 @@ mdFile.new_paragraph(
 with open(os.path.join(root, "descr.yml")) as stream:
     descr = yaml.safe_load(stream)
 
-table_list = ["Name", "Target", "Description", "Access"]
+table_list = ["Name", "Target", "Description", "Access", "License"]
 db_num = 0
 
 for dataset_name in descr.keys():
@@ -52,11 +51,12 @@ for dataset_name in descr.keys():
             descr[dataset_name][1]["target"],
             descr[dataset_name][2]["descr"],
             descr[dataset_name][3]["access"],
+            descr[dataset_name][4]["license"] if len(descr[dataset_name]) > 4 and "license" in descr[dataset_name][4] else "unknown",
         ]
     )
     db_num += 1
 
-mdFile.new_table(columns=4, rows=db_num + 1, text=table_list, text_align="left")
+mdFile.new_table(columns=5, rows=db_num + 1, text=table_list, text_align="left")
 
 # add information about number of datasets
 mdFile.new_paragraph(f"This recipe contains information about {db_num} datasets.")

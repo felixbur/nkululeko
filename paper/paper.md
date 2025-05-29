@@ -73,18 +73,37 @@ As the main goal of `nkululeko` is to avoid the need to learn programming, exper
 The functionality is encapsulated by software *modules* (interfaces) that are to be called on the command line.
 We list the most important ones here:
 
-* **nkululeko**: do machine learning experiments combining features and learners
-* **demo**: demo the current best model on the command line or some files
-* **test**: run the current best model on a specified test set
+* **nkululeko**: do machine learning experiments combining features and learners (e.g. opensmile with SVM);
+* **demo**: demo the current best model on the command line or some files;
+* **test**: run the current best model on a specified test set;
 * **explore**: perform data exploration (used mainly in this paper)
-* **augment**: augment the current training data. This could also be used to reduce bias in the data, for example, by adding noise to audio samples that belong to a specific category.
-* **aug\_train**: augment the training data and train the model with the augmented data.
-* **predict**: predict features like speaker diarization, signal distortion ratio, mean opinion score, arousal/valence, age/gender (for databases that miss this information), with deep neural nets models, e.g. as a basis for the *explore* module.
-* **segment**: segment a database based on VAD (voice activity detection)
-* **ensemble**: ensemble several models to improve performance
+* **augment**: augment the current training data. This could also be used to reduce bias in the data, for example, by adding noise to audio samples that belong to a specific category;
+* **aug\_train**: augment the training data and train the model with the augmented data;
+* **predict**: predict features like speaker diarization, signal distortion ratio, mean opinion score, arousal/valence, age/gender (for databases that miss this information), with deep neural nets models, e.g. as a basis for the *explore* module;
+* **segment**: segment a database based on VAD (voice activity detection);
+* **ensemble**: ensemble several models to improve performance.
 
-The **configuration file** (INI)  consists of a set of key-value pairs that are organised into several sections. Almost all keys have default values, so they do not have to be specified.
+The **configuration file** (ini INI format)  consists of a set of key-value pairs that are organised into several sections. Almost all keys have default values, so they do not have to be specified. 
 
+The following table gives examples of default values for important configuration keys:
+
+| Section | Key           | Default         |
+|---------|---------------|----------------|
+| MODEL   | batch_size    | 8              |
+| MODEL   | learning_rate | 0.0001         |
+| MODEL   | drop          | 0.1/False      |
+| MODEL   | max_duration  | 8.0            |
+| MODEL   | push_to_hub   | False          |
+| FEATS   | store_format  | pkl            |
+| FEATS   | set           | eGeMAPSv02     |
+| PLOT    | format        | png            |
+| PLOT    | ccc           | False          |
+| DATA    | target        | emotion        |
+| DATA    | labels        | all labels     |
+| EXP     | type          | classification |
+| EXP     | epochs        | 1              |
+
+You can override these defaults by specifying your own values in the configuration file.
 Here is a sample listing of an INI file (`conf.ini`) with a database section:
 
 ```ini

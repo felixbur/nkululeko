@@ -4,6 +4,7 @@ EMORYLP:
 - target: emotion
 - descr: English Emotion Dataset from Friends TV Show
 - access: public
+- license: unknown
 
 # EMNS Dataset
 EMNS:
@@ -11,6 +12,7 @@ EMNS:
 - target: emotion,intensity
 - descr: British, singles peaker, UAR=.479
 - access: public
+- license: CC BY 4.0
 
 # Test Dataset
 TEST:
@@ -18,6 +20,7 @@ TEST:
 - target: none
 - descr: Test data for nkululeko
 - access: public
+- license: unknown
 
 # Cats vs Dogs Dataset
 CATSVSDOGS:
@@ -25,6 +28,7 @@ CATSVSDOGS:
 - target: cats_dogs
 - descr: kaggle test set
 - access: public
+- license: unknown
 
 # CLAC Dataset
 CLAC:
@@ -32,6 +36,7 @@ CLAC:
 - target: healthyspeech,age,gender
 - descr: English
 - access: public
+- license: Custom academic/research use
 
 # VIVAE Dataset
 VIVAE:
@@ -39,6 +44,7 @@ VIVAE:
 - target: emotion
 - descr: English vocal bursts
 - access: public
+- license: unknown
 
 # EmoFilm Dataset
 EMOFILM:
@@ -46,6 +52,7 @@ EMOFILM:
 - target: emotion
 - descr: English, Spanish, Italian
 - access: restricted
+- license: unknown
 
 # Emozionalmente Dataset
 EMOZIONALMENTE:
@@ -53,6 +60,7 @@ EMOZIONALMENTE:
 - target: emotion
 - descr: Italian
 - access: public
+- license: unknown
 
 # Laughter Types Dataset
 LAUGHTERTYPES:
@@ -60,6 +68,7 @@ LAUGHTERTYPES:
 - target: laughter
 - descr: Master Thesis from TUBerlin
 - access: public
+- license: unknown
 
 # SAVEE Dataset
 SAVEE:
@@ -67,6 +76,7 @@ SAVEE:
 - target: emotion
 - descr: English, from tfds
 - access: restricted
+- license: Custom academic/research use
 
 # EMOVO Dataset
 EMOVO:
@@ -74,6 +84,7 @@ EMOVO:
 - target: emotion
 - descr: Italian
 - access: restricted
+- license: CC BY-NC-SA 4.0
 
 # SUBESCO Dataset
 SUBESCO:
@@ -81,6 +92,7 @@ SUBESCO:
 - target: emotion
 - descr: Bangla
 - access: public
+- license: Custom academic/research use
 
 # OREAU2 Dataset
 OREAU2:
@@ -88,6 +100,7 @@ OREAU2:
 - target: emotion
 - descr: French
 - access: public
+- license: unknown
 
 # MESS Dataset
 MESS:
@@ -95,6 +108,7 @@ MESS:
 - target: emotion
 - descr: English
 - access: public
+- license: unknown
 
 # EMOV-DB Dataset
 EMOVDB:
@@ -102,6 +116,7 @@ EMOVDB:
 - target: emotion
 - descr: English
 - access: public
+- license: CC BY 4.0
 
 # Odyssey CAT 2024 Dataset
 ODYSSEYCAT2024:
@@ -109,6 +124,7 @@ ODYSSEYCAT2024:
 - target: emotion
 - descr: Data for Odyssey 2024 challenge, needs MSPPodcast
 - access: restricted
+- license: unknown
 
 # RAVDESS Dataset
 RAVDESS:
@@ -116,6 +132,7 @@ RAVDESS:
 - target: emotion,speaker
 - descr: English
 - access: public
+- license: CC BY 4.0
 
 # ERYSAC Dataset
 ERYSAC:
@@ -123,6 +140,7 @@ ERYSAC:
 - target: emotion
 - descr: Russian, children
 - access: public
+- license: unknown
 
 # DEMOS Dataset
 DEMOS:
@@ -130,6 +148,7 @@ DEMOS:
 - target: emotion
 - descr: Italian
 - access: restricted
+- license: Custom academic/research use
 
 # EMO-DB Dataset
 EMODB:
@@ -137,6 +156,7 @@ EMODB:
 - target: emotion
 - descr: German
 - access: public
+- license: CC BY 4.0
 
 # JNV Dataset
 JNV:
@@ -144,6 +164,7 @@ JNV:
 - target: emotion
 - descr: Japanese, non-verbals
 - access: public
+- license: unknown
 
 # AESDD Dataset
 AESDD:
@@ -151,6 +172,7 @@ AESDD:
 - target: emotion
 - descr: amharic language
 - access: public
+- license: unknown
 
 # MSP-Podcast Dataset
 MSPPODCAST:
@@ -158,6 +180,7 @@ MSPPODCAST:
 - target: emotion,VAD
 - descr: English
 - access: restricted
+- license: unknown
 
 # BAVED Dataset
 BAVED:
@@ -165,6 +188,7 @@ BAVED:
 - target: emotion
 - descr: Arabic
 - access: public
+- license: CC BY 4.0
 
 # ASVP-ESD Dataset
 ASVPESD:
@@ -172,6 +196,7 @@ ASVPESD:
 - target: emotion
 - descr: Multilingual, also contain vocal bursts
 - access: public
+- license: Custom academic/research use
 
 # Estonian Emotional Speech Corpus Dataset
 EKORPUS:
@@ -179,6 +204,7 @@ EKORPUS:
 - target: emotion
 - descr: Estonian
 - access: public
+- license: unknown
 
 # IEMOCAP Dataset
 IEMOCAP:
@@ -186,6 +212,7 @@ IEMOCAP:
 - target: emotion,VAD
 - descr: English
 - access: restriced
+- license: Custom academic/research use
 
 # JL Dataset
 JL:
@@ -193,6 +220,7 @@ JL:
 - target: emotion
 - descr: English
 - access: public
+- license: ODC-By
 
 # SYNTACT Dataset
 SYNTACT:
@@ -200,6 +228,7 @@ SYNTACT:
 - target: emotion
 - descr: Synthesized German speech
 - access: public
+- license: Custom academic/research use
 
 # KIA Dataset
 KIA:
@@ -207,6 +236,7 @@ KIA:
 - target: emotion
 - descr: Korean, wake-up word
 - access: public
+- license: unknown
 
 # Portuguese Dataset
 PORTUGUESE:
@@ -214,6 +244,7 @@ PORTUGUESE:
 - target: emotion
 - descr: Portuguese
 - access: public
+- license: Custom academic/research use
 
 # CREMA-D Dataset
 CREMAD:
@@ -221,6 +252,7 @@ CREMAD:
 - target: emotion
 - descr: English,adopted from tfds
 - access: public
+- license: Custom academic/research use
 
 # Thorsten Emotional Dataset
 THORSTENEMOTIONAL:
@@ -228,6 +260,7 @@ THORSTENEMOTIONAL:
 - target: emotion
 - descr: German
 - access: public
+- license: CC BY 4.0
 
 # JVNV Dataset
 JVNV:
@@ -235,6 +268,7 @@ JVNV:
 - target: emotion
 - descr: Japanese, verbal and non-verbal
 - access: public
+- license: unknown
 
 # MESD Dataset
 MESD:
@@ -242,6 +276,7 @@ MESD:
 - target: emotion
 - descr: Mexican
 - access: public
+- license: unknown
 
 # eNTERFACE Dataset
 ENTERFACE:
@@ -249,6 +284,7 @@ ENTERFACE:
 - target: emotion
 - descr: Multilingual
 - access: public
+- license: unknown
 
 # TUREV Dataset
 TUREV:
@@ -256,6 +292,7 @@ TUREV:
 - target: emotion
 - descr: Turkish
 - access: public
+- license: unknown
 
 # nEMO Dataset
 NEMO:
@@ -263,6 +300,7 @@ NEMO:
 - target: emotion,VAD
 - descr: Polish
 - access: public
+- license: unknown
 
 # EAED Dataset
 EAED:
@@ -270,6 +308,7 @@ EAED:
 - target: emotion
 - descr: Arabic
 - access: public
+- license: unknown
 
 # ASED Dataset
 ASED:
@@ -277,6 +316,7 @@ ASED:
 - target: emotion
 - descr: Greek
 - access: public
+- license: unknown
 
 # CAFE Dataset
 CAFE:
@@ -284,6 +324,7 @@ CAFE:
 - target: emotion
 - descr: Childrenspeech, CanadianFrench
 - access: public
+- license: Custom academic/research use
 
 # BanglaSER Dataset
 BANGLASER:
@@ -291,6 +332,7 @@ BANGLASER:
 - target: emotion
 - descr: Bengali
 - access: public
+- license: unknown
 
 # MLENDSND Dataset
 MLENDSND:
@@ -298,6 +340,7 @@ MLENDSND:
 - target: emotion
 - descr: English
 - access: public
+- license: Custom academic/research use
 
 # GERPARAS Dataset
 GERPARAS:
@@ -305,6 +348,7 @@ GERPARAS:
 - target: valence,arousal,dominance
 - descr: German
 - access: restricted
+- license: unknown
 
 # Androids Dataset
 ANDROIDS:
@@ -312,6 +356,7 @@ ANDROIDS:
 - target: depression
 - descr: English
 - access: public
+- license: unknown
 
 # KBES Dataset
 KBES:
@@ -319,6 +364,7 @@ KBES:
 - target: emotion
 - descr: Bengali
 - access: public
+- license: unknown
 
 # TESS Dataset
 TESS:
@@ -326,6 +372,7 @@ TESS:
 - target: emotion
 - descr: British English (Toronto)
 - access: public
+- license: Custom academic/research use
 
 # JTES Dataset
 JTES:
@@ -333,6 +380,7 @@ JTES:
 - target: emotion
 - descr: Japanese
 - access: private
+- license: unknown
 
 # MELD Dataset
 MELD:
@@ -340,6 +388,7 @@ MELD:
 - target: emotion
 - descr: English, From Friends TV
 - access: public
+- license: CC BY 4.0
 
 # Urdu Dataset
 URDU:
@@ -347,6 +396,7 @@ URDU:
 - target: emotion
 - descr: Urdu
 - access: public
+- license: unknown
 
 # Polish Dataset
 POLISH:
@@ -354,6 +404,7 @@ POLISH:
 - target: emotion
 - descr: Polish
 - access: public
+- license: unknown
 
 # CMU-MOSEI Dataset
 CMUMOSEI:
@@ -361,6 +412,7 @@ CMUMOSEI:
 - target: sentiment,emotion
 - descr: English, original link dead
 - access: public
+- license: unknown
 
 # SVD Dataset
 SVD:
@@ -368,6 +420,7 @@ SVD:
 - target: pathologicalspeech
 - descr: German
 - access: public
+- license: unknown
 
 # MSP-IMPROV Dataset
 MSPIMPROV:
@@ -375,6 +428,7 @@ MSPIMPROV:
 - target: emotion,VAD,naturalness
 - descr: English
 - access: restricted
+- license: unknown
 
 # ShEMO Dataset
 SHEMO:
@@ -382,6 +436,7 @@ SHEMO:
 - target: emotion
 - descr: Persian
 - access: public
+- license: Custom academic/research use
 
 # ESD Dataset
 ESD:
@@ -389,9 +444,11 @@ ESD:
 - target: emotion
 - descr: English,Chinese
 - access: public
+- license: unknown
 
 SVD:
 - name: svd
 - target: pahtological speech
 - descr: German speech data for detecting various pathological voices
 - access: public
+- license: unknown

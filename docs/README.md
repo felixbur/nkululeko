@@ -1,6 +1,6 @@
 # Nkululeko documentation  
 
-## Documentation URL: [https://nkululeko.readthedocs.io/en/latest/](https://nkululeko.readthedocs.io/en/latest/)
+## Documentation URL: [https://nkululeko.readthedocs.io/latest/](https://nkululeko.readthedocs.io/latest/)
 
 ## How to run locally
 
