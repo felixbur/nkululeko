@@ -211,7 +211,7 @@ IEMOCAP:
 - name: iemocap
 - target: emotion,VAD
 - descr: English
-- access: restriced
+- access: restricted
 - license: Custom academic/research use
 
 # JL Dataset
