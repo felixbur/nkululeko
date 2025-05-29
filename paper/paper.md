@@ -91,7 +91,7 @@ The following table gives examples of default values for important configuration
 |---------|---------------|----------------|
 | MODEL   | batch_size    | 8              |
 | MODEL   | learning_rate | 0.0001         |
-| MODEL   | drop          | 0.1/False      |
+| MODEL   | drop          | 0.1 (MLP) or False      |
 | MODEL   | max_duration  | 8.0            |
 | MODEL   | push_to_hub   | False          |
 | FEATS   | store_format  | pkl            |

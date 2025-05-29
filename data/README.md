@@ -79,4 +79,4 @@ To support open science and reproducible research, we encourage to submit PR and
 This recipe contains information about 56 datasets.
 ## Performance
   
-![Nkululeko performance](../meta/images/nkululeko_ser_20240719.png)  
+![Nkululeko performance](./meta/images/nkululeko_ser_20240719.png)  
