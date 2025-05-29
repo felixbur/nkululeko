@@ -10,7 +10,7 @@ EMORYLP:
 EMNS:
 - name: emns
 - target: emotion,intensity
-- descr: British, singles peaker, UAR=.479
+- descr: British, singles speaker, UAR=.479
 - access: public
 - license: CC BY 4.0
 
@@ -19,14 +19,6 @@ TEST:
 - name: test
 - target: none
 - descr: Test data for nkululeko
-- access: public
-- license: unknown
-
-# Cats vs Dogs Dataset
-CATSVSDOGS:
-- name: catsvsdogs
-- target: cats_dogs
-- descr: kaggle test set
 - access: public
 - license: unknown
 
@@ -211,7 +203,7 @@ IEMOCAP:
 - name: iemocap
 - target: emotion,VAD
 - descr: English
-- access: restriced
+- access: restricted
 - license: Custom academic/research use
 
 # JL Dataset
