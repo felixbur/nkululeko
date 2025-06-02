@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# script to run all example configurations in the nkululeko package
+example_dir="examples"
+
 # save output to log.out
 exec > >(tee -i log.out)
 
@@ -31,8 +34,8 @@ if [ "$1" == "nkululeko" ] || [ "$1" == "all" ];  [ "$1" == "-spotlight" ]; then
     # add overwrite argument
     if [ "$2" == "-overwrite" ]; then
         echo "Removing (old) results directory and create if not exist"
-        rm -rf tests/results/*
-        mkdir -p tests/results
+        rm -rf $example_dir/results/*
+        mkdir -p $example_dir/results
     fi
 fi
 
@@ -154,7 +157,7 @@ do
     do
         # if module is "demo" add "--list" argument
         if [ "$module" == "demo" ]; then
-            RunTest python3 -m "nkululeko.$module" --config "tests/$ini_file" --list "data/test/samples.csv"
+            RunTest python3 -m "nkululeko.$module" --config "examples/$ini_file" --list "data/test/samples.csv"
         
         # for ensemble module
         elif [ "$module" == "ensemble" ]; then
@@ -162,12 +165,12 @@ do
             inis = ""
             for ensemble_ini_file in "${ensemble_ini_files[@]}"
             do
-                inis += "tests/$ensemble_ini_file "
+                inis += "$example_dir/$ensemble_ini_file "
             done
             RunTest python3 -m "nkululeko.$module" $inis --method mean
 
         else # for other modules
-            RunTest python3 -m "nkululeko.$module" --config "tests/$ini_file"
+            RunTest python3 -m "nkululeko.$module" --config "$example_dir/$ini_file"
         fi
 
         if [ $? -eq 0 ]; then
