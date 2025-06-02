@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.94.2 (25-06-02)
+--------------------------
+* added better error message: util.py might not have a logger 
+
 Version 0.94.1 (25-04-03)
 --------------------------
 * fixed bug: plot uncertainties had wrong file path
