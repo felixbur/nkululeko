@@ -30,6 +30,7 @@ class Util:
     ]
 
     def __init__(self, caller=None, has_config=True):
+        self.logger = None
         if caller is not None:
             self.caller = caller
         else:
@@ -48,7 +49,12 @@ class Util:
                         self.error(f"no such file: {self.got_data_roots}")
                     self.data_roots = configparser.ConfigParser()
                     self.data_roots.read(self.got_data_roots)
-            except (ModuleNotFoundError, AttributeError):
+            except ModuleNotFoundError as e:
+                self.error(e)
+                self.config = None
+                self.got_data_roots = False
+            except AttributeError as e:
+                self.error(e)
                 self.config = None
                 self.got_data_roots = False
 
@@ -311,14 +317,22 @@ class Util:
         return False
 
     def error(self, message):
-        self.logger.error(f"ERROR: {self.caller}: {message}")
+        if self.logger is not None:
+            self.logger.error(f"ERROR: {self.caller}: {message}")
+        else:
+            print(f"ERROR: {message}")
         sys.exit()
 
     def warn(self, message):
-        self.logger.warning(f"WARNING: {self.caller}: {message}")
-
+        if self.logger is not None:
+            self.logger.warning(f"WARNING: {self.caller}: {message}")
+        else:
+            print(f"WARNING: {message}")
     def debug(self, message):
-        self.logger.debug(f"DEBUG: {self.caller}: {message}")
+        if self.logger is not None:
+            self.logger.debug(f"DEBUG: {self.caller}: {message}")
+        else:
+            print(f"DEBUG: {message}")
 
     def set_config_val(self, section, key, value):
         try:
