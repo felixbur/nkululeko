@@ -73,9 +73,10 @@ To support open science and reproducible research, we encourage to submit PR and
 |msp-improv|emotion,VAD,naturalness|English|restricted|unknown|
 |shemo|emotion|Persian|public|Custom academic/research use|
 |esd|emotion|English,Chinese|public|unknown|
+|dementianet|audio for dementia screening|hundred of public figure audio samples with a confirmed dementia diagnosis|public|MIT|
 
 
-This recipe contains information about 55 datasets.
+This recipe contains information about 56 datasets.
 ## Performance
   
 ![Nkululeko performance](../meta/images/nkululeko_ser_20240719.png)  
