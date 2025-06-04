@@ -17,7 +17,7 @@ class Resampler:
     def __init__(self, df, replace, not_testing=True):
         self.SAMPLING_RATE = 16000
         self.df = df
-        self.util = Util("resampler", has_config=not_testing)
+        self.util = Util("resampler", has_config=not not_testing)
         self.util.warn(f"all files might be resampled to {self.SAMPLING_RATE}")
         self.not_testing = not_testing
         self.replace = (
@@ -30,7 +30,7 @@ class Resampler:
         files = self.df.index.get_level_values(0).values
         # replace = eval(self.util.config_val("RESAMPLE", "replace", "False"))
         replace = self.replace
-        if self.not_testing:
+        if not self.not_testing:
             store = self.util.get_path("store")
         else:
             store = "./"
@@ -67,17 +67,25 @@ class Resampler:
             self.df = self.df.set_index(
                 self.df.index.set_levels(new_files, level="file")
             )
-            target_file = self.util.config_val("RESAMPLE", "target", "resampled.csv")
-            # remove encoded labels
-            target = self.util.config_val("DATA", "target", "emotion")
-            if "class_label" in self.df.columns:
-                self.df = self.df.drop(columns=[target])
-                self.df = self.df.rename(columns={"class_label": target})
-            # save file
-            self.df.to_csv(target_file)
-            self.util.debug(
-                "saved resampled list of files to" f" {os.path.abspath(target_file)}"
-            )
+            if not self.not_testing:
+                target_file = self.util.config_val("RESAMPLE", "target", "resampled.csv")
+                # remove encoded labels
+                target = self.util.config_val("DATA", "target", "emotion")
+                if "class_label" in self.df.columns:
+                    self.df = self.df.drop(columns=[target])
+                    self.df = self.df.rename(columns={"class_label": target})
+                # save file
+                self.df.to_csv(target_file)
+                self.util.debug(
+                    "saved resampled list of files to" f" {os.path.abspath(target_file)}"
+                )
+            else:
+                # When running from command line, save to simple resampled.csv
+                target_file = "resampled.csv"
+                self.df.to_csv(target_file)
+                self.util.debug(
+                    f"saved resampled list of files to {os.path.abspath(target_file)}"
+                )
         self.util.debug(f"resampled {succes} files, {error} errors")
 
 
@@ -91,7 +99,7 @@ def main():
         df_sample.index, allow_nat=False
     )
     df_sample.head(10)
-    resampler = Resampler(df_sample, not_testing=False)
+    resampler = Resampler(df_sample, False, not_testing=False)
     resampler.resample()
     shutil.copyfile(testfile, "tmp.resample_result.wav")
     shutil.copyfile("tmp.wav", testfile)

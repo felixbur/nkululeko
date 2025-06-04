@@ -1,4 +1,4 @@
-# xgbmodel.py
+# model_xgb.py
 
 from xgboost import XGBClassifier
 

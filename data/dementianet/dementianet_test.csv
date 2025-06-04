@@ -1,0 +1,49 @@
+file,dementia,speaker,gender
+DEMENTIANET/dementia/Jimmy Calderwood/JimmyCalderwood_5.wav,dementia,DEMENTIANET_Jimmy_Calderwood,unknown
+DEMENTIANET/dementia/Viv Nicholson/vivnicholson_5.wav,dementia,DEMENTIANET_Viv_Nicholson,unknown
+DEMENTIANET/dementia/Ian Holm/IanHolm_2.wav,dementia,DEMENTIANET_Ian_Holm,unknown
+DEMENTIANET/dementia/Charmian Carr/CharmianCarr_15.wav,dementia,DEMENTIANET_Charmian_Carr,unknown
+DEMENTIANET/dementia/Charmian Carr/CharmianCarr_5.wav,dementia,DEMENTIANET_Charmian_Carr,unknown
+DEMENTIANET/dementia/Annette Michelson/annettemichelson_15.wav,dementia,DEMENTIANET_Annette_Michelson,unknown
+DEMENTIANET/dementia/Bill Buckner/BillBuckner_5.wav,dementia,DEMENTIANET_Bill_Buckner,unknown
+DEMENTIANET/dementia/Bill Buckner/BillBuckner_10.wav,dementia,DEMENTIANET_Bill_Buckner,unknown
+DEMENTIANET/dementia/Bill Buckner/BillBuckner_15.wav,dementia,DEMENTIANET_Bill_Buckner,unknown
+DEMENTIANET/dementia/B B King/bbking_10.wav,dementia,DEMENTIANET_B_B_King,unknown
+DEMENTIANET/dementia/B B King/bbking_15.wav,dementia,DEMENTIANET_B_B_King,unknown
+DEMENTIANET/dementia/B B King/bbking_0.wav,dementia,DEMENTIANET_B_B_King,unknown
+DEMENTIANET/dementia/Jonathan Miller/JonathanMiller_5.wav,dementia,DEMENTIANET_Jonathan_Miller,unknown
+DEMENTIANET/dementia/Ernie Sigley/ErnieSigley_15.wav,dementia,DEMENTIANET_Ernie_Sigley,unknown
+DEMENTIANET/dementia/Joe Conley/JoeConley_0.wav,dementia,DEMENTIANET_Joe_Conley,unknown
+DEMENTIANET/dementia/Lerone Bennett Jr/LeroneBennettJr_10.wav,dementia,DEMENTIANET_Lerone_Bennett_Jr,unknown
+DEMENTIANET/dementia/Jimmy Fratianno/JimmyFratianno_0.wav,dementia,DEMENTIANET_Jimmy_Fratianno,unknown
+DEMENTIANET/dementia/Casey Kasem/CaseyKasem_5.wav,dementia,DEMENTIANET_Casey_Kasem,unknown
+DEMENTIANET/dementia/Casey Kasem/CaseyKasem_15.wav,dementia,DEMENTIANET_Casey_Kasem,unknown
+DEMENTIANET/dementia/Estelle Getty/EstelleGetty_15.wav,dementia,DEMENTIANET_Estelle_Getty,unknown
+DEMENTIANET/nodementia/Bill Wyman/BillWyman_1.wav,nodementia,DEMENTIANET_Bill_Wyman,unknown
+DEMENTIANET/nodementia/Bill Wyman/BillWyman_3.wav,nodementia,DEMENTIANET_Bill_Wyman,unknown
+DEMENTIANET/nodementia/Bill Wyman/BillWyman_2.wav,nodementia,DEMENTIANET_Bill_Wyman,unknown
+DEMENTIANET/nodementia/Stan Lee/Stan Lee_3.wav,nodementia,DEMENTIANET_Stan_Lee,unknown
+DEMENTIANET/nodementia/Stan Lee/Stan Lee_2.wav,nodementia,DEMENTIANET_Stan_Lee,unknown
+DEMENTIANET/nodementia/Stan Lee/Stan Lee_1.wav,nodementia,DEMENTIANET_Stan_Lee,unknown
+DEMENTIANET/nodementia/Prince Philip/Prince Philip_2.wav,nodementia,DEMENTIANET_Prince_Philip,unknown
+DEMENTIANET/nodementia/Prince Philip/Prince Philip_3.wav,nodementia,DEMENTIANET_Prince_Philip,unknown
+DEMENTIANET/nodementia/Prince Philip/Prince Philip_1.wav,nodementia,DEMENTIANET_Prince_Philip,unknown
+DEMENTIANET/nodementia/George H W Bush/GeorgeHWBush_3.wav,nodementia,DEMENTIANET_George_H_W_Bush,unknown
+DEMENTIANET/nodementia/George H W Bush/GeorgeHWBush_2.wav,nodementia,DEMENTIANET_George_H_W_Bush,unknown
+DEMENTIANET/nodementia/Morgen Freeman/Morgen Freeman_1.wav,nodementia,DEMENTIANET_Morgen_Freeman,unknown
+DEMENTIANET/nodementia/Morgen Freeman/Morgen Freeman_3.wav,nodementia,DEMENTIANET_Morgen_Freeman,unknown
+DEMENTIANET/nodementia/Morgen Freeman/Morgen Freeman_2.wav,nodementia,DEMENTIANET_Morgen_Freeman,unknown
+DEMENTIANET/nodementia/Donald Sutherland/DonaldSutherland_3.wav,nodementia,DEMENTIANET_Donald_Sutherland,unknown
+DEMENTIANET/nodementia/Donald Sutherland/DonaldSutherland_2.wav,nodementia,DEMENTIANET_Donald_Sutherland,unknown
+DEMENTIANET/nodementia/Donald Sutherland/DonaldSutherland_1.wav,nodementia,DEMENTIANET_Donald_Sutherland,unknown
+DEMENTIANET/nodementia/Jeanne Moreau/JeanneMoreau_3.wav,nodementia,DEMENTIANET_Jeanne_Moreau,unknown
+DEMENTIANET/nodementia/Jeanne Moreau/JeanneMoreau_1.wav,nodementia,DEMENTIANET_Jeanne_Moreau,unknown
+DEMENTIANET/nodementia/Dick Cavett/DickCavett_1.wav,nodementia,DEMENTIANET_Dick_Cavett,unknown
+DEMENTIANET/nodementia/Dick Cavett/DickCavett_3.wav,nodementia,DEMENTIANET_Dick_Cavett,unknown
+DEMENTIANET/nodementia/Queen Elisabeth/Queen Elisabeth_3.wav,nodementia,DEMENTIANET_Queen_Elisabeth,unknown
+DEMENTIANET/nodementia/Anthony Hopkins/AnthonyHopkins_1.wav,nodementia,DEMENTIANET_Anthony_Hopkins,unknown
+DEMENTIANET/nodementia/Anthony Hopkins/AnthonyHopkins_2.wav,nodementia,DEMENTIANET_Anthony_Hopkins,unknown
+DEMENTIANET/nodementia/Anthony Hopkins/AnthonyHopkins_3.wav,nodementia,DEMENTIANET_Anthony_Hopkins,unknown
+DEMENTIANET/nodementia/Charles Aznavour/CharlesAznavour_3.wav,nodementia,DEMENTIANET_Charles_Aznavour,unknown
+DEMENTIANET/nodementia/Charles Aznavour/CharlesAznavour_1.wav,nodementia,DEMENTIANET_Charles_Aznavour,unknown
+DEMENTIANET/nodementia/Charles Aznavour/CharlesAznavour_2.wav,nodementia,DEMENTIANET_Charles_Aznavour,unknown

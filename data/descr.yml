@@ -444,3 +444,10 @@ SVD:
 - descr: German speech data for detecting various pathological voices
 - access: public
 - license: unknown
+
+DEMENTIANET:
+- name: dementianet
+- target: audio for dementia screening
+- descr: hundred of public figure audio samples with a confirmed dementia diagnosis
+- access: public
+- license: MIT

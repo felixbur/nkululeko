@@ -181,7 +181,7 @@ class Runmanager:
         """
         # self.load_model(report)
         # report = self.model.predict()
-        self.util.debug(f"plotting conf matrix to {plot_name}")
+        self.util.debug(f"plotting conf matrix as {plot_name}")
         report.plot_confmatrix(plot_name, epoch=report.epoch)
         report.print_results(report.epoch, file_name=plot_name)
         report.print_probabilities(file_name=plot_name)

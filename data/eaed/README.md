@@ -11,7 +11,7 @@ AA : Actor unique ID
 BB : the emotion label  
 CC : unique number inside this folder
 
-Example: NellyKarim_happy_ 01.wav is a file in a folder that belongs to an actress whose name is Nelly Karim and the emotion being conveyed is happy.
+Example: `NellyKarim_happy_ 01.wav` is a file in a folder that belongs to an actress whose name is Nelly Karim and the emotion being conveyed is happy.
 
 ## Pre-processing command
 
