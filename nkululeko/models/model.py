@@ -3,16 +3,19 @@ import ast
 import pickle
 import random
 
+from joblib import parallel_backend
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import LeaveOneGroupOut
+from sklearn.model_selection import StratifiedKFold
 import sklearn.utils
-from joblib import parallel_backend
-from sklearn.model_selection import GridSearchCV, LeaveOneGroupOut, StratifiedKFold
+
+import audeer
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.reporting.reporter import Reporter
 from nkululeko.utils.util import Util
-
 
 
 class Model:
@@ -361,6 +364,6 @@ class Model:
             initial_type = [("input", FloatTensorType(input_shape))]
 
         onnx_model = convert_sklearn(self.clf, initial_types=initial_type)
-        with open(onnx_path, "wb") as f:
+        with open(audeer.path(onnx_path), "wb") as f:
             f.write(onnx_model.SerializeToString())
         self.util.debug(f"Model exported to ONNX at {onnx_path}")
