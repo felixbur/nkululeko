@@ -13,7 +13,7 @@ $ python3 -m nkululeko.nkululeko --config data/urdu/exp.ini
 ```
 
 
-References: 
-[1] https://github.com/siddiquelatif/URDU-Dataset/
-[2] Latif, S., Qadir, J., & Bilal, M. (2019). Unsupervised Adversarial Domain Adaptation for Cross-Lingual Speech Emotion Recognition. 2019 8th International Conference on Affective Computing and Intelligent Interaction, ACII 2019. https://doi.org/10.1109/ACII.2019.8925513
-[3] https://github.com/bagustris/multilingual_speech_emotion_dataset
+References:  
+[1] https://github.com/siddiquelatif/URDU-Dataset/  
+[2] Latif, S., Qadir, J., & Bilal, M. (2019). Unsupervised Adversarial Domain Adaptation for Cross-Lingual Speech Emotion Recognition. 2019 8th International Conference on Affective Computing and Intelligent Interaction, ACII 2019. https://doi.org/10.1109/ACII.2019.8925513  
+[3] https://github.com/bagustris/multilingual_speech_emotion_dataset  
