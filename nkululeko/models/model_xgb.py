@@ -61,7 +61,8 @@ class XGB_model(Model):
         # Check if early stopping is configured
         if self.early_stopping_rounds:
             # Check if we're in split3 mode (train/dev/test) where validation data is available
-            split3 = eval(self.util.config_val("EXP", "traindevtest", "False"))
+            import ast
+            split3 = ast.literal_eval(self.util.config_val("EXP", "traindevtest", "False"))
             
             if split3 and self.feats_test is not None and self.df_test is not None:
                 # In split3 mode, self.feats_test and self.df_test are actually the dev set
