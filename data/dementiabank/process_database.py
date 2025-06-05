@@ -3,7 +3,6 @@
 
 import argparse
 import collections
-import os
 from pathlib import Path
 
 import numpy as np
@@ -108,7 +107,7 @@ def process_database(data_dir=None, output_dir=None):
 
     # Define paths following TensorFlow datasets structure
     control_folder = data_dir / "DEMENTIABANK/English/Pitt/Control/cookie"
-    dementia_folder = data_dir / "DEMENTIABANK/English/Pitt/Dementia/dementia"
+    dementia_folder = data_dir / "DEMENTIABANK/English/Pitt/Dementia/cookie"
 
     # Check if directories exist
     if not control_folder.exists():
@@ -126,7 +125,7 @@ def process_database(data_dir=None, output_dir=None):
         speaker_id = filename.split("-")[0]
 
         # Create relative path for nkululeko
-        relative_path = f"DEMENTIABANK/English/Pitt/Control/coockie/{filename}"
+        relative_path = f"{control_folder}/{filename}"
 
         example = {"file": relative_path, "label": "control", "speaker_id": speaker_id}
         examples_and_speaker_ids.append((example, speaker_id))
@@ -138,7 +137,7 @@ def process_database(data_dir=None, output_dir=None):
         speaker_id = filename.split("-")[0]
 
         # Create relative path for nkululeko
-        relative_path = f"DEMENTIABANK/English/Pitt/Dementia/dementia/{filename}"
+        relative_path = f"{dementia_folder}/{filename}"
 
         example = {"file": relative_path, "label": "dementia", "speaker_id": speaker_id}
         examples_and_speaker_ids.append((example, speaker_id))
@@ -221,7 +220,7 @@ def process_database(data_dir=None, output_dir=None):
     overlap_train_test = train_speakers & test_speakers
     overlap_val_test = val_speakers & test_speakers
 
-    print(f"\nSpeaker separation verification:")
+    print("\nSpeaker separation verification:")
     print(f"Train speakers: {len(train_speakers)}")
     print(f"Validation speakers: {len(val_speakers)}")
     print(f"Test speakers: {len(test_speakers)}")
