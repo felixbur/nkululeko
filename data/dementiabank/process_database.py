@@ -107,7 +107,7 @@ def process_database(data_dir=None, output_dir=None):
     print(f"Processing DementiaBank dataset from {data_dir}")
 
     # Define paths following TensorFlow datasets structure
-    control_folder = data_dir / "DEMENTIABANK/English/Pitt/Control/coockie"
+    control_folder = data_dir / "DEMENTIABANK/English/Pitt/Control/cookie"
     dementia_folder = data_dir / "DEMENTIABANK/English/Pitt/Dementia/dementia"
 
     # Check if directories exist
