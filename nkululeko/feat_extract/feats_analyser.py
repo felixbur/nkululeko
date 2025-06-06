@@ -76,17 +76,18 @@ class FeatureAnalyser:
             self.util.to_pickle(shap_values, name)
         else:
             shap_values = self.util.from_pickle(name)
-        # plt.figure()
-        plt.close("all")
-        plt.tight_layout()
-        shap.plots.bar(shap_values)
+        # Create SHAP summary plot instead
+        fig, ax = plt.subplots(figsize=(10, 6))
+        shap.plots.bar(shap_values, ax=ax, show=False)
+
         fig_dir = self.util.get_path("fig_dir") + "../"  # one up because of the runs
         exp_name = self.util.get_exp_name(only_data=True)
         format = self.util.config_val("PLOT", "format", "png")
         filename = f"_SHAP_{model.name}"
         filename = f"{fig_dir}{exp_name}{filename}.{format}"
-        plt.savefig(filename)
-        plt.close()
+
+        fig.savefig(filename, dpi=300, bbox_inches="tight")
+        plt.close(fig)
         self.util.debug(f"plotted SHAP feature importance to {filename}")
 
     def analyse(self):

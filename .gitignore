@@ -86,10 +86,8 @@ venv.bak/
 # cache/tmp
 cache/
 bak/
-bak
-
-
-# others
+examples?/
+others/
 *.bak
 *.swp
 *.tmp
@@ -108,7 +106,7 @@ bak
 *.pt
 *.ckpt
 *.json
-
+.*
 
 # dataset
 data/*/** 
@@ -158,6 +156,10 @@ docs/_static/
 docs/_templates/
 docs/source/
 docs/build/
+
+# Singularity build sandboxes
+nkululeko-dev/
+*.sif
 
 # agent settings
 AGENT.md
