@@ -297,6 +297,10 @@
     * **tree**: Classification tree classifier
     * **tree_reg**: Classification tree regressor
     * **xgb**: XG-Boost
+      * n_estimators = 100
+      * max_depth = 6
+      * learning_rate = 0.3
+      * subsample = 1.0
     * **xgr**: XG-Boost Regression
 * **balancing**: balancing for **finetune** type; for other than finetune, set balancing in [FEATS].
   * possible values: [ros, smote, adasyn]
@@ -370,7 +374,7 @@
   * dist_type = kde
 * **spotlight**: open a web-browser window to inspect the data with the [spotlight software](https://github.com/Renumics/spotlight). Needs package *renumics-spotlight* to be installed!
   * spotlight = False
-* **shap**: comopute [SHAP](https://shap.readthedocs.io/en/latest/) values
+* **shap**: compute [SHAP](https://shap.readthedocs.io/en/latest/) values
   * shap = False
 
 ### [PREDICT](#predict)

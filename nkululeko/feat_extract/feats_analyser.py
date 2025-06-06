@@ -80,7 +80,7 @@ class FeatureAnalyser:
         fig, ax = plt.subplots(figsize=(10, 6))
         shap.plots.bar(shap_values, ax=ax, show=False)
 
-        fig_dir = self.util.get_path("fig_dir") + "../"  # one up because of the runs
+        fig_dir = self.util.get_path("fig_dir")
         exp_name = self.util.get_exp_name(only_data=True)
         format = self.util.config_val("PLOT", "format", "png")
         filename = f"_SHAP_{model.name}"
@@ -264,7 +264,7 @@ class FeatureAnalyser:
             title += "\n based on feature permutation"
         ax.set(title=title)
         plt.tight_layout()
-        fig_dir = self.util.get_path("fig_dir") + "../"  # one up because of the runs
+        fig_dir = self.util.get_path("fig_dir")
         exp_name = self.util.get_exp_name(only_data=True)
         format = self.util.config_val("PLOT", "format", "png")
         filename = f"_EXPL_{model_name}"

@@ -216,7 +216,7 @@ class Plots:
 
     def save_plot(self, ax, caption, header, filename, type_s):
         # one up because of the runs
-        fig_dir = self.util.get_path("fig_dir") + "../"
+        fig_dir = self.util.get_path("fig_dir")  # + "../"
         fig_plots = ax.figure
         # avoid warning
         # plt.tight_layout()
@@ -359,7 +359,7 @@ class Plots:
 
     def plot_durations(self, df, filename, sample_selection, caption=""):
         # one up because of the runs
-        fig_dir = self.util.get_path("fig_dir") + "../"
+        fig_dir = self.util.get_path("fig_dir")  # + "../"
         try:
             ax = sns.histplot(df, x="duration", hue="class_label", kde=True)
         except AttributeError as ae:
@@ -393,7 +393,7 @@ class Plots:
         filename = "speakers"
         caption = "speakers"
         # one up because of the runs
-        fig_dir = self.util.get_path("fig_dir") + "../"
+        fig_dir = self.util.get_path("fig_dir")  # + "../"
         sns.set_style("whitegrid")  # Set style for chart
         ax = df["speaker"].value_counts().plot(kind="pie", autopct="%1.1f%%")
         title = f"Speaker distr. for {sample_selection} {df.shape[0]}."
@@ -415,7 +415,7 @@ class Plots:
 
     def describe_df(self, name, df, target, filename):
         """Make a stacked barplot of samples and speakers per sex and target values. speaker, gender and target columns must be present"""
-        fig_dir = self.util.get_path("fig_dir") + "../"  # one up because of the runs
+        fig_dir = self.util.get_path("fig_dir")  # + "../"  # one up because of the runs
         sampl_num = df.shape[0]
         sex_col = "gender"
         if target == "gender":
@@ -463,7 +463,7 @@ class Plots:
     def scatter_plot(self, feats, label_df, label, dimred_type):
         dim_num = int(self.util.config_val("EXPL", "scatter.dim", 2))
         # one up because of the runs
-        fig_dir = self.util.get_path("fig_dir") + "../"
+        fig_dir = self.util.get_path("fig_dir")  # + "../"
         sample_selection = self.util.config_val("EXPL", "sample_selection", "all")
         filename = f"{label}_{self.util.get_feattype_name()}_{sample_selection}_{dimred_type}_{str(dim_num)}d"
         filename = f"{fig_dir}{filename}.{self.format}"
@@ -599,7 +599,7 @@ class Plots:
         # remove fullstops in the name
         feature_name = feature.replace(".", "-")
         # one up because of the runs
-        fig_dir = self.util.get_path("fig_dir") + "../"
+        fig_dir = self.util.get_path("fig_dir")  # + "../"
         filename = f"{fig_dir}feat_dist_{title}_{feature_name}.{self.format}"
         if self.util.is_categorical(df_labels[label]):
             df_plot = pd.DataFrame(
@@ -647,7 +647,7 @@ class Plots:
         # plt.tight_layout()
         # print(ax)
         # one up because of the runs
-        fig_dir = self.util.get_path("fig_dir") + "../"
+        fig_dir = self.util.get_path("fig_dir")  # + "../"
         exp_name = self.util.get_exp_name(only_data=True)
         filename = f"{fig_dir}{exp_name}EXPL_tree-plot.{self.format}"
         fig = ax.figure
