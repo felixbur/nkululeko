@@ -62,7 +62,7 @@ From: python:3.12-slim
         audmetric xgboost transformers datasets accelerate \
         pyannote.audio pylatex audiomentations audonnx \
         confidence_intervals imageio sounddevice umap-learn \
-        black flake8 pytest ipython
+        black flake8 pytest ipython shap
 
     # Optional packages
     pip install --no-cache-dir praat-parselmouth || true
