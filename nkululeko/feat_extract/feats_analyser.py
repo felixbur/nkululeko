@@ -1,5 +1,7 @@
 # feats_analyser.py
 import ast
+from multiprocessing import RawArray
+import random
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -88,6 +90,25 @@ class FeatureAnalyser:
 
         fig.savefig(filename, dpi=300, bbox_inches="tight")
         plt.close(fig)
+
+        # print and save SHAP feature importance
+        max_feat_num = len(self.features.columns)
+        shap_importance_values = shap_values.abs.mean(0).values
+
+        feature_cols = self.features.columns
+        feature_importance = pd.DataFrame(
+            shap_importance_values[:max_feat_num],
+            index=feature_cols,
+            columns=["importance"],
+        ).sort_values("importance", ascending=False)
+
+        self.util.debug(
+            f"SHAP analysis, features = {feature_importance.index.tolist()}"
+        )
+        # Save to CSV (save all features, not just top ones)
+        csv_filename = f"{fig_dir}{exp_name}_SHAP_importance_{model.name}.csv"
+        feature_importance.to_csv(csv_filename)
+        self.util.debug(f"Saved SHAP feature importance to {csv_filename}")
         self.util.debug(f"plotted SHAP feature importance to {filename}")
 
     def analyse(self):
@@ -157,7 +178,7 @@ class FeatureAnalyser:
                     from sklearn.svm import SVC
 
                     c = float(self.util.config_val("MODEL", "C_val", "1.0"))
-                    model = SVC(kernel="linear", C=c, gamma="scale")
+                    model = SVC(kernel="linear", C=c, gamma="scale", random_state=42)
                     result_importances[model_s] = self._get_importance(
                         model, permutation
                     )
@@ -166,7 +187,7 @@ class FeatureAnalyser:
                         plots = Plots()
                         plots.plot_tree(model, self.features)
                 elif model_s == "tree":
-                    model = DecisionTreeClassifier()
+                    model = DecisionTreeClassifier(random_state=42)
                     result_importances[model_s] = self._get_importance(
                         model, permutation
                     )
@@ -177,7 +198,9 @@ class FeatureAnalyser:
                 elif model_s == "xgb":
                     from xgboost import XGBClassifier
 
-                    model = XGBClassifier(enable_categorical=True, tree_method="hist")
+                    model = XGBClassifier(
+                        enable_categorical=True, tree_method="hist", random_state=42
+                    )
                     self.labels = self.labels.astype("category")
                     result_importances[model_s] = self._get_importance(
                         model, permutation

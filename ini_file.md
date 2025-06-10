@@ -374,7 +374,7 @@
   * dist_type = kde
 * **spotlight**: open a web-browser window to inspect the data with the [spotlight software](https://github.com/Renumics/spotlight). Needs package *renumics-spotlight* to be installed!
   * spotlight = False
-* **shap**: compute [SHAP](https://shap.readthedocs.io/en/latest/) values
+* **shap**: compute [SHAP](https://shap.readthedocs.io/en/latest/) values, need to run the model first.
   * shap = False
 
 ### [PREDICT](#predict)
