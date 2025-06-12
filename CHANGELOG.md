@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 0.94.3 (25-07-22)
+--------------------------
+* adding the following features (related to dementia/alzheimer):
+* pause_lognorm_mu, pause_lognorm_sigma, pause_lognorm_ks_pvalue
+* pause_mean_duration, pause_std_duration, pause_cv, proportion_pause_duration (
+
 Version 0.94.2 (25-06-02)
 --------------------------
 * added better error message: util.py might not have a logger 

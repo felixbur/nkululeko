@@ -305,8 +305,15 @@ class Model:
     def get_type(self):
         return "generic"
 
-    def predict_sample(self, features):
-        """Predict one sample"""
+    def predict_sample(self, features: np.ndarray) -> dict | float:
+        """Predict a single sample using the trained model.
+
+        Args:
+            features (np.ndarray): The feature vector of the sample to predict.
+
+        Returns:
+            dict: A dictionary containing the predicted class probabilities or value.
+        """
         prediction = {}
         if self.util.exp_is_classification():
             # get the class probabilities
