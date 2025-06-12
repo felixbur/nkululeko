@@ -5,7 +5,6 @@ Collector class for report items collected during module processing.
 
 """
 
-from nkululeko.reporting.latex_writer import LatexWriter
 from nkululeko.utils.util import Util
 
 
@@ -31,7 +30,10 @@ class Report:
                 print("\t" + c.contents)
 
     def export_latex(self):
-        lw = LatexWriter()
-        for topic in self.report_items:
-            lw.add_items_for_section(topic, self.report_items[topic])
-        lw.finish_doc()
+        if str(self.util.config_val("REPORT", "show", "False")).lower() == "true":
+            from nkululeko.reporting.latex_writer import LatexWriter
+
+            lw = LatexWriter()
+            for topic in self.report_items:
+                lw.add_items_for_section(topic, self.report_items[topic])
+            lw.finish_doc()
