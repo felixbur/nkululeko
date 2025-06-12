@@ -21,9 +21,14 @@ Nkululeko requires Python 3.9 or higher with the following build status:
 Create and activate a virtual Python environment and simply install Nkululeko:
 
 ```bash
+# using python venv
 python -m venv .env
 source .env/bin/activate  # specify OS versions, add a separate line for Windows users 
 pip install nkululeko
+# using uv in development mode
+uv venv --python 3.12
+source .venv/bin/activate
+uv pip install -r requirements.txt
 ```
 
 Current version: **0.94.1**
