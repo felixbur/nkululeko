@@ -85,8 +85,10 @@ def main():
             expr.extract_feats()
             needs_feats = True
             # explore
-            # expr.init_runmanager()
-            # expr.runmgr.do_runs()
+            if shap:
+                # SHAP analysis requires a trained model
+                expr.init_runmanager()
+                expr.runmgr.do_runs()
     expr.analyse_features(needs_feats)
     expr.store_report()
     print("DONE")
