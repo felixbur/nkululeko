@@ -65,12 +65,18 @@ class FeatureAnalyser:
 
             self.util.debug(f"using SHAP explainer for {model_name} model")
 
+            # Set random seeds for reproducibility
+            import numpy as np
+            np.random.seed(42)
+            import random
+            random.seed(42)
+            
             explainer = shap.Explainer(
                 model_func,
                 self.features,
                 output_names=glob_conf.labels,
                 algorithm="permutation",
-                npermutations=5,
+                npermutations=100,  # Increased for stability
             )
 
             self.util.debug("computing SHAP values...")
