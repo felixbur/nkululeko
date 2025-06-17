@@ -144,6 +144,10 @@ class TunedModel(BaseModel):
         if self.is_classifier:
             self.util.debug("Task is classification.")
             le = glob_conf.label_encoder
+            if le is None:
+                self.util.error(
+                    "Label encoder is not available. Make sure to set up data loading properly."
+                )
             mapping = dict(zip(le.classes_, range(len(le.classes_))))
             target_mapping = {k: int(v) for k, v in mapping.items()}
             target_mapping_reverse = {

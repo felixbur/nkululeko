@@ -280,7 +280,10 @@ class Modelrunner:
                 f"balanced with: {balancing}, new size: {X_res.shape[0]} (was {orig_size})"
             )
             # Check if label encoder is available before using it
-            if hasattr(glob_conf, 'label_encoder'):
+            if (
+                hasattr(glob_conf, "label_encoder")
+                and glob_conf.label_encoder is not None
+            ):
                 le = glob_conf.label_encoder
                 res = y_res.value_counts()
                 resd = {}
@@ -288,4 +291,6 @@ class Modelrunner:
                     resd[e] = res.values[i]
                 self.util.debug(f"class distribution after balancing: {resd}")
             else:
-                self.util.debug("Label encoder not available, skipping class distribution report")
+                self.util.debug(
+                    "Label encoder not available, skipping class distribution report"
+                )

@@ -152,11 +152,14 @@ class Reporter:
             probas["truth"] = self.truths
             try:
                 le = glob_conf.label_encoder
-                mapping = dict(zip(le.classes_, range(len(le.classes_))))
-                mapping_reverse = {value: key for key, value in mapping.items()}
-                probas = probas.rename(columns=mapping_reverse)
-                probas["predicted"] = probas["predicted"].map(mapping_reverse)
-                probas["truth"] = probas["truth"].map(mapping_reverse)
+                if le is not None:
+                    mapping = dict(zip(le.classes_, range(len(le.classes_))))
+                    mapping_reverse = {value: key for key, value in mapping.items()}
+                    probas = probas.rename(columns=mapping_reverse)
+                    probas["predicted"] = probas["predicted"].map(mapping_reverse)
+                    probas["truth"] = probas["truth"].map(mapping_reverse)
+                else:
+                    self.util.debug("Label encoder is None, skipping label mapping")
             except AttributeError as ae:
                 self.util.debug(f"Can't label categories: {ae}")
             # compute entropy per sample

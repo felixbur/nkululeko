@@ -1,7 +1,6 @@
 # feats_analyser.py
 import ast
-from multiprocessing import RawArray
-import random
+
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -65,18 +64,12 @@ class FeatureAnalyser:
 
             self.util.debug(f"using SHAP explainer for {model_name} model")
 
-            # Set random seeds for reproducibility
-            import numpy as np
-            np.random.seed(42)
-            import random
-            random.seed(42)
-            
             explainer = shap.Explainer(
                 model_func,
                 self.features,
                 output_names=glob_conf.labels,
                 algorithm="permutation",
-                npermutations=100,  # Increased for stability
+                npermutations=5,
             )
 
             self.util.debug("computing SHAP values...")
@@ -87,12 +80,12 @@ class FeatureAnalyser:
         # Create SHAP summary plot instead
         fig, ax = plt.subplots(figsize=(10, 6))
         shap.plots.bar(shap_values, ax=ax, show=False)
+        fig_dir = self.util.get_path("fig_dir") + "../"
 
-        fig_dir = self.util.get_path("fig_dir")
-        exp_name = self.util.get_exp_name(only_data=True)
         format = self.util.config_val("PLOT", "format", "png")
-        filename = f"_SHAP_{model.name}"
-        filename = f"{fig_dir}{exp_name}{filename}.{format}"
+        feat_type = self.util.config_val("FEATS", "type", "unknown")
+        filename = f"SHAP_{feat_type}_{model.name}.{format}"
+        filename = f"{fig_dir}{filename}"
 
         fig.savefig(filename, dpi=300, bbox_inches="tight")
         plt.close(fig)
@@ -112,7 +105,7 @@ class FeatureAnalyser:
             f"SHAP analysis, features = {feature_importance.index.tolist()}"
         )
         # Save to CSV (save all features, not just top ones)
-        csv_filename = f"{fig_dir}{exp_name}_SHAP_importance_{model.name}.csv"
+        csv_filename = f"{fig_dir}SHAP_{feat_type}_importance_{model.name}.csv"
         feature_importance.to_csv(csv_filename)
         self.util.debug(f"Saved SHAP feature importance to {csv_filename}")
         self.util.debug(f"plotted SHAP feature importance to {filename}")
@@ -148,6 +141,12 @@ class FeatureAnalyser:
                     covariance_type = self.util.config_val(
                         "MODEL", "GMM_covariance_type", "full"
                     )
+                    allowed_cov_types = ["full", "tied", "diag", "spherical"]
+                    if covariance_type not in allowed_cov_types:
+                        self.util.error(
+                            f"Invalid covariance_type '{covariance_type}', must be one of {allowed_cov_types}. Using default 'full'."
+                        )
+                        covariance_type = "full"
                     model = mixture.GaussianMixture(
                         n_components=n_components, covariance_type=covariance_type
                     )
@@ -294,12 +293,11 @@ class FeatureAnalyser:
         ax.set(title=title)
         plt.tight_layout()
         fig_dir = self.util.get_path("fig_dir")
-        exp_name = self.util.get_exp_name(only_data=True)
         format = self.util.config_val("PLOT", "format", "png")
-        filename = f"_EXPL_{model_name}"
+        filename = f"EXPL_{model_name}"
         if permutation:
             filename += "_perm"
-        filename = f"{fig_dir}{exp_name}{filename}.{format}"
+        filename = f"{fig_dir}{filename}.{format}"
         plt.savefig(filename)
         fig = ax.figure
         fig.clear()
