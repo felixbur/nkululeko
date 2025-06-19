@@ -1,5 +1,14 @@
 # glob_conf.py
 
+# Initialize global variables
+config = None
+label_encoder = None
+util = None
+module = None
+report = None
+labels = None
+target = None
+
 
 def init_config(config_obj):
     global config
