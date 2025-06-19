@@ -80,7 +80,7 @@ class FeatureAnalyser:
         # Create SHAP summary plot instead
         fig, ax = plt.subplots(figsize=(10, 6))
         shap.plots.bar(shap_values, ax=ax, show=False)
-        fig_dir = self.util.get_path("fig_dir") + "../"
+        fig_dir = os.path.join(self.util.get_path("fig_dir"), "..")
 
         format = self.util.config_val("PLOT", "format", "png")
         feat_type = self.util.get_feattype_name()
