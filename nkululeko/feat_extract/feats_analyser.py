@@ -83,7 +83,7 @@ class FeatureAnalyser:
         fig_dir = self.util.get_path("fig_dir") + "../"
 
         format = self.util.config_val("PLOT", "format", "png")
-        feat_type = self.util.config_val("FEATS", "type", "unknown")
+        feat_type = self.util.get_feattype_name()
         filename = f"SHAP_{feat_type}_{model.name}.{format}"
         filename = f"{fig_dir}{filename}"
 
