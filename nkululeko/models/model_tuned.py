@@ -119,7 +119,7 @@ class TunedModel(BaseModel):
                 else:
                     self.util.error(f"Unknown balancing algorithm: {self.balancing}")
 
-                X_resampled, y_resampled = sampler.fit_resample(
+                X_resampled, y_resampled = sampler.fit_resample(  # type: ignore
                     df[["start", "end"]], df["targets"]
                 )
                 df = pd.DataFrame(
@@ -148,6 +148,7 @@ class TunedModel(BaseModel):
                 self.util.error(
                     "Label encoder is not available. Make sure to set up data loading properly."
                 )
+                return
             mapping = dict(zip(le.classes_, range(len(le.classes_))))
             target_mapping = {k: int(v) for k, v in mapping.items()}
             target_mapping_reverse = {
@@ -195,14 +196,14 @@ class TunedModel(BaseModel):
             feature_extractor=feature_extractor,
             tokenizer=tokenizer,
         )
-        assert self.processor.feature_extractor.sampling_rate == self.sampling_rate
+        assert self.processor.feature_extractor.sampling_rate == self.sampling_rate  # type: ignore
 
-        self.model = Model.from_pretrained(
+        self.model = Model.from_pretrained(  # type: ignore
             pretrained_model,
             config=self.config,
         )
-        self.model.freeze_feature_extractor()
-        self.model.train()
+        self.model.freeze_feature_extractor()  # type: ignore
+        self.model.train()  # type: ignore
         self.model_initialized = True
 
     def set_model_type(self, type):
@@ -390,13 +391,13 @@ class TunedModel(BaseModel):
         )
 
         trainer = Trainer(
-            model=self.model,
+            model=self.model,  # type: ignore
             data_collator=self.data_collator,
             args=training_args,
             compute_metrics=self.compute_metrics,
             train_dataset=self.dataset["train"],
             eval_dataset=self.dataset["dev"],
-            tokenizer=self.processor.feature_extractor,
+            tokenizer=self.processor.feature_extractor,  # type: ignore
             callbacks=[transformers.integrations.TensorBoardCallback()],
         )
 
@@ -425,7 +426,7 @@ class TunedModel(BaseModel):
                     file, duration=end - start, offset=start, always_2d=True
                 )
             assert sr == self.sampling_rate
-            prediction = self.model.predict(signal)
+            prediction = self.model.predict(signal)  # type: ignore
             results.append(prediction)
             # results.append(predictions.argmax())
         predictions = np.asarray(results)
@@ -487,13 +488,13 @@ class TunedModel(BaseModel):
         prediction = {}
         if self.is_classifier:
             # get the class probabilities
-            predictions = self.model.predict(signal)
+            predictions = self.model.predict(signal)  # type: ignore
             # pred = self.clf.predict(features)
             for i in range(len(self.labels)):
                 cat = self.labels[i]
                 prediction[cat] = predictions[i]
         else:
-            predictions = self.model.predict(signal)
+            predictions = self.model.predict(signal)  # type: ignore
             prediction = predictions
         return prediction
 
@@ -515,20 +516,20 @@ class TunedModel(BaseModel):
 
 
 @dataclasses.dataclass
-class ModelOutput(transformers.file_utils.ModelOutput):
-    logits: torch.FloatTensor = None
-    hidden_states: typing.Tuple[torch.FloatTensor] = None
-    cnn_features: torch.FloatTensor = None
+class ModelOutput:
+    logits: typing.Optional[torch.Tensor] = None
+    hidden_states: typing.Optional[torch.Tensor] = None
+    cnn_features: typing.Optional[torch.Tensor] = None
 
 
 @dataclasses.dataclass
-class ModelOutputReg(transformers.file_utils.ModelOutput):
-    logits: torch.FloatTensor
-    hidden_states: typing.Tuple[torch.FloatTensor] = None
-    attentions: typing.Tuple[torch.FloatTensor] = None
-    logits_framewise: torch.FloatTensor = None
-    hidden_states_framewise: torch.FloatTensor = None
-    cnn_features: torch.FloatTensor = None
+class ModelOutputReg:
+    logits: torch.Tensor
+    hidden_states: typing.Optional[torch.Tensor] = None
+    attentions: typing.Optional[torch.Tensor] = None
+    logits_framewise: typing.Optional[torch.Tensor] = None
+    hidden_states_framewise: typing.Optional[torch.Tensor] = None
+    cnn_features: typing.Optional[torch.Tensor] = None
 
 
 class ModelHead(torch.nn.Module):

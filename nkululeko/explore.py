@@ -79,7 +79,7 @@ def main():
 
     # Check exploration settings regardless of whether experiment was loaded or not
     plot_feats = eval(util.config_val("EXPL", "feature_distributions", "False"))
-    tsne = eval(util.config_val("EXPL", "tsne", "False"))
+    tsne_plot = eval(util.config_val("EXPL", "tsne", "False"))
     umap_plot = eval(util.config_val("EXPL", "umap", "False"))
     pca_plot = eval(util.config_val("EXPL", "pca", "False"))
     scatter = eval(util.config_val("EXPL", "scatter", "False"))
@@ -89,7 +89,7 @@ def main():
 
     if (
         plot_feats
-        or tsne
+        or tsne_plot
         or umap_plot
         or pca_plot
         or scatter

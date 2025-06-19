@@ -1,5 +1,6 @@
 # plots.py
 import ast
+import os
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -217,11 +218,11 @@ class Plots:
 
     def save_plot(self, ax, caption, header, filename, type_s):
         # one up because of the runs
-        fig_dir = self.util.get_path("fig_dir") + "../"
+        fig_dir = os.path.join(self.util.get_path("fig_dir"), "..")
         fig_plots = ax.figure
         # avoid warning
         # plt.tight_layout()
-        img_path = f"{fig_dir}{filename}_{type_s}.{self.format}"
+        img_path = os.path.join(fig_dir, f"{filename}_{type_s}.{self.format}")
         plt.savefig(img_path)
         plt.close(fig_plots)
         self.util.debug(f"Saved plot to {img_path}")
@@ -360,7 +361,7 @@ class Plots:
 
     def plot_durations(self, df, filename, sample_selection, caption=""):
         # one up because of the runs
-        fig_dir = self.util.get_path("fig_dir") + "../"
+        fig_dir = os.path.join(self.util.get_path("fig_dir"), "..")
         try:
             ax = sns.histplot(df, x="duration", hue="class_label", kde=True)
         except AttributeError as ae:
@@ -377,7 +378,7 @@ class Plots:
         ax.set_ylabel("number of samples")
         fig = ax.figure
         # plt.tight_layout()
-        img_path = f"{fig_dir}{filename}_{sample_selection}.{self.format}"
+        img_path = os.path.join(fig_dir, f"{filename}_{sample_selection}.{self.format}")
         plt.savefig(img_path)
         plt.close(fig)
         self.util.debug(f"plotted durations to {img_path}")
@@ -394,14 +395,14 @@ class Plots:
         filename = "speakers"
         caption = "speakers"
         # one up because of the runs
-        fig_dir = self.util.get_path("fig_dir") + "../"
+        fig_dir = os.path.join(self.util.get_path("fig_dir"), "..")
         sns.set_style("whitegrid")  # Set style for chart
         ax = df["speaker"].value_counts().plot(kind="pie", autopct="%1.1f%%")
         title = f"Speaker distr. for {sample_selection} {df.shape[0]}."
         ax.set_title(title)
         fig = ax.figure
         # plt.tight_layout()
-        img_path = f"{fig_dir}{filename}_{sample_selection}.{self.format}"
+        img_path = os.path.join(fig_dir, f"{filename}_{sample_selection}.{self.format}")
         plt.savefig(img_path)
         plt.close(fig)
         self.util.debug(f"plotted speakers to {img_path}")
@@ -448,7 +449,7 @@ class Plots:
                     kind="bar", ax=axes, title=f"samples ({sampl_num})"
                 )
             # plt.tight_layout()
-            img_path = f"{fig_dir}{filename}.{self.format}"
+            img_path = os.path.join(fig_dir, f"{filename}.{self.format}")
             plt.savefig(img_path)
             fig.clear()
             plt.close(fig)
@@ -464,11 +465,11 @@ class Plots:
     def scatter_plot(self, feats, label_df, label, dimred_type):
         dim_num = int(self.util.config_val("EXPL", "scatter.dim", 2))
         # one up because of the runs (for explore module)
-        fig_dir = self.util.get_path("fig_dir") + "../"
+        fig_dir = os.path.join(self.util.get_path("fig_dir"), "..")
         sample_selection = self.util.config_val("EXPL", "sample_selection", "all")
         exp_name = self.util.get_name()
         filename = f"{label}_{exp_name}_{self.util.get_feattype_name()}_{sample_selection}_{dimred_type}_{str(dim_num)}d"
-        filename = f"{fig_dir}{filename}.{self.format}"
+        filename = os.path.join(fig_dir, f"{filename}.{self.format}")
         self.util.debug(f"computing {dimred_type}, this might take a while...")
         data = None
         labels = label_df[label]
@@ -602,8 +603,8 @@ class Plots:
         # remove fullstops in the name
         feature_name = feature.replace(".", "-")
         # one up because of the runs
-        fig_dir = self.util.get_path("fig_dir") + "../"
-        filename = f"{fig_dir}feat_dist_{title}_{feature_name}.{self.format}"
+        fig_dir = os.path.join(self.util.get_path("fig_dir"), "..")
+        filename = os.path.join(fig_dir, f"feat_dist_{title}_{feature_name}.{self.format}")
         if self.util.is_categorical(df_labels[label]):
             df_plot = pd.DataFrame(
                 {label: df_labels[label], feature: df_features[feature]}
@@ -650,9 +651,9 @@ class Plots:
         # plt.tight_layout()
         # print(ax)
         # one up because of the runs
-        fig_dir = self.util.get_path("fig_dir") + "../"
+        fig_dir = os.path.join(self.util.get_path("fig_dir"), "..")
         exp_name = self.util.get_exp_name(only_data=True)
-        filename = f"{fig_dir}{exp_name}EXPL_tree-plot.{self.format}"
+        filename = os.path.join(fig_dir, f"{exp_name}EXPL_tree-plot.{self.format}")
         fig = ax.figure
         fig.savefig(filename)
         fig.clear()
