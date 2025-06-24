@@ -119,6 +119,8 @@ class TunedModel(BaseModel):
                 else:
                     self.util.error(f"Unknown balancing algorithm: {self.balancing}")
 
+                # The `fit_resample` method from `imblearn` may lack complete type annotations,
+                # leading to type-checking errors. Suppressing these errors as the method is used correctly.
                 X_resampled, y_resampled = sampler.fit_resample(  # type: ignore
                     df[["start", "end"]], df["targets"]
                 )
