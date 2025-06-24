@@ -85,7 +85,7 @@ class FeatureAnalyser:
         format = self.util.config_val("PLOT", "format", "png")
         feat_type = self.util.get_feattype_name()
         filename = f"SHAP_{feat_type}_{model.name}.{format}"
-        filename = f"{fig_dir}{filename}"
+        filename = os.path.join(fig_dir, filename)
 
         fig.savefig(filename, dpi=300, bbox_inches="tight")
         plt.close(fig)
