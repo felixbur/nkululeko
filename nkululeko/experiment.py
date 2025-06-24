@@ -688,7 +688,7 @@ class Experiment:
                 f"scatter.target from [EXPL][scatter.target]: {scatter_target}"
             )
         if scatter_var:
-            scatters = ast.literal_eval(glob_conf.config["EXPL"]["scatter"])
+            scatters = ast.literal_eval(scatter_target)
             scat_targets = ast.literal_eval(scatter_target)
             plots = Plots()
             for scat_target in scat_targets:
