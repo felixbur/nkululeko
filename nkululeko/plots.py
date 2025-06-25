@@ -218,7 +218,7 @@ class Plots:
 
     def save_plot(self, ax, caption, header, filename, type_s):
         # one up because of the runs
-        fig_dir = os.path.join(self.util.get_path("fig_dir"), "..")
+        fig_dir = os.path.dirname(self.util.get_path("fig_dir"))
         fig_plots = ax.figure
         # avoid warning
         # plt.tight_layout()
