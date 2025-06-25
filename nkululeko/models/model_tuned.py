@@ -150,7 +150,9 @@ class TunedModel(BaseModel):
                 self.util.error(
                     "Label encoder is not available. Make sure to set up data loading properly."
                 )
-                return
+                raise ValueError(
+                    "Label encoder is missing. Initialization cannot proceed. Ensure data loading is correctly configured."
+                )
             mapping = dict(zip(le.classes_, range(len(le.classes_))))
             target_mapping = {k: int(v) for k, v in mapping.items()}
             target_mapping_reverse = {
