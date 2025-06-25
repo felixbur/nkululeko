@@ -105,7 +105,7 @@ class FeatureAnalyser:
             f"SHAP analysis, features = {feature_importance.index.tolist()}"
         )
         # Save to CSV (save all features, not just top ones)
-        csv_filename = f"{fig_dir}SHAP_{feat_type}_importance_{model.name}.csv"
+        csv_filename = os.path.join(fig_dir, f"SHAP_{feat_type}_importance_{model.name}.csv")
         feature_importance.to_csv(csv_filename)
         self.util.debug(f"Saved SHAP feature importance to {csv_filename}")
         self.util.debug(f"plotted SHAP feature importance to {filename}")
