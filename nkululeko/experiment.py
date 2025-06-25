@@ -668,11 +668,27 @@ class Experiment:
 
         # check if a scatterplot should be done
         scatter_var = eval(self.util.config_val("EXPL", "scatter", "False"))
+
+        # Priority: use [EXPL][scatter.target] if available, otherwise use [DATA][target] value
+        if hasattr(self, "target") and self.target != "none":
+            default_scatter_target = f"['{self.target}']"
+        else:
+            default_scatter_target = "['class_label']"
+
         scatter_target = self.util.config_val(
-            "EXPL", "scatter.target", "['class_label']"
+            "EXPL", "scatter.target", default_scatter_target
         )
+
+        if scatter_target == default_scatter_target:
+            self.util.debug(
+                f"scatter.target using default from [DATA][target]: {scatter_target}"
+            )
+        else:
+            self.util.debug(
+                f"scatter.target from [EXPL][scatter.target]: {scatter_target}"
+            )
         if scatter_var:
-            scatters = ast.literal_eval(glob_conf.config["EXPL"]["scatter"])
+            scatters = ast.literal_eval(scatter_target)
             scat_targets = ast.literal_eval(scatter_target)
             plots = Plots()
             for scat_target in scat_targets:
@@ -691,6 +707,30 @@ class Experiment:
                         plots.scatter_plot(
                             df_feats, df_labels, f"{scat_target}_bins", scatter
                         )
+
+        # check if t-SNE plot should be generated
+        tsne = eval(self.util.config_val("EXPL", "tsne", "False"))
+        if tsne:
+            target_column = self.util.config_val("DATA", "target", "emotion")
+            plots = Plots()
+            self.util.debug("generating t-SNE plot...")
+            plots.scatter_plot(df_feats, df_labels, target_column, "tsne")
+
+        # check if UMAP plot should be generated
+        umap_plot = eval(self.util.config_val("EXPL", "umap", "False"))
+        if umap_plot:
+            target_column = self.util.config_val("DATA", "target", "emotion")
+            plots = Plots()
+            self.util.debug("generating UMAP plot...")
+            plots.scatter_plot(df_feats, df_labels, target_column, "umap")
+
+        # check if PCA plot should be generated
+        pca_plot = eval(self.util.config_val("EXPL", "pca", "False"))
+        if pca_plot:
+            target_column = self.util.config_val("DATA", "target", "emotion")
+            plots = Plots()
+            self.util.debug("generating PCA plot...")
+            plots.scatter_plot(df_feats, df_labels, target_column, "pca")
 
     def _check_scale(self):
         self.util.save_to_store(self.feats_train, "feats_train")

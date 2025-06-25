@@ -279,9 +279,18 @@ class Modelrunner:
             self.util.debug(
                 f"balanced with: {balancing}, new size: {X_res.shape[0]} (was {orig_size})"
             )
-            le = glob_conf.label_encoder
-            res = y_res.value_counts()
-            resd = {}
-            for i, e in enumerate(le.inverse_transform(res.index.values)):
-                resd[e] = res.values[i]
-            self.util.debug(f"{resd})")
+            # Check if label encoder is available before using it
+            if (
+                hasattr(glob_conf, "label_encoder")
+                and glob_conf.label_encoder is not None
+            ):
+                le = glob_conf.label_encoder
+                res = y_res.value_counts()
+                resd = {}
+                for i, e in enumerate(le.inverse_transform(res.index.values)):
+                    resd[e] = res.values[i]
+                self.util.debug(f"class distribution after balancing: {resd}")
+            else:
+                self.util.debug(
+                    "Label encoder not available, skipping class distribution report"
+                )

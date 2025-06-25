@@ -142,6 +142,10 @@ test*
 log.*
 codemeta.json
 # paper/paper.pdf
+*.ipynb_checkpoints
+*.ipynb
+nkululeko-dev/
+*.txt
 
 # add exception for run_test?.sh
 !run_test?.sh

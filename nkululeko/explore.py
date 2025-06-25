@@ -8,6 +8,8 @@ The script supports the following configuration options:
 - `no_warnings`: If set to `True`, it will ignore all warnings during the exploration.
 - `feature_distributions`: If set to `True`, it will generate plots of the feature distributions.
 - `tsne`: If set to `True`, it will generate a t-SNE plot of the feature space.
+- `umap`: If set to `True`, it will generate a UMAP plot of the feature space.
+- `pca`: If set to `True`, it will generate a PCA plot of the feature space.
 - `scatter`: If set to `True`, it will generate a scatter plot of the feature space.
 - `spotlight`: If set to `True`, it will generate a 'spotlight' plot of the feature space.
 - `shap`: If set to `True`, it will generate SHAP feature importance plots.
@@ -59,10 +61,12 @@ def main():
 
         warnings.filterwarnings("ignore")
     needs_feats = False
+    experiment_loaded = False
     try:
         # load the experiment
         expr.load(f"{util.get_save_name()}")
         needs_feats = True
+        experiment_loaded = True
     except FileNotFoundError:
         # first time: load the data
         expr.load_datasets()
@@ -73,20 +77,35 @@ def main():
             f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}"
         )
 
-        plot_feats = eval(util.config_val("EXPL", "feature_distributions", "False"))
-        tsne = eval(util.config_val("EXPL", "tsne", "False"))
-        scatter = eval(util.config_val("EXPL", "scatter", "False"))
-        shap = eval(util.config_val("EXPL", "shap", "False"))
-        model_type = util.config_val("EXPL", "model", False)
-        plot_tree = eval(util.config_val("EXPL", "plot_tree", "False"))
-        needs_feats = False
-        if plot_feats or tsne or scatter or model_type or plot_tree or shap:
-            # these investigations need features to explore
+    # Check exploration settings regardless of whether experiment was loaded or not
+    plot_feats = eval(util.config_val("EXPL", "feature_distributions", "False"))
+    tsne_plot = eval(util.config_val("EXPL", "tsne", "False"))
+    umap_plot = eval(util.config_val("EXPL", "umap", "False"))
+    pca_plot = eval(util.config_val("EXPL", "pca", "False"))
+    scatter = eval(util.config_val("EXPL", "scatter", "False"))
+    shap = eval(util.config_val("EXPL", "shap", "False"))
+    model_type = util.config_val("EXPL", "model", False)
+    plot_tree = eval(util.config_val("EXPL", "plot_tree", "False"))
+
+    if (
+        plot_feats
+        or tsne_plot
+        or umap_plot
+        or pca_plot
+        or scatter
+        or model_type
+        or plot_tree
+        or shap
+    ):
+        # these investigations need features to explore
+        if not experiment_loaded or not needs_feats:
             expr.extract_feats()
-            needs_feats = True
-            # explore
-            # expr.init_runmanager()
-            # expr.runmgr.do_runs()
+        needs_feats = True
+        # explore
+        if shap:
+            # SHAP analysis requires a trained model
+            expr.init_runmanager()
+            expr.runmgr.do_runs()
     expr.analyse_features(needs_feats)
     expr.store_report()
     print("DONE")
