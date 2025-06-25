@@ -384,7 +384,22 @@ class TunedModel(BaseModel):
         # truth = p.label_ids[:, 0].astype(int)
         truth = p.label_ids
         preds = p.predictions
-        preds = np.argmax(preds, axis=1)
+        
+        if isinstance(preds, tuple):
+            if len(preds) > 0:
+                preds = preds[0]  # Extract logits from tuple
+            else:
+                raise ValueError(f"Empty predictions tuple received: {preds}")
+        
+        if hasattr(preds, 'numpy'):
+            preds = preds.numpy()
+        elif hasattr(preds, 'detach'):
+            preds = preds.detach().numpy()
+        
+        if len(preds.shape) > 1 and preds.shape[1] > 1:
+            preds = np.argmax(preds, axis=1)
+        else:
+            preds = preds.flatten()
         scores = {}
         if self.is_classifier:
             for name, metric in metrics.items():
@@ -443,12 +458,16 @@ class TunedModel(BaseModel):
                 model,
                 inputs,
                 return_outputs=False,
+                num_items_in_batch=None,
             ):
                 targets = inputs.pop("labels").squeeze()
                 targets = targets.type(torch.long)
 
                 outputs = model(**inputs)
-                logits = outputs[0].squeeze()
+                if hasattr(outputs, 'logits'):
+                    logits = outputs.logits.squeeze()
+                else:
+                    logits = outputs[0].squeeze()
 
                 loss = criterion(logits, targets)
 
@@ -479,7 +498,7 @@ class TunedModel(BaseModel):
             per_device_train_batch_size=self.batch_size,
             per_device_eval_batch_size=self.batch_size,
             gradient_accumulation_steps=self.accumulation_steps,
-            evaluation_strategy="steps",
+            eval_strategy="steps",
             num_train_epochs=self.epoch_num,
             fp16=self.device != "cpu",
             use_cpu=self.device == "cpu",
@@ -499,16 +518,20 @@ class TunedModel(BaseModel):
             overwrite_output_dir=True,
         )
 
-        trainer = Trainer(
-            model=self.model,  # type: ignore
-            data_collator=self.data_collator,
-            args=training_args,
-            compute_metrics=self.compute_metrics,
-            train_dataset=self.dataset["train"],
-            eval_dataset=self.dataset["dev"],
-            tokenizer=self.processor.feature_extractor,  # type: ignore
-            callbacks=[transformers.integrations.TensorBoardCallback()],
-        )
+        trainer_kwargs = {
+            "model": self.model,
+            "data_collator": self.data_collator,
+            "args": training_args,
+            "compute_metrics": self.compute_metrics,
+            "train_dataset": self.dataset["train"],
+            "eval_dataset": self.dataset["dev"],
+            "callbacks": [transformers.integrations.TensorBoardCallback()],
+        }
+        
+        if self.processor is not None:
+            trainer_kwargs["tokenizer"] = self.processor.feature_extractor
+        
+        trainer = Trainer(**trainer_kwargs)
 
         trainer.train()
         trainer.save_model(self.torch_root)
@@ -635,6 +658,30 @@ class ModelOutput:
     logits: typing.Optional[torch.Tensor] = None
     hidden_states: typing.Optional[torch.Tensor] = None
     cnn_features: typing.Optional[torch.Tensor] = None
+    
+    def __getitem__(self, index):
+        """Make ModelOutput subscriptable for HuggingFace compatibility."""
+        if isinstance(index, slice):
+            items = [self.logits, self.hidden_states, self.cnn_features]
+            result = items[index]
+            filtered_result = [item for item in result if item is not None]
+            
+            if not filtered_result and self.logits is not None:
+                return (self.logits,)
+            
+            return tuple(filtered_result)
+        elif index == 0:
+            return self.logits
+        elif index == 1:
+            return self.hidden_states
+        elif index == 2:
+            return self.cnn_features
+        else:
+            raise IndexError(f"Index {index} out of range for ModelOutput")
+    
+    def __len__(self):
+        """Return the number of available outputs."""
+        return 3
 
 
 @dataclasses.dataclass
@@ -645,6 +692,32 @@ class ModelOutputReg:
     logits_framewise: typing.Optional[torch.Tensor] = None
     hidden_states_framewise: typing.Optional[torch.Tensor] = None
     cnn_features: typing.Optional[torch.Tensor] = None
+    
+    def __getitem__(self, index):
+        """Make ModelOutputReg subscriptable for HuggingFace compatibility."""
+        if isinstance(index, slice):
+            items = [self.logits, self.hidden_states, self.attentions, 
+                    self.logits_framewise, self.hidden_states_framewise, self.cnn_features]
+            result = items[index]
+            return tuple(item for item in result if item is not None)
+        elif index == 0:
+            return self.logits
+        elif index == 1:
+            return self.hidden_states
+        elif index == 2:
+            return self.attentions
+        elif index == 3:
+            return self.logits_framewise
+        elif index == 4:
+            return self.hidden_states_framewise
+        elif index == 5:
+            return self.cnn_features
+        else:
+            raise IndexError(f"Index {index} out of range for ModelOutputReg")
+    
+    def __len__(self):
+        """Return the number of available outputs."""
+        return 6
 
 
 class ModelHead(torch.nn.Module):
@@ -775,6 +848,20 @@ class EmotionVecConfig:
         for key, value in kwargs.items():
             setattr(self, key, value)
 
+    def to_json_string(self):
+        """Convert config to JSON string for HuggingFace compatibility."""
+        import json
+        config_dict = {
+            "num_labels": self.num_labels,
+            "is_classifier": self.is_classifier,
+            "sampling_rate": self.sampling_rate,
+            "final_dropout": self.final_dropout,
+        }
+        for key, value in self.__dict__.items():
+            if key not in config_dict:
+                config_dict[key] = value
+        return json.dumps(config_dict, indent=2)
+
 
 class Emotion2vecModel(torch.nn.Module):
     """Wrapper class for emotion2vec finetuning."""
@@ -834,6 +921,23 @@ class Emotion2vecModel(torch.nn.Module):
                 return torch.zeros(768, dtype=torch.float32)
             finally:
                 os.unlink(tmp_file.name)
+
+    def predict(self, signal):
+        """Predict method for compatibility with nkululeko prediction pipeline."""
+        if isinstance(signal, np.ndarray):
+            signal_tensor = torch.from_numpy(signal).unsqueeze(0)
+        else:
+            signal_tensor = signal.unsqueeze(0) if signal.dim() == 1 else signal
+        
+        with torch.no_grad():
+            result = self(signal_tensor)
+            
+        if self.is_classifier:
+            logits = result.logits
+        else:
+            logits = result.logits
+            
+        return logits.detach().numpy()[0]
 
 
 class ConcordanceCorCoeff(torch.nn.Module):
