@@ -131,7 +131,9 @@ class Emotion2vec(Featureset):
                 import tempfile
                 import soundfile as sf
 
-                with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_file:
+                with tempfile.NamedTemporaryFile(
+                    suffix=".wav", delete=False
+                ) as tmp_file:
                     sf.write(tmp_file.name, signal_np, sampling_rate)
                     audio_path = tmp_file.name
             else:
@@ -155,7 +157,9 @@ class Emotion2vec(Featureset):
                         # Fallback to create default embedding
                         return np.array([0.0] * 768)
                 else:
-                    self.util.error(f"No result from emotion2vec model for file: {file}")
+                    self.util.error(
+                        f"No result from emotion2vec model for file: {file}"
+                    )
                     return np.array([0.0] * 768)
 
             finally:
@@ -172,30 +176,30 @@ class Emotion2vec(Featureset):
         """Extract features from a single sample."""
         if not self.model_initialized:
             self.init_model()
-        
+
         # Save signal as temporary file for emotion2vec
         import tempfile
         import soundfile as sf
-        
+
         try:
             # Convert tensor to numpy if needed
             if torch.is_tensor(signal):
                 signal_np = signal.squeeze().numpy()
             else:
                 signal_np = signal.squeeze()
-                
+
             # Handle multi-channel audio
             if signal_np.ndim > 1:
                 signal_np = signal_np[0]
-                
+
             with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_file:
                 sf.write(tmp_file.name, signal_np, sr)
-                
+
                 # Extract using the emotion2vec model
                 res = self.model.generate(
                     tmp_file.name, granularity="utterance", extract_embedding=True
                 )
-                
+
                 # Get embeddings from result
                 if isinstance(res, list) and len(res) > 0:
                     embeddings = res[0].get("feats", None)
@@ -203,9 +207,9 @@ class Emotion2vec(Featureset):
                         if isinstance(embeddings, list):
                             embeddings = np.array(embeddings)
                         return embeddings.flatten()
-                
+
                 return np.array([0.0] * 768)
-                
+
         except Exception as e:
             print(f"Error in extract_sample: {str(e)}")
             return np.array([0.0] * 768)

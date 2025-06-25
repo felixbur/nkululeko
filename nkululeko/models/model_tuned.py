@@ -84,6 +84,17 @@ class TunedModel(BaseModel):
         # print finetuning information via debug
         self.util.debug(f"Finetuning from model: {pretrained_model}")
 
+        if any(
+            emotion_model in pretrained_model
+            for emotion_model in ["emotion2vec", "iic/emotion2vec"]
+        ):
+            self._init_emotion2vec_model(pretrained_model)
+            return
+
+        self._init_huggingface_model(pretrained_model)
+
+    def _init_huggingface_model(self, pretrained_model):
+        """Initialize HuggingFace transformer model for finetuning."""
         # create dataset
         dataset = {}
         target_name = glob_conf.target
@@ -99,43 +110,9 @@ class TunedModel(BaseModel):
             df = y.reset_index()
             df.start = df.start.dt.total_seconds()
             df.end = df.end.dt.total_seconds()
-            #     ds = datasets.Dataset.from_pandas(df)
-            #     dataset[split] = ds
 
-            # self.dataset = datasets.DatasetDict(dataset)
             if split == "train" and self.balancing:
-                if self.balancing == "ros":
-                    from imblearn.over_sampling import RandomOverSampler
-
-                    sampler = RandomOverSampler(random_state=42)
-                elif self.balancing == "smote":
-                    from imblearn.over_sampling import SMOTE
-
-                    sampler = SMOTE(random_state=42)
-                elif self.balancing == "adasyn":
-                    from imblearn.over_sampling import ADASYN
-
-                    sampler = ADASYN(random_state=42)
-                else:
-                    self.util.error(f"Unknown balancing algorithm: {self.balancing}")
-
-                # The `fit_resample` method from `imblearn` may lack complete type annotations,
-                # leading to type-checking errors. Suppressing these errors as the method is used correctly.
-                X_resampled, y_resampled = sampler.fit_resample(  # type: ignore
-                    df[["start", "end"]], df["targets"]
-                )
-                df = pd.DataFrame(
-                    {
-                        "start": X_resampled["start"],
-                        "end": X_resampled["end"],
-                        "targets": y_resampled,
-                    }
-                )
-
-                # print the before and after class distribution
-                self.util.debug(
-                    f"balanced with: {self.balancing}, new size: {len(df)}, was {len(data_sources[split])}"
-                )
+                df = self._apply_balancing(df, data_sources[split])
 
             ds = datasets.Dataset.from_pandas(df)
             dataset[split] = ds
@@ -208,6 +185,121 @@ class TunedModel(BaseModel):
         self.model.train()  # type: ignore
         self.model_initialized = True
 
+    def _init_emotion2vec_model(self, pretrained_model):
+        """Initialize emotion2vec model for finetuning."""
+        try:
+            from funasr import AutoModel
+        except ImportError:
+            self.util.error(
+                "FunASR is required for emotion2vec finetuning. "
+                "Please install with: pip install funasr modelscope"
+            )
+            return
+
+        model_mapping = {
+            "emotion2vec": "iic/emotion2vec_base",
+            "emotion2vec-base": "iic/emotion2vec_base_finetuned",
+            "emotion2vec-seed": "iic/emotion2vec_plus_seed",
+            "emotion2vec-large": "iic/emotion2vec_plus_large",
+        }
+
+        if pretrained_model in model_mapping:
+            model_path = model_mapping[pretrained_model]
+        else:
+            model_path = pretrained_model
+
+        self._create_emotion2vec_dataset()
+
+        self.emotion2vec_backbone = AutoModel(model=model_path)
+
+        if self.is_classifier:
+            le = glob_conf.label_encoder
+            if le is None:
+                self.util.error("Label encoder not available for classification")
+                return
+            num_labels = len(le.classes_)
+            label_mapping = dict(zip(le.classes_, range(len(le.classes_))))
+            self.config = EmotionVecConfig(
+                num_labels=num_labels,
+                label2id=label_mapping,
+                id2label={v: k for k, v in label_mapping.items()},
+                is_classifier=True,
+                sampling_rate=self.sampling_rate,
+                final_dropout=self.drop,
+            )
+        else:
+            self.config = EmotionVecConfig(
+                num_labels=1,
+                is_classifier=False,
+                sampling_rate=self.sampling_rate,
+                final_dropout=self.drop,
+            )
+
+        self.model = Emotion2vecModel(self.emotion2vec_backbone, self.config)
+        self.model.train()
+        self.model_initialized = True
+
+        self.processor = None
+
+    def _create_emotion2vec_dataset(self):
+        """Create dataset for emotion2vec training."""
+        dataset = {}
+        target_name = glob_conf.target
+        data_sources = {
+            "train": pd.DataFrame(self.df_train[target_name]),
+            "dev": pd.DataFrame(self.df_test[target_name]),
+        }
+
+        for split in ["train", "dev"]:
+            df = data_sources[split]
+            y = df[target_name].astype("float")
+            y.name = "targets"
+            df = y.reset_index()
+            df.start = df.start.dt.total_seconds()
+            df.end = df.end.dt.total_seconds()
+
+            if split == "train" and self.balancing:
+                df = self._apply_balancing(df, data_sources[split])
+
+            ds = datasets.Dataset.from_pandas(df)
+            dataset[split] = ds
+
+        self.dataset = datasets.DatasetDict(dataset)
+
+    def _apply_balancing(self, df, original_df):
+        """Apply data balancing to training dataset."""
+        if self.balancing == "ros":
+            from imblearn.over_sampling import RandomOverSampler
+
+            sampler = RandomOverSampler(random_state=42)
+        elif self.balancing == "smote":
+            from imblearn.over_sampling import SMOTE
+
+            sampler = SMOTE(random_state=42)
+        elif self.balancing == "adasyn":
+            from imblearn.over_sampling import ADASYN
+
+            sampler = ADASYN(random_state=42)
+        else:
+            self.util.error(f"Unknown balancing algorithm: {self.balancing}")
+            return df
+
+        X_resampled, y_resampled = sampler.fit_resample(
+            df[["start", "end"]], df["targets"]
+        )
+        df = pd.DataFrame(
+            {
+                "start": X_resampled["start"],
+                "end": X_resampled["end"],
+                "targets": y_resampled,
+            }
+        )
+
+        self.util.debug(
+            f"balanced with: {self.balancing}, new size: {len(df)}, was {len(original_df)}"
+        )
+        return df
+
     def set_model_type(self, type):
         self.model_type = type
 
@@ -231,11 +323,7 @@ class TunedModel(BaseModel):
         targets = [d["targets"] for d in data]
 
         signals = []
-        for file, start, end in zip(
-            files,
-            starts,
-            ends,
-        ):
+        for file, start, end in zip(files, starts, ends):
             offset = start
             duration = end - offset
             if self.max_duration_sec is not None:
@@ -247,18 +335,37 @@ class TunedModel(BaseModel):
             )
             signals.append(signal.squeeze())
 
-        input_values = self.processor(
-            signals,
-            sampling_rate=self.sampling_rate,
-            padding=True,
-        )
-        batch = self.processor.pad(
-            input_values,
-            padding=True,
-            return_tensors="pt",
-        )
+        if hasattr(self, "emotion2vec_backbone"):
+            max_length = max(len(s) for s in signals)
+            padded_signals = []
+            for s in signals:
+                if len(s) < max_length:
+                    padded = np.pad(s, (0, max_length - len(s)), mode="constant")
+                else:
+                    padded = s[:max_length]
+                padded_signals.append(padded)
 
-        batch["labels"] = torch.Tensor(targets)
+            batch = {
+                "input_values": torch.stack(
+                    [torch.tensor(s, dtype=torch.float32) for s in padded_signals]
+                ),
+                "labels": torch.tensor(
+                    targets,
+                    dtype=torch.float32 if not self.is_classifier else torch.long,
+                ),
+            }
+        else:
+            input_values = self.processor(
+                signals,
+                sampling_rate=self.sampling_rate,
+                padding=True,
+            )
+            batch = self.processor.pad(
+                input_values,
+                padding=True,
+                return_tensors="pt",
+            )
+            batch["labels"] = torch.Tensor(targets)
 
         return batch
 
@@ -505,10 +612,16 @@ class TunedModel(BaseModel):
 
     def load(self, run, epoch):
         self.set_id(run, epoch)
-        self.model = Model.from_pretrained(
-            self.torch_root,
-            config=self.config,
-        )
+        if hasattr(self, "emotion2vec_backbone"):
+            model_path = os.path.join(self.torch_root, "pytorch_model.bin")
+            if os.path.exists(model_path):
+                self.model.load_state_dict(torch.load(model_path))
+                self.model.eval()
+        else:
+            self.model = Model.from_pretrained(
+                self.torch_root,
+                config=self.config,
+            )
         # print(f"loaded model type {type(self.model)}")
 
     def load_path(self, path, run, epoch):
@@ -642,6 +755,85 @@ class Model(Wav2Vec2PreTrainedModel):
         result = self(torch.from_numpy(signal))
         result = result[0].detach().numpy()[0]
         return result
+
+
+class EmotionVecConfig:
+    """Configuration class for emotion2vec models."""
+
+    def __init__(
+        self,
+        num_labels,
+        is_classifier=True,
+        sampling_rate=16000,
+        final_dropout=0.1,
+        **kwargs,
+    ):
+        self.num_labels = num_labels
+        self.is_classifier = is_classifier
+        self.sampling_rate = sampling_rate
+        self.final_dropout = final_dropout
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+
+class Emotion2vecModel(torch.nn.Module):
+    """Wrapper class for emotion2vec finetuning."""
+
+    def __init__(self, emotion2vec_backbone, config):
+        super().__init__()
+        self.emotion2vec_backbone = emotion2vec_backbone
+        self.config = config
+        self.is_classifier = config.is_classifier
+
+        embedding_dim = 768
+        self.head = torch.nn.Sequential(
+            torch.nn.Dropout(config.final_dropout),
+            torch.nn.Linear(embedding_dim, config.num_labels),
+        )
+
+    def forward(self, input_values, labels=None, **kwargs):
+        embeddings = self._extract_embeddings(input_values)
+
+        logits = self.head(embeddings)
+
+        if not self.training and self.is_classifier:
+            logits = torch.softmax(logits, dim=1)
+
+        if self.is_classifier:
+            return ModelOutput(logits=logits)
+        else:
+            return ModelOutputReg(logits=logits)
+
+    def _extract_embeddings(self, input_values):
+        batch_embeddings = []
+        for audio_tensor in input_values:
+            embedding = self._process_single_audio(audio_tensor)
+            batch_embeddings.append(embedding)
+        return torch.stack(batch_embeddings)
+
+    def _process_single_audio(self, audio_tensor):
+        import tempfile
+        import soundfile as sf
+
+        signal_np = audio_tensor.squeeze().numpy()
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_file:
+            sf.write(tmp_file.name, signal_np, self.config.sampling_rate)
+
+            try:
+                res = self.emotion2vec_backbone.generate(
+                    tmp_file.name, granularity="utterance", extract_embedding=True
+                )
+
+                if isinstance(res, list) and len(res) > 0:
+                    embeddings = res[0].get("feats", None)
+                    if embeddings is not None:
+                        if isinstance(embeddings, list):
+                            embeddings = np.array(embeddings)
+                        return torch.tensor(embeddings.flatten(), dtype=torch.float32)
+
+                return torch.zeros(768, dtype=torch.float32)
+            finally:
+                os.unlink(tmp_file.name)
 
 
 class ConcordanceCorCoeff(torch.nn.Module):
