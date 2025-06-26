@@ -513,7 +513,7 @@ class Experiment:
 
     def autopredict(self):
         """Predict labels for samples with existing models and add to the dataframe."""
-        sample_selection = self.util.config_val("PREDICT", "split", "all")
+        sample_selection = self.util.config_val("PREDICT", "sample_selection", "all")
         if sample_selection == "all":
             df = pd.concat([self.df_train, self.df_test])
         elif sample_selection == "train":
@@ -568,6 +568,11 @@ class Experiment:
                 from nkululeko.autopredict.ap_stoi import STOIPredictor
 
                 predictor = STOIPredictor(df)
+                df = predictor.predict(sample_selection)
+            elif target == "text":
+                from nkululeko.autopredict.ap_text import TextPredictor
+
+                predictor = TextPredictor(df, self.util)
                 df = predictor.predict(sample_selection)
             elif target == "arousal":
                 from nkululeko.autopredict.ap_arousal import ArousalPredictor

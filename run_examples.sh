@@ -91,6 +91,7 @@ augment_ini_files=(
 # test prediction
 predict_ini_files=(
     exp_emodb_predict.ini
+    exp_ravdess_predict_text.ini
 ) 
 # test demo
 demo_ini_files=(
