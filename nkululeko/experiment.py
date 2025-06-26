@@ -584,6 +584,11 @@ class Experiment:
 
                 predictor = DominancePredictor(df)
                 df = predictor.predict(sample_selection)
+            elif target == "emotion":
+                from nkululeko.autopredict.ap_emotion import EmotionPredictor
+
+                predictor = EmotionPredictor(df)
+                df = predictor.predict(sample_selection)
             else:
                 self.util.error(f"unknown auto predict target: {target}")
         return df

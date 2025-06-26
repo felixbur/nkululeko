@@ -68,7 +68,9 @@ class Resampler:
                 self.df.index.set_levels(new_files, level="file")
             )
             if not self.not_testing:
-                target_file = self.util.config_val("RESAMPLE", "target", "resampled.csv")
+                target_file = self.util.config_val(
+                    "RESAMPLE", "target", "resampled.csv"
+                )
                 # remove encoded labels
                 target = self.util.config_val("DATA", "target", "emotion")
                 if "class_label" in self.df.columns:
@@ -77,7 +79,8 @@ class Resampler:
                 # save file
                 self.df.to_csv(target_file)
                 self.util.debug(
-                    "saved resampled list of files to" f" {os.path.abspath(target_file)}"
+                    "saved resampled list of files to"
+                    f" {os.path.abspath(target_file)}"
                 )
             else:
                 # When running from command line, save to simple resampled.csv
