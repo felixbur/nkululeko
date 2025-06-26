@@ -1,6 +1,16 @@
 Changelog
 =========
 
+Version 0.94.4 (25-06-26)
+--------------------------
+* add finetune and autopredict from emotion2vec
+
+Version 0.94.3 (25-06-25)
+--------------------------
+* save of SHAP analysis into CSV (in addition to image)
+* show debug of shape, t-sne, and pca (so can be opened directly from terminal/vs code)
+* fix UMAP on the explore module (no need to run the experiment again)
+
 Version 0.94.2 (25-06-02)
 --------------------------
 * added better error message: util.py might not have a logger 
