@@ -1,15 +1,17 @@
 # util.py
 import ast
 import configparser
+import json
 import logging
 import os.path
 import pickle
 import sys
 
-import audeer
-import audformat
 import numpy as np
 import pandas as pd
+
+import audeer
+import audformat
 
 
 class Util:
@@ -92,6 +94,8 @@ class Util:
                 dir_name = "./results/"
             elif entry == "model_dir":
                 dir_name = "./models/"
+            elif entry == "cache":
+                dir_name = "./cache/"
             else:
                 dir_name = "./store/"
         else:
@@ -107,6 +111,8 @@ class Util:
                     entryn = "./results/"
                 elif entry == "model_dir":
                     entryn = "./models/"
+                elif entry == "cache":
+                    entryn = "./cache/"
                 else:
                     entryn = "./store/"
 
@@ -506,3 +512,28 @@ class Util:
     def to_3_digits_str(self, x):
         """Given a float, return this to 3 digits as string without integer number."""
         return str(self.to_3_digits(x))[1:]
+
+    def save_json(self, file: str, var: dict):
+        """Save variable to json file.
+
+        Args:
+            file: path to json file
+            var: dictionary to store
+
+        """
+        with open(file, "w", encoding="utf-8") as fp:
+            json.dump(var, fp, ensure_ascii=False, indent=2)
+
+    def read_json(self, file: str) -> object:
+        """Read variable from json file.
+
+        Args:
+            file: path to json file
+
+        Returns:
+            content of json file
+
+        """
+        with open(file, "r") as fp:
+            return json.load(fp)
+

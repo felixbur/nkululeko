@@ -60,7 +60,8 @@ def main():
     if "class_label" in df.columns:
         df = df.drop(columns=[target])
         df = df.rename(columns={"class_label": target})
-    name = util.get_data_name() + "_predicted"
+    sample_selection = util.config_val("PREDICT", "sample_selection", "all")
+    name = f"{sample_selection}_predicted"
     df.to_csv(f"{expr.data_dir}/{name}.csv")
     util.debug(f"saved {os.path.join(expr.data_dir, name)}.csv")
     print("DONE")

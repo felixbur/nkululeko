@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.95.0 (25-06-26)
+--------------------------
+* added prediction of text via whisper
+
 Version 0.94.4 (25-06-26)
 --------------------------
 * add finetune and autopredict from emotion2vec
