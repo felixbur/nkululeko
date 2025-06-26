@@ -192,15 +192,15 @@ class TunedModel(BaseModel):
         except ImportError:
             self.util.error(
                 "FunASR is required for emotion2vec finetuning. "
-                "Please install with: pip install funasr modelscope"
+                "Please install with: pip install funasr"
             )
             return
 
         model_mapping = {
-            "emotion2vec": "iic/emotion2vec_base",
-            "emotion2vec-base": "iic/emotion2vec_base_finetuned",
-            "emotion2vec-seed": "iic/emotion2vec_plus_seed",
-            "emotion2vec-large": "iic/emotion2vec_plus_large",
+            "emotion2vec": "emotion2vec/emotion2vec_base",
+            "emotion2vec-base": "emotion2vec/emotion2vec_base", 
+            "emotion2vec-seed": "emotion2vec/emotion2vec_plus_seed",
+            "emotion2vec-large": "emotion2vec/emotion2vec_plus_large",
         }
 
         if pretrained_model in model_mapping:
@@ -210,7 +210,10 @@ class TunedModel(BaseModel):
 
         self._create_emotion2vec_dataset()
 
-        self.emotion2vec_backbone = AutoModel(model=model_path)
+        self.emotion2vec_backbone = AutoModel(
+            model=model_path,
+            hub="hf"  # Use HuggingFace Hub instead of ModelScope
+        )
 
         if self.is_classifier:
             le = glob_conf.label_encoder
@@ -226,6 +229,7 @@ class TunedModel(BaseModel):
                 is_classifier=True,
                 sampling_rate=self.sampling_rate,
                 final_dropout=self.drop,
+                model_name=pretrained_model,
             )
         else:
             self.config = EmotionVecConfig(
@@ -233,6 +237,7 @@ class TunedModel(BaseModel):
                 is_classifier=False,
                 sampling_rate=self.sampling_rate,
                 final_dropout=self.drop,
+                model_name=pretrained_model,
             )
 
         self.model = Emotion2vecModel(self.emotion2vec_backbone, self.config)
@@ -839,12 +844,14 @@ class EmotionVecConfig:
         is_classifier=True,
         sampling_rate=16000,
         final_dropout=0.1,
+        model_name=None,
         **kwargs,
     ):
         self.num_labels = num_labels
         self.is_classifier = is_classifier
         self.sampling_rate = sampling_rate
         self.final_dropout = final_dropout
+        self.model_name = model_name
         for key, value in kwargs.items():
             setattr(self, key, value)
 
@@ -872,11 +879,23 @@ class Emotion2vecModel(torch.nn.Module):
         self.config = config
         self.is_classifier = config.is_classifier
 
-        embedding_dim = 768
+        # Determine embedding dimension based on model variant (hardcoded)
+        embedding_dim = self._get_embedding_dim_by_model()
         self.head = torch.nn.Sequential(
             torch.nn.Dropout(config.final_dropout),
             torch.nn.Linear(embedding_dim, config.num_labels),
         )
+
+    def _get_embedding_dim_by_model(self):
+        """Get embedding dimension based on model variant."""
+        model_name = getattr(self.config, 'model_name', '')
+        
+        # Large models have 1024 dimensions
+        if 'large' in model_name.lower():
+            return 1024
+        # Base, seed, and other models have 768 dimensions
+        else:
+            return 768
 
     def forward(self, input_values, labels=None, **kwargs):
         embeddings = self._extract_embeddings(input_values)
@@ -893,8 +912,11 @@ class Emotion2vecModel(torch.nn.Module):
 
     def _extract_embeddings(self, input_values):
         batch_embeddings = []
+        device = next(self.parameters()).device  # Get the device of the model
         for audio_tensor in input_values:
             embedding = self._process_single_audio(audio_tensor)
+            # Ensure embedding is on the same device as the model
+            embedding = embedding.to(device)
             batch_embeddings.append(embedding)
         return torch.stack(batch_embeddings)
 
@@ -902,7 +924,7 @@ class Emotion2vecModel(torch.nn.Module):
         import tempfile
         import soundfile as sf
 
-        signal_np = audio_tensor.squeeze().numpy()
+        signal_np = audio_tensor.squeeze().cpu().numpy()
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_file:
             sf.write(tmp_file.name, signal_np, self.config.sampling_rate)
 
@@ -918,7 +940,12 @@ class Emotion2vecModel(torch.nn.Module):
                             embeddings = np.array(embeddings)
                         return torch.tensor(embeddings.flatten(), dtype=torch.float32)
 
-                return torch.zeros(768, dtype=torch.float32)
+                # Fallback based on model type
+                model_name = getattr(self.config, 'model_name', '')
+                if 'large' in model_name.lower():
+                    return torch.zeros(1024, dtype=torch.float32)
+                else:
+                    return torch.zeros(768, dtype=torch.float32)
             finally:
                 os.unlink(tmp_file.name)
 
@@ -937,7 +964,7 @@ class Emotion2vecModel(torch.nn.Module):
         else:
             logits = result.logits
             
-        return logits.detach().numpy()[0]
+        return logits.detach().cpu().numpy()[0]
 
 
 class ConcordanceCorCoeff(torch.nn.Module):

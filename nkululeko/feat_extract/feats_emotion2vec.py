@@ -3,7 +3,6 @@
 # choices for feat_type = "emotion2vec", "emotion2vec-large", "emotion2vec-base", "emotion2vec-seed"
 
 # requirements:
-# pip install "modelscope>=1.9.5,<2.0.0"
 # pip install funasr
 
 import os
@@ -43,27 +42,30 @@ class Emotion2vec(Featureset):
         except ImportError:
             self.util.error(
                 "FunASR is required for emotion2vec features. "
-                "Please install with: pip install funasr modelscope"
+                "Please install with: pip install funasr"
             )
 
-        # Map feat_type to model names
+        # Map feat_type to model names on HuggingFace
         model_mapping = {
-            "emotion2vec": "iic/emotion2vec_base",
-            "emotion2vec-base": "iic/emotion2vec_base_finetuned",
-            "emotion2vec-seed": "iic/emotion2vec_plus_seed",
-            "emotion2vec-large": "iic/emotion2vec_plus_large",
+            "emotion2vec": "emotion2vec/emotion2vec_base",
+            "emotion2vec-base": "emotion2vec/emotion2vec_base",
+            "emotion2vec-seed": "emotion2vec/emotion2vec_plus_seed",
+            "emotion2vec-large": "emotion2vec/emotion2vec_plus_large",
         }
 
         # Get model path from config or use default mapping
         model_path = self.util.config_val(
             "FEATS",
             "emotion2vec.model",
-            model_mapping.get(self.feat_type, "iic/emotion2vec_base"),
+            model_mapping.get(self.feat_type, "emotion2vec/emotion2vec_base"),
         )
 
         try:
-            # Initialize the FunASR model for emotion2vec
-            self.model = AutoModel(model=model_path)
+            # Initialize the FunASR model for emotion2vec using HuggingFace Hub
+            self.model = AutoModel(
+                model=model_path,
+                hub="hf"  # Use HuggingFace Hub instead of ModelScope
+            )
             self.util.debug(f"initialized emotion2vec model: {model_path}")
             self.model_initialized = True
         except Exception as e:
@@ -154,13 +156,20 @@ class Emotion2vec(Featureset):
                             embeddings = np.array(embeddings)
                         return embeddings.flatten()
                     else:
-                        # Fallback to create default embedding
-                        return np.array([0.0] * 768)
+                        # Fallback based on model type
+                        if 'large' in self.feat_type.lower():
+                            return np.array([0.0] * 1024)
+                        else:
+                            return np.array([0.0] * 768)
                 else:
                     self.util.error(
                         f"No result from emotion2vec model for file: {file}"
                     )
-                    return np.array([0.0] * 768)
+                    # Fallback based on model type
+                    if 'large' in self.feat_type.lower():
+                        return np.array([0.0] * 1024)
+                    else:
+                        return np.array([0.0] * 768)
 
             finally:
                 # Clean up temporary file if we created one
@@ -170,7 +179,11 @@ class Emotion2vec(Featureset):
         except Exception as e:
             print(f"Error processing {file}: {str(e)}")
             self.util.error(f"couldn't extract file: {file}, error: {str(e)}")
-            return np.array([0.0] * 768)
+            # Return appropriate dimension based on model type
+            if 'large' in self.feat_type.lower():
+                return np.array([0.0] * 1024)
+            else:
+                return np.array([0.0] * 768)
 
     def extract_sample(self, signal, sr):
         """Extract features from a single sample."""
@@ -208,11 +221,19 @@ class Emotion2vec(Featureset):
                             embeddings = np.array(embeddings)
                         return embeddings.flatten()
 
-                return np.array([0.0] * 768)
+                # Fallback based on model type
+                if 'large' in self.feat_type.lower():
+                    return np.array([0.0] * 1024)
+                else:
+                    return np.array([0.0] * 768)
 
         except Exception as e:
             print(f"Error in extract_sample: {str(e)}")
-            return np.array([0.0] * 768)
+            # Return appropriate dimension based on model type
+            if 'large' in self.feat_type.lower():
+                return np.array([0.0] * 1024)
+            else:
+                return np.array([0.0] * 768)
         finally:
             # Clean up temporary file
             if tmp_file is not None:  # Check if tmp_file was created
