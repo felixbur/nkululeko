@@ -1,8 +1,8 @@
 # predict.py
-# use some model and add automatically predicted labels to train and test splits
-# then save as a new dataset
+# use some model and add automatically predicted labels 
+# also can labels train and test splits then save as a new dataset
 
-r"""This script is used to call the nkululeko PREDICT framework.
+r"""This script is used to call the nkululeko PREDICT module.
 
 It loads a configuration file, creates a new experiment,
 and performs automatic prediction on the train and test datasets. The predicted labels are added to the datasets and
@@ -62,7 +62,7 @@ def main():
         df = df.rename(columns={"class_label": target})
     name = util.get_data_name() + "_predicted"
     df.to_csv(f"{expr.data_dir}/{name}.csv")
-    util.debug(f"saved {name}.csv to {expr.data_dir}")
+    util.debug(f"saved {os.path.join(expr.data_dir, name)}.csv")
     print("DONE")
 
 

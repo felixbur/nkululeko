@@ -328,6 +328,7 @@ class Util:
             self.logger.warning(f"WARNING: {self.caller}: {message}")
         else:
             print(f"WARNING: {message}")
+
     def debug(self, message):
         if self.logger is not None:
             self.logger.debug(f"DEBUG: {self.caller}: {message}")

@@ -604,7 +604,9 @@ class Plots:
         feature_name = feature.replace(".", "-")
         # one up because of the runs
         fig_dir = os.path.join(self.util.get_path("fig_dir"), "..")
-        filename = os.path.join(fig_dir, f"feat_dist_{title}_{feature_name}.{self.format}")
+        filename = os.path.join(
+            fig_dir, f"feat_dist_{title}_{feature_name}.{self.format}"
+        )
         if self.util.is_categorical(df_labels[label]):
             df_plot = pd.DataFrame(
                 {label: df_labels[label], feature: df_features[feature]}
