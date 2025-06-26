@@ -54,6 +54,7 @@ The examples only covers some important features of Nkululeko. For more details,
    how_to
    hello_world_aud.md
    hello_world_csv.md
+   emotion_prediction.md
    comparing
    experiments.md
    test.md
