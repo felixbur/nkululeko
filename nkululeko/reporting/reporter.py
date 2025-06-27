@@ -2,6 +2,7 @@ import ast
 import glob
 import json
 import math
+import os
 
 # import os
 from confidence_intervals import evaluate_with_conf_int
@@ -173,6 +174,13 @@ class Reporter:
             probas["correct"] = probas.predicted == probas.truth
             if file_name is None:
                 file_name = self.util.get_pred_name() + ".csv"
+            else:
+                # Ensure the file_name goes to the results directory
+                if not os.path.isabs(file_name):
+                    res_dir = self.util.get_res_dir()
+                    file_name = os.path.join(res_dir, file_name + ".csv")
+                else:
+                    file_name = file_name + ".csv"
             self.probas = probas
             probas.to_csv(file_name)
             self.util.debug(f"Saved probabilities to {file_name}")

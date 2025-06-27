@@ -62,8 +62,9 @@ def main():
         df = df.rename(columns={"class_label": target})
     sample_selection = util.config_val("PREDICT", "sample_selection", "all")
     name = f"{sample_selection}_predicted"
-    df.to_csv(f"{expr.data_dir}/{name}.csv")
-    util.debug(f"saved {os.path.join(expr.data_dir, name)}.csv")
+    res_dir = util.get_res_dir()
+    df.to_csv(f"{res_dir}{name}.csv")
+    util.debug(f"saved {os.path.join(res_dir, name)}.csv")
     print("DONE")
 
 
