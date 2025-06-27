@@ -4,6 +4,7 @@ import pandas as pd
 
 from nkululeko import glob_conf
 from nkululeko.utils.util import Util
+from nkululeko.balance import DataBalancer
 
 
 class Modelrunner:
@@ -143,6 +144,7 @@ class Modelrunner:
 
     def _select_model(self, model_type):
         self._check_balancing()
+        self._check_feature_balancing()
 
         if model_type == "svm":
             from nkululeko.models.model_svm import SVM_model
@@ -243,54 +245,19 @@ class Modelrunner:
             )
         return self.model
 
-    def _check_balancing(self):
+    def _check_feature_balancing(self):
+        """Check and apply feature balancing using the dedicated DataBalancer class."""
         balancing = self.util.config_val("FEATS", "balancing", False)
         if balancing:
-            orig_size = self.feats_train.shape[0]
-            self.util.debug(f"balancing the training features with: {balancing}")
-            if balancing == "ros":
-                from imblearn.over_sampling import RandomOverSampler
-
-                sampler = RandomOverSampler(random_state=42)
-                X_res, y_res = sampler.fit_resample(
-                    self.feats_train, self.df_train[self.target]
-                )
-            elif balancing == "smote":
-                from imblearn.over_sampling import SMOTE
-
-                sampler = SMOTE(random_state=42)
-                X_res, y_res = sampler.fit_resample(
-                    self.feats_train, self.df_train[self.target]
-                )
-            elif balancing == "adasyn":
-                from imblearn.over_sampling import ADASYN
-
-                sampler = ADASYN(random_state=42)
-                X_res, y_res = sampler.fit_resample(
-                    self.feats_train, self.df_train[self.target]
-                )
-            else:
-                self.util.error(
-                    f"unknown balancing algorithm: {balancing} (should be [ros|smote|adasyn])"
-                )
-
-            self.feats_train = X_res
-            self.df_train = pd.DataFrame({self.target: y_res}, index=X_res.index)
-            self.util.debug(
-                f"balanced with: {balancing}, new size: {X_res.shape[0]} (was {orig_size})"
+            self.util.debug("Applying feature balancing using DataBalancer")
+            
+            # Initialize the data balancer
+            balancer = DataBalancer(random_state=42)
+            
+            # Apply balancing
+            self.df_train, self.feats_train = balancer.balance_features(
+                df_train=self.df_train,
+                feats_train=self.feats_train,
+                target_column=self.target,
+                method=balancing
             )
-            # Check if label encoder is available before using it
-            if (
-                hasattr(glob_conf, "label_encoder")
-                and glob_conf.label_encoder is not None
-            ):
-                le = glob_conf.label_encoder
-                res = y_res.value_counts()
-                resd = {}
-                for i, e in enumerate(le.inverse_transform(res.index.values)):
-                    resd[e] = res.values[i]
-                self.util.debug(f"class distribution after balancing: {resd}")
-            else:
-                self.util.debug(
-                    "Label encoder not available, skipping class distribution report"
-                )

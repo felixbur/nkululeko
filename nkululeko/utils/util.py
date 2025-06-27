@@ -106,15 +106,15 @@ class Util:
             except KeyError:
                 # some default values
                 if entry == "fig_dir":
-                    entryn = "./images/"
+                    entryn = "images/"
                 elif entry == "res_dir":
-                    entryn = "./results/"
+                    entryn = "results/"
                 elif entry == "model_dir":
-                    entryn = "./models/"
+                    entryn = "models/"
                 elif entry == "cache":
-                    entryn = "./cache/"
+                    entryn = "cache/"
                 else:
-                    entryn = "./store/"
+                    entryn = "store/"
 
             # Expand image, model and result directories with run index
             if entry == "fig_dir" or entry == "res_dir" or entry == "model_dir":
