@@ -178,9 +178,13 @@ class Reporter:
                 # Ensure the file_name goes to the results directory
                 if not os.path.isabs(file_name):
                     res_dir = self.util.get_res_dir()
-                    file_name = os.path.join(res_dir, file_name + ".csv")
+                    if not file_name.endswith(".csv"):
+                        file_name = os.path.join(res_dir, file_name + ".csv")
+                    else:
+                        file_name = os.path.join(res_dir, file_name)
                 else:
-                    file_name = file_name + ".csv"
+                    if not file_name.endswith(".csv"):
+                        file_name = file_name + ".csv"
             self.probas = probas
             probas.to_csv(file_name)
             self.util.debug(f"Saved probabilities to {file_name}")
