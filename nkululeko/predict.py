@@ -63,7 +63,7 @@ def main():
     sample_selection = util.config_val("PREDICT", "sample_selection", "all")
     name = f"{sample_selection}_predicted"
     res_dir = util.get_res_dir()
-    df.to_csv(f"{res_dir}{name}.csv")
+    df.to_csv(os.path.join(res_dir, f"{name}.csv"))
     util.debug(f"saved {os.path.join(res_dir, name)}.csv")
     print("DONE")
 
