@@ -261,9 +261,20 @@
 * **balancing**: balance the features with respect to [class distribution](https://imbalanced-learn.org/stable/)
   * balancing=smote
   * possible values:
-    * **ros**: simply repeat random samples from the minority classes
-    * **smote**: *invent* new minority samples by little changes from the existing ones
-    * **adasyn**: similar to smote, but resulting in uneven class distributions
+    * **Over-sampling methods** (increase minority classes):
+      * **ros**: simply repeat random samples from the minority classes
+      * **smote**: *invent* new minority samples by little changes from the existing ones
+      * **adasyn**: similar to smote, but resulting in uneven class distributions
+      * **borderlinesmote**: SMOTE variant focusing on borderline instances
+      * **svmsmote**: SMOTE variant using SVM for generating synthetic samples
+    * **Under-sampling methods** (reduce majority classes):
+      * **clustercentroids**: replace majority class clusters with their centroids using K-means clustering
+      * **randomundersampler**: randomly remove samples from majority classes
+      * **editednearestneighbours**: remove noisy samples using edited nearest neighbors
+      * **tomeklinks**: remove Tomek links to clean class boundaries
+    * **Combination methods** (over-sampling + under-sampling):
+      * **smoteenn**: combination of oversampling with SMOTE and undersampling with edited nearest neighbour (ENN)
+      * **smotetomek**: combination of SMOTE oversampling and Tomek links undersampling
 
 ### MODEL
 

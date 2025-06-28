@@ -5,6 +5,7 @@ Predict targets from a model and save as csv file.
 """
 
 import ast
+import os
 
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
@@ -24,7 +25,12 @@ class TestPredictor:
         self.label_encoder = labenc
         self.target = glob_conf.config["DATA"]["target"]
         self.util = Util("test_predictor")
-        self.name = name
+        # Construct full path to results directory
+        res_dir = self.util.get_res_dir()
+        if os.path.isabs(name):
+            self.name = name
+        else:
+            self.name = os.path.join(res_dir, name)
 
     def predict_and_store(self):
         label_data = self.util.config_val("DATA", "label_data", False)

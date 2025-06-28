@@ -130,6 +130,8 @@ results_*
 *_backup_*/
 ./openXBOW/
 ./pretrained_models/
+openXBOW/
+data/MELD-ST/
 
 # ignore specific files/folders
 results_*
@@ -164,6 +166,7 @@ docs/build/
 # Singularity build sandboxes
 nkululeko-dev/
 *.sif
+
 
 # agent settings
 AGENT.md

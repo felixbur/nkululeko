@@ -537,7 +537,6 @@ def get_speech_rate(file_index):
     cols = [
         "nsyll",
         "npause",
-        "dur_s",
         "phonationtime_s",
         "speechrate_nsyll_dur",
         "articulation_rate_nsyll_phonationtime",
@@ -755,7 +754,6 @@ def speech_rate(sound):
     speechrate_dictionary = {
         "nsyll": voicedcount,
         "npause": npause,
-        # "dur_s": originaldur,
         "phonationtime_s": intensity_duration,
         "speechrate_nsyll_dur": speakingrate,
         "articulation_rate_nsyll_phonationtime": articulationrate,
