@@ -2,10 +2,27 @@
 
 # Script to run all balancing method experiments
 # Created for testing different balancing techniques in nkululeko
-# to be run from nkululeko root directory
+# Auto-detects if run from run_scripts/ or nkululeko root directory
 
 echo "Starting balancing experiments..."
 echo "================================"
+
+# Auto-detect working directory and set paths accordingly
+CURRENT_DIR="$(pwd)"
+if [[ "$CURRENT_DIR" == *"/run_scripts" ]]; then
+    # Running from run_scripts/ directory
+    EXAMPLES_PATH="../examples"
+    RESULTS_PATH="../examples/results"
+else
+    # Running from nkululeko root or elsewhere
+    EXAMPLES_PATH="./examples"
+    RESULTS_PATH="./examples/results"
+fi
+
+echo "Current directory: $CURRENT_DIR"
+echo "Examples path: $EXAMPLES_PATH"
+echo "Results path: $RESULTS_PATH"
+echo ""
 
 # List of balancing methods to test
 balancing_methods=(
@@ -22,10 +39,10 @@ balancing_methods=(
 )
 
 # Create results directory if it doesn't exist
-mkdir -p ../examples/results/
+mkdir -p "$RESULTS_PATH"
 
 # Initialize summary file
-summary_file="../examples/results/balancing_experiments_summary.txt"
+summary_file="$RESULTS_PATH/balancing_experiments_summary.txt"
 echo "Balancing Experiments Summary" > $summary_file
 echo "=============================" >> $summary_file
 echo "Started: $(date)" >> $summary_file
@@ -40,15 +57,15 @@ for method in "${balancing_methods[@]}"; do
     echo "Running experiment with balancing method: $method"
     echo "================================================="
     
-    config_file="./nkululeko/examples/exp_balancing_${method}.ini"
-    log_file="./nkululeko/examples/results/exp_balancing_${method}.log"
+    config_file="$EXAMPLES_PATH/exp_balancing_${method}.ini"
+    log_file="$RESULTS_PATH/exp_balancing_${method}.log"
     
     if [ -f "$config_file" ]; then
         echo "Config file found: $config_file"
         echo "Starting experiment..."
         
         # Run the experiment and capture output
-        if python -m nkululeko.nkululeko.nkululeko --config "$config_file" > "$log_file" 2>&1; then
+        if python -m nkululeko.nkululeko --config "$config_file" > "$log_file" 2>&1; then
             echo "✓ SUCCESS: $method balancing completed"
             echo "✓ SUCCESS: $method" >> $summary_file
             ((success_count++))
@@ -82,4 +99,4 @@ echo "Summary saved to: $summary_file"
 # Show results directory
 echo ""
 echo "Results directory contents:"
-ls -la ../examples/results/
+ls -la "$RESULTS_PATH"
