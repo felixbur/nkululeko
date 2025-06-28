@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 0.95.1 (25-06-28)
+--------------------------
+* Moving and updating the balancing code to use a new DataBalancer class.
+* Adding new test cases for balancing methods and updating file paths in predictor and reporting modules.
+* Updating documentation to reflect the new balancing methods.
+
 Version 0.95.0 (25-06-26)
 --------------------------
 * added prediction of text via whisper
