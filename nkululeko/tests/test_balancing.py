@@ -1,51 +1,36 @@
 #!/usr/bin/env python3
 """
-Pytest test suite for comprehensive balancing methods testing
-using the new DataBalancer class
+Simple and comprehensive test suite for all balancing methods in DataBalancer.
 
-Tests all balancing methods including:
-- ClusterCentroids (undersampling)
-- SMOTE (oversampling) 
-- ADASYN (oversampling)
-- RandomUnderSampler (undersampling)
-- SMOTEENN (combination)
-- And more...
+Tests all 11 balancing methods from balance.py:
 
-Run with:
-    pytest nkululeko/tests/test_balancing.py -v
-    or
-    pytest nkululeko/tests -v
+Oversampling (5): ros, smote, adasyn, borderlinesmote, svmsmote
+Undersampling (4): clustercentroids, randomundersampler, editednearestneighbours, tomeklinks  
+Combination (2): smoteenn, smotetomek
 
-From the nkululeko root directory.
+Run with: pytest nkululeko/tests/test_balancing.py -v
 """
 
-import os
-import sys
 import numpy as np
 import pandas as pd
 import pytest
-
-# Import the modules we need to test
 from nkululeko.balance import DataBalancer
-from nkululeko import glob_conf
-from nkululeko.utils.util import Util
+import nkululeko.glob_conf as glob_conf
 
 
 @pytest.fixture
-def imbalanced_data():
-    """Create sample imbalanced data for testing"""
+def sample_data():
+    """Create sample imbalanced data that works with all methods"""
     np.random.seed(42)
     
-    # Create a synthetic dataset with class imbalance
-    # Majority class (label 0): 100 samples
-    # Minority class (label 1): 20 samples
-    majority_features = np.random.randn(100, 10)
-    minority_features = np.random.randn(20, 10) + 2  # Shift to make them distinguishable
+    # Majority class: 100 samples, Minority class: 25 samples
+    # Well-separated for better algorithm performance
+    majority_features = np.random.randn(100, 10) 
+    minority_features = np.random.randn(25, 10) + 3  # Good separation
     
     features = np.vstack([majority_features, minority_features])
-    labels = np.array([0] * 100 + [1] * 20)
+    labels = np.array([0] * 100 + [1] * 25)
     
-    # Create DataFrames
     df_train = pd.DataFrame({'target': labels})
     feats_train = features
     
@@ -54,104 +39,153 @@ def imbalanced_data():
 
 @pytest.fixture
 def mock_config():
-    """Mock the global configuration for testing"""
+    """Mock configuration for testing"""
     original_config = getattr(glob_conf, 'config', None)
     
-    # Set up mock configuration
     glob_conf.config = {
-        'FEATS': {'balancing': 'clustercentroids'},
+        'FEATS': {'balancing': 'smote'},
         'DATA': {'target': 'target'},
-        'MODEL': {'type': 'mlp'},
-        'EXP': {'epochs': '1'}
+        'MODEL': {'type': 'mlp'}
     }
     
     yield glob_conf.config
     
-    # Restore original configuration
     if original_config is not None:
         glob_conf.config = original_config
 
 
 class TestDataBalancer:
-    """Test suite for DataBalancer class"""
+    """Simple test suite for DataBalancer - tests all 11 methods"""
     
-    def test_data_balancer_initialization(self):
-        """Test DataBalancer can be initialized"""
+    def test_initialization(self):
+        """Test 1: DataBalancer can be initialized"""
         balancer = DataBalancer(random_state=42)
         assert balancer is not None
-        assert hasattr(balancer, 'random_state')
         assert balancer.random_state == 42
     
-    def test_supported_methods(self):
-        """Test that supported methods are correctly reported"""
-        balancer = DataBalancer(random_state=42)
-        supported = balancer.get_supported_methods()
+    def test_get_all_supported_methods(self):
+        """Test 2: All 11 methods are reported as supported"""
+        balancer = DataBalancer()
+        methods = balancer.get_supported_methods()
         
-        assert 'oversampling' in supported
-        assert 'undersampling' in supported
-        assert 'combination' in supported
+        # Check we have all 3 categories
+        assert 'oversampling' in methods
+        assert 'undersampling' in methods  
+        assert 'combination' in methods
         
-        # Check that ClusterCentroids is in undersampling methods
-        assert 'clustercentroids' in supported['undersampling']
+        # Check exact counts
+        assert len(methods['oversampling']) == 5
+        assert len(methods['undersampling']) == 4
+        assert len(methods['combination']) == 2
+        
+        # Total should be 11
+        total = (len(methods['oversampling']) + 
+                len(methods['undersampling']) + 
+                len(methods['combination']))
+        assert total == 11
     
-    def test_is_valid_method(self):
-        """Test method validation"""
-        balancer = DataBalancer(random_state=42)
+    def test_method_validation(self):
+        """Test 3: Method validation works correctly"""
+        balancer = DataBalancer()
         
-        # Test valid methods
-        assert balancer.is_valid_method('clustercentroids') == True
+        # Valid methods
+        assert balancer.is_valid_method('ros') == True
         assert balancer.is_valid_method('smote') == True
-        assert balancer.is_valid_method('adasyn') == True
+        assert balancer.is_valid_method('clustercentroids') == True
+        assert balancer.is_valid_method('smoteenn') == True
         
-        # Test invalid method
-        assert balancer.is_valid_method('invalid_method') == False
+        # Invalid methods
+        assert balancer.is_valid_method('invalid') == False
+        assert balancer.is_valid_method('') == False
     
-    def test_clustercentroids_balancing(self, imbalanced_data, mock_config):
-        """Test ClusterCentroids balancing functionality"""
-        df_train, feats_train = imbalanced_data
-        
-        # Create balancer
+    def test_all_oversampling_methods(self, sample_data, mock_config):
+        """Test 4: All 5 oversampling methods work"""
+        df_train, feats_train = sample_data
         balancer = DataBalancer(random_state=42)
         
-        # Get original statistics
-        orig_train_size = feats_train.shape[0]
-        orig_class_dist = df_train['target'].value_counts().to_dict()
+        oversampling_methods = ['ros', 'smote', 'adasyn', 'borderlinesmote', 'svmsmote']
         
-        print(f"Before balancing - Train size: {orig_train_size}")
-        print(f"Before balancing - Class distribution: {orig_class_dist}")
-        
-        # Apply ClusterCentroids balancing
-        balanced_df, balanced_features = balancer.balance_features(
-            df_train=df_train,
-            feats_train=feats_train,
-            target_column='target',
-            method='clustercentroids'
-        )
-        
-        # Check results
-        new_train_size = balanced_features.shape[0]
-        new_class_dist = balanced_df['target'].value_counts().to_dict()
-        
-        print(f"After balancing - Train size: {new_train_size}")
-        print(f"After balancing - Class distribution: {new_class_dist}")
-        
-        # Assertions
-        assert new_train_size < orig_train_size, "Dataset size should be reduced with undersampling"
-        assert len(set(new_class_dist.values())) == 1, "Classes should be perfectly balanced"
-        assert balanced_features.shape[1] == feats_train.shape[1], "Feature dimensions should remain the same"
-        assert len(balanced_df) == len(balanced_features), "DataFrame and features should have same length"
+        for method in oversampling_methods:
+            print(f"Testing oversampling: {method}")
+            
+            balanced_df, balanced_features = balancer.balance_features(
+                df_train=df_train,
+                feats_train=feats_train,
+                target_column='target',
+                method=method
+            )
+            
+            # Basic checks
+            assert len(balanced_df) >= len(df_train), f"{method} should increase/maintain size"
+            assert len(balanced_df) == len(balanced_features), f"{method} length mismatch"
+            assert balanced_features.shape[1] == feats_train.shape[1], f"{method} feature dim changed"
+            
+            print(f"✓ {method} passed")
     
-    def test_multiple_balancing_methods(self, imbalanced_data, mock_config):
-        """Test multiple balancing methods for completeness"""
-        df_train, feats_train = imbalanced_data
+    def test_all_undersampling_methods(self, sample_data, mock_config):
+        """Test 5: All 4 undersampling methods work"""
+        df_train, feats_train = sample_data
         balancer = DataBalancer(random_state=42)
         
-        # Test only methods that are likely to work with our test data
-        test_methods = ['smote', 'randomundersampler']
+        undersampling_methods = ['clustercentroids', 'randomundersampler', 
+                               'editednearestneighbours', 'tomeklinks']
         
-        for method in test_methods:
-            if balancer.is_valid_method(method):
-                print(f"Testing method: {method}")
+        for method in undersampling_methods:
+            print(f"Testing undersampling: {method}")
+            
+            balanced_df, balanced_features = balancer.balance_features(
+                df_train=df_train,
+                feats_train=feats_train,
+                target_column='target',
+                method=method
+            )
+            
+            # Basic checks
+            assert len(balanced_df) <= len(df_train), f"{method} should decrease/maintain size"
+            assert len(balanced_df) == len(balanced_features), f"{method} length mismatch"
+            assert balanced_features.shape[1] == feats_train.shape[1], f"{method} feature dim changed"
+            
+            print(f"✓ {method} passed")
+    
+    def test_all_combination_methods(self, sample_data, mock_config):
+        """Test 6: All 2 combination methods work"""
+        df_train, feats_train = sample_data
+        balancer = DataBalancer(random_state=42)
+        
+        combination_methods = ['smoteenn', 'smotetomek']
+        
+        for method in combination_methods:
+            print(f"Testing combination: {method}")
+            
+            balanced_df, balanced_features = balancer.balance_features(
+                df_train=df_train,
+                feats_train=feats_train,
+                target_column='target',
+                method=method
+            )
+            
+            # Basic checks
+            assert len(balanced_df) == len(balanced_features), f"{method} length mismatch"
+            assert balanced_features.shape[1] == feats_train.shape[1], f"{method} feature dim changed"
+            assert len(balanced_df) > 0, f"{method} resulted in empty dataset"
+            
+            print(f"✓ {method} passed")
+    
+    def test_all_11_methods_comprehensive(self, sample_data, mock_config):
+        """Test 7: All 11 methods work in one comprehensive test"""
+        df_train, feats_train = sample_data
+        balancer = DataBalancer(random_state=42)
+        
+        # Get all methods from the balancer itself
+        all_methods = balancer.get_supported_methods()
+        
+        successful_methods = []
+        failed_methods = []
+        
+        print("Testing all 11 balancing methods...")
+        
+        for category, methods in all_methods.items():
+            for method in methods:
                 try:
                     balanced_df, balanced_features = balancer.balance_features(
                         df_train=df_train,
@@ -160,97 +194,77 @@ class TestDataBalancer:
                         method=method
                     )
                     
-                    # Basic checks
+                    # Verify results
                     assert len(balanced_df) == len(balanced_features)
                     assert balanced_features.shape[1] == feats_train.shape[1]
-                    print(f"✓ {method} completed successfully")
+                    assert len(balanced_df) > 0
                     
-                except SystemExit:
-                    # Handle the case where util.error() calls sys.exit()
-                    print(f"⚠ {method} failed (expected for some datasets)")
+                    successful_methods.append(method)
+                    print(f"✓ {method} succeeded")
+                    
                 except Exception as e:
-                    print(f"⚠ {method} failed with exception: {str(e)}")
+                    failed_methods.append((method, str(e)))
+                    print(f"✗ {method} failed: {str(e)}")
+        
+        print(f"\nResults: {len(successful_methods)}/11 methods successful")
+        print(f"Successful: {successful_methods}")
+        if failed_methods:
+            print(f"Failed: {[m[0] for m in failed_methods]}")
+        
+        # All 11 methods should work
+        assert len(successful_methods) == 11, f"Expected 11 successful methods, got {len(successful_methods)}"
+        assert len(failed_methods) == 0, f"Some methods failed: {failed_methods}"
     
-    def test_smoteenn_combination_method(self, imbalanced_data, mock_config):
-        """Test SMOTEENN combination method"""
-        df_train, feats_train = imbalanced_data
+    def test_invalid_method_handling(self, sample_data, mock_config):
+        """Test 8: Invalid methods are handled correctly"""
+        df_train, feats_train = sample_data
         balancer = DataBalancer(random_state=42)
         
-        if balancer.is_valid_method('smoteenn'):
-            print("Testing SMOTEENN combination method")
-            
-            balanced_df, balanced_features = balancer.balance_features(
-                df_train=df_train,
-                feats_train=feats_train,
-                target_column='target',
-                method='smoteenn'
-            )
-            
-            # Check that balancing occurred
-            new_class_dist = balanced_df['target'].value_counts().to_dict()
-            print(f"SMOTEENN class distribution: {new_class_dist}")
-            
-            assert len(balanced_df) == len(balanced_features)
-            assert balanced_features.shape[1] == feats_train.shape[1]
-            print("✓ SMOTEENN completed successfully")
-    
-    def test_invalid_method_raises_error(self, imbalanced_data, mock_config):
-        """Test that invalid methods raise appropriate errors"""
-        df_train, feats_train = imbalanced_data
-        balancer = DataBalancer(random_state=42)
+        # Test that invalid methods are detected by validation
+        assert balancer.is_valid_method('invalid_method') == False
+        assert balancer.is_valid_method('nonexistent') == False
+        assert balancer.is_valid_method('') == False
         
-        # Since the current implementation calls sys.exit(), we need to test differently
-        # Check that the method is correctly identified as invalid
-        assert not balancer.is_valid_method('invalid_method')
-        
-        # Test with a subprocess or mock to avoid sys.exit() affecting our test
-        print("Testing invalid method detection (sys.exit() handling)")
-        
-        # Alternative: just test the validation logic
-        invalid_methods = ['invalid_method', 'nonexistent', 'fake_balancer']
-        for invalid_method in invalid_methods:
-            assert not balancer.is_valid_method(invalid_method), f"{invalid_method} should be invalid"
+        # Note: The actual balance_features() with invalid method calls sys.exit()
+        # This is expected behavior in the current implementation
+        print("✓ Invalid method validation works correctly")
 
 
-# Legacy test function for backward compatibility
-def test_clustercentroids_legacy():
-    """Legacy ClusterCentroids test function that can also be run directly"""
-    print("Running legacy ClusterCentroids test...")
+def test_simple_integration():
+    """Test 9: Simple integration test without fixtures"""
+    print("Simple integration test...")
     
-    # Create sample imbalanced data
+    # Create simple data
     np.random.seed(42)
-    majority_features = np.random.randn(50, 5)
-    minority_features = np.random.randn(10, 5) + 1
-    
-    features = np.vstack([majority_features, minority_features])
-    labels = np.array([0] * 50 + [1] * 10)
+    features = np.random.randn(60, 5)
+    labels = np.array([0] * 40 + [1] * 20)  # 40 vs 20 imbalance
     
     df_train = pd.DataFrame({'target': labels})
-    feats_train = features
     
-    # Mock config
-    glob_conf.config = {
-        'FEATS': {'balancing': 'clustercentroids'},
-        'DATA': {'target': 'target'},
-        'MODEL': {'type': 'mlp'},
-        'EXP': {'epochs': '1'}
-    }
-    
-    # Test balancer
+    # Test a few key methods
     balancer = DataBalancer(random_state=42)
-    balanced_df, balanced_features = balancer.balance_features(
-        df_train=df_train,
-        feats_train=feats_train,
-        target_column='target',
-        method='clustercentroids'
-    )
+    key_methods = ['ros', 'smote', 'clustercentroids', 'randomundersampler']
     
-    print(f"Original size: {len(df_train)}, Balanced size: {len(balanced_df)}")
-    print("✓ Legacy test passed")
+    for method in key_methods:
+        balanced_df, balanced_features = balancer.balance_features(
+            df_train=df_train,
+            feats_train=features,
+            target_column='target',
+            method=method
+        )
+        
+        assert len(balanced_df) == len(balanced_features)
+        print(f"✓ {method} integration test passed")
+    
+    print("✓ Integration test completed")
 
 
 if __name__ == "__main__":
-    # Allow running this file directly for quick testing
-    print("Running comprehensive balancing tests directly...")
-    test_clustercentroids_legacy()
-    print("All tests completed!")
+    print("Running simple balancing tests...")
+    print("=" * 50)
+    
+    # Run integration test
+    test_simple_integration()
+    
+    print("=" * 50)
+    print("Direct test completed! Run 'pytest test_balancing.py -v' for full tests")

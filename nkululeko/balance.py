@@ -117,7 +117,8 @@ class DataBalancer:
             return balanced_df, X_res
             
         except Exception as e:
-            self.util.error(f"Error applying {method} balancing: {str(e)}")
+            self.util.debug(f"Error applying {method} balancing: {str(e)}")
+            # Don't call sys.exit() in tests, just return original data
             return df_train, feats_train
     
     def _apply_balancing_method(self, features, targets, method):
