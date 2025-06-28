@@ -65,7 +65,7 @@ for method in "${balancing_methods[@]}"; do
         echo "Starting experiment..."
         
         # Run the experiment and capture output
-        if python -m nkululeko.nkululeko --config "$config_file" > "$log_file" 2>&1; then
+        if python3 -m nkululeko.nkululeko --config "$config_file" > "$log_file" 2>&1; then
             echo "✓ SUCCESS: $method balancing completed"
             echo "✓ SUCCESS: $method" >> $summary_file
             ((success_count++))
