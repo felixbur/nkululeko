@@ -6,6 +6,7 @@ import configparser
 import itertools
 import os
 import sys
+import time
 
 import numpy as np
 
@@ -442,7 +443,9 @@ class OptimizationRunner:
             return
             
         if filepath is None:
-            filepath = f"optimization_results_{self.model_type}.csv"
+            # Save in the results directory instead of current directory
+            results_dir = self.util.get_path("res_dir")
+            filepath = os.path.join(results_dir, f"optimization_results_{self.model_type}.csv")
             
         import csv
         
@@ -513,6 +516,9 @@ def doit(config_file):
 
     optimizer = OptimizationRunner(config)
 
+    # Start timing the optimization
+    start_time = time.time()
+
     # Use intelligent optimization if available
     try:
         best_params, best_result, all_results = optimizer.run_intelligent_optimization()
@@ -520,10 +526,15 @@ def doit(config_file):
         print(f"Intelligent optimization failed, falling back to manual: {e}")
         best_params, best_result, all_results = optimizer.run_optimization()
 
+    # Calculate optimization time
+    end_time = time.time()
+    optimization_time = end_time - start_time
+    
     print("OPTIMIZATION COMPLETE")
     print(f"Best parameters: {best_params}")
     print(f"Best result: {best_result}")
-
+    print(f"Optimization time: {optimization_time:.2f} seconds ({optimization_time/60:.2f} minutes)")
+    print(f"DONE")
     return best_params, best_result
 
 
