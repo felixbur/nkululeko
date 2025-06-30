@@ -5,6 +5,7 @@ import ast
 import configparser
 import itertools
 import os
+import sys
 
 from nkululeko.constants import VERSION
 from nkululeko.utils.util import Util
@@ -17,6 +18,7 @@ class OptimizationRunner:
         self.config = config
         self.util = Util("optim")
         self.results = []
+        self.model_type = None  # Will be set when parsing OPTIM params
 
     def parse_optim_params(self):
         """Parse OPTIM section parameters into search spaces."""
@@ -38,7 +40,8 @@ class OptimizationRunner:
         """Parse individual parameter specification."""
         try:
             parsed = ast.literal_eval(param_value)
-        except (ValueError, SyntaxError):
+        except (ValueError, SyntaxError) as e:
+            self.util.debug(f"Could not parse parameter {param_name}={param_value} as literal, treating as string: {e}")
             if isinstance(param_value, str):
                 return [param_value]
             return param_value
@@ -50,6 +53,9 @@ class OptimizationRunner:
                 return self._generate_range_with_step(
                     parsed[0], parsed[1], parsed[2], param_name
                 )
+            else:
+                self.util.error(f"Invalid tuple format for parameter {param_name}: {param_value}. Expected (min, max) or (min, max, step)")
+                return [parsed[0]]  # Fallback to first value
         elif isinstance(parsed, list):
             return parsed
         else:
@@ -67,7 +73,9 @@ class OptimizationRunner:
                 current *= 2
             return result
         elif param_name in ["lr", "do"]:
-            step = (max_val - min_val) / 100  # Default to 100 steps
+            # For learning rate and dropout, generate 10-20 steps instead of 100
+            num_steps = 10
+            step = (max_val - min_val) / num_steps
             result = []
             current = min_val
             while current <= max_val + step / 2:
@@ -79,11 +87,13 @@ class OptimizationRunner:
 
     def _generate_range_with_step(self, min_val, max_val, step, param_name):
         """Generate parameter range with explicit step."""
-        if isinstance(step, float) or isinstance(min_val, float):
+        if isinstance(step, float) or isinstance(min_val, float) or isinstance(max_val, float):
             result = []
-            current = min_val
+            current = float(min_val)
+            step = float(step)
+            max_val = float(max_val)
             while current <= max_val + step / 2:
-                result.append(round(current, 4))
+                result.append(round(current, 6))  # More precision for floats
                 current += step
             return result
         else:
@@ -104,7 +114,16 @@ class OptimizationRunner:
     def run_optimization(self):
         """Run hyperparameter optimization."""
         param_specs = self.parse_optim_params()
+        
+        if not param_specs:
+            self.util.error("No optimization parameters found in [OPTIM] section")
+            return None, None, []
+            
         combinations = self.generate_param_combinations(param_specs)
+        
+        if not combinations:
+            self.util.error("No parameter combinations generated")
+            return None, None, []
 
         self.util.debug(
             f"Starting optimization with {len(combinations)} parameter combinations"
@@ -121,7 +140,7 @@ class OptimizationRunner:
 
             try:
                 result, last_epoch = self._run_single_experiment()
-                score = float(result.split()[1]) if isinstance(result, str) else result
+                score = result  # result.test is already a numeric value
 
                 result_entry = {
                     "params": params.copy(),
@@ -143,21 +162,24 @@ class OptimizationRunner:
                 self.util.debug(f"Result: {result}, Score: {score}")
 
             except Exception as e:
-                self.util.debug(f"Failed with params {params}: {e}")
+                self.util.error(f"Failed with params {params}: {str(e)}")
+                # Log the full traceback for debugging
+                import traceback
+                self.util.debug(f"Full traceback: {traceback.format_exc()}")
                 continue
 
         self.util.debug(f"Optimization complete!")
         self.util.debug(f"Best parameters: {best_params}")
         self.util.debug(f"Best result: {best_result}")
+        
+        # Save results to file
+        self.save_results()
 
         return best_params, best_result, self.results
 
     def _update_config_with_params(self, params):
         """Update configuration with current parameter set."""
-        if "MODEL" not in self.config:
-            self.config.add_section("MODEL")
-
-        self.config["MODEL"]["type"] = self.model_type
+        self._ensure_model_section()
 
         if self.model_type == "mlp":
             self._update_mlp_params(params)
@@ -194,13 +216,10 @@ class OptimizationRunner:
 
     def _update_traditional_ml_params(self, params):
         """Update traditional ML parameters using tuning_params approach."""
-        tuning_param_names = []
+        # For optimization, we set the specific parameter values directly
+        # rather than using the tuning mechanism
         for param_name, param_value in params.items():
-            self.config["MODEL"][param_name] = str([param_value])
-            tuning_param_names.append(param_name)
-
-        self.config["MODEL"]["tuning_params"] = str(tuning_param_names)
-        self.config["MODEL"]["scoring"] = "recall_macro"
+            self.config["MODEL"][param_name] = str(param_value)
 
     def _run_single_experiment(self):
         """Run a single experiment with current configuration."""
@@ -226,6 +245,59 @@ class OptimizationRunner:
         result = expr.get_best_report(reports).result.test
 
         return result, int(min(last_epochs))
+
+    def save_results(self, filepath=None):
+        """Save optimization results to CSV file."""
+        if not self.results:
+            self.util.debug("No results to save")
+            return
+            
+        if filepath is None:
+            filepath = f"optimization_results_{self.model_type}.csv"
+            
+        import csv
+        
+        try:
+            with open(filepath, 'w', newline='') as csvfile:
+                # Get all unique parameter names from all results
+                param_names = set()
+                for result in self.results:
+                    param_names.update(result['params'].keys())
+                param_names = sorted(list(param_names))
+                
+                fieldnames = param_names + ['score', 'result', 'epoch']
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                
+                writer.writeheader()
+                for result in self.results:
+                    row = result['params'].copy()
+                    row['score'] = result['score']
+                    row['result'] = result['result']
+                    row['epoch'] = result['epoch']
+                    writer.writerow(row)
+                    
+            self.util.debug(f"Optimization results saved to {filepath}")
+        except Exception as e:
+            self.util.error(f"Failed to save results: {e}")
+
+    def get_best_params(self):
+        """Get the best parameters found during optimization."""
+        if not self.results:
+            return None
+            
+        best_result = None
+        best_score = -float("inf") if self.util.high_is_good() else float("inf")
+        
+        for result in self.results:
+            score = result['score']
+            is_better = (self.util.high_is_good() and score > best_score) or (
+                not self.util.high_is_good() and score < best_score
+            )
+            if is_better:
+                best_score = score
+                best_result = result
+                
+        return best_result
 
 
 def doit(config_file):
