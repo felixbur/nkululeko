@@ -7,6 +7,8 @@ import itertools
 import os
 import sys
 
+import numpy as np
+
 from nkululeko.constants import VERSION
 from nkululeko.utils.util import Util
 
@@ -19,6 +21,10 @@ class OptimizationRunner:
         self.util = Util("optim")
         self.results = []
         self.model_type = None  # Will be set when parsing OPTIM params
+        # New: Optimization strategy configuration
+        self.search_strategy = None
+        self.n_iter = None
+        self.cv_folds = None
 
     def parse_optim_params(self):
         """Parse OPTIM section parameters into search spaces."""
@@ -27,10 +33,15 @@ class OptimizationRunner:
 
         optim_config = self.config["OPTIM"]
         self.model_type = optim_config.get("model", "mlp")
+        
+        # Parse optimization strategy settings
+        self.search_strategy = optim_config.get("search_strategy", "grid")
+        self.n_iter = int(optim_config.get("n_iter", "50"))
+        self.cv_folds = int(optim_config.get("cv_folds", "3"))
 
         param_specs = {}
         for key, value in optim_config.items():
-            if key == "model":
+            if key in ["model", "search_strategy", "n_iter", "cv_folds"]:
                 continue
             param_specs[key] = self._parse_param_spec(key, value)
 
@@ -45,6 +56,13 @@ class OptimizationRunner:
             if isinstance(param_value, str):
                 return [param_value]
             return param_value
+
+        # Check for inefficient learning rate ranges and suggest better alternatives
+        if param_name == "lr" and isinstance(parsed, tuple) and len(parsed) == 3:
+            min_val, max_val, step = parsed
+            if step <= 0.0001 and (max_val - min_val) / step > 20:
+                self.util.debug(f"WARNING: Learning rate range {param_value} will generate {int((max_val - min_val) / step)} values!")
+                self.util.debug(f"Consider using discrete values like [0.0001, 0.001, 0.01, 0.1] or range (0.0001, 0.1) for log-scale sampling")
 
         if isinstance(parsed, tuple):
             if len(parsed) == 2:
@@ -72,14 +90,23 @@ class OptimizationRunner:
                 result.append(current)
                 current *= 2
             return result
-        elif param_name in ["lr", "do"]:
-            # For learning rate and dropout, generate 10-20 steps instead of 100
-            num_steps = 10
+        elif param_name in ["lr"]:
+            # For learning rate, use logarithmic scale sampling (more practical)
+            # Generate 5-8 values on log scale between min and max
+            num_samples = min(8, max(5, int(np.log10(max_val / min_val) * 2)))
+            log_min = np.log10(min_val)
+            log_max = np.log10(max_val)
+            log_values = np.linspace(log_min, log_max, num_samples)
+            result = [round(10**log_val, 6) for log_val in log_values]
+            return result
+        elif param_name in ["do"]:
+            # For dropout, generate reasonable steps
+            num_steps = 5
             step = (max_val - min_val) / num_steps
             result = []
             current = min_val
             while current <= max_val + step / 2:
-                result.append(round(current, 4))
+                result.append(round(current, 2))
                 current += step
             return result
         else:
@@ -176,6 +203,168 @@ class OptimizationRunner:
         self.save_results()
 
         return best_params, best_result, self.results
+
+    def run_intelligent_optimization(self):
+        """Run intelligent hyperparameter optimization using scikit-learn methods."""
+        param_specs = self.parse_optim_params()
+        
+        if not param_specs:
+            self.util.error("No optimization parameters found in [OPTIM] section")
+            return None, None, []
+        
+        # Use scikit-learn's built-in hyperparameter optimization
+        if self.model_type in ["svm", "svr", "xgb", "xgr", "knn", "tree"]:
+            return self._run_sklearn_optimization(param_specs)
+        else:
+            # Fall back to manual optimization for neural networks
+            return self.run_optimization()
+    
+    def _run_sklearn_optimization(self, param_specs):
+        """Run optimization using scikit-learn's hyperparameter search methods."""
+        from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
+        from sklearn.model_selection import cross_val_score
+        
+        # Import the actual experiment to get the model and data
+        import nkululeko.experiment as exp
+        
+        # Set up the experiment
+        expr = exp.Experiment(self.config)
+        expr.set_module("optim")
+        expr.load_datasets()
+        expr.fill_train_and_tests()
+        expr.extract_feats()
+        
+        # Get the base model without hyperparameter tuning
+        original_tuning_params = self.config.get("MODEL", "tuning_params", fallback=None)
+        if "MODEL" not in self.config:
+            self.config.add_section("MODEL")
+        
+        # Temporarily disable tuning_params to get base model
+        if original_tuning_params:
+            self.config.remove_option("MODEL", "tuning_params")
+        
+        # Create a model instance to get the base classifier
+        from nkululeko.models.model import Model
+        model_instance = Model.create(self.config, expr.df_train, expr.df_test, 
+                                    expr.feats_train, expr.feats_test)
+        base_clf = model_instance.clf
+        
+        # Restore original tuning_params if it existed
+        if original_tuning_params:
+            self.config.set("MODEL", "tuning_params", original_tuning_params)
+        
+        # Convert parameter specifications to sklearn format
+        sklearn_params = self._convert_to_sklearn_params(param_specs)
+        
+        # Choose search strategy
+        if self.search_strategy == "random":
+            search = RandomizedSearchCV(
+                base_clf, 
+                sklearn_params,
+                n_iter=self.n_iter,
+                cv=self.cv_folds,
+                scoring=self._get_scoring_metric(),
+                random_state=42,
+                n_jobs=-1,
+                verbose=1
+            )
+        elif self.search_strategy == "halving_random":
+            try:
+                from sklearn.model_selection import HalvingRandomSearchCV
+                search = HalvingRandomSearchCV(
+                    base_clf,
+                    sklearn_params,
+                    cv=self.cv_folds,
+                    scoring=self._get_scoring_metric(),
+                    random_state=42,
+                    n_jobs=-1,
+                    verbose=1
+                )
+            except ImportError:
+                self.util.debug("HalvingRandomSearchCV not available, falling back to RandomizedSearchCV")
+                search = RandomizedSearchCV(
+                    base_clf, sklearn_params, n_iter=self.n_iter,
+                    cv=self.cv_folds, scoring=self._get_scoring_metric(),
+                    random_state=42, n_jobs=-1, verbose=1
+                )
+        elif self.search_strategy == "halving_grid":
+            try:
+                from sklearn.model_selection import HalvingGridSearchCV
+                search = HalvingGridSearchCV(
+                    base_clf,
+                    sklearn_params,
+                    cv=self.cv_folds,
+                    scoring=self._get_scoring_metric(),
+                    random_state=42,
+                    n_jobs=-1,
+                    verbose=1
+                )
+            except ImportError:
+                self.util.debug("HalvingGridSearchCV not available, falling back to GridSearchCV")
+                search = GridSearchCV(
+                    base_clf, sklearn_params,
+                    cv=self.cv_folds, scoring=self._get_scoring_metric(),
+                    n_jobs=-1, verbose=1
+                )
+        else:  # grid search (default)
+            search = GridSearchCV(
+                base_clf, 
+                sklearn_params,
+                cv=self.cv_folds,
+                scoring=self._get_scoring_metric(),
+                n_jobs=-1,
+                verbose=1
+            )
+        
+        self.util.debug(f"Starting {self.search_strategy} search with {len(sklearn_params)} parameters")
+        
+        # Fit the search
+        search.fit(expr.feats_train, expr.df_train[self.config["DATA"]["target"]])
+        
+        # Extract results
+        best_params = search.best_params_
+        best_score = search.best_score_
+        
+        # Convert results back to our format
+        all_results = []
+        for i, (params, score) in enumerate(zip(search.cv_results_['params'], 
+                                               search.cv_results_['mean_test_score'])):
+            result_entry = {
+                "params": params,
+                "score": score,
+                "result": score,
+                "epoch": 0,
+            }
+            all_results.append(result_entry)
+        
+        self.results = all_results
+        
+        self.util.debug(f"Optimization complete!")
+        self.util.debug(f"Best parameters: {best_params}")
+        self.util.debug(f"Best score: {best_score}")
+        
+        # Save results
+        self.save_results()
+        
+        return best_params, best_score, all_results
+    
+    def _convert_to_sklearn_params(self, param_specs):
+        """Convert our parameter specifications to sklearn format."""
+        sklearn_params = {}
+        for param_name, values in param_specs.items():
+            if isinstance(values, list):
+                sklearn_params[param_name] = values
+            else:
+                # Convert single values to lists
+                sklearn_params[param_name] = [values]
+        return sklearn_params
+    
+    def _get_scoring_metric(self):
+        """Get the appropriate scoring metric for sklearn optimization."""
+        if self.util.exp_is_classification():
+            return "accuracy"  # or "f1_macro", "precision_macro", "recall_macro"
+        else:
+            return "neg_mean_squared_error"  # for regression
 
     def _update_config_with_params(self, params):
         """Update configuration with current parameter set."""
@@ -299,6 +488,19 @@ class OptimizationRunner:
                 
         return best_result
 
+    def get_recommended_ranges(self, param_name):
+        """Get recommended parameter ranges for common hyperparameters."""
+        recommendations = {
+            'lr': [0.0001, 0.001, 0.01, 0.1],  # Log-scale discrete values
+            'do': [0.1, 0.3, 0.5, 0.7],        # Common dropout rates
+            'C_val': [0.1, 1.0, 10.0, 100.0],  # SVM regularization
+            'n_estimators': [50, 100, 200],     # XGB trees
+            'max_depth': [3, 6, 9, 12],         # Tree depth
+            'subsample': [0.6, 0.8, 1.0],      # XGB subsample
+            'learning_rate': [0.01, 0.1, 0.3], # XGB learning rate
+        }
+        return recommendations.get(param_name, None)
+
 
 def doit(config_file):
     """Run hyperparameter optimization experiment."""
@@ -311,7 +513,12 @@ def doit(config_file):
 
     optimizer = OptimizationRunner(config)
 
-    best_params, best_result, all_results = optimizer.run_optimization()
+    # Use intelligent optimization if available
+    try:
+        best_params, best_result, all_results = optimizer.run_intelligent_optimization()
+    except Exception as e:
+        print(f"Intelligent optimization failed, falling back to manual: {e}")
+        best_params, best_result, all_results = optimizer.run_optimization()
 
     print("OPTIMIZATION COMPLETE")
     print(f"Best parameters: {best_params}")

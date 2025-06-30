@@ -458,13 +458,25 @@
 
 * **model**: the model type to optimize (e.g., 'mlp', 'svm', 'xgb')
   * model = mlp
+* **search_strategy**: intelligent search strategy for faster optimization
+  * search_strategy = random
+  * possible values:
+    * **grid**: exhaustive grid search (default, slowest but thorough)
+    * **random**: random search with n_iter samples (faster, often as good as grid)
+    * **halving_random**: successive halving random search (fastest, requires sklearn >= 0.24)
+    * **halving_grid**: successive halving grid search (compromise between speed and thoroughness)
+* **n_iter**: number of parameter combinations to try for random search
+  * n_iter = 50
+* **cv_folds**: number of cross-validation folds for hyperparameter evaluation
+  * cv_folds = 3
 * **Parameter specifications**: Define search spaces for hyperparameters using tuples for ranges and lists for discrete choices
   * **nlayers**: number of hidden layers for neural networks
     * nlayers = (1, 3)  # search from 1 to 3 layers
   * **nnodes**: number of nodes per layer for neural networks  
     * nnodes = (16, 256)  # search powers of 2 from 16 to 256
   * **lr**: learning rate for neural networks
-    * lr = (0.0001, 0.1, 0.0001)  # search from 0.0001 to 0.1 with step 0.0001
+    * lr = [0.0001, 0.001, 0.01, 0.1]  # discrete log-scale choices (recommended)
+    * lr = (0.0001, 0.01)  # or range with automatic log-scale sampling
   * **bs**: batch size for neural networks
     * bs = (2, 256)  # search powers of 2 from 2 to 256
   * **loss**: loss function for neural networks
@@ -478,8 +490,18 @@
 
 **Parameter specification formats**:
 * **(min, max)**: Range with automatic step selection based on parameter type
+  * For learning rates: uses logarithmic sampling (5-8 values)
+  * For dropout: uses linear sampling (5 values)
+  * For integers: uses linear sampling
 * **(min, max, step)**: Range with explicit step size
-* **[val1, val2, ...]**: Discrete list of values to try
+* **[val1, val2, ...]**: Discrete list of values to try (recommended for most cases)
 * **value**: Single value (equivalent to [value])
+
+**Recommended parameter ranges**:
+* **Learning rate**: `[0.0001, 0.001, 0.01, 0.1]` (log-scale discrete values)
+* **Dropout**: `[0.1, 0.3, 0.5, 0.7]` (common dropout rates)
+* **SVM C**: `[0.1, 1.0, 10.0, 100.0]` (regularization parameter)
+* **XGB n_estimators**: `[50, 100, 200]` (number of trees)
+* **XGB max_depth**: `[3, 6, 9, 12]` (tree depth)
 
 **Usage**: Run with `python3 -m nkululeko.optim --config exp.ini`
