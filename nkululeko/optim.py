@@ -5,6 +5,7 @@ import ast
 import configparser
 import itertools
 import os
+import random
 import sys
 import time
 
@@ -27,6 +28,7 @@ class OptimizationRunner:
         self.n_iter = 50
         self.cv_folds = 3
         self.metric = "accuracy"
+        self.random_state = 42  # Default random state for reproducibility
 
     def parse_optim_params(self):
         """Parse OPTIM section parameters into search spaces."""
@@ -40,13 +42,21 @@ class OptimizationRunner:
         self.search_strategy = optim_config.get("search_strategy", "grid")
         self.n_iter = int(optim_config.get("n_iter", "50"))
         self.cv_folds = int(optim_config.get("cv_folds", "3"))
+        self.random_state = int(optim_config.get("random_state", "42"))
+        
+        # Set global random seeds for reproducibility
+        random.seed(self.random_state)
+        np.random.seed(self.random_state)
+        
+        self.util.debug(f"Using random state: {self.random_state} for reproducibility")
+        
         self.metric = optim_config.get("metric", "accuracy").lower()
 
         self.util.debug(f"Parsed metric from config: '{self.metric}'")  # Debug line
 
         param_specs = {}
         for key, value in optim_config.items():
-            if key in ["model", "search_strategy", "n_iter", "cv_folds", "metric"]:
+            if key in ["model", "search_strategy", "n_iter", "cv_folds", "metric", "random_state"]:
                 continue
             param_specs[key] = self._parse_param_spec(key, value)
 
@@ -284,7 +294,7 @@ class OptimizationRunner:
                 n_iter=self.n_iter,
                 cv=self.cv_folds,
                 scoring=self._get_scoring_metric(),
-                random_state=42,
+                random_state=self.random_state,
                 n_jobs=-1,
                 verbose=1,
             )
@@ -297,7 +307,7 @@ class OptimizationRunner:
                     sklearn_params,
                     cv=self.cv_folds,
                     scoring=self._get_scoring_metric(),
-                    random_state=42,
+                    random_state=self.random_state,
                     n_jobs=-1,
                     verbose=1,
                 )
@@ -311,7 +321,7 @@ class OptimizationRunner:
                     n_iter=self.n_iter,
                     cv=self.cv_folds,
                     scoring=self._get_scoring_metric(),
-                    random_state=42,
+                    random_state=self.random_state,
                     n_jobs=-1,
                     verbose=1,
                 )
@@ -324,7 +334,7 @@ class OptimizationRunner:
                     sklearn_params,
                     cv=self.cv_folds,
                     scoring=self._get_scoring_metric(),
-                    random_state=42,
+                    random_state=self.random_state,
                     n_jobs=-1,
                     verbose=1,
                 )
@@ -382,6 +392,13 @@ class OptimizationRunner:
 
         # Save results
         self.save_results()
+        
+        # Validate best parameters using standard nkululeko evaluation for consistency
+        validation_score = self._validate_best_params_standard_eval(best_params, expr)
+        if validation_score is not None:
+            self.util.debug(f"Cross-validation score: {best_score:.4f}")
+            self.util.debug(f"Standard evaluation score: {validation_score:.4f}")
+            self.util.debug(f"Score difference: {abs(best_score - validation_score):.4f}")
 
         return best_params, best_score, all_results
 
@@ -510,6 +527,10 @@ class OptimizationRunner:
         # rather than using the tuning mechanism
         for param_name, param_value in params.items():
             self.config["MODEL"][param_name] = str(param_value)
+        
+        # Add random_state to model configuration for consistency
+        if self.model_type in ["xgb", "xgr", "svm", "svr", "knn", "knn_reg", "tree", "tree_reg"]:
+            self.config["MODEL"]["random_state"] = str(self.random_state)
 
     def _run_single_experiment(self):
         """Run a single experiment with current configuration."""
@@ -610,6 +631,20 @@ class OptimizationRunner:
             "learning_rate": [0.01, 0.1, 0.3],  # XGB learning rate
         }
         return recommendations.get(param_name, None)
+
+    def _validate_best_params_standard_eval(self, best_params, expr):
+        """Validate the best parameters using standard nkululeko train-test evaluation."""
+        try:
+            # Set the model parameters to the best found values
+            self._update_config_with_params(best_params)
+            
+            # Run a single experiment with these parameters using the standard approach
+            result, _ = self._run_single_experiment()
+            
+            return result
+        except Exception as e:
+            self.util.debug(f"Standard validation failed: {e}")
+            return None
 
 
 def doit(config_file):
