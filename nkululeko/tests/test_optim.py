@@ -126,6 +126,30 @@ def test_run_sklearn_optimization_random(runner, param_specs):
             assert all("params" in r and "score" in r for r in all_results)
             runner.save_results.assert_called_once()
 
+def test_parameter_mapping(runner):
+    """Test that parameters are correctly mapped for sklearn compatibility."""
+    # Test SVM parameter mapping
+    param_specs = {"c_val": [0.1, 1.0, 10.0], "kernel": ["linear", "rbf"]}
+    sklearn_params = runner._convert_to_sklearn_params(param_specs)
+    
+    # Check that c_val was mapped to C
+    assert "C" in sklearn_params
+    assert "c_val" not in sklearn_params
+    assert sklearn_params["C"] == [0.1, 1.0, 10.0]
+    assert sklearn_params["kernel"] == ["linear", "rbf"]
+
+    # Test KNN parameter mapping
+    param_specs = {"K_val": [3, 5, 7], "KNN_weights": ["uniform", "distance"]}
+    sklearn_params = runner._convert_to_sklearn_params(param_specs)
+    
+    # Check that K_val was mapped to n_neighbors and KNN_weights to weights
+    assert "n_neighbors" in sklearn_params
+    assert "weights" in sklearn_params
+    assert "K_val" not in sklearn_params
+    assert "KNN_weights" not in sklearn_params
+    assert sklearn_params["n_neighbors"] == [3, 5, 7]
+    assert sklearn_params["weights"] == ["uniform", "distance"]
+
 def test_run_sklearn_optimization_grid_strategy(runner, param_specs):
     # Test that the system works with grid strategy (simpler than testing import errors)
     # This ensures the fallback logic is accessible and the basic functionality works

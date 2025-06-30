@@ -157,18 +157,18 @@ class OptimizationRunner:
 
     def run_optimization(self):
         """Run hyperparameter optimization using the most appropriate method."""
-        param_specs = self.parse_optim_params()
-
         self.util.debug(
             f"Starting optimization using {self.search_strategy} strategy with {self.metric} metric, nkululeko version {VERSION}"
         )
+
+        param_specs = self.parse_optim_params()
 
         if not param_specs:
             self.util.error("No optimization parameters found in [OPTIM] section")
             return None, None, []
 
         # Use scikit-learn's optimization for compatible models, otherwise use manual grid search
-        if self.model_type in ["svm", "svr", "xgb", "xgr", "knn", "tree"]:
+        if self.model_type in ["svm", "svr", "xgb", "xgr", "knn", "knn_reg", "tree", "tree_reg", "bayes", "lin_reg"]:
             return self._run_sklearn_optimization(param_specs)
         else:
             # Use manual optimization for neural networks and other custom models
@@ -387,13 +387,28 @@ class OptimizationRunner:
 
     def _convert_to_sklearn_params(self, param_specs):
         """Convert our parameter specifications to sklearn format."""
+        # Parameter name mapping from nkululeko names to sklearn names
+        param_mapping = {
+            # SVM parameters
+            "C_val": "C",  # SVM regularization parameter
+            "c_val": "C",  # Alternative lowercase version
+            # KNN parameters
+            "K_val": "n_neighbors",  # KNN number of neighbors
+            "k_val": "n_neighbors",  # Alternative lowercase version
+            "KNN_weights": "weights",  # KNN weights (uniform/distance)
+            "knn_weights": "weights",  # Alternative lowercase version
+        }
+        
         sklearn_params = {}
         for param_name, values in param_specs.items():
+            # Map parameter names to sklearn equivalents
+            sklearn_param_name = param_mapping.get(param_name, param_name)
+            
             if isinstance(values, list):
-                sklearn_params[param_name] = values
+                sklearn_params[sklearn_param_name] = values
             else:
                 # Convert single values to lists
-                sklearn_params[param_name] = [values]
+                sklearn_params[sklearn_param_name] = [values]
         return sklearn_params
 
     def _get_scoring_metric(self):
@@ -584,6 +599,11 @@ class OptimizationRunner:
             "lr": [0.0001, 0.001, 0.01, 0.1],  # Log-scale discrete values
             "do": [0.1, 0.3, 0.5, 0.7],  # Common dropout rates
             "C_val": [0.1, 1.0, 10.0, 100.0],  # SVM regularization
+            "c_val": [0.1, 1.0, 10.0, 100.0],  # SVM regularization (alternative)
+            "K_val": [3, 5, 7, 9, 11],  # KNN neighbors
+            "k_val": [3, 5, 7, 9, 11],  # KNN neighbors (alternative)
+            "KNN_weights": ["uniform", "distance"],  # KNN weights
+            "knn_weights": ["uniform", "distance"],  # KNN weights (alternative)
             "n_estimators": [50, 100, 200],  # XGB trees
             "max_depth": [3, 6, 9, 12],  # Tree depth
             "subsample": [0.6, 0.8, 1.0],  # XGB subsample
