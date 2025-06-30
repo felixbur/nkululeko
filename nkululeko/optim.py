@@ -67,11 +67,12 @@ class OptimizationRunner:
                 current *= 2
             return result
         elif param_name in ["lr", "do"]:
+            step = (max_val - min_val) / 100  # Default to 100 steps
             result = []
             current = min_val
-            while current <= max_val + 0.0001:
+            while current <= max_val + step / 2:
                 result.append(round(current, 4))
-                current += 0.0001
+                current += step
             return result
         else:
             return list(range(min_val, max_val + 1))
