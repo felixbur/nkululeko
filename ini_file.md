@@ -21,6 +21,7 @@
     - [PLOT](#plot)
     - [RESAMPLE](#resample)
     - [REPORT](#report)
+    - [OPTIM](#optim)
 
 ## Sections
 
@@ -452,3 +453,33 @@
   * latex = my_latex_document
 * **title**: title for document
 * **author**: author for document
+
+### OPTIM
+
+* **model**: the model type to optimize (e.g., 'mlp', 'svm', 'xgb')
+  * model = mlp
+* **Parameter specifications**: Define search spaces for hyperparameters using tuples for ranges and lists for discrete choices
+  * **nlayers**: number of hidden layers for neural networks
+    * nlayers = (1, 3)  # search from 1 to 3 layers
+  * **nnodes**: number of nodes per layer for neural networks  
+    * nnodes = (16, 256)  # search powers of 2 from 16 to 256
+  * **lr**: learning rate for neural networks
+    * lr = (0.0001, 0.1, 0.0001)  # search from 0.0001 to 0.1 with step 0.0001
+  * **bs**: batch size for neural networks
+    * bs = (2, 256)  # search powers of 2 from 2 to 256
+  * **loss**: loss function for neural networks
+    * loss = ["cross", "f1"]  # discrete choices
+  * **do**: dropout rate for neural networks
+    * do = (0.1, 0.5, 0.1)  # search from 0.1 to 0.5 with step 0.1
+  * **Traditional ML parameters**: For SVM, XGB, etc., use parameter names from sklearn
+    * C = [0.1, 1.0, 10.0]  # SVM regularization parameter
+    * n_estimators = [50, 100, 200]  # XGB number of estimators
+    * max_depth = [3, 6, 9]  # XGB maximum depth
+
+**Parameter specification formats**:
+* **(min, max)**: Range with automatic step selection based on parameter type
+* **(min, max, step)**: Range with explicit step size
+* **[val1, val2, ...]**: Discrete list of values to try
+* **value**: Single value (equivalent to [value])
+
+**Usage**: Run with `python3 -m nkululeko.optim --config exp.ini`
