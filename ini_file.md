@@ -465,6 +465,16 @@
     * **random**: random search with n_iter samples (faster, often as good as grid)
     * **halving_random**: successive halving random search (fastest, requires sklearn >= 0.24)
     * **halving_grid**: successive halving grid search (compromise between speed and thoroughness)
+* **metric**: evaluation metric for optimization
+  * metric = uar
+  * possible values:
+    * **uar**: Unweighted Average Recall (balanced accuracy, good for imbalanced datasets)
+    * **accuracy**: Standard accuracy (default)
+    * **f1**: Macro-averaged F1-score (balance of precision and recall)
+    * **precision**: Macro-averaged precision
+    * **recall**: Macro-averaged recall
+    * **sensitivity**: Sensitivity (same as recall)
+    * **specificity**: Specificity (true negative rate)
 * **n_iter**: number of parameter combinations to try for random search
   * n_iter = 50
 * **cv_folds**: number of cross-validation folds for hyperparameter evaluation
