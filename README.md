@@ -33,8 +33,6 @@ uv pip install -r requirements.txt
 uv run python -m nkululeko.nkululeko --config examples/exp_polish_tree.ini
 ```
 
-Current version: **0.94.1**
-
 ### Optional Dependencies
 
 Nkululeko supports optional dependencies through extras:
