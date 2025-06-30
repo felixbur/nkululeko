@@ -29,6 +29,8 @@ pip install nkululeko
 uv venv --python 3.12
 source .venv/bin/activate
 uv pip install -r requirements.txt
+# or run directly using uv run after cloning
+uv run python -m nkululeko.nkululeko --config examples/exp_polish_tree.ini
 ```
 
 Current version: **0.94.1**
