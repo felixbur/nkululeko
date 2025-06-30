@@ -102,6 +102,8 @@ class OptimizationRunner:
 
     def run_optimization(self):
         """Run hyperparameter optimization."""
+        self._ensure_model_section()
+        
         param_specs = self.parse_optim_params()
         combinations = self.generate_param_combinations(param_specs)
 
@@ -162,6 +164,14 @@ class OptimizationRunner:
             self._update_mlp_params(params)
         else:
             self._update_traditional_ml_params(params)
+    
+    def _ensure_model_section(self):
+        """Ensure MODEL section exists with basic configuration."""
+        if "MODEL" not in self.config:
+            self.config.add_section("MODEL")
+        
+        if "type" not in self.config["MODEL"]:
+            self.config["MODEL"]["type"] = self.model_type
 
     def _update_mlp_params(self, params):
         """Update MLP-specific parameters."""
