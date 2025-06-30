@@ -177,15 +177,13 @@ class OptimizationRunner:
             self.util.error("No optimization parameters found in [OPTIM] section")
             return None, None, []
 
-        # Use scikit-learn's optimization for compatible models, otherwise use manual grid search
-        if self.model_type in ["svm", "svr", "xgb", "xgr", "knn", "knn_reg", "tree", "tree_reg", "bayes", "lin_reg"]:
-            return self._run_sklearn_optimization(param_specs)
-        else:
-            # Use manual optimization for neural networks and other custom models
-            return self._run_manual_optimization(param_specs)
+        # Always use manual optimization to ensure consistent evaluation pipeline
+        # This prevents discrepancies between CV and final evaluation
+        self.util.debug("Using manual optimization for consistent evaluation pipeline")
+        return self._run_manual_optimization(param_specs)
 
     def _run_manual_optimization(self, param_specs):
-        """Run manual grid search optimization for models not compatible with sklearn."""
+        """Run manual grid search optimization with consistent evaluation pipeline."""
         combinations = self.generate_param_combinations(param_specs)
 
         if not combinations:
@@ -196,6 +194,18 @@ class OptimizationRunner:
             f"Starting manual optimization with {len(combinations)} parameter combinations"
         )
 
+        # Check if we should use cross-validation or train-test split
+        use_cv = self.search_strategy in ["grid_cv", "random_cv"] or (
+            hasattr(self, 'use_cv_in_manual') and self.use_cv_in_manual
+        )
+
+        if use_cv:
+            return self._run_manual_cv_optimization(combinations, param_specs)
+        else:
+            return self._run_manual_train_test_optimization(combinations)
+
+    def _run_manual_train_test_optimization(self, combinations):
+        """Run manual optimization using train-test split (matches final evaluation)."""
         best_result = None
         best_params = None
         best_score = -float("inf") if self.util.high_is_good() else float("inf")
@@ -245,9 +255,136 @@ class OptimizationRunner:
 
         return best_params, best_result, self.results
 
+    def _run_manual_cv_optimization(self, combinations, param_specs):
+        """Run manual optimization using cross-validation."""
+        import numpy as np
+        from sklearn.model_selection import StratifiedKFold
+
+        self.util.debug("Using cross-validation for optimization (may differ from final evaluation)")
+
+        # Set up the experiment once to get the data
+        import nkululeko.experiment as exp
+        expr = exp.Experiment(self.config)
+        expr.set_module("optim")
+        expr.load_datasets()
+        expr.fill_train_and_tests()
+        expr.extract_feats()
+
+        # Create stratified CV splits
+        cv_splitter = StratifiedKFold(
+            n_splits=self.cv_folds, 
+            shuffle=True, 
+            random_state=self.random_state
+        )
+
+        best_result = None
+        best_params = None
+        best_score = -float("inf") if self.util.high_is_good() else float("inf")
+
+        for i, params in enumerate(combinations):
+            self.util.debug(f"Testing combination {i+1}/{len(combinations)}: {params}")
+
+            # Run cross-validation for this parameter combination
+            cv_scores = []
+            
+            try:
+                for fold, (train_idx, val_idx) in enumerate(cv_splitter.split(
+                    expr.feats_train, expr.df_train[self.config["DATA"]["target"]]
+                )):
+                    self.util.debug(f"  Fold {fold+1}/{self.cv_folds}")
+                    
+                    # Create fold-specific data
+                    fold_train_feats = expr.feats_train.iloc[train_idx]
+                    fold_val_feats = expr.feats_train.iloc[val_idx]
+                    fold_train_df = expr.df_train.iloc[train_idx]
+                    fold_val_df = expr.df_train.iloc[val_idx]
+
+                    # Update config with current parameters
+                    self._update_config_with_params(params)
+
+                    # Run experiment on this fold
+                    fold_score = self._run_cv_fold(
+                        fold_train_feats, fold_val_feats, 
+                        fold_train_df, fold_val_df, params
+                    )
+                    cv_scores.append(fold_score)
+
+                # Calculate mean CV score
+                mean_score = np.mean(cv_scores)
+                std_score = np.std(cv_scores)
+
+                result_entry = {
+                    "params": params.copy(),
+                    "score": mean_score,
+                    "result": mean_score,
+                    "cv_std": std_score,
+                    "cv_scores": cv_scores,
+                    "epoch": 0,
+                }
+                self.results.append(result_entry)
+
+                is_better = (self.util.high_is_good() and mean_score > best_score) or (
+                    not self.util.high_is_good() and mean_score < best_score
+                )
+
+                if is_better:
+                    best_score = mean_score
+                    best_result = mean_score
+                    best_params = params.copy()
+
+                self.util.debug(f"CV Score: {mean_score:.4f} ± {std_score:.4f}")
+
+            except Exception as e:
+                self.util.error(f"Failed with params {params}: {str(e)}")
+                continue
+
+        self.util.debug("Cross-validation optimization complete!")
+        self.util.debug(f"Best parameters: {best_params}")
+        self.util.debug(f"Best CV score: {best_result}")
+
+        # Validate with final evaluation pipeline
+        if best_params:
+            validation_score = self._validate_best_params_standard_eval(best_params, expr)
+            if validation_score is not None:
+                self.util.debug(f"Cross-validation score: {best_result:.4f}")
+                self.util.debug(f"Standard evaluation score: {validation_score:.4f}")
+                score_diff = abs(best_result - validation_score)
+                self.util.debug(f"Score difference: {score_diff:.4f}")
+                
+                if score_diff > 0.1:  # 10% difference threshold
+                    self.util.debug("WARNING: Large discrepancy between CV and standard evaluation!")
+                    self.util.debug("Consider using train-test optimization for more consistent results.")
+
+        # Save results to file
+        self.save_results()
+
+        return best_params, best_result, self.results
+
+    def _run_cv_fold(self, train_feats, val_feats, train_df, val_df, params):
+        """Run a single cross-validation fold."""
+        from nkululeko.modelrunner import Modelrunner
+
+        # Create a temporary runner for this fold
+        runner = Modelrunner(train_df, val_df, train_feats, val_feats, 0)
+        runner._select_model(self.model_type)
+
+        # Configure model with current parameters
+        if self.model_type == "mlp":
+            self._configure_mlp_model(runner.model, params)
+        else:
+            self._configure_traditional_model(runner.model, params)
+
+        # Train and evaluate
+        runner.model.train()
+        reports = runner.model.predict()
+        
+        # Extract score based on metric
+        return self._extract_score_from_report(reports)
+
     def _run_sklearn_optimization(self, param_specs):
-        """Run optimization using scikit-learn's hyperparameter search methods."""
-        from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
+        """Run optimization using scikit-learn's hyperparameter search methods with consistent data handling."""
+        from sklearn.model_selection import (GridSearchCV, RandomizedSearchCV,
+                                             StratifiedKFold)
 
         # Import the actual experiment to get the model and data
         import nkululeko.experiment as exp
@@ -258,6 +395,26 @@ class OptimizationRunner:
         expr.load_datasets()
         expr.fill_train_and_tests()
         expr.extract_feats()
+
+        # Apply the same balancing as the final evaluation
+        original_train_feats = expr.feats_train.copy()
+        original_train_df = expr.df_train.copy()
+        
+        if "FEATS" in self.config and "balancing" in self.config["FEATS"]:
+            balancing_method = self.config["FEATS"]["balancing"]
+            if balancing_method and balancing_method.lower() != "none":
+                self.util.debug(f"Applying {balancing_method} balancing for optimization consistency")
+                try:
+                    from nkululeko.balance import DataBalancer
+                    balancer = DataBalancer()
+                    expr.feats_train, expr.df_train = balancer.balance_features(
+                        expr.df_train, expr.feats_train, self.config["DATA"]["target"], balancing_method
+                    )
+                    self.util.debug(f"Balanced training data: {len(expr.feats_train)} samples")
+                except Exception as e:
+                    self.util.debug(f"Balancing failed: {e}, using original data")
+                    expr.feats_train = original_train_feats
+                    expr.df_train = original_train_df
 
         # Get the base model without hyperparameter tuning
         original_tuning_params = self.config.get(
@@ -286,13 +443,20 @@ class OptimizationRunner:
         # Convert parameter specifications to sklearn format
         sklearn_params = self._convert_to_sklearn_params(param_specs)
 
+        # Create stratified CV for consistent cross-validation
+        cv = StratifiedKFold(
+            n_splits=self.cv_folds, 
+            shuffle=True, 
+            random_state=self.random_state
+        )
+
         # Choose search strategy
         if self.search_strategy == "random":
             search = RandomizedSearchCV(
                 base_clf,
                 sklearn_params,
                 n_iter=self.n_iter,
-                cv=self.cv_folds,
+                cv=cv,  # Use stratified CV
                 scoring=self._get_scoring_metric(),
                 random_state=self.random_state,
                 n_jobs=-1,
@@ -305,7 +469,7 @@ class OptimizationRunner:
                 search = HalvingRandomSearchCV(
                     base_clf,
                     sklearn_params,
-                    cv=self.cv_folds,
+                    cv=cv,  # Use stratified CV
                     scoring=self._get_scoring_metric(),
                     random_state=self.random_state,
                     n_jobs=-1,
@@ -319,7 +483,7 @@ class OptimizationRunner:
                     base_clf,
                     sklearn_params,
                     n_iter=self.n_iter,
-                    cv=self.cv_folds,
+                    cv=cv,  # Use stratified CV
                     scoring=self._get_scoring_metric(),
                     random_state=self.random_state,
                     n_jobs=-1,
@@ -332,7 +496,7 @@ class OptimizationRunner:
                 search = HalvingGridSearchCV(
                     base_clf,
                     sklearn_params,
-                    cv=self.cv_folds,
+                    cv=cv,  # Use stratified CV
                     scoring=self._get_scoring_metric(),
                     random_state=self.random_state,
                     n_jobs=-1,
@@ -345,7 +509,7 @@ class OptimizationRunner:
                 search = GridSearchCV(
                     base_clf,
                     sklearn_params,
-                    cv=self.cv_folds,
+                    cv=cv,  # Use stratified CV
                     scoring=self._get_scoring_metric(),
                     n_jobs=-1,
                     verbose=1,
@@ -354,7 +518,7 @@ class OptimizationRunner:
             search = GridSearchCV(
                 base_clf,
                 sklearn_params,
-                cv=self.cv_folds,
+                cv=cv,  # Use stratified CV
                 scoring=self._get_scoring_metric(),
                 n_jobs=-1,
                 verbose=1,
@@ -363,6 +527,7 @@ class OptimizationRunner:
         self.util.debug(
             f"Starting {self.search_strategy} search with {len(sklearn_params)} parameters"
         )
+        self.util.debug(f"Using stratified {self.cv_folds}-fold cross-validation")
 
         # Fit the search
         search.fit(expr.feats_train, expr.df_train[self.config["DATA"]["target"]])
@@ -398,7 +563,13 @@ class OptimizationRunner:
         if validation_score is not None:
             self.util.debug(f"Cross-validation score: {best_score:.4f}")
             self.util.debug(f"Standard evaluation score: {validation_score:.4f}")
-            self.util.debug(f"Score difference: {abs(best_score - validation_score):.4f}")
+            score_diff = abs(best_score - validation_score)
+            self.util.debug(f"Score difference: {score_diff:.4f}")
+            
+            if score_diff > 0.1:  # 10% difference threshold
+                self.util.debug("WARNING: Large discrepancy between CV and standard evaluation!")
+                self.util.debug("This may indicate overfitting to CV folds or inconsistent data handling.")
+                self.util.debug("Consider using manual optimization for more consistent results.")
 
         return best_params, best_score, all_results
 
@@ -435,8 +606,8 @@ class OptimizationRunner:
             from sklearn.metrics import make_scorer
 
             def specificity_score(y_true, y_pred):
-                from sklearn.metrics import confusion_matrix
                 import numpy as np
+                from sklearn.metrics import confusion_matrix
 
                 cm = confusion_matrix(y_true, y_pred)
                 if cm.shape[0] == 2:  # Binary classification
@@ -645,6 +816,65 @@ class OptimizationRunner:
         except Exception as e:
             self.util.debug(f"Standard validation failed: {e}")
             return None
+
+    def _configure_mlp_model(self, model, params):
+        """Configure MLP model with current parameters."""
+        # Set MLP-specific parameters
+        if hasattr(model, 'clf') and hasattr(model.clf, 'set_params'):
+            model_params = {}
+            
+            # Map optimization parameters to model parameters
+            if "lr" in params:
+                model_params["learning_rate"] = params["lr"]
+            if "do" in params:
+                model_params["dropout"] = params["do"]
+            if "bs" in params:
+                model_params["batch_size"] = params["bs"]
+                
+            model.clf.set_params(**model_params)
+
+    def _configure_traditional_model(self, model, params):
+        """Configure traditional ML model with current parameters."""
+        if hasattr(model, 'clf') and hasattr(model.clf, 'set_params'):
+            # Map parameter names for different models
+            param_mapping = {
+                "C_val": "C",
+                "c_val": "C", 
+                "K_val": "n_neighbors",
+                "k_val": "n_neighbors",
+                "KNN_weights": "weights",
+                "knn_weights": "weights",
+            }
+            
+            model_params = {}
+            for param_name, param_value in params.items():
+                sklearn_param = param_mapping.get(param_name, param_name)
+                model_params[sklearn_param] = param_value
+                
+            model.clf.set_params(**model_params)
+
+    def _extract_score_from_report(self, reports):
+        """Extract score from model prediction reports."""
+        # This is a simplified version - you may need to adapt based on your report structure
+        if isinstance(reports, dict):
+            # Try to extract the metric we're optimizing for
+            if self.metric in reports:
+                return reports[self.metric]
+            elif "test" in reports:
+                return reports["test"]
+            else:
+                # Return the first numeric value found
+                for key, value in reports.items():
+                    if isinstance(value, (int, float)):
+                        return value
+        elif isinstance(reports, (int, float)):
+            return reports
+        else:
+            # Fallback: assume it's a list and take the first element
+            try:
+                return reports[0] if hasattr(reports, '__getitem__') else 0.0
+            except:
+                return 0.0
 
 
 def doit(config_file):

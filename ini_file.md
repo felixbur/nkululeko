@@ -239,6 +239,233 @@
     * **sdr**: estimated [SDR](https://arxiv.org/pdf/2304.01448.pdf) (Perceptual Evaluation of Speech Quality)
     * **spkrec**: speaker-id: [speechbrain embeddings](https://huggingface.co/speechbrain/spkrec-xvect-voxceleb)
     * **stoi**: estimated [STOI](https://arxiv.org/pdf/2304.01448.pdf) (Perceptual Evaluation of Speech Quality)
+    * **squim**: [TorchAudio SQUIM](https://pytorch.org/audio/stable/tutorials/squim_tutorial.html) (Speech Quality and Intelligibility Measures)
+    * **trill**: [Google Research TRILL features](https://ai.googleblog.com/2020/06/improving-speech-representations-and.html)
+    * **wav2vec2**: [Facebook's wav2vec2 models](https://huggingface.co/docs/transformers/model_doc/wav2vec2)
+    * **whisper**: [OpenAI's Whisper ASR model](https://openai.com/research/whisper)
+    * **xbow**: [openXBOW processed opensmile features](https://github.com/openXBOW/openXBOW)
+    * **audmodel**: [audEERING's models](https://github.com/audeering/audmodel)
+* **balancing**: [balance the data with respect to class distribution](https://imbalanced-learn.org/stable/)
+  * balancing = smote
+  * possible values:
+    * **ros**: Random Over Sampler
+    * **smote**: SMOTE
+    * **adasyn**: ADASYN
+    * **borderlinesmote**: Borderline SMOTE
+    * **svmsmote**: SVM SMOTE
+    * **smoteenn**: SMOTE + Edited Nearest Neighbours
+    * **smotetomek**: SMOTE + Tomek links
+    * **clustercentroids**: Cluster Centroids
+    * **randomundersampler**: Random Under Sampler
+    * **editednearestneighbours**: Edited Nearest Neighbours
+    * **tomeklinks**: Tomek Links
+* **scale**: [scale (standard normalize) the features](http://blog.syntheticspeech.de/2021/08/10/the-nkululeko-configuration-file/)
+  * scale = standard
+  * possible values:
+    * **standard**: z-transformation (mean of 0 and std of 1) based on the training set
+    * **robust**: robust scaler
+    * **speaker**: like *standard* but based on individual speaker sets (also for the test)
+    * **bins**: convert feature values into 0, .5 and 1 (for low, mid and high)
+* **set**: name of opensmile feature set, e.g. eGeMAPSv02, ComParE_2016, GeMAPSv01a, eGeMAPSv01a
+  * set = eGeMAPSv02
+* **level**: level of opensmile features
+  * level = functional
+  * possible values:
+    * **functional**: aggregated over the whole utterance
+    * **lld**: low-level descriptor: framewise
+* **balancing**: balance the features with respect to [class distribution](https://imbalanced-learn.org/stable/)
+  * balancing=smote
+  * possible values: see above under **balancing**
+* **no_reuse**: don't re-use any feature files, but start fresh
+  * no_reuse = False
+* **needs_feature_extraction**: force the features to be freshly extracted
+  * needs_feature_extraction = False
+
+### MODEL
+
+Model and training specifications. In general, default values should work for classification tasks.
+
+* **type**: select the model
+  * type = xgb
+  * possible values:
+    * **xgb**: [XGBoost](http://blog.syntheticspeech.de/2021/07/13/nkululeko-how-to-use-xgboost-for-speech-emotion-recognition/)
+    * **xgr**: XGBoost for regression  
+    * **svm**: [Support vector machine](http://blog.syntheticspeech.de/2021/07/08/nkululeko-how-to-use-support-vector-machines-for-speech-emotion-recognition/)
+    * **svr**: Support vector machine for regression
+    * **knn**: [k nearest neighbors](http://blog.syntheticspeech.de/2021/08/19/nkululeko-k-nearest-neighbors/)
+    * **knn_reg**: k nearest neighbors for regression
+    * **tree**: Decision tree
+    * **tree_reg**: Decision tree for regression
+    * **nb**: Naive Bayes  
+    * **mlp**: [Multi-layer perceptron](http://blog.syntheticspeech.de/2021/08/30/nkululeko-multi-layer-perceptron/) (neural network)
+    * **cnn**: [Convolutional neural network](http://blog.syntheticspeech.de/2022/01/17/how-to-use-convolutional-neural-networks-with-nkululeko/)
+    * **lstm**: [Long short-term memory](http://blog.syntheticspeech.de/2022/03/18/nkululeko-how-to-use-recurrent-neural-networks/) recurrent neural network
+    * **gru**: Gated recurrent unit
+    * **finetune**: [Fine-tuning](http://blog.syntheticspeech.de/2022/10/07/nkululeko-how-to-fine-tune-a-wav2vec2-model/) for pre-trained models
+    * **auto**: Automated machine learning using [flaml](https://microsoft.github.io/FLAML/)
+* **learning_rate**: learning rate for neural networks
+  * learning_rate = 0.0001
+* **drop**: dropout rate for neural networks (0 to 1)  
+  * drop = 0.1
+* **batch_size**: batch size for neural networks
+  * batch_size = 8
+* **loss**: loss function for neural networks
+  * loss = cross
+  * possible values:
+    * **cross**: CrossEntropyLoss
+    * **f1**: F1 loss  
+    * **mse**: Mean squared error (for regression)
+    * **mae**: Mean absolute error (for regression)
+* **layers**: specify the layer architecture for MLP
+  * layers = {'l1':64, 'l2':16}
+* **C_val**: regularization value for SVM
+  * C_val = 1.0
+* **gamma**: gamma value for SVM (kernel coefficient)  
+  * gamma = scale
+* **kernel**: kernel type for SVM
+  * kernel = rbf
+  * possible values: linear, poly, rbf, sigmoid
+* **K_val**: number of neighbors for KNN
+  * K_val = 5
+* **weights**: weight function for KNN
+  * weights = uniform  
+  * possible values: uniform, distance
+* **n_estimators**: number of trees for tree-based models (XGBoost, Random Forest)
+  * n_estimators = 100
+* **max_depth**: maximum depth of trees
+  * max_depth = 6
+* **subsample**: subsample ratio for XGBoost
+  * subsample = 1.0
+* **colsample_bytree**: subsample ratio of columns for XGBoost
+  * colsample_bytree = 1.0
+* **random_state**: random seed for reproducible results
+  * random_state = 42
+* **device**: device for neural network training
+  * device = cpu
+  * possible values: cpu, cuda
+* **patience**: early stopping patience for neural networks  
+  * patience = 5
+* **save**: save the trained model
+  * save = False
+
+### OPTIM
+
+Hyperparameter optimization configuration. Used with the `nkululeko.optim` module to automatically find the best model parameters.
+
+* **model**: model type to optimize (must match MODEL.type)
+  * model = xgb
+  * possible values: same as MODEL.type
+* **search_strategy**: optimization search strategy
+  * search_strategy = grid
+  * possible values:
+    * **grid**: exhaustive grid search (conventional)
+    * **random**: random search
+    * **halving_grid**: successive halving grid search (intelligent)
+    * **halving_random**: successive halving random search (intelligent)
+* **metric**: optimization metric to maximize/minimize
+  * metric = uar
+  * possible values:
+    * **uar**: Unweighted Average Recall (good for imbalanced data)
+    * **accuracy**: Overall accuracy
+    * **f1**: F1-score (macro-averaged)
+    * **precision**: Precision (macro-averaged)  
+    * **recall**: Recall (macro-averaged)
+    * **specificity**: Specificity
+* **n_iter**: number of iterations for random search strategies
+  * n_iter = 50
+* **cv_folds**: number of cross-validation folds
+  * cv_folds = 3
+* **random_state**: random seed for reproducible optimization
+  * random_state = 42
+
+#### Model-Specific Parameters
+
+**XGBoost/XGRegressor parameters:**
+* **n_estimators**: number of trees to test
+  * n_estimators = [50, 100, 200]
+* **max_depth**: maximum tree depth values
+  * max_depth = [3, 6, 9]
+* **learning_rate**: learning rates to test
+  * learning_rate = [0.01, 0.1, 0.3]
+* **subsample**: subsampling ratios
+  * subsample = [0.6, 0.8, 1.0]
+* **colsample_bytree**: column subsampling ratios
+  * colsample_bytree = [0.6, 0.8, 1.0]
+
+**SVM/SVR parameters:**
+* **C_val**: regularization values
+  * C_val = [0.1, 1.0, 10.0, 100.0]
+* **kernel**: kernel types  
+  * kernel = ["linear", "rbf", "poly"]
+* **gamma**: gamma values
+  * gamma = ["scale", "auto", 0.001, 0.01, 0.1, 1.0]
+
+**KNN parameters:**
+* **K_val**: number of neighbors
+  * K_val = [3, 5, 7, 9, 11]
+* **weights**: weight functions
+  * weights = ["uniform", "distance"]
+
+**MLP parameters:**
+* **nlayers**: number of hidden layers
+  * nlayers = [1, 2, 3]
+* **nnodes**: number of nodes per layer
+  * nnodes = [16, 32, 64, 128]
+* **lr**: learning rates
+  * lr = [0.0001, 0.001, 0.01]
+* **bs**: batch sizes  
+  * bs = [8, 16, 32, 64]
+* **do**: dropout rates
+  * do = [0.1, 0.3, 0.5]
+* **loss**: loss functions
+  * loss = ["cross", "f1", "mse"]
+
+#### Parameter Format
+
+Parameters can be specified in three formats:
+
+1. **List format**: discrete values to test
+   ```ini
+   C_val = [0.1, 1.0, 10.0]
+   kernel = ["linear", "rbf"]
+   ```
+
+2. **Range format**: continuous range (auto-generates steps)
+   ```ini
+   learning_rate = (0.001, 0.1)  # log-spaced values
+   max_depth = (3, 10)           # integer range
+   ```
+
+3. **Range with step**: explicit step size
+   ```ini
+   dropout = (0.1, 0.5, 0.1)     # [0.1, 0.2, 0.3, 0.4, 0.5]
+   ```
+
+#### Examples
+
+**Conventional Grid Search (XGBoost):**
+```ini
+[OPTIM]
+model = xgb
+n_estimators = [50, 100, 200]
+max_depth = [3, 6, 9]
+learning_rate = [0.01, 0.1, 0.2]
+metric = uar
+```
+
+**Intelligent Search (SVM):**
+```ini
+[OPTIM] 
+model = svm
+search_strategy = halving_grid
+n_iter = 15
+cv_folds = 3
+random_state = 42
+C_val = [0.1, 1.0, 10.0, 100.0]
+kernel = ["linear", "rbf", "poly"]
+gamma = ["scale", "auto", 0.001, 0.01, 0.1, 1.0]
+metric = uar
+```
 * **features** = *python list of selected features to be used (all others ignored)*
   * features = ['JitterPCA', 'meanF0Hz', 'hld_sylRate']
 * **no_reuse**: don't re-use already extracted features, but start fresh
