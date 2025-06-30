@@ -229,7 +229,7 @@ def doit(config_file):
     """Run hyperparameter optimization experiment."""
     if not os.path.isfile(config_file):
         print(f"ERROR: no such file: {config_file}")
-        exit()
+        sys.exit(1)
 
     config = configparser.ConfigParser()
     config.read(config_file)
