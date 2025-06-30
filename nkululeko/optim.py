@@ -103,8 +103,6 @@ class OptimizationRunner:
 
     def run_optimization(self):
         """Run hyperparameter optimization."""
-        self._ensure_model_section()
-        
         param_specs = self.parse_optim_params()
         combinations = self.generate_param_combinations(param_specs)
 
@@ -207,6 +205,8 @@ class OptimizationRunner:
     def _run_single_experiment(self):
         """Run a single experiment with current configuration."""
         import nkululeko.experiment as exp
+        
+        self._ensure_model_section()
         
         expr = exp.Experiment(self.config)
         expr.set_module("optim")
