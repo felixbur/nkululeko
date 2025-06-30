@@ -67,11 +67,12 @@ class OptimizationRunner:
                 current *= 2
             return result
         elif param_name in ["lr", "do"]:
+            step = (max_val - min_val) / 100  # Default to 100 steps
             result = []
             current = min_val
-            while current <= max_val + 0.0001:
+            while current <= max_val + step / 2:
                 result.append(round(current, 4))
-                current += 0.0001
+                current += step
             return result
         else:
             return list(range(min_val, max_val + 1))
@@ -81,7 +82,7 @@ class OptimizationRunner:
         if isinstance(step, float) or isinstance(min_val, float):
             result = []
             current = min_val
-            while current <= max_val + step/2:
+            while current <= max_val + step / 2:
                 result.append(round(current, 4))
                 current += step
             return result
@@ -111,7 +112,7 @@ class OptimizationRunner:
 
         best_result = None
         best_params = None
-        best_score = -float('inf') if self.util.high_is_good() else float('inf')
+        best_score = -float("inf") if self.util.high_is_good() else float("inf")
 
         for i, params in enumerate(combinations):
             self.util.debug(f"Testing combination {i+1}/{len(combinations)}: {params}")
@@ -163,6 +164,14 @@ class OptimizationRunner:
         else:
             self._update_traditional_ml_params(params)
 
+    def _ensure_model_section(self):
+        """Ensure MODEL section exists with basic configuration."""
+        if "MODEL" not in self.config:
+            self.config.add_section("MODEL")
+
+        if "type" not in self.config["MODEL"]:
+            self.config["MODEL"]["type"] = self.model_type
+
     def _update_mlp_params(self, params):
         """Update MLP-specific parameters."""
         if "nlayers" in params and "nnodes" in params:
@@ -196,21 +205,26 @@ class OptimizationRunner:
     def _run_single_experiment(self):
         """Run a single experiment with current configuration."""
         import nkululeko.experiment as exp
-        
+
+        if "MODEL" not in self.config:
+            self.config.add_section("MODEL")
+        if "type" not in self.config["MODEL"]:
+            self.config["MODEL"]["type"] = self.model_type
+
         expr = exp.Experiment(self.config)
         expr.set_module("optim")
-        
+
         expr.load_datasets()
-        
+
         expr.fill_train_and_tests()
-        
+
         expr.extract_feats()
-        
+
         expr.init_runmanager()
-        
+
         reports, last_epochs = expr.run()
         result = expr.get_best_report(reports).result.test
-        
+
         return result, int(min(last_epochs))
 
 
@@ -218,19 +232,19 @@ def doit(config_file):
     """Run hyperparameter optimization experiment."""
     if not os.path.isfile(config_file):
         print(f"ERROR: no such file: {config_file}")
-        exit()
+        sys.exit(1)
 
     config = configparser.ConfigParser()
     config.read(config_file)
-    
+
     optimizer = OptimizationRunner(config)
-    
+
     best_params, best_result, all_results = optimizer.run_optimization()
-    
+
     print("OPTIMIZATION COMPLETE")
     print(f"Best parameters: {best_params}")
     print(f"Best result: {best_result}")
-    
+
     return best_params, best_result
 
 
