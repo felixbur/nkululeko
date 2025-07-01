@@ -1,5 +1,5 @@
 # Core dependencies
-audeer>=0.7.11
+audeer>=1.0.0
 audformat>=1.3.1
 audinterface>=1.0.0
 audiofile>=1.0.0
@@ -10,7 +10,7 @@ confidence-intervals>=0.0.2
 datasets>=2.0.0
 imageio>=2.0.0
 matplotlib>=3.0.0
-# numpy>=2.3.0
+numpy>=1.20.0
 opensmile>=2.0.0
 pandas>=1.0.0
 praat-parselmouth>=0.4.0
