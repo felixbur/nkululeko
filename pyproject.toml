@@ -7,10 +7,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nkululeko"
-version = "0.95.1"
+version = "0.95.2"
 description = "Machine learning audio prediction experiments based on templates"
 authors = [
-    {name = "Felix Burkhardt", email = "fxburk@gmail.com"}
+    {name = "Felix Burkhardt", email = "fxburk@gmail.com"},
+    {name = "Bagus Tris Atmaja", email = "bagus@ep.its.ac.id"}
 ]
 readme = "README.md"
 license = {text = "MIT"}
