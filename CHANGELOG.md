@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.95.2 (25-07-01)
+--------------------------
+* added optimizer module
+
 Version 0.95.1 (25-06-28)
 --------------------------
 * Moving and updating the balancing code to use a new DataBalancer class.

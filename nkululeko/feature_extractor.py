@@ -74,6 +74,11 @@ class FeatureExtractor:
 
             return TRILLset
 
+        elif feats_type == "mld":
+            from nkululeko.feat_extract.feats_mld import MLD_set
+
+            return MLD_set
+
         elif feats_type.startswith(
             ("wav2vec2", "hubert", "wavlm", "spkrec", "whisper", "ast", "emotion2vec")
         ):

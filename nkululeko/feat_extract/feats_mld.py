@@ -1,15 +1,23 @@
 # mld_fset.py
 import os
 import sys
+from typing import Optional, Union, List, Any, Dict
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
 
 
 class MLD_set(Featureset):
-    def __init__(self, name, data_df):
-        super().__init__(name, data_df)
+    def __init__(
+        self,
+        name,
+        data_df,
+        feats_type: Optional[str] = None,
+    ):
+        super().__init__(name, data_df, feats_type)
         mld_path = self.util.config_val("FEATS", "mld.model", None)
+        if mld_path is None:
+            self.util.error("FEATS.mld.model required")
         sys.path.append(mld_path)
 
     def extract(self):
@@ -24,10 +32,10 @@ class MLD_set(Featureset):
             )
         else:
             self.util.debug("reusing previously extracted midleveldescriptor features")
-        import midlevel_descriptors as mld
+        import audmld
 
-        fex_mld = mld.MLD()
-        self.df = fex_mld.extract_from_index(index=self.data_df, cache_path=storage)
+        fex_mld = audmld.Mld(num_workers=6, verbose=True)
+        self.df = fex_mld.process_index(index=self.data_df.index, cache_root=storage)
         self.util.debug(f"MLD feats shape: {self.df.shape}")
         # shouldn't happen
         # replace NANa with column means values
