@@ -1,4 +1,4 @@
-# test_pretrain.py
+# nkulu_test_pretrain.py
 import argparse
 import configparser
 import json
@@ -32,7 +32,7 @@ def doit(config_file):
 
     # create a new experiment
     expr = exp.Experiment(config)
-    module = "test_pretrain"
+    module = "nkulu_test_pretrain"
     expr.set_module(module)
     util = Util(module)
     util.debug(

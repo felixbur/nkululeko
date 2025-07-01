@@ -1,4 +1,4 @@
-# test.py
+# nkulu_test.py
 # Just use a database as test
 
 import argparse
