@@ -1,4 +1,4 @@
-# test_pretrain.py
+# testing_pretrain.py
 import argparse
 import configparser
 import json
@@ -32,7 +32,7 @@ def doit(config_file):
 
     # create a new experiment
     expr = exp.Experiment(config)
-    module = "test_pretrain"
+    module = "nkulu_test_pretrain"
     expr.set_module(module)
     util = Util(module)
     util.debug(
@@ -151,7 +151,6 @@ def doit(config_file):
     # training
 
     def data_collator(data):
-
         files = [d["file"] for d in data]
         starts = [d["start"] for d in data]
         ends = [d["end"] for d in data]
@@ -190,7 +189,6 @@ def doit(config_file):
         return batch
 
     def compute_metrics(p: transformers.EvalPrediction):
-
         truth_gender = p.label_ids[:, 0].astype(int)
         preds = p.predictions
         preds_gender = np.argmax(preds, axis=1)
@@ -222,7 +220,6 @@ def doit(config_file):
             inputs,
             return_outputs=False,
         ):
-
             targets = inputs.pop("labels").squeeze()
             targets_gender = targets.type(torch.long)
 

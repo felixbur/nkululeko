@@ -5,7 +5,7 @@ import os.path
 import sys
 
 from nkululeko.nkululeko import doit as nkulu
-from nkululeko.test import do_it as test_mod
+from nkululeko.testing import do_it as test_mod
 
 
 def doit(cla):
