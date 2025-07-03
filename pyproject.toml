@@ -11,11 +11,11 @@ version = "0.95.2"
 description = "Machine learning audio prediction experiments based on templates"
 authors = [
     {name = "Felix Burkhardt", email = "fxburk@gmail.com"},
-    {name = "Bagus Tris Atmaja", email = "bagus@ep.its.ac.id"}
+    {name = "Bagus Tris Atmaja", email = "btatmaja@gmail.com"}
 ]
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 keywords = ["machine learning", "audio", "emotion recognition", "speech processing"]
 classifiers = [
     "Development Status :: 4 - Beta",

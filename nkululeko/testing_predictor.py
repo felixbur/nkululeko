@@ -1,4 +1,4 @@
-"""testing_predictor.py.
+"""testing_predictor.py
 
 Predict targets from a model and save as csv file.
 
@@ -24,7 +24,7 @@ class TestPredictor:
         self.orig_df = orig_df
         self.label_encoder = labenc
         self.target = glob_conf.config["DATA"]["target"]
-        self.util = Util("nkulu_test_predictor")
+        self.util = Util("testing_predictor")
         # Construct full path to results directory
         res_dir = self.util.get_res_dir()
         if os.path.isabs(name):
