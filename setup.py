@@ -89,7 +89,7 @@ setup(
             "nkululeko.predict=nkululeko.predict:main",
             "nkululeko.resample=nkululeko.resample:main",
             "nkululeko.segment=nkululeko.segment:main",
-            "nkululeko.test=nkululeko.test:main",
+            "nkululeko.testing=nkululeko.testing:main",
             "nkululeko.ensemble=nkululeko.ensemble:main",
         ],
     },
