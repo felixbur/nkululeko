@@ -428,9 +428,17 @@ class Reporter:
                     target_names=labels,
                     output_dict=True,
                 )
+                # in case we hade numbers before
+                s_labels = [str(x) for x in labels]
                 # print classifcation report in console
+                class_report_str = classification_report(
+                    self.truths,
+                    self.preds,
+                    target_names=s_labels,
+                    digits=4,
+                )
                 self.util.debug(
-                    f"\n {classification_report(self.truths, self.preds, target_names=labels, digits=4)}"
+                    f"\n {class_report_str}"
                 )
             except ValueError as e:
                 self.util.debug(
