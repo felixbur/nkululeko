@@ -333,13 +333,13 @@ class Util:
         if self.logger is not None:
             self.logger.warning(f"WARNING: {self.caller}: {message}")
         else:
-            print(f"WARNING: {message}")
+            print(f"WARNING: {message}", flush=True)
 
     def debug(self, message):
         if self.logger is not None:
             self.logger.debug(f"DEBUG: {self.caller}: {message}")
         else:
-            print(f"DEBUG: {message}")
+            print(f"DEBUG: {message}", flush=True)
 
     def set_config_val(self, section, key, value):
         try:

@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.95.3 (25-07-03)
+--------------------------
+* fix bug with classifying integers
+
 Version 0.95.2 (25-07-01)
 --------------------------
 * added optimizer module
