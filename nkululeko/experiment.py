@@ -23,7 +23,7 @@ from nkululeko.plots import Plots
 from nkululeko.reporting.report import Report
 from nkululeko.runmanager import Runmanager
 from nkululeko.scaler import Scaler
-from nkululeko.nkulu_test_predictor import TestPredictor
+from nkululeko.testing_predictor import TestPredictor
 from nkululeko.utils.util import Util
 
 

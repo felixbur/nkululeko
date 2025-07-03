@@ -1,4 +1,4 @@
-"""nkulu_test_predictor.py.
+"""testing_predictor.py.
 
 Predict targets from a model and save as csv file.
 

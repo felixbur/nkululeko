@@ -1,4 +1,4 @@
-# nkulu_test.py
+# testing.py
 # Just use a database as test
 
 import argparse
@@ -11,7 +11,6 @@ from nkululeko.utils.util import Util
 
 
 def do_it(config_file, outfile):
-
     # test if the configuration file exists
     if not os.path.isfile(config_file):
         print(f"ERROR: no such file: {config_file}")
@@ -43,7 +42,9 @@ def do_it(config_file, outfile):
 
 
 def main(src_dir):
-    parser = argparse.ArgumentParser(description="Call the nkululeko TEST framework.")
+    parser = argparse.ArgumentParser(
+        description="Call the nkululeko TESTING framework."
+    )
     parser.add_argument("--config", default="exp.ini", help="The base configuration")
     parser.add_argument(
         "--outfile",
