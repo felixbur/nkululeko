@@ -13,13 +13,13 @@ exec 2> >(tee -i log.err >&2)
 # Display help message
 function Help {
     echo "Usage: test_runs.sh [options]"
-    echo "Example: ./test_runs.sh nkululeko"
+    echo "Example: ./run_examples.sh nkululeko"
     echo "Options:"
     echo "  nkululeko: test basic nkululeko"
     echo "  augment: test augmentation"
     echo "  predict: test prediction"
     echo "  demo: test demo"
-    echo "  test: test test module"
+    echo "  testing: test testing module"
     echo "  multidb: test multidb"
     echo "  explore: test explore module (must be run last)"
     echo "  all: test all modules"
@@ -138,9 +138,9 @@ start_time=$(date +%s)
 
 # Loop over the module or all modules if -all arg is given
 if [ "$1" == "all" ]; then
-    modules=(nkululeko augment predict demo test multidb explore)
+    modules=(nkululeko augment predict demo testing multidb explore)
 elif [ "$1" == "-spotlight" ]; then
-    modules=(resample nkululeko augment predict demo test multidb explore)
+    modules=(resample nkululeko augment predict demo testing multidb explore)
     # unset last two ini files to exclude spotlight and shap
     unset explore_ini_files[-1]  # Exclude INI file for spotlight 
     unset explore_ini_files[-1]  # and shap

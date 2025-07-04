@@ -250,14 +250,19 @@ class Modelrunner:
         balancing = self.util.config_val("FEATS", "balancing", False)
         if balancing:
             self.util.debug("Applying feature balancing using DataBalancer")
-            
-            # Initialize the data balancer
-            balancer = DataBalancer(random_state=42)
-            
+
+            # Get random state from config, fallback to 42 for backward compatibility
+            random_state = int(
+                self.util.config_val("FEATS", "balancing_random_state", 42)
+            )
+
+            # Initialize the data balancer with configurable random state
+            balancer = DataBalancer(random_state=random_state)
+
             # Apply balancing
             self.df_train, self.feats_train = balancer.balance_features(
                 df_train=self.df_train,
                 feats_train=self.feats_train,
                 target_column=self.target,
-                method=balancing
+                method=balancing,
             )

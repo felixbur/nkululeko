@@ -32,7 +32,7 @@ def doit(config_file):
 
     # create a new experiment
     expr = exp.Experiment(config)
-    module = "nkulu_test_pretrain"
+    module = "testing_pretrain"
     expr.set_module(module)
     util = Util(module)
     util.debug(
