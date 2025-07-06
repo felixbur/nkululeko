@@ -170,15 +170,15 @@ class OptimizationRunner:
 
     def run_optimization(self):
         """Run hyperparameter optimization using the most appropriate method."""
+        param_specs = self.parse_optim_params()
+
         self.util.debug(
             f"Starting optimization using {self.search_strategy} strategy with {self.metric.upper()} metric, nkululeko version {VERSION}"
         )
-
+        
         # Set comprehensive random state for reproducibility
         self._set_comprehensive_random_state()
-
-        param_specs = self.parse_optim_params()
-
+        
         if not param_specs:
             self.util.error("No optimization parameters found in [OPTIM] section")
             return None, None, []
@@ -424,11 +424,8 @@ class OptimizationRunner:
 
     def _run_sklearn_optimization(self, param_specs):
         """Run optimization using scikit-learn's hyperparameter search methods with consistent data handling."""
-        from sklearn.model_selection import (
-            GridSearchCV,
-            RandomizedSearchCV,
-            StratifiedKFold,
-        )
+        from sklearn.model_selection import (GridSearchCV, RandomizedSearchCV,
+                                             StratifiedKFold)
 
         # Import the actual experiment to get the model and data
         import nkululeko.experiment as exp
@@ -1050,6 +1047,7 @@ class OptimizationRunner:
         """Set comprehensive random state across all libraries and components for full reproducibility."""
         import os
         import random
+
         import numpy as np
 
         # Set Python's built-in random seed
