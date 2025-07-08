@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.95.5 (25-07-08)
+--------------------------
+* fixed bug that categorical targets couldn't be super mapped
+
 Version 0.95.4 (25-07-08)
 --------------------------
 * add supercategory label mapping e.g. angry, sad -> negative
