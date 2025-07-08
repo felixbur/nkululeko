@@ -916,8 +916,8 @@ class Dataset:
                         mapping[k] = mapping[key]
                     # remove the old key
                     del mapping[key]
-            if pd.api.types.is_numeric_dtype(df[target]):
-                df[target] = df[target].astype("string")
+            # ensure string type for the target column
+            df[target] = df[target].astype("string")
             df[target] = df[target].map(mapping)
             # remove any exiting nan values after mapping
             df = df.dropna()
