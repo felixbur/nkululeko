@@ -14,6 +14,11 @@
     - [SEGMENT](#segment)
     - [FEATS](#feats)
     - [MODEL](#model)
+    - [OPTIM](#optim)
+      - [Model-Specific Parameters](#model-specific-parameters)
+      - [Parameter Format](#parameter-format)
+      - [Examples](#examples)
+    - [MODEL](#model-1)
     - [EXPL](#expl)
     - [PREDICT](#predict)
     - [EXPORT](#export)
@@ -21,7 +26,7 @@
     - [PLOT](#plot)
     - [RESAMPLE](#resample)
     - [REPORT](#report)
-    - [OPTIM](#optim)
+    - [OPTIM](#optim-1)
 
 ## Sections
 
@@ -79,6 +84,7 @@
   * my_data.audio_path = wav_files/
 * **db_name.mapping**: mapping python dictionary to map between categories for cross-database experiments (format: {'target_emo':'source_emo'})
   * emodb.mapping = {'anger':'angry', 'happiness':'happy', 'sadness':'sad', 'neutral':'neutral'}
+  * emodb.mapping = {'anger, sadness, disgust':'negative', 'happiness':'positive'}
 * **db_name.colnames**: mapping to rename columns to standard names
   * my_data.colnames = {'speaker':'Participant ID', 'sex':'gender', 'Age': 'age'}
 * **db_name.split_strategy**: How to identify sets for train/development data splits within one database
