@@ -75,7 +75,7 @@ We list the most important ones here:
 
 * **nkululeko**: do machine learning experiments combining features and learners (e.g. opensmile with SVM);
 * **demo**: demo the current best model on the command line or some files;
-* **test**: run the current best model on a specified test set;
+* **testing**: run the current best model on a specified test set;
 * **explore**: perform data exploration (used mainly in this paper)
 * **augment**: augment the current training data. This could also be used to reduce bias in the data, for example, by adding noise to audio samples that belong to a specific category;
 * **aug\_train**: augment the training data and train the model with the augmented data;
@@ -83,7 +83,7 @@ We list the most important ones here:
 * **segment**: segment a database based on VAD (voice activity detection);
 * **ensemble**: ensemble several models to improve performance.
 
-The **configuration file** (ini INI format)  consists of a set of key-value pairs that are organised into several sections. Almost all keys have default values, so they do not have to be specified. 
+The **configuration file** (in INI format) consists of a set of key-value pairs that are organised into several sections. Almost all keys have default values, so they do not have to be specified. 
 
 The following table gives examples of default values for important configuration keys:
 
@@ -144,7 +144,7 @@ The `nkululeko` configuration can specify further sections:
 # Example of usage
 In the previous section, we have seen how to specify an experiment in an INI file that can be run with, for instance, `explore` and `segment` modules. Here, we show how to run the experiment (`nkululeko.nkululeko`) with built-in dataset (Polish Speech Emotions dataset) from the installation until getting the results. 
 
-First, novices could clone the GitHub repository of Nkululeko. 
+First, users could clone the GitHub repository of Nkululeko. 
 
 ```bash
 $ git clone https://github.com/felixbur/nkululeko.git
@@ -260,9 +260,9 @@ For example, you would like to know if the combination of expert features and le
 ```bash
 python -m nkululeko.ensemble \
 --method max_class \
-tests/exp_emodb_praat_xgb.ini \
-tests/exp_emodb_ast_xgb.ini \
-tests/exp_emodb_wav2vec_xgb.in
+examples/exp_emodb_praat_xgb.ini \
+examples/exp_emodb_ast_xgb.ini \
+examples/exp_emodb_wav2vec_xgb.in
 ```
 (all in one line)
 and would then get the results for a majority voting of the three results for Praat, AST and Wav2vec2 features.
@@ -278,9 +278,9 @@ Other  methods to combine the different predictors, are *mean*, *max*, *sum*, *m
 * **uncertainty_weighted**: For classification: weigh each class with the inverse of its uncertainty (1/uncertainty), normalize the weights per model, then multiply each class model probability with their normalized weights and use the maximum one to infer the label.
 * **confidence_weighted**: Weighted ensemble based on confidence (1-uncertainty), normalized for all samples per model. Like before, but use confidence (instead of inverse of uncertainty) as weights.
 
-## Predicting Speaker ID  
+## Predicting speaker ID  
 
-To have labels for the individual speakers in a database is extremely important, because if you mix the same speakers in training and testing data splits, it is very possible that your model simply learned some speaker idiosyncrasies instead of some underlying principle. If you don't have this labels, you could at least try to infer them with a pre-trained model.
+To have labels for the individual speakers in a database is extremely important, because if you mix the same speakers in training and testing data splits, it is very possible that your model simply learned some speaker idiosyncrasies instead of some underlying principle. If you don't have these labels, you could at least try to infer them with a pre-trained model.
 
 With [nkululeko](https://github.com/felixbur/nkululeko) since version 0.93.0 the [pyannote](https://github.com/pyannote/pyannote-audio) segmentation package is interfaced (as an alternative to [silero](https://github.com/snakers4/silero-vad)).
 
@@ -355,7 +355,7 @@ Nkululeko has been used in several research projects since its first appearance 
 # Changes
 Nkululeko has been described in three papers so far, we give a short overview on the updates since then.
 
-* **2022 Paper:** F. Burkhardt, Johannes Wagner, Hagen Wierstorf, Florian Eyben and Björn Schuller: Nkululeko: A Tool For Rapid Speaker Characteristics Detection, Proc. Proc. LREC, 2022. **New features:** First version mainly focussing on basic machinelearning experiments that combine *expert* acoustic features (like Praat or opensmile features) with traditional learning approaches.
+* **2022 Paper:** F. Burkhardt, Johannes Wagner, Hagen Wierstorf, Florian Eyben and Björn Schuller: Nkululeko: A Tool For Rapid Speaker Characteristics Detection, Proc. Proc. LREC, 2022. **New features:** First version mainly focussing on basic machine learning experiments that combine *expert* acoustic features (like Praat or opensmile features) with traditional learning approaches.
 
 * **2023 Paper:** F. Burkhardt, Florian Eyben and Björn Schuller: Nkululeko: Machine Learning Experiments on Speaker Characteristics Without Programming, Proc. Interspeech, 2023. **New features:** Mainly extending the acoustic features to deep-learning based (like TRILL, Hubert or wav2vec2) and the models by neural net architectures like MLP or CNN.
 
