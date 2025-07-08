@@ -174,6 +174,9 @@ class MLP_Reg_model(Model):
             logits = model(features.to(device)).reshape(-1)
             loss = self.criterion(logits, labels.to(device))
             # print(f'loss: {loss.item()}')
+            if torch.isnan(loss):
+                # possible that ccc returns NaN if batch contains only one value
+                continue
             losses.append(loss.item())
             optimizer.zero_grad()
             loss.backward()
