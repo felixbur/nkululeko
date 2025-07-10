@@ -667,6 +667,8 @@ metric = uar
   * ccc = False
 * **fill_areas**: should areas, e.g. in distribution plots, be filled?
   * fill_areas = False
+* **uncertainty_threshold**: plot a confusionmatrix with samples removed that are less uncertain
+  * uncertainty_threshold = .6
   
 ### RESAMPLE
 

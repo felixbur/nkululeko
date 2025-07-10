@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.95.6 (25-07-10)
+--------------------------
+* added uncertainty_threshold plot
+
 Version 0.95.5 (25-07-08)
 --------------------------
 * fixed bug that categorical targets couldn't be super mapped
