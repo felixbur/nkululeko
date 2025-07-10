@@ -20,6 +20,8 @@ from sklearn.metrics import r2_score
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import roc_curve
 
+import audeer
+
 # from torch import is_tensor
 from audmetric import accuracy
 from audmetric import concordance_cc
@@ -186,6 +188,7 @@ class Reporter:
                     if not file_name.endswith(".csv"):
                         file_name = file_name + ".csv"
             self.probas = probas
+            self.plot_proba_conf()
             probas.to_csv(file_name)
             self.util.debug(f"Saved probabilities to {file_name}")
             plots = Plots()
@@ -196,9 +199,26 @@ class Reporter:
                 ax,
                 caption,
                 "Uncertainty",
-                "uncertainty_samples",
+                "uncertainty",
                 "samples",
             )
+
+    def plot_proba_conf(self):
+        uncertainty_threshold = self.util.config_val("PLOT", "uncertainty_threshold", False)
+        if uncertainty_threshold:
+            uncertainty_threshold = float(uncertainty_threshold)
+            old_size = self.probas.shape[0]
+            df = self.probas[self.probas["uncertainty"] < uncertainty_threshold]
+            new_size = df.shape[0]
+            difference = old_size - new_size
+            self.util.debug(
+                f"Filtered probabilities: {old_size} -> {new_size} ({difference}) samples with uncertainty < {uncertainty_threshold}"
+            )
+            truths = df["truth"].values
+            preds = df["predicted"].values
+            self._plot_confmat(truths, preds, f"uncertainty_less_than_{uncertainty_threshold}_cnf",
+                            epoch=None, test_result=None)
+
 
     def set_id(self, run, epoch):
         """Make the report identifiable with run and epoch index."""
