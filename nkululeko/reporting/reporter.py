@@ -12,15 +12,9 @@ from scipy.special import softmax
 from scipy.stats import entropy
 from scipy.stats import pearsonr
 from sklearn.metrics import ConfusionMatrixDisplay
-from sklearn.metrics import RocCurveDisplay
-from sklearn.metrics import auc
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import r2_score
-from sklearn.metrics import roc_auc_score
-from sklearn.metrics import roc_curve
-
-import audeer
 
 # from torch import is_tensor
 from audmetric import accuracy
