@@ -1,6 +1,19 @@
 Changelog
 =========
 
+Version 0.95.6 (25-07-10)
+--------------------------
+* added uncertainty_threshold plot
+
+Version 0.95.5 (25-07-08)
+--------------------------
+* fixed bug that categorical targets couldn't be super mapped
+
+Version 0.95.4 (25-07-08)
+--------------------------
+* add supercategory label mapping e.g. angry, sad -> negative
+* fix bug that mlp_reg might crash with CCC (no variance in training batch)
+
 Version 0.95.3 (25-07-03)
 --------------------------
 * fix bug with classifying integers
