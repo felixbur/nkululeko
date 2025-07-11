@@ -65,6 +65,7 @@ def main():
     try:
         # load the experiment
         expr.load(f"{util.get_save_name()}")
+        expr.util.set_config(config)
         needs_feats = True
         experiment_loaded = True
     except FileNotFoundError:
