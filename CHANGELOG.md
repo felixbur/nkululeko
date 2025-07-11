@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.95.7 (25-07-11)
+--------------------------
+* infer gender and age from audb misc table
+* fix result plots in run folder
+
 Version 0.95.6 (25-07-10)
 --------------------------
 * added uncertainty_threshold plot
