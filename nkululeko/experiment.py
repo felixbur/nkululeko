@@ -574,6 +574,11 @@ class Experiment:
 
                 predictor = TextPredictor(df, self.util)
                 df = predictor.predict(sample_selection)
+            elif target == "translation":
+                from nkululeko.autopredict.ap_translate import TextTranslator
+
+                predictor = TextTranslator(df, self.util)
+                df = predictor.predict(sample_selection)
             elif target == "arousal":
                 from nkululeko.autopredict.ap_arousal import ArousalPredictor
 

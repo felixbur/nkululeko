@@ -625,9 +625,11 @@ metric = uar
 ### [PREDICT](#predict)
 
 * **targets**: Speaker/speech characteristics to be predicted by some models
-  * targets = ['text', 'speaker', 'gender', 'age', 'snr', 'arousal', 'valence', 'dominance', 'pesq', 'mos']
+  * targets = ['text', 'translation', 'speaker', 'gender', 'age', 'snr', 'arousal', 'valence', 'dominance', 'pesq', 'mos']
 * **sample_selection**: which split: [train, test, all]
   * sample_selection = all
+* **target_language**: target language for the translation prediction
+  * target_language = en
 
 ### EXPORT
 
