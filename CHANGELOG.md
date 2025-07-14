@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.95.8 (25-07-14)
+--------------------------
+* fix bug that bool was not detected as categorical
+
+
 Version 0.95.7 (25-07-11)
 --------------------------
 * infer gender and age from audb misc table
