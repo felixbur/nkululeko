@@ -28,7 +28,7 @@ class Plots:
         self.with_ccc = eval(self.util.config_val("PLOT", "ccc", "False"))
         self.type_s = "samples"
 
-    def plot_distributions_speaker(self, df:pd.DataFrame):
+    def plot_distributions_speaker(self, df: pd.DataFrame):
         if df.empty:
             self.util.warn("plot_distributions_speaker: empty DataFrame, nothing to plot")
             return
