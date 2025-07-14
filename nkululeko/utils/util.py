@@ -189,8 +189,11 @@ class Util:
 
     def is_categorical(self, pd_series):
         """Check if a dataframe column is categorical."""
-        return pd_series.dtype.name == "object" or isinstance(
-            pd_series.dtype, pd.CategoricalDtype
+        return (
+            pd_series.dtype.name == "object"
+            or pd_series.dtype.name == "bool"
+            or isinstance(pd_series.dtype, pd.CategoricalDtype)
+            or isinstance(pd_series.dtype, pd.BooleanDtype)
         )
 
     def get_name(self):
