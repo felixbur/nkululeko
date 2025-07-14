@@ -90,7 +90,7 @@ class Plots:
 
         self.plot_distributions(df_speakers, type_s="speakers")
 
-    def plot_distributions(self, df:pd.DataFrame, type_s:str="samples"):
+    def plot_distributions(self, df: pd.DataFrame, type_s: str = "samples"):
         if df.empty:
             self.util.warn("plot_distributions: empty DataFrame, nothing to plot")
             return
