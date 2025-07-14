@@ -294,12 +294,21 @@ class Dataset:
                 # try to get the gender values
                 if "gender" in source_df:
                     df_local["gender"] = source_df["gender"]
-                    got_gender = True
+                else:
+                    # try to get the gender via the speaker description
+                    gender_map = db['speaker'].get().to_dict()['gender']
+                    df_local['gender'] = df_local['speaker'].map(gender_map).astype(str)
+                got_gender = True
             except (KeyError, ValueError, audformat.errors.BadKeyError):
                 pass
             try:
                 # try to get the age values
-                df_local["age"] = source_df["age"].astype(int)
+                if "age" in source_df:
+                    df_local["age"] = source_df["age"].astype(int)
+                else:
+                    # try to get the age via the speaker description
+                    age_map = db['speaker'].get().to_dict()['age']
+                    df_local['age'] = df_local['speaker'].map(age_map).astype(int)
                 got_age = True
             except (KeyError, ValueError, audformat.errors.BadKeyError):
                 pass
