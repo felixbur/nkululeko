@@ -44,7 +44,7 @@ class Bert(Featureset):
         self.model = BertModel.from_pretrained(model_path, config=config).to(
             self.device
         )
-        print(f"intialized {self.feat_type} model on {self.device}")
+        print(f"initialized {self.feat_type} model on {self.device}")
         self.model.eval()
         self.model_initialized = True
 
