@@ -94,7 +94,9 @@ class Bert(Featureset):
         except RuntimeError as re:
             print(str(re))
             self.util.error(f"couldn't extract file: {file}")
-        # print(f"y flattened shape: {y.ravel().shape}")
+            y = None
+        if y is None:
+            return None
         return y.detach().cpu().numpy()
 
     def extract_sample(self, text):
