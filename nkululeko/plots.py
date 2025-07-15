@@ -28,7 +28,10 @@ class Plots:
         self.with_ccc = eval(self.util.config_val("PLOT", "ccc", "False"))
         self.type_s = "samples"
 
-    def plot_distributions_speaker(self, df):
+    def plot_distributions_speaker(self, df: pd.DataFrame):
+        if df.empty:
+            self.util.warn("plot_distributions_speaker: empty DataFrame, nothing to plot")
+            return
         self.type_s = "speaker"
         df_speakers = pd.DataFrame()
         pd.options.mode.chained_assignment = None  # default='warn'
@@ -87,7 +90,10 @@ class Plots:
 
         self.plot_distributions(df_speakers, type_s="speakers")
 
-    def plot_distributions(self, df, type_s="samples"):
+    def plot_distributions(self, df: pd.DataFrame, type_s: str = "samples"):
+        if df.empty:
+            self.util.warn("plot_distributions: empty DataFrame, nothing to plot")
+            return
         class_label, df = self._check_binning("class_label", df)
         value_counts_conf = self.util.config_val("EXPL", "value_counts", False)
         if not isinstance(value_counts_conf, str):
