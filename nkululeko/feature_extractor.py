@@ -80,7 +80,7 @@ class FeatureExtractor:
             return MLD_set
 
         elif feats_type.startswith(
-            ("wav2vec2", "hubert", "wavlm", "spkrec", "whisper", "ast", "emotion2vec")
+            ("bert", "wav2vec2", "hubert", "wavlm", "spkrec", "whisper", "ast", "emotion2vec")
         ):
             return self._get_feat_extractor_by_prefix(feats_type)
 

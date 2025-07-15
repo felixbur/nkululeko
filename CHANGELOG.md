@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.96.0 (25-07-14)
+--------------------------
+* added Bert feature extractor
+
 Version 0.95.9 (25-07-14)
 --------------------------
 * added google translation
