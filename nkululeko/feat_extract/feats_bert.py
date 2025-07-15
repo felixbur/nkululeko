@@ -51,7 +51,7 @@ class Bert(Featureset):
     def extract(self):
         """Extract the features or load them from disk if present."""
         store = self.util.get_path("store")
-        storage = f"{store}{self.name}.pkl"
+        storage = os.path.join(store, f"{self.name}.pkl")
         extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
