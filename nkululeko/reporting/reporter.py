@@ -198,7 +198,9 @@ class Reporter:
             )
 
     def plot_proba_conf(self):
-        uncertainty_threshold = self.util.config_val("PLOT", "uncertainty_threshold", False)
+        uncertainty_threshold = self.util.config_val(
+            "PLOT", "uncertainty_threshold", False
+        )
         if uncertainty_threshold:
             uncertainty_threshold = float(uncertainty_threshold)
             old_size = self.probas.shape[0]
@@ -210,9 +212,13 @@ class Reporter:
             )
             truths = df["truth"].values
             preds = df["predicted"].values
-            self._plot_confmat(truths, preds, f"uncertainty_less_than_{uncertainty_threshold}_cnf",
-                            epoch=None, test_result=None)
-
+            self._plot_confmat(
+                truths,
+                preds,
+                f"uncertainty_less_than_{uncertainty_threshold}_cnf",
+                epoch=None,
+                test_result=None,
+            )
 
     def set_id(self, run, epoch):
         """Make the report identifiable with run and epoch index."""
@@ -434,7 +440,10 @@ class Reporter:
             self.util.debug(f"####->{file_name}<-####")
             file_name = f"{res_dir}{file_name}{self.filenameadd}.txt"
         if self.util.exp_is_classification():
-            labels = glob_conf.labels
+            if glob_conf.label_encoder is not None:
+                labels = glob_conf.label_encoder.classes_
+            else:
+                labels = glob_conf.labels
             try:
                 rpt = classification_report(
                     self.truths,
@@ -451,9 +460,7 @@ class Reporter:
                     target_names=s_labels,
                     digits=4,
                 )
-                self.util.debug(
-                    f"\n {class_report_str}"
-                )
+                self.util.debug(f"\n {class_report_str}")
             except ValueError as e:
                 self.util.debug(
                     "Reporter: caught a ValueError when trying to get"
