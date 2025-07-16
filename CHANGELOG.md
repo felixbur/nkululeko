@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.96.1 (25-07-16)
+--------------------------
+* bugfix: wrong labels in confmatrix plots
+
 Version 0.96.0 (25-07-14)
 --------------------------
 * added Bert feature extractor
