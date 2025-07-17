@@ -300,43 +300,34 @@ class Experiment:
             else:
                 if not self.test_empty:
                     if self.df_test.is_labeled:
-                        test_cats = self.df_test[self.target].unique()
+                        # get printable string of categories and their counts
+                        test_cats = self.df_test[self.target].value_counts().to_string()
                     else:
                         # if there is no target, copy a dummy label
                         self.df_test = self._add_random_target(self.df_test).astype(
                             "str"
                         )
                 if not self.train_empty:
-                    train_cats = self.df_train[self.target].unique()
+                    train_cats = self.df_train[self.target].value_counts().to_string()
                 if self.split3 and not self.dev_empty:
-                    dev_cats = self.df_dev[self.target].unique()
+                    dev_cats = self.df_dev[self.target].value_counts().to_string()
             # encode the labels as numbers
             self.label_encoder = LabelEncoder()
             glob_conf.set_label_encoder(self.label_encoder)
             if not self.train_empty:
-                if isinstance(train_cats, np.ndarray):
-                    self.util.debug(f"Categories train (nd.array): {train_cats}")
-                else:
-                    self.util.debug(f"Categories train (list): {list(train_cats)}")
-
+                self.util.debug(f"Categories train: {train_cats}")
                 self.df_train[self.target] = self.label_encoder.fit_transform(
                     self.df_train[self.target]
                 )
             if not self.test_empty:
                 if self.df_test.is_labeled:
-                    if isinstance(test_cats, np.ndarray):
-                        self.util.debug(f"Categories test (nd.array): {test_cats}")
-                    else:
-                        self.util.debug(f"Categories test (list): {list(test_cats)}")
+                    self.util.debug(f"Categories test: {test_cats}")
                 if not self.train_empty:
                     self.df_test[self.target] = self.label_encoder.transform(
                         self.df_test[self.target]
                     )
             if self.split3 and not self.dev_empty:
-                if isinstance(dev_cats, np.ndarray):
-                    self.util.debug(f"Categories dev (nd.array): {dev_cats}")
-                else:
-                    self.util.debug(f"Categories dev (list): {list(dev_cats)}")
+                self.util.debug(f"Categories dev: {dev_cats}")
                 if not self.train_empty:
                     self.df_dev[self.target] = self.label_encoder.transform(
                         self.df_dev[self.target]

@@ -241,9 +241,7 @@ class Reporter:
             epoch (int, optional): Number of epoch. Defaults to None.
         """
         if not self.util.exp_is_classification():
-            self._plot_scatter(
-                self.truths, self.preds, plot_name.replace("cnf", "scatter"), epoch
-            )
+            self._plot_scatter(self.truths, self.preds, f"{plot_name}_scatter", epoch)
             self.continuous_to_categorical()
         self._plot_confmat(self.truths, self.preds, plot_name, epoch)
 
