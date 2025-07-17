@@ -7,9 +7,11 @@ assignees: ''
 
 ---
 
-**Describe the bug and step to reproduce**
+**Describe the bug and steps to reproduce**
 
 **Expected behavior**
+
+**INI File example**
 
 **Desktop information**
  - OS: 
