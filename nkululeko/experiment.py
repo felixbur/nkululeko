@@ -327,7 +327,7 @@ class Experiment:
                         self.df_test[self.target]
                     )
             if self.split3 and not self.dev_empty:
-                self.util.debug(f"Categories dev (list): {dev_cats}")
+                self.util.debug(f"Categories dev: {dev_cats}")
                 if not self.train_empty:
                     self.df_dev[self.target] = self.label_encoder.transform(
                         self.df_dev[self.target]
