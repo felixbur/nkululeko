@@ -249,7 +249,7 @@ class Reporter:
             original_preds = self.preds.copy()
 
             # Create scatter plot for continuous values using original data
-            scatter_plot_name = plot_name + "_scatter"
+            scatter_plot_name = f"{plot_name}_scatter"
             self._plot_scatter(
                 original_truths,
                 original_preds,
