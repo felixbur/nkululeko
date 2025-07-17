@@ -234,18 +234,38 @@ class Reporter:
         self.preds = np.digitize(self.preds, bins) - 1
 
     def plot_confmatrix(self, plot_name, epoch=None):
-        """Plot a confusionmatrix to the store.
+        """Plot appropriate visualizations for the experiment type.
+
+        For regression: creates both scatter plot (continuous values) and confusion matrix (binned categories).
+        For classification: creates confusion matrix only.
 
         Args:
             plot_name (str): name for the image file.
             epoch (int, optional): Number of epoch. Defaults to None.
         """
         if not self.util.exp_is_classification():
+            # For regression experiments, save original continuous values before binning
+            original_truths = self.truths.copy()
+            original_preds = self.preds.copy()
+
+            # Create scatter plot for continuous values using original data
+            scatter_plot_name = f"{plot_name}_scatter"
             self._plot_scatter(
-                self.truths, self.preds, plot_name.replace("cnf", "scatter"), epoch
+                original_truths,
+                original_preds,
+                scatter_plot_name,
+                epoch,
             )
+
+            # Convert to categorical for confusion matrix (modifies self.truths and self.preds)
             self.continuous_to_categorical()
-        self._plot_confmat(self.truths, self.preds, plot_name, epoch)
+
+            # Create confusion matrix for binned categories
+            cnf_plot_name = plot_name + "_cnf"
+            self._plot_confmat(self.truths, self.preds, cnf_plot_name, epoch)
+        else:
+            # For classification experiments, create confusion matrix only
+            self._plot_confmat(self.truths, self.preds, plot_name, epoch)
 
     def plot_per_speaker(self, result_df, plot_name, function):
         """Plot a confusion matrix with the mode category per speakers.

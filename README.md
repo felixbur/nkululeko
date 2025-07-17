@@ -210,6 +210,8 @@ Here's [an animation that shows the progress of classification done with nkulule
 <details> 
 
 There's Felix [blog](http://blog.syntheticspeech.de/?s=nkululeko) with tutorials below:  
+* [How to translate your textual transcription](https://blog.syntheticspeech.de/2025/07/14/nkululelo-how-to-translate-your-textual-transcriptions/)
+* [How to add textual transcriptions to your data](https://blog.syntheticspeech.de/2025/06/26/nkululeko-how-to-add-textual-transcriptions-to-your-data/)
 * [Ensemble learning with Nkululeko](http://blog.syntheticspeech.de/2024/06/25/nkululeko-ensemble-classifiers-with-late-fusion/)
 * [Finetune transformer-models with Nkululeko](http://blog.syntheticspeech.de/2024/05/29/nkululeko-how-to-finetune-a-transformer-model/)
 * Below is a [Hello World example for Nkululeko](#helloworld) that should set you up fastly, also on [Google Colab](https://colab.research.google.com/drive/1GYNBd5cdZQ1QC3Jm58qoeMaJg3UuPhjw?usp=sharing#scrollTo=4G_SjuF9xeQf), and [with Kaggle](https://www.kaggle.com/felixburk/nkululeko-hello-world-example)
