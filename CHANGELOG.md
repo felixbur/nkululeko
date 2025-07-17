@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.96.2 (25-07-16)
+--------------------------
+* bugfix: scatter plot for regression problems was not generated any more
+* add category counts to console output
+
 Version 0.96.1 (25-07-16)
 --------------------------
 * bugfix: wrong labels in confmatrix plots
