@@ -91,8 +91,13 @@ class Modelrunner:
                 if plot_epochs:
                     self.util.debug(f"plotting conf matrix to {plot_name}")
                     report.plot_confmatrix(plot_name, epoch)
-                store_models = self.util.config_val("EXP", "save", False)
-                plot_best_model = self.util.config_val("PLOT", "best_model", False)
+                import ast
+                store_models = ast.literal_eval(
+                    self.util.config_val("EXP", "save", "False")
+                ) or ast.literal_eval(self.util.config_val("EXP", "traindevtest", "False"))
+                plot_best_model = ast.literal_eval(
+                    self.util.config_val("PLOT", "best_model", "False")
+                )
                 if (store_models or plot_best_model) and (
                     not only_test
                 ):  # in any case the model needs to be stored to disk.
