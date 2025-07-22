@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nkululeko"
-version = "0.96.3"
+version = "0.96.4"
 description = "Machine learning audio prediction experiments based on templates"
 authors = [
     {name = "Felix Burkhardt", email = "fxburk@gmail.com"},
@@ -34,6 +34,7 @@ classifiers = [
 dependencies = [
     "audeer>=1.0.0",
     "audformat>=1.3.1",
+    "audplot",
     "audinterface>=1.0.0",
     "audiofile>=1.0.0",
     "audiomentations==0.31.0",

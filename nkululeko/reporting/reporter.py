@@ -3,6 +3,7 @@ import glob
 import json
 import math
 import os
+import audplot
 
 # import os
 from confidence_intervals import evaluate_with_conf_int
@@ -342,25 +343,32 @@ class Reporter:
             alpha=5,
         )
         acc = accuracy(truths, preds)
-        cm = confusion_matrix(
-            truths, preds, normalize=None
-        )  # normalize must be one of {'true', 'pred', 'all', None}
-        if cm.shape[0] != len(labels):
-            self.util.error(
-                f"mismatch between confmatrix dim ({cm.shape[0]}) and labels"
-                f" length ({len(labels)}: {labels})"
+        # cm = confusion_matrix(
+        #     truths, preds, normalize=None
+        # )  # normalize must be one of {'true', 'pred', 'all', None}
+        # if cm.shape[0] != len(labels):
+        #     self.util.error(
+        #         f"mismatch between confmatrix dim ({cm.shape[0]}) and labels"
+        #         f" length ({len(labels)}: {labels})"
+        #     )
+
+        # try:
+        #     disp = ConfusionMatrixDisplay(
+        #         confusion_matrix=cm, display_labels=labels
+        #     ).plot(cmap="Blues")
+        # except ValueError:
+        #     disp = ConfusionMatrixDisplay(
+        #         confusion_matrix=cm,
+        #         display_labels=list(labels).remove("neutral"),
+        #     ).plot(cmap="Blues")
+        le = glob_conf.label_encoder
+        if le is not None:
+            label_dict = dict(zip(range(len(le.classes_)), le.classes_))
+            audplot.confusion_matrix(
+                truths, preds, label_aliases=label_dict, show_both=True
             )
-
-        try:
-            disp = ConfusionMatrixDisplay(
-                confusion_matrix=cm, display_labels=labels
-            ).plot(cmap="Blues")
-        except ValueError:
-            disp = ConfusionMatrixDisplay(
-                confusion_matrix=cm,
-                display_labels=list(labels).remove("neutral"),
-            ).plot(cmap="Blues")
-
+        else:
+            audplot.confusion_matrix(truths, preds, show_both=True)
         reg_res = ""
         if not self.is_classification:
             reg_res = f"{test_result.test_result_str()}"

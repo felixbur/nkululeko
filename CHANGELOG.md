@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.96.4 (25-07-22)
+--------------------------
+* add percentage to confusion matrices
+
 Version 0.96.3 (25-07-22)
 --------------------------
 * bugfix: extracting Bert embeddings on cuda gave error
