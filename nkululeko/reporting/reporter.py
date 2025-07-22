@@ -475,6 +475,8 @@ class Reporter:
                     f"result per class (F1 score): {c_ress} from epoch: {epoch}"
                 )
                 self.util.debug(f1_per_class)
+                # convert all keys to strings
+                rpt = dict((str(key), value) for (key, value) in rpt.items())
                 rpt_str = f"{json.dumps(rpt)}\n{f1_per_class}"
                 # rpt_str += f"\n{auc_auc}"
                 text_file.write(rpt_str)

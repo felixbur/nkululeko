@@ -86,7 +86,7 @@ class Bert(Featureset):
         r"""Extract embeddings from raw audio signal."""
         try:
             with torch.no_grad():
-                inputs = self.tokenizer(text, return_tensors="pt")
+                inputs = self.tokenizer(text, return_tensors="pt").to(self.device)
                 outputs = self.model(**inputs)
                 # mean pooling 
                 y = torch.mean(outputs[0], dim=1)

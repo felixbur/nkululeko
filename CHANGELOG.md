@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.96.3 (25-07-22)
+--------------------------
+* bugfix: extracting Bert embeddings on cuda gave error
+* bugfix: traindevtest was only working when models were stored by some other value
+
 Version 0.96.2 (25-07-16)
 --------------------------
 * bugfix: scatter plot for regression problems was not generated any more
