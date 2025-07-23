@@ -76,7 +76,7 @@ class AudmodelSet(Featureset):
             self.df = self.util.get_store(storage, store_format)
 
     def extract_sample(self, signal, sr):
-        if self.model == None:
+        if self.model is None:
             self.__init__("na", None)
         result = self.model(signal, sr)
         return np.asarray(result[self.embeddings_name].flatten())
