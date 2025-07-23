@@ -180,6 +180,11 @@ class MLPModel(Model):
     class MLP(torch.nn.Module):
         def __init__(self, i, layers, o, drop):
             super().__init__()
+            if type(layers) is list:
+                layers_list = layers.copy()
+                # construct a dict with layer names
+                keys = [str(i) for i in range(len(layers_list))]
+                layers = dict(zip(keys, layers_list))
             sorted_layers = sorted(layers.items(), key=lambda x: x[1])
             layers = OrderedDict()
             layers["0"] = torch.nn.Linear(i, sorted_layers[0][1])

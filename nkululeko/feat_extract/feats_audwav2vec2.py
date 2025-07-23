@@ -1,22 +1,22 @@
-# feats_audmodel.py
+# feats_audwav2vec2.py
 import os
-
-import numpy as np
-import torch
 
 import audeer
 import audinterface
-import audmodel
 import audonnx
+import numpy as np
+import torch
 
-from nkululeko.feat_extract.featureset import Featureset
 import nkululeko.glob_conf as glob_conf
+from nkululeko.feat_extract.featureset import Featureset
 
 
-class AudmodelSet(Featureset):
-    """Generic audmodel import.
+class Audwav2vec2Set(Featureset):
+    """Embeddings from the wav2vec2 based model finetuned on MSPPodcast emotions.
 
-    https://audeering.github.io/audmodel/index.html
+    Described in the paper:
+    "Dawn of the transformer era in speech emotion recognition: closing the valence gap"
+    https://arxiv.org/abs/2203.07378.
     """
 
     def __init__(self, name, data_df, feats_type):
@@ -25,15 +25,13 @@ class AudmodelSet(Featureset):
         self.feats_type = feats_type
 
     def _load_model(self):
-        model_id = self.util.config_val("FEATS", "audmodel.id", False)
-        if model_id is False:
-            self.util.error(
-                "Please set the audmodel.id in the config file to the model you want to use."
-            )
-        self.embeddings_name = self.util.config_val(
-            "FEATS", "audmodel.embeddings_name", "hidden_states"
-        )
-        model_root = audmodel.load(model_id)
+        model_url = "https://zenodo.org/record/6221127/files/w2v2-L-robust-12.6bc4a7fd-1.1.0.zip"
+        model_root = self.util.config_val("FEATS", "aud.model", "./audmodel/")
+        if not os.path.isdir(model_root):
+            cache_root = audeer.mkdir("cache")
+            model_root = audeer.mkdir(model_root)
+            archive_path = audeer.download_url(model_url, cache_root, verbose=True)
+            audeer.extract_archive(archive_path, model_root)
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         device = self.util.config_val("MODEL", "device", cuda)
         self.model = audonnx.load(model_root, device=device)
@@ -55,10 +53,10 @@ class AudmodelSet(Featureset):
             if not self.model_loaded:
                 self._load_model()
             hidden_states = audinterface.Feature(
-                self.model.labels(self.embeddings_name),
+                self.model.labels("hidden_states"),
                 process_func=self.model,
                 process_func_args={
-                    "outputs": self.embeddings_name,
+                    "outputs": "hidden_states",
                 },
                 sampling_rate=16000,
                 resample=True,
@@ -79,4 +77,4 @@ class AudmodelSet(Featureset):
         if self.model is None:
             self.__init__("na", None)
         result = self.model(signal, sr)
-        return np.asarray(result[self.embeddings_name].flatten())
+        return np.asarray(result["hidden_states"].flatten())
