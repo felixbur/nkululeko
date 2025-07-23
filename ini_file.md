@@ -231,7 +231,10 @@
       * "wavlm-base", "wavlm-base-plus", "wavlm-large"
     * **Whisper**: [whisper models](https://huggingface.co/models?other=whisper)
       * "whisper-base", "whisper-large", "whisper-medium", "whisper-tiny"
-    * **audmodel**: [audEERING emotion model embeddings](https://arxiv.org/abs/2203.07378), wav2vec2.0 model finetuned on [MSPPodcast](https://ecs.utdallas.edu/research/researchlabs/msp-lab/MSP-Podcast.html) emotions, embeddings
+    * **audmodel**: generic [audmodel format model](https://audeering.github.io/audmodel/index.html) import
+      * **audmodel.id** = audmodel id 
+      * **audmodel.embeddings_name** = hidden_states
+    * **audwav2vec2**: [audEERING emotion model embeddings](https://arxiv.org/abs/2203.07378), wav2vec2.0 model finetuned on [MSPPodcast](https://ecs.utdallas.edu/research/researchlabs/msp-lab/MSP-Podcast.html) emotions, embeddings
       * **aud.model** = ./audmodel/ (*path to the audEERING model folder*)
     * **auddim**: [audEERING emotion model dimensions](https://arxiv.org/abs/2203.07378), wav2vec2.0 model finetuned on [MSPPodcast](https://ecs.utdallas.edu/research/researchlabs/msp-lab/MSP-Podcast.html) arousal, dominance, valence
     * **agender**: [audEERING age and gender model embeddings](https://arxiv.org/abs/2306.16962), wav2vec2.0 model finetuned on [several age databases](https://github.com/audeering/w2v2-age-gender-how-to), embeddings
@@ -326,7 +329,7 @@ Model and training specifications. In general, default values should work for cl
     * **mse**: Mean squared error (for regression)
     * **mae**: Mean absolute error (for regression)
 * **layers**: specify the layer architecture for MLP
-  * layers = {'l1':64, 'l2':16}
+  * layers = [64, 16]
 * **C_val**: regularization value for SVM
   * C_val = 1.0
 * **gamma**: gamma value for SVM (kernel coefficient)  

@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 0.96.5 (25-07-23)
+--------------------------
+* change layers specification
+* rename audmodel to audwav2vec2
+* add audmodel import
+
 Version 0.96.4 (25-07-22)
 --------------------------
 * add percentage to confusion matrices
