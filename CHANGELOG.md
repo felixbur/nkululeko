@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.96.6 (25-07-30)
+--------------------------
+* fixed bug: confusion matrix UAR is now based on actual values
+* storage cache now keeps version for intermediate embedding layers
+
 Version 0.96.5 (25-07-23)
 --------------------------
 * change layers specification
