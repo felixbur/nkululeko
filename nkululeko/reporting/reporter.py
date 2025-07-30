@@ -333,12 +333,11 @@ class Reporter:
         if test_result is None:
             test_result = self.result
         fig_dir = self.util.get_path("fig_dir")
-        labels = glob_conf.labels
         fig = plt.figure()  # figsize=[5, 5]
         uar, (upper, lower) = evaluate_with_conf_int(
-            self.preds,
+            preds,
             unweighted_average_recall,
-            self.truths,
+            truths,
             num_bootstraps=1000,
             alpha=5,
         )

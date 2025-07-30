@@ -37,6 +37,7 @@ class Wav2vec2(Featureset):
             self.feat_type = "wav2vec2-large-robust-ft-swbd-300h"
         else:
             self.feat_type = feat_type
+        self.hidden_layer = int(self.util.config_val("FEATS", "wav2vec2.layer", "0"))
 
     def init_model(self):
         # load model
@@ -46,10 +47,9 @@ class Wav2vec2(Featureset):
         )
         config = transformers.AutoConfig.from_pretrained(model_path)
         layer_num = config.num_hidden_layers
-        hidden_layer = int(self.util.config_val("FEATS", "wav2vec2.layer", "0"))
-        config.num_hidden_layers = layer_num - hidden_layer
+        config.num_hidden_layers = layer_num - self.hidden_layer
+        self.hidden_layer = config.num_hidden_layers
         self.util.debug(f"using hidden layer #{config.num_hidden_layers}")
-
         self.processor = Wav2Vec2FeatureExtractor.from_pretrained(model_path)
         self.model = Wav2Vec2Model.from_pretrained(model_path, config=config).to(
             self.device
@@ -61,7 +61,10 @@ class Wav2vec2(Featureset):
     def extract(self):
         """Extract the features or load them from disk if present."""
         store = self.util.get_path("store")
-        storage = f"{store}{self.name}.pkl"
+        if self.hidden_layer == 0:
+            storage = f"{store}{self.name}.pkl"
+        else:
+            storage = f"{store}{self.name}_l{str(self.hidden_layer)}.pkl"
         extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
