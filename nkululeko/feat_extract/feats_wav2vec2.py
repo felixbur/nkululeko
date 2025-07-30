@@ -47,9 +47,9 @@ class Wav2vec2(Featureset):
         )
         config = transformers.AutoConfig.from_pretrained(model_path)
         layer_num = config.num_hidden_layers
-        config.num_hidden_layers = layer_num - self.hidden_layer
-        self.hidden_layer = config.num_hidden_layers
-        self.util.debug(f"using hidden layer #{config.num_hidden_layers}")
+        self.adjusted_layer = layer_num - self.hidden_layer
+        config.num_hidden_layers = self.adjusted_layer
+        self.util.debug(f"using hidden layer #{config.num_hidden_layers} (from input)")
         self.processor = Wav2Vec2FeatureExtractor.from_pretrained(model_path)
         self.model = Wav2Vec2Model.from_pretrained(model_path, config=config).to(
             self.device
