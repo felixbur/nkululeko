@@ -30,7 +30,7 @@ class FeatureAnalyser:
         self.df_labels = df_labels
 
         # check for NaN values in the features
-        for i, col in enumerate(df_features.columns):
+        for col in df_features.columns:
             if df_features[col].isnull().values.any():
                 self.util.debug(
                     f"{col} includes {df_features[col].isnull().sum()} nan,"
