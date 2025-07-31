@@ -617,7 +617,7 @@ class Plots:
             fig_dir, f"feat_dist_{title}_{feature_name}.{self.format}"
         )
         if self.util.is_categorical(df_labels[label]):
-            if "gender" in df_labels:
+            if "gender" in df_labels and df_labels["gender"].notna().any():
                 # plot distribution for each gender in parallel violin plots
                 df_plot = pd.DataFrame(
                     {
