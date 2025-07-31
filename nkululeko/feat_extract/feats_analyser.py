@@ -298,7 +298,6 @@ class FeatureAnalyser:
         plt.tight_layout()
         # one up because of the runs
         fig_dir = audeer.path(self.util.get_path("fig_dir"), "..")
-        self.util.get_path("fig_dir")
         format = self.util.config_val("PLOT", "format", "png")
         filename = f"EXPL_{model_name}"
         if permutation:
