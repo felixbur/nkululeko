@@ -626,7 +626,6 @@ class Plots:
                         "gender": df_labels["gender"],
                     }
                 )
-                p_val = ""
                 if df_labels[label].nunique() == 2:
                     label_1 = df_labels[label].unique()[0]
                     label_2 = df_labels[label].unique()[1]
