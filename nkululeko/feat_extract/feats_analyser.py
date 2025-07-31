@@ -29,6 +29,8 @@ class FeatureAnalyser:
         # self.labels = df_labels["class_label"]
         self.df_labels = df_labels
 
+        # Create a copy of df_features to avoid modifying the original DataFrame
+        df_features = df_features.copy()
         # check for NaN values in the features
         for col in df_features.columns:
             if df_features[col].isnull().values.any():
