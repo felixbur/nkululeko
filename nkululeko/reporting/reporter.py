@@ -190,11 +190,12 @@ class Reporter:
             ax, caption = plots.plotcatcont(
                 probas, "correct", "uncertainty", "uncertainty", "correct"
             )
+            file_name = f"{self.util.get_exp_name()}_uncertainty"
             plots.save_plot(
                 ax,
                 caption,
-                "Uncertainty",
                 "uncertainty",
+                file_name,
                 "samples",
             )
 
@@ -213,10 +214,11 @@ class Reporter:
             )
             truths = df["truth"].values
             preds = df["predicted"].values
+            plot_name = f"{self.util.get_exp_name()}_uncertainty_lt_{uncertainty_threshold}_{difference}-removed_cnf"
             self._plot_confmat(
                 truths,
                 preds,
-                f"uncertainty_less_than_{uncertainty_threshold}_cnf",
+                plot_name,
                 epoch=None,
                 test_result=None,
             )

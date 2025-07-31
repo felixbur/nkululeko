@@ -1,13 +1,16 @@
 [build-system]
 requires = [
   "setuptools>=54",
-  "wheel"
+  "wheel", 
+  "setuptools_scm[toml]>=6.2",
 ]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "nkululeko"
-version = "0.96.6"
+# version = "0.96.7"
+dynamic = ['version']
+
 description = "Machine learning audio prediction experiments based on templates"
 authors = [
     {name = "Felix Burkhardt", email = "fxburk@gmail.com"},
@@ -114,3 +117,9 @@ Issues = "https://github.com/felixbur/nkululeko/issues"
 [tool.pytest]
 testpaths = ["tests"]
 python_files = "test_*.py"
+
+# ----- setuptools_scm ----------------------------------------------------
+#
+# Use setuptools_scm to get version from git
+[tool.setuptools_scm]
+version = {use_scm = true}
