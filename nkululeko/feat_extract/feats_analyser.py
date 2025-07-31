@@ -3,6 +3,7 @@ import ast
 import os
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from sklearn.inspection import permutation_importance
 from sklearn.linear_model import LinearRegression
@@ -27,6 +28,22 @@ class FeatureAnalyser:
         self.labels = df_labels[self.target]
         # self.labels = df_labels["class_label"]
         self.df_labels = df_labels
+
+        # Create a copy of df_features to avoid modifying the original DataFrame
+        df_features = df_features.copy()
+        # check for NaN values in the features
+        for col in df_features.columns:
+            if df_features[col].isnull().values.any():
+                self.util.debug(
+                    f"{col} includes {df_features[col].isnull().sum()} nan,"
+                    " inserting mean values"
+                )
+                mean_val = df_features[col].mean()
+                if not np.isnan(mean_val):
+                    df_features[col] = df_features[col].fillna(mean_val)
+                else:
+                    df_features[col] = df_features[col].fillna(0)
+
         self.features = df_features
         self.label = label
 
