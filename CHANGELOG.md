@@ -1,111 +1,115 @@
 Changelog
 =========
 
+Version 0.96.8 (25-07-31)
+-------------------------
+* added Nan check for feature importance analyzer
+
 Version 0.96.7 (25-07-31)
---------------------------
+-------------------------
 * added gender difference for feature plots
 * added experiment name to uncertainty plots
 
 
 Version 0.96.6 (25-07-30)
---------------------------
+-------------------------
 * fixed bug: confusion matrix UAR is now based on actual values
 * storage cache now keeps version for intermediate embedding layers
 
 Version 0.96.5 (25-07-23)
---------------------------
+-------------------------
 * change layers specification
 * rename audmodel to audwav2vec2
 * add audmodel import
 
 Version 0.96.4 (25-07-22)
---------------------------
+-------------------------
 * add percentage to confusion matrices
 
 Version 0.96.3 (25-07-22)
---------------------------
+-------------------------
 * bugfix: extracting Bert embeddings on cuda gave error
 * bugfix: traindevtest was only working when models were stored by some other value
 
 Version 0.96.2 (25-07-16)
---------------------------
+-------------------------
 * bugfix: scatter plot for regression problems was not generated any more
 * add category counts to console output
 
 Version 0.96.1 (25-07-16)
---------------------------
+-------------------------
 * bugfix: wrong labels in confmatrix plots
 
 Version 0.96.0 (25-07-14)
---------------------------
+-------------------------
 * added Bert feature extractor
 
 Version 0.95.9 (25-07-14)
---------------------------
+-------------------------
 * added google translation
 
 Version 0.95.8 (25-07-14)
---------------------------
+-------------------------
 * fix bug that bool was not detected as categorical
 
 
 Version 0.95.7 (25-07-11)
---------------------------
+-------------------------
 * infer gender and age from audb misc table
 * fix result plots in run folder
 
 Version 0.95.6 (25-07-10)
---------------------------
+-------------------------
 * added uncertainty_threshold plot
 
 Version 0.95.5 (25-07-08)
---------------------------
+-------------------------
 * fixed bug that categorical targets couldn't be super mapped
 
 Version 0.95.4 (25-07-08)
---------------------------
+-------------------------
 * add supercategory label mapping e.g. angry, sad -> negative
 * fix bug that mlp_reg might crash with CCC (no variance in training batch)
 
 Version 0.95.3 (25-07-03)
---------------------------
+-------------------------
 * fix bug with classifying integers
 
 Version 0.95.2 (25-07-01)
---------------------------
+-------------------------
 * added optimizer module
 
 Version 0.95.1 (25-06-28)
---------------------------
+-------------------------
 * Moving and updating the balancing code to use a new DataBalancer class.
 * Adding new test cases for balancing methods and updating file paths in predictor and reporting modules.
 * Updating documentation to reflect the new balancing methods.
 
 Version 0.95.0 (25-06-26)
---------------------------
+-------------------------
 * added prediction of text via whisper
 
 Version 0.94.4 (25-06-26)
---------------------------
+-------------------------
 * add finetune and autopredict from emotion2vec
 
 Version 0.94.3 (25-06-25)
---------------------------
+-------------------------
 * save of SHAP analysis into CSV (in addition to image)
 * show debug of shape, t-sne, and pca (so can be opened directly from terminal/vs code)
 * fix UMAP on the explore module (no need to run the experiment again)
 
 Version 0.94.2 (25-06-02)
---------------------------
+-------------------------
 * added better error message: util.py might not have a logger 
 
 Version 0.94.1 (25-04-03)
---------------------------
+-------------------------
 * fixed bug: plot uncertainties had wrong file path
 * added possibility to filter several values for type, e.g. [type = [a, b]]
   
 Version 0.94.0 (25-03-26)
---------------------------
+-------------------------
 * added train/dev/test experiments
 
 Version 0.93.16 (25-02-13)
