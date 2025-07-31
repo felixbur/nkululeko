@@ -8,7 +8,6 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nkululeko"
-# version = "0.96.7"
 dynamic = ['version']
 
 description = "Machine learning audio prediction experiments based on templates"
