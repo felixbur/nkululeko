@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 0.96.7 (25-07-31)
+--------------------------
+* added gender difference for feature plots
+* added experiment name to uncertainty plots
+
+
 Version 0.96.6 (25-07-30)
 --------------------------
 * fixed bug: confusion matrix UAR is now based on actual values
