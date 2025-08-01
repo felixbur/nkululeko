@@ -2,7 +2,15 @@
 
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import RobustScaler, StandardScaler
+from sklearn.preprocessing import (
+    RobustScaler,
+    StandardScaler,
+    MinMaxScaler,
+    MaxAbsScaler,
+    Normalizer,
+    PowerTransformer,
+    QuantileTransformer,
+)
 
 from nkululeko.utils.util import Util
 
@@ -35,6 +43,16 @@ class Scaler:
             self.scaler = StandardScaler()
         elif scaler_type == "robust":
             self.scaler = RobustScaler()
+        elif scaler_type == "minmax":
+            self.scaler = MinMaxScaler()
+        elif scaler_type == "maxabs":
+            self.scaler = MaxAbsScaler()
+        elif scaler_type == "normalizer":
+            self.scaler = Normalizer()
+        elif scaler_type == "powertransformer":
+            self.scaler = PowerTransformer()
+        elif scaler_type == "quantiletransformer":
+            self.scaler = QuantileTransformer()
         elif scaler_type == "speaker":
             self.scaler = StandardScaler()
         elif scaler_type == "bins":
@@ -108,18 +126,20 @@ class Scaler:
     def bin_to_three(self):
         feats_bin_train = pd.DataFrame(index=self.feats_train.index)
         feats_bin_test = pd.DataFrame(index=self.feats_test.index)
+        # Store quantile boundaries for each column
+        quantile_boundaries = {}
         for c in self.feats_train.columns:
             b1 = np.quantile(self.feats_train[c], 0.33)
             b2 = np.quantile(self.feats_train[c], 0.66)
+            quantile_boundaries[c] = (b1, b2)
             feats_bin_train[c] = self._bin(self.feats_train[c].values, b1, b2).values
             feats_bin_test[c] = self._bin(self.feats_test[c].values, b1, b2).values
         self.feats_train = feats_bin_train
         self.feats_test = feats_bin_test
         if self.feats_dev is not None:
             feats_bin_dev = pd.DataFrame(index=self.feats_dev.index)
-            for c in self.feats_train.columns:
-                b1 = np.quantile(self.feats_train[c], 0.33)
-                b2 = np.quantile(self.feats_train[c], 0.66)
+            for c in self.feats_dev.columns:
+                b1, b2 = quantile_boundaries[c]
                 feats_bin_dev[c] = self._bin(self.feats_dev[c].values, b1, b2).values
             self.feats_dev = feats_bin_dev
 
