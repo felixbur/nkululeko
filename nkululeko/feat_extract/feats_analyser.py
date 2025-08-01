@@ -3,12 +3,15 @@ import ast
 import os
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from sklearn.inspection import permutation_importance
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.tree import DecisionTreeRegressor
+
+import audeer
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.plots import Plots
@@ -25,6 +28,22 @@ class FeatureAnalyser:
         self.labels = df_labels[self.target]
         # self.labels = df_labels["class_label"]
         self.df_labels = df_labels
+
+        # Create a copy of df_features to avoid modifying the original DataFrame
+        df_features = df_features.copy()
+        # check for NaN values in the features
+        for col in df_features.columns:
+            if df_features[col].isnull().values.any():
+                self.util.debug(
+                    f"{col} includes {df_features[col].isnull().sum()} nan,"
+                    " inserting mean values"
+                )
+                mean_val = df_features[col].mean()
+                if not np.isnan(mean_val):
+                    df_features[col] = df_features[col].fillna(mean_val)
+                else:
+                    df_features[col] = df_features[col].fillna(0)
+
         self.features = df_features
         self.label = label
 
@@ -105,7 +124,9 @@ class FeatureAnalyser:
             f"SHAP analysis, features = {feature_importance.index.tolist()}"
         )
         # Save to CSV (save all features, not just top ones)
-        csv_filename = os.path.join(fig_dir, f"SHAP_{feat_type}_importance_{model.name}.csv")
+        csv_filename = os.path.join(
+            fig_dir, f"SHAP_{feat_type}_importance_{model.name}.csv"
+        )
         feature_importance.to_csv(csv_filename)
         self.util.debug(f"Saved SHAP feature importance to {csv_filename}")
         self.util.debug(f"plotted SHAP feature importance to {filename}")
@@ -292,12 +313,13 @@ class FeatureAnalyser:
             title += "\n based on feature permutation"
         ax.set(title=title)
         plt.tight_layout()
-        fig_dir = self.util.get_path("fig_dir")
+        # one up because of the runs
+        fig_dir = audeer.path(self.util.get_path("fig_dir"), "..")
         format = self.util.config_val("PLOT", "format", "png")
         filename = f"EXPL_{model_name}"
         if permutation:
             filename += "_perm"
-        filename = f"{fig_dir}{filename}.{format}"
+        filename = audeer.path(fig_dir, f"{filename}.{format}")
         plt.savefig(filename)
         fig = ax.figure
         fig.clear()

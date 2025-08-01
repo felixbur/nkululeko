@@ -30,7 +30,9 @@ class Plots:
 
     def plot_distributions_speaker(self, df: pd.DataFrame):
         if df.empty:
-            self.util.warn("plot_distributions_speaker: empty DataFrame, nothing to plot")
+            self.util.warn(
+                "plot_distributions_speaker: empty DataFrame, nothing to plot"
+            )
             return
         self.type_s = "speaker"
         df_speakers = pd.DataFrame()
@@ -608,25 +610,54 @@ class Plots:
 
     def plot_feature(self, title, feature, label, df_labels, df_features):
         # remove fullstops in the name
-        feature_name = feature.replace(".", "-")
+        feature_name = str(feature).replace(".", "-")
         # one up because of the runs
-        fig_dir = os.path.join(self.util.get_path("fig_dir"), "..")
-        filename = os.path.join(
+        fig_dir = audeer.path(self.util.get_path("fig_dir"), "..")
+        filename = audeer.path(
             fig_dir, f"feat_dist_{title}_{feature_name}.{self.format}"
         )
+        ignore_gender = eval(self.util.config_val("EXPL", "ignore_gender", "False"))
         if self.util.is_categorical(df_labels[label]):
-            df_plot = pd.DataFrame(
-                {label: df_labels[label], feature: df_features[feature]}
-            )
             p_val = ""
-            if df_labels[label].nunique() == 2:
-                label_1 = df_labels[label].unique()[0]
-                label_2 = df_labels[label].unique()[1]
-                vals_1 = df_plot[df_plot[label] == label_1][feature].values
-                vals_2 = df_plot[df_plot[label] == label_2][feature].values
-                r_stats = stats.mannwhitneyu(vals_1, vals_2, alternative="two-sided")
-                p_val = f", Mann-Whitney p-val: {r_stats.pvalue:.3f}"
-            ax = sns.violinplot(data=df_plot, x=label, y=feature)
+            if (
+                "gender" in df_labels
+                and df_labels["gender"].notna().any()
+                and not ignore_gender
+            ):
+                # plot distribution for each gender in parallel violin plots
+                df_plot = pd.DataFrame(
+                    {
+                        label: df_labels[label],
+                        feature: df_features[feature],
+                        "gender": df_labels["gender"],
+                    }
+                )
+                if df_labels[label].nunique() == 2:
+                    label_1 = df_labels[label].unique()[0]
+                    label_2 = df_labels[label].unique()[1]
+                    vals_1 = df_plot[df_plot[label] == label_1][feature].values
+                    vals_2 = df_plot[df_plot[label] == label_2][feature].values
+                    r_stats = stats.mannwhitneyu(
+                        vals_1, vals_2, alternative="two-sided"
+                    )
+                    p_val = f", Mann-Whitney p-val: {r_stats.pvalue:.3f}"
+                ax = sns.violinplot(
+                    data=df_plot, x=label, y=feature, hue="gender", split=True
+                )
+            else:
+                df_plot = pd.DataFrame(
+                    {label: df_labels[label], feature: df_features[feature]}
+                )
+                if df_labels[label].nunique() == 2:
+                    label_1 = df_labels[label].unique()[0]
+                    label_2 = df_labels[label].unique()[1]
+                    vals_1 = df_plot[df_plot[label] == label_1][feature].values
+                    vals_2 = df_plot[df_plot[label] == label_2][feature].values
+                    r_stats = stats.mannwhitneyu(
+                        vals_1, vals_2, alternative="two-sided"
+                    )
+                    p_val = f", Mann-Whitney p-val: {r_stats.pvalue:.3f}"
+                ax = sns.violinplot(data=df_plot, x=label, y=feature)
             label = self.util.config_val("DATA", "target", "class_label")
             ax.set(title=f"{title} samples {p_val}", xlabel=label)
         else:

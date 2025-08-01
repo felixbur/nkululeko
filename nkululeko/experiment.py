@@ -673,7 +673,7 @@ class Experiment:
             feat_analyser.analyse()
 
         # check if a scatterplot should be done
-        scatter_var = eval(self.util.config_val("EXPL", "scatter", "False"))
+        list_of_dimreds = eval(self.util.config_val("EXPL", "scatter", "False"))
 
         # Priority: use [EXPL][scatter.target] if available, otherwise use [DATA][target] value
         if hasattr(self, "target") and self.target != "none":
@@ -693,14 +693,14 @@ class Experiment:
             self.util.debug(
                 f"scatter.target from [EXPL][scatter.target]: {scatter_target}"
             )
-        if scatter_var:
-            scatters = ast.literal_eval(scatter_target)
+        if list_of_dimreds:
+            dimreds = list_of_dimreds
             scat_targets = ast.literal_eval(scatter_target)
             plots = Plots()
             for scat_target in scat_targets:
                 if self.util.is_categorical(df_labels[scat_target]):
-                    for scatter in scatters:
-                        plots.scatter_plot(df_feats, df_labels, scat_target, scatter)
+                    for dimred in dimreds:
+                        plots.scatter_plot(df_feats, df_labels, scat_target, dimred)
                 else:
                     self.util.debug(
                         f"{self.name}: binning continuous variable to categories"
@@ -709,9 +709,9 @@ class Experiment:
                         df_labels[scat_target]
                     )
                     df_labels[f"{scat_target}_bins"] = cat_vals.values
-                    for scatter in scatters:
+                    for dimred in dimreds:
                         plots.scatter_plot(
-                            df_feats, df_labels, f"{scat_target}_bins", scatter
+                            df_feats, df_labels, f"{scat_target}_bins", dimred
                         )
 
         # check if t-SNE plot should be generated
