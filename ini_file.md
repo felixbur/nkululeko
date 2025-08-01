@@ -601,6 +601,8 @@ metric = uar
 
 * **feature_distributions**: plot distributions for features and analyze importance
   * feature_distributions = False
+* **ignore_gender**: ignore gender when plotting feature distribution
+  * ignore_gender = False
 * **model**: Which model to use to estimate feature importance.
   * model = ['log_reg'] # can be all models from the [MODEL](#model) section, If they are combined, the mean result is used.
 * **max_feats**: Maximal number of important features
