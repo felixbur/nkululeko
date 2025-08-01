@@ -271,13 +271,18 @@
     * **randomundersampler**: Random Under Sampler
     * **editednearestneighbours**: Edited Nearest Neighbours
     * **tomeklinks**: Tomek Links
-* **scale**: [scale (standard normalize) the features](http://blog.syntheticspeech.de/2021/08/10/the-nkululeko-configuration-file/)
+* **scale**: scale (standard/normalize) the features
   * scale = standard
   * possible values:
     * **standard**: z-transformation (mean of 0 and std of 1) based on the training set
-    * **robust**: robust scaler
-    * **speaker**: like *standard* but based on individual speaker sets (also for the test)
-    * **bins**: convert feature values into 0, .5 and 1 (for low, mid and high)
+    * **robust**: robust scaler 
+    * **speaker**: like *standard* but based on individual speaker sets (also for the test)  
+    * **bins**: convert feature values into 0, .5 and 1 (for low, mid and high)  
+    * **minmnax**: rescales the data set such that all feature values are in the range [0, 1] 
+    * **maxabs**: similar to MinMaxScaler except that the values are mapped across several ranges depending on whether negative OR positive values are present  
+    * **normalizer**: 
+    * **powertransformer**: applies a power transformation to each feature to make the data more Gaussian-like in order to stabilize variance and minimize skewness
+    * **quantiletransformer**: applies a non-linear transformation such that the probability density function of each feature will be mapped to a uniform or Gaussian distribution (range [0, 1])  
 * **set**: name of opensmile feature set, e.g. eGeMAPSv02, ComParE_2016, GeMAPSv01a, eGeMAPSv01a
   * set = eGeMAPSv02
 * **level**: level of opensmile features
@@ -359,125 +364,6 @@ Model and training specifications. In general, default values should work for cl
   * patience = 5
 * **save**: save the trained model
   * save = False
-
-### OPTIM
-
-Hyperparameter optimization configuration. Used with the `nkululeko.optim` module to automatically find the best model parameters.
-
-* **model**: model type to optimize (must match MODEL.type)
-  * model = xgb
-  * possible values: same as MODEL.type
-* **search_strategy**: optimization search strategy
-  * search_strategy = grid
-  * possible values:
-    * **grid**: exhaustive grid search (conventional)
-    * **random**: random search
-    * **halving_grid**: successive halving grid search (intelligent)
-    * **halving_random**: successive halving random search (intelligent)
-* **metric**: optimization metric to maximize/minimize
-  * metric = uar
-  * possible values:
-    * **uar**: Unweighted Average Recall (good for imbalanced data)
-    * **accuracy**: Overall accuracy
-    * **f1**: F1-score (macro-averaged)
-    * **precision**: Precision (macro-averaged)  
-    * **recall**: Recall (macro-averaged)
-    * **specificity**: Specificity
-* **n_iter**: number of iterations for random search strategies
-  * n_iter = 50
-* **cv_folds**: number of cross-validation folds
-  * cv_folds = 3
-* **random_state**: random seed for reproducible optimization
-  * random_state = 42
-
-#### Model-Specific Parameters
-
-**XGBoost/XGRegressor parameters:**
-* **n_estimators**: number of trees to test
-  * n_estimators = [50, 100, 200]
-* **max_depth**: maximum tree depth values
-  * max_depth = [3, 6, 9]
-* **learning_rate**: learning rates to test
-  * learning_rate = [0.01, 0.1, 0.3]
-* **subsample**: subsampling ratios
-  * subsample = [0.6, 0.8, 1.0]
-* **colsample_bytree**: column subsampling ratios
-  * colsample_bytree = [0.6, 0.8, 1.0]
-
-**SVM/SVR parameters:**
-* **C_val**: regularization values
-  * C_val = [0.1, 1.0, 10.0, 100.0]
-* **kernel**: kernel types  
-  * kernel = ["linear", "rbf", "poly"]
-* **gamma**: gamma values
-  * gamma = ["scale", "auto", 0.001, 0.01, 0.1, 1.0]
-
-**KNN parameters:**
-* **K_val**: number of neighbors
-  * K_val = [3, 5, 7, 9, 11]
-* **weights**: weight functions
-  * weights = ["uniform", "distance"]
-
-**MLP parameters:**
-* **nlayers**: number of hidden layers
-  * nlayers = [1, 2, 3]
-* **nnodes**: number of nodes per layer
-  * nnodes = [16, 32, 64, 128]
-* **lr**: learning rates
-  * lr = [0.0001, 0.001, 0.01]
-* **bs**: batch sizes  
-  * bs = [8, 16, 32, 64]
-* **do**: dropout rates
-  * do = [0.1, 0.3, 0.5]
-* **loss**: loss functions
-  * loss = ["cross", "f1", "mse"]
-
-#### Parameter Format
-
-Parameters can be specified in three formats:
-
-1. **List format**: discrete values to test
-   ```ini
-   C_val = [0.1, 1.0, 10.0]
-   kernel = ["linear", "rbf"]
-   ```
-
-2. **Range format**: continuous range (auto-generates steps)
-   ```ini
-   learning_rate = (0.001, 0.1)  # log-spaced values
-   max_depth = (3, 10)           # integer range
-   ```
-
-3. **Range with step**: explicit step size
-   ```ini
-   dropout = (0.1, 0.5, 0.1)     # [0.1, 0.2, 0.3, 0.4, 0.5]
-   ```
-
-#### Examples
-
-**Conventional Grid Search (XGBoost):**
-```ini
-[OPTIM]
-model = xgb
-n_estimators = [50, 100, 200]
-max_depth = [3, 6, 9]
-learning_rate = [0.01, 0.1, 0.2]
-metric = uar
-```
-
-**Intelligent Search (SVM):**
-```ini
-[OPTIM] 
-model = svm
-search_strategy = halving_grid
-n_iter = 15
-cv_folds = 3
-random_state = 42
-C_val = [0.1, 1.0, 10.0, 100.0]
-kernel = ["linear", "rbf", "poly"]
-gamma = ["scale", "auto", 0.001, 0.01, 0.1, 1.0]
-metric = uar
-```
 * **features** = *python list of selected features to be used (all others ignored)*
   * features = ['JitterPCA', 'meanF0Hz', 'hld_sylRate']
 * **no_reuse**: don't re-use already extracted features, but start fresh

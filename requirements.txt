@@ -22,6 +22,7 @@ transformers>=4.0.0
 umap-learn==0.5.7
 xgboost>=1.0.0
 pylatex>=1.0.0
+audplot >= 1.4.7
 
 # Optional dependencies - PyTorch
 torch>=1.0.0
