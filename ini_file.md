@@ -280,7 +280,7 @@
     * **bins**: convert feature values into 0, .5 and 1 (for low, mid and high)  
     * **minmax**: rescales the data set such that all feature values are in the range [0, 1] 
     * **maxabs**: similar to MinMaxScaler except that the values are mapped across several ranges depending on whether negative OR positive values are present  
-    * **normalizer**: 
+    * **normalizer**: scales each sample (row) individually to have unit norm (e.g., L2 norm)
     * **powertransformer**: applies a power transformation to each feature to make the data more Gaussian-like in order to stabilize variance and minimize skewness
     * **quantiletransformer**: applies a non-linear transformation such that the probability density function of each feature will be mapped to a uniform or Gaussian distribution (range [0, 1])  
 * **set**: name of opensmile feature set, e.g. eGeMAPSv02, ComParE_2016, GeMAPSv01a, eGeMAPSv01a
