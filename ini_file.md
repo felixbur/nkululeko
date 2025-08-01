@@ -278,7 +278,7 @@
     * **robust**: robust scaler 
     * **speaker**: like *standard* but based on individual speaker sets (also for the test)  
     * **bins**: convert feature values into 0, .5 and 1 (for low, mid and high)  
-    * **minmnax**: rescales the data set such that all feature values are in the range [0, 1] 
+    * **minmax**: rescales the data set such that all feature values are in the range [0, 1] 
     * **maxabs**: similar to MinMaxScaler except that the values are mapped across several ranges depending on whether negative OR positive values are present  
     * **normalizer**: 
     * **powertransformer**: applies a power transformation to each feature to make the data more Gaussian-like in order to stabilize variance and minimize skewness
