@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.97.0 (25-08-04)
+-------------------------
+* scaling methods added
+
 Version 0.96.8 (25-07-31)
 -------------------------
 * added Nan check for feature importance analyzer
