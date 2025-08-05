@@ -73,7 +73,7 @@ class TestPredictor:
             predictions, _ = self.model.get_predictions()
             df = self.orig_df.copy()
             df["predictions"] = self.label_encoder.inverse_transform(predictions)
-            target = self.util.config_val("DATA", "target", "emotion")
+            target = self.target
             if "class_label" in df.columns:
                 df = df.drop(columns=[target])
                 df = df.rename(columns={"class_label": target})
