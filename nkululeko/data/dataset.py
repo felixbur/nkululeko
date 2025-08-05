@@ -77,7 +77,15 @@ class Dataset:
         rename_cols = self.util.config_val_data(self.name, "colnames", False)
         if rename_cols:
             col_dict = ast.literal_eval(rename_cols)
-            df = df.rename(columns=col_dict)
+            # df = df.rename(columns=col_dict)
+            for key in col_dict.keys():
+                if key in df.columns:
+                    df[col_dict[key]] = df[key]
+                else:
+                    self.util.warn(
+                        f"column {key} not found in {self.name} database, "
+                        "not renaming it"
+                    )
             self.util.debug(f"renamed data columns: {col_dict}")
         return df
 
@@ -296,8 +304,8 @@ class Dataset:
                     df_local["gender"] = source_df["gender"]
                 else:
                     # try to get the gender via the speaker description
-                    gender_map = db['speaker'].get().to_dict()['gender']
-                    df_local['gender'] = df_local['speaker'].map(gender_map).astype(str)
+                    gender_map = db["speaker"].get().to_dict()["gender"]
+                    df_local["gender"] = df_local["speaker"].map(gender_map).astype(str)
                 got_gender = True
             except (KeyError, ValueError, audformat.errors.BadKeyError):
                 pass
@@ -307,8 +315,8 @@ class Dataset:
                     df_local["age"] = source_df["age"].astype(int)
                 else:
                     # try to get the age via the speaker description
-                    age_map = db['speaker'].get().to_dict()['age']
-                    df_local['age'] = df_local['speaker'].map(age_map).astype(int)
+                    age_map = db["speaker"].get().to_dict()["age"]
+                    df_local["age"] = df_local["speaker"].map(age_map).astype(int)
                 got_age = True
             except (KeyError, ValueError, audformat.errors.BadKeyError):
                 pass

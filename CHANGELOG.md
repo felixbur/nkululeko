@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.97.1 (25-08-05)
+-------------------------
+* changed renaming of columns from replacement to copy
+
 Version 0.97.0 (25-08-04)
 -------------------------
 * scaling methods added
