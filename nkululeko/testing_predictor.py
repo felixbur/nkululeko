@@ -25,12 +25,7 @@ class TestPredictor:
         self.label_encoder = labenc
         self.target = glob_conf.config["DATA"]["target"]
         self.util = Util("testing_predictor")
-        # Construct full path to results directory
-        res_dir = self.util.get_res_dir()
-        if os.path.isabs(name):
-            self.name = name
-        else:
-            self.name = os.path.join(res_dir, name)
+        self.name = name
 
     def predict_and_store(self):
         label_data = self.util.config_val("DATA", "label_data", False)
@@ -57,7 +52,7 @@ class TestPredictor:
             df["gender"] = data_df["gender"]
             df[self.target] = labelenc.inverse_transform(predictions.tolist())
             df.to_csv(self.name)
-        else:
+        elif self.util.config_val("DATA", "tests", False):
             test_dbs = ast.literal_eval(glob_conf.config["DATA"]["tests"])
             test_dbs_string = "_".join(test_dbs)
             predictions, _ = self.model.get_predictions()
@@ -67,6 +62,15 @@ class TestPredictor:
             self.util.print_best_results([report])
             report.plot_confmatrix(self.util.get_plot_name(), 0)
             report.print_results(0)
+            df = self.orig_df.copy()
+            df["predictions"] = self.label_encoder.inverse_transform(predictions)
+            target = self.util.config_val("DATA", "target", "emotion")
+            if "class_label" in df.columns:
+                df = df.drop(columns=[target])
+                df = df.rename(columns={"class_label": target})
+            df.to_csv(self.name)
+        else:
+            predictions, _ = self.model.get_predictions()
             df = self.orig_df.copy()
             df["predictions"] = self.label_encoder.inverse_transform(predictions)
             target = self.util.config_val("DATA", "target", "emotion")

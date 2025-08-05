@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.97.2 (25-08-05)
+-------------------------
+* bugfix: save test did not work any more
+
 Version 0.97.1 (25-08-05)
 -------------------------
 * changed renaming of columns from replacement to copy
