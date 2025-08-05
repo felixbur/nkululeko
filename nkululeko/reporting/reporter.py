@@ -209,12 +209,13 @@ class Reporter:
             df = self.probas[self.probas["uncertainty"] < uncertainty_threshold]
             new_size = df.shape[0]
             difference = old_size - new_size
+            diff_perc = int((difference / old_size) * 100 if old_size > 0 else 0)
             self.util.debug(
                 f"Filtered probabilities: {old_size} -> {new_size} ({difference}) samples with uncertainty < {uncertainty_threshold}"
             )
             truths = df["truth"].values
             preds = df["predicted"].values
-            plot_name = f"{self.util.get_exp_name()}_uncertainty_lt_{uncertainty_threshold}_{difference}-removed_cnf"
+            plot_name = f"{self.util.get_exp_name()}_uncertainty_lt_{uncertainty_threshold}_{diff_perc}pct-removed_cnf"
             self._plot_confmat(
                 truths,
                 preds,
