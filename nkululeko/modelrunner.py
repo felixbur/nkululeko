@@ -92,7 +92,6 @@ class Modelrunner:
                 if plot_epochs:
                     self.util.debug(f"plotting conf matrix to {plot_name}")
                     report.plot_confmatrix(plot_name, epoch)
-                import ast
 
                 # check if we need should not store the model
                 save_models = ast.literal_eval(
