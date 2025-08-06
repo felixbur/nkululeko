@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 0.97.3 (25-08-06)
+-------------------------
+* added dropout lists
+* added bert models
+* fixed save_test bug
+
 Version 0.97.2 (25-08-05)
 -------------------------
 * bugfix: save test did not work any more

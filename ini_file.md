@@ -14,10 +14,6 @@
     - [SEGMENT](#segment)
     - [FEATS](#feats)
     - [MODEL](#model)
-    - [OPTIM](#optim)
-      - [Model-Specific Parameters](#model-specific-parameters)
-      - [Parameter Format](#parameter-format)
-      - [Examples](#examples)
     - [MODEL](#model-1)
     - [EXPL](#expl)
     - [PREDICT](#predict)
@@ -26,7 +22,7 @@
     - [PLOT](#plot)
     - [RESAMPLE](#resample)
     - [REPORT](#report)
-    - [OPTIM](#optim-1)
+    - [OPTIM](#optim)
 
 ## Sections
 
@@ -362,8 +358,8 @@ Model and training specifications. In general, default values should work for cl
   * possible values: cpu, cuda
 * **patience**: early stopping patience for neural networks  
   * patience = 5
-* **save**: save the trained model
-  * save = False
+* **save**: set this to *False* if you don't want models stored on disk
+  * save = True
 * **features** = *python list of selected features to be used (all others ignored)*
   * features = ['JitterPCA', 'meanF0Hz', 'hld_sylRate']
 * **no_reuse**: don't re-use already extracted features, but start fresh

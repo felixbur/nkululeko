@@ -256,6 +256,12 @@ class MLP_Reg_model(Model):
             self.model.load_state_dict(torch.load(self.store_path))
             self.model.eval()
 
+    def get_predictions(self):
+        _, _, predictions = self.evaluate_model(
+            self.model, self.testloader, self.device
+        )
+        return predictions.numpy(), None
+
     def predict_sample(self, features):
         """Predict one sample"""
         with torch.no_grad():
