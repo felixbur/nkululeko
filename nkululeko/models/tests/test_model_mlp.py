@@ -151,3 +151,17 @@ def test_reset_test(mlp_model, dummy_data):
     _, df_test, _, feats_test = dummy_data
     mlp_model.reset_test(df_test, feats_test)
     assert mlp_model.testloader is not None
+
+def test_mlp_model_init_with_dropout_list():
+    # Test with a list of dropout values
+    mlp_inner = MLPModel.MLP(3, {'a': 8, 'b': 4}, 2, [0.1, 0.2])
+    dropout_layers = [l for l in mlp_inner.linear if isinstance(l, torch.nn.Dropout)]
+    assert len(dropout_layers) == 1
+    assert dropout_layers[0].p == 0.1
+
+def test_mlp_model_init_with_dropout_float():
+    # Test with a single float value for dropout
+    mlp_inner = MLPModel.MLP(3, {'a': 8, 'b': 4}, 2, 0.5)
+    dropout_layers = [l for l in mlp_inner.linear if isinstance(l, torch.nn.Dropout)]
+    assert len(dropout_layers) == 1
+    assert dropout_layers[0].p == 0.5

@@ -473,7 +473,8 @@ Model and training specifications. In general, default values should work for cl
 * **learning_rate**: The learning rate for ANN models
   * learning_rate = 0.0001
 * **drop**: Adding dropout (after each hidden layer). Value states dropout probability
-  * drop = .5
+  * drop = .5 # or [0.2] to apply dropout rate 0.5 for all layers or a single layer
+  * drop = [0.5, 0.1] # to apply dropout rates 0.5 for the first layer and 0.1 for the second layer  
 * **batch_size**: Size of the batch before backpropagation for neural nets
   * batch_size = 8
 * **device**: For torch/huggingface models: select your GPU number if you have one. Values are either "cpu" or GPU ids (e.g., 0, 1 or both "0,1"). By default, the GPU/CUDA is used if available, otherwise is CPU.

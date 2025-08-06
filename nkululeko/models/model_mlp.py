@@ -58,9 +58,19 @@ class MLPModel(Model):
         self.util.debug(f"using layers {layers_string}")
         layers = ast.literal_eval(layers_string)
         # with dropout?
-        drop = self.util.config_val("MODEL", "drop", False)
-        if drop:
+        drop = self.util.config_val("MODEL", "drop", "False")
+        if drop != "False":
+            try:
+                drop = ast.literal_eval(drop)
+            except (ValueError, SyntaxError):
+                # if it's not a list, it should be a float
+                try:
+                    drop = float(drop)
+                except ValueError:
+                    self.util.error(f"invalid value for dropout: {drop}")
             self.util.debug(f"init: training with dropout: {drop}")
+        else:
+            drop = False
         self.model = self.MLP(feats_train.shape[1], layers, self.class_num, drop).to(
             self.device
         )
@@ -194,7 +204,11 @@ class MLPModel(Model):
                     sorted_layers[i][1], sorted_layers[i + 1][1]
                 )
                 if drop:
-                    layers[str(i) + "_d"] = torch.nn.Dropout(float(drop))
+                    if isinstance(drop, list):
+                        if i < len(drop):
+                            layers[str(i) + "_d"] = torch.nn.Dropout(float(drop[i]))
+                    else:
+                        layers[str(i) + "_d"] = torch.nn.Dropout(float(drop))
                 layers[str(i) + "_r"] = torch.nn.ReLU()
             layers[str(len(sorted_layers) + 1)] = torch.nn.Linear(
                 sorted_layers[-1][1], o
@@ -247,9 +261,19 @@ class MLPModel(Model):
         self.device = self.util.config_val("MODEL", "device", cuda)
         layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])
         self.store_path = dir + name
-        drop = self.util.config_val("MODEL", "drop", False)
-        if drop:
+        drop = self.util.config_val("MODEL", "drop", "False")
+        if drop != "False":
+            try:
+                drop = ast.literal_eval(drop)
+            except (ValueError, SyntaxError):
+                # if it's not a list, it should be a float
+                try:
+                    drop = float(drop)
+                except ValueError:
+                    self.util.error(f"invalid value for dropout: {drop}")
             self.util.debug(f"loading: dropout set to: {drop}")
+        else:
+            drop = False
         self.model = self.MLP(
             self.feats_train.shape[1], layers, self.class_num, drop
         ).to(self.device)
@@ -263,9 +287,19 @@ class MLPModel(Model):
             self.device = self.util.config_val("MODEL", "device", cuda)
             layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])
             self.store_path = path
-            drop = self.util.config_val("MODEL", "drop", False)
-            if drop:
+            drop = self.util.config_val("MODEL", "drop", "False")
+            if drop != "False":
+                try:
+                    drop = ast.literal_eval(drop)
+                except (ValueError, SyntaxError):
+                    # if it's not a list, it should be a float
+                    try:
+                        drop = float(drop)
+                    except ValueError:
+                        self.util.error(f"invalid value for dropout: {drop}")
                 self.util.debug(f"dropout set to: {drop}")
+            else:
+                drop = False
             self.model = self.MLP(
                 self.feats_train.shape[1], layers, self.class_num, drop
             ).to(self.device)
