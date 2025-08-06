@@ -176,8 +176,10 @@ class MLPModel(Model):
         return report
 
     def get_predictions(self):
-        _, _, predictions, _ = self.evaluate(self.model, self.testloader, self.device)
-        return predictions.numpy()
+        _, _, predictions, logits = self.evaluate(
+            self.model, self.testloader, self.device
+        )
+        return (predictions.numpy(), self.get_probas(logits))
 
     def get_loader(self, df_x, df_y, shuffle):
         data = []
@@ -277,7 +279,10 @@ class MLPModel(Model):
         self.model = self.MLP(
             self.feats_train.shape[1], layers, self.class_num, drop
         ).to(self.device)
-        self.model.load_state_dict(torch.load(self.store_path))
+        try:
+            self.model.load_state_dict(torch.load(self.store_path))
+        except FileNotFoundError:
+            self.util.error(f"model file not found: {self.store_path}")
         self.model.eval()
 
     def load_path(self, path, run, epoch):

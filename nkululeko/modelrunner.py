@@ -1,5 +1,6 @@
 # modelrunner.py
 
+import ast
 import pandas as pd
 
 from nkululeko import glob_conf
@@ -91,16 +92,12 @@ class Modelrunner:
                 if plot_epochs:
                     self.util.debug(f"plotting conf matrix to {plot_name}")
                     report.plot_confmatrix(plot_name, epoch)
-                import ast
-                store_models = ast.literal_eval(
-                    self.util.config_val("EXP", "save", "False")
-                ) or ast.literal_eval(self.util.config_val("EXP", "traindevtest", "False"))
-                plot_best_model = ast.literal_eval(
-                    self.util.config_val("PLOT", "best_model", "False")
+
+                # check if we need should not store the model
+                save_models = ast.literal_eval(
+                    self.util.config_val("MODEL", "save", "True")
                 )
-                if (store_models or plot_best_model) and (
-                    not only_test
-                ):  # in any case the model needs to be stored to disk.
+                if save_models:  # in any case the model needs to be stored to disk.
                     self.model.store()
                 if patience:
                     patience = int(patience)
