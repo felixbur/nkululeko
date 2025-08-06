@@ -3,8 +3,7 @@ import os
 import pandas as pd
 from tqdm import tqdm
 import transformers
-import torch 
-from transformers import BertTokenizer, BertModel
+import torch
 
 from nkululeko.feat_extract.featureset import Featureset
 import nkululeko.glob_conf as glob_conf
@@ -24,26 +23,26 @@ class Bert(Featureset):
         self.device = self.util.config_val("MODEL", "device", cuda)
         self.model_initialized = False
         if feat_type == "bert":
-            self.feat_type = "bert-base-uncased"
+            self.feat_type = "google-bert/bert-base-uncased"
         else:
             self.feat_type = feat_type
 
     def init_model(self):
         # load model
-        self.util.debug(f"loading {self.feat_type} model...")
-        model_path = self.util.config_val(
-            "FEATS", "bert.model", f"google-bert/{self.feat_type}"
+        self.model_path = self.util.config_val(
+            "FEATS", "bert.model", f"{self.feat_type}"
         )
-        config = transformers.AutoConfig.from_pretrained(model_path)
+        self.util.debug(f"loading {self.model_path} model...")
+        config = transformers.AutoConfig.from_pretrained(self.model_path)
         layer_num = config.num_hidden_layers
         hidden_layer = int(self.util.config_val("FEATS", "bert.layer", "0"))
         config.num_hidden_layers = layer_num - hidden_layer
         self.util.debug(f"using hidden layer #{config.num_hidden_layers}")
 
-        self.tokenizer = BertTokenizer.from_pretrained(model_path)
-        self.model = BertModel.from_pretrained(model_path, config=config).to(
-            self.device
-        )
+        self.tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_path)
+        self.model = transformers.AutoModel.from_pretrained(
+            self.model_path, config=config
+        ).to(self.device)
         print(f"initialized {self.feat_type} model on {self.device}")
         self.model.eval()
         self.model_initialized = True
@@ -54,16 +53,17 @@ class Bert(Featureset):
         storage = os.path.join(store, f"{self.name}.pkl")
         extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
+        text_column = self.util.config_val("FEATS", "bert.text_column", "text")
         if extract or no_reuse or not os.path.isfile(storage):
             if not self.model_initialized:
                 self.init_model()
             self.util.debug(
-                f"extracting {self.feat_type} embeddings, this might take a while..."
+                f"extracting {self.model_path} embeddings, this might take a while..."
             )
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
             for idx, row in tqdm(self.data_df.iterrows(), total=len(self.data_df)):
                 file = idx[0]
-                text = row['text']
+                text = row[text_column]
                 emb = self.get_embeddings(text, file)
                 emb_series[idx] = emb
             # print(f"emb_series shape: {emb_series.shape}")
@@ -83,17 +83,26 @@ class Bert(Featureset):
                 )
 
     def get_embeddings(self, text, file):
-        r"""Extract embeddings from raw audio signal."""
+        r"""Extract embeddings from text."""
         try:
             with torch.no_grad():
-                inputs = self.tokenizer(text, return_tensors="pt").to(self.device)
+                # Truncate text to model's max length to avoid tensor size mismatch
+                inputs = self.tokenizer(
+                    text,
+                    return_tensors="pt",
+                    truncation=True,
+                    max_length=512,
+                    padding=True,
+                ).to(self.device)
                 outputs = self.model(**inputs)
-                # mean pooling 
+                # mean pooling
                 y = torch.mean(outputs[0], dim=1)
                 y = y.ravel()
         except RuntimeError as re:
             print(str(re))
-            self.util.error(f"couldn't extract file: {file}")
+            self.util.error(
+                f"couldn't extract embeddings from text (file reference: {file})"
+            )
             y = None
         if y is None:
             return None
