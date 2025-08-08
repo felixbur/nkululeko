@@ -24,7 +24,7 @@ features = [
 
 for c in classifiers:
     for f in features:
-        cmd = "python -m nkululeko.nkuluflag --config meta/demos/multiple_exeriments/exp.ini "
+    cmd = "python -m nkululeko.flags --config meta/demos/multiple_exeriments/exp.ini "
         for item in c:
             cmd += f"{item} {c[item]} "
         for item in f:
