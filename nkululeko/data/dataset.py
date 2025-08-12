@@ -767,7 +767,11 @@ class Dataset:
         if test_speakers:
             test_speakers = ast.literal_eval(test_speakers)
         train_speakers = self.util.config_val_data(self.name, "train", False)
-        self.df_test = self.df[self.df.speaker.isin(test_speakers)]
+            self.df_test = self.df[self.df.speaker.isin(test_speakers)]
+        else:
+            self.util.error(f"test speakers required: {test_speakers}")
+            self.df_test = pd.DataFrame(columns=self.df.columns)
+        train_speakers = self.util.config_val_data(self.name, "train", False)
         if not train_speakers:
             self.df_train = self.df[~self.df.index.isin(self.df_test.index)]
             train_speakers = list(self.df_train.speaker.unique())
