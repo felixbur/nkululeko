@@ -175,10 +175,10 @@ class OptimizationRunner:
         self.util.debug(
             f"Starting optimization using {self.search_strategy} strategy with {self.metric.upper()} metric, nkululeko version {VERSION}"
         )
-        
+
         # Set comprehensive random state for reproducibility
         self._set_comprehensive_random_state()
-        
+
         if not param_specs:
             self.util.error("No optimization parameters found in [OPTIM] section")
             return None, None, []
@@ -424,8 +424,11 @@ class OptimizationRunner:
 
     def _run_sklearn_optimization(self, param_specs):
         """Run optimization using scikit-learn's hyperparameter search methods with consistent data handling."""
-        from sklearn.model_selection import (GridSearchCV, RandomizedSearchCV,
-                                             StratifiedKFold)
+        from sklearn.model_selection import (
+            GridSearchCV,
+            RandomizedSearchCV,
+            StratifiedKFold,
+        )
 
         # Import the actual experiment to get the model and data
         import nkululeko.experiment as exp
@@ -764,13 +767,13 @@ class OptimizationRunner:
         # For XGBoost specifically, also set additional reproducibility parameters
         if self.model_type in ["xgb", "xgr"]:
             # Ensure deterministic behavior
-            self.config["MODEL"]["n_jobs"] = (
-                "1"  # Force single-threaded for reproducibility
-            )
+            self.config["MODEL"][
+                "n_jobs"
+            ] = "1"  # Force single-threaded for reproducibility
             if "tree_method" not in params:
-                self.config["MODEL"]["tree_method"] = (
-                    "exact"  # Deterministic tree construction
-                )
+                self.config["MODEL"][
+                    "tree_method"
+                ] = "exact"  # Deterministic tree construction
 
     def _run_single_experiment(self):
         """Run a single experiment with current configuration."""

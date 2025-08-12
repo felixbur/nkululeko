@@ -23,14 +23,14 @@ class EmotionPredictor:
     def predict(self, split_selection):
         self.util.debug(f"predicting emotion for {split_selection} samples")
         feats_name = "_".join(ast.literal_eval(glob_conf.config["DATA"]["databases"]))
-        
+
         self.feature_extractor = FeatureExtractor(
             self.df, ["emotion2vec-large"], feats_name, split_selection
         )
         emotion_df = self.feature_extractor.extract()
-        
+
         pred_emotion = ["neutral"] * len(emotion_df)
-        
+
         return_df = self.df.copy()
         return_df["emotion_pred"] = pred_emotion
         return return_df

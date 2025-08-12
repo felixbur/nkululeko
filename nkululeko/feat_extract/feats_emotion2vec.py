@@ -63,8 +63,7 @@ class Emotion2vec(Featureset):
         try:
             # Initialize the FunASR model for emotion2vec using HuggingFace Hub
             self.model = AutoModel(
-                model=model_path,
-                hub="hf"  # Use HuggingFace Hub instead of ModelScope
+                model=model_path, hub="hf"  # Use HuggingFace Hub instead of ModelScope
             )
             self.util.debug(f"initialized emotion2vec model: {model_path}")
             self.model_initialized = True
@@ -157,7 +156,7 @@ class Emotion2vec(Featureset):
                         return embeddings.flatten()
                     else:
                         # Fallback based on model type
-                        if 'large' in self.feat_type.lower():
+                        if "large" in self.feat_type.lower():
                             return np.array([0.0] * 1024)
                         else:
                             return np.array([0.0] * 768)
@@ -166,7 +165,7 @@ class Emotion2vec(Featureset):
                         f"No result from emotion2vec model for file: {file}"
                     )
                     # Fallback based on model type
-                    if 'large' in self.feat_type.lower():
+                    if "large" in self.feat_type.lower():
                         return np.array([0.0] * 1024)
                     else:
                         return np.array([0.0] * 768)
@@ -180,7 +179,7 @@ class Emotion2vec(Featureset):
             print(f"Error processing {file}: {str(e)}")
             self.util.error(f"couldn't extract file: {file}, error: {str(e)}")
             # Return appropriate dimension based on model type
-            if 'large' in self.feat_type.lower():
+            if "large" in self.feat_type.lower():
                 return np.array([0.0] * 1024)
             else:
                 return np.array([0.0] * 768)
@@ -222,7 +221,7 @@ class Emotion2vec(Featureset):
                         return embeddings.flatten()
 
                 # Fallback based on model type
-                if 'large' in self.feat_type.lower():
+                if "large" in self.feat_type.lower():
                     return np.array([0.0] * 1024)
                 else:
                     return np.array([0.0] * 768)
@@ -230,7 +229,7 @@ class Emotion2vec(Featureset):
         except Exception as e:
             print(f"Error in extract_sample: {str(e)}")
             # Return appropriate dimension based on model type
-            if 'large' in self.feat_type.lower():
+            if "large" in self.feat_type.lower():
                 return np.array([0.0] * 1024)
             else:
                 return np.array([0.0] * 768)
