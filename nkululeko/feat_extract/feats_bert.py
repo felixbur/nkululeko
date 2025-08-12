@@ -43,7 +43,7 @@ class Bert(Featureset):
         self.model = transformers.AutoModel.from_pretrained(
             self.model_path, config=config
         ).to(self.device)
-        print(f"initialized {self.feat_type} model on {self.device}")
+        print(f"initialized {self.model_path} model on {self.device}")
         self.model.eval()
         self.model_initialized = True
 
