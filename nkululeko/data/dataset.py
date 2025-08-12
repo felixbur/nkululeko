@@ -808,7 +808,7 @@ class Dataset:
             self.df_train = self.df[self.df.speaker.isin(train_speakers)]
         self.util.debug(
             f"{self.name} (speakers stated): "
-            f"[{self.df_train.shape[0]}/{self.df_test.shape[0]}] samples in train/test"
+            f"[{self.df_train.shape[0]}/{self.df_dev.shape[0]}/{self.df_test.shape[0]}] samples in train/dev/test"
         )
         self.util.debug(f"train speakers: {train_speakers}")
         self.util.debug(f"test speakers: {test_speakers}")
