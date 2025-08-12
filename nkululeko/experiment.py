@@ -756,10 +756,19 @@ class Experiment:
                 dev_x=self.df_dev,
                 dev_y=self.feats_dev,
             )
-            self.feats_train, self.feats_test = self.scaler_feats.scale()
-            # store versions
-            self.util.save_to_store(self.feats_train, "feats_train_scaled")
-            self.util.save_to_store(self.feats_test, "feats_test_scaled")
+            if self.split3:
+                self.feats_train, self.feats_dev, self.feats_test = (
+                    self.scaler_feats.scale()
+                )
+                # store versions
+                self.util.save_to_store(self.feats_train, "feats_train_scaled")
+                self.util.save_to_store(self.feats_test, "feats_test_scaled")
+                self.util.save_to_store(self.feats_dev, "feats_dev_scaled")
+            else:
+                self.feats_train, self.feats_test = self.scaler_feats.scale()
+                # store versions
+                self.util.save_to_store(self.feats_train, "feats_train_scaled")
+                self.util.save_to_store(self.feats_test, "feats_test_scaled")
 
     def init_runmanager(self):
         """Initialize the manager object for the runs."""

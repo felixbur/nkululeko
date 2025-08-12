@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 0.97.4 (25-08-12)
+-------------------------
+* fixed bug about traindevtest and feature scaling
+* changed format of database filter to dictionary
+* printing out speaker names for speaker_split method
+
 Version 0.97.3 (25-08-06)
 -------------------------
 * added dropout lists

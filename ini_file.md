@@ -128,7 +128,7 @@
 * **db_name.rename_speakers**: add the database name to the speaker names, e.g., because several databases use the same names
   * emodb.rename_speakers = False
 * **db_name.filter**: don't use all the data but only selected values from columns: [col, val]*
-  * emodb.filter = [['gender', 'female']]
+  * emodb.filter = {'gender': ['female', 'diverse']}
 * **db_name.scale**: [scale (standard normalize) the target variable](http://blog.syntheticspeech.de/2024/03/13/nkululeko-how-to-tweak-the-target-variable-for-database-comparison/) (if numeric)
   * my_data.scale = True
 * **db_name.reverse**: reverse the target variable (if numeric). I.e. f(x) = abs(x-max)
@@ -352,7 +352,7 @@ Model and training specifications. In general, default values should work for cl
 * **colsample_bytree**: subsample ratio of columns for XGBoost
   * colsample_bytree = 1.0
 * **random_state**: random seed for reproducible results
-  * random_state = 42
+  * random_state = 42 # set this to *False* if #run > 1
 * **device**: device for neural network training
   * device = cpu
   * possible values: cpu, cuda
