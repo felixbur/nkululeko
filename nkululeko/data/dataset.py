@@ -450,17 +450,21 @@ class Dataset:
             self.balanced_split()
         elif split_strategy == "speaker_split":
             self.split_speakers()
+        elif split_strategy == "speakers_stated":
+            self.speakers_stated()
         elif split_strategy == "random":
             self.random_split()
         elif split_strategy == "reuse":
             self.util.debug(f"{self.name}: trying to reuse data splits")
             self.df_test = pd.read_pickle(storage_test)
             self.df_train = pd.read_pickle(storage_train)
-        elif isinstance(ast.literal_eval(split_strategy), list):
-            # treat this as a list of test speakers
-            self.assign_speakers(ast.literal_eval(split_strategy))
         else:
-            self.util.error(f"unknown split strategy: {split_strategy}")
+            try:
+                if isinstance(ast.literal_eval(split_strategy), list):
+                    # treat this as a list of test speakers
+                    self.assign_speakers(ast.literal_eval(split_strategy))
+            except ValueError:
+                self.util.error(f"unknown split strategy: {split_strategy}")
 
         # check if train or test set should be ignored
         as_test = eval(self.util.config_val_data(self.name, "as_test", "False"))
@@ -604,6 +608,8 @@ class Dataset:
             self.balanced_split(with_dev=True)
         elif split_strategy == "speaker_split":
             self.split_speakers_3()
+        elif split_strategy == "speakers_stated":
+            self.speakers_stated_3()
         elif split_strategy == "random":
             self.random_split_3()
         elif split_strategy == "reuse":
@@ -611,11 +617,13 @@ class Dataset:
             self.df_test = pd.read_pickle(storage_test)
             self.df_train = pd.read_pickle(storage_train)
             self.df_dev = pd.read_pickle(storage_dev)
-        elif isinstance(ast.literal_eval(split_strategy), list):
-            # treat this as a list of test speakers
-            self.assign_speakers(ast.literal_eval(split_strategy))
         else:
-            self.util.error(f"unknown split strategy: {split_strategy}")
+            try:
+                if isinstance(ast.literal_eval(split_strategy), list):
+                    # treat this as a list of test speakers
+                    self.assign_speakers(ast.literal_eval(split_strategy))
+            except ValueError:
+                self.util.error(f"unknown split strategy: {split_strategy}")
 
         # check if train or test set should be ignored
         as_test = eval(self.util.config_val_data(self.name, "as_test", "False"))
@@ -754,6 +762,54 @@ class Dataset:
         # the feature extraction has to be done again
         glob_conf.config["FEATS"]["needs_feature_extraction"] = "True"
 
+    def speakers_stated(self):
+        test_speakers = self.util.config_val_data(self.name, "test", False)
+        if test_speakers:
+            test_speakers = ast.literal_eval(test_speakers)
+        train_speakers = self.util.config_val_data(self.name, "train", False)
+        self.df_test = self.df[self.df.speaker.isin(test_speakers)]
+        if not train_speakers:
+            self.df_train = self.df[~self.df.index.isin(self.df_test.index)]
+            train_speakers = list(self.df_train.speaker.unique())
+        else:
+            train_speakers = ast.literal_eval(train_speakers)
+            self.df_train = self.df[self.df.speaker.isin(train_speakers)]
+        self.util.debug(
+            f"{self.name} (speakers stated): "
+            f"[{self.df_train.shape[0]}/{self.df_test.shape[0]}] samples in train/test"
+        )
+        self.util.debug(f"train speakers: {train_speakers}")
+        self.util.debug(f"test speakers: {test_speakers}")
+
+    def speakers_stated_3(self):
+        test_speakers = self.util.config_val_data(self.name, "test", False)
+        if test_speakers:
+            test_speakers = ast.literal_eval(test_speakers)
+            self.df_test = self.df[self.df.speaker.isin(test_speakers)]
+        else:
+            self.util.error(f"test speaker required: {test_speakers}")
+        dev_speakers = self.util.config_val_data(self.name, "dev", False)
+        if dev_speakers:
+            dev_speakers = ast.literal_eval(dev_speakers)
+            self.df_dev = self.df[self.df.speaker.isin(dev_speakers)]
+        else:
+            self.util.error(f"dev speaker required: {dev_speakers}")
+        train_speakers = self.util.config_val_data(self.name, "train", False)
+        if not train_speakers:
+            self.df_train = self.df[~self.df.index.isin(self.df_test.index)]
+            self.df_train = self.df_train[~self.df_train.index.isin(self.df_dev.index)]
+            train_speakers = list(self.df_train.speaker.unique())
+        else:
+            train_speakers = ast.literal_eval(train_speakers)
+            self.df_train = self.df[self.df.speaker.isin(train_speakers)]
+        self.util.debug(
+            f"{self.name} (speakers stated): "
+            f"[{self.df_train.shape[0]}/{self.df_test.shape[0]}] samples in train/test"
+        )
+        self.util.debug(f"train speakers: {train_speakers}")
+        self.util.debug(f"test speakers: {test_speakers}")
+        self.util.debug(f"dev speakers: {dev_speakers}")
+
     def split_speakers(self):
         """One way to split train and eval sets: Specify percentage of evaluation speakers"""
         test_percent = int(self.util.config_val_data(self.name, "test_size", 20))
@@ -767,7 +823,7 @@ class Dataset:
         msg = (
             f"{self.name} (speaker splits): "
             f"[{self.df_train.shape[0]}/{self.df_test.shape[0]}]"
-            " samples in train/dev/test"
+            " samples in train/test"
         )
         self.util.debug(msg)
         self.util.debug(f"train speakers: {train_spkrs}")
