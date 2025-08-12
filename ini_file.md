@@ -93,8 +93,13 @@
       * emodb.test_tables = ['emotion.categories.test.gold_standard']
     * **speaker_split**: split samples randomly but speaker disjunct, given a percentage of speakers for the test (and dev) set.
       * emodb.test_size = 50 (default:20)
+      * emodb.dev_size = 20 # for train-dev-test experiments
     * **list of test speakers**: you can simply provide a list of test ids
       * emodb.split_strategy = [12, 14, 15, 16]
+    * **speakers_stated**: explicitly state the speaker names for all splits (test and dev are required)
+      * emodb.test = [14, 8]
+      * emodb.dev = [12, 15]
+      * emodb.train = [3, 9, 10, 11, 13, 16]
     * **random**: split samples randomly (but NOT speaker disjunct, e.g., no speaker info given or each sample a speaker), given a percentage of samples for the test set.
       * emodb.tests_size = 50 (default:20)
     * **reuse**: reuse the splits after a *speaker_split* run to save time with feature extraction.

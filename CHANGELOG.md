@@ -3,7 +3,7 @@ Changelog
 
 Version 0.97.5 (25-08-12)
 -------------------------
-* added specification of speakers for splits
+* added possibility to specify all speakers for splits
 
 Version 0.97.4 (25-08-12)
 -------------------------
