@@ -766,7 +766,6 @@ class Dataset:
         test_speakers = self.util.config_val_data(self.name, "test", False)
         if test_speakers:
             test_speakers = ast.literal_eval(test_speakers)
-        train_speakers = self.util.config_val_data(self.name, "train", False)
             self.df_test = self.df[self.df.speaker.isin(test_speakers)]
         else:
             self.util.error(f"test speakers required: {test_speakers}")
