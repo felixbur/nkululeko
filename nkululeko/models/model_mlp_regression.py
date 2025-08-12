@@ -36,10 +36,10 @@ class MLP_Reg_model(Model):
         else:
             self.util.error(f"unknown loss function: {criterion}")
         self.util.debug(f"training model with {criterion} loss function")
-        manual_seed = eval(self.util.config_val("MODEL", "manual_seed", "True"))
+        manual_seed = eval(self.util.config_val("MODEL", "random_state", "23"))
         if manual_seed:
-            self.util.debug(f"seeding random to {23}")
-            torch.manual_seed(23)
+            self.util.debug(f"seeding random to {manual_seed}")
+            torch.manual_seed(int(manual_seed))
         # set up the model
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)

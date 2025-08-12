@@ -63,6 +63,8 @@ nkululeko_ini_files=(
     exp_emodb_cnn.ini
     exp_emodb_balancing.ini
     exp_emodb_split.ini
+    exp_emodb_traindevtest.ini
+    exp_emodb_filter.ini
     exp_emodb_stress.ini
     exp_emodb_binscaled.ini
     exp_ravdess_os_xgb.ini
