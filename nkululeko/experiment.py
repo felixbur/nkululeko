@@ -222,18 +222,20 @@ class Experiment:
                     d.prepare_labels()
                 if d.df_train.shape[0] == 0:
                     self.util.debug(f"warn: {d.name} train empty")
-                self.df_train = pd.concat([self.df_train, d.df_train])
-                # print(f"df_train: {self.df_train}")
-                self.util.copy_flags(d, self.df_train)
+                else:
+                    self.df_train = pd.concat([self.df_train, d.df_train])
+                    self.util.copy_flags(d, self.df_train)
                 if d.df_test.shape[0] == 0:
                     self.util.debug(f"warn: {d.name} test empty")
-                self.df_test = pd.concat([self.df_test, d.df_test])
-                self.util.copy_flags(d, self.df_test)
+                else:
+                    self.df_test = pd.concat([self.df_test, d.df_test])
+                    self.util.copy_flags(d, self.df_test)
                 if self.split3:
                     if d.df_dev.shape[0] == 0:
                         self.util.debug(f"warn: {d.name} dev empty")
-                    self.df_dev = pd.concat([self.df_dev, d.df_dev])
-                    self.util.copy_flags(d, self.df_dev)
+                    else:
+                        self.df_dev = pd.concat([self.df_dev, d.df_dev])
+                        self.util.copy_flags(d, self.df_dev)
             self.train_empty = True if self.df_train.shape[0] == 0 else False
             self.test_empty = True if self.df_test.shape[0] == 0 else False
             if self.split3:

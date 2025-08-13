@@ -101,6 +101,8 @@ class MLPModel(Model):
         self.testloader = self.get_loader(feats_test, df_test, False)
 
     def set_testdata(self, data_df, feats_df):
+        self.df_test = data_df
+        self.feats_test = feats_df
         self.testloader = self.get_loader(feats_df, data_df, False)
 
     def reset_test(self, df_test, feats_test):

@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.97.6 (25-08-13)
+-------------------------
+* fixed several bugs with respect to traindevtest with extra test data
+
 Version 0.97.5 (25-08-12)
 -------------------------
 * added possibility to specify all speakers for splits
