@@ -744,7 +744,7 @@ class Dataset:
                 f"[{self.df_train.shape[0]}/{self.df_test.shape[0]}] samples in train/test"
             )
             self.util.debug(msg)
-        # because this generates new train/test sample quantaties,
+        # because this generates new train/test sample quantities,
         # the feature extraction has to be done again
         glob_conf.config["FEATS"]["needs_feature_extraction"] = "True"
 
@@ -768,7 +768,6 @@ class Dataset:
             test_speakers = ast.literal_eval(test_speakers)
             self.df_test = self.df[self.df.speaker.isin(test_speakers)]
         else:
-            self.util.error(f"test speakers required: {test_speakers}")
             self.df_test = pd.DataFrame(columns=self.df.columns)
         train_speakers = self.util.config_val_data(self.name, "train", False)
         if not train_speakers:
@@ -790,13 +789,13 @@ class Dataset:
             test_speakers = ast.literal_eval(test_speakers)
             self.df_test = self.df[self.df.speaker.isin(test_speakers)]
         else:
-            self.util.error(f"test speaker required: {test_speakers}")
+            self.df_test = pd.DataFrame(columns=self.df.columns)
         dev_speakers = self.util.config_val_data(self.name, "dev", False)
         if dev_speakers:
             dev_speakers = ast.literal_eval(dev_speakers)
             self.df_dev = self.df[self.df.speaker.isin(dev_speakers)]
         else:
-            self.util.error(f"dev speaker required: {dev_speakers}")
+            self.df_dev = pd.DataFrame(columns=self.df.columns)
         train_speakers = self.util.config_val_data(self.name, "train", False)
         if not train_speakers:
             self.df_train = self.df[~self.df.index.isin(self.df_test.index)]

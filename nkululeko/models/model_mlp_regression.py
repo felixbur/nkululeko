@@ -80,6 +80,8 @@ class MLP_Reg_model(Model):
         self.testloader = self.get_loader(feats_test, df_test, False)
 
     def set_testdata(self, data_df, feats_df):
+        self.df_test = data_df
+        self.feats_test = feats_df
         self.testloader = self.get_loader(feats_df, data_df, False)
 
     def train(self):
