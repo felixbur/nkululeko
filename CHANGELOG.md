@@ -1,6 +1,20 @@
 Changelog
 =========
 
+Version 0.97.6 (25-08-13)
+-------------------------
+* fixed several bugs with respect to traindevtest with extra test data
+
+Version 0.97.5 (25-08-12)
+-------------------------
+* added possibility to specify all speakers for splits
+
+Version 0.97.4 (25-08-12)
+-------------------------
+* fixed bug about traindevtest and feature scaling
+* changed format of database filter to dictionary
+* printing out speaker names for speaker_split method
+
 Version 0.97.3 (25-08-06)
 -------------------------
 * added dropout lists

@@ -21,6 +21,8 @@ class Util:
         "all",
         False,
         "False",
+        True,
+        "True",
         "classification",
         "png",
         "audio_path",
@@ -432,12 +434,14 @@ class Util:
             all += str(report.result.test) + ", "
             vals = np.append(vals, report.result.test)
         file_name = f"{res_dir}{self.get_exp_name()}_runs.txt"
+        output = (
+            f"{all}"
+            + f"\nmean: {vals.mean():.3f}, std: {vals.std():.3f}, "
+            + f"max: {vals.max():.3f}, max_index: {vals.argmax()}"
+        )
         with open(file_name, "w") as text_file:
-            text_file.write(all)
-            text_file.write(
-                f"\nmean: {vals.mean():.3f}, max: {vals.max():.3f}, max_index:"
-                f" {vals.argmax()}"
-            )
+            text_file.write(output)
+        self.debug(output)
 
     def exist_pickle(self, name):
         store = self.get_path("store")

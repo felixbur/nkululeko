@@ -133,18 +133,33 @@ class DataFilter:
         if filters_str:
             filters = ast.literal_eval(filters_str)
             df = self.df.copy()
-            for f in filters:
-                col = f[0]
-                val = f[1]
-                pre = df.shape[0]
-                if not isinstance(val, list):
-                    val = [val]
-                df = df[df[col].isin(val)]
-                post = df.shape[0]
-                self.util.debug(
-                    f"{data_name}: filtered {col}={val}, reduced samples from"
-                    f" {pre} to {post}"
-                )
+            if isinstance(filters, list):
+                for f in filters:
+                    col = f[0]
+                    val = f[1]
+                    pre = df.shape[0]
+                    if not isinstance(val, list):
+                        val = [val]
+                    df = df[df[col].isin(val)]
+                    post = df.shape[0]
+                    self.util.debug(
+                        f"{data_name}: filtered {col}={val}, reduced samples from"
+                        f" {pre} to {post}"
+                    )
+            elif isinstance(filters, dict):
+                for col, val in filters.items():
+                    pre = df.shape[0]
+                    if isinstance(val, list):
+                        df = df[df[col].isin(val)]
+                    else:
+                        df = df[df[col].eq(val)]
+                    post = df.shape[0]
+                    self.util.debug(
+                        f"{data_name}: filtered {col}={val}, reduced samples from"
+                        f" {pre} to {post}"
+                    )
+            else:
+                self.util.error(f"Unknown filter type: {type(filters)}")
             self.util.copy_flags(self.df, df)
             self.df = df
             return df
