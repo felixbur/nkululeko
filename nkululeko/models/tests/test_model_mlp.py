@@ -23,30 +23,42 @@ class DummyUtil:
         if key == "drop":
             return False
         return default
-    def debug(self, msg): pass
-    def error(self, msg): raise Exception(msg)
-    def get_path(self, key): return "./"
-    def get_exp_name(self, only_train=False): return "exp"
+
+    def debug(self, msg):
+        pass
+
+    def error(self, msg):
+        raise Exception(msg)
+
+    def get_path(self, key):
+        return "./"
+
+    def get_exp_name(self, only_train=False):
+        return "exp"
+
 
 @pytest.fixture(autouse=True)
 def patch_globals(monkeypatch):
     # Patch global config and labels
     import nkululeko.glob_conf as glob_conf
+
     glob_conf.config = {
         "DATA": {"target": "label"},
-        "MODEL": {"layers": "{'a': 8, 'b': 4}"}
+        "MODEL": {"layers": "{'a': 8, 'b': 4}"},
     }
     glob_conf.labels = [0, 1]
     yield
 
+
 @pytest.fixture
 def dummy_data():
     # 4 samples, 3 features
-    feats_train = pd.DataFrame(np.random.rand(4, 3), columns=['f1', 'f2', 'f3'])
-    feats_test = pd.DataFrame(np.random.rand(2, 3), columns=['f1', 'f2', 'f3'])
-    df_train = pd.DataFrame({'label': [0, 1, 0, 1]})
-    df_test = pd.DataFrame({'label': [1, 0]})
+    feats_train = pd.DataFrame(np.random.rand(4, 3), columns=["f1", "f2", "f3"])
+    feats_test = pd.DataFrame(np.random.rand(2, 3), columns=["f1", "f2", "f3"])
+    df_train = pd.DataFrame({"label": [0, 1, 0, 1]})
+    df_test = pd.DataFrame({"label": [1, 0]})
     return df_train, df_test, feats_train, feats_test
+
 
 @pytest.fixture
 def mlp_model(dummy_data, monkeypatch):
@@ -69,17 +81,18 @@ def mlp_model(dummy_data, monkeypatch):
         model.df_test = df_test
         model.feats_test = feats_test
         model.feats_train = feats_train
-        
+
         # Create a simple MLP model for testing
-        model.model = MLPModel.MLP(3, {'a': 8, 'b': 4}, 2, False).to("cpu")
+        model.model = MLPModel.MLP(3, {"a": 8, "b": 4}, 2, False).to("cpu")
         model.optimizer = torch.optim.Adam(model.model.parameters(), lr=0.001)
-        
+
         # Create data loaders
         model.trainloader = model.get_loader(feats_train, df_train, True)
         model.testloader = model.get_loader(feats_test, df_test, False)
         model.store_path = "/tmp/test_model.pt"
-        
+
         return model
+
 
 def test_mlpmodel_init(mlp_model):
     assert hasattr(mlp_model, "model")
@@ -87,11 +100,13 @@ def test_mlpmodel_init(mlp_model):
     assert hasattr(mlp_model, "testloader")
     assert mlp_model.model is not None
 
+
 def test_train_and_predict(mlp_model):
     mlp_model.train()
     report = mlp_model.predict()
     assert hasattr(report, "result")
     assert hasattr(report.result, "train")
+
 
 def test_get_predictions(mlp_model):
     mlp_model.train()
@@ -99,12 +114,16 @@ def test_get_predictions(mlp_model):
     assert isinstance(preds, np.ndarray)
     assert preds.shape[0] == 2
 
+
 def test_get_probas(mlp_model):
     mlp_model.train()
-    _, _, _, logits = mlp_model.evaluate(mlp_model.model, mlp_model.testloader, mlp_model.device)
+    _, _, _, logits = mlp_model.evaluate(
+        mlp_model.model, mlp_model.testloader, mlp_model.device
+    )
     probas = mlp_model.get_probas(logits)
     assert isinstance(probas, pd.DataFrame)
     assert set(probas.columns) == set([0, 1])
+
 
 def test_predict_sample(mlp_model):
     mlp_model.train()
@@ -113,55 +132,61 @@ def test_predict_sample(mlp_model):
     assert isinstance(res, dict)
     assert set(res.keys()) == set([0, 1])
 
+
 def test_predict_shap(mlp_model):
     mlp_model.train()
     feats = pd.DataFrame(np.random.rand(2, 3))
     results = mlp_model.predict_shap(feats)
     assert len(results) == 2
 
+
 def test_store_and_load(tmp_path, mlp_model, monkeypatch):
     mlp_model.train()
-    
+
     # Mock the util methods that load() uses to construct the path
     def mock_get_path(key):
         if key == "model_dir":
             return str(tmp_path) + "/"
         return "./"
-    
+
     def mock_get_exp_name(only_train=False):
         return "model"
-        
+
     mlp_model.util.get_path = mock_get_path
     mlp_model.util.get_exp_name = mock_get_exp_name
-    
+
     # Set store path to match what load() will construct
     mlp_model.store_path = str(tmp_path) + "/model_0_000.model"
     mlp_model.store()
-    
+
     # Simulate loading
     mlp_model.load(0, 0)
     assert mlp_model.model is not None
+
 
 def test_set_testdata(mlp_model, dummy_data):
     _, df_test, _, feats_test = dummy_data
     mlp_model.set_testdata(df_test, feats_test)
     assert mlp_model.testloader is not None
 
+
 def test_reset_test(mlp_model, dummy_data):
     _, df_test, _, feats_test = dummy_data
     mlp_model.reset_test(df_test, feats_test)
     assert mlp_model.testloader is not None
 
+
 def test_mlp_model_init_with_dropout_list():
     # Test with a list of dropout values
-    mlp_inner = MLPModel.MLP(3, {'a': 8, 'b': 4}, 2, [0.1, 0.2])
+    mlp_inner = MLPModel.MLP(3, {"a": 8, "b": 4}, 2, [0.1, 0.2])
     dropout_layers = [l for l in mlp_inner.linear if isinstance(l, torch.nn.Dropout)]
     assert len(dropout_layers) == 1
     assert dropout_layers[0].p == 0.1
 
+
 def test_mlp_model_init_with_dropout_float():
     # Test with a single float value for dropout
-    mlp_inner = MLPModel.MLP(3, {'a': 8, 'b': 4}, 2, 0.5)
+    mlp_inner = MLPModel.MLP(3, {"a": 8, "b": 4}, 2, 0.5)
     dropout_layers = [l for l in mlp_inner.linear if isinstance(l, torch.nn.Dropout)]
     assert len(dropout_layers) == 1
     assert dropout_layers[0].p == 0.5

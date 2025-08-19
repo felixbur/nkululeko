@@ -28,6 +28,7 @@ class TextPredictor:
             # in the autopredict module
             self.util = Util("textPredictor")
         from nkululeko.autopredict.whisper_transcriber import Transcriber
+
         device = "cuda" if torch.cuda.is_available() else "cpu"
         device = self.util.config_val("MODEL", "device", device)
         self.transcriber = Transcriber(
@@ -35,11 +36,10 @@ class TextPredictor:
             language=self.util.config_val("EXP", "language", "en"),
             util=self.util,
         )
+
     def predict(self, split_selection):
         self.util.debug(f"predicting text for {split_selection} samples")
-        df = self.transcriber.transcribe_index(
-            self.df.index
-        )
+        df = self.transcriber.transcribe_index(self.df.index)
         return_df = self.df.copy()
         return_df["text"] = df["text"].values
         return return_df

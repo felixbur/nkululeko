@@ -1,5 +1,5 @@
 # predict.py
-# use some model and add automatically predicted labels 
+# use some model and add automatically predicted labels
 # also can labels train and test splits then save as a new dataset
 
 r"""This script is used to call the nkululeko PREDICT module.

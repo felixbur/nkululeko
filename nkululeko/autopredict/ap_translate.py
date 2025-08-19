@@ -21,9 +21,10 @@ class TextTranslator:
             # this is needed to access the config and other utilities
             # in the autopredict module
             self.util = Util("translator")
-            
+
         self.language = self.util.config_val("PREDICT", "target_language", "en")
         from nkululeko.autopredict.google_translator import GoogleTranslator
+
         self.translator = GoogleTranslator(
             language=self.language,
             util=self.util,
@@ -31,9 +32,7 @@ class TextTranslator:
 
     def predict(self, split_selection):
         self.util.debug(f"translating text for {split_selection} samples")
-        df = self.translator.translate_index(
-            self.df
-        )
+        df = self.translator.translate_index(self.df)
         return_df = self.df.copy()
         return_df[self.language] = df[self.language].values
         return return_df

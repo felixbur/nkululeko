@@ -200,7 +200,7 @@ class TunedModel(BaseModel):
 
         model_mapping = {
             "emotion2vec": "emotion2vec/emotion2vec_base",
-            "emotion2vec-base": "emotion2vec/emotion2vec_base", 
+            "emotion2vec-base": "emotion2vec/emotion2vec_base",
             "emotion2vec-seed": "emotion2vec/emotion2vec_plus_seed",
             "emotion2vec-large": "emotion2vec/emotion2vec_plus_large",
         }
@@ -213,8 +213,7 @@ class TunedModel(BaseModel):
         self._create_emotion2vec_dataset()
 
         self.emotion2vec_backbone = AutoModel(
-            model=model_path,
-            hub="hf"  # Use HuggingFace Hub instead of ModelScope
+            model=model_path, hub="hf"  # Use HuggingFace Hub instead of ModelScope
         )
 
         if self.is_classifier:
@@ -391,18 +390,18 @@ class TunedModel(BaseModel):
         # truth = p.label_ids[:, 0].astype(int)
         truth = p.label_ids
         preds = p.predictions
-        
+
         if isinstance(preds, tuple):
             if len(preds) > 0:
                 preds = preds[0]  # Extract logits from tuple
             else:
                 raise ValueError(f"Empty predictions tuple received: {preds}")
-        
-        if hasattr(preds, 'numpy'):
+
+        if hasattr(preds, "numpy"):
             preds = preds.numpy()
-        elif hasattr(preds, 'detach'):
+        elif hasattr(preds, "detach"):
             preds = preds.detach().numpy()
-        
+
         if len(preds.shape) > 1 and preds.shape[1] > 1:
             preds = np.argmax(preds, axis=1)
         else:
@@ -471,7 +470,7 @@ class TunedModel(BaseModel):
                 targets = targets.type(torch.long)
 
                 outputs = model(**inputs)
-                if hasattr(outputs, 'logits'):
+                if hasattr(outputs, "logits"):
                     logits = outputs.logits.squeeze()
                 else:
                     logits = outputs[0].squeeze()
@@ -534,10 +533,10 @@ class TunedModel(BaseModel):
             "eval_dataset": self.dataset["dev"],
             "callbacks": [transformers.integrations.TensorBoardCallback()],
         }
-        
+
         if self.processor is not None:
             trainer_kwargs["tokenizer"] = self.processor.feature_extractor
-        
+
         trainer = Trainer(**trainer_kwargs)
 
         trainer.train()
@@ -665,17 +664,17 @@ class ModelOutput:
     logits: typing.Optional[torch.Tensor] = None
     hidden_states: typing.Optional[torch.Tensor] = None
     cnn_features: typing.Optional[torch.Tensor] = None
-    
+
     def __getitem__(self, index):
         """Make ModelOutput subscriptable for HuggingFace compatibility."""
         if isinstance(index, slice):
             items = [self.logits, self.hidden_states, self.cnn_features]
             result = items[index]
             filtered_result = [item for item in result if item is not None]
-            
+
             if not filtered_result and self.logits is not None:
                 return (self.logits,)
-            
+
             return tuple(filtered_result)
         elif index == 0:
             return self.logits
@@ -685,7 +684,7 @@ class ModelOutput:
             return self.cnn_features
         else:
             raise IndexError(f"Index {index} out of range for ModelOutput")
-    
+
     def __len__(self):
         """Return the number of available outputs."""
         return 3
@@ -699,12 +698,18 @@ class ModelOutputReg:
     logits_framewise: typing.Optional[torch.Tensor] = None
     hidden_states_framewise: typing.Optional[torch.Tensor] = None
     cnn_features: typing.Optional[torch.Tensor] = None
-    
+
     def __getitem__(self, index):
         """Make ModelOutputReg subscriptable for HuggingFace compatibility."""
         if isinstance(index, slice):
-            items = [self.logits, self.hidden_states, self.attentions, 
-                    self.logits_framewise, self.hidden_states_framewise, self.cnn_features]
+            items = [
+                self.logits,
+                self.hidden_states,
+                self.attentions,
+                self.logits_framewise,
+                self.hidden_states_framewise,
+                self.cnn_features,
+            ]
             result = items[index]
             return tuple(item for item in result if item is not None)
         elif index == 0:
@@ -721,7 +726,7 @@ class ModelOutputReg:
             return self.cnn_features
         else:
             raise IndexError(f"Index {index} out of range for ModelOutputReg")
-    
+
     def __len__(self):
         """Return the number of available outputs."""
         return 6
@@ -860,6 +865,7 @@ class EmotionVecConfig:
     def to_json_string(self):
         """Convert config to JSON string for HuggingFace compatibility."""
         import json
+
         config_dict = {
             "num_labels": self.num_labels,
             "is_classifier": self.is_classifier,
@@ -890,10 +896,10 @@ class Emotion2vecModel(torch.nn.Module):
 
     def _get_embedding_dim_by_model(self):
         """Get embedding dimension based on model variant."""
-        model_name = getattr(self.config, 'model_name', '')
-        
+        model_name = getattr(self.config, "model_name", "")
+
         # Large models have 1024 dimensions
-        if 'large' in model_name.lower():
+        if "large" in model_name.lower():
             return 1024
         # Base, seed, and other models have 768 dimensions
         else:
@@ -943,8 +949,8 @@ class Emotion2vecModel(torch.nn.Module):
                         return torch.tensor(embeddings.flatten(), dtype=torch.float32)
 
                 # Fallback based on model type
-                model_name = getattr(self.config, 'model_name', '')
-                if 'large' in model_name.lower():
+                model_name = getattr(self.config, "model_name", "")
+                if "large" in model_name.lower():
                     return torch.zeros(1024, dtype=torch.float32)
                 else:
                     return torch.zeros(768, dtype=torch.float32)
@@ -957,15 +963,15 @@ class Emotion2vecModel(torch.nn.Module):
             signal_tensor = torch.from_numpy(signal).unsqueeze(0)
         else:
             signal_tensor = signal.unsqueeze(0) if signal.dim() == 1 else signal
-        
+
         with torch.no_grad():
             result = self(signal_tensor)
-            
+
         if self.is_classifier:
             logits = result.logits
         else:
             logits = result.logits
-            
+
         return logits.detach().cpu().numpy()[0]
 
 
