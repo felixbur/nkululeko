@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Version 0.98.0 (25-08-19)
+-------------------------
+* Adds nkululeko.flags module for automated parameter combination experiments
+* Applies black code formatting across the entire codebase for consistency
+* Includes comprehensive test coverage for the new flags functionality
+
+
 Version 0.97.6 (25-08-13)
 -------------------------
 * fixed several bugs with respect to traindevtest with extra test data
