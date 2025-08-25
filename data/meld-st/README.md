@@ -176,8 +176,46 @@ MELD-ST/
         └── test/
 ```
 
-## Exlcluded files  
-After running inital experiment on ENG_DEU, we found some files have zero size; hence we removed from the list using Nkululeko `check_size=5000` (under [DATA] section).
+## Text emotion recognition  
+To run experiments on text emotion recognition, you must have "text" column (default). The header column is not necessary named "text", you can use Nkululeko mapping or specify like below.
+
+```ini
+[FEATS]
+type = ['bert']
+bert.model = line-corporation/line-distilbert-base-japanese
+bert.text_columnt = Japanese2  # if text column is not "text"
+```
+Then run it with `nkululeko.nkululeko`. Example of results are below; highlights showed that it uses Japanese LINE distillbert instead of Google Bert.
+
+```bash
+...
+DEBUG: featureset: loading line-corporation/line-distilbert-base-japanese model...
+DEBUG: featureset: value for bert.layer is not found, using default: 0
+DEBUG: featureset: using hidden layer #6
+The repository line-corporation/line-distilbert-base-japanese contains custom code which must be executed to correctly load the model. You can inspect the repository content at https://hf.co/line-corporation/line-distilbert-base-japanese .
+ You can inspect the repository content at https://hf.co/line-corporation/line-distilbert-base-japanese.
+You can avoid this prompt in future by passing the argument `trust_remote_code=True`.
+
+Do you wish to run the custom code? [y/N] y
+initialized line-corporation/line-distilbert-base-japanese model on cuda
+DEBUG: featureset: extracting line-corporation/line-distilbert-base-japanese embeddings, this might take a while...
+100%|████████████████████████████████████████████████████████████████████████████████████████████████| 1008/1008 [00:03<00:00, 281.54it/s]
+DEBUG: experiment: All features: train shape : (9077, 768), test shape:(1008, 768)
+DEBUG: experiment: scaler: False
+DEBUG: runmanager: run 0 using model mlp
+DEBUG: model: value for n_jobs is not found, using default: 8
+DEBUG: model: value for random_state is not found, using default: 23
+DEBUG: model: seeding random to 23
+DEBUG: model: value for loss is not found, using default: cross
+DEBUG: model: using model with cross entropy loss function
+DEBUG: model: value for device is not found, using default: cuda
+DEBUG: model: using layers {'l2':64, 'l1':32}
+DEBUG: model: init: training with dropout: 0.3
+DEBUG: model: value for learning_rate is not found, using default: 0.0001
+DEBUG: modelrunner: run: 0 epoch: 0: result: test: 0.229 UAR
+DEBUG: modelrunner: run: 0 epoch: 1: result: test: 0.266 UAR
+...
+```
 
 ## Reference:  
 [1] Poria, S., Hazarika, D., Majumder, N., Naik, G., Cambria, E., & Mihalcea, R. (2019). MELD: A Multimodal Multi-Party Dataset for Emotion Recognition in Conversations. Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics, 527–536. https://doi.org/10.18653/v1/p19-1050

@@ -39,7 +39,8 @@ class Bert(Featureset):
         config.num_hidden_layers = layer_num - hidden_layer
         self.util.debug(f"using hidden layer #{config.num_hidden_layers}")
 
-        self.tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_path)
+        self.tokenizer = transformers.AutoTokenizer.from_pretrained(
+            self.model_path, trus_remote_code=True)
         self.model = transformers.AutoModel.from_pretrained(
             self.model_path, config=config
         ).to(self.device)

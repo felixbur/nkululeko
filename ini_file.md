@@ -648,3 +648,12 @@ Model and training specifications. In general, default values should work for cl
 * **XGB max_depth**: `[3, 6, 9, 12]` (tree depth)
 
 **Usage**: Run with `python3 -m nkululeko.optim --config exp.ini`
+
+
+### FLAGS  
+
+Running different values at one. Example:  
+* models = ['xgb', 'svm']
+* features = ['praat', 'os']   
+* balancing = ['none', 'ros', 'smote']  
+* scale = ['none', 'standard', 'robust', 'minmax']
