@@ -111,7 +111,7 @@ From the nkululeko root directory, run the emotion recognition experiments:
 python -m nkululeko.nkululeko --config data/meld-st/exp_eng_jpn_eng.ini
 ```
 
-#### Japanese Sepeech Emotion Recognition (ENG_JPN dataset)
+#### Japanese Speech Emotion Recognition (ENG_JPN dataset)
 ```bash
 python -m nkululeko.nkululeko --config data/meld-st/exp_eng_jpn_jpn.ini
 ```
