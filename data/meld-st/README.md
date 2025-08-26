@@ -217,6 +217,8 @@ DEBUG: modelrunner: run: 0 epoch: 1: result: test: 0.266 UAR
 ...
 ```
 
+There are two examples of INI file available under this meld-st data directory for Japanese and Deutsche Text Emotion Recognition with UAR 0.315 and 0.295 accordingly. To compute English UAR, just use `bert.text_column = English` in those INI file.
+
 ## Reference:  
 [1] Poria, S., Hazarika, D., Majumder, N., Naik, G., Cambria, E., & Mihalcea, R. (2019). MELD: A Multimodal Multi-Party Dataset for Emotion Recognition in Conversations. Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics, 527–536. https://doi.org/10.18653/v1/p19-1050  
 [2] Chen, S., Yahata, S., Shimizu, S., Yang, Z., Li, Y., Chu, C., & Kurohashi, S. (2024). MELD-ST: An Emotion-aware Speech Translation Dataset. Findings of the Association for Computational Linguistics ACL 2024, 10118–10126. https://doi.org/10.18653/v1/2024.findings-acl.601
