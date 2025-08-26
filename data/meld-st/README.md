@@ -29,7 +29,7 @@ The dataset includes:
 #### German (DEU)
 - Total samples: 11,642
 - Speakers: 291 unique
-- Train: 9,314 samples./data/meld-st/MELD-ST/ENG_DEU/DEU
+- Train: 9,314 samples
 - Valid: 1,164 samples
 - Test: 1,164 samples
 
