@@ -14,7 +14,6 @@
     - [SEGMENT](#segment)
     - [FEATS](#feats)
     - [MODEL](#model)
-    - [MODEL](#model-1)
     - [EXPL](#expl)
     - [PREDICT](#predict)
     - [EXPORT](#export)
@@ -23,6 +22,7 @@
     - [RESAMPLE](#resample)
     - [REPORT](#report)
     - [OPTIM](#optim)
+    - [FLAGS](#flags)
 
 ## Sections
 
@@ -291,9 +291,6 @@
   * possible values:
     * **functional**: aggregated over the whole utterance
     * **lld**: low-level descriptor: framewise
-* **balancing**: balance the features with respect to [class distribution](https://imbalanced-learn.org/stable/)
-  * balancing=smote
-  * possible values: see above under **balancing**
 * **no_reuse**: don't re-use any feature files, but start fresh
   * no_reuse = False
 * **needs_feature_extraction**: force the features to be freshly extracted
@@ -319,8 +316,17 @@ Model and training specifications. In general, default values should work for cl
     * **cnn**: [Convolutional neural network](http://blog.syntheticspeech.de/2022/01/17/how-to-use-convolutional-neural-networks-with-nkululeko/)
     * **lstm**: [Long short-term memory](http://blog.syntheticspeech.de/2022/03/18/nkululeko-how-to-use-recurrent-neural-networks/) recurrent neural network
     * **gru**: Gated recurrent unit
-    * **finetune**: [Fine-tuning](http://blog.syntheticspeech.de/2022/10/07/nkululeko-how-to-fine-tune-a-wav2vec2-model/) for pre-trained models
-    * **auto**: Automated machine learning using [flaml](https://microsoft.github.io/FLAML/)
+    * **finetune**: [Fine-tuning](http://blog.syntheticspeech.de/2022/10/07/nkululeko-how-to-fine-tune-a-wav2vec2-model/) for pre-trained models:
+      - pretrained_model: HF for base model
+      - push_to_hub: True
+      - max_duration: 8 (in seconds, resit are disgarded)  
+      - balancing: smote (as in FEATS, only for finetune needs to be defined here)  
+* **class_weight**: add class_weight to the linear classifier (XGB, SVM) fit methods for imbalanced data (True or False)
+  * class_weight = False
+* **logo**: leave-one-speaker group out. Will disregard train/dev splits and split the speakers in *logo* groups and then do a LOGO evaluation. If you want LOSO (leave one speaker out), simply set the number to the number of speakers.
+  * logo = 10
+* **k_fold_cross**: k-fold-cross validation. Will disregard train/dev splits and do a stratified cross validation (meaning that classes are balanced across folds). speaker id is ignored.
+  * k_fold_cross = 10
 * **learning_rate**: learning rate for neural networks
   * learning_rate = 0.0001
 * **drop**: dropout rate for neural networks (0 to 1)  
@@ -332,8 +338,15 @@ Model and training specifications. In general, default values should work for cl
   * possible values:
     * **cross**: CrossEntropyLoss
     * **f1**: F1 loss  
+    * **1-ccc**: concordance correlation coefficient
     * **mse**: Mean squared error (for regression)
     * **mae**: Mean absolute error (for regression)
+* **measure**: A measure/metric to report progress with regression experiments (classification is UAR)
+  * measure = mse
+  * possible values:
+    * **mse**: mean squared error
+    * **mae**: mean absolute error
+    * **ccc**: concordance correlation coefficient
 * **layers**: specify the layer architecture for MLP
   * layers = [64, 16]
 * **C_val**: regularization value for SVM
@@ -365,125 +378,6 @@ Model and training specifications. In general, default values should work for cl
   * patience = 5
 * **save**: set this to *False* if you don't want models stored on disk
   * save = True
-* **features** = *python list of selected features to be used (all others ignored)*
-  * features = ['JitterPCA', 'meanF0Hz', 'hld_sylRate']
-* **no_reuse**: don't re-use already extracted features, but start fresh
-  * no_reuse = False
-* **store_format**: how to store the features: possible values [pkl | csv]
-  * store_format = pkl
-* **scale**: scale the features (important for gmm)
-  * scale=standard
-  * possible values:
-    * **standard**: z-transformation (mean of 0 and std of 1) based on the training set
-    * **robust**: robust scaler
-    * **speaker**: like *standard* but based on individual speaker sets (also for the test)
-    * **bins**: convert feature values into 0, .5 and 1 (for low, mid and high)
-* **set**: name of opensmile feature set, e.g. eGeMAPSv02, ComParE_2016, GeMAPSv01a, eGeMAPSv01a
-  * set = eGeMAPSv02
-* **level**: level of opensmile features
-  * level = functional
-  * possible values:
-    * **functional**: aggregated over the whole utterance
-    * **lld**: low-level descriptor: framewise
-* **balancing**: balance the features with respect to [class distribution](https://imbalanced-learn.org/stable/)
-  * balancing=smote
-  * possible values:
-    * **Over-sampling methods** (increase minority classes):
-      * **ros**: simply repeat random samples from the minority classes
-      * **smote**: *invent* new minority samples by little changes from the existing ones
-      * **adasyn**: similar to smote, but resulting in uneven class distributions
-      * **borderlinesmote**: SMOTE variant focusing on borderline instances
-      * **svmsmote**: SMOTE variant using SVM for generating synthetic samples
-    * **Under-sampling methods** (reduce majority classes):
-      * **clustercentroids**: replace majority class clusters with their centroids using K-means clustering
-      * **randomundersampler**: randomly remove samples from majority classes
-      * **editednearestneighbours**: remove noisy samples using edited nearest neighbors
-      * **tomeklinks**: remove Tomek links to clean class boundaries
-    * **Combination methods** (over-sampling + under-sampling):
-      * **smoteenn**: combination of oversampling with SMOTE and undersampling with edited nearest neighbour (ENN)
-      * **smotetomek**: combination of SMOTE oversampling and Tomek links undersampling
-
-### MODEL
-
-* **type**: type of classifier
-  * type = svm
-  * possible values:
-    * **bayes**: Naive Bayes classifier
-    * **cnn**: Convolutional neural network (only works with feature type=spectra)
-    * **finetune**: Finetune a transformer model with [huggingface](https://huggingface.co/docs/transformers/training). In this case the features are ignored, because audiofiles are used directly.
-      * **pretrained_model**: Base model for finetuning/transfer learning. Variants of wav2vec2, Hubert, and WavLM are tested to work. Default is facebook/wav2vec2-large-robust-ft-swbd-300h.
-        * pretrained_model = microsoft/wavlm-base
-      * **push_to_hub**: For finetuning, whether to push the model to the huggingface model hub. Default is False.
-        * push_to_hub = True
-      * **max_duration**: Max. duration of samples/segments for the transformer in seconds, frames are pooled.
-        * max_duration = 8.0
-    * **gmm**: Gaussian mixture classifier
-      * GMM_components = 4 (currently must be the same as number of labels)
-      * GMM_covariance_type = [full | tied | diag | spherical](https://scikit-learn.org/stable/auto_examples/mixture/plot_gmm_covariances.html)
-    * **knn**: k nearest neighbor classifier
-      * K_val = 5
-      * KNN_weights = uniform | distance
-    * **knn_reg**: K nearest neighbor regressor
-    * **mlp**: Multi-Layer-Perceptron for classification
-    * **mlp_reg**: Multi-Layer-Perceptron for regression
-    * **svm**: Support Vector Machine
-      * C_val = 1.0
-      * kernel = rbf # ‘linear’, ‘poly’, ‘rbf’, ‘sigmoid’, ‘precomputed’
-    * **svr**: Support Vector Regression
-      * C_val = 0.001
-      * kernel = rbf # ‘linear’, ‘poly’, ‘rbf’, ‘sigmoid’, ‘precomputed’
-    * **tree**: Classification tree classifier
-    * **tree_reg**: Classification tree regressor
-    * **xgb**: XG-Boost
-      * n_estimators = 100
-      * max_depth = 6
-      * learning_rate = 0.3
-      * subsample = 1.0
-    * **xgr**: XG-Boost Regression
-* **balancing**: balancing for **finetune** type; for other than finetune, set balancing in [FEATS].
-  * possible values: [ros, smote, adasyn]
-* **tuning_params**: possible tuning parameters for x-fold optimization (for Bayes, KNN, KNN_reg, Tree, Tree_reg, SVM, SVR, XGB and XGR)
-  * tuning_params = ['subsample', 'n_estimators', 'max_depth']
-    * subsample = [.5, .7]
-    * n_estimators = [50, 80, 200]
-    * max_depth = [1, 6]
-* **scoring**: scoring measure for the optimization
-  * scoring = recall_macro
-* **layers**: layer outline (number of hidden layers and number of neurons per layer) for the MLP as a python dictionary
-  * layers = {'l1':8, 'l2':4}
-* **class_weight**: add class_weight to the linear classifier (XGB, SVM) fit methods for imbalanced data (True or False)
-  * class_weight = False
-* **logo**: leave-one-speaker group out. Will disregard train/dev splits and split the speakers in *logo* groups and then do a LOGO evaluation. If you want LOSO (leave one speaker out), simply set the number to the number of speakers.
-  * logo = 10
-* **k_fold_cross**: k-fold-cross validation. Will disregard train/dev splits and do a stratified cross validation (meaning that classes are balanced across folds). speaker id is ignored.
-  * k_fold_cross = 10
-* **loss**: A loss function for regression ANN models (classification models use Cross Entropy Loss with or without class weights)
-  * loss = mse/cross
-  * possible values (SHOULD correspond with *measure*):
-    * **mse**: mean squared error
-    * **mae**: mean average error
-    * **1-ccc**: concordance correlation coefficient
-    * **cross**: cross entropy correlation
-    * **f1**: Soft (differentiable) F1 Loss
-* **measure**: A measure/metric to report progress with regression experiments (classification is UAR)
-  * measure = mse
-  * possible values:
-    * **mse**: mean squared error
-    * **mae**: mean absolute error
-    * **ccc**: concordance correlation coefficient
-* **learning_rate**: The learning rate for ANN models
-  * learning_rate = 0.0001
-* **drop**: Adding dropout (after each hidden layer). Value states dropout probability
-  * drop = .5 # or [0.2] to apply dropout rate 0.5 for all layers or a single layer
-  * drop = [0.5, 0.1] # to apply dropout rates 0.5 for the first layer and 0.1 for the second layer  
-* **batch_size**: Size of the batch before backpropagation for neural nets
-  * batch_size = 8
-* **device**: For torch/huggingface models: select your GPU number if you have one. Values are either "cpu" or GPU ids (e.g., 0, 1 or both "0,1"). By default, the GPU/CUDA is used if available, otherwise is CPU.
-  * device = 0
-* **patience**: Number of epochs to wait if the result gets better (for early stopping)
-  * patience = 5
-* **n_jobs**: set/restrict the number of processes for model training (replaces former *num_workers*)
-  * n_jobs = 8
 
 ### EXPL
 
@@ -648,3 +542,12 @@ Model and training specifications. In general, default values should work for cl
 * **XGB max_depth**: `[3, 6, 9, 12]` (tree depth)
 
 **Usage**: Run with `python3 -m nkululeko.optim --config exp.ini`
+
+
+### FLAGS  
+
+Running different values at one. Example:  
+* models = ['xgb', 'svm']
+* features = ['praat', 'os']   
+* balancing = ['none', 'ros', 'smote']  
+* scale = ['none', 'standard', 'robust', 'minmax']
