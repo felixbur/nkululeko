@@ -33,13 +33,17 @@ class Bert(Featureset):
             "FEATS", "bert.model", f"{self.feat_type}"
         )
         self.util.debug(f"loading {self.model_path} model...")
-        config = transformers.AutoConfig.from_pretrained(self.model_path)
+        config = transformers.AutoConfig.from_pretrained(
+            self.model_path, trust_remote_code=True
+        )
         layer_num = config.num_hidden_layers
         hidden_layer = int(self.util.config_val("FEATS", "bert.layer", "0"))
         config.num_hidden_layers = layer_num - hidden_layer
         self.util.debug(f"using hidden layer #{config.num_hidden_layers}")
 
-        self.tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_path)
+        self.tokenizer = transformers.AutoTokenizer.from_pretrained(
+            self.model_path, trust_remote_code=True
+        )
         self.model = transformers.AutoModel.from_pretrained(
             self.model_path, config=config
         ).to(self.device)
@@ -75,7 +79,10 @@ class Bert(Featureset):
             except KeyError:
                 pass
         else:
-            self.util.debug(f"reusing extracted {self.feat_type} embeddings")
+            model_path = self.util.config_val(
+                "FEATS", "bert.model", f"{self.feat_type}"
+            )
+            self.util.debug(f"reusing extracted {model_path} embeddings")
             self.df = pd.read_pickle(storage)
             if self.df.isnull().values.any():
                 self.util.error(
