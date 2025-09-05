@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.98.1 (25-09-05)
+-------------------------
+* Enhanced BERT feature extraction with trust_remote_code=True parameter for custom model support
+
 Version 0.98.0 (25-08-19)
 -------------------------
 * Adds nkululeko.flags module for automated parameter combination experiments
