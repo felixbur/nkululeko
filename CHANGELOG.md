@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.98.2 (TBD)
+--------------------
+* added show_percentages option to control percentage display in confusion matrix plots
+
 Version 0.98.1 (25-09-05)
 -------------------------
 * Enhanced BERT feature extraction with trust_remote_code=True parameter for custom model support

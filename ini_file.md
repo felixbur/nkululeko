@@ -461,6 +461,8 @@ Model and training specifications. In general, default values should work for cl
   * fill_areas = False
 * **uncertainty_threshold**: plot a confusionmatrix with samples removed that are less uncertain
   * uncertainty_threshold = .6
+* **show_percentages**: show both counts and percentages in confusion matrix plots
+  * show_percentages = True
   
 ### RESAMPLE
 

@@ -347,14 +347,17 @@ class Reporter:
         acc = accuracy(truths, preds)
         #         display_labels=list(labels).remove("neutral"),
         #     ).plot(cmap="Blues")
+        # Check if percentages should be shown in confusion matrix
+        show_percentages = self.util.config_val("PLOT", "show_percentages", True)
+        
         le = glob_conf.label_encoder
         if le is not None:
             label_dict = dict(zip(range(len(le.classes_)), le.classes_))
             audplot.confusion_matrix(
-                truths, preds, label_aliases=label_dict, show_both=True
+                truths, preds, label_aliases=label_dict, show_both=show_percentages
             )
         else:
-            audplot.confusion_matrix(truths, preds, show_both=True)
+            audplot.confusion_matrix(truths, preds, show_both=show_percentages)
         reg_res = ""
         if not self.is_classification:
             reg_res = f"{test_result.test_result_str()}"
