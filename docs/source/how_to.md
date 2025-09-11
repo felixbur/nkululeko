@@ -46,7 +46,7 @@ An overview on all nkululeko options is listed in [INI file](ini_file).
 
 4) Run the experiment
 
-Inside a shell type (or use VSC) and start the process with:
+Inside a shell type (or use VSCode) and start the process with:
 
     python -m nkululeko.nkululeko --config exp_emodb.ini
 
@@ -55,5 +55,5 @@ Inside a shell type (or use VSC) and start the process with:
 If all goes well, the program should start by extracting opensmile
 features, and, if you\'re done, you should be able to inspect the
 results in the folder named like the experiment: exp\_emodb. There
-should be a subfolder with a confusion matrix named [images]{.title-ref}
-and a subfolder for the textual results named [results]{.title-ref}.
+should be a subfolder with a confusion matrix named `images` 
+and a subfolder for the textual results named `results`.

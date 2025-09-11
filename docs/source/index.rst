@@ -57,11 +57,13 @@ The examples only covers some important features of Nkululeko. For more details,
    emotion_prediction.md
    comparing
    scaler.md
+   balance.md
    optim.md
    test.md
    demo.md
    multidb.md
    ensemble.md
+   flags.md
    nkuluflag.md
 
 .. toctree::

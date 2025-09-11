@@ -1,4 +1,4 @@
-# Nkululeko documentation  
+# Nkululeko Documentation  
 
 ## Documentation URL: [https://nkululeko.readthedocs.io/latest/](https://nkululeko.readthedocs.io/latest/)
 

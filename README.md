@@ -129,8 +129,9 @@ All of them take *--config <my_config.ini>* as an argument.
 * **nkululeko.aug_train**: augment the current training data [and do a training](http://blog.syntheticspeech.de/2023/03/13/nkululeko-how-to-augment-the-training-set/) including this data
 * **nkululeko.predict**: [predict features](http://blog.syntheticspeech.de/2023/08/16/nkululeko-how-to-predict-labels-for-your-data-from-existing-models-and-check-them/) like SNR, MOS, arousal/valence, age/gender, with DNN models
 * **nkululeko.segment**: [segment a database](http://blog.syntheticspeech.de/2023/07/14/nkululeko-segmenting-a-database/) based on VAD (voice activity detection)
-* **nkululeko.resample**: check on all [sampling rates and change](http://blog.syntheticspeech.de/2023/08/31/how-to-fix-different-sampling-rates-in-a-dataset-with-nkululeko/) to 16kHz 
-* **nkululeko.nkuluflag**: a convenient module to specify configuration parameters on the command line.
+* **nkululeko.resample**: check on all [sampling rates and change](http://blog.syntheticspeech.de/2023/08/31/how-to-fix-different-sampling-rates-in-a-dataset-with-nkululeko/) to 16kHz
+* **nkululeko.optim**: do [meta parameter optimization](https://nkululeko.readthedocs.io/latest/optim.html) (e.g. grid search for SVM C and gamma)
+* **nkululeko.flags**: a convenient module to conduct multiple experiments with different configuration parameters on the command line.
 
 ## <a name="helloworld">Hello World example</a>
 * NEW: [Here's a Google colab that runs this example out-of-the-box](https://colab.research.google.com/drive/1Up7t5Nn7VwDPCCEpTg2U7cpZ_PdoEgj-?usp=sharing), and here is the same [with Kaggle](https://www.kaggle.com/felixburk/nkululeko-hello-world-example)
