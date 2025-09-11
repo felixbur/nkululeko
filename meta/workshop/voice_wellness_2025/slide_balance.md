@@ -472,4 +472,4 @@ python -m nkululeko.nkululeko --config your_config.ini
 - GitHub: https://github.com/bagustris/nkululeko
 - Issues: Report bugs and feature requests
 
-**Let's make emotion recognition more fair and accurate! 🎯**
+**Let's balancing our life and our work!!! 🎯**
