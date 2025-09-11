@@ -96,8 +96,3 @@ echo "Completed: $(date)" >> $summary_file
 echo "Success rate: $success_count/$total_count" >> $summary_file
 
 echo "Summary saved to: $summary_file"
-
-# Show results directory
-echo ""
-echo "Results directory contents:"
-ls -la "$RESULTS_PATH"

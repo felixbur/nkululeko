@@ -125,6 +125,23 @@ scale = speaker
 
 ## Configuration
 
+### Quick Start Demo
+
+To quickly test scaling techniques, you can use the provided demo example:
+
+```bash
+# Clone the repository and navigate to it
+cd nkululeko
+
+# Run a single scaling demo with standard scaling
+python -m nkululeko.nkululeko --config examples/exp_scaling_demo.ini
+
+# Or run all scaling methods systematically
+bash scripts/run_scaler_experiments.sh
+```
+
+The systematic script will test all 9 scaling methods and provide a comprehensive comparison of their performance on your dataset.
+
 ### Basic Configuration
 
 Add the scaling configuration to the `[FEATS]` section of your INI file:
@@ -208,7 +225,23 @@ kernel = rbf
 
 ### Comparing Different Scaling Methods
 
-You can compare different scaling methods by running separate experiments:
+You can compare different scaling methods using the automated script or manually:
+
+#### Automated Comparison (Recommended)
+```bash
+# Run all scaling methods on your dataset
+bash scripts/run_scaler_experiments.sh
+```
+
+This script will:
+- Test all 9 scaling methods automatically
+- Generate individual configuration files
+- Run experiments with consistent settings
+- Provide a summary comparison of results
+- Clean up temporary files
+
+#### Manual Comparison
+You can also compare different scaling methods by running separate experiments:
 
 **Experiment 1: Standard scaling**
 ```ini
@@ -233,6 +266,87 @@ name = emotion_minmax_scaling
 [FEATS]
 scale = minmax
 ```
+
+#### Using the FLAGS Module for Comparison
+For systematic comparison within a single run:
+
+```ini
+[EXP]
+root = ./results/scaling_comparison/
+name = comprehensive_scaling_study
+
+[DATA]
+databases = ['mydata']
+mydata = ./data/mydata.csv
+target = emotion
+
+[FEATS]
+type = ['os']
+
+[MODEL]
+type = ['xgb']
+
+[FLAGS]
+scale = ['standard', 'robust', 'minmax', 'maxabs', 'normalizer', 'powertransformer', 'quantiletransformer', 'bins']
+```
+
+## Understanding Scaling Results
+
+When you run the scaling experiments script, you'll see output like this:
+
+```
+Starting scaling experiments...
+===============================
+Current directory: /path/to/nkululeko
+Examples path: ./examples
+Results path: ./examples/results
+
+Checking data availability...
+✓ Polish dataset found - using full dataset
+
+Running experiment with scaling method: standard
+=================================================
+Config file created: ./examples/results/temp_scaling_configs/exp_scaling_standard.ini
+Starting experiment...
+✓ SUCCESS: standard scaling completed
+  Result: best result: 0.75
+
+Running experiment with scaling method: robust
+===============================================
+...
+
+========================================
+All scaling experiments completed!
+Success: 9/9
+========================================
+
+Quick Results Comparison:
+========================
+standard            : 0.75
+robust              : 0.78
+minmax              : 0.72
+maxabs              : 0.74
+normalizer          : 0.69
+powertransformer    : 0.76
+quantiletransformer : 0.77
+bins                : 0.71
+speaker             : 0.73
+```
+
+### Interpreting Results
+
+- **Higher scores** indicate better performance (accuracy for classification)
+- **Robust scaling** often performs well with real-world audio data due to outlier resistance
+- **Standard scaling** is a reliable baseline
+- **Bins scaling** may show different results as it converts to categorical features
+- **Speaker scaling** is useful when speaker variability is a concern
+
+### Result Files
+
+The script generates several output files:
+- `scaling_experiments_summary.txt`: Complete summary with timestamps and method descriptions
+- Individual log files: `exp_scaling_[method].log` for detailed experiment logs
+- Result plots (if configured): Visual comparisons of scaling effects
 
 ## Best Practices
 
@@ -374,6 +488,55 @@ The scaler is automatically integrated into the Nkululeko pipeline:
 No manual intervention is required - just specify the scaling method in your INI file.
 
 ---
+
+## Script Usage and Examples
+
+### Running the Scaling Experiments Script
+
+The `run_scaler_experiments.sh` script provides an automated way to test all scaling methods:
+
+```bash
+# From nkululeko root directory
+bash scripts/run_scaler_experiments.sh
+
+# From scripts directory
+cd scripts
+bash run_scaler_experiments.sh
+```
+
+### Script Features
+
+- **Automatic dataset detection**: Uses Polish dataset if available, falls back to test dataset
+- **Dynamic configuration**: Creates temporary config files for each scaling method
+- **Comprehensive logging**: Individual log files for each experiment
+- **Results summary**: Consolidated summary with performance comparison
+- **Error handling**: Continues with other methods if one fails
+- **Cleanup**: Removes temporary files after completion
+
+### Script Output Files
+
+| File | Description |
+|------|-------------|
+| `scaling_experiments_summary.txt` | Main summary with all results and timestamps |
+| `exp_scaling_[method].log` | Detailed log for each scaling method |
+| `[method]_scaling_results/` | Model outputs and plots (if save=True) |
+
+### Customizing the Script
+
+You can modify the script to:
+
+1. **Change the dataset**: Edit the config creation functions
+2. **Add custom scaling methods**: Extend the `scaling_methods` array
+3. **Modify experiment parameters**: Update epochs, runs, or model type
+4. **Change feature types**: Modify the `[FEATS]` section in config templates
+
+Example customization for different features:
+```bash
+# Edit the create_scaling_config function to use different features
+[FEATS]
+type = ['praat']  # Instead of ['os']
+scale = ${method}
+```
 
 For more information about feature extraction and model configuration, see:
 - [Feature Extraction Documentation](nkululeko.feat_extract.rst)
