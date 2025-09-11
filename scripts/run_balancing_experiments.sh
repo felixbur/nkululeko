@@ -28,6 +28,7 @@ echo ""
 balancing_methods=(
     "ros"
     "smote" 
+    "svmsmote"
     "adasyn"
     "smoteenc"
     "borderlinesmote"
