@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 exec > >(tee results_laughter.log) 2>&1
 
 run_threshold() {
