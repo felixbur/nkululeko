@@ -1011,6 +1011,8 @@ class Dataset:
             df = df[df[target].isin(labels)]
         else:
             labels = list(df[target].unique())
+        if df.shape[0] == 0:
+            self.util.warn(f"no match in data values for {labels}")
         df["class_label"] = df[target]
         return df
 
