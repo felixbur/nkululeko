@@ -1,7 +1,7 @@
-# Data Balancing in Nkululeko
-## Addressing Class Imbalance in Speech Emotion Recognition
-
----
+# Data Balancing in Machine Learning and its implementation in Nkululeko
+  
+### Addressing Class Imbalance Machine Learning  
+Study Case: Speech Processing
 
 ## Slide 1: Why We Need Data Balancing
 
@@ -25,7 +25,7 @@ Class Distribution:
 
 ### The Accuracy Paradox
 - **Scenario**: Medical diagnosis with 99% healthy, 1% diseased patients
-- **Naive Model**: Always predict "healthy" → 99% accuracy!
+- **Naive Model**: Always predict "healthy" -> 99% accuracy!
 - **Reality**: Completely useless for detecting disease
 
 ---
@@ -56,19 +56,17 @@ Class Distribution:
 
 **Before Balancing:**
 ```
-Angry: ████ (200 samples)
-Sad:   ████████ (400 samples)  
-Happy: ████████████████ (800 samples)
+Angry: #### (200 samples)
+Sad:   ######## (400 samples)  
+Happy: ################ (800 samples)
 ```
 
 **After SMOTE Balancing:**
 ```
-Angry: ████████████████ (800 samples)
-Sad:   ████████████████ (800 samples)
-Happy: ████████████████ (800 samples)
+Angry: ################ (800 samples)
+Sad:   ################ (800 samples)
+Happy: ################ (800 samples)
 ```
-
----
 
 ## Slide 3: Nkululeko's Balancing Implementation
 
@@ -204,20 +202,20 @@ scale = standard
 
 ```
 Dataset Size?
-├── Small (<1000 samples)
-│   └── Use Over-sampling
-│       ├── Start with: SMOTE
-│       └── Try: ROS (baseline), ADASYN (severe imbalance)
-│
-├── Medium (1000-10000 samples)  
-│   └── Use Combination Methods
-│       ├── Start with: SMOTE + Tomek
-│       └── Try: SMOTE + ENN (noisy data)
-│
-└── Large (>10000 samples)
-    └── Use Under-sampling
-        ├── Start with: Cluster Centroids
-        └── Try: Random Under-sampling (fast)
++-- Small (<1000 samples)
+|   +-- Use Over-sampling
+|       +-- Start with: SMOTE
+|       +-- Try: ROS (baseline), ADASYN (severe imbalance)
+|
++-- Medium (1000-10000 samples)  
+|   +-- Use Combination Methods
+|       +-- Start with: SMOTE + Tomek
+|       +-- Try: SMOTE + ENN (noisy data)
+|
++-- Large (>10000 samples)
+    +-- Use Under-sampling
+        +-- Start with: Cluster Centroids
+        +-- Try: Random Under-sampling (fast)
 ```
 
 ### Guidelines by Dataset Characteristics
@@ -263,16 +261,18 @@ type = xgb
 ### Comparing Multiple Methods
 ```ini
 [FLAGS]
-balancing = ['none', 'smote', 'adasyn', 'clustercentroids', 'smoteenn']
+balancing = ['none', 'smote', 'adasyn', 'smoteenn']
 ```
 
 ### Expected Output
-```
+```bash
 Balancing features with: smote
 Original dataset size: 1200
-Original class distribution: {'happy': 400, 'sad': 300, 'angry': 300, 'neutral': 200}
+Original class distribution: 
+ {'happy': 400, 'sad': 300, 'angry': 300, 'neutral': 200}
 Balanced dataset size: 1600 (was 1200)
-New class distribution: {'happy': 400, 'sad': 400, 'angry': 400, 'neutral': 400}
+New class distribution: 
+ {'happy': 400, 'sad': 400, 'angry': 400, 'neutral': 400}
 ```
 
 ### Integration with Other Features
@@ -286,12 +286,12 @@ New class distribution: {'happy': 400, 'sad': 400, 'angry': 400, 'neutral': 400}
 
 ### Case Study: Emotion Recognition
 
-**Dataset**: EmoDb with severe imbalance
-- Angry: 127 samples (31%)
+**Dataset**: EmoDb with severe imbalance  
+- Angry: 127 samples (31%)  
 - Happy: 71 samples (17%)  
-- Sad: 62 samples (15%)
-- Neutral: 79 samples (19%)
-- Fear: 69 samples (17%)
+- Sad: 62 samples (15%)  
+- Neutral: 79 samples (19%)  
+- Fear: 69 samples (17%)  
 
 ### Results Comparison
 
@@ -304,8 +304,8 @@ New class distribution: {'happy': 400, 'sad': 400, 'angry': 400, 'neutral': 400}
 | SMOTE+Tomek | 0.81 | 0.79 | 0.76 |
 
 ### Key Observations
-- **23% → 76%** improvement in minority class recall
-- **52% → 79%** improvement in F1-score  
+- **23% -> 76%** improvement in minority class recall
+- **52% -> 79%** improvement in F1-score  
 - Combination methods often perform best
 - SMOTE provides good balance of performance and simplicity
 
@@ -346,13 +346,13 @@ New class distribution: {'happy': 400, 'sad': 400, 'angry': 400, 'neutral': 400}
 
 ### Best Practices Checklist
 
-✅ **Always keep test set imbalanced** for realistic evaluation
-✅ **Start with SMOTE** as baseline
-✅ **Compare multiple methods** using FLAGS
-✅ **Monitor class distribution** in output logs
-✅ **Validate on separate dataset** when possible
-✅ **Consider data size** when choosing method
-✅ **Apply balancing after feature extraction** but before scaling
+- **Always keep test set imbalanced** for realistic evaluation
+- **Start with SMOTE** as baseline
+- **Compare multiple methods** using FLAGS
+- **Monitor class distribution** in output logs
+- **Validate on separate dataset** when possible
+- **Consider data size** when choosing method
+- **Apply balancing after feature extraction** but before scaling
 
 ---
 
@@ -447,29 +447,28 @@ runs = 5  # Each fold maintains class proportions
 pip install nkululeko
 
 # 2. Add balancing to your config
-echo "balancing = smote" >> your_config.ini
+balancing = smote
 
 # 3. Compare methods
-echo "FLAGS: balancing = ['smote', 'adasyn', 'smoteenn']" >> config.ini
+[FLAGS]
+balancing = ['smote', 'adasyn', 'smoteenn']
 
 # 4. Run experiment  
-python -m nkululeko.nkululeko --config your_config.ini
+python -m nkululeko.flags --config your_config.ini
 ```
-
----
 
 ## Thank You!
 
 ### Questions & Discussion
 
-**Resources:**
-- Documentation: https://nkululeko.readthedocs.io/
-- Tutorial: `docs/source/balance.md`
-- Examples: `examples/exp_balancing_xxx.ini`
-- Run all examples: `bash script/run_balancing_experiments.sh`
+**Resources:**  
+- Documentation: https://nkululeko.readthedocs.io/  
+- Tutorial: `docs/source/balance.md`  
+- Examples: `examples/exp_balancing_xxx.ini`  
+- Run all examples: `bash script/run_balancing_experiments.sh`  
 
-**Contact:**
-- GitHub: https://github.com/bagustris/nkululeko
-- Issues: Report bugs and feature requests
+**Contact:**  
+- GitHub: https://github.com/bagustris/nkululeko  
+- Issues: Report bugs and feature requests  
 
-**Let's balancing our life and our work!!! 🎯**
+**Let's balance our life and our work!!!**

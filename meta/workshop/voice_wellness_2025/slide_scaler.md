@@ -57,7 +57,8 @@ SVM Decision Boundary influenced by:
 - Energy: 0.1 (small impact)
 - Spectral Centroid: 2000 (dominates!)
 - F0: 150 (medium impact)
-Result: Model ignores energy, focuses only on spectral features
+Result: Model ignores energy, 
+focuses only on spectral features
 ```
 
 **With Scaling:**
@@ -123,9 +124,12 @@ After:  [-1.2, -0.4, 0.8, 1.6] (standardized)
 - **Use Case**: When data contains outliers or non-normal distribution
 
 ```
-Before: [80, 150, 300, 450, 2000] (F0 with outlier)
-Robust: [-0.8, -0.3, 0.5, 1.0, 4.2] (outlier less dominant)
-Standard: [-0.9, -0.7, -0.3, 0.1, 4.8] (outlier more dominant)
+Before: [80, 150, 300, 450, 2000] 
+(F0 with outlier)
+Robust: [-0.8, -0.3, 0.5, 1.0, 4.2] 
+(outlier less dominant)
+Standard: [-0.9, -0.7, -0.3, 0.1, 4.8] 
+(outlier more dominant)
 ```
 
 ### 3. Min-Max Scaling
@@ -153,13 +157,13 @@ After:  [-0.5, -0.1, 0.25, 1.0] (scaled by absolute max)
 ## Slide 5: Advanced Distribution Methods
 
 ### 5. Normalizer (L2 Norm)
-- **Formula**: `x / ||x||₂` (per sample)
-- **Result**: Each sample has unit norm
-- **Use Case**: When direction matters more than magnitude
+- **Formula**: $\dfrac{x}{||x||_2}$ (per sample)  
+- **Result**: Each sample has unit norm  
+- **Use Case**: When direction matters more than magnitude  
 
 ```
 Sample: [F0=200, Energy=0.5, MFCC1=10]
-Norm = √(200² + 0.5² + 10²) = 200.25
+Norm = sqrt(200^2 + 0.5^2 + 10^2) = 200.25
 Result: [0.999, 0.0025, 0.05]
 ```
 
@@ -169,9 +173,10 @@ Result: [0.999, 0.0025, 0.05]
 - **Use Case**: Skewed features, improving normality
 
 ```
-Before: Highly skewed energy distribution
-After:  More bell-shaped, normal-like distribution
-Effect: Better performance for algorithms assuming normality
+Before: Highly skewed energy distribution  
+After:  More bell-shaped, normal-like distribution  
+Effect: Better performance for algorithms  
+assuming normality
 ```
 
 ### 7. Quantile Transformer
@@ -180,9 +185,9 @@ Effect: Better performance for algorithms assuming normality
 - **Use Case**: Heavy outliers, unknown distribution
 
 ```
-Before: Any distribution shape
-After:  Perfect uniform [0,1] or normal N(0,1)
-Benefit: Completely removes outlier effects
+Before: Any distribution shape  
+After:  Perfect uniform [0,1] or normal N(0,1)  
+Benefit: Completely removes outlier effects  
 ```
 
 ---
@@ -195,32 +200,35 @@ Benefit: Completely removes outlier effects
 - **Output**: String values "0", "0.5", "1"
 
 ```
-Before: [80, 120, 150, 200, 300, 400, 450] (F0 values)
-Percentiles: 33% = 150, 66% = 350
-After:  ["0", "0", "0", "0.5", "0.5", "1", "1"]
+Before: [80, 120, 150, 200, 300, 400, 450] 
+(F0 values)   
+Percentiles: 33% = 150, 66% = 350  
+After:  ["0", "0", "0", "0.5", "0.5", "1", "1"]  
 ```
 
 **Benefits:**
-- Robust to outliers
-- Interpretable categories: Low/Medium/High
-- Works well with tree-based models
-- Reduces feature complexity
+- Robust to outliers  
+- Interpretable categories: Low/Medium/High   
+- Works well with tree-based models  
+- Reduces feature complexity  
 
 ### 9. Speaker-wise Scaling (`speaker`)
-- **Method**: Standard scaling applied per speaker
-- **Requirement**: Speaker information in dataset
-- **Use Case**: Remove speaker-specific bias
+- **Method**: Standard scaling applied per speaker  
+- **Requirement**: Speaker information in dataset  
+- **Use Case**: Remove speaker-specific bias  
 
 ```
-Speaker A: F0 range [80-200] → scaled to [-1, +1] for Speaker A
-Speaker B: F0 range [150-350] → scaled to [-1, +1] for Speaker B
-Result: Each speaker's features normalized to their own range
+Speaker A: 
+ F0 range [80-200] -> scaled to [-1, +1] for Speaker A
+Speaker B:  
+ F0 range [150-350] -> scaled to [-1, +1] for Speaker B  
+Result: Each speaker's features normalized to their own range  
 ```
 
 **Applications:**
-- Speaker-independent emotion recognition
-- Cross-speaker analysis
-- Removing physiological differences
+- Speaker-independent emotion recognition  
+- Cross-speaker analysis  
+- Removing physiological differences  
 
 ---
 
@@ -230,35 +238,36 @@ Result: Each speaker's features normalized to their own range
 
 ```
 Data Characteristics?
-├── Contains Outliers?
-│   ├── YES → Use Robust Scaling
-│   │   ├── Many outliers → quantiletransformer
-│   │   └── Few outliers → robust
-│   └── NO → Normal Distribution?
-│       ├── YES → standard
-│       └── NO → Skewed?
-│           ├── YES → powertransformer
-│           └── NO → Check Model Type
-│
-└── Model Type?
-    ├── Neural Networks → minmax or standard
-    ├── SVM → standard or robust
-    ├── Tree-based → bins or no scaling
-    └── Distance-based → normalizer
++-- Contains Outliers?
+|   +-- YES -> Use Robust Scaling
+|   |   +-- Many outliers -> quantiletransformer
+|   |   +-- Few outliers -> robust
+|   +-- NO -> Normal Distribution?
+|       +-- YES -> standard
+|       +-- NO -> Skewed?
+|           +-- YES -> powertransformer
+|           +-- NO -> Check Model Type
+|
++-- Model Type?
+    +-- Neural Networks -> minmax or standard
+    +-- SVM -> standard or robust
+    +-- Tree-based -> bins or no scaling
+    +-- Distance-based -> normalizer
 ```
 
 ### Quick Reference Guide
 
 | Scenario | Recommended Method | Why |
-|----------|-------------------|-----|
-| **Clean speech data** | `standard` | Classical choice, works well |
+|:---------|:-------------------|:----|
+| **Clean speech data** | `standard` | Classic, works well |
 | **Noisy recordings** | `robust` | Resistant to outliers |
 | **Neural networks** | `minmax` | Bounded inputs [0,1] |
 | **Mixed speakers** | `speaker` | Removes speaker bias |
 | **Heavy outliers** | `quantiletransformer` | Completely robust |
 | **Skewed features** | `powertransformer` | Improves normality |
-| **Tree models** | `bins` or none | Trees are scale-invariant |
+| **Tree models** | `bins` or none | Scale-invariant |
 | **Interpretability** | `bins` | Clear categories |
+
 
 ---
 
@@ -298,21 +307,17 @@ scale = [
 cd nkululeko
 bash scripts/run_scaler_experiments.sh
 
-# Expected output:
-# ========================================
-# All scaling experiments completed!
-# Success: 9/9
-# ========================================
+# ...
 # Quick Results Comparison:
-# standard            : 0.75
-# robust              : 0.78  ← Best performance
-# minmax              : 0.72
-# maxabs              : 0.74
-# normalizer          : 0.69
-# powertransformer    : 0.76
-# quantiletransformer : 0.77
-# bins                : 0.71
-# speaker             : 0.73
+# standard            : .5
+# robust              : .5
+# minmax              : .488
+# maxabs              : .5
+# normalizer          : .511
+# powertransformer    : .433
+# quantiletransformer : .5
+# bins                : .466
+# speaker             : .6  <-- Best performance
 ```
 
 ### Method-Specific Examples
@@ -360,13 +365,13 @@ type = xgb          # Tree models work well with bins
 
 ### Case Study: Emotion Recognition with Different Scaling
 
-**Dataset**: EmoDB (German emotions)
-**Features**: eGeMAPSv02 (88 features)
-**Model**: SVM with RBF kernel
+**Dataset**: EmoDB (German emotions)  
+**Features**: eGeMAPSv02 (88 features)  
+**Model**: SVM with RBF kernel  
 
 ### Results Comparison
 
-| Scaling Method | Accuracy | F1-Score | Training Time | Notes |
+| Method | ACC | F1-Score | Run Time | Notes |
 |----------------|----------|----------|---------------|-------|
 | **No Scaling** | 0.52 | 0.48 | 45s | Poor convergence |
 | **Standard** | 0.75 | 0.73 | 12s | Good baseline |
@@ -378,9 +383,9 @@ type = xgb          # Tree models work well with bins
 
 ### Key Observations
 
-#### **Performance Impact**
-- **50% improvement**: No scaling (0.52) → Robust scaling (0.78)
-- **Consistent gains**: All scaling methods outperform no scaling
+#### **Performance Impact**  
+- **50% improvement**: No scaling (0.52) -> Robust scaling (0.78)
+- **Consistent gains**: All scaling methods outperform no scaling   
 - **Method matters**: 6% difference between best (robust) and worst (bins)
 
 #### **Training Efficiency**
@@ -388,7 +393,10 @@ type = xgb          # Tree models work well with bins
 - **Better convergence**: Scaled features help optimization
 - **Stable gradients**: Reduced oscillation in gradient descent
 
+---
+
 #### **Feature Analysis**
+
 ```
 Before Scaling (Feature Importance):
 1. Spectral Centroid: 45% (dominates due to large values)
@@ -438,14 +446,14 @@ After Robust Scaling (Feature Importance):
 
 ### Best Practices Checklist
 
-✅ **Always scale features** for distance-based algorithms (SVM, kNN)
-✅ **Use robust scaling** as default for real-world audio data
-✅ **Test multiple methods** using the automated script
-✅ **Keep test scaling consistent** with training scaling
-✅ **Monitor feature distributions** before and after scaling
-✅ **Consider speaker normalization** for speaker-independent tasks
-✅ **Match scaling to model type** (bins for trees, minmax for NN)
-✅ **Validate on unseen data** to ensure generalization
+- **Always scale features** for distance-based algorithms (SVM, kNN)
+- **Use robust scaling** as default for real-world audio data
+- **Test multiple methods** using the automated script
+- **Keep test scaling consistent** with training scaling
+- **Monitor feature distributions** before and after scaling
+- **Consider speaker normalization** for speaker-independent tasks
+- **Match scaling to model type** (bins for trees, minmax for NN)
+- **Validate on unseen data** to ensure generalization
 
 ---
 
@@ -467,7 +475,7 @@ type = xgb
 
 #### **Categorical Features**
 - Don't scale already categorical variables
-- Bins scaling converts continuous → categorical
+- Bins scaling converts continuous -> categorical
 
 ### Model-Specific Recommendations
 
@@ -521,7 +529,7 @@ scale = robust      # Robust to different conditions
 
 # Test on Database B  
 [DATA]
-test = database_b   # Scaling parameters from Database A applied
+test = database_b   # Apply scaling from Database A
 ```
 
 ---
@@ -566,10 +574,10 @@ test = database_b   # Scaling parameters from Database A applied
 
 ### Implementation Improvements
 
-#### **Streaming Scaling**
-- Online scaling for real-time applications
-- Incremental statistics update
-- Low-latency normalization
+#### **Streaming Scaling**  
+- Online scaling for real-time applications  
+- Incremental statistics update  
+- Low-latency normalization  
 
 #### **Memory-Efficient Scaling**
 - Approximate scaling for large datasets
@@ -608,13 +616,13 @@ bash scripts/run_scaler_experiments.sh
 #### **4. Analysis and Selection**
 ```bash
 # Review results
-cat scaling_experiments_summary.txt
+cat scaling_experiments_summary.txt  
 ```
 
 #### **5. Final Implementation**
 ```ini
 [FEATS]
-scale = robust     # Use the best method from testing
+scale = standard     # start with standard scaler
 ```
 
 ### Automation Features
@@ -625,31 +633,16 @@ scripts/run_scaler_experiments.sh
 ```
 
 **What it does:**
-- Tests all 9 scaling methods automatically
-- Creates temporary configs for each method
-- Runs experiments with consistent parameters
-- Generates comprehensive comparison report
-- Cleans up temporary files
+- Tests all 9 scaling methods automatically  
+- Creates temporary configs for each method  
+- Runs experiments with consistent parameters  
+- Generates comprehensive comparison report  
+- Cleans up temporary files  
 
 **Output files:**
 - `scaling_experiments_summary.txt`: Main results
 - `exp_scaling_[method].log`: Individual logs
 - Performance comparison table
-
-### Custom Scaling Pipeline
-
-```python
-# For advanced users: custom scaling in Python
-from nkululeko.scaler import Scaler
-
-# Initialize with your data
-scaler = Scaler(train_df, test_df, train_feats, test_feats, 'robust')
-
-# Apply scaling
-train_scaled, test_scaled = scaler.scale()
-
-# Use scaled features in your pipeline
-```
 
 ---
 
@@ -680,7 +673,7 @@ train_scaled, test_scaled = scaler.scale()
 
 ```
 Choose Scaling Method:
-1. Start with: robust (handles outliers well)
+1. Start with: standard --> robust (handles outliers well)
 2. For neural networks: minmax
 3. For interpretability: bins  
 4. For speaker independence: speaker
@@ -726,9 +719,9 @@ As speech emotion recognition moves toward real-world deployment, proper feature
 ### Questions & Discussion
 
 **Key Resources:**
-- Documentation: `docs/source/scaler.md`
-- Automated testing: `scripts/run_scaler_experiments.sh`
-- Examples: Config files in `examples/`
+- Documentation: `docs/source/scaler.md`  
+- Automated testing: `scripts/run_scaler_experiments.sh`  
+- Examples: Config files in `examples/`  
 
 **Quick Start:**
 ```bash
@@ -741,7 +734,7 @@ bash scripts/run_scaler_experiments.sh
 - GitHub: https://github.com/bagustris/nkululeko
 - Issues: Report bugs and feature requests
 
-**Remember: "Scale your features, scale your success!" 📊**
+**Remember: "Scale your features, scale your success!"**
 
 ### Final Tips
 
@@ -751,4 +744,4 @@ bash scripts/run_scaler_experiments.sh
 4. **Validate thoroughly** on independent data
 5. **Document your choice** for reproducibility
 
-**Happy scaling! 🎯**
+**Happy scaling!**
