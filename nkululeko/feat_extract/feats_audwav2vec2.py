@@ -1,12 +1,12 @@
 # feats_audwav2vec2.py
 import os
-
+import pandas as pd
 import audeer
 import audinterface
 import audonnx
 import numpy as np
 import torch
-
+from tqdm import tqdm
 import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
 
@@ -63,7 +63,14 @@ class Audwav2vec2Set(Featureset):
                 num_workers=self.n_jobs,
                 verbose=True,
             )
-            self.df = hidden_states.process_index(self.data_df.index)
+            df = pd.DataFrame()
+            for f, start, end in tqdm(self.data_df.index):
+                try:
+                    f_df = hidden_states.process_file(f)
+                except Exception as ror:
+                    self.util.error(f"error {ror} on file {f}")
+                df = pd.concat([df, f_df])
+            self.df = df
             self.util.write_store(self.df, storage, store_format)
             try:
                 glob_conf.config["DATA"]["needs_feature_extraction"] = "False"
