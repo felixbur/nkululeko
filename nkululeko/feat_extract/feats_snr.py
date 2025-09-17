@@ -14,13 +14,13 @@ from nkululeko.autopredict.estimate_snr import SNREstimator
 from nkululeko.feat_extract.featureset import Featureset
 
 
-class SNRSet(Featureset):
+class SnrSet(Featureset):
     """Class to estimate snr"""
 
-    def __init__(self, name, data_df):
+    def __init__(self, name, data_df, feat_type):
         """Constructor."""
 
-        super().__init__(name, data_df)
+        super().__init__(name, data_df, feat_type)
 
     def extract(self):
         """Estimate the features or load them from disk if present."""

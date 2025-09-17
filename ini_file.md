@@ -106,6 +106,9 @@
     * **train**: use the entire database for training
     * **test**: use the entire database for evaluation / testing
     * **dev**: use the entire database for evaluation / development
+    * **balanced**: [stratify the data splits](https://blog.syntheticspeech.de/2023/11/07/nkululeko-automatically-stratify-your-split-sets/)
+      * balance = {'emotion':2, 'age':1, 'gender':1}
+      * age_bins = 2
 * **db_name.target_tables**: tables that contain the target / speaker / sex labels
   * emodb.target_tables = ['emotion']
 * **target_tables_append**: set this to True if the multiple tables should be combined row-wise, else they are combined column-wise
