@@ -188,11 +188,6 @@ def _run_single_flags_experiment(base_experiment, combo, config):
         elif param == "scale":
             # Only set scale if not "none"
             if str(value).lower() != "none":
-                experiment_config["FEATS"]["balancing"] = value
-            # If "none", don't set balancing parameter (use default behavior)
-        elif param == "scale":
-            # Only set scale if not "none"
-            if str(value).lower() != "none":
                 experiment_config["FEATS"]["scale"] = value
             # If "none", don't set scale parameter (use default behavior)
         else:
