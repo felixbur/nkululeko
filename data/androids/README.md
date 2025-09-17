@@ -4,9 +4,7 @@ Simply download and unzip, it is already in audformat.
 
 ```bash
 # Download using wget
-wget wget https://www.dropbox.com/s/2rurxlh70ihfki4/Androids-Corpus.zip?dl=0
-# rename
-mv Androids-Corpus.zip\?dl\=0 Androids-Corpus.zip
+wget https://www.dropbox.com/s/2rurxlh70ihfki4/Androids-Corpus.zip
 # Unzip
 unzip Androids-Corpus.zip
 # delete zip file for space
