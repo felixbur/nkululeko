@@ -11,6 +11,10 @@ mv Androids-Corpus.zip\?dl\=0 Androids-Corpus.zip
 unzip Androids-Corpus.zip
 # delete zip file for space
 rm Androids-Corpus.zip
+# delete the audio sub folder, as it contains the whole interviews, including the interviewer (the data with only the patients is in the folder audio_clip)
+rm -r Androids-Corpus/Interview-Task/audio
+# run the script to generate the CSV file from the database
+python ./process_database.py
 # change to Nkululeko parent directory
 cd ../..
 # convert to mono 16 kHz sampling rate
