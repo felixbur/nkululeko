@@ -232,7 +232,9 @@ def ensemble_predictions(
             # get CSV files of predictions
             pred_name = expr.util.get_pred_name()
             util.debug(f"Loading predictions from {pred_name}")
-            preds = pd.read_csv(f"{pred_name}.csv")
+            if not pred_name.endswith(".csv"):
+                pred_name += ".csv"
+            preds = pd.read_csv(pred_name)
 
         ensemble_preds_ls.append(preds)
 
