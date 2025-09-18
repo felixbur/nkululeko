@@ -315,10 +315,8 @@ Model and training specifications. In general, default values should work for cl
     * **tree**: Decision tree
     * **tree_reg**: Decision tree for regression
     * **nb**: Naive Bayes  
-    * **mlp**: [Multi-layer perceptron](http://blog.syntheticspeech.de/2021/08/30/nkululeko-multi-layer-perceptron/) (neural network)
-    * **cnn**: [Convolutional neural network](http://blog.syntheticspeech.de/2022/01/17/how-to-use-convolutional-neural-networks-with-nkululeko/)
-    * **lstm**: [Long short-term memory](http://blog.syntheticspeech.de/2022/03/18/nkululeko-how-to-use-recurrent-neural-networks/) recurrent neural network
-    * **gru**: Gated recurrent unit
+    * **mlp**: [Multi-layer perceptron](http://blog.syntheticspeech.de/2021/08/30/nkululeko-multi-layer-perceptron/) (neural network)  
+    * **cnn**: [Convolutional neural network](http://blog.syntheticspeech.de/2022/01/17/how-to-use-convolutional-neural-networks-with-nkululeko/)  
     * **finetune**: [Fine-tuning](http://blog.syntheticspeech.de/2022/10/07/nkululeko-how-to-fine-tune-a-wav2vec2-model/) for pre-trained models:
       - pretrained_model: HF for base model
       - push_to_hub: True

@@ -30,7 +30,7 @@ balancing_methods=(
     "smote" 
     "svmsmote"
     "adasyn"
-    "smoteenc"
+    "smoteenn"
     "borderlinesmote"
     "clustercentroids"
     "randomundersampler"
