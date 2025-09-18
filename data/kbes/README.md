@@ -14,5 +14,5 @@ python3 -m nkululeko.nkululeko --config data/kbes/exp.ini
 ```
 
 Reference:  
-[1] <https://data.mendeley.com/datasets/vsn37ps3rx/4>
+[1] <https://data.mendeley.com/datasets/vsn37ps3rx/4>  
 [2] Billah, M. M., Sarker, M. L., & Akhand, M. A. H. (2023). KBES: A dataset for realistic Bangla speech emotion recognition with intensity level. Data in Brief, 51, 109741. <https://doi.org/10.1016/j.dib.2023.109741>

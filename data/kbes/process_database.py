@@ -2,9 +2,13 @@
 
 import argparse
 import os
+# Add the nkululeko directory to Python path (two directories up)
+import sys
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from nkululeko.utils.files import find_files
 
