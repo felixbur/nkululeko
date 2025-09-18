@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.98.3 (25-09-18)
+-------------------------
+* updated balancing and scaling examples and slides
+* fixed confusionmatrix labels out of range
+
 Version 0.98.2 (25-09-17)
 -------------------------
 * Various bugfixes and added warnings

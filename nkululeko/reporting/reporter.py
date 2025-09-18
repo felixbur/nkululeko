@@ -345,8 +345,6 @@ class Reporter:
             alpha=5,
         )
         acc = accuracy(truths, preds)
-        #         display_labels=list(labels).remove("neutral"),
-        #     ).plot(cmap="Blues")
         le = glob_conf.label_encoder
         if le is not None:
             label_dict = dict(zip(range(len(le.classes_)), le.classes_))
@@ -378,6 +376,7 @@ class Reporter:
                 + f"(+-{up_str}/{low_str}) {reg_res}"
             )
         img_path = f"{fig_dir}{plot_name}{self.filenameadd}.{self.format}"
+        plt.tight_layout()
         plt.savefig(img_path)
         self.util.debug(f"Saved confusion plot to {img_path}")
         fig.clear()
