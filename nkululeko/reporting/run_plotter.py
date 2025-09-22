@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import os
 import audeer
+import math
 
 # from torch import is_tensor
 from audmetric import accuracy
@@ -58,23 +59,46 @@ class Run_plotter:
             data=data,
             index=[f"run {i+1}" for i in range(len(run_results[0]))],
         )
+        metric = self.util.config_val("MODEL", "measure", "uar")
         sns.boxplot(data=df_plot)
+        run_num = int(self.util.config_val("EXP", "runs", 1))
+        plt.title(f"Comparison of {compare_target} over {run_num} runs")
+        plt.ylabel(metric)
+        plt.xlabel(compare_target)
         plt.tight_layout()
         fig_dir = self.exp.util.get_path("fig_dir")
         img_path = f"{fig_dir}{plot_name}.{self.format}"
-        self.util.debug(f"plotted overview on runs to {img_path}")
+        self.util.debug(f"plotted overview on runs as boxplots to {img_path}")
 
         plt.savefig(img_path)
         plt.close()
 
-        # list_run1 = [min(runs1), max(runs1), mean(runs1), stdev(runs1)]
-        # list_run2 = [min(runs2), max(runs2), mean(runs2), stdev(runs2)]
-        # df = pd.DataFrame(
-        #     data={runs1_label: list_run1, runs2_label: list_run2},
-        #     index=["min", "max", "mean", "stdev"],
-        # )
-        # ax = df.T[["min", "max", "mean"]].plot(
-        #     kind="bar",
-        #     figsize=(10, 6),
-        #     title="Comparison of Run Outputs",
-        # )
+        res_lists = []
+        for i, run_result in enumerate(run_results):
+            res_list = [
+                min(run_result),
+                max(run_result),
+                mean(run_result),
+            ]
+            res_lists.append(res_list)
+        data = dict(zip(compares, res_lists))
+        df = pd.DataFrame(
+            data=data,
+            index=["min", "max", "mean"],
+        )
+        plot_df = df.unstack().reset_index(name=metric)
+        plot_df.rename(
+            columns={"level_0": compare_target, "level_1": "statistic"}, inplace=True
+        )
+        f = lambda x: math.trunc(100 * float(x)) / 100
+        plot_df[metric] = plot_df[metric].apply(f)
+        ax = sns.barplot(data=plot_df, x=compare_target, y=metric, hue="statistic")
+        ax.bar_label(ax.containers[0])
+        ax.bar_label(ax.containers[1])
+        ax.bar_label(ax.containers[2])
+        plt.title(f"Comparison of {compare_target} over {run_num} runs")
+        plt.tight_layout()
+        img_path = f"{fig_dir}{plot_name}_bar.{self.format}"
+        self.util.debug(f"plotted overview on runs as barplot to {img_path}")
+        plt.savefig(img_path)
+        plt.close()

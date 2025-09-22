@@ -232,7 +232,7 @@ class Util:
         return ""
 
     def get_data_name(self):
-        """Get a string as name from all databases that are useed."""
+        """Get a string as name from all databases that are used."""
         return "_".join(ast.literal_eval(self.config["DATA"]["databases"]))
 
     def get_feattype_name(self):

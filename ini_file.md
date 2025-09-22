@@ -370,8 +370,8 @@ Model and training specifications. In general, default values should work for cl
   * subsample = 1.0
 * **colsample_bytree**: subsample ratio of columns for XGBoost
   * colsample_bytree = 1.0
-* **random_state**: random seed for reproducible results
-  * random_state = 42 # set this to *False* if #run > 1
+* **random_seed**: random seed for reproducible results
+  * random_seed = 42 # set this to *False* if #run > 1
 * **device**: device for neural network training
   * device = cpu
   * possible values: cpu, cuda
@@ -462,7 +462,9 @@ Model and training specifications. In general, default values should work for cl
   * fill_areas = False
 * **uncertainty_threshold**: plot a confusionmatrix with samples removed that are less uncertain
   * uncertainty_threshold = .6
-  
+* **runs_compare**: generate plots to compare the run results: compare *features*, *models* or *databases*  
+  * runs_compare = features
+
 ### RESAMPLE
 
 * **sample_selection**: which split: [train, test, all]
