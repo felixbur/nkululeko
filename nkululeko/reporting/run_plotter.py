@@ -30,17 +30,21 @@ class Run_plotter:
         self.exp = experiment
 
     def get_compare(self, compare: str = "features", file_name: str = ""):
+        parts = file_name.split("_")
+        if len(parts) < 4:
+            self.util.error(f"file name '{file_name}' does not have at least 4 underscore-separated parts")
+            return None
         if compare == "features":
-            return file_name.split("_")[3]
+            return parts[3]
         elif compare == "model":
-            return file_name.split("_")[2]
+            return parts[2]
         elif compare == "target":
-            return file_name.split("_")[1]
+            return parts[1]
         elif compare == "databases":
-            return file_name.split("_")[0]
+            return parts[0]
         else:
             self.util.error(f"unknown compare option {compare} with {file_name}")
-
+            return None
     def plot(self, compare_target: str = "features"):
         plot_name = f"{self.exp.util.get_exp_name()}_runs_plot"
         # one up because of the runs
