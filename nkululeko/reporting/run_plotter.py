@@ -59,7 +59,7 @@ class Run_plotter:
             data=data,
             index=[f"run {i+1}" for i in range(len(run_results[0]))],
         )
-        metric = self.util.config_val("MODEL", "measure", "uar")
+        metric = self.util.config_val("MODEL", "measure", "uar").upper()
         sns.boxplot(data=df_plot)
         run_num = int(self.util.config_val("EXP", "runs", 1))
         plt.title(f"Comparison of {compare_target} over {run_num} runs")
