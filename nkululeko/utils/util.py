@@ -243,9 +243,9 @@ class Util:
         trains_val = self.config_val("DATA", "trains", False)
         if only_train and trains_val:
             # try to get only the train tables
-            ds = "_".join(ast.literal_eval(self.config["DATA"]["trains"]))
+            ds = "-".join(ast.literal_eval(self.config["DATA"]["trains"]))
         else:
-            ds = "_".join(ast.literal_eval(self.config["DATA"]["databases"]))
+            ds = "-".join(ast.literal_eval(self.config["DATA"]["databases"]))
         return_string = f"{ds}"
         if not only_data:
             mt = self.get_model_description()
@@ -277,7 +277,7 @@ class Util:
             and ft_value.startswith("[")
             and ft_value.endswith("]")
         ):
-            ft = "_".join(ast.literal_eval(ft_value))
+            ft = "-".join(ast.literal_eval(ft_value))
         else:
             ft = ft_value
         ft += "_"
@@ -548,3 +548,86 @@ class Util:
         """
         with open(file, "r") as fp:
             return json.load(fp)
+
+    def read_first_line_floats(
+        self, file_path: str, delimiter: str = None, strip_chars: str = None
+    ) -> list:
+        """Read the first line of a file and interpret it as a list of floats.
+
+        Args:
+            file_path: path to the file to read
+            delimiter: delimiter to split the line (auto-detect if None)
+            strip_chars: characters to strip from the line (default: whitespace)
+
+        Returns:
+            list: list of floats parsed from the first line
+
+        Raises:
+            FileNotFoundError: if the file does not exist
+            ValueError: if the line cannot be parsed as floats
+            IOError: if there are issues reading the file
+
+        Examples:
+        --------
+        >>> util = Util()
+        >>> # Read space-separated floats
+        >>> floats = util.read_first_line_floats('data.txt')
+        >>> # Read comma-separated floats
+        >>> floats = util.read_first_line_floats('data.csv', delimiter=',')
+        """
+        try:
+            with open(file_path, "r") as fp:
+                first_line = fp.readline()
+
+                if not first_line:
+                    self.debug(f"File {file_path} is empty")
+                    return []
+
+                # Strip specified characters (default: whitespace)
+                if strip_chars is not None:
+                    first_line = first_line.strip(strip_chars)
+                else:
+                    first_line = first_line.strip()
+
+                if not first_line:
+                    self.debug(f"First line of {file_path} is empty after stripping")
+                    return []
+
+                # Auto-detect delimiter if not specified
+                if delimiter is None:
+                    # Try common delimiters in order of preference
+                    for test_delimiter in [" ", ",", "\t", ";", "|"]:
+                        if test_delimiter in first_line:
+                            delimiter = test_delimiter
+                            break
+                    else:
+                        # No delimiter found, treat as single value
+                        delimiter = None
+
+                # Split the line and convert to floats
+                if delimiter is not None:
+                    string_values = first_line.split(delimiter)
+                else:
+                    string_values = [first_line]
+
+                # Convert to floats, handling empty strings
+                float_values = []
+                for value in string_values:
+                    value = value.strip()
+                    if value:  # Skip empty strings
+                        try:
+                            float_values.append(float(value))
+                        except ValueError as e:
+                            self.error(
+                                f"Cannot convert '{value}' to float in file {file_path}: {e}"
+                            )
+
+                self.debug(f"Read {len(float_values)} floats from {file_path}")
+                return float_values
+
+        except FileNotFoundError:
+            self.error(f"File not found: {file_path}")
+        except IOError as e:
+            self.error(f"Error reading file {file_path}: {e}")
+        except Exception as e:
+            self.error(f"Unexpected error reading floats from {file_path}: {e}")

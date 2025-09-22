@@ -1,0 +1,80 @@
+import matplotlib.pyplot as plt
+import seaborn as sns
+from statistics import mean, stdev
+import pandas as pd
+import numpy as np
+import os
+import audeer
+
+# from torch import is_tensor
+from audmetric import accuracy
+from audmetric import concordance_cc
+from audmetric import mean_absolute_error
+from audmetric import mean_squared_error
+from audmetric import unweighted_average_recall
+
+from nkululeko.experiment import Experiment
+from nkululeko.plots import Plots
+from nkululeko.reporting.defines import Header
+from nkululeko.reporting.report_item import ReportItem
+from nkululeko.reporting.result import Result
+from nkululeko.utils.util import Util
+from nkululeko.utils.files import find_files_by_name
+
+
+class Run_plotter:
+    def __init__(self, experiment):
+        self.util = Util("run_plotter")
+        self.format = self.util.config_val("PLOT", "format", "png")
+        self.exp = experiment
+
+    def get_compare(self, compare: str = "features", file_name: str = ""):
+        if compare == "features":
+            return file_name.split("_")[3]
+        elif compare == "model":
+            return file_name.split("_")[2]
+        elif compare == "target":
+            return file_name.split("_")[1]
+        elif compare == "databases":
+            return file_name.split("_")[0]
+        else:
+            self.util.error(f"unknown compare option {compare} with {file_name}")
+
+    def plot(self, compare_target: str = "features"):
+        plot_name = f"{self.exp.util.get_exp_name()}_runs_plot"
+        # one up because of the runs
+        results_dir = audeer.path(self.exp.util.get_path("res_dir"), "..")
+        run_files = find_files_by_name(directory=results_dir, pattern="_runs")
+        run_results = []
+        compares = []
+        for file in run_files:
+            results = self.util.read_first_line_floats(file_path=file, delimiter=",")
+            run_results.append(results)
+            file_name = os.path.basename(file)
+            compare = self.get_compare(compare_target, file_name)
+            compares.append(compare)
+        data = dict(zip(compares, run_results))
+        df_plot = pd.DataFrame(
+            data=data,
+            index=[f"run {i+1}" for i in range(len(run_results[0]))],
+        )
+        sns.boxplot(data=df_plot)
+        plt.tight_layout()
+        fig_dir = self.exp.util.get_path("fig_dir")
+        img_path = f"{fig_dir}{plot_name}.{self.format}"
+        self.util.debug(f"plotted overview on runs to {img_path}")
+
+        plt.savefig(img_path)
+        plt.close()
+
+        # list_run1 = [min(runs1), max(runs1), mean(runs1), stdev(runs1)]
+        # list_run2 = [min(runs2), max(runs2), mean(runs2), stdev(runs2)]
+        # df = pd.DataFrame(
+        #     data={runs1_label: list_run1, runs2_label: list_run2},
+        #     index=["min", "max", "mean", "stdev"],
+        # )
+        # ax = df.T[["min", "max", "mean"]].plot(
+        #     kind="bar",
+        #     figsize=(10, 6),
+        #     title="Comparison of Run Outputs",
+        # )
