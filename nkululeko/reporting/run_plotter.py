@@ -112,7 +112,7 @@ class Run_plotter:
         plot_df.rename(
             columns={"level_0": compare_target, "level_1": "statistic"}, inplace=True
         )
-        f = lambda x: math.trunc(100 * float(x)) / 100
+        f = lambda x: math.trunc(1000 * float(x)) / 1000
         plot_df[metric] = plot_df[metric].apply(f)
         ax = sns.barplot(data=plot_df, x=compare_target, y=metric, hue="statistic")
         ax.bar_label(ax.containers[0])
