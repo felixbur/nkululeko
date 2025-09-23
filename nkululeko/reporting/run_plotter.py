@@ -72,9 +72,10 @@ class Run_plotter:
             data=data,
             index=[f"run {i+1}" for i in range(len(run_results[0]))],
         )
-        sig_combo, _, pval, sig_result, _ = (
+        sig_combo, _, pval, sig_result, all_result = (
             find_most_significant_difference_mannwhitney(data)
         )
+        self.util.debug(f"all results from statistical test: {all_result}")
         metric = self.util.config_val("MODEL", "measure", "uar").upper()
         sns.boxplot(data=df_plot)
         run_num = int(self.util.config_val("EXP", "runs", 1))
