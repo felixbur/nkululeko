@@ -36,7 +36,7 @@ class MLP_Reg_model(Model):
         else:
             self.util.error(f"unknown loss function: {criterion}")
         self.util.debug(f"training model with {criterion} loss function")
-        manual_seed = self.util.config_val("MODEL", "random_seed", False)
+        manual_seed = eval(self.util.config_val("MODEL", "random_seed", "False"))
         if manual_seed:
             self.util.debug(f"seeding random to {manual_seed}")
             torch.manual_seed(int(manual_seed))

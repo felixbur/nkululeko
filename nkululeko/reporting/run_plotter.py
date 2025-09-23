@@ -21,6 +21,7 @@ from nkululeko.reporting.report_item import ReportItem
 from nkululeko.reporting.result import Result
 from nkululeko.utils.util import Util
 from nkululeko.utils.files import find_files_by_name
+from nkululeko.utils.stats import find_most_significant_difference_mannwhitney
 
 
 class Run_plotter:
@@ -32,7 +33,9 @@ class Run_plotter:
     def get_compare(self, compare: str = "features", file_name: str = ""):
         parts = file_name.split("_")
         if len(parts) < 4:
-            self.util.error(f"file name '{file_name}' does not have at least 4 underscore-separated parts")
+            self.util.error(
+                f"file name '{file_name}' does not have at least 4 underscore-separated parts"
+            )
             return None
         if compare == "features":
             return parts[3]
@@ -45,6 +48,7 @@ class Run_plotter:
         else:
             self.util.error(f"unknown compare option {compare} with {file_name}")
             return None
+
     def plot(self, compare_target: str = "features"):
         plot_name = f"{self.exp.util.get_exp_name()}_runs_plot"
         # one up because of the runs
@@ -63,15 +67,24 @@ class Run_plotter:
             data=data,
             index=[f"run {i+1}" for i in range(len(run_results[0]))],
         )
+        sig_combo, _, pval, sig_result, _ = (
+            find_most_significant_difference_mannwhitney(data)
+        )
         metric = self.util.config_val("MODEL", "measure", "uar").upper()
         sns.boxplot(data=df_plot)
         run_num = int(self.util.config_val("EXP", "runs", 1))
-        plt.title(f"Comparison of {compare_target} over {run_num} runs")
+        sig_test = "Mann-Whitney U"
+        if len(run_results) > 2:
+            sig_test = "Kruskal-Wallis"
+        plt.title(
+            f"Comparison of {compare_target} over {run_num} runs\n"
+            + f"{sig_test} test: {sig_combo}: {sig_result}"
+        )
         plt.ylabel(metric)
         plt.xlabel(compare_target)
         plt.tight_layout()
-        fig_dir = self.exp.util.get_path("fig_dir")
-        img_path = f"{fig_dir}{plot_name}.{self.format}"
+        fig_dir = audeer.path(self.exp.util.get_path("fig_dir"), "..")
+        img_path = f"{fig_dir}/{plot_name}.{self.format}"
         self.util.debug(f"plotted overview on runs as boxplots to {img_path}")
 
         plt.savefig(img_path)
@@ -102,7 +115,7 @@ class Run_plotter:
         ax.bar_label(ax.containers[2])
         plt.title(f"Comparison of {compare_target} over {run_num} runs")
         plt.tight_layout()
-        img_path = f"{fig_dir}{plot_name}_bar.{self.format}"
+        img_path = f"{fig_dir}/{plot_name}_bar.{self.format}"
         self.util.debug(f"plotted overview on runs as barplot to {img_path}")
         plt.savefig(img_path)
         plt.close()

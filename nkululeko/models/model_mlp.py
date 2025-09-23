@@ -31,7 +31,7 @@ class MLPModel(Model):
         super().set_model_type("ann")
         self.name = "mlp"
         self.target = glob_conf.config["DATA"]["target"]
-        manual_seed = self.util.config_val("MODEL", "random_seed", False)
+        manual_seed = eval(self.util.config_val("MODEL", "random_seed", "False"))
         if manual_seed:
             self.util.debug(f"seeding random to {manual_seed}")
             torch.manual_seed(int(manual_seed))
