@@ -62,6 +62,11 @@ class Run_plotter:
             file_name = os.path.basename(file)
             compare = self.get_compare(compare_target, file_name)
             compares.append(compare)
+        if len(run_results) < 2:
+            self.util.warn(
+                f"need at least two different {compare_target} to compare, found {len(run_results)}"
+            )
+            return
         data = dict(zip(compares, run_results))
         df_plot = pd.DataFrame(
             data=data,
