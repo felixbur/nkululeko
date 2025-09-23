@@ -355,17 +355,22 @@ class FeatureAnalyser:
         df_imp.to_csv(filename, mode="a")
         self.util.debug(f"Saved feature importance values to {filename}")
 
-        # check if feature distributions should be plotted
-        plot_feats = self.util.config_val("EXPL", "feature_distributions", False)
-        if plot_feats:
-            sample_selection = self.util.config_val("EXPL", "sample_selection", "all")
-            for feature in df_imp.feats:
-                # plot_feature(self, title, feature, label, df_labels, df_features):
-                _plots = Plots()
-                _plots.plot_feature(
-                    sample_selection,
-                    feature,
-                    "class_label",
-                    self.df_labels,
-                    self.features,
-                )
+        # Plot feature distributions
+        features_to_plot = df_imp.feats.values.tolist()
+
+        # check for additional features to plot
+        plot_feats_list = self.util.config_val("EXPL", "plot_features", None)
+        if plot_feats_list:
+            plot_feats_list = ast.literal_eval(plot_feats_list)
+            features_to_plot.extend(plot_feats_list)
+        sample_selection = self.util.config_val("EXPL", "sample_selection", "all")
+        for feature in features_to_plot:
+            # plot_feature(self, title, feature, label, df_labels, df_features):
+            _plots = Plots()
+            _plots.plot_feature(
+                sample_selection,
+                feature,
+                "class_label",
+                self.df_labels,
+                self.features,
+            )
