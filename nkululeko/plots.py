@@ -27,8 +27,10 @@ class Plots:
         self.target = self.util.config_val("DATA", "target", "emotion")
         self.with_ccc = eval(self.util.config_val("PLOT", "ccc", "False"))
         self.type_s = "samples"
+        self.titles = eval(self.util.config_val("PLOT", "titles", "True"))
 
     def plot_distributions_speaker(self, df: pd.DataFrame):
+        title = ""
         if df.empty:
             self.util.warn(
                 "plot_distributions_speaker: empty DataFrame, nothing to plot"
@@ -45,6 +47,8 @@ class Plots:
         self.util.debug("plotting samples per speaker")
         if "gender" in df_speakers:
             filename = "samples_value_counts"
+            if self.titles:
+                title = f"samples per speaker ({df_speakers.shape[0]})"
             ax = (
                 df_speakers.groupby("samplenum")["gender"]
                 .value_counts()
@@ -52,7 +56,7 @@ class Plots:
                 .plot(
                     kind="bar",
                     stacked=True,
-                    title=f"samples per speaker ({df_speakers.shape[0]})",
+                    title=title,
                     rot=0,
                 )
             )
@@ -69,6 +73,8 @@ class Plots:
             # fig.clear()
         else:
             filename = "samples_value_counts"
+            if self.titles:
+                title = f"samples per speaker ({df_speakers.shape[0]})"
             ax = (
                 df_speakers["samplenum"]
                 .value_counts()
@@ -76,7 +82,7 @@ class Plots:
                 .plot(
                     kind="bar",
                     stacked=True,
-                    title=f"samples per speaker ({df_speakers.shape[0]})",
+                    title=title,
                     rot=0,
                 )
             )
@@ -369,6 +375,7 @@ class Plots:
         return ax, caption
 
     def plot_durations(self, df, filename, sample_selection, caption=""):
+        title = ""
         # one up because of the runs
         fig_dir = os.path.join(self.util.get_path("fig_dir"), "..")
         try:
@@ -381,8 +388,9 @@ class Plots:
             ax = sns.histplot(df, x="duration", kde=True)
         min = self.util.to_3_digits(df.duration.min())
         max = self.util.to_3_digits(df.duration.max())
-        title = f"Duration distr. for {sample_selection} {df.shape[0]}. min={min}, max={max}"
-        ax.set_title(title)
+        if self.titles:
+            title = f"Duration distr. for {sample_selection} {df.shape[0]}. min={min}, max={max}"
+            ax.set_title(title)
         ax.set_xlabel("duration")
         ax.set_ylabel("number of samples")
         fig = ax.figure
@@ -407,8 +415,9 @@ class Plots:
         fig_dir = os.path.join(self.util.get_path("fig_dir"), "..")
         sns.set_style("whitegrid")  # Set style for chart
         ax = df["speaker"].value_counts().plot(kind="pie", autopct="%1.1f%%")
-        title = f"Speaker distr. for {sample_selection} {df.shape[0]}."
-        ax.set_title(title)
+        if self.titles:
+            title = f"Speaker distr. for {sample_selection} {df.shape[0]}."
+            ax.set_title(title)
         fig = ax.figure
         # plt.tight_layout()
         img_path = os.path.join(fig_dir, f"{filename}_{sample_selection}.{self.format}")
@@ -609,6 +618,7 @@ class Plots:
         return tsne_data
 
     def plot_feature(self, title, feature, label, df_labels, df_features):
+        print_stats = eval(self.util.config_val("EXPL", "print_stats", "False"))
         # remove fullstops in the name
         feature_name = str(feature).replace(".", "-")
         # one up because of the runs
@@ -617,8 +627,11 @@ class Plots:
             fig_dir, f"feat_dist_{title}_{feature_name}.{self.format}"
         )
         ignore_gender = eval(self.util.config_val("EXPL", "ignore_gender", "False"))
+        sample_num = df_labels.shape[0]
+        title = f"{title} ({sample_num})"
         if self.util.is_categorical(df_labels[label]):
             p_val = ""
+            cat_num = df_labels[label].nunique()
             if (
                 "gender" in df_labels
                 and df_labels["gender"].notna().any()
@@ -632,15 +645,6 @@ class Plots:
                         "gender": df_labels["gender"],
                     }
                 )
-                if df_labels[label].nunique() == 2:
-                    label_1 = df_labels[label].unique()[0]
-                    label_2 = df_labels[label].unique()[1]
-                    vals_1 = df_plot[df_plot[label] == label_1][feature].values
-                    vals_2 = df_plot[df_plot[label] == label_2][feature].values
-                    r_stats = stats.mannwhitneyu(
-                        vals_1, vals_2, alternative="two-sided"
-                    )
-                    p_val = f", Mann-Whitney p-val: {r_stats.pvalue:.3f}"
                 ax = sns.violinplot(
                     data=df_plot, x=label, y=feature, hue="gender", split=True
                 )
@@ -648,25 +652,47 @@ class Plots:
                 df_plot = pd.DataFrame(
                     {label: df_labels[label], feature: df_features[feature]}
                 )
-                if df_labels[label].nunique() == 2:
-                    label_1 = df_labels[label].unique()[0]
-                    label_2 = df_labels[label].unique()[1]
-                    vals_1 = df_plot[df_plot[label] == label_1][feature].values
-                    vals_2 = df_plot[df_plot[label] == label_2][feature].values
-                    r_stats = stats.mannwhitneyu(
-                        vals_1, vals_2, alternative="two-sided"
-                    )
-                    p_val = f", Mann-Whitney p-val: {r_stats.pvalue:.3f}"
                 ax = sns.violinplot(data=df_plot, x=label, y=feature)
+            val_dict, mean_featnum = self.util.df_to_categorical_dict(
+                df_plot, label, feature
+            )
+            pairwise_results, overall_results = su.find_most_significant_difference(
+                val_dict, mean_featnum
+            )
+            # 'approach', 'combo', test statistic, 'p_value', 'significance','all_results'
+            if print_stats:
+                if overall_results is not None:
+                    self.util.debug(
+                        f"overall results for {feature_name} from statistical test: {overall_results['all_results']}"
+                    )
+                self.util.debug(
+                    f"pairwise results from statistical test: {pairwise_results['all_results']}"
+                )
             label = self.util.config_val("DATA", "target", "class_label")
-            ax.set(title=f"{title} samples {p_val}", xlabel=label)
+            if self.titles:
+                if cat_num > 2:
+                    title = (
+                        f"{title} samples ({sample_num})\n"
+                        + f"{overall_results['approach']}: {overall_results['combo']}:"
+                        f"{overall_results['significance']})\n"
+                        + f"{pairwise_results['approach']}: {pairwise_results['combo']}:"
+                        f"{pairwise_results['significance']})"
+                    )
+                else:
+                    title = (
+                        f"{title} samples ({sample_num})\n"
+                        + f"{pairwise_results['approach']}: {pairwise_results['combo']}:"
+                        f"{pairwise_results['significance']})"
+                    )
+
+                ax.set(title=title, xlabel=label)
+            else:
+                ax.set(xlabel=label)
         else:
             plot_df = pd.concat([df_labels, df_features], axis=1)
             ax, caption = self._plot2cont(plot_df, label, feature, feature)
-        # def _plot2cont(self, df, col1, col2, xlab, ylab):
-
         fig = ax.figure
-        # plt.tight_layout()
+        plt.tight_layout()
         plt.savefig(filename)
         fig.clear()
         plt.close(fig)

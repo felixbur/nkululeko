@@ -816,6 +816,16 @@ class Experiment:
         )
         if conf_mat_per_speaker_function:
             self.plot_confmat_per_speaker(conf_mat_per_speaker_function)
+
+        # check if a summary of multiple runs should be plotted
+        plot_runs = self.util.config_val("PLOT", "runs_compare", False)
+        run_num = int(self.util.config_val("EXP", "runs", 1))
+        if plot_runs and run_num > 1:
+            from nkululeko.reporting.run_plotter import Run_plotter
+
+            rp = Run_plotter(self)
+            rp.plot(plot_runs)
+
         used_time = time.process_time() - self.start
         self.util.debug(f"Done, used {used_time:.3f} seconds")
 

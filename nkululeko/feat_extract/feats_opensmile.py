@@ -111,7 +111,9 @@ class Opensmileset(Featureset):
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
 
         if extract or not os.path.isfile(storage) or no_reuse:
-            self.util.debug("Extracting OpenSMILE features, this might take a while...")
+            self.util.debug(
+                f"Extracting OpenSMILE {self.featset} features, this might take a while..."
+            )
 
             try:
                 smile = opensmile.Smile(
@@ -152,7 +154,9 @@ class Opensmileset(Featureset):
             except Exception as e:
                 self.util.error(f"Failed to load stored features: {str(e)}")
                 raise RuntimeError(f"Failed to load stored features: {str(e)}")
-
+        # if there's not too many features, print their names
+        if self.df.shape[1] < 100:
+            self.util.debug(f"opensmile feature names: {self.df.columns}")
         return self.df
 
     def extract_sample(self, signal: np.ndarray, sr: int) -> np.ndarray:

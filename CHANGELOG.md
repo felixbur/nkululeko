@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.98.4 (25-09-24)
+-------------------------
+* added comparison plots for run results
+* added statistic tests for feature distribution plots
+
 Version 0.98.3 (25-09-18)
 -------------------------
 * updated balancing and scaling examples and slides
