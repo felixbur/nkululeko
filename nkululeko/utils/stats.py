@@ -176,7 +176,7 @@ def get_mannwhitney_effect(
     return float(u_stat), float(p_value), significance
 
 
-def find_most_significant_difference(
+def find_most_significant_difference_ttests(
     distributions: dict, equal_var: bool = True
 ) -> tuple[str, float, float, str, dict]:
     """Find the combination with the most significant t-test difference among n distributions.
@@ -216,13 +216,14 @@ def find_most_significant_difference(
     min_p_key = min(results, key=lambda x: results[x]["p_value"])
     min_p_result = results[min_p_key]
 
-    return (
-        min_p_key,
-        min_p_result["t_stat"],
-        min_p_result["p_value"],
-        min_p_result["significance"],
-        results,
-    )
+    return {
+        "approach": "t-test",
+        "combo": min_p_key,
+        "t_stat": min_p_result["t_stat"],
+        "p_value": min_p_result["p_value"],
+        "significance": min_p_result["significance"],
+        "all_results": results,
+    }
 
 
 def get_kruskal_wallis_effect(distributions: dict) -> tuple[float, float, str]:
@@ -255,54 +256,146 @@ def get_kruskal_wallis_effect(distributions: dict) -> tuple[float, float, str]:
     return float(h_stat), float(p_value), significance
 
 
-def find_most_significant_difference_mannwhitney(
-    distributions: dict,
-) -> tuple[str, float, float, str, dict]:
-    """Find the most significant difference among n distributions using non-parametric tests.
+def find_most_significant_difference(
+    distributions: dict, mean_featnum: float = 0
+) -> tuple[str, dict, dict]:
+    """Find the most significant difference between multiple distributions.
 
-    Uses Mann-Whitney U test for 2 distributions, Kruskal-Wallis test for >2 distributions.
+    Automatically selects the appropriate statistical test based on the number
+    of distributions and mean feature number:
+    - For 2 distributions with mean_featnum >= 30: t-test (Welch's if unequal var)
+    - For 2 distributions with mean_featnum < 30: Mann-Whitney U test
+    - For >2 distributions: Kruskal-Wallis test (non-parametric ANOVA)
 
     Args:
-        distributions: dictionary with distribution names as keys and numpy arrays as values
+        distributions (dict): Dictionary with distribution names as keys and
+                             numpy arrays as values
+        mean_featnum (float): Mean number of features/samples per distribution.
+                             Determines whether to use parametric (>=30) or
+                             non-parametric (<30) tests. Defaults to 0.
+
     Returns:
-        For 2 distributions: Most significant pair, U-statistic, p-value, significance, pairwise results
-        For >2 distributions: "all_groups", H-statistic, p-value, significance, overall result
+        tuple: (pairwise_results, overall_results) where:
+            - pairwise_results (dict): Results for pairwise comparisons with keys:
+                'approach', 'combo', test statistic, 'p_value', 'significance',
+                'all_results'
+            - overall_results (dict): Results for overall test (Kruskal-Wallis if >2
+                distributions), or None if only 2 distributions
+
+    Raises:
+        ValueError: If fewer than 2 distributions are provided
+
+    Examples:
+    --------
+    >>> distributions = {
+    ...     'group_A': np.array([1.2, 1.5, 1.8, 2.1]),
+    ...     'group_B': np.array([2.3, 2.7, 3.1, 3.4]),
+    ...     'group_C': np.array([3.8, 4.1, 4.5, 4.9])
+    ... }
+    >>> approach, pairwise, overall = find_most_significant_difference(
+    ...     distributions, mean_featnum=25)
+    >>> # Returns Mann-Whitney U for pairwise, Kruskal-Wallis for overall
     """
     if len(distributions) < 2:
         raise ValueError("Need at least 2 distributions for comparison")
-
-    if len(distributions) == 2:
-        # Use Mann-Whitney U test for exactly 2 distributions
-        dist_names = list(distributions.keys())
-        name1, name2 = dist_names[0], dist_names[1]
-        dist1, dist2 = distributions[name1], distributions[name2]
-
-        u_stat, p_value, significance = get_mannwhitney_effect(dist1, dist2)
-
-        combo_key = f"{name1}-{name2}"
-        results = {
-            combo_key: {
-                "u_stat": u_stat,
-                "p_value": p_value,
-                "significance": significance,
-            }
-        }
-
-        return (combo_key, u_stat, p_value, significance, results)
-
+    approach = ""
+    if mean_featnum >= 30:
+        results_bin = find_most_significant_difference_ttests(
+            distributions, equal_var=False
+        )
     else:
+        results_bin = find_most_significant_difference_mannwhitney(distributions)
+
+    res_all = None
+    if len(distributions) > 2:
         # Use Kruskal-Wallis test for >2 distributions
         h_stat, p_value, significance = get_kruskal_wallis_effect(distributions)
 
-        results = {
+        results_kruskal_wallis = {
             "all_groups": {
                 "h_stat": h_stat,
                 "p_value": p_value,
                 "significance": significance,
             }
         }
+        approach = "Kruskal-Wallis"
+        res_all = {
+            "approach": approach,
+            "combo": "all_groups",
+            "h_stat": h_stat,
+            "p_value": p_value,
+            "significance": significance,
+            "all_results": results_kruskal_wallis,
+        }
 
-        return ("all_groups", h_stat, p_value, significance, results)
+    return results_bin, res_all
+
+
+def find_most_significant_difference_mannwhitney(distributions: dict) -> dict:
+    """Find the most significant difference using Mann-Whitney U tests.
+
+    Performs pairwise Mann-Whitney U tests between all distributions and
+    returns the combination with the most significant p-value. This is a
+    non-parametric alternative that doesn't assume normal distributions.
+
+    Args:
+        distributions (dict): Dictionary with distribution names as keys and
+                             numpy arrays as values
+
+    Returns:
+        dict: Results dictionary with keys:
+            - 'approach': Always 'Mann-Whitney U'
+            - 'combo': Most significant pair as string "dist1-dist2"
+            - 'u_stat': U-statistic for most significant pair
+            - 'p_value': p-value for most significant pair
+            - 'significance': significance interpretation string
+            - 'all_results': Dictionary with all pairwise comparisons
+
+    Raises:
+        ValueError: If fewer than 2 distributions are provided
+
+    Examples:
+    --------
+    >>> distributions = {
+    ...     'group_A': np.array([1.2, 1.5, 1.8, 2.1]),
+    ...     'group_B': np.array([2.3, 2.7, 3.1, 3.4]),
+    ...     'group_C': np.array([3.8, 4.1, 4.5, 4.9])
+    ... }
+    >>> result = find_most_significant_difference_mannwhitney(distributions)
+    >>> print(f"Most significant: {result['combo']} (p={result['p_value']:.3f})")
+    """
+    if len(distributions) < 2:
+        raise ValueError("Need at least 2 distributions for comparison")
+
+    dist_names = list(distributions.keys())
+    combos = all_combinations(dist_names)
+    results = {}
+
+    for combo in combos:
+        name1, name2 = combo[0], combo[1]
+        dist1, dist2 = distributions[name1], distributions[name2]
+
+        u_stat, p_value, significance = get_mannwhitney_effect(dist1, dist2)
+
+        combo_key = f"{name1}-{name2}"
+        results[combo_key] = {
+            "u_stat": u_stat,
+            "p_value": p_value,
+            "significance": significance,
+        }
+
+    # Find combination with most significant p-value (smallest p-value)
+    min_p_key = min(results, key=lambda x: results[x]["p_value"])
+    min_p_result = results[min_p_key]
+
+    return {
+        "approach": "Mann-Whitney U",
+        "combo": min_p_key,
+        "u_stat": min_p_result["u_stat"],
+        "p_value": min_p_result["p_value"],
+        "significance": min_p_result["significance"],
+        "all_results": results,
+    }
 
 
 def normalize(values):

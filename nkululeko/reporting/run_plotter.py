@@ -21,7 +21,7 @@ from nkululeko.reporting.report_item import ReportItem
 from nkululeko.reporting.result import Result
 from nkululeko.utils.util import Util
 from nkululeko.utils.files import find_files_by_name
-from nkululeko.utils.stats import find_most_significant_difference_mannwhitney
+from nkululeko.utils.stats import find_most_significant_difference
 
 
 class Run_plotter:
@@ -29,6 +29,7 @@ class Run_plotter:
         self.util = Util("run_plotter")
         self.format = self.util.config_val("PLOT", "format", "png")
         self.exp = experiment
+        self.titles = eval(self.util.config_val("PLOT", "titles", "True"))
 
     def get_compare(self, compare: str = "features", file_name: str = ""):
         parts = file_name.split("_")
@@ -50,6 +51,8 @@ class Run_plotter:
             return None
 
     def plot(self, compare_target: str = "features"):
+        run_num = int(self.util.config_val("EXP", "runs", 1))
+        print_stats = eval(self.util.config_val("EXPL", "print_stats", "False"))
         plot_name = f"{self.exp.util.get_exp_name()}_runs_plot"
         # one up because of the runs
         results_dir = audeer.path(self.exp.util.get_path("res_dir"), "..")
@@ -72,20 +75,35 @@ class Run_plotter:
             data=data,
             index=[f"run {i+1}" for i in range(len(run_results[0]))],
         )
-        sig_combo, _, pval, sig_result, all_result = (
-            find_most_significant_difference_mannwhitney(data)
+        pairwise_results, overall_results = find_most_significant_difference(
+            data, run_num
         )
-        self.util.debug(f"all results from statistical test: {all_result}")
+        # 'approach', 'combo', test statistic, 'p_value', 'significance','all_results'
+        if print_stats:
+            if overall_results is not None:
+                self.util.debug(
+                    f"overall results from statistical test: {overall_results['all_results']}"
+                )
+            self.util.debug(
+                f"pairwise results from statistical test: {pairwise_results['all_results']}"
+            )
         metric = self.util.config_val("MODEL", "measure", "uar").upper()
         sns.boxplot(data=df_plot)
-        run_num = int(self.util.config_val("EXP", "runs", 1))
-        sig_test = "Mann-Whitney U"
-        if len(run_results) > 2:
-            sig_test = "Kruskal-Wallis"
-        plt.title(
-            f"Comparison of {compare_target} over {run_num} runs\n"
-            + f"{sig_test} test: {sig_combo}: {sig_result}"
-        )
+        if self.titles:
+            if len(run_results) > 2:
+                plt.title(
+                    f"Comparison of {compare_target} over {run_num} runs\n"
+                    + f"{overall_results['approach']}: {overall_results['combo']}: "
+                    f"{overall_results['significance']}\n"
+                    + f"{pairwise_results['approach']}: {pairwise_results['combo']}: "
+                    f"{pairwise_results['significance']}"
+                )
+            else:
+                plt.title(
+                    f"Comparison of {compare_target} over {run_num} runs\n"
+                    + f"{pairwise_results['approach']}: {pairwise_results['combo']}: "
+                    f"{pairwise_results['significance']} (p={pairwise_results['p_value']:.3f})"
+                )
         plt.ylabel(metric)
         plt.xlabel(compare_target)
         plt.tight_layout()

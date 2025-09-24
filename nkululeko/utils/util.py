@@ -631,3 +631,46 @@ class Util:
             self.error(f"Error reading file {file_path}: {e}")
         except Exception as e:
             self.error(f"Unexpected error reading floats from {file_path}: {e}")
+
+    def df_to_categorical_dict(self, df, categorical_column, value_column):
+        """Convert a DataFrame with a categorical and real-valued column to a dict.
+
+        Args:
+            df (pd.DataFrame): Input DataFrame
+            categorical_column (str): Name of the categorical column (used as keys)
+            value_column (str): Name of the real-valued column (used as values)
+
+        Returns:
+            tuple: (dict, float) where dict has categories as keys and value lists,
+                   and float is the mean number of values per category
+
+        Examples:
+        --------
+        >>> util = Util()
+        >>> df = pd.DataFrame({
+        ...     'emotion': ['happy', 'sad', 'happy', 'angry', 'sad'],
+        ...     'intensity': [0.8, 0.6, 0.9, 0.7, 0.5]
+        ... })
+        >>> result_dict, mean_count = util.df_to_categorical_dict(
+        ...     df, 'emotion', 'intensity')
+        >>> # Returns: ({'happy': [0.8, 0.9], 'sad': [0.6, 0.5], 'angry': [0.7]}, 1.67)
+        """
+        if categorical_column not in df.columns:
+            self.error(f"Column '{categorical_column}' not found in DataFrame")
+        if value_column not in df.columns:
+            self.error(f"Column '{value_column}' not found in DataFrame")
+
+        result = {}
+        for category in df[categorical_column].unique():
+            mask = df[categorical_column] == category
+            values = df.loc[mask, value_column].tolist()
+            result[category] = values
+
+        # Calculate mean number of values per category
+        if result:
+            total_values = sum(len(values) for values in result.values())
+            mean_values_per_category = total_values / len(result)
+        else:
+            mean_values_per_category = 0.0
+
+        return result, mean_values_per_category

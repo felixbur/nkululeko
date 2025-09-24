@@ -302,7 +302,7 @@ class Reporter:
         if epoch is None:
             epoch = self.epoch
         fig_dir = self.util.get_path("fig_dir")
-        pcc = pearsonr(self.truths, self.preds)[0]
+        pcc = pearsonr(truths, preds)[0]
         reg_res = self.result.test_result_str()
         fig = plt.figure()
         plt.scatter(truths, preds)

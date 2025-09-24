@@ -412,6 +412,8 @@ Model and training specifications. In general, default values should work for cl
   * spotlight = False
 * **shap**: compute [SHAP](https://shap.readthedocs.io/en/latest/) values, need to run the model first.
   * shap = False
+* **print_stats**: if (possibly extensive) results from statistical tests should be printed ouot on the debug channel
+  * print_stats = False
 
 ### [PREDICT](#predict)
 
@@ -464,6 +466,8 @@ Model and training specifications. In general, default values should work for cl
   * uncertainty_threshold = .6
 * **runs_compare**: generate plots to compare the run results: compare *features*, *models* or *databases*  
   * runs_compare = features
+* **titles**: if titles should be added to the plots
+  * titles = True
 
 ### RESAMPLE
 
@@ -549,7 +553,7 @@ Model and training specifications. In general, default values should work for cl
 
 ### FLAGS  
 
-Running different values at one. Example:  
+Running different values at once. Example:  
 * models = ['xgb', 'svm']
 * features = ['praat', 'os']   
 * balancing = ['none', 'ros', 'smote']  
