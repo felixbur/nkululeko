@@ -75,10 +75,6 @@ def process_database(data_dir, output_dir):
             writer.writerows(set_data)
         print(f"Wrote {len(set_data)} entries to {csv_path}")
     
-    # # Print number of files in each set
-    # for set_name, set_data in data.items():
-    #     print(f"Number of files in {set_name} set: {len(set_data)}")
-    # print("Database processing completed.")
 
 
 if __name__ == "__main__":
