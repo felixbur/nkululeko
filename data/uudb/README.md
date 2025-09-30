@@ -1,4 +1,4 @@
-# Nkululeoko pre-processing for UUDB dataset  
+# Nkululeko pre-processing for UUDB dataset  
 
 ## directory structure
 ```bash
