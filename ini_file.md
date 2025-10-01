@@ -80,7 +80,8 @@
   * my_data.audio_path = wav_files/
 * **db_name.mapping**: mapping python dictionary to map between categories for cross-database experiments (format: {'target_emo':'source_emo'})
   * emodb.mapping = {'anger':'angry', 'happiness':'happy', 'sadness':'sad', 'neutral':'neutral'}
-  * emodb.mapping = {'anger, sadness, disgust':'negative', 'happiness':'positive'}
+  * can also be used for general mapping
+  * emodb.mapping = {'gender':{'male':0, 'female':1}, 'emotion':{'anger':'stress', 'neutral':'no stress'}}
 * **db_name.colnames**: mapping to rename columns to standard names
   * my_data.colnames = {'speaker':'Participant ID', 'sex':'gender', 'Age': 'age'}
 * **db_name.split_strategy**: How to identify sets for train/development data splits within one database
@@ -298,6 +299,8 @@
   * no_reuse = False
 * **needs_feature_extraction**: force the features to be freshly extracted
   * needs_feature_extraction = False
+* **print_feats**: set this to False if you don't want os and praat feature names to be printed out
+  * print_feats = False
 
 ### MODEL
 

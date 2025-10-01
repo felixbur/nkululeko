@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 0.98.5 (25-10-01)
+-------------------------
+* added general mappings
+* add the possibility to not print out os or praat feature names
+
+
 Version 0.98.4 (25-09-24)
 -------------------------
 * added comparison plots for run results

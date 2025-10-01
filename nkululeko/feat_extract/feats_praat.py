@@ -19,6 +19,7 @@ class PraatSet(Featureset):
 
     def __init__(self, name, data_df, feats_type):
         super().__init__(name, data_df, feats_type)
+        self.print_feats = eval(self.util.config_val("FEATS", "print_feats", "True"))
 
     def extract(self):
         """Extract the features based on the initialized dataset or re-open them when found on disk."""
@@ -47,7 +48,8 @@ class PraatSet(Featureset):
         else:
             self.util.debug(f"reusing extracted Praat features: {storage}.")
             self.df = self.util.get_store(storage, store_format)
-        self.util.debug(f"praat feature names: {self.df.columns}")
+        if self.print_feats:
+            self.util.debug(f"praat feature names: {self.df.columns}")
         self.df = self.df.astype(float)
 
     def extract_sample(self, signal, sr):
