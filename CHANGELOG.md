@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.98.6 (25-10-01)
+-------------------------
+* fixed bug
+
 Version 0.98.5 (25-10-01)
 -------------------------
 * added general mappings

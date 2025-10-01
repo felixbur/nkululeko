@@ -996,8 +996,6 @@ class Dataset:
                 for key in mapping.keys():
                     mapping_tar = mapping[key]
                     df = self.util.map_labels(df, key, mapping_tar)
-                    # remove any exiting nan values after mapping
-                    df = df.dropna()
                     self.util.debug(
                         f"{self.name}: for column {key} mapped {mapping_tar}"
                     )
