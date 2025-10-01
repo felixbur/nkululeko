@@ -451,3 +451,11 @@ DEMENTIANET:
 - descr: hundred of public figure audio samples with a confirmed dementia diagnosis
 - access: public
 - license: MIT
+
+# OGVC Dataset
+OGVC:
+- name: ogvc
+- target: emotion,intensity
+- descr: Acted emotional speech with 8 emotions and 4 intensity levels
+- access: public
+- license: unknown
