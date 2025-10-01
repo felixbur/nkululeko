@@ -87,6 +87,7 @@ class Opensmileset(Featureset):
         except (AttributeError, SyntaxError) as e:
             self.util.error(f"Invalid feature level: {self.featlevel}. Error: {str(e)}")
             raise ValueError(f"Invalid feature level: {self.featlevel}")
+        self.print_feats = eval(self.util.config_val("FEATS", "print_feats", "True"))
 
     def extract(self) -> pd.DataFrame:
         """Extract the features based on the initialized dataset or load them from disk if available.
@@ -155,7 +156,7 @@ class Opensmileset(Featureset):
                 self.util.error(f"Failed to load stored features: {str(e)}")
                 raise RuntimeError(f"Failed to load stored features: {str(e)}")
         # if there's not too many features, print their names
-        if self.df.shape[1] < 100:
+        if (self.df.shape[1] < 100) and self.print_feats:
             self.util.debug(f"opensmile feature names: {self.df.columns}")
         return self.df
 

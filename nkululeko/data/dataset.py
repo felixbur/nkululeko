@@ -986,24 +986,22 @@ class Dataset:
         mappings = self.util.config_val_data(self.name, "mapping", False)
         if mappings:
             mapping = ast.literal_eval(mappings)
-            # mapping should be a dictionary, the keys might encode lists.
-            keys = list(mapping.keys())
-            for key in keys:
-                # a comma in the key means that the key is a list of labels
-                if "," in key:
-                    # split the key and create a list
-                    key_list = [k.strip() for k in key.split(",")]
-                    # create a new mapping for each key
-                    for k in key_list:
-                        mapping[k] = mapping[key]
-                    # remove the old key
-                    del mapping[key]
-            # ensure string type for the target column
-            df[target] = df[target].astype("string")
-            df[target] = df[target].map(mapping)
-            # remove any exiting nan values after mapping
-            df = df.dropna()
-            self.util.debug(f"{self.name}: mapped {mapping}")
+            if self.util.is_dict_with_string_values(mapping):
+                df = self.util.map_labels(df, target, mapping)
+                # remove any exiting nan values after mapping
+                df = df.dropna()
+                self.util.debug(f"{self.name}: mapped {mapping}")
+            else:
+                # mappings should be a dictionary of dictionaries (with mappings)
+                for key in mapping.keys():
+                    mapping_tar = mapping[key]
+                    df = self.util.map_labels(df, key, mapping_tar)
+                    # remove any exiting nan values after mapping
+                    df = df.dropna()
+                    self.util.debug(
+                        f"{self.name}: for column {key} mapped {mapping_tar}"
+                    )
+
         # remove labels that are not in the labels list
         labels = self.util.config_val("DATA", "labels", False)
         if labels:

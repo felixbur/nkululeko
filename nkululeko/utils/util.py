@@ -674,3 +674,29 @@ class Util:
             mean_values_per_category = 0.0
 
         return result, mean_values_per_category
+
+    def is_dict_with_string_values(self, test_dict):
+        try:
+            return isinstance(test_dict, dict) and all(
+                isinstance(v, str) for v in test_dict.values()
+            )
+        except (ValueError, SyntaxError):
+            return False
+
+    def map_labels(self, df, target, mapping):
+        # mapping should be a dictionary, the keys might encode lists.
+        keys = list(mapping.keys())
+        for key in keys:
+            # a comma in the key means that the key is a list of labels
+            if "," in key:
+                # split the key and create a list
+                key_list = [k.strip() for k in key.split(",")]
+                # create a new mapping for each key
+                for k in key_list:
+                    mapping[k] = mapping[key]
+                # remove the old key
+                del mapping[key]
+        # ensure string type for the target column
+        df[target] = df[target].astype("string")
+        df[target] = df[target].map(mapping)
+        return df
