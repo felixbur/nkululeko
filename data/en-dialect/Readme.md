@@ -30,16 +30,11 @@ wget https://openslr.trmal.net/resources/83/welsh_english_male.zip
 # unzipt all zip dataset to 02_process
 unzip '*.zip' -d 02_process
 
-# step 1, add speaker, dialect types and gender information
-python3 01_process_line_index_all.py
-
-# step 2, add files route to csv
-python3 02_process_line_index_all_add_route.py
-
-#step3, split into train, dev and test
-python3 03_process_line_index_all_split.py
+# process the data
+python3 process_database.py
 
 cd ../..
+
 python3 -m nkululeko.resample --config data/en-dialect/en-dialect_exp.ini
 python3 -m nkululeko.nkululeko --config data/en-dialect/en-dialect_exp.ini
 ```
