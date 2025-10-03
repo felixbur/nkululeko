@@ -642,6 +642,11 @@ class Experiment:
         self.util.debug(f"sampling selection: {sample_selection}")
         if self.util.config_val("EXPL", "value_counts", False):
             self.plot_distribution(df_labels)
+        print_colvals = eval(self.util.config_val("EXPL", "print_colvals", "False"))
+        if print_colvals:
+            self.util.debug(f"columns in data: {df_labels.columns}")
+            for col in df_labels.columns:
+                self.util.debug(f"{col}: {df_labels[col].unique()}")
 
         # check if data should be shown with the spotlight data visualizer
         spotlight = eval(self.util.config_val("EXPL", "spotlight", "False"))

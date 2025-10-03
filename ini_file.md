@@ -417,6 +417,8 @@ Model and training specifications. In general, default values should work for cl
   * shap = False
 * **print_stats**: if (possibly extensive) results from statistical tests should be printed ouot on the debug channel
   * print_stats = False
+* **print_colvals**: print the unique values for all columns in the data
+  * print_colvals = False
 
 ### [PREDICT](#predict)
 
