@@ -93,8 +93,8 @@ cd ../..
 
 ### Run experiment
 ```bash
-python3 -m nkululeko.resample --config data/en-dialect/en-dialect_exp.ini
-python3 -m nkululeko.nkululeko --config data/en-dialect/en-dialect_exp.ini
+python3 -m nkululeko.resample --config data/en-dialect/exp.ini
+python3 -m nkululeko.nkululeko --config data/en-dialect/exp.ini
 ```
 
 Reference:  
