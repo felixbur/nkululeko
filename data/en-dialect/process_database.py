@@ -67,48 +67,117 @@ def process_add_path(data_dir, input_csv, output_csv):
     df.to_csv(output_csv, index=False)
     print(f"Saved enriched CSV to {output_csv}")
 
-# ----------- STEP 3: Split dataset ------------
+# ----------- STEP 3: Split dataset by dialect ------------
 
 def split_dataset(input_csv, db_name='en-dialect'):
-    print("Splitting dataset ...")
+    print("Splitting dataset by dialect and speaker ...")
     if not os.path.exists(input_csv):
         raise FileNotFoundError(f"CSV file {input_csv} does not exist")
+    
     result_df = pd.read_csv(input_csv)
+    
+    # Detect which column is used for sorting (compatible with Step 1 and Step 2 outputs)
+    if 'audio_with_out_wav' in result_df.columns:
+        sort_column = 'audio_with_out_wav'
+    elif 'file' in result_df.columns:
+        sort_column = 'file'
+    else:
+        raise ValueError("CSV must contain either 'audio_with_out_wav' or 'file' column")
+    
+    result_df = result_df.sort_values(sort_column).reset_index(drop=True)
+    
     train_frac = 0.8
     dev_frac = 0.1
     test_frac = 0.1
-    rest_df = pd.DataFrame()
+    
     train_df = pd.DataFrame()
-    for speaker in result_df['speaker'].unique():
-        speaker_df = result_df[result_df['speaker'] == speaker]
-        train_sample = speaker_df.sample(frac=train_frac, random_state=42)
-        train_df = pd.concat([train_df, train_sample])
-        rest_sample = speaker_df.drop(train_sample.index)
-        rest_df = pd.concat([rest_df, rest_sample])
-    dev_split_frac = dev_frac / (dev_frac + test_frac)
     dev_df = pd.DataFrame()
     test_df = pd.DataFrame()
-    for speaker in rest_df['speaker'].unique():
-        speaker_df = rest_df[rest_df['speaker'] == speaker]
-        dev_sample = speaker_df.sample(frac=dev_split_frac, random_state=42)
-        dev_df = pd.concat([dev_df, dev_sample])
-        test_sample = speaker_df.drop(dev_sample.index)
-        test_df = pd.concat([test_df, test_sample])
+    
+    # Step 1: Group by Dialect
+    dialects = sorted(result_df['dialect'].unique())
+    print(f"\nFound {len(dialects)} dialects: {dialects}")
+    
+    for dialect in dialects:
+        print(f"\nProcessing dialect: {dialect}")
+        dialect_df = result_df[result_df['dialect'] == dialect]
+        
+        # Step 2: Within each dialect, get the list of speakers and randomly split
+        speakers = sorted(dialect_df['speaker'].unique())
+        n_speakers = len(speakers)
+        print(f"  Total speakers in {dialect}: {n_speakers}")
+        
+        # For reproducibility, set random seed and shuffle speaker list
+        import random
+        speakers_shuffled = speakers.copy()
+        random.seed(42)  
+        random.shuffle(speakers_shuffled)
+        
+        # Calculate how many speakers each set should contain.
+        n_train_speakers = int(n_speakers * train_frac)
+        n_dev_speakers = int(n_speakers * dev_frac)
+        # split test
+        n_test_speakers = n_speakers - n_train_speakers - n_dev_speakers
+        
+        # Assign speakers to each set
+        train_speakers = speakers_shuffled[:n_train_speakers]
+        dev_speakers = speakers_shuffled[n_train_speakers:n_train_speakers + n_dev_speakers]
+        test_speakers = speakers_shuffled[n_train_speakers + n_dev_speakers:]
+        
+        print(f"  Train speakers: {len(train_speakers)}")
+        print(f"  Dev speakers: {len(dev_speakers)}")
+        print(f"  Test speakers: {len(test_speakers)}")
+        
+        # split based on speakers
+        dialect_train = dialect_df[dialect_df['speaker'].isin(train_speakers)]
+        dialect_dev = dialect_df[dialect_df['speaker'].isin(dev_speakers)]
+        dialect_test = dialect_df[dialect_df['speaker'].isin(test_speakers)]
+        
+        print(f"  Train samples: {len(dialect_train)}")
+        print(f"  Dev samples: {len(dialect_dev)}")
+        print(f"  Test samples: {len(dialect_test)}")
+        
+        # merge to overall df
+        train_df = pd.concat([train_df, dialect_train])
+        dev_df = pd.concat([dev_df, dialect_dev])
+        test_df = pd.concat([test_df, dialect_test])
+
+    # Sort and reset index
+    train_df = train_df.sort_values(sort_column).reset_index(drop=True)
+    dev_df = dev_df.sort_values(sort_column).reset_index(drop=True)
+    test_df = test_df.sort_values(sort_column).reset_index(drop=True)
+    
+    # save to csv
     train_file = f'{db_name}_train.csv'
     dev_file = f'{db_name}_dev.csv'
     test_file = f'{db_name}_test.csv'
+    
     train_df.to_csv(train_file, index=False)
     dev_df.to_csv(dev_file, index=False)
     test_df.to_csv(test_file, index=False)
+    
+    # print summary
     total_len = len(result_df)
     train_len = len(train_df)
     dev_len = len(dev_df)
     test_len = len(test_df)
-    print("\nSplit complete!")
+    
+    print("\n" + "="*50)
+    print("Split complete!")
     print(f"Total sample size: {total_len}")
-    print(f"Training set: {train_len} ({train_len/total_len:.0%})")
-    print(f"Dev set: {dev_len} ({dev_len/total_len:.0%})")
-    print(f"Test set: {test_len} ({test_len/total_len:.0%})")
+    print(f"Training set: {train_len} ({train_len/total_len:.1%})")
+    print(f"Dev set: {dev_len} ({dev_len/total_len:.1%})")
+    print(f"Test set: {test_len} ({test_len/total_len:.1%})")
+    
+    # print dialect distribution in each set
+    print("\nDialect distribution:")
+    for split_name, split_df in [('Train', train_df), ('Dev', dev_df), ('Test', test_df)]:
+        print(f"\n{split_name} set:")
+        dialect_counts = split_df['dialect'].value_counts().sort_index()
+        for dialect, count in dialect_counts.items():
+            print(f"  {dialect}: {count} samples")
+    
+    print("="*50)
 
 # ----------- MAIN CLI ------------
 
