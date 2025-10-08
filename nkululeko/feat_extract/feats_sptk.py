@@ -254,7 +254,7 @@ class SptkSet(Featureset):
                         self.util.debug(
                             f"Warning: Could not extract pitch features for {file}: {e}"
                         )
-                emb_series[idx] = emb
+                emb_series[row_index] = emb
             self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
 
             # Fill NaN values with mean (similar to Praat)
