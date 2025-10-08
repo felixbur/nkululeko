@@ -269,7 +269,7 @@ class SptkSet(Featureset):
             self.df = self.df.astype(float)
 
             # Print feature names if requested
-            print_feats = eval(self.util.config_val("FEATS", "print_feats", "False"))
+            print_feats = self.util.config_val("FEATS", "print_feats", "False").strip().lower() == "true"
             if print_feats:
                 self.util.debug(f"SPTK feature names: {self.df.columns.tolist()}")
 
