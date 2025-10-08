@@ -118,7 +118,7 @@ class SptkSet(Featureset):
                 out_format="power",
             )
             self.pitch_features_available = True
-        except (ImportError, ModuleNotFoundError, AttributeError, Exception) as e:
+        except (ImportError, ModuleNotFoundError, AttributeError) as e:
             self.util.debug(f"Could not initialize pitch-dependent features: {e}")
             self.util.debug("Will extract only basic features (STFT, FBANK, MCEP)")
             self.pitch_features_available = False
