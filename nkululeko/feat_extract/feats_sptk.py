@@ -72,9 +72,9 @@ class SptkSet(Featureset):
             n_iter=10,
         ).to(self.device)
 
-        # self.chroma = diffsptk.ChromaFilterBankAnalysis(
-        #     self.fft_length, self.n_channel, self.sample_rate, device=self.device
-        # )
+        self.chroma = diffsptk.ChromaFilterBankAnalysis(
+            fft_length=self.fft_length, n_channel=self.n_channel, sample_rate=self.sample_rate, device=self.device
+        )
 
         # Initialize pitch extractor with error handling for missing dependencies
         try:
@@ -113,7 +113,7 @@ class SptkSet(Featureset):
             self.pitch_spec = diffsptk.PitchAdaptiveSpectralAnalysis(
                 frame_period=self.frame_period,
                 sample_rate=self.sample_rate,
-                fft_length=self.fft_length,
+                fft_length=1024,
                 algorithm="cheap-trick",
                 out_format="power",
             )
@@ -204,6 +204,15 @@ class SptkSet(Featureset):
                         coef_data = mcep_np[..., i]
                         emb[f"mcep_{i}_mean"] = np.mean(coef_data)
                         emb[f"mcep_{i}_std"] = np.std(coef_data)
+
+                if "chroma" in features_requested:
+                    chroma_features = self.chroma(stft_features)
+                    chroma_np = chroma_features.cpu().numpy()
+                    # Flatten chroma to per-channel statistics
+                    for i in range(chroma_np.shape[-1]):
+                        channel_data = chroma_np[..., i]
+                        emb[f"chroma_{i}_mean"] = np.mean(channel_data)
+                        emb[f"chroma_{i}_std"] = np.std(channel_data)
 
                 # Only extract pitch-dependent features if available
                 if self.pitch_features_available and not (
@@ -343,6 +352,14 @@ class SptkSet(Featureset):
                 coef_data = mcep_np[..., i]
                 emb[f"mcep_{i}_mean"] = np.mean(coef_data)
                 emb[f"mcep_{i}_std"] = np.std(coef_data)
+
+        if "chroma" in features_requested:
+            chroma_features = self.chroma(stft_features)
+            chroma_np = chroma_features.cpu().numpy()
+            for i in range(chroma_np.shape[-1]):
+                channel_data = chroma_np[..., i]
+                emb[f"chroma_{i}_mean"] = np.mean(channel_data)
+                emb[f"chroma_{i}_std"] = np.std(channel_data)
 
         # Create DataFrame and convert to numpy
         df = pd.DataFrame([emb])
