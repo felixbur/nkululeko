@@ -111,6 +111,7 @@ class FeatureExtractor:
             "praat",
             "mld",
             "import",
+            "sptk",
         ):
             return self._get_feat_extractor_by_name(feats_type)
         else:
