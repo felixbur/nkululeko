@@ -297,6 +297,8 @@
     * **lld**: low-level descriptor: framewise
 * **no_reuse**: don't re-use any feature files, but start fresh
   * no_reuse = False
+* **features**: disregard all other features and only use these the ones stated here.
+  * features = ['speechrate(nsyll / dur)', 'F0semitoneFrom27.5Hz_sma3nz_amean']
 * **needs_feature_extraction**: force the features to be freshly extracted
   * needs_feature_extraction = False
 * **print_feats**: set this to False if you don't want os and praat feature names to be printed out
