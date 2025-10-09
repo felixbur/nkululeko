@@ -8,15 +8,21 @@ pip install diffsptk
 
 import os
 
-import audiofile
+import numpy as np
 import pandas as pd
-from scipy import signal
-from tqdm import tqdm
 import torch
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
-import diffsptk
+from nkululeko.feat_extract import feats_sptk_core
+
+# Constants
+FRAME_LENGTH = 400  # Frame length.
+FRAME_PERIOD = 80  # Frame period.
+N_FFT = 512  # FFT length.
+M_DIM = 24  # Mel-cepstrum dimensions.
+SR = 16000  # Sampling rate.
+N_CHANNEL = 128
 
 
 class SptkSet(Featureset):
@@ -31,7 +37,24 @@ class SptkSet(Featureset):
         super().__init__(name, data_df, feats_type)
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
-        self.model_initialized = False
+
+        # Read configuration from INI file with defaults
+        self.frame_length = int(
+            self.util.config_val("FEATS", "sptk.frame_length", FRAME_LENGTH)
+        )
+        self.frame_period = int(
+            self.util.config_val("FEATS", "sptk.frame_period", FRAME_PERIOD)
+        )
+        self.fft_length = int(self.util.config_val("FEATS", "sptk.fft_length", N_FFT))
+        self.n_channel = int(self.util.config_val("FEATS", "sptk.n_channel", N_CHANNEL))
+        self.sample_rate = int(self.util.config_val("FEATS", "sptk.sample_rate", SR))
+
+        # Get requested features from config
+        self.features_requested = self.util.config_val(
+            "FEATS", "sptk.features", "['stft', 'fbank']"
+        )
+        if isinstance(self.features_requested, str):
+            self.features_requested = eval(self.features_requested)
 
     def extract(self):
         """Extract the features or load them from disk if present."""
@@ -42,21 +65,27 @@ class SptkSet(Featureset):
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             self.util.debug("extracting SPTK, this might take a while...")
-            emb_series = pd.Series(index=self.data_df.index, dtype=object)
-            length = len(self.data_df.index)
-            for idx, (file, start, end) in enumerate(
-                tqdm(self.data_df.index.to_list(), total=length)
-            ):
-                signal, sampling_rate = audiofile.read(
-                    file,
-                    offset=start.total_seconds(),
-                    duration=(end - start).total_seconds(),
-                    always_2d=True,
-                )
-                emb = self.get_extract(signal, sampling_rate, file)
-                emb_series[idx] = emb
-            self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
-            self.df.columns = ["pesq", "sdr", "stoi"]
+
+            # Use core module for feature extraction
+            self.df = feats_sptk_core.compute_features(
+                file_index=self.data_df.index,
+                frame_length=self.frame_length,
+                frame_period=self.frame_period,
+                fft_length=self.fft_length,
+                n_channel=self.n_channel,
+                sample_rate=self.sample_rate,
+                features_requested=self.features_requested,
+                device=self.device,
+            )
+
+            # Print feature names if requested
+            print_feats = (
+                self.util.config_val("FEATS", "print_feats", "False").strip().lower()
+                == "true"
+            )
+            if print_feats:
+                self.util.debug(f"SPTK feature names: {self.df.columns.tolist()}")
+
             self.util.write_store(self.df, storage, store_format)
             try:
                 glob_conf.config["DATA"]["needs_feature_extraction"] = "false"
@@ -71,82 +100,34 @@ class SptkSet(Featureset):
                 self.util.error(
                     f"got nan: {self.df.shape} {self.df.isnull().sum().sum()}"
                 )
-
-    def get_extract(self, signal, sampling_rate, file):
-        # mc = self.get_melcepstrum(signal, sampling_rate)
-        f0 = self.get_pitch(signal, sampling_rate)
-        # chroma = self.get_chroma(signal, sampling_rate)
-        # return mc
+        return self.df
 
     def extract_sample(self, signal, sr):
-        self.init_model()
-        feats = self.get_extract(signal, sr, "no file")
+        """Extract features from a single audio sample (like Praat's extract_sample)."""
+        # Use core module for feature extraction
+        emb = feats_sptk_core.compute_features_from_signal(
+            signal=signal,
+            sr=sr,
+            frame_length=self.frame_length,
+            frame_period=self.frame_period,
+            fft_length=self.fft_length,
+            n_channel=self.n_channel,
+            sample_rate=self.sample_rate,
+            features_requested=self.features_requested,
+            device=self.device,
+        )
+
+        # Convert to DataFrame and then to numpy
+        df = pd.DataFrame([emb])
+        for col in df.columns:
+            if df[col].isnull().values.any():
+                mean_val = df[col].mean()
+                if not np.isnan(mean_val):
+                    df[col] = df[col].fillna(mean_val)
+                else:
+                    df[col] = df[col].fillna(0)
+
+        df = df.astype(float)
+        feats = df.to_numpy()
+
         return feats
-
-    def get_melcepstrum(self, signal, sr):
-        """Get melcepstrum features from signal."""
-        fl = 400  # Frame length.
-        fp = 80  # Frame period.
-        n_fft = 512  # FFT length.
-        M = 24  # Mel-cepstrum dimensions.# Compute STFT amplitude of x.
-        stft = diffsptk.STFT(frame_length=fl, frame_period=fp, fft_length=n_fft)
-        tensor = torch.from_numpy(signal)
-        X = stft(tensor).to(self.device)
-
-        # Estimate mel-cepstrum of x.
-        alpha = diffsptk.get_alpha(sr)
-        mcep = diffsptk.MelCepstralAnalysis(
-            fft_length=n_fft,
-            cep_order=M,
-            alpha=alpha,
-            n_iter=10,
-        )
-        mc = mcep(X)
-        return mc.detach().numpy().flatten()
-
-    def get_pitch(self, signal, sr):
-        """Get pitch from signal."""
-
-        tensor = torch.from_numpy(signal)
-        fp = 80  # Frame period.
-        n_fft = 1024  # FFT length.
-
-        # Extract F0 of x, or prepare well-estimated F0.
-        pitch = diffsptk.Pitch(
-            frame_period=fp,
-            sample_rate=sr,
-            f_min=80,
-            f_max=180,
-            voicing_threshold=0.4,
-            out_format="f0",
-        )
-        f0 = pitch(x).to(self.device)
-        # Extract aperiodicity of x by D4C.
-        ap = diffsptk.Aperiodicity(
-            frame_period=fp,
-            sample_rate=sr,
-            fft_length=n_fft,
-            algorithm="d4c",
-            out_format="a",
-        )
-        A = ap(tensor, f0)
-
-        # Extract spectral envelope of x by CheapTrick.
-        pitch_spec = diffsptk.PitchAdaptiveSpectralAnalysis(
-            frame_period=fp,
-            sample_rate=sr,
-            fft_length=n_fft,
-            algorithm="cheap-trick",
-            out_format="power",
-        )
-        S = pitch_spec(tensor, f0)
-        return f0, A, S
-
-    def get_chroma(self, signal, sr):
-        tensor = torch.from_numpy(signal)
-        stft = diffsptk.STFT(frame_length=512, frame_period=512, fft_length=512)
-
-        chroma = diffsptk.ChromaFilterBankAnalysis(12, 512, sr, device=self.device)
-
-        y = chroma(stft(tensor)).to(self.device)
-        return y.detach().numpy().flatten()
