@@ -73,7 +73,10 @@ class SptkSet(Featureset):
         ).to(self.device)
 
         self.chroma = diffsptk.ChromaFilterBankAnalysis(
-            fft_length=self.fft_length, n_channel=self.n_channel, sample_rate=self.sample_rate, device=self.device
+            fft_length=self.fft_length,
+            n_channel=self.n_channel,
+            sample_rate=self.sample_rate,
+            device=self.device,
         )
 
         # Initialize pitch extractor with error handling for missing dependencies
@@ -171,8 +174,9 @@ class SptkSet(Featureset):
 
                 # Build feature dictionary with requested features only
                 features_requested = self.util.config_val(
-                    "FEATS", "features", "['stft', 'fbank']"
+                    "FEATS", "sptk.features", "['stft', 'fbank']"
                 )
+                # Create alias features = sptk.features
                 if isinstance(features_requested, str):
                     features_requested = eval(features_requested)
 
@@ -278,7 +282,10 @@ class SptkSet(Featureset):
             self.df = self.df.astype(float)
 
             # Print feature names if requested
-            print_feats = self.util.config_val("FEATS", "print_feats", "False").strip().lower() == "true"
+            print_feats = (
+                self.util.config_val("FEATS", "print_feats", "False").strip().lower()
+                == "true"
+            )
             if print_feats:
                 self.util.debug(f"SPTK feature names: {self.df.columns.tolist()}")
 
