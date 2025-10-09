@@ -29,7 +29,7 @@ bibliography: paper.bib
 
 # Summary
 
-`Nkululeko` [@nkululeko:2022] is a toolkit for audio-based machine learning explorations using command line interface and a configuration file, based on machine learning packages like sklearn [@scikit-learn:2011] and pytorch [@torch:2020]. It is written in Python without the need to write Python code by the users. The main features are: training and evaluation of labelled speech databases with state-of-the-art machine learning approach and acoustic feature extractors, a live demonstration interface, and the possibility to store databases with predicted labels. Based on this, the framework can also be used to check on bias in databases by exploring correlations of target labels, like, e.g. depression or diagnosis, with predicted, or additionally given, labels like age, gender, signal distortion ratio or mean opinion score in.
+`Nkululeko` [@nkululeko:2022] is a toolkit for audio-based machine learning explorations using a command line interface and a configuration file, based on machine learning packages like sklearn [@scikit-learn:2011] and pytorch [@torch:2020]. It is written in Python without the need to write Python code by the users. The main features are: training and evaluation of labelled speech databases with state-of-the-art machine learning approach and acoustic feature extractors, a live demonstration interface, and the possibility to store databases with predicted labels. Based on this, the framework can also be used to check on bias in databases by exploring correlations of target labels, like, e.g., depression or diagnosis, with predicted, or additionally given, labels like age, gender, signal distortion ratio, or mean opinion score in.
 
 # Design choices 
 
@@ -37,18 +37,18 @@ The program is intended for **novice** people interested in speaker characterist
 
 - Finding good combinations of variables, e.g., acoustic features, models (classifier or regressor), feature standardization, augmentation, etc., for speaker characteristics detection (e.g., emotion);
 
-- Characteristics of the database, such as distribution of gender, age, emotion, duration, data size, and so on with their visualization;
+- Characteristics of the database, such as distribution of gender, age, emotion, duration, data size, and so on, with their visualization;
 
-- Inference of speaker characteristics from a given audio file or streaming audio (can be said also as “weak” labeling for semi-supervised learning).
+- Inference of speaker characteristics from a given audio file or streaming audio (can also be said as “weak” labeling for semi-supervised learning).
 
 <!-- module + INI file -->
-Hence, one should be able to use Nkululeko after installing and preparing/downloading their data in the correct format in a single line (add `python -m` if working in development environment without installing it). 
+Hence, one should be able to use Nkululeko after installing and preparing/downloading their data in the correct format in a single line (add `python -m` if working in a development environment without installing it). 
 
 ```bash
 $ nkululeko.MODULE_NAME --config CONFIG_FILE.ini
 ```
 
-<!-- I think we should ship Nkululeko with built-in datasets in the future so user can directly run it without downloading any dataset -> added Polish dataset -->
+<!-- I think we should ship Nkululeko with built-in datasets in the future so users can directly run it without downloading any dataset -> added Polish dataset -->
 
 # How does it work?
 
@@ -57,7 +57,7 @@ $ nkululeko.MODULE_NAME --config CONFIG_FILE.ini
 ```bash
 $ nkululeko.explore --config conf.ini
 ```
-and inspect the results afterward; they are represented as images, texts, and even a fully automatically compiled PDF report written in latex.
+and inspect the results afterward; they are represented as images, texts, and even a fully automatically compiled PDF report written in LaTeX.
 
 `nkululeko`'s data import format is based on a simple CSV formalism, or alternatively, for a more detailed representation including data schemata, audformat.\footnote{\url{https://audeering.github.io/audformat/}}
 Basically, to be used by `nkululeko`, the data format should include the audio file path of **speech dataset** (usually in WAV format) and a task-specific label. Optionally, speaker ID and gender labels help with speech data. 
@@ -142,7 +142,7 @@ The `nkululeko` configuration can specify further sections:
 
 
 # Example of usage
-In the previous section, we have seen how to specify an experiment in an INI file that can be run with, for instance, `explore` and `segment` modules. Here, we show how to run the experiment (`nkululeko.nkululeko`) with built-in dataset (Polish Speech Emotions dataset) from the installation until getting the results. 
+In the previous section, we have seen how to specify an experiment in an INI file that can be run with, for instance, `explore` and `segment` modules. Here, we show how to run the experiment (`nkululeko.nkululeko`) with the built-in dataset (Polish Speech Emotions dataset) from the installation until getting the results. 
 
 First, users could clone the GitHub repository of Nkululeko. 
 
@@ -211,7 +211,7 @@ type = []
 [MODEL]
 type = finetune
 ```
-The acoustic features can/should be empty, because the transformer model starts with CNN layers to model the acoustics frame-wise.  The frames are then getting pooled by the model for the whole utterance.
+The acoustic features can/should be empty, because the transformer model starts with CNN layers to model the acoustics frame-wise.  The frames are then pooled by the model for the whole utterance.
 
 The default base model is the one from [facebook](https://huggingface.co/facebook/wav2vec2-large-robust-ft-swbd-300h), but you can specify a different one like this:
 
@@ -241,7 +241,7 @@ The loss function is fixed to
 * weighted cross entropy for classification
 * concordance correlation coefficient for regression
 
-The resulting best model and the huggingface logs (which can be read by [tensorboard](https://www.tensorflow.org/tensorboard)) are stored in the project folder.
+The resulting best model and the HuggingFace logs (which can be read by [tensorboard](https://www.tensorflow.org/tensorboard)) are stored in the project folder.
 
 If you like to have your model published, set:
 
@@ -265,7 +265,7 @@ examples/exp_emodb_ast_xgb.ini \
 examples/exp_emodb_wav2vec_xgb.in
 ```
 (all in one line)
-and would then get the results for a majority voting of the three results for Praat, AST and Wav2vec2 features.
+and would then get the results for a majority voting of the three results for Praat, AST, and Wav2vec2 features.
 
 Other  methods to combine the different predictors, are *mean*, *max*, *sum*, *max_class*, *uncertainty_threshold*, *uncertainty_weighted*, *confidence_weighted*:
 
@@ -276,7 +276,7 @@ Other  methods to combine the different predictors, are *mean*, *max*, *sum*, *m
 * **max_class**: For classification: compare the highest probabilities of all models across classes (instead of same class as in max_ensemble) and return the highest probability and the class
 * **uncertainty_threshold**: For classification: predict the class with the lowest uncertainty if lower than a threshold (default to 1.0, meaning no threshold), else calculate the mean of uncertainties for all models per class and predict the lowest.
 * **uncertainty_weighted**: For classification: weigh each class with the inverse of its uncertainty (1/uncertainty), normalize the weights per model, then multiply each class model probability with their normalized weights and use the maximum one to infer the label.
-* **confidence_weighted**: Weighted ensemble based on confidence (1-uncertainty), normalized for all samples per model. Like before, but use confidence (instead of inverse of uncertainty) as weights.
+* **confidence_weighted**: Weighted ensemble based on confidence (1-uncertainty), normalized for all samples per model. Like before, but use confidence (instead of the inverse of uncertainty) as weights.
 
 ## Predicting speaker ID  
 
@@ -289,9 +289,9 @@ There are two modules that you can use for this:
 * SEGMENT
 * PREDICT
 
-The (huge) difference is, that the SEGMENT module looks at each file in the input data and looks for speakers per file (can be only one large file), while the PREDICT module concatenates all input data and looks for different speakers in the whole database.
+The (huge) difference is that the SEGMENT module looks at each file in the input data and looks for speakers per file (can be only one large file), while the PREDICT module concatenates all input data and looks for different speakers in the whole database.
 
-In any case best run it on a GPU, as CPU will be very slow (and there is no progress bar).
+In any case, best run it on a GPU, as CPU will be very slow (and there is no progress bar).
 
 If you specify the *method* in [SEGMENT] section and the [*hf_token* ](https://huggingface.co/docs/hub/security-tokens) (needed for the pyannote model) in the [MODEL] section
 
@@ -304,14 +304,14 @@ sample_selection = all
 hf_token = <my hugging face token>
 ```
 
-your resulting segmentation will have predicted `speaker id` attached. Be aware that this is really slow on CPU, so best run on GPU and declare so in the [MODEL] section:
+your resulting segmentation will have the predicted `speaker id` attached. Be aware that this is really slow on CPU, so best run on GPU and declare so in the [MODEL] section:
 
 ```ini
 [MODEL]
 hf_token = <my hugging face token>
 device=gpu # or cuda:0
 ```
-As a result a new plot would appear in the image folder: the distribution of speakers that were found.
+As a result, a new plot would appear in the image folder: the distribution of speakers that were found.
 
 Simply select *speaker* as the prediction target:
 ```ini
@@ -330,7 +330,7 @@ Nkululeko follows these principles:
 
 - *Minimum programming skills*: The only programming skills required are preparing the data in the correct (CSV) format and running the command line tool. For AUDFORMAT, no preparation is needed.
 
-- *Standardised data format and label*: The data format is based on CSV and AUDFORMAT, which are widely used formats for data exchange. The standard headers are like 'file', 'speaker', 'emotion', 'age', and 'language' and can be customised. Data could be saved anywhere on the computer, but the recipe for the data preparation is advised to be saved in `nkululeko/data` folder (and/or make a soft link to the original data location).
+- *Standardised data format and label*: The data format is based on CSV and AUDFORMAT, which are widely used formats for data exchange. The standard headers are like 'file', 'speaker', 'emotion', 'age', and 'language', and can be customised. Data could be saved anywhere on the computer, but the recipe for the data preparation is advised to be saved in `nkululeko/data` folder (and/or make a soft link to the original data location).
 
 - *Replicability*: the experiments are specified in a configuration file, which can be shared with others including the splitting of training, development, and test partition. All results are stored in a folder with the same name as the experiment.
 
@@ -342,18 +342,18 @@ Nkululeko follows these principles:
 <!-- list of papers used nkululeko -->
 Nkululeko has been used in several research projects since its first appearance in 2022 [@nkululeko:2022]. The following list gives an overview of the research papers that have used Nkululeko:
 
-- [@burkhardt:2022-syntact]: this paper reported a database development of synthesized speech for basic emotions and its evaluation using the Nkululeko toolkit.
+- [@burkhardt:2022-syntact]: This paper reported a database development of synthesized speech for basic emotions and its evaluation using the Nkululeko toolkit.
 
-- [@Burkhardt:2024]: this paper shows how to use Nkululeko for bias detection. The findings on two datasets, UACorpus and Androids, show that some features are correlated with the target label, e.g., depression, and can be used to detect bias in the database.
+- [@Burkhardt:2024]: This paper shows how to use Nkululeko for bias detection. The findings on two datasets, UACorpus and Androids, show that some features are correlated with the target label, e.g., depression, and can be used to detect bias in the database.
 
-- [@Atmaja:2024a]: this paper shows Nkululeko's capability for ensemble learning with a focus on uncertainty estimation.
+- [@Atmaja:2024a]: This paper shows Nkululeko's capability for ensemble learning with a focus on uncertainty estimation.
 
-- [@Atmaja:2025]: in this paper, evaluations of different handcrafted acoustic features and SSL approaches for pathological voice detection tasks were reported, highlighting the ease of using Nkululeko to perform extensive experiments including combinations of different features at different levels (early and late fusions).
+- [@Atmaja:2025]: In this paper, evaluations of different handcrafted acoustic features and SSL approaches for pathological voice detection tasks were reported, highlighting the ease of using Nkululeko to perform extensive experiments, including combinations of different features at different levels (early and late fusions).
 
-- [@Atmaja:2025b]: this paper extends the previous ensemble learning evaluations with performance weighting (using weighted and unweighted accuracies) on five tasks and ten datasets.
+- [@Atmaja:2025b]: This paper extends the previous ensemble learning evaluations with performance weighting (using weighted and unweighted accuracies) on five tasks and ten datasets.
  
 # Changes
-Nkululeko has been described in three papers so far, we give a short overview on the updates since then.
+Nkululeko has been described in three papers so far; we give a short overview on the updates since then.
 
 * **2022 Paper:** F. Burkhardt, Johannes Wagner, Hagen Wierstorf, Florian Eyben and Björn Schuller: Nkululeko: A Tool For Rapid Speaker Characteristics Detection, Proc. Proc. LREC, 2022. **New features:** First version mainly focussing on basic machine learning experiments that combine *expert* acoustic features (like Praat or opensmile features) with traditional learning approaches.
 

@@ -107,7 +107,7 @@ def main():
 
     # Merge GRBAS scores with main dataframe based on filename
     df = df.merge(
-        grbas_combined[["text_patient_id", "G", "R", "B", "A", "S"]],
+        grbas_combined,
         left_on="filename",
         right_on="text_patient_id",
         how="left"
@@ -118,7 +118,17 @@ def main():
 
     print("Data shape after adding GRBAS scores:", df.shape)
     print("Number of rows with GRBAS scores:", df[["G", "R", "B", "A", "S"]].notna().any(axis=1).sum())
-
+    df.rename(columns={'TOTAL':'total', 'COMMENTS ':'comments', 
+       'GLOTOTIC ATTACK':'glototic_attack', 'INTENSITY':'intensity', 'SPEED':'speed', 'RESONANCE':'resonance', 'ARTICLES':'articles',
+       'TONE':'tone', 'QUALITY PHONATION':'quality_phonation', 'INTELLIGIBILITY':'intelligibility', 'PROSODY':'prosody'},inplace=True)
+    print("Number of rows with intelligibility scores:", df[["intelligibility"]].notna().any(axis=1).sum())
+    
+    # normalize the values in the column "intelligibility"
+    normal_map = {"nromal":"normal", "normalnormal":"normal", "nnormal ":"normal",\
+    "nnormal":"normal", "2 mild deficiency":"mild deficiency",\
+    "milddefieicence":"mild deficiency",\
+    "moderate": "moderate deficiency", "moderatedeficiency":"moderate deficiency"}
+    df["intelligibility"] = df["intelligibility"].replace(normal_map)
     df.to_csv("neurovoz.csv", index=False)
 
 
