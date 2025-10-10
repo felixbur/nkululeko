@@ -15,7 +15,7 @@ import transformers
 
 import nkululeko.experiment as exp
 import nkululeko.glob_conf as glob_conf
-import nkululeko.models.finetune_model as fm
+import nkululeko.models.model_tuned as mt
 from nkululeko.constants import VERSION
 from nkululeko.utils.util import Util
 
@@ -141,7 +141,7 @@ def doit(config_file):
     )
     assert processor.feature_extractor.sampling_rate == sampling_rate
 
-    model = fm.Model.from_pretrained(
+    model = mt.Model.from_pretrained(
         model_path,
         config=config,
     )
@@ -271,7 +271,7 @@ def doit(config_file):
         trainer.train()
         trainer.save_model(torch_root)
 
-    modelnew = fm.Model.from_pretrained(
+    modelnew = mt.Model.from_pretrained(
         torch_root,
         config=config,
     )
