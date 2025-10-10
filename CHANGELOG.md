@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Version 0.99.0 (25-10-10)  
+* added EATD dataset  
+* added English Dialect corpus  
+* added SPTK features
+* fixed BERT test files
+* fixed missing DOI in paper.bib  
+
 Version 0.98.6 (25-10-01)
 -------------------------
 * fixed bug
