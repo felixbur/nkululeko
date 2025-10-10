@@ -1,5 +1,5 @@
 """
-Segment audio files in a given directory into smaller chunks with a specified length and overlap. This requires the PyDub library to be installed.
+fixedsegment.py: segment audio files in a given directory into smaller chunks with a specified length and overlap. This requires the PyDub library to be installed.
 
 Args:
     input_dir (str): The directory containing the audio files to be segmented.
@@ -8,6 +8,9 @@ Args:
     overlap (int): The overlap between adjacent audio segments in milliseconds.
 
 This function will recursively search the input directory for all .wav audio files, and then segment each file into smaller chunks with the specified length and overlap. The segmented audio files will be saved in the output directory, preserving the relative directory structure from the input directory.
+
+Example usage:
+    python fixedsegment.py --input_dir data/test/audio  --output_dir ./segmented_data --segment
 """
 
 import argparse
@@ -57,7 +60,7 @@ def segment_audio(input_dir, output_dir, segment_length, overlap):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_dir", type=str, default="./")
+    parser.add_argument("--input_dir", type=str, default="./data/test/audio")
     # add argument for output_dir
     parser.add_argument(
         "--output_dir",
