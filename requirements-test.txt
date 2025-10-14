@@ -1,0 +1,27 @@
+# Core dependencies only (no PyTorch/TensorFlow)
+audeer>=1.0.0
+audformat>=1.3.1
+audinterface>=1.0.0
+audiofile>=1.0.0
+audmetric>=1.0.0
+confidence-intervals>=0.0.2
+matplotlib>=3.0.0
+numpy>=1.20.0
+opensmile>=2.0.0
+pandas>=1.0.0
+praat-parselmouth>=0.4.0
+scikit_learn>=1.4.2
+scipy>=1.0.0
+seaborn>=0.11.0
+sounddevice>=0.4.0
+xgboost>=1.0.0
+audplot>=1.4.7
+diffsptk>=3.3.1
+imblearn>=0.0.0
+shap>=0.47.2
+splitutils>=0.0.1
+
+# Skip these heavy ones for CI:
+# torch, torchaudio, torchvision
+# transformers, datasets
+# audiomentations (if not needed for tests)
