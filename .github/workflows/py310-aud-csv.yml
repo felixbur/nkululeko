@@ -7,17 +7,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+
+    - name: Free Disk Space
+      run: |
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /opt/ghc
+        sudo rm -rf /usr/local/share/boost
+        sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+        df -h
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
         cache: 'pip'
-        cache-dependency-path: 'requirements.txt'
+        cache-dependency-path: 'requirements-test.txt'
     - name: Install dependencies
       run: |
         sudo apt-get -y install sox libportaudio2
         python3 -m pip install --upgrade pip
-        pip install -r requirements.txt
+        pip install -r requirements-test.txt
         # pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
         pip install --editable .
         # python -m nkululeko.nkululeko --config tests/exp_emodb_os_xgb.ini
@@ -35,14 +43,12 @@ jobs:
           echo "Test Failed"
           exit 1
         fi
-    - name: Run csv-ravdess-praat-xgb
+    - name: Run csv-polish-xgb
       run: |
-        cd data/ravdess
-        # wget https://zenodo.org/record/1188976/files/Audio_Speech_Actors_01-24.zip
-        wget https://zenodo.org/records/11063852/files/Audio_Speech_Actors_01-24_16k.zip
-        unzip Audio_Speech_Actors_01-24_16k.zip
+        cd data/polish
+        unzip polish_speech_emotions.zip
         cd ../..
-        python3 -m nkululeko.nkululeko --config data/ravdess/exp_praat_xgb.ini > output1.txt
+        python3 -m nkululeko.nkululeko --config examples/exp_polish_optim_xgb.ini > output1.txt
         if grep -q "DONE" output1.txt; then
           echo "Test Success"
         else

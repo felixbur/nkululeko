@@ -10,6 +10,8 @@ The dataset includes:
 - **ENG_DEU**: English-German parallel audio with emotion/sentiment labels
 - **ENG_JPN**: English-Japanese parallel audio with emotion/sentiment labels
 
+To get the CSV files, you need to clone/download from MELD-ST Hugging Face repository: https://huggingface.co/datasets/ku-nlp/MELD-ST (need to accept terms and conditions).
+
 ### Emotions
 7 emotion classes: anger, disgust, fear, joy, neutral, sadness, surprise
 
@@ -94,13 +96,13 @@ Each CSV file contains the following columns:
 Run the preprocessing script to generate CSV files:
 ```bash
 cd data/meld-st
-python preprocess_meld_st.py
+python process_database.py
 ```
 
 Or for specific language pairs:
 ```bash
-python preprocess_meld_st.py --language_pairs ENG_JPN
-python preprocess_meld_st.py --language_pairs ENG_DEU
+python process_database.py --language_pairs ENG_JPN
+python process_database.py --language_pairs ENG_DEU
 ```
 
 ### Running Experiments

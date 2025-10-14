@@ -11,10 +11,10 @@ Thus, for a speaker, 90 audio files (1 speaker *6 words* 5 repetitions * 3 emoti
 Download link: <https://mostwiedzy.pl/en/open-research-data/emotions-in-polish-speech-recordings,11190523461146169-0/download>
 
 ```bash
+# if downloading from original dataset
 mkdir POLISH
-# if downlading from original dataset
 unzip Speech_emotions.zip -d POLISH
-# if using the resampled version
+# if using the resampled version from nkululeko
 unzip polish_speech_emotions.zip
 python3 process_database.py
 cd ../..

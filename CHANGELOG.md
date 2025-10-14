@@ -2,6 +2,7 @@ Changelog
 =========
 
 Version 0.99.0 (25-10-10)  
+---------------------
 * added EATD dataset  
 * added English Dialect corpus  
 * added SPTK features
