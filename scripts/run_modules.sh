@@ -78,6 +78,7 @@ nkululeko_ini_files=(
     exp_emodb_wav2vec2_test.ini
     exp_emodb_os_xgb.ini
     exp_emodb_os_svm.ini
+    exp_emodb_sptk_svm.ini
     exp_emodb_os_knn.ini
     exp_emodb_os_mlp.ini
     exp_agedb_os_xgr.ini

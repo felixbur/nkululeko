@@ -1,8 +1,13 @@
 Changelog
 =========
 
+Version 1.0.0 (25-10-14)  
+-------------------------
+* added sptk example
+* removed unused files from distribution
+
 Version 0.99.0 (25-10-10)  
----------------------
+-------------------------
 * added EATD dataset  
 * added English Dialect corpus  
 * added SPTK features
