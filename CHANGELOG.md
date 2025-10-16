@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.0.1 (25-10-16)  
+-------------------------
+* added text classification as predictor
+
 Version 1.0.0 (25-10-14)  
 -------------------------
 * added sptk example
