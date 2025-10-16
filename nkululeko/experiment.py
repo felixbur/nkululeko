@@ -567,6 +567,13 @@ class Experiment:
 
                 predictor = TextPredictor(df, self.util)
                 df = predictor.predict(sample_selection)
+            elif target == "textclassification":
+                from nkululeko.autopredict.ap_textclassifier import (
+                    TextClassificationPredictor,
+                )
+
+                predictor = TextClassificationPredictor(df, self.util)
+                df = predictor.predict(sample_selection)
             elif target == "translation":
                 from nkululeko.autopredict.ap_translate import TextTranslator
 

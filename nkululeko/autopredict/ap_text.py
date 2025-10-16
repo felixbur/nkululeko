@@ -3,12 +3,7 @@
 Currently based on whisper model.
 """
 
-import ast
-
 import torch
-
-from nkululeko.feature_extractor import FeatureExtractor
-import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.util import Util
 
 
