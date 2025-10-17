@@ -14,6 +14,13 @@ class Featureset:
     data_df = None  # dataframe to get audio paths
 
     def __init__(self, name, data_df, feats_type):
+        """Constructor.
+
+        Args:
+        name (str): The name of the feature set.
+        data_df (pd.DataFrame): The dataframe containing the data to extract features from.
+        feats_type (str): The type of features to extract.
+        """
         self.name = name
         self.data_df = data_df
         self.util = Util("featureset")

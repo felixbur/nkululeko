@@ -99,6 +99,7 @@ augment_ini_files=(
 predict_ini_files=(
     exp_emodb_predict.ini
     exp_ravdess_predict_text.ini
+    exp_emodb_textclassifier.ini
 ) 
 # test demo
 demo_ini_files=(

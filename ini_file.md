@@ -228,8 +228,10 @@
       * **wav2vec2.model** = *path to the wav2vec2 model folder*
       * **wav2vec2.layer** = *which last hidden layer to use*
     * **bert variants**: [Bert embeddings](https://huggingface.co/transformers/v3.0.2/model_doc/bert.html#bertmodel)
-      * **bert.model** = *path to the bert model folder (without the google-bert/)*
-      * **bert.layer** = *which last hidden layer to use*
+      * **bert.model** = path to the bert model folder (without the google-bert/)
+      * **bert.layer** = which last hidden layer to use
+      * **bert.text_column** = which column to use for text analysis
+        * *bert.text_column = text*
     * **Hubert variants**: [facebook Hubert models](https://ai.meta.com/blog/hubert-self-supervised-representation-learning-for-speech-recognition-generation-and-compression/)
       * "hubert-base-ls960", "hubert-large-ll60k", "hubert-large-ls960-ft", hubert-xlarge-ll60k, "hubert-xlarge-ls960-ft"
     * **WavLM**:
@@ -425,11 +427,13 @@ Model and training specifications. In general, default values should work for cl
 ### [PREDICT](#predict)
 
 * **targets**: Speaker/speech characteristics to be predicted by some models
-  * targets = ['text', 'translation', 'speaker', 'gender', 'age', 'snr', 'arousal', 'valence', 'dominance', 'pesq', 'mos']
+  * targets = ['text', 'translation', 'textclassification', 'speaker', 'gender', 'age', 'snr', 'arousal', 'valence', 'dominance', 'pesq', 'mos']
+  * textclassifier.candidates = ["sadness", "anger", "neutral"]: for target *textclassification*: the labels for the categories that should be predicted (using [joeddav/xlm-roberta-large-xnli](https://huggingface.co/joeddav/xlm-roberta-large-xnli))
 * **sample_selection**: which split: [train, test, all]
   * sample_selection = all
 * **target_language**: target language for the translation prediction
   * target_language = en
+  
 
 ### EXPORT
 
