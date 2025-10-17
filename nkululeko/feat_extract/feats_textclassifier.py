@@ -95,9 +95,9 @@ class TextClassifier(Featureset):
         -> {'sequence': '...', 'labels': ['valence', 'arousal', 'dominance'],
             'scores': [0.8, 0.15, 0.05]}
 
-        We want to return a list with the winner label as 0 element
-        and the logits for the other labels following.
-        The order of the logits is the same as in candidate_labels.
+        We want to return a list with the winner label as the first element
+        and the scores (probabilities) for the other labels following.
+        The order of the scores is the same as in candidate_labels.
         """
         result = self.model(text, self.candidate_labels)
         # Create a mapping from label to score
