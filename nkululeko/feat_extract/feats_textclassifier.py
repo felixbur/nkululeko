@@ -30,8 +30,9 @@ class TextClassifier(Featureset):
         modelname = "joeddav/xlm-roberta-large-xnli"
         self.util.debug(f"loading {modelname} model...")
 
+        device_arg = 0 if self.device == "cuda" else -1
         self.model = transformers.pipeline(
-            "zero-shot-classification", model="joeddav/xlm-roberta-large-xnli"
+            "zero-shot-classification", model="joeddav/xlm-roberta-large-xnli", device=device_arg
         )
         print(f"initialized {modelname} model on {self.device}")
         self.candidate_labels = self.util.config_val(
