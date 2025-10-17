@@ -1,4 +1,4 @@
-""" "
+"""
 A predictor for zero shot text classification.
 """
 
