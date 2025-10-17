@@ -53,7 +53,7 @@ class TextClassifier(Featureset):
         store_format = self.util.config_val("FEATS", "store_format", "pkl")
         storage = f"{store}{self.name}.{store_format}"
         extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
-        no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
+        no_reuse = ast.literal_eval(self.util.config_val("FEATS", "no_reuse", "False"))
         text_column = "text"
         if text_column not in self.data_df.columns:
             self.util.error(f"no {text_column} column found in data")
@@ -75,7 +75,7 @@ class TextClassifier(Featureset):
             self.df.columns = col_names
             self.util.write_store(self.df, storage, store_format)
             try:
-                glob_conf.config["DATA"]["needs_feature_extraction"] = "false"
+                glob_conf.config["FEATS"]["needs_feature_extraction"] = "false"
             except KeyError:
                 pass
         else:
