@@ -1,8 +1,7 @@
 """
-A predictor for zero shot text classification.
+A predictor for zero-shot text classification.
 """
 
-import ast
 import pandas as pd
 import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.feats_textclassifier import TextClassifier
