@@ -382,6 +382,28 @@ class Experiment:
         df[self.target] = a
         return df
 
+    def _decode_labels(self, df_labels, column_name):
+        """Decode encoded labels for visualization.
+        
+        Args:
+            df_labels: DataFrame containing the labels
+            column_name: Name of the column to decode
+            
+        Returns:
+            str: The column name to use (either decoded version or original)
+        """
+        if (
+            hasattr(self, "label_encoder")
+            and self.label_encoder is not None
+            and self.util.exp_is_classification()
+        ):
+            decoded_col = f"{column_name}_decoded"
+            df_labels[decoded_col] = self.label_encoder.inverse_transform(
+                df_labels[column_name]
+            )
+            return decoded_col
+        return column_name
+
     def plot_distribution(self, df_labels):
         """Plot the distribution of samples and speakers.
 
@@ -722,11 +744,9 @@ class Experiment:
                 
                 if is_encoded_target:
                     # Decode the labels for visualization
-                    df_labels[f"{scat_target}_decoded"] = self.label_encoder.inverse_transform(
-                        df_labels[scat_target]
-                    )
+                    target_col = self._decode_labels(df_labels, scat_target)
                     for dimred in dimreds:
-                        plots.scatter_plot(df_feats, df_labels, f"{scat_target}_decoded", dimred)
+                        plots.scatter_plot(df_feats, df_labels, target_col, dimred)
                 elif self.util.is_categorical(df_labels[scat_target]):
                     for dimred in dimreds:
                         plots.scatter_plot(df_feats, df_labels, scat_target, dimred)
@@ -748,15 +768,7 @@ class Experiment:
         if tsne:
             target_column = self.util.config_val("DATA", "target", "emotion")
             # Decode labels if they were encoded
-            if (
-                hasattr(self, "label_encoder")
-                and self.label_encoder is not None
-                and self.util.exp_is_classification()
-            ):
-                df_labels[f"{target_column}_decoded"] = self.label_encoder.inverse_transform(
-                    df_labels[target_column]
-                )
-                target_column = f"{target_column}_decoded"
+            target_column = self._decode_labels(df_labels, target_column)
             plots = Plots()
             self.util.debug("generating t-SNE plot...")
             plots.scatter_plot(df_feats, df_labels, target_column, "tsne")
@@ -766,15 +778,7 @@ class Experiment:
         if umap_plot:
             target_column = self.util.config_val("DATA", "target", "emotion")
             # Decode labels if they were encoded
-            if (
-                hasattr(self, "label_encoder")
-                and self.label_encoder is not None
-                and self.util.exp_is_classification()
-            ):
-                df_labels[f"{target_column}_decoded"] = self.label_encoder.inverse_transform(
-                    df_labels[target_column]
-                )
-                target_column = f"{target_column}_decoded"
+            target_column = self._decode_labels(df_labels, target_column)
             plots = Plots()
             self.util.debug("generating UMAP plot...")
             plots.scatter_plot(df_feats, df_labels, target_column, "umap")
@@ -784,15 +788,7 @@ class Experiment:
         if pca_plot:
             target_column = self.util.config_val("DATA", "target", "emotion")
             # Decode labels if they were encoded
-            if (
-                hasattr(self, "label_encoder")
-                and self.label_encoder is not None
-                and self.util.exp_is_classification()
-            ):
-                df_labels[f"{target_column}_decoded"] = self.label_encoder.inverse_transform(
-                    df_labels[target_column]
-                )
-                target_column = f"{target_column}_decoded"
+            target_column = self._decode_labels(df_labels, target_column)
             plots = Plots()
             self.util.debug("generating PCA plot...")
             plots.scatter_plot(df_feats, df_labels, target_column, "pca")
