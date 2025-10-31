@@ -194,8 +194,10 @@ class Util:
         return (
             pd_series.dtype.name == "object"
             or pd_series.dtype.name == "bool"
+            or pd_series.dtype.name == "string"
             or isinstance(pd_series.dtype, pd.CategoricalDtype)
             or isinstance(pd_series.dtype, pd.BooleanDtype)
+            or isinstance(pd_series.dtype, pd.StringDtype)
         )
 
     def get_name(self):
