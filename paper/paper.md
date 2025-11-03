@@ -55,7 +55,7 @@ Configuration files contain sections: DATA (database location, target labels), F
 
 # Statement of Need
 
-Open-source tools accelerate science through security, customizability, and transparency. While several open-source tools exist for audio analysis—librosa @McFee:2015, TorchAudio @Yang:2021, pyAudioAnalysis @Giannakopoulos:2015, ESPNET @Watanabe:2018, and SpeechBrain @speechbrain:2021 — none specialize in speech analysis with high-level interfaces for novices. Nkululeko fills this gap with key principles: 
+Open-source tools accelerate science through security, customizability, and transparency. While several open-source tools exist for audio analysis—librosa [@McFee:2015], TorchAudio [@Yang:2021], pyAudioAnalysis [@Giannakopoulos:2015], ESPNET [@Watanabe:2018], and SpeechBrain [@speechbrain:2021]—none specialize in speech analysis with high-level interfaces for novices. Nkululeko fills this gap with key principles: 
 
 1. minimal programming skills (CSV data preparation and command-line execution); 
 
@@ -73,15 +73,15 @@ Nkululeko interfaces with Spotlight [@spotlight:2023] for enhanced metadata visu
 
 Nkululeko has been used in several research projects since 2022 [@nkululeko:2022]:
 
-- [@burkhardt:2022-syntact] evaluated synthesized emotional speech databases;
+- @burkhardt:2022-syntact evaluated synthesized emotional speech databases;
 
-- [@Burkhardt:2024] demonstrated bias detection in UACorpus and Androids datasets; 
+- @Burkhardt:2024 demonstrated bias detection in UACorpus and Androids datasets; 
 
-- [@Atmaja:2024a] showcased ensemble learning with uncertainty estimation;
+- @Atmaja:2024a showcased ensemble learning with uncertainty estimation;
 
-- [@Atmaja:2025] evaluated handcrafted acoustic features and self-supervised learning for pathological voice detection with early/late fusion strategies; 
+- @Atmaja:2025 evaluated handcrafted acoustic features and self-supervised learning for pathological voice detection with early/late fusion strategies; 
 
-- [@Atmaja:2025b] extended ensemble evaluations with performance weighting across five tasks and ten datasets.
+- @Atmaja:2025b extended ensemble evaluations with performance weighting across five tasks and ten datasets.
 
 # Acknowledgements
 
