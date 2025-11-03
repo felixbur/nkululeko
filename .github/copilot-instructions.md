@@ -18,7 +18,7 @@
 
 ```bash
 # Create and activate virtual environment
-python3 -m venv .venv
+uv venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate.bat
 
 # Install from source (for development)
@@ -208,7 +208,7 @@ All modules accept `--config <file.ini>`:
 
 1. **Clone and setup**:
    ```bash
-   git clone https://github.com/bagustris/nkululeko.git
+   git clone https://github.com/felixbur/nkululeko.git
    cd nkululeko
    python3 -m venv .venv && source .venv/bin/activate
    pip install -r requirements-test.txt
