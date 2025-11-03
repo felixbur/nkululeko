@@ -55,7 +55,7 @@ Configuration files contain sections: DATA (database location, target labels), F
 
 # Statement of Need
 
-Open-source tools accelerate science through security, customizability, and transparency. While several open-source tools exist for audio analysis—librosa [@McFee:2015], TorchAudio [@Yang:2021], pyAudioAnalysis [@Giannakopoulos:2015], ESPNET [@Watanabe:2018], and SpeechBrain [@speechbrain:2021]—none specialize in speech analysis with high-level interfaces for novices. Nkululeko fills this gap with key principles: 
+Open-source tools accelerate science through security, customizability, and transparency. While several open-source tools exist for audio analysis—librosa @McFee:2015, TorchAudio @Yang:2021, pyAudioAnalysis @Giannakopoulos:2015, ESPNET @Watanabe:2018, and SpeechBrain @speechbrain:2021 — none specialize in speech analysis with high-level interfaces for novices. Nkululeko fills this gap with key principles: 
 
 1. minimal programming skills (CSV data preparation and command-line execution); 
 
