@@ -1,12 +1,18 @@
 Changelog
 =========
 
+Version 1.0.2 (25-11-03)  
+------------------------
+* Applied consistent label decoding logic across t-SNE, UMAP, PCA, and custom scatter plot generation
+* Added automatic label decoding for visualization in scatter plots when labels have been encoded for classification tasks
+
+
 Version 1.0.1 (25-10-16)  
--------------------------
+------------------------
 * added text classification as predictor
 
 Version 1.0.0 (25-10-14)  
--------------------------
+------------------------
 * added sptk example
 * removed unused files from distribution
 
