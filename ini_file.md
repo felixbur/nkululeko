@@ -404,7 +404,7 @@ Model and training specifications. In general, default values should work for cl
 * **scatter**: make a scatter plot of combined train and test data, colored by label.
   * scatter = ['tsne', 'umap', 'pca']
 * **scatter.target**: target for the scatter plot (defaults to *target* value).
-  * scatter = ['age', 'gender', 'likability]
+  * scatter.target = ['age', 'gender', 'likability]
 * **scatter.dim**: dimension of reduction, can be 2 or 3.
   * scatter.dim = 2
 * **plot_tree**: Plot a decision tree for classification (Requires model = tree)
