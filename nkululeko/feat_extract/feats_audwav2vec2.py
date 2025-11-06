@@ -37,6 +37,17 @@ class Audwav2vec2Set(Featureset):
         device = self.util.config_val("MODEL", "device", cuda)
         self.model = audonnx.load(model_root, device=device)
         self.model_loaded = True
+        self.model_interface = audinterface.Feature(
+            self.model.labels("hidden_states"),
+            process_func=self.model,
+            process_func_args={
+                "outputs": "hidden_states",
+            },
+            sampling_rate=16000,
+            resample=True,
+            num_workers=self.n_jobs,
+            verbose=True,
+        )
 
     def extract(self):
         """Extract the features based on the initialized dataset or re-open them when found on disk."""
@@ -92,16 +103,5 @@ class Audwav2vec2Set(Featureset):
     def extract_sample(self, signal, sr):
         if not self.model_loaded:
             self._load_model()
-        hidden_states = audinterface.Feature(
-            self.model.labels("hidden_states"),
-            process_func=self.model,
-            process_func_args={
-                "outputs": "hidden_states",
-            },
-            sampling_rate=16000,
-            resample=True,
-            num_workers=self.n_jobs,
-            verbose=True,
-        )
-        result = hidden_states.process_signal(signal, sr)
+        result = self.model_interface.process_signal(signal, sr)
         return np.asarray(result.values).flatten()

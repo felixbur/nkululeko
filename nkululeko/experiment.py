@@ -961,6 +961,8 @@ class Experiment:
             f.close()
         except (TypeError, AttributeError) as error:
             self.feature_extractor.feat_extractor.model = None
+            if hasattr(self.feature_extractor.feat_extractor, "model_interface"):
+                self.feature_extractor.feat_extractor.model_interface = None
             f = open(filename, "wb")
             pickle.dump(self.__dict__, f)
             f.close()
