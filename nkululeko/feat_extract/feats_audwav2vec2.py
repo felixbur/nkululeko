@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import audeer
 import audinterface
+import audiofile
 import audonnx
 import numpy as np
 import torch
@@ -36,6 +37,17 @@ class Audwav2vec2Set(Featureset):
         device = self.util.config_val("MODEL", "device", cuda)
         self.model = audonnx.load(model_root, device=device)
         self.model_loaded = True
+        self.model_interface = audinterface.Feature(
+            self.model.labels("hidden_states"),
+            process_func=self.model,
+            process_func_args={
+                "outputs": "hidden_states",
+            },
+            sampling_rate=16000,
+            resample=True,
+            num_workers=self.n_jobs,
+            verbose=True,
+        )
 
     def extract(self):
         """Extract the features based on the initialized dataset or re-open them when found on disk."""
@@ -50,25 +62,18 @@ class Audwav2vec2Set(Featureset):
             self.util.debug(
                 "extracting audwav2vec2 embeddings, this might take a while..."
             )
-            if not self.model_loaded:
-                self._load_model()
-            hidden_states = audinterface.Feature(
-                self.model.labels("hidden_states"),
-                process_func=self.model,
-                process_func_args={
-                    "outputs": "hidden_states",
-                },
-                sampling_rate=16000,
-                resample=True,
-                num_workers=self.n_jobs,
-                verbose=True,
-            )
             df = pd.DataFrame()
-            for f, start, end in tqdm(self.data_df.index):
+            for file, start, end in tqdm(self.data_df.index):
                 try:
-                    f_df = hidden_states.process_file(f)
+                    if end == pd.NaT:
+                        signal, sr = audiofile.read(file, offset=start)
+                    else:
+                        signal, sr = audiofile.read(
+                            file, duration=end - start, offset=start
+                        )
+                    f_df = self.extract_sample_df(signal, sr, (file, start, end))
                 except Exception as ror:
-                    self.util.error(f"error {ror} on file {f}")
+                    self.util.error(f"error {ror} on file {file}")
                 df = pd.concat([df, f_df])
             self.df = df
             self.util.write_store(self.df, storage, store_format)
@@ -80,8 +85,23 @@ class Audwav2vec2Set(Featureset):
             self.util.debug("reusing extracted audmodel features.")
             self.df = self.util.get_store(storage, store_format)
 
+    def extract_sample_df(self, signal, sr, index_tuple):
+        """Extract features for a single sample and return as DataFrame.
+
+        Args:
+            signal: Audio signal
+            sr: Sample rate
+            index_tuple: Tuple of (file, start, end) for DataFrame index
+
+        Returns:
+            pd.DataFrame: Features as a single-row DataFrame with proper index
+        """
+        features = self.extract_sample(signal, sr)
+        # Create DataFrame with proper index matching data_df structure
+        return pd.DataFrame([features], index=[index_tuple])
+
     def extract_sample(self, signal, sr):
-        if self.model is None:
-            self.__init__("na", None)
-        result = self.model(signal, sr)
-        return np.asarray(result["hidden_states"].flatten())
+        if not self.model_loaded:
+            self._load_model()
+        result = self.model_interface.process_signal(signal, sr)
+        return np.asarray(result.values).flatten()

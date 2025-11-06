@@ -478,11 +478,24 @@ class Dataset:
             self.df_test = self.finish_up(self.df_test, storage_test)
         if self.df_train.shape[0] > 0:
             self.df_train = self.finish_up(self.df_train, storage_train)
+        self._report_split_size()
 
+    def _report_split_size(self):
         self.util.debug(
             f"{self.name}: {self.df_test.shape[0]} samples in test and"
             f" {self.df_train.shape[0]} samples in train"
         )
+        if self.split3:
+            self.util.debug(
+                f"{self.name}: {self.df_test.shape[0]} samples in test,"
+                f" {self.df_dev.shape[0]} samples in dev and"
+                f" {self.df_train.shape[0]} samples in train"
+            )
+        else:
+            self.util.debug(
+                f"{self.name}: {self.df_test.shape[0]} samples in test and"
+                f" {self.df_train.shape[0]} samples in train"
+            )
 
     def split_3(self):
         """Split the database into train, test and dev set."""
@@ -641,11 +654,7 @@ class Dataset:
             self.df_train = self.finish_up(self.df_train, storage_train)
         if self.df_dev.shape[0] > 0:
             self.df_dev = self.finish_up(self.df_dev, storage_dev)
-
-        self.util.debug(
-            f"{self.name}: {self.df_test.shape[0]} samples in test and"
-            f" {self.df_train.shape[0]} samples in train"
-        )
+        self._report_split_size()
 
     def finish_up(self, df, storage):
         df.is_labeled = self.is_labeled
@@ -971,6 +980,7 @@ class Dataset:
                         self.target,
                         f"{self.name}_dev_distplot",
                     )
+        self._report_split_size()
 
     def map_labels(self, df):
         pd.options.mode.chained_assignment = None

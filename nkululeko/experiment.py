@@ -384,11 +384,11 @@ class Experiment:
 
     def _decode_labels(self, df_labels, column_name):
         """Decode encoded labels for visualization.
-        
+
         Args:
             df_labels: DataFrame containing the labels
             column_name: Name of the column to decode
-            
+
         Returns:
             str: The column name to use (either decoded version or original)
         """
@@ -741,7 +741,7 @@ class Experiment:
                     and self.label_encoder is not None
                     and self.util.exp_is_classification()
                 )
-                
+
                 if is_encoded_target:
                     # Decode the labels for visualization
                     target_col = self._decode_labels(df_labels, scat_target)
@@ -849,7 +849,7 @@ class Experiment:
         self.reports = self.runmgr.best_results
         last_epochs = self.runmgr.last_epochs
         # try to save yourself
-        save = self.util.config_val("EXP", "save", False)
+        save = self.util.config_val("EXP", "save", True)
         if save:
             # save the experiment for future use
             self.save(self.util.get_save_name())
@@ -961,6 +961,8 @@ class Experiment:
             f.close()
         except (TypeError, AttributeError) as error:
             self.feature_extractor.feat_extractor.model = None
+            if hasattr(self.feature_extractor.feat_extractor, "model_interface"):
+                self.feature_extractor.feat_extractor.model_interface = None
             f = open(filename, "wb")
             pickle.dump(self.__dict__, f)
             f.close()

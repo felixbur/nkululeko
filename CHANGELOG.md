@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 1.0.3 (25-11-06)  
+------------------------
+* added implementation to demo segmented index databases
+* made experiment.save = True default
+
+
 Version 1.0.2 (25-11-03)  
 ------------------------
 * Applied consistent label decoding logic across t-SNE, UMAP, PCA, and custom scatter plot generation

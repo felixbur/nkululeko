@@ -5,9 +5,13 @@ import audformat
 import audiofile
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.util import Util
+import warnings
+
+warnings.simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
 
 
 class Demo_predictor:
@@ -40,9 +44,26 @@ class Demo_predictor:
                 try:
                     in_df = audformat.utils.read_csv(self.file)
                     if audformat.is_segmented_index(in_df.index):
-                        self.util.error(
-                            f"segmented index not implemented yet: {self.file}"
-                        )
+                        df_res = in_df.copy()
+                        for idx, (file, start, end) in enumerate(
+                            tqdm(in_df.index.to_list())
+                        ):
+                            if end == pd.NaT:
+                                signal, sr = audiofile.read(file, offset=start)
+                            else:
+                                signal, sr = audiofile.read(
+                                    file, duration=end - start, offset=start
+                                )
+                            res_dict = self.predict_signal(signal, sr)
+                            # Add all result dictionary values to new columns
+                            for key, value in res_dict.items():
+                                df_res.loc[(file, start, end), key] = value
+                        if self.outfile is not None:
+                            df_res.to_csv(self.outfile)
+                            self.util.debug(f"saved predictions to {self.outfile}")
+                        else:
+                            self.util.debug(df_res)
+                        return
                     else:
                         file_list = in_df.index.values
                 except (ValueError, AttributeError):
@@ -96,7 +117,6 @@ class Demo_predictor:
                     lab = self.label_encoder.inverse_transform(ak)[0]
                     dict_2[lab] = f"{result_dict[k]:.3f}"
                 dict_2["predicted"] = max(dict_2, key=dict_2.get)
-                print(dict_2)
                 return dict_2
             else:
                 print(result_dict)
