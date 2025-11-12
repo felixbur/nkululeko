@@ -6,7 +6,7 @@ Some abilities that Nkululeko provides: combines acoustic features and machine l
 
 Nkululeko orchestrates data loading, feature extraction, and model training, allowing you to specify your experiment in a configuration file. The framework handles the process from raw data to trained model and evaluation, making it easy to run machine learning experiments without directly coding in Python.
 
-<img src="meta/images/nkulu_in_one_picture.png" />
+<img src="meta/images/nkulu_in_one_picture.png" width="50%"/>
 
 ## Who is this for?
 Nkululeko is for speech processing learners, researchers and ML practitioners focused on speaker characteristics, e.g., emotion, age, gender, or disorder detection.
