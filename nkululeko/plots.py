@@ -725,7 +725,8 @@ class Plots:
                 if self.util.is_categorical(labels[cat_var]):
                     plot_df = features[[feat_x, feat_y]]
                     plot_df = pd.concat([plot_df, labels[cat_var]], axis=1)
-                    ax = sns.scatterplot(data=plot_df, x=feat_x, y=feat_y, hue=cat_var)
+                    # ax = sns.scatterplot(data=plot_df, x=feat_x, y=feat_y, hue=cat_var)
+                    ax = sns.pairplot(data=plot_df, x_vars=feat_x, y_vars=feat_y, hue=cat_var, kind="reg", height=7)
                 else: 
                     plot_df = features[[feat_x, feat_y]]
                     plot_df = pd.concat([plot_df, labels[cat_var]], axis=1)

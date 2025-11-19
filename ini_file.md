@@ -425,6 +425,8 @@ Model and training specifications. In general, default values should work for cl
   * print_colvals = False
 * **plot_features**: plot distributions for this features in any case, irrespective of their importance
   * plot_features = ["speechrate", "mean_f0"]
+* **regplot**: do scatter plots for two features, and show categories. When two values are given, the target is used as category, else one could be stated.
+  * regplot = [["feat_a", "feat_b"], ["feat_a", "feat_b", "emotion"]]
 
 ### [PREDICT](#predict)
 
