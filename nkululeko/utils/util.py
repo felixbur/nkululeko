@@ -634,6 +634,10 @@ class Util:
         except Exception as e:
             self.error(f"Unexpected error reading floats from {file_path}: {e}")
 
+    def df_to_cont_dict(self, df, categorical_column, value_column):
+        """Convert a DataFrame with two continuous columns into a dictionary with column names as keys"""
+        pass
+
     def df_to_categorical_dict(self, df, categorical_column, value_column):
         """Convert a DataFrame with a categorical and real-valued column to a dict.
 

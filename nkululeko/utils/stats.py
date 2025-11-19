@@ -11,9 +11,7 @@ def check_na(a):
         count = np.count_nonzero(np.isnan(a))
         print(f"WARNING: got {count} Nans (of {len(a)}), setting to 0")
         a[np.isnan(a)] = 0
-        return a
-    else:
-        return a
+    return a
 
 
 def cohen_d(d1: np.array, d2: np.array) -> float:

@@ -1,7 +1,7 @@
 # plots.py
 import ast
 import os
-
+import re
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -705,6 +705,57 @@ class Plots:
                 filename,
             )
         )
+
+    def regplot(self, reglist, labels, features):
+        title = "regplot"
+        if len(reglist) > 1 and len(reglist) < 4:
+            if len(reglist) ==2:
+                cat_var = "class_label"
+            else:
+                cat_var = reglist[2]
+            # remove fullstops in the name
+            feat_x = str(reglist[0]).replace(".", "-")
+            feat_y = str(reglist[1]).replace(".", "-")
+            # one up because of the runs
+            fig_dir = audeer.path(self.util.get_path("fig_dir"), "..")
+            filename = audeer.path(
+                fig_dir, f"feat_{title}_{feat_x}-{feat_y}.{self.format}"
+            )
+            try:
+                if self.util.is_categorical(labels[cat_var]):
+                    plot_df = features[[feat_x, feat_y]]
+                    plot_df = pd.concat([plot_df, labels[cat_var]], axis=1)
+                    ax = sns.scatterplot(data=plot_df, x=feat_x, y=feat_y, hue=cat_var)
+                else: 
+                    plot_df = features[[feat_x, feat_y]]
+                    plot_df = pd.concat([plot_df, labels[cat_var]], axis=1)
+                    ax = sns.scatterplot(data=plot_df, x=feat_x, y=feat_y, sizes=labels[cat_var])
+            except KeyError as ke:
+                r = re.compile(f"{ke.args[0]}*")
+                s_list = list(filter(r.match, features.columns)) 
+                self.util.error(f"regplot feature not found: {ke}\nDid you mean {s_list} ?")
+            val_dict = {}
+            val_dict["feat_a"] = features[feat_x].values
+            val_dict["feat_b"] = features[feat_y].values
+            mean_featnum = features.shape[0]
+            pairwise_results, overall_results = su.find_most_significant_difference(
+                val_dict, mean_featnum
+            )
+            if self.titles:
+                title = (
+                    f"{title} samples ({features.shape[0]})\n"
+                    + f"{pairwise_results['approach']}: {pairwise_results['combo']}:"
+                    f"{pairwise_results['significance']})"
+                )
+                ax.set(title=title)
+
+            fig = ax.figure
+            plt.tight_layout()
+            plt.savefig(filename)
+            self.util.debug(f"saved regplot to {filename}")
+            fig.clear()
+            plt.close(fig)
+
 
     def plot_tree(self, model, features):
         from sklearn import tree
