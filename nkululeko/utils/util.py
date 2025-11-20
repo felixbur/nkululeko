@@ -706,3 +706,40 @@ class Util:
         df[target] = df[target].astype("string")
         df[target] = df[target].map(mapping)
         return df
+
+    def scale_to_range(self, values, new_min=0, new_max=1):
+        """Scale a list of numbers to a new min and max value.
+
+        Args:
+            values: List or array of numeric values to scale
+            new_min: Target minimum value (default: 0)
+            new_max: Target maximum value (default: 1)
+
+        Returns:
+            numpy.ndarray: Scaled values in the range [new_min, new_max]
+
+        Examples:
+        --------
+        >>> util = Util()
+        >>> values = [1, 2, 3, 4, 5]
+        >>> scaled = util.scale_to_range(values, 0, 10)
+        >>> # Returns: [0.0, 2.5, 5.0, 7.5, 10.0]
+        >>> scaled = util.scale_to_range(values, -1, 1)
+        >>> # Returns: [-1.0, -0.5, 0.0, 0.5, 1.0]
+        """
+        values = np.array(values, dtype=float)
+
+        if len(values) == 0:
+            return values
+
+        old_min = np.min(values)
+        old_max = np.max(values)
+
+        # Handle case where all values are the same
+        if old_min == old_max:
+            return np.full_like(values, (new_min + new_max) / 2)
+
+        # Apply min-max scaling formula
+        scaled = (values - old_min) / (old_max - old_min) * (new_max - new_min) + new_min
+
+        return scaled
