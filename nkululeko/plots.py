@@ -710,7 +710,7 @@ class Plots:
     def regplot(self, reglist, labels, features):
         title = "regplot"
         if len(reglist) > 1 and len(reglist) < 4:
-            if len(reglist) ==2:
+            if len(reglist) == 2:
                 cat_var = "class_label"
             else:
                 cat_var = reglist[2]
