@@ -338,17 +338,13 @@ def find_most_significant_difference(
     """
     if len(distributions) < 2:
         raise ValueError("Need at least 2 distributions for comparison")
-    approach = ""
-
     results_bin = None
     res_all = None
     if mean_featnum >= 30:
-        approach = "t-test"
         results_bin = find_most_significant_difference_ttests(
             distributions, equal_var=False
         )
     else:
-        approach = "mann-whitney"
         results_bin = find_most_significant_difference_mannwhitney(distributions)
 
     if len(distributions) > 2:
