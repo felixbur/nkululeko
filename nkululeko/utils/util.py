@@ -634,10 +634,32 @@ class Util:
         except Exception as e:
             self.error(f"Unexpected error reading floats from {file_path}: {e}")
 
-    def df_to_cont_dict(self, df, categorical_column, value_column):
-        """Convert a DataFrame with two continuous columns into a dictionary with column names as keys"""
-        pass
+    def df_to_cont_dict(self, df, column1, column2):
+        """Convert a DataFrame with two continuous columns into a dictionary with column names as keys.
 
+        Args:
+            df (pd.DataFrame): Input DataFrame
+            column1 (str): Name of the first continuous column
+            column2 (str): Name of the second continuous column
+
+        Returns:
+            dict: {column1: [...], column2: [...]}
+
+        Example:
+        --------
+        >>> util = Util()
+        >>> df = pd.DataFrame({'x': [1.0, 2.0], 'y': [3.0, 4.0]})
+        >>> util.df_to_cont_dict(df, 'x', 'y')
+        {'x': [1.0, 2.0], 'y': [3.0, 4.0]}
+        """
+        if column1 not in df.columns:
+            self.error(f"Column '{column1}' not found in DataFrame")
+        if column2 not in df.columns:
+            self.error(f"Column '{column2}' not found in DataFrame")
+        return {
+            column1: df[column1].tolist(),
+            column2: df[column2].tolist()
+        }
     def df_to_categorical_dict(self, df, categorical_column, value_column):
         """Convert a DataFrame with a categorical and real-valued column to a dict.
 
