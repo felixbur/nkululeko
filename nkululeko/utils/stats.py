@@ -207,7 +207,7 @@ def get_2cont_effect(
             - significance: Human-readable significance level string
             - p-val: Raw p-value from the test
     """
-    if normaltest(variable1) and normaltest(variable2) and len(variable1)>30:
+    if normaltest(variable1) and normaltest(variable2) and len(variable1) > 30:
         _, p_value, significance = get_t_test_effect(variable1, variable2)
         approach = "t-test"
     else:
