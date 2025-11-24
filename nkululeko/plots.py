@@ -761,7 +761,7 @@ class Plots:
                     #plt.title('Bubble Plot with Seaborn\n(Bubble size represents feature_3)', fontsize=14)
                     plt.grid(True, alpha=0.3)
             except KeyError as ke:
-                r = re.compile(f"{ke.args[0]}*")
+                r = re.compile(f".*{re.escape(ke.args[0])}.*")
                 s_list = list(filter(r.match, features.columns)) 
                 self.util.error(f"regplot feature not found: {ke}\nDid you mean {s_list} ?")
             pearson = stats.pearsonr(features[feat_x], features[feat_y])
