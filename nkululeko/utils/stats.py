@@ -140,8 +140,6 @@ def get_t_test_effect(
     equal_var = False
     if p_levene > .05:
         equal_var = True
-        
-
     # Perform t-test
     t_stat, p_value = stats.ttest_ind(variable1, variable2, equal_var=equal_var)
 
