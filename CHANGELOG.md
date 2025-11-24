@@ -4,7 +4,7 @@ Changelog
 
 Version 1.1.0 (25-11-20)  
 ------------------------
-* added regression plots for two continuous featuers and a 3rd target variable
+* added regression plots for two continuous features and a 3rd target variable
 
 Version 1.0.3 (25-11-06)  
 ------------------------
