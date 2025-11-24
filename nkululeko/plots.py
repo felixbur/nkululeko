@@ -775,7 +775,7 @@ class Plots:
                 data_df = features
                 data_df[self.target] = labels["class_label"].values
                 data_df["speaker"] = labels["speaker"].values
-                model = smf.mixedlm(f"{feat_x} ~ emotion * {feat_y}", 
+                model = smf.mixedlm(f"{feat_x} ~ {self.target} * {feat_y}", 
                                     data_df, 
                                     groups=data_df["speaker"])
                 result = model.fit()
