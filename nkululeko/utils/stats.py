@@ -211,7 +211,7 @@ def get_2cont_effect(
         _, p_value, significance = get_t_test_effect(variable1, variable2)
         approach = "t-test"
     else:
-        _, p_value, significance =  get_mannwhitney_effect(variable1, variable2)
+        _, p_value, significance = get_mannwhitney_effect(variable1, variable2)
         approach = "mann-whitney"
     significance = p_value_to_string(p_value)
     return {"approach":approach, "significance":significance, "p-val":p_value}
