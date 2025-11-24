@@ -342,7 +342,7 @@ def find_most_significant_difference(
     res_all = None
     if mean_featnum >= 30:
         results_bin = find_most_significant_difference_ttests(
-            distributions, equal_var=False
+            distributions
         )
     else:
         results_bin = find_most_significant_difference_mannwhitney(distributions)
