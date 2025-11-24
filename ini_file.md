@@ -419,7 +419,7 @@ Model and training specifications. In general, default values should work for cl
   * spotlight = False
 * **shap**: compute [SHAP](https://shap.readthedocs.io/en/latest/) values, need to run the model first.
   * shap = False
-* **print_stats**: whether (possibly extensive) results from statistical tests should be printed ouot on the debug channel
+* **print_stats**: whether (possibly extensive) results from statistical tests should be printed out on the debug channel
   * print_stats = False
 * **print_colvals**: print the unique values for all columns in the data
   * print_colvals = False
