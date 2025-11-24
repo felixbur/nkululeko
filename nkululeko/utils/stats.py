@@ -11,9 +11,7 @@ def check_na(a):
         count = np.count_nonzero(np.isnan(a))
         print(f"WARNING: got {count} Nans (of {len(a)}), setting to 0")
         a[np.isnan(a)] = 0
-        return a
-    else:
-        return a
+    return a
 
 
 def cohen_d(d1: np.array, d2: np.array) -> float:
@@ -118,7 +116,7 @@ def p_value_to_string(p_val: float) -> str:
 
 
 def get_t_test_effect(
-    variable1: np.array, variable2: np.array, equal_var: bool = True
+    variable1: np.array, variable2: np.array
 ) -> tuple[float, float, str]:
     """Get t-test statistics for two real-numbered distributions.
 
@@ -127,17 +125,21 @@ def get_t_test_effect(
     Args:
         variable1: first real-numbered distribution
         variable2: second real-numbered distribution
-        equal_var: whether to assume equal variances (default True)
-                  If False, uses Welch's t-test
     Returns:
         t-statistic
         p-value
         significance interpretation string
     """
+
     # Handle NaN values
     variable1 = check_na(variable1)
     variable2 = check_na(variable2)
 
+    # check for equal variance
+    _, p_levene = stats.levene(variable1, variable2)
+    equal_var = False
+    if p_levene > .05:
+        equal_var = True
     # Perform t-test
     t_stat, p_value = stats.ttest_ind(variable1, variable2, equal_var=equal_var)
 
@@ -175,9 +177,45 @@ def get_mannwhitney_effect(
 
     return float(u_stat), float(p_value), significance
 
+def normaltest(variable1: np.array):
+    # This function tests the null hypothesis that a sample comes from a normal distribution.
+    res = stats.normaltest(variable1)
+    if res.pvalue >= .05:
+        return True
+    return False
+
+
+
+def get_2cont_effect(
+    variable1: np.array, variable2: np.array
+) -> tuple[float, float, str]:
+    """Calculate statistical significance between two continuous variables.
+
+    Automatically selects the appropriate statistical test based on data distribution:
+    - Uses t-test if both variables are normally distributed and sample size > 30
+    - Otherwise uses Mann-Whitney U test (non-parametric alternative)
+
+    Args:
+        variable1: First continuous variable array
+        variable2: Second continuous variable array
+
+    Returns:
+        Dictionary containing:
+            - approach: Statistical test used ("t-test" or "mann-whitney")
+            - significance: Human-readable significance level string
+            - p-val: Raw p-value from the test
+    """
+    if normaltest(variable1) and normaltest(variable2) and len(variable1) > 30:
+        _, p_value, significance = get_t_test_effect(variable1, variable2)
+        approach = "t-test"
+    else:
+        _, p_value, significance = get_mannwhitney_effect(variable1, variable2)
+        approach = "mann-whitney"
+    significance = p_value_to_string(p_value)
+    return {"approach": approach, "significance": significance, "p-val": p_value}
 
 def find_most_significant_difference_ttests(
-    distributions: dict, equal_var: bool = True
+    distributions: dict
 ) -> tuple[str, float, float, str, dict]:
     """Find the combination with the most significant t-test difference among n distributions.
 
@@ -203,7 +241,7 @@ def find_most_significant_difference_ttests(
         name1, name2 = combo[0], combo[1]
         dist1, dist2 = distributions[name1], distributions[name2]
 
-        t_stat, p_value, significance = get_t_test_effect(dist1, dist2, equal_var)
+        t_stat, p_value, significance = get_t_test_effect(dist1, dist2)
 
         combo_key = f"{name1}-{name2}"
         results[combo_key] = {
@@ -298,15 +336,15 @@ def find_most_significant_difference(
     """
     if len(distributions) < 2:
         raise ValueError("Need at least 2 distributions for comparison")
-    approach = ""
+    results_bin = None
+    res_all = None
     if mean_featnum >= 30:
         results_bin = find_most_significant_difference_ttests(
-            distributions, equal_var=False
+            distributions
         )
     else:
         results_bin = find_most_significant_difference_mannwhitney(distributions)
 
-    res_all = None
     if len(distributions) > 2:
         # Use Kruskal-Wallis test for >2 distributions
         h_stat, p_value, significance = get_kruskal_wallis_effect(distributions)

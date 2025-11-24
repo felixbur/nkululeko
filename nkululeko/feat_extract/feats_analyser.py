@@ -46,6 +46,7 @@ class FeatureAnalyser:
 
         self.features = df_features
         self.label = label
+        self.plots = Plots()
 
     def _get_importance(self, model, permutation):
         model.fit(self.features, self.labels)
@@ -367,11 +368,16 @@ class FeatureAnalyser:
         sample_selection = self.util.config_val("EXPL", "sample_selection", "all")
         for feature in features_to_plot:
             # plot_feature(self, title, feature, label, df_labels, df_features):
-            _plots = Plots()
-            _plots.plot_feature(
+            self.plots.plot_feature(
                 sample_selection,
                 feature,
                 "class_label",
                 self.df_labels,
                 self.features,
             )
+        # Check for feature combinations to do a regression plot
+        regplot_list = self.util.config_val("EXPL", "regplot", None)
+        if regplot_list:
+            regplot_list = ast.literal_eval(regplot_list)
+            for reglist in regplot_list:
+                self.plots.regplot(reglist, self.df_labels, self.features)

@@ -634,6 +634,32 @@ class Util:
         except Exception as e:
             self.error(f"Unexpected error reading floats from {file_path}: {e}")
 
+    def df_to_cont_dict(self, df, column1, column2):
+        """Convert a DataFrame with two continuous columns into a dictionary with column names as keys.
+
+        Args:
+            df (pd.DataFrame): Input DataFrame
+            column1 (str): Name of the first continuous column
+            column2 (str): Name of the second continuous column
+
+        Returns:
+            dict: {column1: [...], column2: [...]}
+
+        Example:
+        --------
+        >>> util = Util()
+        >>> df = pd.DataFrame({'x': [1.0, 2.0], 'y': [3.0, 4.0]})
+        >>> util.df_to_cont_dict(df, 'x', 'y')
+        {'x': [1.0, 2.0], 'y': [3.0, 4.0]}
+        """
+        if column1 not in df.columns:
+            self.error(f"Column '{column1}' not found in DataFrame")
+        if column2 not in df.columns:
+            self.error(f"Column '{column2}' not found in DataFrame")
+        return {
+            column1: df[column1].tolist(),
+            column2: df[column2].tolist()
+        }
     def df_to_categorical_dict(self, df, categorical_column, value_column):
         """Convert a DataFrame with a categorical and real-valued column to a dict.
 
@@ -702,3 +728,40 @@ class Util:
         df[target] = df[target].astype("string")
         df[target] = df[target].map(mapping)
         return df
+
+    def scale_to_range(self, values, new_min=0, new_max=1):
+        """Scale a list of numbers to a new min and max value.
+
+        Args:
+            values: List or array of numeric values to scale
+            new_min: Target minimum value (default: 0)
+            new_max: Target maximum value (default: 1)
+
+        Returns:
+            numpy.ndarray: Scaled values in the range [new_min, new_max]
+
+        Examples:
+        --------
+        >>> util = Util()
+        >>> values = [1, 2, 3, 4, 5]
+        >>> scaled = util.scale_to_range(values, 0, 10)
+        >>> # Returns: [0.0, 2.5, 5.0, 7.5, 10.0]
+        >>> scaled = util.scale_to_range(values, -1, 1)
+        >>> # Returns: [-1.0, -0.5, 0.0, 0.5, 1.0]
+        """
+        values = np.array(values, dtype=float)
+
+        if len(values) == 0:
+            return values
+
+        old_min = np.min(values)
+        old_max = np.max(values)
+
+        # Handle case where all values are the same
+        if old_min == old_max:
+            return np.full_like(values, (new_min + new_max) / 2)
+
+        # Apply min-max scaling formula
+        scaled = (values - old_min) / (old_max - old_min) * (new_max - new_min) + new_min
+
+        return scaled
