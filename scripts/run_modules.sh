@@ -131,7 +131,6 @@ explore_ini_files=(
     exp_emodb_explore_features.ini
     exp_agedb_explore_data.ini
     exp_polish_gmm.ini  # shap
-    exp_explore.ini # test splotlight
 )
 
 ensemble_ini_files=(
