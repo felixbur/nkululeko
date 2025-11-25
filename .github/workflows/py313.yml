@@ -1,15 +1,25 @@
 name: Test Installation Python 3.13
 
 on: [push, pull_request]
+
 jobs:
   test-install:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - name: Free Disk Space
+      run: |
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /opt/ghc
+        sudo rm -rf /usr/local/share/boost
+        sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+        df -h
     - name: Set up Python 3.13
       uses: actions/setup-python@v4
       with:
         python-version: '3.13'
+    - name: Install uv
+      run: pip install uv
     - name: Test installation
       run: |
         python tests/test_install.py

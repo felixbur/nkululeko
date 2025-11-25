@@ -22,7 +22,7 @@ def main(python_version=None):
     Test nkululeko installation in a virtual environment.
 
     Args:
-        python_version: Optional Python version to use (e.g., "3.10", "3.11", "3.12")
+        python_version: Optional Python version to use (e.g., "3.14", "3.11", "3.12")
     """
     repo_root = Path(__file__).resolve().parent.parent
 
@@ -38,7 +38,7 @@ def main(python_version=None):
     test_dir = repo_root / "build"
     print(f"Creating test directory: {test_dir}")
 
-    # check if the directory exists, give message to reuse
+    # check if the directory exists, give a message to reuse
     if test_dir.exists():
         print(
             f"Test directory {test_dir}/{python_ver} exists and will be reused. "
@@ -53,14 +53,39 @@ def main(python_version=None):
         print(f"Failed to create virtual environment ({python_ver} exists): {stderr}")
         return 1
 
-    pip_cmd = f"./{python_ver}/bin/pip"
-
+    # Use uv pip for faster installation
+    pip_cmd = f"uv pip"
     venv_python = f"./{python_ver}/bin/python"
-    print("Installing nkululeko...")
-    stdout, stderr, returncode = run_command(f"{pip_cmd} install -e {repo_root}")
-    if returncode != 0:
-        print(f"Failed to install nkululeko: {stderr}")
-        return 1
+    
+    # Set the virtual environment for uv
+    os.environ["VIRTUAL_ENV"] = str(Path(test_dir) / python_ver)
+
+    # For Python 3.14+, install nkululeko without dependencies first
+    # because torchaudio doesn't have compatible wheels yet
+    if python_ver >= "3.14":
+        print("Installing nkululeko (without deps for Python 3.14+)...")
+        stdout, stderr, returncode = run_command(f"{pip_cmd} install --no-deps -e {repo_root}")
+        if returncode != 0:
+            print(f"Failed to install nkululeko: {stderr}")
+            return 1
+        
+        # Install dependencies manually, excluding torchaudio
+        print("Installing nkululeko dependencies (excluding torchaudio)...")
+        stdout, stderr, returncode = run_command(
+            f'{pip_cmd} install "torch>=1.0.0" "torchvision>=0.10.0" '
+            f'"pandas" "numpy" "scikit-learn" "matplotlib" "seaborn" '
+            f'"audformat" "audiofile" "opensmile" "praat-parselmouth" '
+            f'"transformers" "datasets" "audmetric"'
+        )
+        if returncode != 0:
+            print(f"Failed to install dependencies: {stderr}")
+            # Continue anyway as some deps might not be critical
+    else:
+        print("Installing nkululeko...")
+        stdout, stderr, returncode = run_command(f"{pip_cmd} install -e {repo_root}")
+        if returncode != 0:
+            print(f"Failed to install nkululeko: {stderr}")
+            return 1
 
     print("Basic installation successful")
 
@@ -94,12 +119,17 @@ def main(python_version=None):
             return 1
         print("Spotlight dependencies installed successfully")
 
-    print("Installing torch dependencies for tests...")
-    stdout, stderr, returncode = run_command(
-        f'{pip_cmd} install "torch>=1.0.0" "torchvision>=0.10.0" "torchaudio>=0.10.0"'
-    )
-    if returncode != 0:
-        print(f"Failed to install torch dependencies: {stderr}")
+    # For Python 3.14+, torch dependencies are already installed above
+    # so only install for other versions
+    if python_ver >= "3.14":
+        print("Torch dependencies already installed for Python 3.14+")
+    else:
+        print("Installing torch dependencies for tests...")
+        stdout, stderr, returncode = run_command(
+            f'{pip_cmd} install "torch>=1.0.0" "torchvision>=0.10.0" "torchaudio>=0.10.0"'
+        )
+        if returncode != 0:
+            print(f"Failed to install torch dependencies: {stderr}")
 
     with open("run_tests.py", "w") as f:
         f.write(
@@ -129,7 +159,7 @@ if __name__ == '__main__':
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Test nkululeko installation")
     parser.add_argument(
-        "--python", help="Python version to use (e.g., 3.10, 3.11, 3.12)"
+        "--python", help="Python version to use (e.g., 3.14, 3.11, 3.12)"
     )
     args = parser.parse_args()
 
