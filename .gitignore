@@ -110,6 +110,10 @@ others/
 
 # dataset
 data/*/** 
+# Exception: allow descr.yml files in database folders
+!data/*/descr.yml
+# Exception: allow the test database folder
+!data/test/
 
 # Ignore all symbolic links
 *.lnk

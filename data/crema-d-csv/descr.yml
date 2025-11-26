@@ -1,0 +1,5 @@
+name: crema-d-csv
+target: emotion
+description: Crowd-sourced Emotional Multimodal Actors Dataset (CSV version)
+access: public
+license: Custom academic/research use

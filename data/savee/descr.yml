@@ -1,0 +1,5 @@
+name: savee
+target: emotion
+description: English, from tfds
+access: restricted
+license: Custom academic/research use

@@ -1,0 +1,5 @@
+name: test
+target: none
+description: Test data for nkululeko
+access: public
+license: unknown

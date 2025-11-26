@@ -1,0 +1,5 @@
+name: emorynlp
+target: emotion
+description: English Emotion Dataset from Friends TV Show
+access: public
+license: unknown

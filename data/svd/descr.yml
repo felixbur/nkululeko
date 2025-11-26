@@ -1,0 +1,5 @@
+name: svd
+target: pahtological speech
+description: German speech data for detecting various pathological voices
+access: public
+license: unknown

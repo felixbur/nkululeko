@@ -1,0 +1,5 @@
+name: keio-esd
+target: emotion
+description: Keio Emotional Speech Dataset
+access: public
+license: unknown

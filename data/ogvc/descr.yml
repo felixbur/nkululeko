@@ -1,0 +1,5 @@
+name: ogvc
+target: emotion,intensity
+description: Acted emotional speech with 8 emotions and 4 intensity levels
+access: public
+license: unknown
