@@ -89,6 +89,13 @@ git commit -m "Add my-emotion-dataset database"
 git push
 ```
 
+**Note**: The CI workflow will automatically validate:
+- Your `descr.yml` file has all required fields
+- The `README.md` is properly updated
+- All database folders have valid metadata
+
+See `CI_VALIDATION.md` for details on the automated checks.
+
 ## Examples
 
 ### Example 1: Simple Emotion Database
