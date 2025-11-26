@@ -9,7 +9,9 @@ if os.path.basename(os.getcwd()) == "data":
 else:
     root = "./data"
 
-mdFile = MdUtils(file_name=os.path.join(root, "README.md"), title="Nkululeko Data Directory")
+mdFile = MdUtils(
+    file_name=os.path.join(root, "README.md"), title="Nkululeko Data Directory"
+)
 mdFile.create_md_file()
 mdFile.new_header(level=1, title="README Creation")
 mdFile.new_paragraph(
@@ -22,7 +24,6 @@ mdFile.new_paragraph(
     "`data/make_readme.py` script (needs `mdutils` package). "
     "To update this file, run the script again after adding new datasets "
     "and adding the necessary information to each database folder's `descr.yml` file. "
-
 )
 mdFile.new_header(level=2, title="Accessibility")
 mdFile.new_paragraph(
@@ -52,28 +53,30 @@ db_num = 0
 # Get all subdirectories in the data folder
 for entry in os.listdir(root):
     folder_path = os.path.join(root, entry)
-    
+
     # Skip if not a directory
     if not os.path.isdir(folder_path):
         continue
-    
+
     # Look for descr.yml in the folder
     descr_file = os.path.join(folder_path, "descr.yml")
     if os.path.exists(descr_file):
         try:
             with open(descr_file, "r") as f:
                 descr = yaml.safe_load(f)
-            
+
             # Handle both old (list-based) and new (dict-based) formats
             if isinstance(descr, dict) and "name" in descr:
                 # New format: simple dictionary
-                datasets.append({
-                    "name": descr.get("name", entry),
-                    "target": descr.get("target", "unknown"),
-                    "description": descr.get("description", ""),
-                    "access": descr.get("access", "unknown"),
-                    "license": descr.get("license", "unknown")
-                })
+                datasets.append(
+                    {
+                        "name": descr.get("name", entry),
+                        "target": descr.get("target", "unknown"),
+                        "description": descr.get("description", ""),
+                        "access": descr.get("access", "unknown"),
+                        "license": descr.get("license", "unknown"),
+                    }
+                )
                 db_num += 1
             else:
                 print(f"Warning: {descr_file} has unexpected format, skipping.")
@@ -86,13 +89,9 @@ datasets.sort(key=lambda x: x["name"].lower())
 # Build the table
 table_list = ["Name", "Target", "Description", "Access", "License"]
 for ds in datasets:
-    table_list.extend([
-        ds["name"],
-        ds["target"],
-        ds["description"],
-        ds["access"],
-        ds["license"]
-    ])
+    table_list.extend(
+        [ds["name"], ds["target"], ds["description"], ds["access"], ds["license"]]
+    )
 
 mdFile.new_table(columns=5, rows=db_num + 1, text=table_list, text_align="left")
 
@@ -108,6 +107,4 @@ mdFile.new_line(
 mdFile.new_line()
 mdFile.create_md_file()
 
-print(
-    f"README.md file created with {db_num} datasets in {root} directory."
-)
+print(f"README.md file created with {db_num} datasets in {root} directory.")

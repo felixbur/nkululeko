@@ -5,6 +5,7 @@ in each database folder.
 """
 
 import os
+
 import yaml
 
 # Read the central descr.yml
@@ -20,16 +21,16 @@ for dataset_key, dataset_info in central_descr.items():
     descr = dataset_info[2]["descr"]
     access = dataset_info[3]["access"]
     license_info = dataset_info[4].get("license", "unknown")
-    
+
     # Create the simplified dictionary format
     new_descr = {
         "name": name,
         "target": target,
         "description": descr,
         "access": access,
-        "license": license_info
+        "license": license_info,
     }
-    
+
     # Check if the folder exists
     folder_path = name
     if os.path.isdir(folder_path):
