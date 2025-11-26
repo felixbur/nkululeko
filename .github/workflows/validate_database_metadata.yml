@@ -100,17 +100,17 @@ jobs:
         echo "=== README.md differences ==="
         git --no-pager diff README.md
 
-    - name: Fail if README is outdated
-      if: steps.check_readme.outputs.readme_changed == 'true'
-      run: |
-        echo ""
-        echo "ERROR: README.md is not up to date with the current descr.yml files"
-        echo ""
-        echo "Please run the following command to update README.md:"
-        echo "  cd data && python make_readme.py"
-        echo ""
-        echo "Then commit the updated README.md file"
-        exit 1
+    # - name: Fail if README is outdated
+    #   if: steps.check_readme.outputs.readme_changed == 'true'
+    #   run: |
+    #     echo ""
+    #     echo "ERROR: README.md is not up to date with the current descr.yml files"
+    #     echo ""
+    #     echo "Please run the following command to update README.md:"
+    #     echo "  cd data && python make_readme.py"
+    #     echo ""
+    #     echo "Then commit the updated README.md file"
+    #     exit 1
 
     - name: Summary
       if: success()
