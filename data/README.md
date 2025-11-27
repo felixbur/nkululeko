@@ -26,12 +26,14 @@ To support open science and reproducible research, we encourage you to submit PR
 |[baved](baved/)|emotion|Basic-Arabic-Vocal-Emotions-Dataset|public|CC BY 4.0|
 |[cafe](cafe/)|emotion|Canadian French Emotional (CaFE) speech dataset. Childrenspeech, CanadianFrench|public|Custom academic/research use|
 |[clac](clac/)|healthyspeech,age,gender|Crowdsourced Language Assessment Corpus (CLAC). English|public|Custom academic/research use|
+|[cmu-mosei](cmu-mosei/)|sentiment,emotion|CMU-MOSEI, Multimodal Sentiment Analysis Dataset. English|public|unknown|
 |[crema-d](crema-d/)|emotion|Crowd-sourced Emotional Multimodal Actors Dataset (CREMA-D). English,adopted from tfds|public|Custom academic/research use|
 |[crema-d-csv](crema-d-csv/)|emotion|Crowd-sourced Emotional Multimodal Actors Dataset (CSV version)|public|Custom academic/research use|
 |[dementiabank](dementiabank/)|dementia|Audio for dementia detection, English|restricted|Custom academic/research use|
 |[dementianet](dementianet/)|audio for dementia screening|hundred of public figure audio samples with a confirmed dementia diagnosis|public|MIT|
 |[demos](demos/)|emotion|DEMoS (Database of Elicited Mood in Speech). Italian|restricted|Custom academic/research use|
 |[eaed](eaed/)|emotion|Egyptian-Arabic emotional speech dataset. Arabic|public|unknown|
+|[eatd](eatd/)|depression, emotion|Automatic Depression Detection, a GRU/ BiLSTM-based Model and An Emotional Audio-Textual Corpus|public|unknown|
 |[ekorpus](ekorpus/)|emotion|Estonian Emotional Speech Corps (EEKK)|public|unknown|
 |[emns](emns/)|emotion,intensity|Emotive Narrative Storytelling (EMNS). British, singles speaker|public|CC BY 4.0|
 |[emodb](emodb/)|emotion|Berlin Emotional Speech Database. German. 10 speakers, 7 emotions, 10 sentences|public|CC BY 4.0|
@@ -81,10 +83,10 @@ To support open science and reproducible research, we encourage you to submit PR
 |[turev](turev/)|emotion|Turkish|public|unknown|
 |[urdu](urdu/)|emotion|Urdu|public|unknown|
 |[uudb](uudb/)|emotion|Urdu speech emotion dataset|public|unknown|
-|[vivae](vivae/)|emotion|English vocal bursts|public|unknown|
+|[vivae](vivae/)|emotion|Variably Intense Vocalizations of Affect and Emotion Corpus (VIVAE). English vocal bursts|public|unknown|
 
 
-This recipe contains information about 64 datasets.
+This recipe contains information about 66 datasets.
 ## Performance
 
 ![Nkululeko performance](../meta/images/nkululeko_ser_20240719.png)

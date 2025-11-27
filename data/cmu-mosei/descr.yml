@@ -1,5 +1,5 @@
 name: cmu-mosei
 target: sentiment,emotion
-description: CMU-MOSEI: Multimodal Sentiment Analysis Dataset. English
+description: CMU-MOSEI, Multimodal Sentiment Analysis Dataset. English
 access: public
 license: unknown
