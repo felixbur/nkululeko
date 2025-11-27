@@ -71,6 +71,7 @@ for entry in os.listdir(root):
                 datasets.append(
                     {
                         "name": descr.get("name", entry),
+                        "folder": entry,
                         "target": descr.get("target", "unknown"),
                         "description": descr.get("description", ""),
                         "access": descr.get("access", "unknown"),
@@ -89,8 +90,10 @@ datasets.sort(key=lambda x: x["name"].lower())
 # Build the table
 table_list = ["Name", "Target", "Description", "Access", "License"]
 for ds in datasets:
+    # Create markdown link for the database name
+    name_link = f"[{ds['name']}]({ds['folder']}/)"
     table_list.extend(
-        [ds["name"], ds["target"], ds["description"], ds["access"], ds["license"]]
+        [name_link, ds["target"], ds["description"], ds["access"], ds["license"]]
     )
 
 mdFile.new_table(columns=5, rows=db_num + 1, text=table_list, text_align="left")
