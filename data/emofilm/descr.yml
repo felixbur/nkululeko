@@ -1,5 +1,5 @@
 name: emofilm
 target: emotion
-description: English, Spanish, Italian
+description: EmoFilm is a multilingual emotional speech corpus comprising 1115 audio instances produced in English, Italian, and Spanish languages
 access: restricted
 license: unknown

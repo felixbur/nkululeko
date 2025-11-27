@@ -1,5 +1,5 @@
 name: emodb
 target: emotion
-description: German
+description: Berlin Emotional Speech Database. German. 10 speakers, 7 emotions, 10 sentences
 access: public
 license: CC BY 4.0

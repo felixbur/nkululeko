@@ -18,26 +18,24 @@ The column `access` in the table below indicates the database's accessibility. T
 To support open science and reproducible research, we encourage you to submit PR and recipes for the public dataset for now on.
 |Name|Target|Description|Access|License|
 | :--- | :--- | :--- | :--- | :--- |
-|[aesdd](aesdd/)|emotion|amharic language|public|unknown|
+|[aesdd](aesdd/)|emotion|Acted Emotional Speech Dynamic Database, Greek|public|unknown|
 |[androids](androids/)|depression|Italian|public|research|
-|[ased](ased/)|emotion|Greek|public|unknown|
-|[asvp-esd](asvp-esd/)|emotion|Multilingual, also contain vocal bursts|public|Custom academic/research use|
+|[ased](ased/)|emotion|Amharic Speech Emotion Dataset|public|unknown|
+|[asvp-esd](asvp-esd/)|emotion|The Audio, Speech and Vision Processing Lab Emotional Sound database. Multilingual, also contain vocal bursts|public|Custom academic/research use|
 |[banglaser](banglaser/)|emotion|Bengali|public|unknown|
-|[baved](baved/)|emotion|Arabic|public|CC BY 4.0|
-|[cafe](cafe/)|emotion|Childrenspeech, CanadianFrench|public|Custom academic/research use|
-|[clac](clac/)|healthyspeech,age,gender|English|public|Custom academic/research use|
-|[cmu-mosei](cmu-mosei/)|sentiment,emotion|English, original link dead|public|unknown|
-|[crema-d](crema-d/)|emotion|English,adopted from tfds|public|Custom academic/research use|
+|[baved](baved/)|emotion|Basic-Arabic-Vocal-Emotions-Dataset|public|CC BY 4.0|
+|[cafe](cafe/)|emotion|Canadian French Emotional (CaFE) speech dataset. Childrenspeech, CanadianFrench|public|Custom academic/research use|
+|[clac](clac/)|healthyspeech,age,gender|Crowdsourced Language Assessment Corpus (CLAC). English|public|Custom academic/research use|
+|[crema-d](crema-d/)|emotion|Crowd-sourced Emotional Multimodal Actors Dataset (CREMA-D). English,adopted from tfds|public|Custom academic/research use|
 |[crema-d-csv](crema-d-csv/)|emotion|Crowd-sourced Emotional Multimodal Actors Dataset (CSV version)|public|Custom academic/research use|
 |[dementiabank](dementiabank/)|dementia|Audio for dementia detection, English|restricted|Custom academic/research use|
 |[dementianet](dementianet/)|audio for dementia screening|hundred of public figure audio samples with a confirmed dementia diagnosis|public|MIT|
-|[demos](demos/)|emotion|Italian|restricted|Custom academic/research use|
-|[eaed](eaed/)|emotion|Arabic|public|unknown|
-|[eatd](eatd/)|emotion|Emotional Audio Tone Dataset|public|unknown|
-|[ekorpus](ekorpus/)|emotion|Estonian|public|unknown|
-|[emns](emns/)|emotion,intensity|British, singles speaker, UAR=.479|public|CC BY 4.0|
-|[emodb](emodb/)|emotion|German|public|CC BY 4.0|
-|[emofilm](emofilm/)|emotion|English, Spanish, Italian|restricted|unknown|
+|[demos](demos/)|emotion|DEMoS (Database of Elicited Mood in Speech). Italian|restricted|Custom academic/research use|
+|[eaed](eaed/)|emotion|Egyptian-Arabic emotional speech dataset. Arabic|public|unknown|
+|[ekorpus](ekorpus/)|emotion|Estonian Emotional Speech Corps (EEKK)|public|unknown|
+|[emns](emns/)|emotion,intensity|Emotive Narrative Storytelling (EMNS). British, singles speaker|public|CC BY 4.0|
+|[emodb](emodb/)|emotion|Berlin Emotional Speech Database. German. 10 speakers, 7 emotions, 10 sentences|public|CC BY 4.0|
+|[emofilm](emofilm/)|emotion|EmoFilm is a multilingual emotional speech corpus comprising 1115 audio instances produced in English, Italian, and Spanish languages|restricted|unknown|
 |[emorynlp](emorynlp/)|emotion|English Emotion Dataset from Friends TV Show|public|unknown|
 |[emov-db](emov-db/)|emotion|English|public|CC BY 4.0|
 |[emovo](emovo/)|emotion|Italian|restricted|CC BY-NC-SA 4.0|
@@ -86,7 +84,7 @@ To support open science and reproducible research, we encourage you to submit PR
 |[vivae](vivae/)|emotion|English vocal bursts|public|unknown|
 
 
-This recipe contains information about 66 datasets.
+This recipe contains information about 64 datasets.
 ## Performance
 
 ![Nkululeko performance](../meta/images/nkululeko_ser_20240719.png)

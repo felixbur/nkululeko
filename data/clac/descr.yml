@@ -1,5 +1,5 @@
 name: clac
 target: healthyspeech,age,gender
-description: English
+description: Crowdsourced Language Assessment Corpus (CLAC). English
 access: public
 license: Custom academic/research use

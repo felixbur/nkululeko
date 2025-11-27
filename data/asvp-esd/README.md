@@ -1,6 +1,6 @@
 # Nkululeko preprocessing for ASVP-ESD dataset (public)
 
-The Audio, Speech, and Vision Processing Lab Emotional  Sound database (ASVP-ESD)
+The Audio, Speech and Vision Processing Lab Emotional Sound database (ASVP-ESD)
 
 Dejoli Tientcheu Touko Landry; Qianhua He; Wei Xie
 
