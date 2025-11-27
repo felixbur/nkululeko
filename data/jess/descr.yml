@@ -1,5 +1,5 @@
 name: jess
-target: emotion
-description: Japanese Emotional Speech dataset
+target: age
+description: Jena Speaker Set
 access: public
-license: unknown
+license: research
