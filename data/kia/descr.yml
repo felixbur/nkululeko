@@ -1,0 +1,5 @@
+name: kia
+target: emotion
+description: Korean, wake-up word
+access: public
+license: unknown

@@ -1,0 +1,5 @@
+name: eatd
+target: emotion
+description: Emotional Audio Tone Dataset
+access: public
+license: unknown

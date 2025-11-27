@@ -1,0 +1,5 @@
+name: dementianet
+target: audio for dementia screening
+description: hundred of public figure audio samples with a confirmed dementia diagnosis
+access: public
+license: MIT

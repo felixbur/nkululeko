@@ -1,0 +1,5 @@
+name: uudb
+target: emotion
+description: Urdu speech emotion dataset
+access: public
+license: unknown

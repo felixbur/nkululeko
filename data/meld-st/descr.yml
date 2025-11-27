@@ -1,0 +1,5 @@
+name: meld-st
+target: emotion
+description: MELD Speech Translation dataset
+access: public
+license: CC BY 4.0

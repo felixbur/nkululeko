@@ -1,0 +1,5 @@
+name: crema-d
+target: emotion
+description: English,adopted from tfds
+access: public
+license: Custom academic/research use

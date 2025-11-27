@@ -1,0 +1,5 @@
+name: en-dialect
+target: dialect
+description: English dialect classification dataset
+access: public
+license: unknown

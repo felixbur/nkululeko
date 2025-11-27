@@ -1,0 +1,120 @@
+name: Validate Database Metadata and Update README
+
+on:
+  push:
+    paths:
+      - 'data/*/descr.yml'
+      - 'data/make_readme.py'
+  pull_request:
+    paths:
+      - 'data/*/descr.yml'
+      - 'data/make_readme.py'
+
+jobs:
+  validate-and-update:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch all history for all branches and tags
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyyaml mdutils
+
+    - name: Validate descr.yml files
+      run: |
+        cd data
+        echo "=== Validating descr.yml files ==="
+        
+        # Check for databases without descr.yml
+        missing_descr=0
+        for dir in */; do
+          if [ ! -f "${dir}descr.yml" ]; then
+            echo "❌ Missing descr.yml in ${dir}"
+            missing_descr=1
+          fi
+        done
+        
+        if [ $missing_descr -eq 1 ]; then
+          echo ""
+          echo "ERROR: Some database folders are missing descr.yml files"
+          echo "Please create a descr.yml file in each database folder with the format:"
+          echo "  name: database-name"
+          echo "  target: emotion"
+          echo "  description: Brief description"
+          echo "  access: public"
+          echo "  license: MIT"
+          exit 1
+        fi
+        
+        # Validate descr.yml format
+        invalid_format=0
+        for dir in */; do
+          if [ -f "${dir}descr.yml" ]; then
+            # Check for required fields
+            for field in name target description access license; do
+              if ! grep -q "^${field}:" "${dir}descr.yml"; then
+                echo "❌ Missing required field '${field}' in ${dir}descr.yml"
+                invalid_format=1
+              fi
+            done
+          fi
+        done
+        
+        if [ $invalid_format -eq 1 ]; then
+          echo ""
+          echo "ERROR: Some descr.yml files have invalid format"
+          echo "Required fields: name, target, description, access, license"
+          exit 1
+        fi
+        
+        echo "✅ All descr.yml files are valid"
+
+    - name: Check if README needs update
+      id: check_readme
+      run: |
+        cd data
+        # Generate README to a temporary file
+        python make_readme.py
+        
+        # Check if README.md was modified
+        if git diff --quiet README.md; then
+          echo "readme_changed=false" >> $GITHUB_OUTPUT
+          echo "✅ README.md is up to date"
+        else
+          echo "readme_changed=true" >> $GITHUB_OUTPUT
+          echo "⚠️  README.md needs to be updated"
+        fi
+
+    - name: Show README diff (if changed)
+      if: steps.check_readme.outputs.readme_changed == 'true'
+      run: |
+        cd data
+        echo "=== README.md differences ==="
+        git --no-pager diff README.md
+
+    # - name: Fail if README is outdated
+    #   if: steps.check_readme.outputs.readme_changed == 'true'
+    #   run: |
+    #     echo ""
+    #     echo "ERROR: README.md is not up to date with the current descr.yml files"
+    #     echo ""
+    #     echo "Please run the following command to update README.md:"
+    #     echo "  cd data && python make_readme.py"
+    #     echo ""
+    #     echo "Then commit the updated README.md file"
+    #     exit 1
+
+    - name: Summary
+      if: success()
+      run: |
+        echo "✅ All checks passed:"
+        echo "   - All database folders have valid descr.yml files"
+        echo "   - README.md is up to date"

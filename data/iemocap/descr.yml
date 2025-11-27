@@ -1,0 +1,5 @@
+name: iemocap
+target: emotion,VAD
+description: English
+access: restricted
+license: Custom academic/research use

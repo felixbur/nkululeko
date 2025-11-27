@@ -1,0 +1,5 @@
+name: clac
+target: healthyspeech,age,gender
+description: English
+access: public
+license: Custom academic/research use
