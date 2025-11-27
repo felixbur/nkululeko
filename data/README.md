@@ -19,7 +19,7 @@ To support open science and reproducible research, we encourage you to submit PR
 |Name|Target|Description|Access|License|
 | :--- | :--- | :--- | :--- | :--- |
 |[aesdd](aesdd/)|emotion|amharic language|public|unknown|
-|[androids](androids/)|depression|English|public|unknown|
+|[androids](androids/)|depression|Italian|public|research|
 |[ased](ased/)|emotion|Greek|public|unknown|
 |[asvp-esd](asvp-esd/)|emotion|Multilingual, also contain vocal bursts|public|Custom academic/research use|
 |[banglaser](banglaser/)|emotion|Bengali|public|unknown|
