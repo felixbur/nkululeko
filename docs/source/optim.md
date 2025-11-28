@@ -1,4 +1,6 @@
-# Hyperparameter Optimization Module
+# nkululeko.optim
+
+## Hyperparameter Optimization Module
 
 The Nkululeko optimization module provides automated hyperparameter tuning for machine learning models. It helps you find the best parameter combinations to improve your model's performance without manual trial and error.
 

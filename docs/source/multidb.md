@@ -1,4 +1,6 @@
-# Multidb module for database comparison
+# nkululeko.multidb
+
+Multidb module for database comparison
 
 With nkululeko since version 0.77.7 there is a new interface named multidb, which lets you compare several databases.
 

@@ -1,6 +1,7 @@
-# nkululeko.experiment
+# nkululeko.nkululeko
 
-The `nkululeko.experiment` module orchestrates the end-to-end lifecycle of an experiment: reading an INI configuration, preparing data splits, extracting features, training models, evaluating, and producing plots / reports.
+The experiment module (`nkululeko.nkululeko`) orchestrates the end-to-end lifecycle of an experiment: reading an INI configuration, preparing data splits, extracting features, training models, evaluating, and producing plots / reports.This is the
+the main user interface to run experiments with Nkululeko.
 
 ## Responsibilities
 * Parse configuration (`[EXP]`, `[DATA]`, `[FEATS]`, `[MODEL]`, `[EXPL]`, `[PLOT]`).
@@ -11,6 +12,14 @@ The `nkululeko.experiment` module orchestrates the end-to-end lifecycle of an ex
 * Coordinate optional explainability steps (feature importance, distributions, regplot, PCA/t-SNE/UMAP scatter).
 
 ## Invocation
+Usage:
+
+```bash
+python -m nkululeko.nkululeko --config config_file.ini
+```
+
+Example:  
+
 ```bash
 python -m nkululeko.nkululeko --config examples/exp_emodb_os_svm.ini
 ```

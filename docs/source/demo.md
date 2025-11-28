@@ -1,4 +1,6 @@
-# Demo module
+# nkululeko.demo  
+
+## Demo module
 
 Nkululeko has `demo` module to either test the built model with an audio file,
 a list of audio files, or even live streaming from your microphone!
