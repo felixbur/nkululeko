@@ -6,7 +6,7 @@
 
 ```bash
 # Install requirements (from docs directory)
-$ pip install -r requirements.txt
+$ uv pip install -r requirements.txt
 $ make html
 ```
 
