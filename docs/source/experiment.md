@@ -1,6 +1,6 @@
 # nkululeko.nkululeko
 
-The experiment module (`nkululeko.nkululeko`) orchestrates the end-to-end lifecycle of an experiment: reading an INI configuration, preparing data splits, extracting features, training models, evaluating, and producing plots / reports.This is the
+The experiment module (`nkululeko.nkululeko`) orchestrates the end-to-end lifecycle of an experiment: reading an INI configuration, preparing data splits, extracting features, training models, evaluating, and producing plots / reports. This is the
 the main user interface to run experiments with Nkululeko.
 
 ## Responsibilities
