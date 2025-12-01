@@ -1,5 +1,7 @@
 ## Nkululeko
 
+[![status](https://joss.theoj.org/papers/215dd49c152e467586ed73f16f27d53a/status.svg)](https://joss.theoj.org/papers/215dd49c152e467586ed73f16f27d53a)
+
 Nkululeko is a software to detect speaker characteristics by machine learning experiments with a high-level interface. The idea is to have a framework (based on e.g. sklearn and torch) that can be used to rapidly and automatically analyse audio data and explore machine learning models based on that data. 
 
 Some abilities that Nkululeko provides: combines acoustic features and machine learning models (including feature selection and features concatenation); performs data exploration, selection and visualization the results; finetuning; ensemble learning models; soft labeling (predicting labels with pre-trained model); and inference the model on a test set.
