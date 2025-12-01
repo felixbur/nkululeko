@@ -282,18 +282,9 @@ Contributions are welcome and encouraged. To learn more about how to contribute 
 ## Citation
 If you use Nkululeko, please cite the paper:
 
-> F. Burkhardt, Johannes Wagner, Hagen Wierstorf, Florian Eyben and Björn Schuller: Nkululeko: A Tool For Rapid Speaker Characteristics Detection, Proc. Proc. LREC, 2022
+> F. Burkhardt and B. Tris Atmaja, (2025). Nkululeko 1.0: A Python package to predict speaker characteristics with a high-level interface. Journal of Open Source Software, 10(115), 8049, https://doi.org/10.21105/joss.08049
 
 
 ```
-@inproceedings{Burkhardt:lrec2022,
-   title = {Nkululeko: A Tool For Rapid Speaker Characteristics Detection},
-   author = {Felix Burkhardt and Johannes Wagner and Hagen Wierstorf and Florian Eyben and Björn Schuller},
-   isbn = {9791095546726},
-   journal = {2022 Language Resources and Evaluation Conference, LREC 2022},
-   keywords = {machine learning,speaker characteristics,tools},
-   pages = {1925-1932},
-   publisher = {European Language Resources Association (ELRA)},
-   year = {2022},
-}
+@article{Burkhardt2025, doi = {10.21105/joss.08049}, url = {https://doi.org/10.21105/joss.08049}, year = {2025}, publisher = {The Open Journal}, volume = {10}, number = {115}, pages = {8049}, author = {Burkhardt, Felix and Atmaja, Bagus Tris}, title = {Nkululeko 1.0: A Python package to predict speaker characteristics with a high-level interface}, journal = {Journal of Open Source Software} } 
 ```
