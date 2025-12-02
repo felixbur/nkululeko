@@ -1,6 +1,8 @@
-# Test module
+# nkululeko.test
 
-Module for testing a saved model on known datatast (has labels).  
+## Test module
+
+Module for testing a saved model on known datasets (has labels).  
 
 Usage:  
 

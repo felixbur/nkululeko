@@ -1,4 +1,6 @@
-# Nkululeko Flags Module Tutorial
+# nkululeko.flags  
+
+## Nkululeko Flags Module Tutorial
 
 The **flags module** in nkululeko allows you to run multiple experiments with different parameter combinations automatically. This is particularly useful for hyperparameter tuning and systematic exploration of different configurations.
 

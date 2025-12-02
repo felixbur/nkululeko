@@ -45,6 +45,7 @@ The examples only covers some important features of Nkululeko. For more details,
    :maxdepth: 1
    :caption: Visualization
 
+   plots.md
    visualization.md
 
 .. toctree::
@@ -55,31 +56,38 @@ The examples only covers some important features of Nkululeko. For more details,
    hello_world_aud.md
    hello_world_csv.md
    emotion_prediction.md
-   comparing
+   comparing.md
    scaler.md
    balance.md
+   regplot.md
+   text_processing.md
+   align_databases.md
+   uncertainty.md
+   compare_runs.md
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Modules
+
+   experiment.md
+   explore.md
+   augment.md
+   resample.md
+   segment.md
    optim.md
    test.md
    demo.md
    multidb.md
    ensemble.md
    flags.md
-   nkuluflag.md
+
 
 .. toctree::
    :maxdepth: 2
    :caption: API Reference
 
-   nkululeko.rst
-   nkululeko.augmenting.rst
-   nkululeko.autopredict.rst
-   nkululeko.data.rst
-   nkululeko.feat_extract.rst
-   nkululeko.losses.rst
-   nkululeko.models.rst
-   nkululeko.reporting.rst
-   nkululeko.segmenting.rst
-   nkululeko.utils.rst
+   nkululeko
 
 
 .. automodule:: nkululeko

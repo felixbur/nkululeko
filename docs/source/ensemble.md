@@ -1,4 +1,6 @@
-# Ensemble module 
+# nkululeko.ensemble
+
+## Ensemble module for combining multiple models
 
 Example of usage:  
 
