@@ -63,6 +63,7 @@ The examples only covers some important features of Nkululeko. For more details,
    text_processing.md
    align_databases.md
    uncertainty.md
+   compare_runs.md
 
 
 .. toctree::
