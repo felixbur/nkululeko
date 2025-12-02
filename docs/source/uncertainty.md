@@ -145,7 +145,10 @@ Consider a medical diagnosis system:
 
 In this case, 30% of samples are flagged for human review, but the automatic predictions are much more reliable.
 
-## Combining with Other Features
+Examples of INI files in the Nkululeko `examples` directory:
+- exp_emodb_textclassifier.ini (threshold: 0.4)
+- exp_emodb_stress.ini (threshold: 0.3)
+- exp_emodb_audmodel_xgb.ini (threshold: 0.5)
 
 Uncertainty works well with:
 - **Multiple runs** (`runs = 5`): Get uncertainty estimates across runs
