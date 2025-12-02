@@ -60,6 +60,7 @@ The examples only covers some important features of Nkululeko. For more details,
    scaler.md
    balance.md
    regplot.md
+   text_processing.md
 
 
 .. toctree::

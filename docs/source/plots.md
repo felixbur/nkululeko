@@ -1,4 +1,4 @@
-# nkululeko.plots
+# Nkululeko Plots
 
 Internal plotting utilities used by `experiment` and `explore` to generate visual outputs.
 
