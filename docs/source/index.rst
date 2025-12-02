@@ -61,6 +61,8 @@ The examples only covers some important features of Nkululeko. For more details,
    balance.md
    regplot.md
    text_processing.md
+   align_databases.md
+   uncertainty.md
 
 
 .. toctree::
