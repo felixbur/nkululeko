@@ -12,6 +12,7 @@ Requirements:
 import pandas as pd
 from pathlib import Path
 import re
+import matplotlib.pyplot as plt
 
 
 def extract_metadata_from_path(file_path, base_path):
@@ -56,6 +57,15 @@ def extract_metadata_from_path(file_path, base_path):
     # Extract gender and speaker_id from filename
     filename = file_path.stem  # filename without extension
 
+    """
+    All file names denote speech content and speaker
+    information including sex (f/m), ID and age. For example, sound file “aba_fAB75.wav” contains the
+    syllable “aba” uttered by the female speaker “AB” who was 75 years old at the time of recording.
+    """
+    # Extract age from filename 
+    age_match = re.search(r'(\d{2})$', filename)
+    age = int(age_match.group(1)) if age_match else -1
+
     # Pattern: content_<gender><speaker_id>
     # Examples: Sdiepostfrau_fKS25, o_fRP71, Nordwind_fKS25
     match = re.search(r'_([fm])([A-Z]{2}\d+)', filename)
@@ -72,6 +82,7 @@ def extract_metadata_from_path(file_path, base_path):
         'speaker': speaker_id,
         'gender': gender,
         'age_group': age_group,
+        'age': age,
         'text': text_type
     }
 
@@ -126,6 +137,16 @@ def process_jess_database():
     print(f"\nText type distribution:")
     print(df['text'].value_counts())
     print(f"\nNumber of unique speakers: {df['speaker'].nunique()}")
+    # plot age distribution
+    print(f"\nAge distribution:")
+    print(df['age'].describe())
+    ax = df['age'].hist(bins=range(0, 101, 5))
+    ax.set_xlabel('Age')
+    ax.set_ylabel('Number of speakers') 
+    ax.set_title('Age Distribution of Speakers')
+    # save to file
+    plt.savefig("age_distribution.png")
+    plt.close()
 
     # Show sample rows
     print(f"\nFirst 10 rows:")
