@@ -15,30 +15,22 @@ Altogether, this make Nkululeko as a good teaching/learning tool for speaker cha
 
 The examples only covers some important features of Nkululeko. For more details, please refer to the `Nkululeko Github page <https://felixbur.github.io/nkululeko/>`__ and `Felix's web page <http://blog.syntheticspeech.de/category/nkululeko/>`__. 
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Getting Started:
-
-   overview.md
-   installation
+There is also `a deepwiki available <https://deepwiki.com/felixbur/nkululeko>`__. You can directly ask your question there (Nkululeko Github also can be used with Copilot).
 
 .. toctree::
    :maxdepth: 1
-   :caption: Usage
-
-   usage.md
+   :caption: Explanation
    
-.. toctree::
-   :maxdepth: 1
-   :caption: Architecture
-
+   overview.md
    architecture.md
    glossary.md
 
 .. toctree::
    :maxdepth: 1
-   :caption: INI File 
+   :caption: How-to Guides
 
+   installation
+   usage.md
    ini_file.md
 
 .. toctree::
@@ -52,7 +44,7 @@ The examples only covers some important features of Nkululeko. For more details,
    :maxdepth: 2
    :caption: Tutorials
 
-   how_to
+   how_to.md
    hello_world_aud.md
    hello_world_csv.md
    emotion_prediction.md
@@ -64,6 +56,12 @@ The examples only covers some important features of Nkululeko. For more details,
    align_databases.md
    uncertainty.md
    compare_runs.md
+   feature_correlations.md
+   linguistics.md
+   traindevtest.md
+   predict_speaker.md
+   finetune.md
+   test_module.md
 
 
 .. toctree::

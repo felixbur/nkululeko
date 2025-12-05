@@ -57,3 +57,5 @@ features, and, if you\'re done, you should be able to inspect the
 results in the folder named like the experiment: exp\_emodb. There
 should be a subfolder with a confusion matrix named `images` 
 and a subfolder for the textual results named `results`.
+
+You can find INI files for different use cases in tutorials documentation in the [examples](https://github.com/felixbur/nkululeko/tree/main/examples) folder of the nkululeko repository.
