@@ -1,1 +1,1 @@
-This is `example` directory to accompany the Nkululeko's Tutorial documentation.
+This is the `example` directory accompanying the Nkululeko's Tutorial documentation.
