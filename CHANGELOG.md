@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.1.1 (25-12-11)  
+------------------------
+* fixed bug that logo didn't work with xgb model
+
 
 Version 1.1.0 (25-11-20)  
 ------------------------
