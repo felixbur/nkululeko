@@ -56,6 +56,15 @@ class XGB_model(Model):
             )
             self.feats_train = self.feats_train.fillna(0)
 
+        # then if leave one speaker group out validation is wanted
+        if self.logo:
+            self._do_logo()
+            return
+        # then if x fold cross validation is wanted
+        if self.xfoldx:
+            self._x_fold_cross()
+            return
+
         feats = self.feats_train.to_numpy()
         labels = self.df_train[self.target]
 

@@ -85,12 +85,12 @@ nkululeko_ini_files=(
     exp_agedb_os_xgr.ini
     exp_agedb_os_mlp.ini
     exp_polish_gmm.ini
+    exp_emodb-aug_os_xgb.ini
 )
 
 # test augmentation
 augment_ini_files=(
     exp_emodb_augment_os_xgb.ini
-    exp_emodb-aug_os_xgb.ini
     exp_emodb_random_splice_os_xgb.ini
     exp_emodb_rs_os_xgb.ini
     emodb_aug_train.ini
