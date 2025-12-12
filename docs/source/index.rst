@@ -62,6 +62,7 @@ There is also `a deepwiki available <https://deepwiki.com/felixbur/nkululeko>`__
    predict_speaker.md
    finetune.md
    test_module.md
+   split_data.md
 
 
 .. toctree::
