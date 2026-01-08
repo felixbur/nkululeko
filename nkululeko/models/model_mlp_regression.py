@@ -36,6 +36,9 @@ class MLP_Reg_model(Model):
         else:
             self.util.error(f"unknown loss function: {criterion}")
         self.util.debug(f"training model with {criterion} loss function")
+        # set up activation function
+        activation, act_func = self._get_activation()
+        self.util.debug(f"using activation function: {act_func}")
         manual_seed = eval(self.util.config_val("MODEL", "random_seed", "False"))
         if manual_seed:
             self.util.debug(f"seeding random to {manual_seed}")
@@ -52,7 +55,7 @@ class MLP_Reg_model(Model):
         drop = self.util.config_val("MODEL", "drop", False)
         if drop:
             self.util.debug(f"training with dropout: {drop}")
-        self.model = self.MLP(feats_train.shape[1], layers, 1, drop).to(self.device)
+        self.model = self.MLP(feats_train.shape[1], layers, 1, drop, activation).to(self.device)
         self.learning_rate = float(
             self.util.config_val("MODEL", "learning_rate", 0.0001)
         )
@@ -78,6 +81,20 @@ class MLP_Reg_model(Model):
             feats_test = feats_test.fillna(0)
         self.trainloader = self.get_loader(feats_train, df_train, True)
         self.testloader = self.get_loader(feats_test, df_test, False)
+
+    def _get_activation(self):
+        act_func = self.util.config_val("MODEL", "activation", "relu")
+        if act_func == "relu":
+            activation = torch.nn.ReLU()
+        elif act_func == "tanh":
+            activation = torch.nn.Tanh()
+        elif act_func == "sigmoid":
+            activation = torch.nn.Sigmoid()
+        elif act_func == "leaky_relu":
+            activation = torch.nn.LeakyReLU()
+        else:
+            self.util.error(f"unknown activation function: {act_func}")
+        return activation, act_func
 
     def set_testdata(self, data_df, feats_df):
         self.df_test = data_df
@@ -141,7 +158,7 @@ class MLP_Reg_model(Model):
             return features, labels
 
     class MLP(torch.nn.Module):
-        def __init__(self, i, layers, o, drop):
+        def __init__(self, i, layers, o, drop, activation):
             super().__init__()
             if type(layers) is list:
                 layers_list = layers.copy()
@@ -151,14 +168,14 @@ class MLP_Reg_model(Model):
             sorted_layers = sorted(layers.items(), key=lambda x: x[1])
             layers = OrderedDict()
             layers["0"] = torch.nn.Linear(i, sorted_layers[0][1])
-            layers["0_r"] = torch.nn.ReLU()
+            layers["0_r"] = activation
             for i in range(0, len(sorted_layers) - 1):
                 layers[str(i + 1)] = torch.nn.Linear(
                     sorted_layers[i][1], sorted_layers[i + 1][1]
                 )
                 if drop:
                     layers[str(i) + "_d"] = torch.nn.Dropout(float(drop))
-                layers[str(i) + "_r"] = torch.nn.ReLU()
+                layers[str(i) + "_r"] = activation
             layers[str(len(sorted_layers) + 1)] = torch.nn.Linear(
                 sorted_layers[-1][1], o
             )
@@ -237,7 +254,8 @@ class MLP_Reg_model(Model):
         drop = self.util.config_val("MODEL", "drop", False)
         if drop:
             self.util.debug(f"training with dropout: {drop}")
-        self.model = self.MLP(self.feats_train.shape[1], layers, 1, drop).to(
+        activation, act_func = self._get_activation()
+        self.model = self.MLP(self.feats_train.shape[1], layers, 1, drop, activation).to(
             self.device
         )
         self.model.load_state_dict(torch.load(dir + name))
@@ -252,8 +270,9 @@ class MLP_Reg_model(Model):
             drop = self.util.config_val("MODEL", "drop", False)
             if drop:
                 self.util.debug(f"training with dropout: {drop}")
+            activation, act_func = self._get_activation()
             self.model = self.MLP(
-                self.feats_train.shape[1], layers, self.class_num, drop
+                self.feats_train.shape[1], layers, self.class_num, drop, activation
             ).to(self.device)
             self.model.load_state_dict(torch.load(self.store_path))
             self.model.eval()
