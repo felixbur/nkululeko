@@ -355,6 +355,8 @@ Model and training specifications. In general, default values should work for cl
     * **mse**: mean squared error
     * **mae**: mean absolute error
     * **ccc**: concordance correlation coefficient
+* **activation**: The activation function for MLPs. One of ["relu", "sigmoid", "tanh", "leaky_relu"]
+  * activation = relu
 * **layers**: specify the layer architecture for MLP
   * layers = [64, 16]
 * **C_val**: regularization value for SVM
