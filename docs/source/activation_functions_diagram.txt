@@ -1,0 +1,123 @@
+```
+Activation Functions Decision Guide
+====================================
+
+                     START HERE
+                         |
+                         v
+            Does your model train well?
+                    /        \
+                 YES          NO
+                  |            |
+                  v            v
+            Keep using    Try leaky_relu
+            current         /      \
+            activation   Better?  Still bad?
+                           |          |
+                          YES         v
+                           |      Check these:
+                           |      - Learning rate too high?
+                           |      - Features not scaled?
+                           |      - Network too deep?
+                           |      - Try tanh
+                           v
+                    SUCCESS!
+
+
+Performance Characteristics
+===========================
+
+Speed:          relu > leaky_relu > tanh > sigmoid
+                ████   ████████    ██████  ████████
+
+Gradient Flow:  leaky_relu > tanh > relu > sigmoid
+                ████████████  ██████ ████  ████
+
+Stability:      tanh > leaky_relu > relu > sigmoid
+                ████   ████████     ████  ██████
+
+
+Common Configurations
+=====================
+
+General Classification:
+┌─────────────────────────────┐
+│ [MODEL]                     │
+│ type = mlp                  │
+│ layers = [128, 64]          │
+│ activation = leaky_relu     │ ← Recommended
+│ drop = 0.3                  │
+│ patience = 10               │
+└─────────────────────────────┘
+
+Deep Network:
+┌─────────────────────────────┐
+│ [MODEL]                     │
+│ type = mlp                  │
+│ layers = [256,128,64,32]    │
+│ activation = leaky_relu     │ ← Prevents dead neurons
+│ drop = [0.4,0.3,0.2,0.2]    │
+│ patience = 20               │
+└─────────────────────────────┘
+
+Regression:
+┌─────────────────────────────┐
+│ [MODEL]                     │
+│ type = mlp                  │
+│ layers = [256, 128, 64]     │
+│ activation = leaky_relu     │ ← Handles negatives
+│ drop = 0.4                  │
+│ patience = 15               │
+└─────────────────────────────┘
+
+
+Activation Function Shapes
+===========================
+
+ReLU:                 Leaky ReLU:
+  ^                     ^
+  |    /                |    /
+  |   /                 |   /
+  |  /                  |  /
+  | /                   | /
+──┼──────>            ──┼──────>
+  |                    /|
+                     /  |
+
+Tanh:                 Sigmoid:
+  ^                     ^
+ 1┤─────                |─────
+  |    /                |   /
+  |   /                 |  /
+──┼──────>            ──┼─────>
+  |  /                  | /
+-1┤─                    |/
+
+
+Troubleshooting Flow
+====================
+
+Loss is NaN?
+    |
+    ├─> Lower learning_rate (try 0.00001)
+    ├─> Switch to tanh or leaky_relu
+    └─> Check feature scaling (use scale = standard)
+
+Model not improving?
+    |
+    ├─> Try leaky_relu (prevents dead neurons)
+    ├─> Reduce dropout
+    └─> Increase patience
+
+Training too slow?
+    |
+    ├─> Use relu (fastest)
+    ├─> Avoid sigmoid
+    └─> Increase batch_size
+
+Overfitting?
+    |
+    ├─> Increase dropout
+    ├─> Reduce network size
+    └─> Use early stopping (patience)
+```

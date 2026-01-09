@@ -29,3 +29,4 @@ sphinx-apidoc -f -o source/ ../nkululeko/
 ```
 
 If found any issues, please report them [here](https://github.com/felixbur/nkululeko/issues).
+

@@ -1,3 +1,5 @@
+See [Architecture and Components](source/architecture.md) for the narrative explanation of these relationships.
+
 ```Mermaid
 classDiagram
    Experiment --> Dataset
