@@ -130,4 +130,4 @@ python -m nkululeko.nkululeko --config examples/exp_meld_bert.ini
 ## Related Tutorials
 
 - [Text Processing Pipeline](text_processing.md): Transcribe and translate speech
-- [Feature Correlations](feature_correlations.md): Explore feature importance
+- [Feature Correlations](regplot.md): Explore feature importance

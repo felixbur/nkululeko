@@ -21,6 +21,10 @@ This page describes the architecture and main components of Nkululeko, providing
 
 ## Main Classes and Components
 
+## Class Diagram
+
+For a quick visual overview of how the core pieces interact, see the [class diagram](./class_diagram.md). It mirrors the components described below and can help when navigating the codebase.
+
 ### Experiment
 
 The central class that manages the entire experiment lifecycle:

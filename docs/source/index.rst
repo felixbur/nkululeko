@@ -57,7 +57,6 @@ There is also `a deepwiki available <https://deepwiki.com/felixbur/nkululeko>`__
    align_databases.md
    uncertainty.md
    compare_runs.md
-   feature_correlations.md
    linguistics.md
    traindevtest.md
    predict_speaker.md
