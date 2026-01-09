@@ -29,3 +29,16 @@ sphinx-apidoc -f -o source/ ../nkululeko/
 ```
 
 If found any issues, please report them [here](https://github.com/felixbur/nkululeko/issues).
+
+## Tutorials
+
+### Activation Functions in Neural Networks
+- **Main Tutorial**: [tut_activation_functions.md](tut_activation_functions.md)
+- **Quick Reference**: [activation_functions_quickref.md](activation_functions_quickref.md)
+- **Working Examples**: See `../tutorials/` directory
+
+Learn how to use different activation functions (ReLU, Leaky ReLU, Tanh, Sigmoid) in MLP models.
+
+### Other Documentation
+- **Class Diagram**: [class_diagram.md](class_diagram.md)
+- **Balancing**: [clustercentroids_balancing.md](clustercentroids_balancing.md)

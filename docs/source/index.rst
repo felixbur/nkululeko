@@ -52,6 +52,7 @@ There is also `a deepwiki available <https://deepwiki.com/felixbur/nkululeko>`__
    scaler.md
    balance.md
    regplot.md
+   tut_activation_functions.md
    text_processing.md
    align_databases.md
    uncertainty.md
