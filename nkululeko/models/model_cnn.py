@@ -259,6 +259,11 @@ class CNNModel(Model):
 
 class myCNN(torch.nn.Module):
     def __init__(self, layers, class_num):
+        if type(layers) is list:
+            layers_list = layers.copy()
+            # construct a dict with layer names
+            keys = [str(i) for i in range(len(layers_list))]
+            layers = dict(zip(keys, layers_list))
         sorted_layers = sorted(layers.items(), key=lambda x: x[1])
         l1 = sorted_layers[0][1]
         l2 = sorted_layers[1][1]
