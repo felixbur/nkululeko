@@ -16,7 +16,8 @@ Options:
 --outfile OUTFILE   A filename to store the features in CSV format (default: features_output.csv)
 --model MODEL       Feature extraction model to use (default: wav2vec2-large-robust-ft-swbd-300h)
                     Options: wav2vec2-*, hubert-*, wavlm-*, whisper-*, ast-*, emotion2vec-*,
-                    audmodel (requires audmodel.id in config), agender, opensmile, clap, spkrec, trill, praat, etc.
+                    audmodel (requires audmodel.id in config), agender, opensmile, clap, spkrec, trill, praat,
+                    squim (PESQ/SDR/STOI), mos, snr, etc.
 """
 import argparse
 import configparser
@@ -48,13 +49,11 @@ def main():
             " processed (16kHz mono wav)"
         ),
         nargs="?",
-        default=None,
     )
     parser.add_argument(
         "--folder",
         help=("A name of a folder where the files within the list are in."),
         nargs="?",
-        default="./",
     )
     parser.add_argument(
         "--mic",
@@ -72,7 +71,7 @@ def main():
         help=(
             "Feature extraction model to use (e.g., wav2vec2-large-robust-ft-swbd-300h,"
             " hubert-large-ll60k, wavlm-base, whisper-base, ast, emotion2vec-base,"
-            " audmodel, agender, opensmile, clap, spkrec, trill, praat)"
+            " audmodel, agender, opensmile, clap, spkrec, trill, praat, squim, mos, snr)"
         ),
         nargs="?",
         default="wav2vec2-large-robust-ft-swbd-300h",
@@ -163,8 +162,20 @@ def main():
 
         files = find_files(args.folder, relative=False, ext=["wav", "mp3", "flac"])
     else:
-        print("ERROR: You must provide --file, --list, --folder, or --mic")
-        return
+        print("="*80)
+        print("ERROR: No input option specified!")
+        print("="*80)
+        print("\nYou must provide one of the following input options:")
+        print("  --file <path>      Process a single audio file")
+        print("  --list <path>      Process files listed in a text file")
+        print("  --folder <path>    Process all audio files in a folder")
+        print("  --mic              Record from microphone for 5 seconds")
+        print("\nExample usage:")
+        print("  python -m nkululeko.feature_demo --mic --model agender")
+        print("  python -m nkululeko.feature_demo --file audio.wav --model squim")
+        print("  python -m nkululeko.feature_demo --folder ./audio --model mos")
+        print("="*80)
+        exit(1)
 
     print(f"\nProcessing {len(files)} file(s)...")
 
@@ -198,7 +209,13 @@ def main():
             features = feature_extractor.extract_sample(signal, sampling_rate)
 
             # Handle different feature formats
-            if isinstance(features, np.ndarray):
+            if isinstance(features, (int, float)):
+                # Single scalar value (e.g., SNR, MOS)
+                features = np.array([features])
+            elif isinstance(features, tuple):
+                # Tuple of values (e.g., SQUIM returns (stoi, pesq, sdr))
+                features = np.array(features)
+            elif isinstance(features, np.ndarray):
                 if features.ndim > 1:
                     # Flatten if multi-dimensional
                     features = features.flatten()
@@ -206,6 +223,9 @@ def main():
                 features = features.values
             elif isinstance(features, pd.DataFrame):
                 features = features.values.flatten()
+            else:
+                # Try to convert to numpy array
+                features = np.array(features).flatten()
 
             features_list.append({"file": file, "features": features})
 
@@ -365,6 +385,51 @@ def get_feature_extractor(model_name, config):
         print(f"  Loading agender_agender model (this may download the model on first use)...")
         extractor = Agender_agenderSet(model_name, None, model_name)
         extractor._load_model()
+        return extractor
+
+    elif "squim" in model_lower:
+        from nkululeko.feat_extract.feats_squim import SquimSet
+
+        # SQUIM extracts PESQ, SDR (SI-SDR), and STOI metrics
+        print(f"  Loading SQUIM model for audio quality metrics (PESQ, SDR, STOI)...")
+        extractor = SquimSet(model_name, None, model_name)
+        extractor.init_model()
+        return extractor
+
+    elif "pesq" in model_lower:
+        from nkululeko.feat_extract.feats_squim import SquimSet
+
+        # PESQ (Perceptual Evaluation of Speech Quality) via SQUIM
+        print(f"  Loading SQUIM model to extract PESQ features...")
+        extractor = SquimSet(model_name, None, model_name)
+        extractor.init_model()
+        return extractor
+
+    elif "sdr" in model_lower:
+        from nkululeko.feat_extract.feats_squim import SquimSet
+
+        # SDR (Signal-to-Distortion Ratio) via SQUIM
+        print(f"  Loading SQUIM model to extract SDR features...")
+        extractor = SquimSet(model_name, None, model_name)
+        extractor.init_model()
+        return extractor
+
+    elif "mos" in model_lower:
+        from nkululeko.feat_extract.feats_mos import MosSet
+
+        # MOS extracts Mean Opinion Score for subjective quality
+        print(f"  Loading MOS model for subjective quality assessment...")
+        extractor = MosSet(model_name, None, model_name)
+        extractor.init_model()
+        return extractor
+
+    elif "snr" in model_lower:
+        from nkululeko.feat_extract.feats_snr import SnrSet
+
+        # SNR extracts Signal-to-Noise Ratio
+        print(f"  Loading SNR estimator...")
+        extractor = SnrSet(model_name, None, model_name)
+        # SNR doesn't need explicit model initialization
         return extractor
 
     else:
