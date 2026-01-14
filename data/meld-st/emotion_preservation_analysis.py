@@ -898,8 +898,6 @@ class EmotionPreservationAnalyzer:
             axes = [ax]
         else:
             fig, axes = plt.subplots(1, n_pairs, figsize=(8 * n_pairs, 6))
-            if n_pairs == 1:
-                axes = [axes]
 
         # Create uncertainty vs agreement plots for each language pair
         for i, (pair_name, data) in enumerate(preservation_results.items()):
