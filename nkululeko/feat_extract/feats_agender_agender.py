@@ -83,4 +83,4 @@ class Agender_agenderSet(Featureset):
 
     def extract_sample(self, signal, sr):
         result = self.model(signal, sr)
-        return np.asarray(result["hidden_states"].flatten())
+        return np.concatenate([result["logits_age"][0], result["logits_gender"][0]])
