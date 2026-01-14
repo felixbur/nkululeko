@@ -300,6 +300,7 @@ class Util:
             ["MODEL", "C_val"],
             ["MODEL", "kernel"],
             ["MODEL", "drop"],
+            ["MODEL", "activation"],
             ["MODEL", "class_weight"],
             ["MODEL", "loss"],
             ["MODEL", "logo"],
