@@ -22,6 +22,7 @@ Options:
 import argparse
 import configparser
 import os
+import soundfile as sf
 
 import audiofile
 import numpy as np
@@ -141,7 +142,6 @@ def main():
         temp_file.close()
 
         # Write the recording to the temp file
-        import soundfile as sf
         sf.write(temp_filename, recording, sample_rate)
         print(f"Audio saved to temporary file: {temp_filename}")
 
