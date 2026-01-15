@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 1.1.3 (26-01-14)  
+------------------------
+* added demo feature extractor functionality
+* added ANN activation to distinguishable results
+
 Version 1.1.2 (26-01-08)  
 ------------------------
 * added different activation functions

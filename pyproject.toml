@@ -108,6 +108,7 @@ all = [
 "nkululeko.nkululeko" = "nkululeko.nkululeko:main"
 "nkululeko.augment" = "nkululeko.augment:main"
 "nkululeko.demo" = "nkululeko.demo:main"
+"nkululeko.feature_demo" = "nkululeko.feature_demo:main"
 "nkululeko.export" = "nkululeko.export:main"
 "nkululeko.predict" = "nkululeko.predict:main"
 "nkululeko.resample" = "nkululeko.resample:main"
