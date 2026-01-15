@@ -192,6 +192,15 @@ class EmotionPreservationAnalyzer:
                     "correct_predictions": correct_predictions,
                 }
 
+        # Calculate overall preservation rate (average across emotions)
+        overall_preservation_rate = (
+            np.mean(
+                [stats["preservation_rate"] for stats in emotion_preservation.values()]
+            )
+            if emotion_preservation
+            else 0.0
+        )
+
         # Store results
         self.preservation_data[f"{source_lang}_{target_lang}"] = {
             "config_key": config_key,
@@ -211,7 +220,7 @@ class EmotionPreservationAnalyzer:
         print(f"  Cohen's Kappa: {kappa:.3f}")
         print(f"  Accuracy: {accuracy:.3f}")
         print(f"  Balanced Accuracy: {balanced_acc:.3f}")
-        print(f"  Emotion Preservation Rates: {preservation_rate:.3f}")
+        print(f"  Overall Emotion Preservation Rate: {overall_preservation_rate:.3f}")
         print(f"  Samples: {len(data)}")
 
     def _compare_original_vs_translated(self, lang_code, lang_name):
