@@ -34,10 +34,12 @@ classifiers = [
 ]
 
 dependencies = [
+    "audb>=1.11.4",
     "audeer>=1.0.0",
     "audformat>=1.3.1",
     "audplot",
     "audmodel",
+    "auglib>=1.0.4",
     "audinterface>=1.0.0",
     "audiofile>=1.0.0",
     "audiomentations>=0.42.0",
