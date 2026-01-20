@@ -198,6 +198,7 @@ class Dataset:
             # remember the target in case they get labelencoded later
             df["class_label"] = df[self.target]
 
+        self.map_continuous_classification(df)   
         self.df = df
         self._report_load()
 
@@ -677,10 +678,12 @@ class Dataset:
         # split target
         targets = df[self.target].to_numpy()
         #
-        bins = self.util.config_val("DATA", "bin", False)
-        if bins:
+        bins = self.util.config_val("DATA", "bins", False)
+        if bins and not self.util.exp_is_classification():
             nbins = len(ast.literal_eval(bins))
-            targets = binning(targets, nbins=nbins)
+            binned_targets = binning(targets, nbins=nbins)
+        else:
+            binned_targets = targets
         # on which variable to split
         speakers = df["speaker"].to_numpy()
 
@@ -693,7 +696,7 @@ class Dataset:
             stratif_vars = ast.literal_eval(stratif_vars)
             for stratif_var in stratif_vars.keys():
                 if stratif_var == self.target:
-                    stratif_vars_array[self.target] = targets
+                    stratif_vars_array[self.target] = binned_targets
                     continue
                 else:
                     data = df[stratif_var].to_numpy()
@@ -715,7 +718,7 @@ class Dataset:
 
         if with_dev:
             train_i, dev_i, test_i, info = optimize_traindevtest_split(
-                X=df,
+                X=None,
                 y=targets,
                 split_on=speakers,
                 stratify_on=stratif_vars_array,
@@ -736,7 +739,7 @@ class Dataset:
             self.util.debug(msg)
         else:
             train_i, test_i, info = optimize_traintest_split(
-                X=df,
+                X=None,
                 y=targets,
                 split_on=speakers,
                 stratify_on=stratif_vars_array,
@@ -932,8 +935,6 @@ class Dataset:
         module = glob_conf.module
         if only_tests and module == "test":
             self.df_test = self.map_labels(self.df_test)
-            # Bin target values if they are continuous but a classification experiment should be done
-            self.map_continuous_classification(self.df_test)
             self.df_test = self._add_labels(self.df_test)
             if self.util.config_val_data(self.name, "value_counts", False):
                 if not self.got_gender or not self.got_speaker:
@@ -947,13 +948,10 @@ class Dataset:
             return
         self.df_train = self.map_labels(self.df_train)
         self.df_test = self.map_labels(self.df_test)
-        self.map_continuous_classification(self.df_train)
-        self.map_continuous_classification(self.df_test)
         self.df_train = self._add_labels(self.df_train)
         self.df_test = self._add_labels(self.df_test)
         if self.split3:
             self.df_dev = self.map_labels(self.df_dev)
-            self.map_continuous_classification(self.df_dev)
             self.df_dev = self._add_labels(self.df_dev)
         if self.util.config_val_data(self.name, "value_counts", False):
             if not self.got_gender or not self.got_speaker:
