@@ -60,7 +60,7 @@ class AugmenterAuglib:
                 sampling_rate=16000,
                 )
             cough, _ = audiofile.read(files[0])
-        transformations.append(auglib.transform.Append(cough))
+            transformations.append(auglib.transform.Append(cough))
         if "room" in transforms:
             transformations.append(auglib.transform.FFTConvolve(
                         auglib.observe.List(db_air.files, draw=True),
