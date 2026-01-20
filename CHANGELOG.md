@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.1.5 (26-01-20)  
+------------------------
+* added auglib augmentation methods
+
 Version 1.1.4 (26-01-19)  
 ------------------------
 * fixed stratification problems

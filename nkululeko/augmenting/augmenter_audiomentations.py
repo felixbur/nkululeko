@@ -10,7 +10,7 @@ from tqdm import tqdm
 from nkululeko.utils.util import Util
 
 
-class Augmenter:
+class AugmenterAudiomentations:
     """
     augmenting the train split
     """

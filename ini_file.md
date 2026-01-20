@@ -171,9 +171,10 @@
 ### AUGMENT
 
 * **augment**: select the methods to augment: either *traditional* or *random_splice*
-  * augment = ['traditional', 'random_splice']
+  * augment = ['traditional', 'auglib', 'random_splice']
   * choices are:
     * *traditional*: uses the [audiomentations package](https://github.com/iver56/audiomentations)
+    * *auglib*: uses [audEERING's auglib package](https://audeering.github.io/auglib/)
     * *random_splice*: randomly re-orders short splices (obfuscates the words)
 * **p_reverse**: for random_splice: probability of some samples to be in reverse order (default: 0.3)
 * **top_db**: for random_splice: top db level for silence to be recognized (default: 12)
@@ -183,6 +184,8 @@
   * result = augmented.csv
 * **augmentations**: select the augmentation methods for the audiomentation module. Default provided.
   * augmentations = Compose([AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.05),Shift(p=0.5),BandPassFilter(min_center_freq=100.0, max_center_freq=6000),])
+* **transformations**: select the augmentation methods for the auglib package. Defaults to ["room", "music", "noise", "babble", "crop", "cough"]
+  * transformations = ['music', 'room', 'cough']
 
 ### SEGMENT
 

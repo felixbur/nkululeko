@@ -59,7 +59,11 @@ def doit(config_file):
             augmentings = ast.literal_eval(augmentings)
             results = []
             if "traditional" in augmentings:
-                df1 = expr.augment()
+                df1 = expr.augment(method="audiomentations")
+                results.append(df1)
+                got_one = True
+            if "auglib" in augmentings:
+                df1 = expr.augment(method="auglib")
                 results.append(df1)
                 got_one = True
             if "random_splice" in augmentings:
