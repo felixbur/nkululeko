@@ -52,6 +52,7 @@ class AugmenterAuglib:
         self.util.debug(f"applying transformations: {transforms}")
         transforms = ast.literal_eval(transforms)
         transformations = []
+        bypass_prob = float(self.util.config_val("AUGMENT", "bypass_prob", 0.3))
         if "cough" in transforms:
             files = audb.load_media(
                 "cough-speech-sneeze",
@@ -60,11 +61,11 @@ class AugmenterAuglib:
                 sampling_rate=16000,
                 )
             cough, _ = audiofile.read(files[0])
-            transformations.append(auglib.transform.Append(cough))
+            transformations.append(auglib.transform.Append(cough, bypass_prob=bypass_prob,))
         if "room" in transforms:
             transformations.append(auglib.transform.FFTConvolve(
                         auglib.observe.List(db_air.files, draw=True),
-                        keep_tail=False,
+                        keep_tail=False, preserve_level=True,bypass_prob=bypass_prob,
                     ))
         if "music" in transforms:
             transformations.append(auglib.transform.Mix(
@@ -73,16 +74,16 @@ class AugmenterAuglib:
                     read_pos_aux=auglib.observe.FloatUni(0, 1),
                     unit="relative",
                     snr_db=10,
-                    loop_aux=True,
+                    loop_aux=True,bypass_prob=bypass_prob,
                 )) 
         if "babble" in transforms:
             transformations.append(auglib.transform.BabbleNoise(
                 list(db_babble.files),
                 num_speakers=auglib.observe.IntUni(3, 7),
-                snr_db=auglib.observe.IntUni(13, 20),)
-                )
+                snr_db=auglib.observe.IntUni(13, 20),bypass_prob=bypass_prob,
+                ))
         if "noise" in transforms:
-            transformations.append(auglib.transform.PinkNoise(snr_db=10))
+            transformations.append(auglib.transform.PinkNoise(snr_db=10,bypass_prob=bypass_prob,))
         if "crop" in transforms:
             crop_dur = float(self.util.config_val("AUGMENT", "crop_dur", 1.0))
             transformations.append(auglib.transform.Trim(
@@ -90,13 +91,11 @@ class AugmenterAuglib:
                 duration=crop_dur,
                 fill="loop",
                 unit="seconds",
+                bypass_prob=bypass_prob,
             ))
-        bypass_prob = float(self.util.config_val("AUGMENT", "bypass_prob", 0.3))
-
         transformations.append(auglib.transform.NormalizeByPeak())
-        transform = auglib.transform.Select(
+        transform = auglib.transform.Compose(
             transformations,
-            bypass_prob=bypass_prob,
         )
         self.augmenter = auglib.Augment(transform)
 
