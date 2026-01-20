@@ -116,7 +116,6 @@ class AugmenterAuglib:
         filepath = f"{store}auglib/"
         audeer.mkdir(filepath)
         self.util.debug(f"augmenting {sample_selection} samples to {filepath}")
-        newpath = ""
         index_map = {}
         for i, f in enumerate(tqdm(files)):
             signal, sr = audiofile.read(f)
