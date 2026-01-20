@@ -100,13 +100,6 @@ class AugmenterAuglib:
         )
         self.augmenter = auglib.Augment(transform)
 
-    def changepath(self, fp, np):
-        #        parent = os.path.dirname(fp).split('/')[-1]
-        fullpath = os.path.dirname(fp)
-        #       newpath = f'{np}{parent}'
-        #       audeer.mkdir(newpath)
-        return fp.replace(fullpath, np)
-
     def augment(self, sample_selection):
         """
         augment the training files and return a dataframe with new files index.
