@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 1.1.4 (26-01-19)  
+------------------------
+* fixed stratification problems
+* moved cont2cat mapping to general data loading
+
 Version 1.1.3 (26-01-14)  
 ------------------------
 * added demo feature extractor functionality
