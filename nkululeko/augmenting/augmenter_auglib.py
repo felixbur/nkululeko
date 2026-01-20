@@ -44,7 +44,7 @@ class AugmenterAuglib:
         db_babble = audb.load(
             "musan",
             tables="speech",
-            media=".*speech-librivox-000\d",
+            media=".*speech-librivox-000\\d",
             version="1.0.0",
             verbose=False,
         )
