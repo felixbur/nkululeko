@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.1.6 (26-01-20)  
+------------------------
+* fixed bug that csv databases didn't get binned
+
 Version 1.1.5 (26-01-20)  
 ------------------------
 * added auglib augmentation methods
