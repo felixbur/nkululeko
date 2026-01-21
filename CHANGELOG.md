@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.1.7 (26-01-21)  
+------------------------
+* print out speaker ids
+
 Version 1.1.6 (26-01-20)  
 ------------------------
 * fixed bug that csv databases didn't get binned
