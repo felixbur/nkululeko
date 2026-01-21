@@ -505,10 +505,8 @@ class Experiment:
 
         self._check_scale()
 
-    def augment(self):
+    def augment(self, method="audiomentations"):
         """Augment the selected samples."""
-        from nkululeko.augmenting.augmenter import Augmenter
-
         sample_selection = self.util.config_val("AUGMENT", "sample_selection", "all")
         if sample_selection == "all":
             df = pd.concat([self.df_train, self.df_test])
@@ -521,8 +519,15 @@ class Experiment:
                 f"unknown augmentation selection specifier {sample_selection},"
                 " should be [all | train | test]"
             )
+        if method == "audiomentations":
+            from nkululeko.augmenting.augmenter_audiomentations import AugmenterAudiomentations
+            augmenter = AugmenterAudiomentations(df)
+        elif method == "auglib":
+            from nkululeko.augmenting.augmenter_auglib import AugmenterAuglib
+            augmenter = AugmenterAuglib(df)
+        else:
+            self.util.error(f"unknown augmentation method: {method}")
 
-        augmenter = Augmenter(df)
         df_ret = augmenter.augment(sample_selection)
         return df_ret
 

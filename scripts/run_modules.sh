@@ -74,6 +74,7 @@ nkululeko_ini_files=(
     exp_emodb_wavlm_xgb.ini
     exp_emodb_whisper_xgb.ini
     emodb_demo.ini
+    exp_emodb_stratify.ini
     exp_emodb_os_xgb_test.ini
     exp_emodb_wav2vec2_test.ini
     exp_emodb_audmodel_mlp.ini
@@ -90,6 +91,7 @@ nkululeko_ini_files=(
 
 # test augmentation
 augment_ini_files=(
+    augment_auglib.ini
     exp_emodb_augment_os_xgb.ini
     exp_emodb_random_splice_os_xgb.ini
     exp_emodb_rs_os_xgb.ini

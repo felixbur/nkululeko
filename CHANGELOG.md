@@ -1,6 +1,19 @@
 Changelog
 =========
 
+Version 1.1.6 (26-01-20)  
+------------------------
+* fixed bug that csv databases didn't get binned
+
+Version 1.1.5 (26-01-20)  
+------------------------
+* added auglib augmentation methods
+
+Version 1.1.4 (26-01-19)  
+------------------------
+* fixed stratification problems
+* moved cont2cat mapping to general data loading
+
 Version 1.1.3 (26-01-14)  
 ------------------------
 * added demo feature extractor functionality
