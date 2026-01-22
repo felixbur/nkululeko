@@ -308,6 +308,8 @@
   * needs_feature_extraction = False
 * **print_feats**: set this to False if you don't want os and praat feature names to be printed out
   * print_feats = False
+* **store_format**: in which format to store the feature data frames [pkl | csv]
+  * store_format = pkl
 
 ### MODEL
 
