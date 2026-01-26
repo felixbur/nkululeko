@@ -35,6 +35,6 @@ This dataset is ideal for testing the **Equal Error Rate (EER)** metric, which i
 See [docs/EER_IMPLEMENTATION.md](../../docs/EER_IMPLEMENTATION.md) for details about the EER implementation.
 
 Reference:  
-[1] Reimao, Ricardo, and Vassilios Tzerpos. "For: A dataset for synthetic speech detection." In 2019 International Conference on Speech Technology and Human-Computer Dialogue (SpeD), pp. 1-10. IEEE, 2019. 
-[2] https://bil.eecs.yorku.ca/datasets/
+[1] Reimao, Ricardo, and Vassilios Tzerpos. "For: A dataset for synthetic speech detection." In 2019 International Conference on Speech Technology and Human-Computer Dialogue (SpeD), pp. 1-10. IEEE, 2019.  
+[2] https://bil.eecs.yorku.ca/datasets/  
 [3] Zhu, Yi, Heitor R. Guimarães, Arthur Pimentel, and Tiago Falk. "AUDDT: Audio Unified Deepfake Detection Benchmark Toolkit." arXiv preprint arXiv:2509.21597 (2025).  
