@@ -36,18 +36,39 @@ try:
     from nkululeko.utils.files import find_files
 except ImportError:
     # Fallback to glob if nkululeko is not available
-    def find_files(directory, ext=None, relative=False, path_object=False):
-        """Find all files with given extensions in directory."""
+    def find_files(directory, ext=None, relative=False, path_object=False, recurse=True):
+        """Find files with given extensions in directory.
+
+        Parameters
+        ----------
+        directory : str or Path
+            Base directory to search.
+        ext : str or list[str], optional
+            File extensions without the leading dot (e.g. "wav" or ["wav", "flac"]).
+            If None, all files are returned.
+        relative : bool, optional
+            If True, return paths relative to ``directory``.
+        path_object : bool, optional
+            If True, return :class:`pathlib.Path` objects, otherwise strings.
+        recurse : bool, optional
+            If True (default), search recursively, otherwise only the top-level
+            of ``directory`` is searched.
+        """
         directory = Path(directory)
         if ext is None:
             ext = ["*"]
+        elif isinstance(ext, (str, bytes)):
+            ext = [ext]
         files = []
+        iterator_factory = directory.rglob if recurse else directory.glob
         for extension in ext:
-            files.extend(directory.rglob(f"*.{extension}"))
+            pattern = f"*.{extension}" if extension != "*" else "*"
+            files.extend(iterator_factory(pattern))
+        if relative:
+            files = [f.relative_to(directory) for f in files]
         if path_object:
             return sorted(files)
-        else:
-            return sorted([str(f) for f in files])
+        return sorted(str(f) for f in files)
 
 
 # Emotion mapping
