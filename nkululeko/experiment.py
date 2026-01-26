@@ -375,11 +375,11 @@ class Experiment:
             self.util.debug(
                 f"train/test shape: {self.df_train.shape}/{self.df_test.shape}"
             )
-        train_spkrs = list(map(str, self.df_train.speaker.unique()))
-        test_spkrs = list(map(str, self.df_test.speaker.unique()))
-        self.util.debug(f"train speakers: {train_spkrs}")
-        self.util.debug(f"test speakers: {test_spkrs}")
-
+        if "speaker" in self.df_train.columns:
+            train_spkrs = list(map(str, self.df_train.speaker.unique()))
+            test_spkrs = list(map(str, self.df_test.speaker.unique()))
+            self.util.debug(f"train speakers: {train_spkrs}")
+            self.util.debug(f"test speakers: {test_spkrs}")
 
     def _add_random_target(self, df):
         labels = glob_conf.labels

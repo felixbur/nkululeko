@@ -80,13 +80,13 @@ class Dataset:
             # df = df.rename(columns=col_dict)
             for key in col_dict.keys():
                 if key in df.columns:
-                    df[col_dict[key]] = df[key]
+                    df = df.rename(columns={key: col_dict[key]})
+                    self.util.debug(f"renamed data column {key} to {col_dict[key]}")
                 else:
                     self.util.warn(
                         f"column {key} not found in {self.name} database, "
                         "not renaming it"
                     )
-            self.util.debug(f"renamed data columns: {col_dict}")
         return df
 
     def _report_load(self):
