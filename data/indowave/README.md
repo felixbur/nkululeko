@@ -30,7 +30,7 @@ A file named `07-03-02-03.wav` indicates:
 Therefore, the actor is male (07), with surprise emotion (03), strong intensity (02), on the third repetition (03).
 
 ## Pre-processing command 
-Download link: [https://data.mendeley.com/datasets/j9ytfdzy27/1](https://data.mendeley.com/datasets/j9ytfdzy27/1). The following commands assumed that data is download in current directory (`nkululeko/data/indowave`).  
+Download link: [https://data.mendeley.com/datasets/j9ytfdzy27/1](https://data.mendeley.com/datasets/j9ytfdzy27/1). The following commands assume that the data is downloaded in the current directory (`nkululeko/data/indowave`).  
 
 ```bash
 # Extract the dataset
