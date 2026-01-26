@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.1.9 (26-01-26)  
+------------------------
+* fixed bug that data without speaker column caused error
+
 Version 1.1.8 (26-01-26)  
 ------------------------
 * added EER
