@@ -109,7 +109,7 @@ def process_jess_database():
     print(f"Scanning for .wav files in: {audio_dir}")
 
     # Find all .wav files
-    wav_files = list(audio_dir.rglob("*.wav"))
+    wav_files = [f for f in audio_dir.rglob("*.wav") if not f.name.startswith("._")]
     print(f"Found {len(wav_files)} .wav files")
 
     if len(wav_files) == 0:

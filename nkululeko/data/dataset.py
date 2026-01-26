@@ -792,8 +792,6 @@ class Dataset:
             f"{self.name} (speakers stated): "
             f"[{self.df_train.shape[0]}/{self.df_test.shape[0]}] samples in train/test"
         )
-        self.util.debug(f"train speakers: {train_speakers}")
-        self.util.debug(f"test speakers: {test_speakers}")
 
     def speakers_stated_3(self):
         test_speakers = self.util.config_val_data(self.name, "test", False)
@@ -820,9 +818,6 @@ class Dataset:
             f"{self.name} (speakers stated): "
             f"[{self.df_train.shape[0]}/{self.df_dev.shape[0]}/{self.df_test.shape[0]}] samples in train/dev/test"
         )
-        self.util.debug(f"train speakers: {train_speakers}")
-        self.util.debug(f"test speakers: {test_speakers}")
-        self.util.debug(f"dev speakers: {dev_speakers}")
 
     def split_speakers(self):
         """One way to split train and eval sets: Specify percentage of evaluation speakers"""
@@ -840,8 +835,6 @@ class Dataset:
             " samples in train/test"
         )
         self.util.debug(msg)
-        self.util.debug(f"train speakers: {train_spkrs}")
-        self.util.debug(f"test speakers: {test_spkrs}")
         # because this generates new train/test sample quantaties,
         # the feature extraction has to be done again
         try:
@@ -864,16 +857,12 @@ class Dataset:
         self.df_test = df[df.speaker.isin(test_spkrs)]
         self.df_dev = df[df.speaker.isin(dev_spkrs)]
         self.df_train = df[~df.speaker.isin(testdev_spkrs)]
-        train_spkrs = list(self.df_train.speaker.unique())
         msg = (
             f"{self.name} (speaker splits): "
             f"[{self.df_train.shape[0]}/{self.df_dev.shape[0]}/{self.df_test.shape[0]}]"
             " samples in train/dev/test"
         )
         self.util.debug(msg)
-        self.util.debug(f"train speakers: {train_spkrs}")
-        self.util.debug(f"dev speakers: {dev_spkrs}")
-        self.util.debug(f"test speakers: {test_spkrs}")
         # because this generates new train/test sample quantaties,
         # the feature extraction has to be done again
         try:
