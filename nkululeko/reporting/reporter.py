@@ -9,6 +9,8 @@ import audplot
 from confidence_intervals import evaluate_with_conf_int
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.interpolate import interp1d
+from scipy.optimize import brentq
 from scipy.special import softmax
 from scipy.stats import entropy
 from scipy.stats import pearsonr
@@ -16,6 +18,7 @@ from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import r2_score
+from sklearn.metrics import roc_curve
 
 # from torch import is_tensor
 from audmetric import accuracy
@@ -32,11 +35,46 @@ from nkululeko.reporting.result import Result
 from nkululeko.utils.util import Util
 
 
+def equal_error_rate(y_true, y_score):
+    """Calculate Equal Error Rate (EER) for binary classification.
+    
+    EER is the point where False Acceptance Rate (FAR) equals False Rejection Rate (FRR).
+    This metric is commonly used in biometric systems and deepfake detection.
+    
+    Args:
+        y_true: Ground truth binary labels (0 or 1)
+        y_score: Predicted scores or probabilities
+        
+    Returns:
+        float: Equal Error Rate (lower is better, range 0-1)
+    """
+    fpr, tpr, thresholds = roc_curve(y_true, y_score, pos_label=1)
+    fnr = 1 - tpr
+    
+    # Find the point where FAR (fpr) equals FRR (fnr)
+    # Calculate absolute difference between FPR and FNR
+    abs_diff = np.abs(fpr - fnr)
+    
+    # Find the index with minimum difference
+    min_index = np.argmin(abs_diff)
+    
+    # EER is the average of FPR and FNR at that point
+    eer = (fpr[min_index] + fnr[min_index]) / 2.0
+    
+    return float(eer)
+
+
 class Reporter:
     def _set_metric(self):
         if self.util.exp_is_classification():
-            self.metric = "uar"
-            self.METRIC = "UAR"
+            # Check if user wants EER metric instead of default UAR
+            measure = self.util.config_val("MODEL", "measure", "uar")
+            if measure.lower() == "eer":
+                self.metric = "eer"
+                self.METRIC = "EER"
+            else:
+                self.metric = "uar"
+                self.METRIC = "UAR"
             self.result.metric = self.METRIC
             self.is_classification = True
         else:
@@ -76,12 +114,20 @@ class Reporter:
         self.cont_to_cat = False
         if len(self.truths) > 0 and len(self.preds) > 0:
             if self.util.exp_is_classification():
-                uar, upper, lower = self._get_test_result(
-                    self.truths, self.preds, "uar"
+                # Calculate the primary metric (UAR or EER)
+                test_result, upper, lower = self._get_test_result(
+                    self.truths, self.preds, self.metric
                 )
-                self.result.test = uar
+                self.result.test = test_result
                 self.result.set_upper_lower(upper, lower)
                 self.result.loss = 1 - accuracy(self.truths, self.preds)
+                
+                # If EER is the metric, also calculate and store UAR for reporting
+                if self.metric == "eer":
+                    uar, _, _ = self._get_test_result(
+                        self.truths, self.preds, "uar"
+                    )
+                    self.uar_result = uar  # Store UAR for additional reporting
             else:
                 # regression experiment
                 # keep the original values for further use, they will be binned later
@@ -99,6 +145,27 @@ class Reporter:
             test_result, (upper, lower) = evaluate_with_conf_int(
                 preds,
                 unweighted_average_recall,
+                truths,
+                num_bootstraps=1000,
+                alpha=5,
+            )
+        elif metric == "eer":
+            # EER requires probabilities/scores, not class predictions
+            # For binary classification, use probabilities if available
+            if self.probas is not None and len(self.probas.columns) >= 2:
+                # Use the positive class probability (assuming binary classification)
+                # Get the probability of the positive class (index 1)
+                y_score = self.probas.iloc[:, 1].values
+            else:
+                # If no probabilities available, use predictions as scores
+                # This is a fallback but not ideal for EER
+                self.util.debug("Warning: EER calculation without probabilities. Results may not be accurate.")
+                y_score = preds
+            
+            # Calculate EER with confidence intervals
+            test_result, (upper, lower) = evaluate_with_conf_int(
+                y_score,
+                equal_error_rate,
                 truths,
                 num_bootstraps=1000,
                 alpha=5,
@@ -364,16 +431,22 @@ class Reporter:
         acc_str = self.util.to_3_digits_str(acc)
         up_str = self.util.to_3_digits_str(upper)
         low_str = self.util.to_3_digits_str(lower)
+        
+        # Prepare metric string for title
+        if self.metric == "eer":
+            # Show both EER and UAR when EER is the primary metric
+            eer_str = self.util.to_3_digits_str(test_result.test)
+            metric_str = f"EER: {eer_str} (+-{up_str}/{low_str}), UAR: {uar_str}"
+        else:
+            metric_str = f"UAR: {uar_str} (+-{up_str}/{low_str})"
 
         if epoch != 0:
             plt.title(
-                f"Confusion Matrix, UAR: {uar_str} "
-                + f"(+-{up_str}/{low_str}), {reg_res}, Epoch: {epoch}"
+                f"Confusion Matrix, {metric_str}, {reg_res}, Epoch: {epoch}"
             )
         else:
             plt.title(
-                f"Confusion Matrix, UAR: {uar_str} "
-                + f"(+-{up_str}/{low_str}) {reg_res}"
+                f"Confusion Matrix, {metric_str} {reg_res}"
             )
         img_path = f"{fig_dir}{plot_name}{self.filenameadd}.{self.format}"
         plt.tight_layout()
@@ -393,10 +466,18 @@ class Reporter:
         )
 
         res_dir = self.util.get_path("res_dir")
-        rpt = (
-            f"Confusion matrix result for epoch: {epoch}, UAR: {uar_str}"
-            + f", (+-{up_str}/{low_str}), ACC: {acc_str}"
-        )
+        # Update report message based on metric
+        if self.metric == "eer":
+            eer_str = self.util.to_3_digits_str(test_result.test)
+            rpt = (
+                f"Confusion matrix result for epoch: {epoch}, EER: {eer_str}"
+                + f", (+-{up_str}/{low_str}), UAR: {uar_str}, ACC: {acc_str}"
+            )
+        else:
+            rpt = (
+                f"Confusion matrix result for epoch: {epoch}, UAR: {uar_str}"
+                + f", (+-{up_str}/{low_str}), ACC: {acc_str}"
+            )
         # print(rpt)
         self.util.debug(rpt)
         file_name = f"{res_dir}{self.util.get_exp_name()}{self.filenameadd}_conf.txt"

@@ -354,12 +354,15 @@ Model and training specifications. In general, default values should work for cl
     * **1-ccc**: concordance correlation coefficient
     * **mse**: Mean squared error (for regression)
     * **mae**: Mean absolute error (for regression)
-* **measure**: A measure/metric to report progress with regression experiments (classification is UAR)
+* **measure**: A measure/metric to report progress with experiments. For classification, default is UAR. For regression, default is MSE.
   * measure = mse
   * possible values:
-    * **mse**: mean squared error
-    * **mae**: mean absolute error
-    * **ccc**: concordance correlation coefficient
+    * **uar**: Unweighted Average Recall (default for classification)
+    * **eer**: Equal Error Rate (for binary classification, commonly used in biometric systems and deepfake detection)
+    * **mse**: Mean Squared Error (default for regression)
+    * **mae**: Mean Absolute Error (for regression)
+    * **ccc**: Concordance Correlation Coefficient (for regression)
+  * Note: When EER is specified, both EER and UAR will be reported
 * **activation**: The activation function for MLPs. One of ["relu", "sigmoid", "tanh", "leaky_relu"]
   * activation = relu
 * **layers**: specify the layer architecture for MLP
