@@ -46,6 +46,7 @@ To support open science and reproducible research, we encourage you to submit PR
 |[enterface](enterface/)|emotion|Multilingual|public|unknown|
 |[erysac](erysac/)|emotion|Russian, children|public|unknown|
 |[esd](esd/)|emotion|English,Chinese|public|unknown|
+|[for-2sec](for-2sec/)|deepfake|Fake-or-Real (FoR) dataset - 2 seconds version|public|unknown|
 |[gerparas](gerparas/)|valence,arousal,dominance|German|restricted|unknown|
 |[iemocap](iemocap/)|emotion,VAD|English|restricted|Custom academic/research use|
 |[jess](jess/)|age|Jena Speaker Set|public|research|
@@ -86,7 +87,7 @@ To support open science and reproducible research, we encourage you to submit PR
 |[vivae](vivae/)|emotion|Variably Intense Vocalizations of Affect and Emotion Corpus (VIVAE). English vocal bursts|public|unknown|
 
 
-This recipe contains information about 66 datasets.
+This recipe contains information about 67 datasets.
 ## Performance
 
 ![Nkululeko performance](../meta/images/nkululeko_ser_20240719.png)

@@ -49,6 +49,8 @@ This glossary provides definitions for key terms and components used in Nkululek
 ## Reporting and Analysis
 
 19. **Reporter**: Generates evaluation metrics, plots, and reports for experiments (nkululeko/reporting/reporter.py)
+   - Supports multiple metrics: UAR (Unweighted Average Recall), EER (Equal Error Rate), MSE, MAE, CCC
+   - See [EER Implementation](../EER_IMPLEMENTATION.md) for details on the Equal Error Rate metric
 
 20. **ensemble_predictions**: Function combining predictions from multiple models (nkululeko/ensemble.py)
 
