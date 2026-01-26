@@ -64,6 +64,7 @@ There is also `a deepwiki available <https://deepwiki.com/felixbur/nkululeko>`__
    test_module.md
    split_data.md
 
+   ../EER_IMPLEMENTATION.md
 
 .. toctree::
    :maxdepth: 2

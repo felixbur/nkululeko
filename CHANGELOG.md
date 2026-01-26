@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.1.8 (26-01-26)  
+------------------------
+* added EER
+
 Version 1.1.7 (26-01-21)  
 ------------------------
 * print out speaker ids

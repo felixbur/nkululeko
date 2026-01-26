@@ -1,0 +1,5 @@
+name: for-2sec
+target: deepfake
+description: Fake-or-Real (FoR) dataset - 2 seconds version
+access: public
+license: unknown
