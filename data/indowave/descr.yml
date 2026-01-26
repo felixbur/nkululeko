@@ -1,0 +1,5 @@
+name: indowave  
+target: emotion class and intensity  
+description: Indonesian audio dataset for emotion classification
+access: public
+license: CC BY 4.0

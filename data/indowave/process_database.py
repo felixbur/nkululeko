@@ -1,0 +1,192 @@
+#!/usr/bin/env python3
+"""
+Process the IndoWaveSentiment dataset and generate CSV files.
+
+IndoWaveSentiment is an Indonesian audio dataset for emotion classification
+with 300 recordings from 10 actors (5 male, 5 female).
+
+File naming convention: <actor>-<emotion>-<intensity>-<repetition>.wav
+- Actor: 01-10 (odd=male, even=female)
+- Emotion: 01=neutral, 02=happy, 03=surprise, 04=disgust, 05=disappointed
+- Intensity: 01=normal, 02=strong
+- Repetition: 01-03 (first, second, third)
+
+Output CSV files:
+- indowave_train.csv
+- indowave_dev.csv
+- indowave_test.csv
+- indowave.csv (all combined)
+
+Columns: file, speaker, emotion, gender, intensity, repetition, language
+"""
+
+import argparse
+import sys
+from pathlib import Path
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
+# Add nkululeko parent directory to path to enable imports
+script_dir = Path(__file__).parent
+nkululeko_root = script_dir.parent.parent
+sys.path.insert(0, str(nkululeko_root))
+
+try:
+    from nkululeko.utils.files import find_files
+except ImportError:
+    # Fallback to glob if nkululeko is not available
+    def find_files(directory, ext=None, relative=False, path_object=False):
+        """Find all files with given extensions in directory."""
+        directory = Path(directory)
+        if ext is None:
+            ext = ["*"]
+        files = []
+        for extension in ext:
+            files.extend(directory.rglob(f"*.{extension}"))
+        if path_object:
+            return sorted(files)
+        else:
+            return sorted([str(f) for f in files])
+
+
+# Emotion mapping
+EMOTION_MAP = {
+    "01": "neutral",
+    "02": "happy",
+    "03": "surprise",
+    "04": "disgust",
+    "05": "disappointed"
+}
+
+# Intensity mapping
+INTENSITY_MAP = {
+    "01": "normal",
+    "02": "strong"
+}
+
+
+def process_database(data_dir, output_dir):
+    """
+    Process the IndoWaveSentiment dataset and generate CSV files.
+    
+    Args:
+        data_dir: Path to the IndoWaveSentiment directory
+        output_dir: Path to save the CSV files
+    """
+    # Check if data_dir exists
+    data_dir = Path(data_dir).resolve()
+    if not data_dir.is_dir():
+        raise FileNotFoundError(f"ERROR: Directory not found: {data_dir}")
+    
+    # Create output directory if it doesn't exist
+    output_dir = Path(output_dir).resolve()
+    if not output_dir.exists():
+        output_dir.mkdir(parents=True)
+    
+    # Find all wav files
+    wav_files = find_files(data_dir, ext=["wav"], relative=False, path_object=True)
+    print(f"Found {len(wav_files)} wav files.")
+    
+    if len(wav_files) == 0:
+        raise FileNotFoundError(f"No wav files found in {data_dir}")
+    
+    # Parse filename components
+    data = []
+    for wav_file in wav_files:
+        # Get relative path from data_dir.parent for CSV
+        rel_path = wav_file.relative_to(data_dir.parent)
+        
+        # Parse filename: <actor>-<emotion>-<intensity>-<repetition>.wav
+        filename = wav_file.stem
+        parts = filename.split("-")
+        
+        if len(parts) != 4:
+            print(f"Warning: Skipping file with unexpected format: {filename}")
+            continue
+        
+        actor, emotion_code, intensity_code, repetition = parts
+        
+        # Extract metadata
+        actor_num = int(actor)
+        gender = "male" if actor_num % 2 == 1 else "female"  # Odd=male, even=female
+        emotion = EMOTION_MAP.get(emotion_code, f"unknown_{emotion_code}")
+        intensity = INTENSITY_MAP.get(intensity_code, f"unknown_{intensity_code}")
+        
+        data.append({
+            "file": str(rel_path),
+            "speaker": f"Actor_{actor}",
+            "emotion": emotion,
+            "gender": gender,
+            "intensity": intensity,
+            "repetition": repetition,
+            "language": "indonesian"
+        })
+    
+    # Create dataframe
+    df = pd.DataFrame(data)
+    
+    if len(df) == 0:
+        raise ValueError("No valid audio files found to process")
+    
+    print(f"\nDataset statistics:")
+    print(f"Total samples: {len(df)}")
+    print(f"Speakers: {df['speaker'].nunique()}")
+    print(f"Emotions: {df['emotion'].value_counts().to_dict()}")
+    print(f"Gender: {df['gender'].value_counts().to_dict()}")
+    
+    # Speaker-independent split (train: 60%, dev: 20%, test: 20%)
+    speakers = df["speaker"].unique()
+    train_speakers, temp_speakers = train_test_split(
+        speakers, test_size=0.4, random_state=42
+    )
+    dev_speakers, test_speakers = train_test_split(
+        temp_speakers, test_size=0.5, random_state=42
+    )
+    
+    # Create train, dev, test splits
+    df_train = df[df["speaker"].isin(train_speakers)]
+    df_dev = df[df["speaker"].isin(dev_speakers)]
+    df_test = df[df["speaker"].isin(test_speakers)]
+    
+    # Save CSV files
+    csv_files = {
+        "train": df_train,
+        "dev": df_dev,
+        "test": df_test
+    }
+    
+    for split_name, split_df in csv_files.items():
+        csv_path = output_dir / f"indowave_{split_name}.csv"
+        split_df.to_csv(csv_path, index=False)
+        print(f"\n✓ Saved {len(split_df)} samples to {csv_path}")
+        print(f"  Speakers: {split_df['speaker'].unique().tolist()}")
+        print(f"  Emotions: {split_df['emotion'].value_counts().to_dict()}")
+    
+    # Save combined CSV
+    combined_csv = output_dir / "indowave.csv"
+    df.to_csv(combined_csv, index=False)
+    print(f"\n✓ Saved {len(df)} total samples to {combined_csv}")
+    
+    print("\n✅ DONE")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Process IndoWaveSentiment dataset and generate CSV files"
+    )
+    parser.add_argument(
+        "--data_dir",
+        type=str,
+        default="./IndoWaveSentiment Indonesian Audio Dataset for Emotion Classification/IndoWaveSentiment/",
+        help="Path to the IndoWaveSentiment directory"
+    )
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        default="./",
+        help="Path to the output directory for CSV files"
+    )
+    args = parser.parse_args()
+    
+    process_database(args.data_dir, args.output_dir)
