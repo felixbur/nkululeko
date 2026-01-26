@@ -53,7 +53,7 @@ dependencies = [
     "numpy>=1.20.0",
     "numpy_audio_limiter",
     "opensmile>=2.0.0",
-    "pandas>=1.0.0",
+    "pandas<3.0.0",
     "praat-parselmouth>=0.4.0",
     "scikit-learn>=1.0.0",
     "scipy>=1.0.0",
