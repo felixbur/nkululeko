@@ -1,4 +1,4 @@
-# Nkululeko pre-processing for Fake or Real(FoR) - 2 seconds  
+# Nkululeko pre-processing for Fake or Real (FoR) - 2 seconds  
 
 ## Dataset description  
 
