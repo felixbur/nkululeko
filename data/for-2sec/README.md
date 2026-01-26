@@ -30,9 +30,9 @@ python3 -m nkululeko.nkululeko --config data/for-2sec/exp_eer.ini
 
 ## EER Metric Support
 
-This dataset is ideal for testing the **Equal Error Rate (EER)** metric, which is commonly used in biometric systems and deepfake detection. The `exp_eer.ini` configuration demonstrates how to use EER as the primary metric while still reporting UAR.
+This dataset is ideal for testing the **Equal Error Rate (EER)** metric, which is commonly used in biometric systems and deepfake detection. The `exp.ini` configuration demonstrates how to use EER as the primary metric while still reporting UAR.
 
-See [docs/EER_IMPLEMENTATION.md](../../docs/EER_IMPLEMENTATION.md) for details about the EER implementation.
+See [docs/EER_IMPLEMENTATION.md](../../docs/source/EER_IMPLEMENTATION.md) for details about the EER implementation.
 
 Reference:  
 [1] Reimao, Ricardo, and Vassilios Tzerpos. "For: A dataset for synthetic speech detection." In 2019 International Conference on Speech Technology and Human-Computer Dialogue (SpeD), pp. 1-10. IEEE, 2019.  
