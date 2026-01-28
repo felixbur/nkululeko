@@ -5,7 +5,7 @@ The **E-SERAVD** is an Indonesian Speech Emotion Recognition (SER) corpus develo
 It consists of emotional speech segments extracted from Indonesian film dialogues, designed to support research in **speech emotion recognition**, **multimodal emotion analysis**, and **affective computing**.
 
 Each clip labeled with **"T" (Tested)** has undergone a full annotation and statistical validation process to ensure **high reliability** and **strong inter-rater agreement**.  
-The dataset includes both **Audio-Only (.wav)** and **Audio-Video (.mp4)** versions to facilitate comprehensive emotion recognition research and model evaluation.  
+The dataset includes both **Audio-Only (.wav)** and **Audio-Video (.mp4)** versions to facilitate comprehensive emotion recognition research and model evaluation.  This recipe focuses on the audio modality only.
 
 ### Dataset Statistics
 - **Total samples**: 1,200 wav files
@@ -50,7 +50,6 @@ python3 -m nkululeko.nkululeko --config data/e-seravd/exp.ini
 ```
 
 ## Results
-Using OpenSmile features + XGBoost:
-- **UAR**: 0.287 (28.7%)
-- **Accuracy**: 29.1%
-- **Note**: Low performance suggests challenging dataset with significant speaker variability and overlapping emotion characteristics in film dialogues
+Using OpenSmile features + svm:
+- **UAR**: 0.528 (52.8%)
+- **Note**: Low performance suggests challenging dataset with significant variability in film dialogues. Note that the results differ from those reported in the original paper mainly due to different data splits (our split is more challenging). 
