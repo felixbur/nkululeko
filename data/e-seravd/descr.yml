@@ -1,0 +1,5 @@
+name: e-seravd
+target: emotion
+description: Indonesian Speech Emotion Recognition dataset from Movies
+access: public
+license: CC BY 4.0  
