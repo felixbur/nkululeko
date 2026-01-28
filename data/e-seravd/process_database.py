@@ -30,7 +30,6 @@ import sys
 from pathlib import Path
 
 import pandas as pd
-from sklearn.model_selection import train_test_split
 
 # Add nkululeko parent directory to path to enable imports
 script_dir = Path(__file__).parent
@@ -137,16 +136,18 @@ def process_database(data_dir, output_dir):
     print(f"Speaker list: {sorted(df['speaker'].unique())}")
     print(f"Emotions: {df['emotion'].value_counts().to_dict()}")
     
-    # Speaker-independent split (train: 60%, dev: 20%, test: 20%)
-    speakers = df["speaker"].unique()
-    print(f"\nTotal speakers: {len(speakers)}")
+    # Speaker-independent split with explicit speaker assignments
+    # Train: 3 speakers (DHB, HA3, HSL) - 679 samples
+    # Dev: 1 speaker (TAOL) - 181 samples
+    # Test: 2 speakers (AADC, D1990) - 340 samples
+    train_speakers = ['DHB', 'HA3', 'HSL']
+    dev_speakers = ['TAOL']
+    test_speakers = ['AADC', 'D1990']
     
-    train_speakers, temp_speakers = train_test_split(
-        speakers, test_size=0.4, random_state=42
-    )
-    dev_speakers, test_speakers = train_test_split(
-        temp_speakers, test_size=0.5, random_state=42
-    )
+    print(f"\nSpeaker assignments:")
+    print(f"Train speakers: {train_speakers}")
+    print(f"Dev speakers: {dev_speakers}")
+    print(f"Test speakers: {test_speakers}")
     
     # Create train, dev, test splits
     df_train = df[df["speaker"].isin(train_speakers)]
