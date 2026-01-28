@@ -25,7 +25,7 @@ Files follow the format: `02-<emotion>-<speaker>-T-<number>.wav`
 ## Processing command  
 
 ### Download and extract dataset
-Download the dataset from: wget https://e.pcloud.link/publink/show?code=XZd62aZSxD3MBAoi8VRhOgKj0n7LLvwzN0y, then follows steps to extract:
+Download the dataset from: https://e.pcloud.link/publink/show?code=XZd62aZSxD3MBAoi8VRhOgKj0n7LLvwzN0y, then follows steps to extract:
 
 ```bash
 unzip E-SERAVD.zip
