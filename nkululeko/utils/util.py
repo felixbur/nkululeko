@@ -434,13 +434,13 @@ class Util:
         all = ""
         vals = np.empty(0)
         for report in best_reports:
-            all += str(report.result.test) + ", "
+            all += f"{report.result.test:.4f} "
             vals = np.append(vals, report.result.test)
         file_name = f"{res_dir}{self.get_exp_name()}_runs.txt"
         output = (
             f"{all}"
-            + f"\nmean: {vals.mean():.3f}, std: {vals.std():.3f}, "
-            + f"max: {vals.max():.3f}, max_index: {vals.argmax()}"
+            + f"\nmean: {vals.mean():.4f}, std: {vals.std():.4f}, "
+            + f"max: {vals.max():.4f}, max_index: {vals.argmax()}"
         )
         with open(file_name, "w") as text_file:
             text_file.write(output)
@@ -507,12 +507,18 @@ class Util:
             df_target.got_speaker = df_source.got_speaker
 
     def high_is_good(self):
-        """check how to interpret results"""
+        """check how to interpret results (higher is better)"""
         if self.exp_is_classification():
-            return True
+            measure = self.config_val("MODEL", "measure", "uar")
+            measure_low = ["eer"]
+            if measure in measure_low:
+                return False
+            else:
+                return True
         else:
             measure = self.config_val("MODEL", "measure", "mse")
-            if measure == "mse" or measure == "mae":
+            measure_low = ["mse", "mae"]
+            if measure in measure_low:
                 return False
             elif measure == "ccc":
                 return True
@@ -525,8 +531,17 @@ class Util:
         return (int(x * 1000)) / 1000.0
 
     def to_3_digits_str(self, x):
-        """Given a float, return this to 3 digits as string without integer number."""
-        return str(self.to_3_digits(x))[1:]
+        """Given a float, return this to 3 digits as string with leading zero."""
+        return f"{self.to_3_digits(x):.3f}"
+
+    def to_4_digits(self, x):
+        """Given a float, return this to 4 digits."""
+        x = float(x)
+        return (int(x * 10000)) / 10000.0
+
+    def to_4_digits_str(self, x):
+        """Given a float, return this to 4 digits as string with leading zero."""
+        return f"{self.to_4_digits(x):.4f}"
 
     def save_json(self, file: str, var: dict):
         """Save variable to json file.
@@ -657,10 +672,8 @@ class Util:
             self.error(f"Column '{column1}' not found in DataFrame")
         if column2 not in df.columns:
             self.error(f"Column '{column2}' not found in DataFrame")
-        return {
-            column1: df[column1].tolist(),
-            column2: df[column2].tolist()
-        }
+        return {column1: df[column1].tolist(), column2: df[column2].tolist()}
+
     def df_to_categorical_dict(self, df, categorical_column, value_column):
         """Convert a DataFrame with a categorical and real-valued column to a dict.
 
@@ -763,6 +776,8 @@ class Util:
             return np.full_like(values, (new_min + new_max) / 2)
 
         # Apply min-max scaling formula
-        scaled = (values - old_min) / (old_max - old_min) * (new_max - new_min) + new_min
+        scaled = (values - old_min) / (old_max - old_min) * (
+            new_max - new_min
+        ) + new_min
 
         return scaled

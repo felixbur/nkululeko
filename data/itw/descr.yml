@@ -1,0 +1,5 @@
+name: in-the-wild
+target: deepfake
+description: audio deepfakes (and corresponding benign audio) for a set of politicians and other public figures
+access: public
+license: Apache-2.0
