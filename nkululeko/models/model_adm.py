@@ -48,13 +48,51 @@ class ADMModel(Model):
         labels = glob_conf.labels
         self.class_num = len(labels)
         
-        # Binary classification loss (BCE)
-        self.criterion = torch.nn.BCEWithLogitsLoss()
-        self.util.debug("using ADM model with BCE loss function")
-        
-        # Device setup
+        # Device setup (needed before loss initialization)
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
+        
+        # Loss function selection
+        loss_type = self.util.config_val("MODEL", "loss", "bce")
+        def _parse_float(val, default):
+            """Parse float values that may include inline comments."""
+            try:
+                return float(str(val).split("#")[0].strip())
+            except (TypeError, ValueError):
+                return default
+        
+        if loss_type == "focal":
+            from nkululeko.losses.loss_focal import FocalLoss
+            alpha = _parse_float(
+                self.util.config_val("MODEL", "focal.alpha", 0.25), 0.25
+            )
+            gamma = _parse_float(
+                self.util.config_val("MODEL", "focal.gamma", 2.0), 2.0
+            )
+            self.criterion = FocalLoss(alpha=alpha, gamma=gamma)
+            self.util.debug(f"using ADM model with Focal Loss (alpha={alpha}, gamma={gamma})")
+            
+        elif loss_type == "weighted_bce":
+            from nkululeko.losses.loss_bce import WeightedBCEWithLogitsLoss, compute_class_weights
+            # Compute class weights from training data
+            class_weight_mode = self.util.config_val("MODEL", "class_weight", "auto")
+            if class_weight_mode == "auto":
+                pos_weight = compute_class_weights(
+                    df_train[self.target], 
+                    labels, 
+                    mode='balanced'
+                )
+                self.util.debug(f"auto class weight: pos_weight={pos_weight:.3f}")
+            else:
+                pos_weight = _parse_float(class_weight_mode, 1.0)
+                self.util.debug(f"manual class weight: pos_weight={pos_weight}")
+            self.criterion = WeightedBCEWithLogitsLoss(pos_weight=pos_weight)
+            self.util.debug("using ADM model with Weighted BCE loss function")
+            
+        else:  # default: bce
+            from nkululeko.losses.loss_bce import BCEWithLogitsLoss
+            self.criterion = BCEWithLogitsLoss()
+            self.util.debug("using ADM model with BCE loss function")
         
         # Determine actual feature dimensions from the data
         # Features are: wav2vec2 (768) + sptk (4)
@@ -208,8 +246,8 @@ class ADMModel(Model):
         
         self.loss_eval = (np.asarray(losses)).mean()
         
-        # Convert logits to predictions (threshold at 0.5)
-        predictions = (torch.sigmoid(logits) > 0.5).long()
+        # Convert logits to predictions (threshold at 0.65)
+        predictions = (torch.sigmoid(logits) > 0.65).long()
         
         # Calculate UAR (macro recall)
         uar = recall_score(targets.numpy(), predictions.numpy(), average="macro")

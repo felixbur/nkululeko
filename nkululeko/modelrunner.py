@@ -63,9 +63,13 @@ class Modelrunner:
             report.set_id(self.run, epoch)
             plot_name = self.util.get_plot_name() + f"_{self.run}_{epoch:03d}_cnf"
             reports.append(report)
+            test_score_metric = reports[-1].get_result().get_test_result()
+            metric_label = self.util.config_val("MODEL", "measure", "uar").upper()
+            performance = float(test_score_metric.split(" ")[1])
+            formatted_performance = f"{performance:.4f}"
             self.util.debug(
                 f"run: {self.run} epoch: {epoch}: result: "
-                f"{reports[-1].get_result().get_test_result()}"
+                f"{test_score_metric.split(' ')[0]} {formatted_performance} {metric_label}"
             )
             if plot_epochs:
                 self.util.debug(f"plotting conf matrix to {plot_name}")
@@ -88,8 +92,9 @@ class Modelrunner:
                 # Extract performance value and format to 4 digits with leading zeros
                 performance = float(test_score_metric.split(" ")[1])
                 formatted_performance = f"{performance:.4f}"
+                metric_label = self.util.config_val("MODEL", "measure", "uar").upper()
                 self.util.debug(
-                    f"run: {self.run} epoch: {epoch}: result: {test_score_metric.split(' ')[0]} {formatted_performance}"
+                    f"run: {self.run} epoch: {epoch}: result: {test_score_metric.split(' ')[0]} {formatted_performance} {metric_label}"
                 )
                 # print(f"performance: {performance.split(' ')[1]}")
                 # Update best performance based on metric direction (lower is better for EER, higher for UAR/ACC)
@@ -254,6 +259,12 @@ class Modelrunner:
             from nkululeko.models.model_adm import ADMModel
 
             self.model = ADMModel(
+                self.df_train, self.df_test, self.feats_train, self.feats_test
+            )
+        elif model_type == "adad":
+            from nkululeko.models.model_adad import ADADModel
+
+            self.model = ADADModel(
                 self.df_train, self.df_test, self.feats_train, self.feats_test
             )
         else:
