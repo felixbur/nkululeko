@@ -25,10 +25,10 @@ def main(data_dir):
     df["label"] = df["label"].map({"bona-fide": "real", "spoof": "fake"})
 
     # Rename columns to match nkululeko format
-    df = df.rename(columns={"file": "file", "speaker": "speaker", "label": "emotion"})
+    df = df.rename(columns={"file": "file", "speaker": "speaker", "label": "label"})
 
     # Reorder columns
-    df = df[["file", "speaker", "emotion"]]
+    df = df[["file", "speaker", "label"]]
 
     # Calculate split sizes (60% train, 20% dev, 20% test)
     # Shuffle with fixed seed for reproducibility
@@ -61,17 +61,16 @@ def main(data_dir):
 
     # Print label distribution
     print("\nLabel distribution in complete dataset:")
-    print(df["emotion"].value_counts())
+    print(df["label"].value_counts())
 
     print("\nLabel distribution in train set:")
-    print(df_train["emotion"].value_counts())
+    print(df_train["label"].value_counts())
 
     print("\nLabel distribution in dev set:")
-    print(df_dev["emotion"].value_counts())
+    print(df_dev["label"].value_counts())
 
     print("\nLabel distribution in test set:")
-    print(df_test["emotion"].value_counts())
-
+    print(df_test["label"].value_counts())
     print("\nDone!")
 
 

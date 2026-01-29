@@ -1,4 +1,4 @@
-file,speaker,emotion
+file,speaker,label
 /home/bagus/github/nkululeko/data/itw/release_in_the_wild/16110.wav,Queen Elizabeth II,fake
 /home/bagus/github/nkululeko/data/itw/release_in_the_wild/30542.wav,Bernie Sanders,real
 /home/bagus/github/nkululeko/data/itw/release_in_the_wild/8846.wav,Queen Elizabeth II,real

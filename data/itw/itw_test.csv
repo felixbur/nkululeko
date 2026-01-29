@@ -1,4 +1,4 @@
-file,speaker,emotion
+file,speaker,label
 /home/bagus/github/nkululeko/data/itw/release_in_the_wild/26232.wav,Barack Obama,real
 /home/bagus/github/nkululeko/data/itw/release_in_the_wild/27493.wav,Christopher Hitchens,fake
 /home/bagus/github/nkululeko/data/itw/release_in_the_wild/20588.wav,Ayn Rand,fake

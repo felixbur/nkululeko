@@ -1,4 +1,4 @@
-file,speaker,emotion
+file,speaker,label
 /home/bagus/github/nkululeko/data/itw/release_in_the_wild/36.wav,Christopher Hitchens,real
 /home/bagus/github/nkululeko/data/itw/release_in_the_wild/4187.wav,Bill Clinton,fake
 /home/bagus/github/nkululeko/data/itw/release_in_the_wild/11825.wav,Ronald Reagan,fake
