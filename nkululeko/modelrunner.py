@@ -261,12 +261,6 @@ class Modelrunner:
             self.model = ADMModel(
                 self.df_train, self.df_test, self.feats_train, self.feats_test
             )
-        elif model_type == "adad":
-            from nkululeko.models.model_adad import ADADModel
-
-            self.model = ADADModel(
-                self.df_train, self.df_test, self.feats_train, self.feats_test
-            )
         else:
             self.util.error(f"unknown model type: '{model_type}'")
         if self.util.exp_is_classification() and not self.model.is_classifier:
