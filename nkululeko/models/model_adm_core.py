@@ -68,10 +68,10 @@ class SpectralADM(nn.Module):
 
     def __init__(self, feat_dim=None, hidden_dim=128):
         super().__init__()
-        # feat_dim will be determined dynamically from input if not provided
+        # Use LazyLinear for proper lazy initialization
         self.feat_dim = feat_dim
         self.hidden_dim = hidden_dim
-        self.fc1 = None  # Lazy initialization
+        self.fc1 = nn.LazyLinear(hidden_dim)
         self.fc2 = nn.Linear(hidden_dim, 64)
         self.dropout = nn.Dropout(0.3)
         self.fc3 = nn.Linear(64, 1)
@@ -80,10 +80,6 @@ class SpectralADM(nn.Module):
         # x: (B, F) or (B, F, T) - handle both cases
         if x.dim() == 3:
             x = x.squeeze(-1)  # Remove time dimension
-
-        # Lazy initialization on first forward pass
-        if self.fc1 is None:
-            self.fc1 = nn.Linear(x.shape[1], self.hidden_dim).to(x.device)
 
         x = F.relu(self.fc1(x))
         x = self.dropout(x)
