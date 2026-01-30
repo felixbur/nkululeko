@@ -128,15 +128,6 @@ class PhaseADM(nn.Module):
         x = self.dropout2(x)
         x = self.fc3(x)
         return x
-        # phase dynamics normalization (identity suppression)
-        x = x - x.mean(dim=1, keepdim=True)
-        x = x / (x.std(dim=1, keepdim=True) + 1e-5)
-
-        _, (h_n, _) = self.lstm(x)
-        h = torch.cat([h_n[-2], h_n[-1]], dim=1)
-        return self.fc(h)
-
-
 # --------------------------------------------------
 # Multi-stream Artifact Detection Model
 # --------------------------------------------------
