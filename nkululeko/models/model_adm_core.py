@@ -6,7 +6,7 @@ Adapted for nkululeko's aggregated features (mean-pooled, not time-series).
 
 Modules:
 - TimeADM    : MLP for SSL aggregated features
-- SpectralADM: MLP for spectral aggregated features  
+- SpectralADM: MLP for spectral aggregated features
 - PhaseADM   : MLP for phase aggregated features
 """
 
@@ -21,7 +21,7 @@ import torch.nn.functional as F
 class TimeADM(nn.Module):
     """
     Detects temporal artifacts using aggregated SSL features.
-    
+
     Input:
         x : (B, D) - aggregated SSL embeddings
     Output:
@@ -33,18 +33,18 @@ class TimeADM(nn.Module):
         self.fc1 = nn.Linear(feat_dim, hidden_dim)
         self.bn1 = nn.BatchNorm1d(hidden_dim)
         self.dropout1 = nn.Dropout(0.3)
-        
+
         self.fc2 = nn.Linear(hidden_dim, 128)
         self.bn2 = nn.BatchNorm1d(128)
         self.dropout2 = nn.Dropout(0.3)
-        
+
         self.fc3 = nn.Linear(128, 1)
 
     def forward(self, x):
         # x: (B, D) - aggregated features
         if x.dim() == 3:
             x = x.squeeze(-1)  # Remove time dimension if present
-        
+
         x = F.relu(self.bn1(self.fc1(x)))
         x = self.dropout1(x)
         x = F.relu(self.bn2(self.fc2(x)))
@@ -80,11 +80,11 @@ class SpectralADM(nn.Module):
         # x: (B, F) or (B, F, T) - handle both cases
         if x.dim() == 3:
             x = x.squeeze(-1)  # Remove time dimension
-        
+
         # Lazy initialization on first forward pass
         if self.fc1 is None:
             self.fc1 = nn.Linear(x.shape[1], self.hidden_dim).to(x.device)
-        
+
         x = F.relu(self.fc1(x))
         x = self.dropout(x)
         x = F.relu(self.fc2(x))
@@ -120,7 +120,7 @@ class PhaseADM(nn.Module):
             x = x.squeeze(1)  # Remove time dimension
         elif x.dim() == 2:
             pass  # Already correct shape
-        
+
         # Simple MLP without problematic normalization
         x = F.relu(self.fc1(x))
         x = self.dropout1(x)
@@ -128,6 +128,8 @@ class PhaseADM(nn.Module):
         x = self.dropout2(x)
         x = self.fc3(x)
         return x
+
+
 # --------------------------------------------------
 # Multi-stream Artifact Detection Model
 # --------------------------------------------------

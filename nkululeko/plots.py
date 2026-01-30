@@ -727,43 +727,54 @@ class Plots:
                     plot_df = features[[feat_x, feat_y]]
                     plot_df = pd.concat([plot_df, labels[cat_var]], axis=1)
                     # ax = sns.scatterplot(data=plot_df, x=feat_x, y=feat_y, hue=cat_var)
-                    ax = sns.pairplot(data=plot_df, x_vars=feat_x, y_vars=feat_y, hue=cat_var, kind="reg", height=7)
-                else: 
-                    bubble_sizes = self.util.scale_to_range(labels[cat_var].values, new_min=5, new_max=50)
-                    #bubble_sizes = labels[cat_var].values
+                    ax = sns.pairplot(
+                        data=plot_df,
+                        x_vars=feat_x,
+                        y_vars=feat_y,
+                        hue=cat_var,
+                        kind="reg",
+                        height=7,
+                    )
+                else:
+                    bubble_sizes = self.util.scale_to_range(
+                        labels[cat_var].values, new_min=5, new_max=50
+                    )
+                    # bubble_sizes = labels[cat_var].values
                     plot_df = features[[feat_x, feat_y]]
                     plot_df = pd.concat([plot_df, labels[cat_var]], axis=1)
                     # Add bubble sizes to DataFrame for seaborn
-                    plot_df['bubble_size'] = bubble_sizes
+                    plot_df["bubble_size"] = bubble_sizes
                     # Create scatter plot with seaborn
                     ax = sns.scatterplot(
                         data=plot_df,
                         x=feat_x,
                         y=feat_y,
-                        size='bubble_size',
+                        size="bubble_size",
                         sizes=(5, 50),  # min and max bubble sizes
                         hue=cat_var,  # color by third variable
-                        palette='viridis',
+                        palette="viridis",
                         alpha=0.6,
-                        edgecolor='black',
+                        edgecolor="black",
                         linewidth=0.5,
                     )
                     # Remove size legend, keep only color legend
                     handles, bub_labels = ax.get_legend_handles_labels()
                     # Find where size legend starts (typically after title "bubble_size")
-                    if 'bubble_size' in bub_labels:
-                        idx = bub_labels.index('bubble_size')
+                    if "bubble_size" in bub_labels:
+                        idx = bub_labels.index("bubble_size")
                         # Keep only handles/labels before the size legend section
                         ax.legend(handles[:idx], bub_labels[:idx])
 
                     plt.xlabel(feat_x, fontsize=12)
                     plt.ylabel(feat_y, fontsize=12)
-                    #plt.title('Bubble Plot with Seaborn\n(Bubble size represents feature_3)', fontsize=14)
+                    # plt.title('Bubble Plot with Seaborn\n(Bubble size represents feature_3)', fontsize=14)
                     plt.grid(True, alpha=0.3)
             except KeyError as ke:
                 r = re.compile(f".*{re.escape(ke.args[0])}.*")
-                s_list = list(filter(r.match, features.columns)) 
-                self.util.error(f"regplot feature not found: {ke}\nDid you mean {s_list} ?")
+                s_list = list(filter(r.match, features.columns))
+                self.util.error(
+                    f"regplot feature not found: {ke}\nDid you mean {s_list} ?"
+                )
             pearson = stats.pearsonr(features[feat_x], features[feat_y])
             # trunc to three digits
             pearson = int(pearson[0] * 1000) / 1000
@@ -771,20 +782,20 @@ class Plots:
 
             if self.print_stats:
                 import statsmodels.formula.api as smf
+
                 # ... add "emotion" and "speaker" column to MLD feature table
                 data_df = features
                 data_df[self.target] = labels["class_label"].values
                 data_df["speaker"] = labels["speaker"].values
-                model = smf.mixedlm(f"{feat_x} ~ {self.target} * {feat_y}", 
-                                    data_df, 
-                                    groups=data_df["speaker"])
+                model = smf.mixedlm(
+                    f"{feat_x} ~ {self.target} * {feat_y}",
+                    data_df,
+                    groups=data_df["speaker"],
+                )
                 result = model.fit()
                 self.util.debug(result.summary())
             if self.titles:
-                title = (
-                    f"{title} samples ({features.shape[0]})\n"
-                    + f"{pearson_string}"
-                )
+                title = f"{title} samples ({features.shape[0]})\n" + f"{pearson_string}"
                 ax.set(title=title)
 
             fig = ax.figure
@@ -793,7 +804,6 @@ class Plots:
             self.util.debug(f"saved regplot to {filename}")
             fig.clear()
             plt.close(fig)
-
 
     def plot_tree(self, model, features):
         from sklearn import tree

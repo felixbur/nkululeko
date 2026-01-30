@@ -1,21 +1,23 @@
-""" augmenter_auglib.py
+"""augmenter_auglib.py
 
 augmentations implemented with auglib
 -> https://audeering.github.io/auglib/
 
 """
+
 import os
 
 import audeer
 import audiofile
 import pandas as pd
-import auglib 
+import auglib
 import audb
 import ast
 from tqdm import tqdm
 import random
 from nkululeko.utils.util import Util
 from nkululeko.constants import SAMPLING_RATE
+
 
 class AugmenterAuglib:
     """
@@ -48,7 +50,11 @@ class AugmenterAuglib:
             version="1.0.0",
             verbose=False,
         )
-        transforms = self.util.config_val("AUGMENT", "transformations", '["room", "music", "noise", "babble", "crop", "cough"]')
+        transforms = self.util.config_val(
+            "AUGMENT",
+            "transformations",
+            '["room", "music", "noise", "babble", "crop", "cough"]',
+        )
         self.util.debug(f"applying transformations: {transforms}")
         transforms = ast.literal_eval(transforms)
         transformations = []
@@ -56,54 +62,80 @@ class AugmenterAuglib:
         if "cough" in transforms:
             cough_files = audb.load_media(
                 "cough-speech-sneeze",
-               ['coughing/sqei2xjfnpk_262.51-263.43.wav',
-                'coughing/3id3zrrzbvm_139.88-140.83.wav',
-                'coughing/kopzxumj430_40.94-41.8.wav',
-                'coughing/kopzxumj430_37.98-39.18.wav',
-                'coughing/ta_ihseeuyk_118.7-119.84.wav',
-                'coughing/_j7jejkncl4_0.84-1.39.wav',
-                'coughing/9kigihccwvq_84.26-85.26.wav',
-                'coughing/4wlf2ct0ecm_32.52-33.6.wav',
-                'coughing/_0rh6xgxhrq_53.41-55.87.wav',
-                'coughing/2mw_s5jnqxu_75.49-76.59.wav',
-                'coughing/dizkwd7jj_q_71.98-72.93.wav',
-                'coughing/ipo39x2bv9c_12.7253-13.7358.wav',
-                'coughing/vwe0wljpgyu_111.11-113.12.wav'],
+                [
+                    "coughing/sqei2xjfnpk_262.51-263.43.wav",
+                    "coughing/3id3zrrzbvm_139.88-140.83.wav",
+                    "coughing/kopzxumj430_40.94-41.8.wav",
+                    "coughing/kopzxumj430_37.98-39.18.wav",
+                    "coughing/ta_ihseeuyk_118.7-119.84.wav",
+                    "coughing/_j7jejkncl4_0.84-1.39.wav",
+                    "coughing/9kigihccwvq_84.26-85.26.wav",
+                    "coughing/4wlf2ct0ecm_32.52-33.6.wav",
+                    "coughing/_0rh6xgxhrq_53.41-55.87.wav",
+                    "coughing/2mw_s5jnqxu_75.49-76.59.wav",
+                    "coughing/dizkwd7jj_q_71.98-72.93.wav",
+                    "coughing/ipo39x2bv9c_12.7253-13.7358.wav",
+                    "coughing/vwe0wljpgyu_111.11-113.12.wav",
+                ],
                 version="2.0.1",
                 sampling_rate=SAMPLING_RATE,
+            )
+            transformations.append(
+                auglib.transform.Append(
+                    auglib.observe.List(cough_files, draw=True),
+                    bypass_prob=bypass_prob,
                 )
-            transformations.append(auglib.transform.Append(auglib.observe.List(cough_files, draw=True), bypass_prob=bypass_prob,))
+            )
         if "room" in transforms:
-            transformations.append(auglib.transform.FFTConvolve(
-                        auglib.observe.List(db_air.files, draw=True),
-                        keep_tail=False, preserve_level=True,bypass_prob=bypass_prob,
-                    ))
+            transformations.append(
+                auglib.transform.FFTConvolve(
+                    auglib.observe.List(db_air.files, draw=True),
+                    keep_tail=False,
+                    preserve_level=True,
+                    bypass_prob=bypass_prob,
+                )
+            )
         if "music" in transforms:
-            transformations.append(auglib.transform.Mix(
+            transformations.append(
+                auglib.transform.Mix(
                     auglib.observe.List(db_musan.files, draw=True),
                     gain_aux_db=auglib.observe.IntUni(-15, -10),
                     read_pos_aux=auglib.observe.FloatUni(0, 1),
                     unit="relative",
                     snr_db=10,
-                    loop_aux=True,bypass_prob=bypass_prob,
-                )) 
+                    loop_aux=True,
+                    bypass_prob=bypass_prob,
+                )
+            )
         if "babble" in transforms:
-            transformations.append(auglib.transform.BabbleNoise(
-                list(db_babble.files),
-                num_speakers=auglib.observe.IntUni(3, 7),
-                snr_db=auglib.observe.IntUni(13, 20),bypass_prob=bypass_prob,
-                ))
+            transformations.append(
+                auglib.transform.BabbleNoise(
+                    list(db_babble.files),
+                    num_speakers=auglib.observe.IntUni(3, 7),
+                    snr_db=auglib.observe.IntUni(13, 20),
+                    bypass_prob=bypass_prob,
+                )
+            )
         if "noise" in transforms:
-            transformations.append(auglib.transform.PinkNoise(snr_db=10,bypass_prob=bypass_prob,))
+            transformations.append(
+                auglib.transform.PinkNoise(
+                    snr_db=10,
+                    bypass_prob=bypass_prob,
+                )
+            )
         if "crop" in transforms:
             crop_dur = float(self.util.config_val("AUGMENT", "crop_dur", 1.0))
-            transformations.append(auglib.transform.Trim(
-                start_pos=auglib.Time(auglib.observe.FloatUni(0, 1), unit="relative"),
-                duration=crop_dur,
-                fill="loop",
-                unit="seconds",
-                bypass_prob=bypass_prob,
-            ))
+            transformations.append(
+                auglib.transform.Trim(
+                    start_pos=auglib.Time(
+                        auglib.observe.FloatUni(0, 1), unit="relative"
+                    ),
+                    duration=crop_dur,
+                    fill="loop",
+                    unit="seconds",
+                    bypass_prob=bypass_prob,
+                )
+            )
         transformations.append(auglib.transform.NormalizeByPeak())
         transform = auglib.transform.Compose(
             transformations,

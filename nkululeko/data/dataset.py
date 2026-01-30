@@ -198,7 +198,7 @@ class Dataset:
             # remember the target in case they get labelencoded later
             df["class_label"] = df[self.target]
 
-        self.map_continuous_classification(df)   
+        self.map_continuous_classification(df)
         self.df = df
         self._report_load()
 

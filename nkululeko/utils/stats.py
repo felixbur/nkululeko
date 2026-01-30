@@ -138,7 +138,7 @@ def get_t_test_effect(
     # check for equal variance
     _, p_levene = stats.levene(variable1, variable2)
     equal_var = False
-    if p_levene > .05:
+    if p_levene > 0.05:
         equal_var = True
     # Perform t-test
     t_stat, p_value = stats.ttest_ind(variable1, variable2, equal_var=equal_var)
@@ -177,13 +177,13 @@ def get_mannwhitney_effect(
 
     return float(u_stat), float(p_value), significance
 
+
 def normaltest(variable1: np.array):
     # This function tests the null hypothesis that a sample comes from a normal distribution.
     res = stats.normaltest(variable1)
-    if res.pvalue >= .05:
+    if res.pvalue >= 0.05:
         return True
     return False
-
 
 
 def get_2cont_effect(
@@ -214,8 +214,9 @@ def get_2cont_effect(
     significance = p_value_to_string(p_value)
     return {"approach": approach, "significance": significance, "p-val": p_value}
 
+
 def find_most_significant_difference_ttests(
-    distributions: dict
+    distributions: dict,
 ) -> tuple[str, float, float, str, dict]:
     """Find the combination with the most significant t-test difference among n distributions.
 
@@ -339,9 +340,7 @@ def find_most_significant_difference(
     results_bin = None
     res_all = None
     if mean_featnum >= 30:
-        results_bin = find_most_significant_difference_ttests(
-            distributions
-        )
+        results_bin = find_most_significant_difference_ttests(distributions)
     else:
         results_bin = find_most_significant_difference_mannwhitney(distributions)
 
