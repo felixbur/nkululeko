@@ -1,7 +1,6 @@
 import os
 import pandas as pd
 import argparse
-from pathlib import Path
 
 
 def main(data_dir):
