@@ -95,7 +95,7 @@ class ADMModel(Model):
             self.util.debug("using ADM model with BCE loss function")
         
         # Determine actual feature dimensions from the data
-        # Features are: wav2vec2 (768) + sptk (4)
+        # Features are concatenated: wav2vec2 (768) + SPTK-based features (dynamic, remaining dimensions)
         total_feats = feats_train.shape[1]
         self.ssl_feat_dim = 768  # wav2vec2 dimension
         self.sptk_feat_dim = total_feats - self.ssl_feat_dim  # remaining features
