@@ -443,7 +443,8 @@ class Reporter:
         title_parts = ["Confusion Matrix", metric_str]
         if reg_res:
             title_parts.append(reg_res)
-        title_parts.append(f"Epoch: {epoch}")
+        if epoch:
+            title_parts.append(f"Epoch: {epoch}")
         plt.title(", ".join(title_parts))
         img_path = f"{fig_dir}{plot_name}{self.filenameadd}.{self.format}"
         plt.tight_layout()
