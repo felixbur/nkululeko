@@ -23,9 +23,6 @@ def main(data_dir):
     # Map labels: 'bona-fide' -> 'real', 'spoof' -> 'fake'
     df["label"] = df["label"].map({"bona-fide": "real", "spoof": "fake"})
 
-    # Rename columns to match nkululeko format
-    df = df.rename(columns={"file": "file", "speaker": "speaker", "label": "label"})
-
     # Reorder columns
     df = df[["file", "speaker", "label"]]
 
