@@ -346,8 +346,3 @@ class ADMModel(Model):
         except FileNotFoundError:
             self.util.error(f"model file not found: {self.store_path}")
         self.model.eval()
-
-    class MLP:
-        """Placeholder for compatibility."""
-        pass
-            
