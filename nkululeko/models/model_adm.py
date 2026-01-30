@@ -291,14 +291,10 @@ class ADMModel(Model):
         probas = self.get_probas(logits)
         report = Reporter(truths, predictions, self.run, self.epoch, probas=probas)
         
-        try:
+        if hasattr(self, "loss"):
             report.result.loss = self.loss
-        except AttributeError:
-            pass
-        try:
+        if hasattr(self, "loss_eval"):
             report.result.loss_eval = self.loss_eval
-        except AttributeError:
-            pass
         
         report.result.train = uar
         return report
