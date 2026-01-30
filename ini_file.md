@@ -349,11 +349,14 @@ Model and training specifications. In general, default values should work for cl
 * **loss**: loss function for neural networks
   * loss = cross
   * possible values:
+    * **bce**: BinaryCrossEntropyLoss (for binary classification)
     * **cross**: CrossEntropyLoss
     * **f1**: F1 loss  
+    * **focal**: Focal loss (for imbalanced classification)
     * **1-ccc**: concordance correlation coefficient
     * **mse**: Mean squared error (for regression)
     * **mae**: Mean absolute error (for regression)
+    * **weighted_bce**: Weighted BinaryCrossEntropyLoss (for imbalanced binary classification)
 * **measure**: A measure/metric to report progress with experiments. For classification, default is UAR. For regression, default is MSE.
   * measure = mse
   * possible values:
