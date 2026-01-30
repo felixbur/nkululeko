@@ -32,6 +32,7 @@ To support open science and reproducible research, we encourage you to submit PR
 |[dementiabank](dementiabank/)|dementia|Audio for dementia detection, English|restricted|Custom academic/research use|
 |[dementianet](dementianet/)|audio for dementia screening|hundred of public figure audio samples with a confirmed dementia diagnosis|public|MIT|
 |[demos](demos/)|emotion|DEMoS (Database of Elicited Mood in Speech). Italian|restricted|Custom academic/research use|
+|[e-seravd](e-seravd/)|emotion|Indonesian Speech Emotion Recognition dataset from Movies|public|CC BY 4.0|
 |[eaed](eaed/)|emotion|Egyptian-Arabic emotional speech dataset. Arabic|public|unknown|
 |[eatd](eatd/)|depression, emotion|Automatic Depression Detection, a GRU/ BiLSTM-based Model and An Emotional Audio-Textual Corpus|public|unknown|
 |[ekorpus](ekorpus/)|emotion|Estonian Emotional Speech Corps (EEKK)|public|unknown|
@@ -49,6 +50,8 @@ To support open science and reproducible research, we encourage you to submit PR
 |[for-2sec](for-2sec/)|deepfake|Fake-or-Real (FoR) dataset - 2 seconds version|public|unknown|
 |[gerparas](gerparas/)|valence,arousal,dominance|German|restricted|unknown|
 |[iemocap](iemocap/)|emotion,VAD|English|restricted|Custom academic/research use|
+|[in-the-wild](itw/)|deepfake|audio deepfakes (and corresponding benign audio) for a set of politicians and other public figures|public|Apache-2.0|
+|[indowave](indowave/)|emotion,intensity|Indonesian audio dataset for emotion classification|public|CC BY 4.0|
 |[jess](jess/)|age|Jena Speaker Set|public|research|
 |[jl](jl/)|emotion|English|public|ODC-By|
 |[jnv](jnv/)|emotion|Japanese, non-verbals|public|unknown|
@@ -87,7 +90,7 @@ To support open science and reproducible research, we encourage you to submit PR
 |[vivae](vivae/)|emotion|Variably Intense Vocalizations of Affect and Emotion Corpus (VIVAE). English vocal bursts|public|unknown|
 
 
-This recipe contains information about 67 datasets.
+This recipe contains information about 70 datasets.
 ## Performance
 
 ![Nkululeko performance](../meta/images/nkululeko_ser_20240719.png)
