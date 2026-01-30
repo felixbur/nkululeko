@@ -286,16 +286,17 @@ class ADMModel(Model):
         """Make predictions on test data."""
         _, truths, predictions, logits = self.evaluate(
             self.model, self.testloader, self.device
-        )
-        uar, _, _, _ = self.evaluate(self.model, self.trainloader, self.device)
-        probas = self.get_probas(logits)
-        report = Reporter(truths, predictions, self.run, self.epoch, probas=probas)
-        
-        if hasattr(self, "loss"):
+
+        try:
             report.result.loss = self.loss
-        if hasattr(self, "loss_eval"):
+        except AttributeError:
+            # `self.loss` may not be set if no training loss was recorded; ignore in that case.
+            pass
+        try:
             report.result.loss_eval = self.loss_eval
-        
+        except AttributeError:
+            # `self.loss_eval` may not be set if no evaluation loss was recorded; ignore in that case.
+            pass
         report.result.train = uar
         return report
 
