@@ -539,11 +539,16 @@ class Util:
     def to_4_digits(self, x):
         """Given a float, return this to 4 digits."""
         x = float(x)
+        if np.isnan(x):
+            return x
         return (int(x * 10000)) / 10000.0
 
     def to_4_digits_str(self, x):
         """Given a float, return this to 4 digits as string with leading zero."""
-        return f"{self.to_4_digits(x):.4f}"
+        x_val = self.to_4_digits(x)
+        if np.isnan(x_val):
+            return "nan"
+        return f"{x_val:.4f}"
 
     def save_json(self, file: str, var: dict):
         """Save variable to json file.
