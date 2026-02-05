@@ -265,7 +265,7 @@ class MLP_Reg_model(Model):
 
     def load_path(self, path, run, epoch):
         self.set_id(run, epoch)
-        with open(path, "rb") as handle:
+        with open(path, "rb"):
             self.device = self.util.config_val("MODEL", "device", "cpu")
             layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])
             self.store_path = path

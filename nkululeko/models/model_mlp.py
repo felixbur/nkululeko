@@ -306,7 +306,7 @@ class MLPModel(Model):
 
     def load_path(self, path, run, epoch):
         self.set_id(run, epoch)
-        with open(path, "rb") as handle:
+        with open(path, "rb"):
             cuda = "cuda" if torch.cuda.is_available() else "cpu"
             self.device = self.util.config_val("MODEL", "device", cuda)
             layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])
