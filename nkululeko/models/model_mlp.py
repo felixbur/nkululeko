@@ -307,28 +307,29 @@ class MLPModel(Model):
     def load_path(self, path, run, epoch):
         self.set_id(run, epoch)
         from pathlib import Path
+
         if not Path(path).exists():
             raise FileNotFoundError(f"Model file not found: {path}")
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
-            layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])
-            self.store_path = path
-            drop = self.util.config_val("MODEL", "drop", "False")
-            if drop != "False":
+        layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])
+        self.store_path = path
+        drop = self.util.config_val("MODEL", "drop", "False")
+        if drop != "False":
+            try:
+                drop = ast.literal_eval(drop)
+            except (ValueError, SyntaxError):
+                # if it's not a list, it should be a float
                 try:
-                    drop = ast.literal_eval(drop)
-                except (ValueError, SyntaxError):
-                    # if it's not a list, it should be a float
-                    try:
-                        drop = float(drop)
-                    except ValueError:
-                        self.util.error(f"invalid value for dropout: {drop}")
-                self.util.debug(f"dropout set to: {drop}")
-            else:
-                drop = False
-            activation, _ = self._get_activation()
-            self.model = self.MLP(
-                self.feats_train.shape[1], layers, self.class_num, drop, activation
-            ).to(self.device)
-            self.model.load_state_dict(torch.load(self.store_path))
-            self.model.eval()
+                    drop = float(drop)
+                except ValueError:
+                    self.util.error(f"invalid value for dropout: {drop}")
+            self.util.debug(f"dropout set to: {drop}")
+        else:
+            drop = False
+        activation, _ = self._get_activation()
+        self.model = self.MLP(
+            self.feats_train.shape[1], layers, self.class_num, drop, activation
+        ).to(self.device)
+        self.model.load_state_dict(torch.load(self.store_path))
+        self.model.eval()
