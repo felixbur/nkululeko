@@ -242,9 +242,11 @@ class CNNModel(Model):
 
     def load_path(self, path, run, epoch):
         self.set_id(run, epoch)
-        with open(path, "rb"):
-            cuda = "cuda" if torch.cuda.is_available() else "cpu"
-            self.device = self.util.config_val("MODEL", "device", cuda)
+        from pathlib import Path
+        if not Path(path).exists():
+            raise FileNotFoundError(f"Model file not found: {path}")
+        cuda = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = self.util.config_val("MODEL", "device", cuda)
             layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])
             self.store_path = path
             drop = self.util.config_val("MODEL", "drop", False)
