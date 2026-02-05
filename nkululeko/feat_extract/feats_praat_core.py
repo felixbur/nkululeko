@@ -653,7 +653,6 @@ def speech_rate(sound):
     # use total duration, not end time, to find out duration of intdur (intensity_duration)
     # in order to allow nonzero starting times.
     intensity_duration = call(sound_from_intensity_matrix, "Get total duration")
-    call(sound_from_intensity_matrix, "Get maximum", 0, 0, "Parabolic")
     point_process = call(
         sound_from_intensity_matrix,
         "To PointProcess (extrema)",
