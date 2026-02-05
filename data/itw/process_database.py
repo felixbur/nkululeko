@@ -1,7 +1,6 @@
 import os
 import pandas as pd
 import argparse
-from pathlib import Path
 
 
 def main(data_dir):
@@ -24,24 +23,28 @@ def main(data_dir):
     # Map labels: 'bona-fide' -> 'real', 'spoof' -> 'fake'
     df["label"] = df["label"].map({"bona-fide": "real", "spoof": "fake"})
 
-    # Rename columns to match nkululeko format
-    df = df.rename(columns={"file": "file", "speaker": "speaker", "label": "emotion"})
-
     # Reorder columns
-    df = df[["file", "speaker", "emotion"]]
+    df = df[["file", "speaker", "label"]]
 
-    # Calculate split sizes (60% train, 20% dev, 20% test)
-    # Shuffle with fixed seed for reproducibility
+    # Speaker-independent split (60% train, 20% dev, 20% test)
+    # Split by speakers to ensure no speaker overlap between sets
+    speakers = df["speaker"].unique()
+    speakers_shuffled = pd.Series(speakers).sample(frac=1, random_state=42).values
+    total_speakers = len(speakers_shuffled)
+
+    train_end = int(0.6 * total_speakers)
+    dev_end = int(0.8 * total_speakers)
+
+    # Split speakers
+    train_speakers = speakers_shuffled[:train_end]
+    dev_speakers = speakers_shuffled[train_end:dev_end]
+    test_speakers = speakers_shuffled[dev_end:]
+
+    # Split data by speakers
+    df_train = df[df["speaker"].isin(train_speakers)].reset_index(drop=True)
+    df_dev = df[df["speaker"].isin(dev_speakers)].reset_index(drop=True)
+    df_test = df[df["speaker"].isin(test_speakers)].reset_index(drop=True)
     df_shuffled = df.sample(frac=1, random_state=42).reset_index(drop=True)
-    total = len(df_shuffled)
-
-    train_end = int(0.6 * total)
-    dev_end = int(0.8 * total)
-
-    # Split data
-    df_train = df_shuffled.iloc[:train_end]
-    df_dev = df_shuffled.iloc[train_end:dev_end]
-    df_test = df_shuffled.iloc[dev_end:]
 
     # Save to CSV files
     train_file = os.path.join(data_dir, "itw_train.csv")
@@ -54,24 +57,30 @@ def main(data_dir):
     df_test.to_csv(test_file, index=False)
     df_shuffled.to_csv(all_file, index=False)
 
-    print(f"✓ Created {train_file} with {len(df_train)} samples")
-    print(f"✓ Created {dev_file} with {len(df_dev)} samples")
-    print(f"✓ Created {test_file} with {len(df_test)} samples")
+    print(
+        f"✓ Created {train_file} with {len(df_train)} samples ({len(train_speakers)} speakers)"
+    )
+    print(
+        f"✓ Created {dev_file} with {len(df_dev)} samples ({len(dev_speakers)} speakers)"
+    )
+    print(
+        f"✓ Created {test_file} with {len(df_test)} samples ({len(test_speakers)} speakers)"
+    )
     print(f"✓ Created {all_file} with {len(df_shuffled)} samples")
 
     # Print label distribution
     print("\nLabel distribution in complete dataset:")
-    print(df["emotion"].value_counts())
+    print(df["label"].value_counts())
+    print(f"Total speakers: {total_speakers}")
 
     print("\nLabel distribution in train set:")
-    print(df_train["emotion"].value_counts())
+    print(df_train["label"].value_counts())
 
     print("\nLabel distribution in dev set:")
-    print(df_dev["emotion"].value_counts())
+    print(df_dev["label"].value_counts())
 
     print("\nLabel distribution in test set:")
-    print(df_test["emotion"].value_counts())
-
+    print(df_test["label"].value_counts())
     print("\nDone!")
 
 

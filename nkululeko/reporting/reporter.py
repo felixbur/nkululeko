@@ -436,10 +436,12 @@ class Reporter:
         else:
             metric_str = f"UAR: {uar_str} (+-{up_str}/{low_str})"
 
-        if epoch != 0:
-            plt.title(f"Confusion Matrix, {metric_str}, {reg_res}, Epoch: {epoch}")
-        else:
-            plt.title(f"Confusion Matrix, {metric_str} {reg_res}")
+        title_parts = ["Confusion Matrix", metric_str]
+        if reg_res:
+            title_parts.append(reg_res)
+        if epoch:
+            title_parts.append(f"Epoch: {epoch}")
+        plt.title(", ".join(title_parts))
         img_path = f"{fig_dir}{plot_name}{self.filenameadd}.{self.format}"
         plt.tight_layout()
         plt.savefig(img_path)

@@ -83,7 +83,9 @@ def mlp_model(dummy_data, monkeypatch):
         model.feats_train = feats_train
 
         # Create a simple MLP model for testing
-        model.model = MLPModel.MLP(3, {"a": 8, "b": 4}, 2, False).to("cpu")
+        model.model = MLPModel.MLP(3, {"a": 8, "b": 4}, 2, False, torch.nn.ReLU()).to(
+            "cpu"
+        )
         model.optimizer = torch.optim.Adam(model.model.parameters(), lr=0.001)
 
         # Create data loaders
@@ -110,7 +112,7 @@ def test_train_and_predict(mlp_model):
 
 def test_get_predictions(mlp_model):
     mlp_model.train()
-    preds = mlp_model.get_predictions()
+    preds, probas = mlp_model.get_predictions()
     assert isinstance(preds, np.ndarray)
     assert preds.shape[0] == 2
 
@@ -178,7 +180,7 @@ def test_reset_test(mlp_model, dummy_data):
 
 def test_mlp_model_init_with_dropout_list():
     # Test with a list of dropout values
-    mlp_inner = MLPModel.MLP(3, {"a": 8, "b": 4}, 2, [0.1, 0.2])
+    mlp_inner = MLPModel.MLP(3, {"a": 8, "b": 4}, 2, [0.1, 0.2], torch.nn.ReLU())
     dropout_layers = [l for l in mlp_inner.linear if isinstance(l, torch.nn.Dropout)]
     assert len(dropout_layers) == 1
     assert dropout_layers[0].p == 0.1
@@ -186,7 +188,7 @@ def test_mlp_model_init_with_dropout_list():
 
 def test_mlp_model_init_with_dropout_float():
     # Test with a single float value for dropout
-    mlp_inner = MLPModel.MLP(3, {"a": 8, "b": 4}, 2, 0.5)
+    mlp_inner = MLPModel.MLP(3, {"a": 8, "b": 4}, 2, 0.5, torch.nn.ReLU())
     dropout_layers = [l for l in mlp_inner.linear if isinstance(l, torch.nn.Dropout)]
     assert len(dropout_layers) == 1
     assert dropout_layers[0].p == 0.5
