@@ -1,18 +1,12 @@
 import os
 
 import pandas as pd
-import torch
 from tqdm import tqdm
 
 import asyncio
 from googletrans import Translator
 
 import audeer
-import audiofile
-
-from nkululeko.utils.util import Util
-
-import httpx
 
 
 class GoogleTranslator:

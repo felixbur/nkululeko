@@ -78,7 +78,7 @@ class Dataset_CSV(Dataset):
                 df = df.set_index(
                     df.index.to_series().apply(lambda x: os.path.join(audio_path, x))
                 )
-        self.map_continuous_classification(df)   
+        self.map_continuous_classification(df)
 
         self.df = df
         self.db = None

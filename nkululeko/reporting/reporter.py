@@ -9,14 +9,10 @@ import audplot
 from confidence_intervals import evaluate_with_conf_int
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.interpolate import interp1d
-from scipy.optimize import brentq
 from scipy.special import softmax
 from scipy.stats import entropy
 from scipy.stats import pearsonr
-from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.metrics import classification_report
-from sklearn.metrics import confusion_matrix
 from sklearn.metrics import r2_score
 from sklearn.metrics import roc_curve
 
@@ -537,8 +533,8 @@ class Reporter:
                 rpt = self.result.to_string()
             with open(file_name, "w") as text_file:
                 c_ress = list(range(len(labels)))
-                for i, l in enumerate(labels):
-                    c_res = rpt[l]["f1-score"]
+                for i, label in enumerate(labels):
+                    c_res = rpt[label]["f1-score"]
                     c_ress[i] = float(f"{c_res:.3f}")
                 self.util.debug(f"labels: {labels}")
                 f1_per_class = (

@@ -42,7 +42,6 @@ class Pyannote_segmenter:
         self.pipeline.to(torch.device(device))
 
     def get_segmentation_simple(self, file):
-
         annotation = self.pipeline(file[0])
 
         speakers, starts, ends, files = [], [], [], []

@@ -7,7 +7,6 @@ including over-sampling, under-sampling, and combination methods.
 """
 
 import pandas as pd
-import numpy as np
 from nkululeko.utils.util import Util
 import nkululeko.glob_conf as glob_conf
 

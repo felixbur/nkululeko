@@ -73,9 +73,9 @@ class MLPModel(Model):
             self.util.debug(f"init: training with dropout: {drop}")
         else:
             drop = False
-        self.model = self.MLP(feats_train.shape[1], layers, self.class_num, drop, activation).to(
-            self.device
-        )
+        self.model = self.MLP(
+            feats_train.shape[1], layers, self.class_num, drop, activation
+        ).to(self.device)
         self.learning_rate = float(
             self.util.config_val("MODEL", "learning_rate", 0.0001)
         )
@@ -115,7 +115,7 @@ class MLPModel(Model):
         else:
             self.util.error(f"unknown activation function: {act_func}")
         return activation, act_func
-    
+
     def set_testdata(self, data_df, feats_df):
         self.df_test = data_df
         self.feats_test = feats_df
@@ -306,7 +306,7 @@ class MLPModel(Model):
 
     def load_path(self, path, run, epoch):
         self.set_id(run, epoch)
-        with open(path, "rb") as handle:
+        with open(path, "rb"):
             cuda = "cuda" if torch.cuda.is_available() else "cpu"
             self.device = self.util.config_val("MODEL", "device", cuda)
             layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])

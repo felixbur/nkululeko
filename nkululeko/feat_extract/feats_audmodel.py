@@ -4,7 +4,6 @@ import os
 import numpy as np
 import torch
 
-import audeer
 import audinterface
 import audmodel
 import audonnx

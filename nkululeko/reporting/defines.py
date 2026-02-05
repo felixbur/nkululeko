@@ -1,9 +1,12 @@
+import inspect
+
+
 class DefineBase:
     @classmethod
     def _assert_has_attribute_value(cls, value):
         valid_values = cls._attribute_values()
         if value not in valid_values:
-            raise BadValueError(value, valid_values)
+            raise ValueError(f"Invalid value: {value}. Valid values: {valid_values}")
 
     @classmethod
     def _attribute_values(cls):

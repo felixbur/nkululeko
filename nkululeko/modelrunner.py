@@ -1,7 +1,6 @@
 # modelrunner.py
 
 import ast
-import pandas as pd
 
 from nkululeko import glob_conf
 from nkululeko.utils.util import Util

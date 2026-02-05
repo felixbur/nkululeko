@@ -54,7 +54,6 @@ def split_wav_naive(wav, top_db=12):
 
 
 def remix_random_reverse(wav, indices, p_reverse=0):
-
     wav_remix = []
 
     for seg in indices:

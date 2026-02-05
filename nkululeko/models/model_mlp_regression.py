@@ -55,7 +55,9 @@ class MLP_Reg_model(Model):
         drop = self.util.config_val("MODEL", "drop", False)
         if drop:
             self.util.debug(f"training with dropout: {drop}")
-        self.model = self.MLP(feats_train.shape[1], layers, 1, drop, activation).to(self.device)
+        self.model = self.MLP(feats_train.shape[1], layers, 1, drop, activation).to(
+            self.device
+        )
         self.learning_rate = float(
             self.util.config_val("MODEL", "learning_rate", 0.0001)
         )
@@ -255,15 +257,15 @@ class MLP_Reg_model(Model):
         if drop:
             self.util.debug(f"training with dropout: {drop}")
         activation, act_func = self._get_activation()
-        self.model = self.MLP(self.feats_train.shape[1], layers, 1, drop, activation).to(
-            self.device
-        )
+        self.model = self.MLP(
+            self.feats_train.shape[1], layers, 1, drop, activation
+        ).to(self.device)
         self.model.load_state_dict(torch.load(dir + name))
         self.model.eval()
 
     def load_path(self, path, run, epoch):
         self.set_id(run, epoch)
-        with open(path, "rb") as handle:
+        with open(path, "rb"):
             self.device = self.util.config_val("MODEL", "device", "cpu")
             layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])
             self.store_path = path

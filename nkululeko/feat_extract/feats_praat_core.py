@@ -534,20 +534,6 @@ on 25/05/23
 
 
 def get_speech_rate(file_index):
-    cols = [
-        "nsyll",
-        "npause",
-        "phonationtime_s",
-        "speechrate_nsyll_dur",
-        "articulation_rate_nsyll_phonationtime",
-        "ASD_speakingtime_nsyll",
-        "pause_lognorm_mu",
-        "pause_lognorm_sigma",
-        "pause_lognorm_ks_pvalue",
-        "pause_mean_duration",
-        "pause_std_duration",
-        "pause_cv",
-    ]
     datalist = []
     for idx, (wave_file, start, end) in enumerate(tqdm(file_index.to_list())):
         signal, sampling_rate = audiofile.read(
@@ -575,9 +561,9 @@ def speech_rate(sound):
     minpause = 0.3
     originaldur = sound.get_total_duration()
     intensity = sound.to_intensity(50)
-    start = call(intensity, "Get time from frame number", 1)
+    call(intensity, "Get time from frame number", 1)
     nframes = call(intensity, "Get number of frames")
-    end = call(intensity, "Get time from frame number", nframes)
+    call(intensity, "Get time from frame number", nframes)
     min_intensity = call(intensity, "Get minimum", 0, 0, "Parabolic")
     max_intensity = call(intensity, "Get maximum", 0, 0, "Parabolic")
 
@@ -667,7 +653,7 @@ def speech_rate(sound):
     # use total duration, not end time, to find out duration of intdur (intensity_duration)
     # in order to allow nonzero starting times.
     intensity_duration = call(sound_from_intensity_matrix, "Get total duration")
-    intensity_max = call(sound_from_intensity_matrix, "Get maximum", 0, 0, "Parabolic")
+    call(sound_from_intensity_matrix, "Get maximum", 0, 0, "Parabolic")
     point_process = call(
         sound_from_intensity_matrix,
         "To PointProcess (extrema)",
@@ -700,7 +686,7 @@ def speech_rate(sound):
 
     for p in range(peakcount - 1):
         following = p + 1
-        followingtime = timepeaks[p + 1]
+        timepeaks[p + 1]
         dip = call(intensity, "Get minimum", currenttime, timepeaks[p + 1], "None")
         diffint = abs(currentint - dip)
         if diffint > mindip:

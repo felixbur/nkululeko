@@ -4,7 +4,7 @@ import os
 import audeer
 import audiofile
 import pandas as pd
-from audiomentations import *
+from audiomentations import *  # noqa: F403
 from tqdm import tqdm
 
 from nkululeko.utils.util import Util

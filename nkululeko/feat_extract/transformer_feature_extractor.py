@@ -2,6 +2,7 @@
 
 import os
 
+import numpy as np
 import pandas as pd
 import torch
 import torchaudio
@@ -141,7 +142,7 @@ class TransformerFeatureExtractor(Featureset):
         #         return {k: v.to(self.device) for k, v in inputs.items()}
 
         #     def extract_hidden_states(self, outputs):
-        return outputs.last_hidden_state
+        #         return outputs.last_hidden_state
 
     # def get_embedding_dim(self):
     #     return self.model.config.hidden_size

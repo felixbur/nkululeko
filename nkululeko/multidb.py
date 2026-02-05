@@ -81,9 +81,9 @@ def main(src_dir):
                 print(f"running train: {train}, test: {test}")
                 if extra_trains:
                     extra_trains_1 = extra_trains.removeprefix("[").removesuffix("]")
-                    config["DATA"][
-                        "databases"
-                    ] = f"['{train}', '{test}', {extra_trains_1}]"
+                    config["DATA"]["databases"] = (
+                        f"['{train}', '{test}', {extra_trains_1}]"
+                    )
                     if use_splits:
                         config["DATA"][f"{test}.as_test"] = "True"
                         config["DATA"][f"{train}.as_train"] = "True"
