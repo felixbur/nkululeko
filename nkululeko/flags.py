@@ -177,9 +177,9 @@ def _run_single_flags_experiment(base_experiment, combo, config):
         if param == "models":
             experiment_config["MODEL"]["type"] = value  # Set model type directly
         elif param == "features":
-            experiment_config["FEATS"][
-                "type"
-            ] = f"['{value}']"  # Set feature type correctly
+            experiment_config["FEATS"]["type"] = (
+                f"['{value}']"  # Set feature type correctly
+            )
         elif param == "balancing":
             # Only set balancing if not "none"
             if value.lower() != "none":

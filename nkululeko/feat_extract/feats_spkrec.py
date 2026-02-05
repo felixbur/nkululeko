@@ -30,7 +30,7 @@ class Spkrec(Featureset):
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
         self.classifier_initialized = False
-        if feat_type == None:
+        if feat_type is None:
             self.feat_type = "spkrec-ecapa-voxceleb"
         self.feat_type = feat_type
 
@@ -57,7 +57,7 @@ class Spkrec(Featureset):
                 self.init_model()
             self.util.debug("extracting Spkrec embeddings, this might take a while...")
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
-            length = len(self.data_df.index)
+            len(self.data_df.index)
             for idx, (file, start, end) in enumerate(
                 tqdm(self.data_df.index.to_list())
             ):

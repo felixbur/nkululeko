@@ -2,9 +2,9 @@
 """Module for extracting OpenSMILE features from audio files.
 OpenSMILE is an audio feature extraction toolkit supporting various feature sets.
 """
+
 import os
-import logging
-from typing import Optional, Union, List, Any, Dict
+from typing import Optional, List
 
 import opensmile
 import pandas as pd

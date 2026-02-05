@@ -3,7 +3,6 @@ A predictor for zero-shot text classification.
 """
 
 import pandas as pd
-import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.feats_textclassifier import TextClassifier
 from nkululeko.utils.util import Util
 

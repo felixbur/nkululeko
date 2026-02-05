@@ -767,13 +767,13 @@ class OptimizationRunner:
         # For XGBoost specifically, also set additional reproducibility parameters
         if self.model_type in ["xgb", "xgr"]:
             # Ensure deterministic behavior
-            self.config["MODEL"][
-                "n_jobs"
-            ] = "1"  # Force single-threaded for reproducibility
+            self.config["MODEL"]["n_jobs"] = (
+                "1"  # Force single-threaded for reproducibility
+            )
             if "tree_method" not in params:
-                self.config["MODEL"][
-                    "tree_method"
-                ] = "exact"  # Deterministic tree construction
+                self.config["MODEL"]["tree_method"] = (
+                    "exact"  # Deterministic tree construction
+                )
 
     def _run_single_experiment(self):
         """Run a single experiment with current configuration."""

@@ -17,11 +17,9 @@ Raises:
     AssertionError: If the number of config files is less than 2 for majority voting.
 """
 
-
 import configparser
 import time
 from argparse import ArgumentParser
-from pathlib import Path
 from typing import List
 
 import numpy as np

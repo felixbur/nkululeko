@@ -213,7 +213,8 @@ class TunedModel(BaseModel):
         self._create_emotion2vec_dataset()
 
         self.emotion2vec_backbone = AutoModel(
-            model=model_path, hub="hf"  # Use HuggingFace Hub instead of ModelScope
+            model=model_path,
+            hub="hf",  # Use HuggingFace Hub instead of ModelScope
         )
 
         if self.is_classifier:

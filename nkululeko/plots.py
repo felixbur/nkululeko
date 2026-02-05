@@ -629,7 +629,6 @@ class Plots:
         ignore_gender = eval(self.util.config_val("EXPL", "ignore_gender", "False"))
         sample_num = df_labels.shape[0]
         if self.util.is_categorical(df_labels[label]):
-            p_val = ""
             cat_num = df_labels[label].nunique()
             if (
                 "gender" in df_labels

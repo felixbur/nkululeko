@@ -34,7 +34,6 @@ class Openxbow(Featureset):
                 num_workers=self.n_jobs,
             )
             if isinstance(self.data_df.index, pd.MultiIndex):
-                is_multi_index = True
                 smile_df = smile.process_index(self.data_df.index)
             else:
                 smile_df = smile.process_files(self.data_df.index)
@@ -87,7 +86,6 @@ class Openxbow(Featureset):
                     num_workers=self.n_jobs,
                 )
                 if isinstance(self.data_df.index, pd.MultiIndex):
-                    is_multi_index = True
                     smile_df = smile.process_index(self.data_df.index)
                 else:
                     smile_df = smile.process_files(self.data_df.index)

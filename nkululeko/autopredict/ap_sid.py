@@ -2,14 +2,10 @@
 A predictor for sid - Speaker ID.
 """
 
-import numpy as np
 from pyannote.audio import Pipeline
 import torch
 
-import audiofile
 
-from nkululeko.feature_extractor import FeatureExtractor
-import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.files import concat_files
 from nkululeko.utils.util import Util
 
@@ -66,8 +62,8 @@ class SIDPredictor:
             # file_duration = audiofile.duration(file)
             seg_duration = seg_end - seg_start
             offset = position + seg_start + seg_duration / 2
-            l = [i < offset for i in starts]
-            r = [i for i, x in enumerate(l) if x]
+            offset_list = [i < offset for i in starts]
+            r = [i for i, x in enumerate(offset_list) if x]
             s_index = r.pop()
             # self.util.debug(f"offset: {offset}, speaker = {speakers[s_index]}")
             position += seg_duration

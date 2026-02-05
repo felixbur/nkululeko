@@ -1,9 +1,7 @@
 # model_xgb.py
 
-import os
 from xgboost import XGBClassifier
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.models.model import Model
 
 
@@ -98,9 +96,7 @@ class XGB_model(Model):
                 fit_params["eval_set"] = eval_set
                 fit_params["verbose"] = True
 
-                self.util.debug(
-                    f"Training XGBoost with early stopping (using dev set):"
-                )
+                self.util.debug("Training XGBoost with early stopping (using dev set):")
                 self.util.debug(
                     f"  - early_stopping_rounds: {self.early_stopping_rounds}"
                 )
@@ -139,7 +135,7 @@ class XGB_model(Model):
                 labels = labels_train_split
 
                 self.util.debug(
-                    f"Training XGBoost with early stopping (using validation split):"
+                    "Training XGBoost with early stopping (using validation split):"
                 )
                 self.util.debug(
                     f"  - early_stopping_rounds: {self.early_stopping_rounds}"

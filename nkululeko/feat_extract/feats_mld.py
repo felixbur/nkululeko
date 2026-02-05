@@ -1,7 +1,7 @@
 # mld_fset.py
 import os
 import sys
-from typing import Optional, Union, List, Any, Dict
+from typing import Optional
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
