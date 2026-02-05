@@ -4,7 +4,7 @@ Artifact Detection Module (ADM) model for deepfake detection.
 
 Multi-stream neural model that detects synthesis artifacts using:
 - TimeADM: temporal/micro-prosodic artifacts from SSL features
-- SpectralADM: spectral/vocoder artifacts from mel-filterbank features
+- SpectralADM: spectral/vocoder artifacts from mel-filterbank features  
 - PhaseADM: phase-dynamics artifacts from STFT features
 """
 
@@ -37,54 +37,50 @@ class ADMModel(Model):
         super().set_model_type("ann")
         self.name = "adm"
         self.target = glob_conf.config["DATA"]["target"]
-
+        
         # Manual seed
         manual_seed = eval(self.util.config_val("MODEL", "random_seed", "False"))
         if manual_seed:
             self.util.debug(f"seeding random to {manual_seed}")
             torch.manual_seed(int(manual_seed))
-
+        
         # Get labels and class number
         labels = glob_conf.labels
         self.class_num = len(labels)
-
+        
         # Device setup (needed before loss initialization)
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
-
+        
         # Loss function selection
         loss_type = self.util.config_val("MODEL", "loss", "bce")
-
         def _parse_float(val, default):
             """Parse float values that may include inline comments."""
             try:
                 return float(str(val).split("#")[0].strip())
             except (TypeError, ValueError):
                 return default
-
+        
         if loss_type == "focal":
             from nkululeko.losses.loss_focal import FocalLoss
-
             alpha = _parse_float(
                 self.util.config_val("MODEL", "focal.alpha", 0.25), 0.25
             )
-            gamma = _parse_float(self.util.config_val("MODEL", "focal.gamma", 2.0), 2.0)
+            gamma = _parse_float(
+                self.util.config_val("MODEL", "focal.gamma", 2.0), 2.0
+            )
             self.criterion = FocalLoss(alpha=alpha, gamma=gamma)
-            self.util.debug(
-                f"using ADM model with Focal Loss (alpha={alpha}, gamma={gamma})"
-            )
-
+            self.util.debug(f"using ADM model with Focal Loss (alpha={alpha}, gamma={gamma})")
+            
         elif loss_type == "weighted_bce":
-            from nkululeko.losses.loss_bce import (
-                WeightedBCEWithLogitsLoss,
-                compute_class_weights,
-            )
-
+            from nkululeko.losses.loss_bce import WeightedBCEWithLogitsLoss, compute_class_weights
             # Compute class weights from training data
             class_weight_mode = self.util.config_val("MODEL", "class_weight", "auto")
             if class_weight_mode == "auto":
                 pos_weight = compute_class_weights(
-                    df_train[self.target], labels, mode="balanced"
+                    df_train[self.target], 
+                    labels, 
+                    mode='balanced'
                 )
                 self.util.debug(f"auto class weight: pos_weight={pos_weight:.3f}")
             else:
@@ -92,33 +88,30 @@ class ADMModel(Model):
                 self.util.debug(f"manual class weight: pos_weight={pos_weight}")
             self.criterion = WeightedBCEWithLogitsLoss(pos_weight=pos_weight)
             self.util.debug("using ADM model with Weighted BCE loss function")
-
+            
         else:  # default: bce
             from nkululeko.losses.loss_bce import BCEWithLogitsLoss
-
             self.criterion = BCEWithLogitsLoss()
             self.util.debug("using ADM model with BCE loss function")
-
+        
         # Determine actual feature dimensions from the data
         # Features are concatenated: wav2vec2 (768) + SPTK-based features (dynamic, remaining dimensions)
         total_feats = feats_train.shape[1]
         self.ssl_feat_dim = 768  # wav2vec2 dimension
         self.sptk_feat_dim = total_feats - self.ssl_feat_dim  # remaining features
-
-        self.util.debug(
-            f"ADM feature split: SSL={self.ssl_feat_dim}, SPTK={self.sptk_feat_dim}"
-        )
-
+        
+        self.util.debug(f"ADM feature split: SSL={self.ssl_feat_dim}, SPTK={self.sptk_feat_dim}")
+        
         # ADM architecture parameters
         fusion = self.util.config_val("MODEL", "adm.fusion", "weighted")
-
+        
         # Initialize ADM model with actual feature dimensions
         self.model = DeepfakeADMModel(
             ssl_feat_dim=self.ssl_feat_dim,
             phase_feat_dim=self.sptk_feat_dim,  # Use actual SPTK dimension
-            fusion=fusion,
+            fusion=fusion
         ).to(self.device)
-
+        
         # Learning rate and optimizer
         self.learning_rate = float(
             self.util.config_val("MODEL", "learning_rate", 0.0001)
@@ -134,11 +127,11 @@ class ADMModel(Model):
             )
         else:
             self.util.error(f"unknown optimizer: {optimizer_type}")
-
+        
         # Batch size
         self.batch_size = int(self.util.config_val("MODEL", "batch_size", 32))
         self.num_workers = self.n_jobs
-
+        
         # Handle NaN values
         if feats_train.isna().to_numpy().any():
             self.util.debug(
@@ -150,7 +143,7 @@ class ADMModel(Model):
                 f"Model, test: replacing {feats_test.isna().sum().sum()} NANs with 0"
             )
             feats_test = feats_test.fillna(0)
-
+        
         # Set up data loaders
         self.trainloader = self.get_loader(feats_train, df_train, True)
         self.testloader = self.get_loader(feats_test, df_test, False)
@@ -172,46 +165,46 @@ class ADMModel(Model):
         for features, labels in self.trainloader:
             # Convert features to float32 to match model dtype
             features = features.float()
-
+            
             # For binary classification, convert labels to float
             labels_float = labels.float().to(self.device)
-
+            
             # Extract multi-stream features
             # This assumes features are concatenated: [ssl_feats | spec_feats | phase_feats]
             # You may need to adjust based on actual feature structure
             ssl_feats, spec_feats, phase_feats = self._split_features(features)
-
+            
             # Forward pass
             logits = self.model(
                 ssl_feats.to(self.device),
                 spec_feats.to(self.device),
-                phase_feats.to(self.device),
+                phase_feats.to(self.device)
             )
-
+            
             loss = self.criterion(logits, labels_float)
             losses.append(loss.item())
-
+            
             # Backward pass
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
-
+        
         self.loss = (np.asarray(losses)).mean()
 
     def _split_features(self, features):
         """
         Split concatenated features into SSL, spectral, and phase streams.
-
+        
         Features from nkululeko are already aggregated (not time-series):
         - wav2vec2: 768 dimensions (mean pooled SSL embeddings)
         - sptk: variable dimensions (stft/fbank statistics)
-
+        
         For the MLP-based ADM architecture working with aggregated features.
         """
         # Split: wav2vec2 (0:ssl_feat_dim), sptk (ssl_feat_dim:end)
-        ssl_feats = features[:, : self.ssl_feat_dim]  # (B, 768)
-        sptk_feats = features[:, self.ssl_feat_dim :]  # (B, sptk_feat_dim)
-
+        ssl_feats = features[:, :self.ssl_feat_dim]  # (B, 768)
+        sptk_feats = features[:, self.ssl_feat_dim:]  # (B, sptk_feat_dim)
+        
         # MLP-based ADMs expect (B, D) - just pass as is
         return ssl_feats, sptk_feats, sptk_feats
 
@@ -221,41 +214,44 @@ class ADMModel(Model):
         targets = torch.zeros(len(loader.dataset))
         model.eval()
         losses = []
-
+        
         with torch.no_grad():
             for index, (features, labels) in enumerate(loader):
                 start_index = index * loader.batch_size
                 end_index = (index + 1) * loader.batch_size
                 if end_index > len(loader.dataset):
                     end_index = len(loader.dataset)
-
+                
                 # Convert features to float32
                 features = features.float()
-
+                
                 # Split features
                 ssl_feats, spec_feats, phase_feats = self._split_features(features)
-
+                
                 # Forward pass
                 batch_logits = model(
-                    ssl_feats.to(device), spec_feats.to(device), phase_feats.to(device)
+                    ssl_feats.to(device),
+                    spec_feats.to(device),
+                    phase_feats.to(device)
                 )
-
+                
                 logits[start_index:end_index] = batch_logits
                 targets[start_index:end_index] = labels
-
+                
                 loss = self.criterion(
-                    batch_logits.to(device), labels.float().to(device)
+                    batch_logits.to(device),
+                    labels.float().to(device)
                 )
                 losses.append(loss.item())
-
+        
         self.loss_eval = (np.asarray(losses)).mean()
-
+        
         # Convert logits to predictions (threshold at 0.65)
         predictions = (torch.sigmoid(logits) > 0.65).long()
-
+        
         # Calculate UAR (macro recall)
         uar = recall_score(targets.numpy(), predictions.numpy(), average="macro")
-
+        
         return uar, targets, predictions, logits
 
     def get_probas(self, logits):
@@ -264,17 +260,15 @@ class ADMModel(Model):
         proba_d = {}
         classes = self.df_test[self.target].unique()
         classes.sort()
-
+        
         # Apply sigmoid to get probabilities
         probs = torch.sigmoid(logits).numpy()
-
+        
         # Handle NaN values
         if np.isnan(probs).any():
-            self.util.debug(
-                f"Warning: NaN values detected in probabilities, replacing with 0.5"
-            )
+            self.util.debug(f"Warning: NaN values detected in probabilities, replacing with 0.5")
             probs = np.nan_to_num(probs, nan=0.5)
-
+        
         # Assuming binary: class 0 (real) and class 1 (fake)
         if len(classes) == 2:
             proba_d[classes[0]] = 1 - probs
@@ -283,7 +277,7 @@ class ADMModel(Model):
             # Handle multi-class case (shouldn't happen with binary BCE)
             for i, cls in enumerate(classes):
                 proba_d[cls] = probs if i == 1 else 1 - probs
-
+        
         probas = pd.DataFrame(proba_d)
         probas = probas.set_index(self.df_test.index)
         return probas
@@ -293,17 +287,15 @@ class ADMModel(Model):
         _, truths, predictions, logits = self.evaluate(
             self.model, self.testloader, self.device
         )
-
-        try:
+        uar, _, _, _ = self.evaluate(self.model, self.trainloader, self.device)
+        probas = self.get_probas(logits)
+        report = Reporter(truths, predictions, self.run, self.epoch, probas=probas)
+        
+        if hasattr(self, "loss"):
             report.result.loss = self.loss
-        except AttributeError:
-            # `self.loss` may not be set if no training loss was recorded; ignore in that case.
-            pass
-        try:
+        if hasattr(self, "loss_eval"):
             report.result.loss_eval = self.loss_eval
-        except AttributeError:
-            # `self.loss_eval` may not be set if no evaluation loss was recorded; ignore in that case.
-            pass
+        
         report.result.train = uar
         return report
 
@@ -335,16 +327,16 @@ class ADMModel(Model):
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
         self.store_path = dir + name
-
+        
         # Recreate model architecture with actual dimensions
         fusion = self.util.config_val("MODEL", "adm.fusion", "weighted")
-
+        
         self.model = DeepfakeADMModel(
             ssl_feat_dim=self.ssl_feat_dim,
             phase_feat_dim=self.sptk_feat_dim,
-            fusion=fusion,
+            fusion=fusion
         ).to(self.device)
-
+        
         try:
             self.model.load_state_dict(torch.load(self.store_path))
         except FileNotFoundError:
