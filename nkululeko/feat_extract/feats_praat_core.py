@@ -686,7 +686,6 @@ def speech_rate(sound):
 
     for p in range(peakcount - 1):
         following = p + 1
-        timepeaks[p + 1]
         dip = call(intensity, "Get minimum", currenttime, timepeaks[p + 1], "None")
         diffint = abs(currentint - dip)
         if diffint > mindip:
