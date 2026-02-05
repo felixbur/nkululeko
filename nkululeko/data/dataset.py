@@ -828,7 +828,6 @@ class Dataset:
         test_spkrs = sample(list(df.speaker.unique()), test_num)
         self.df_test = df[df.speaker.isin(test_spkrs)]
         self.df_train = df[~df.index.isin(self.df_test.index)]
-        list(self.df_train.speaker.unique())
         msg = (
             f"{self.name} (speaker splits): "
             f"[{self.df_train.shape[0]}/{self.df_test.shape[0]}]"
