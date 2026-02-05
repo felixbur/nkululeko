@@ -234,7 +234,9 @@ def find_files_by_name(
     return files
 
 
-def __get_files_by_pattern(dir_name: Union[str, os.PathLike[Any]], pattern: str, case_sensitive: bool):
+def __get_files_by_pattern(
+    dir_name: Union[str, os.PathLike[Any]], pattern: str, case_sensitive: bool
+):
     """Get a list of files in a single directory matching a pattern"""
     dir_name = os.path.abspath(os.path.expanduser(dir_name))
 

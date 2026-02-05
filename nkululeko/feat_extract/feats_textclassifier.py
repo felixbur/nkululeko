@@ -32,7 +32,9 @@ class TextClassifier(Featureset):
 
         device_arg = 0 if self.device == "cuda" else -1
         self.model = transformers.pipeline(
-            "zero-shot-classification", model="joeddav/xlm-roberta-large-xnli", device=device_arg
+            "zero-shot-classification",
+            model="joeddav/xlm-roberta-large-xnli",
+            device=device_arg,
         )
         print(f"initialized {modelname} model on {self.device}")
         self.candidate_labels = self.util.config_val(

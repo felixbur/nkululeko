@@ -32,7 +32,11 @@ class Modelrunner:
         # intialize a new model
         model_type = glob_conf.config["MODEL"]["type"]
         self._select_model(model_type)
-        self.best_performance = 0
+        # Initialize best_performance based on metric direction
+        if self.util.high_is_good():
+            self.best_performance = 0
+        else:
+            self.best_performance = 100000
         self.best_epoch = 0
 
     def do_epochs(self):
@@ -59,9 +63,13 @@ class Modelrunner:
             report.set_id(self.run, epoch)
             plot_name = self.util.get_plot_name() + f"_{self.run}_{epoch:03d}_cnf"
             reports.append(report)
+            test_score_metric = reports[-1].get_result().get_test_result()
+            metric_label = self.util.config_val("MODEL", "measure", "uar").upper()
+            performance = float(test_score_metric.split(" ")[1])
+            formatted_performance = f"{performance:.4f}"
             self.util.debug(
                 f"run: {self.run} epoch: {epoch}: result: "
-                f"{reports[-1].get_result().get_test_result()}"
+                f"{test_score_metric.split(' ')[0]} {formatted_performance} {metric_label}"
             )
             if plot_epochs:
                 self.util.debug(f"plotting conf matrix to {plot_name}")
@@ -81,14 +89,23 @@ class Modelrunner:
                 plot_name = self.util.get_plot_name() + f"_{self.run}_{epoch:03d}_cnf"
                 reports.append(report)
                 test_score_metric = report.get_result().get_test_result()
+                # Extract performance value and format to 4 digits with leading zeros
+                performance = float(test_score_metric.split(" ")[1])
+                formatted_performance = f"{performance:.4f}"
+                metric_label = self.util.config_val("MODEL", "measure", "uar").upper()
                 self.util.debug(
-                    f"run: {self.run} epoch: {epoch}: result: {test_score_metric}"
+                    f"run: {self.run} epoch: {epoch}: result: {test_score_metric.split(' ')[0]} {formatted_performance} {metric_label}"
                 )
                 # print(f"performance: {performance.split(' ')[1]}")
-                performance = float(test_score_metric.split(" ")[1])
-                if performance > self.best_performance:
-                    self.best_performance = performance
-                    self.best_epoch = epoch
+                # Update best performance based on metric direction (lower is better for EER, higher for UAR/ACC)
+                if self.util.high_is_good():
+                    if performance > self.best_performance:
+                        self.best_performance = performance
+                        self.best_epoch = epoch
+                else:
+                    if performance < self.best_performance:
+                        self.best_performance = performance
+                        self.best_epoch = epoch
                 if plot_epochs:
                     self.util.debug(f"plotting conf matrix to {plot_name}")
                     report.plot_confmatrix(plot_name, epoch)
@@ -236,6 +253,12 @@ class Modelrunner:
             from nkululeko.models.model_mlp_regression import MLP_Reg_model
 
             self.model = MLP_Reg_model(
+                self.df_train, self.df_test, self.feats_train, self.feats_test
+            )
+        elif model_type == "adm":
+            from nkululeko.models.model_adm import ADMModel
+
+            self.model = ADMModel(
                 self.df_train, self.df_test, self.feats_train, self.feats_test
             )
         else:

@@ -527,10 +527,14 @@ class Experiment:
                 " should be [all | train | test]"
             )
         if method == "audiomentations":
-            from nkululeko.augmenting.augmenter_audiomentations import AugmenterAudiomentations
+            from nkululeko.augmenting.augmenter_audiomentations import (
+                AugmenterAudiomentations,
+            )
+
             augmenter = AugmenterAudiomentations(df)
         elif method == "auglib":
             from nkululeko.augmenting.augmenter_auglib import AugmenterAuglib
+
             augmenter = AugmenterAuglib(df)
         else:
             self.util.error(f"unknown augmentation method: {method}")

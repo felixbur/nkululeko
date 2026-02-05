@@ -143,9 +143,10 @@ class Runmanager:
     def print_best_result_runs(self):
         """Print the best result for all runs."""
         best_report = self.get_best_result(self.best_results)
+        formatted_result = f"{best_report.result.test:.4f}"
+        measure = self.util.config_val("MODEL", "measure", "uar").upper()
         self.util.debug(
-            f"best result all runs with run {best_report.run}             and"
-            f" epoch {best_report.epoch}: {best_report.result.test:.3f}"
+            f"best result all runs with run {best_report.run} and epoch {best_report.epoch} with metric {measure}: {formatted_result}"
         )
         plot_name_suggest = self.util.get_exp_name()
         plot_name = (
@@ -229,4 +230,8 @@ class Runmanager:
                 if res < best_result:
                     best_result = res
                     best_r = r
+        formatted_result = f"{best_result:.4f}"
+        self.util.debug(
+            f"search_best_result: order={order}, best epoch={best_r.epoch}, best result={formatted_result}"
+        )
         return best_r

@@ -84,7 +84,7 @@ def main():
         # User explicitly provided a config file
         config_file = args.config
         if not os.path.isfile(config_file):
-            print("="*80)
+            print("=" * 80)
             print(f"ERROR: Configuration file not found: {config_file}")
             print("\nPlease create a config file with the following structure:")
             print("  [EXP]")
@@ -94,7 +94,7 @@ def main():
             print("  wav2vec2.layer = <layer>  # Optional for wav2vec2")
             print("\n  [MODEL]")
             print("  device = cuda  # or cpu")
-            print("="*80)
+            print("=" * 80)
             exit(1)
         # load configuration
         config = configparser.ConfigParser()
@@ -107,10 +107,12 @@ def main():
         config["EXP"] = {"name": "feature_demo"}
         config["DATA"] = {"databases": ["none"]}
         config["FEATS"] = {"type": [args.model]}
-        config["MODEL"] = {"type": "svm", "device": "cuda" if __import__('torch').cuda.is_available() else "cpu"}
+        config["MODEL"] = {
+            "type": "svm",
+            "device": "cuda" if __import__("torch").cuda.is_available() else "cpu",
+        }
         config["FEATS"]["needs_feature_extraction"] = "True"
         config["FEATS"]["no_reuse"] = "True"
-
 
     # Initialize global config
     glob_conf.config = config
@@ -119,9 +121,9 @@ def main():
     files = []
     if args.mic:
         # Record from microphone first before loading models
-        print("\n" + "="*80, flush=True)
+        print("\n" + "=" * 80, flush=True)
         print("MICROPHONE RECORDING", flush=True)
-        print("="*80, flush=True)
+        print("=" * 80, flush=True)
         import time
 
         duration = 5  # seconds
@@ -129,10 +131,12 @@ def main():
 
         print("Recording NOW for 5 seconds - speak clearly!", flush=True)
         # Record audio
-        recording = sd.rec(int(duration * sample_rate),
-                          samplerate=sample_rate,
-                          channels=1,
-                          dtype='float32')
+        recording = sd.rec(
+            int(duration * sample_rate),
+            samplerate=sample_rate,
+            channels=1,
+            dtype="float32",
+        )
         sd.wait()  # Wait until recording is finished
         print("Recording finished!", flush=True)
 
@@ -162,9 +166,9 @@ def main():
 
         files = find_files(args.folder, relative=False, ext=["wav", "mp3", "flac"])
     else:
-        print("="*80)
+        print("=" * 80)
         print("ERROR: No input option specified!")
-        print("="*80)
+        print("=" * 80)
         print("\nYou must provide one of the following input options:")
         print("  --file <path>      Process a single audio file")
         print("  --list <path>      Process files listed in a text file")
@@ -174,7 +178,7 @@ def main():
         print("  python -m nkululeko.feature_demo --mic --model agender")
         print("  python -m nkululeko.feature_demo --file audio.wav --model squim")
         print("  python -m nkululeko.feature_demo --folder ./audio --model mos")
-        print("="*80)
+        print("=" * 80)
         exit(1)
 
     print(f"\nProcessing {len(files)} file(s)...")
@@ -251,14 +255,16 @@ def main():
         # Save to CSV
         if args.outfile:
             # Ensure .csv extension
-            outfile = args.outfile if args.outfile.endswith('.csv') else args.outfile + '.csv'
+            outfile = (
+                args.outfile if args.outfile.endswith(".csv") else args.outfile + ".csv"
+            )
             df.to_csv(outfile)
             print(f"\nFeatures saved to {outfile}")
 
         # Print summary to stdout
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("FEATURE EXTRACTION SUMMARY")
-        print("="*80)
+        print("=" * 80)
         print(f"Total files processed: {len(file_names)}")
         print(f"Feature dimension: {features_array.shape[1]}")
         print(f"Output shape: {df.shape}")
@@ -335,7 +341,11 @@ def get_feature_extractor(model_name, config):
         extractor.init_model()
         return extractor
 
-    elif "opensmile" in model_lower or "gemaps" in model_lower or "compare" in model_lower:
+    elif (
+        "opensmile" in model_lower
+        or "gemaps" in model_lower
+        or "compare" in model_lower
+    ):
         from nkululeko.feat_extract.feats_opensmile import Opensmileset
 
         extractor = Opensmileset(model_name, None, model_name)
@@ -382,7 +392,9 @@ def get_feature_extractor(model_name, config):
         from nkululeko.feat_extract.feats_agender_agender import Agender_agenderSet
 
         # Create agender extractor and load the model
-        print(f"  Loading agender_agender model (this may download the model on first use)...")
+        print(
+            f"  Loading agender_agender model (this may download the model on first use)..."
+        )
         extractor = Agender_agenderSet(model_name, None, model_name)
         extractor._load_model()
         return extractor
@@ -434,10 +446,9 @@ def get_feature_extractor(model_name, config):
 
     else:
         # Default to wav2vec2 if unknown
-        print(
-            f"WARNING: Unknown model {model_name}"
-        )
+        print(f"WARNING: Unknown model {model_name}")
         exit(1)
+
 
 if __name__ == "__main__":
     main()
