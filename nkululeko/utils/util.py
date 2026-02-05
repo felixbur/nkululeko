@@ -31,6 +31,8 @@ class Util:
         "eGeMAPSv02",
         "functionals",
         "n_jobs",
+        "uar",
+        "mse",
     ]
 
     def __init__(self, caller=None, has_config=True):
