@@ -277,7 +277,7 @@ class MLP_Reg_model(Model):
             self.util.debug(f"training with dropout: {drop}")
         activation, act_func = self._get_activation()
         self.model = self.MLP(
-            self.feats_train.shape[1], layers, self.class_num, drop, activation
+            self.feats_train.shape[1], layers, 1, drop, activation
         ).to(self.device)
         self.model.load_state_dict(torch.load(self.store_path))
         self.model.eval()

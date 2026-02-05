@@ -32,8 +32,6 @@ class Resampler:
         replace = self.replace
         if not self.not_testing:
             self.util.get_path("store")
-        else:
-            pass
         succes, error = 0, 0
         if not replace:
             new_files = []
