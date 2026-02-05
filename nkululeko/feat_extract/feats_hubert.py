@@ -70,7 +70,6 @@ class Hubert(Featureset):
                 self.init_model()
             self.util.debug("extracting Hubert embeddings, this might take a while...")
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
-            len(self.data_df.index)
             for idx, (file, start, end) in enumerate(
                 tqdm(self.data_df.index.to_list())
             ):

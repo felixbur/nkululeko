@@ -69,8 +69,6 @@ class Whisper(Featureset):
             self.util.debug("reusing extracted wav2vec2 embeddings")
             self.df = pd.read_pickle(storage)
             if self.df.isnull().values.any():
-                self.df.columns[self.df.isna().any()].tolist()
-                # print(nanrows)
                 self.util.error(
                     f"got nan: {self.df.shape} {self.df.isnull().sum().sum()}"
                 )
@@ -80,7 +78,6 @@ class Whisper(Featureset):
         try:
             with torch.no_grad():
                 embed_size = self.model.config.hidden_size
-                [f"whisper_{i}" for i in range(embed_size)]
                 inputs = self.feature_extractor(signal, sampling_rate=16000)[
                     "input_features"
                 ][0]
