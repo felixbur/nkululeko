@@ -22,13 +22,13 @@ class GoogleTranslator:
 
     async def translate_text(self, text):
         async with Translator() as translator:
-            result = translator.translate(text, dest="en")
+            result = translator.translate(text, dest=self.language)
             return (await result).text
 
     async def translate_texts(self, texts: list[str]) -> list[str]:
         """Translate a list of texts using a single Translator session."""
         async with Translator() as translator:
-            tasks = [translator.translate(text, dest="en") for text in texts]
+            tasks = [translator.translate(text, dest=self.language) for text in texts]
             results = await asyncio.gather(*tasks)
             translations = [result.text for result in results]
         return translations
