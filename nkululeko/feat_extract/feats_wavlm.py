@@ -55,7 +55,6 @@ class Wavlm(Featureset):
                 self.init_model()
             self.util.debug("extracting wavlm embeddings, this might take a while...")
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
-            length = len(self.data_df.index)
             for idx, (file, start, end) in enumerate(
                 tqdm(self.data_df.index.to_list())
             ):

@@ -31,6 +31,8 @@ class Util:
         "eGeMAPSv02",
         "functionals",
         "n_jobs",
+        "uar",
+        "mse",
     ]
 
     def __init__(self, caller=None, has_config=True):
@@ -437,10 +439,21 @@ class Util:
             all += f"{report.result.test:.4f} "
             vals = np.append(vals, report.result.test)
         file_name = f"{res_dir}{self.get_exp_name()}_runs.txt"
+        
+        # For metrics where lower is better (EER, MSE, MAE), show min instead of max
+        if self.high_is_good():
+            best_val = vals.max()
+            best_idx = vals.argmax()
+            best_label = "max"
+        else:
+            best_val = vals.min()
+            best_idx = vals.argmin()
+            best_label = "min"
+        
         output = (
             f"{all}"
             + f"\nmean: {vals.mean():.4f}, std: {vals.std():.4f}, "
-            + f"max: {vals.max():.4f}, max_index: {vals.argmax()}"
+            + f"{best_label}: {best_val:.4f}, {best_label}_index: {best_idx}"
         )
         with open(file_name, "w") as text_file:
             text_file.write(output)
@@ -537,11 +550,16 @@ class Util:
     def to_4_digits(self, x):
         """Given a float, return this to 4 digits."""
         x = float(x)
+        if np.isnan(x):
+            return x
         return (int(x * 10000)) / 10000.0
 
     def to_4_digits_str(self, x):
         """Given a float, return this to 4 digits as string with leading zero."""
-        return f"{self.to_4_digits(x):.4f}"
+        x_val = self.to_4_digits(x)
+        if np.isnan(x_val):
+            return "nan"
+        return f"{x_val:.4f}"
 
     def save_json(self, file: str, var: dict):
         """Save variable to json file.

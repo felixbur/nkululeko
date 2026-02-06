@@ -8,8 +8,6 @@ import whisper
 import audeer
 import audiofile
 
-from nkululeko.utils.util import Util
-
 
 class Transcriber:
     def __init__(self, model_name="turbo", device=None, language="en", util=None):

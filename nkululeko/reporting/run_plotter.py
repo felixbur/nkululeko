@@ -1,24 +1,13 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
-from statistics import mean, stdev
+from statistics import mean
 import pandas as pd
-import numpy as np
 import os
 import audeer
 import math
 
 # from torch import is_tensor
-from audmetric import accuracy
-from audmetric import concordance_cc
-from audmetric import mean_absolute_error
-from audmetric import mean_squared_error
-from audmetric import unweighted_average_recall
 
-from nkululeko.experiment import Experiment
-from nkululeko.plots import Plots
-from nkululeko.reporting.defines import Header
-from nkululeko.reporting.report_item import ReportItem
-from nkululeko.reporting.result import Result
 from nkululeko.utils.util import Util
 from nkululeko.utils.files import find_files_by_name
 from nkululeko.utils.stats import find_most_significant_difference
@@ -131,7 +120,10 @@ class Run_plotter:
         plot_df.rename(
             columns={"level_0": compare_target, "level_1": "statistic"}, inplace=True
         )
-        f = lambda x: math.trunc(1000 * float(x)) / 1000
+
+        def f(x):
+            return math.trunc(1000 * float(x)) / 1000
+
         plot_df[metric] = plot_df[metric].apply(f)
         ax = sns.barplot(data=plot_df, x=compare_target, y=metric, hue="statistic")
         ax.bar_label(ax.containers[0])

@@ -17,6 +17,7 @@ Options:   \n
 --folder FOLDER     A name of a folder where the files within the list are in   (default: ./) \n
 --outfile OUTFILE   A filename to store the results in CSV  (default: None)
 """
+
 import argparse
 import configparser
 import os
@@ -61,7 +62,7 @@ def main():
     if args.config is not None:
         config_file = args.config
     else:
-        config_file = f"{src_dir}/exp.ini"
+        config_file = "exp.ini"
 
     # test if the configuration file exists
     if not os.path.isfile(config_file):

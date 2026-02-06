@@ -141,4 +141,4 @@ class Demo_predictor:
 
         print("playback ...")
         sd.play(signal.T, self.sr)
-        status = sd.wait()
+        sd.wait()

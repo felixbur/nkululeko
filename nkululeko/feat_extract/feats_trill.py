@@ -5,7 +5,6 @@ import audiofile as af
 import pandas as pd
 
 import tensorflow as tf
-import tensorflow_hub as hub
 from tqdm import tqdm
 
 import nkululeko.glob_conf as glob_conf
@@ -35,7 +34,7 @@ class TRILLset(Featureset):
         """
         super().__init__(name, data_df, feats_type)
         # Load the model from the configured path
-        model_path = self.util.config_val(
+        self.util.config_val(
             "FEATS",
             "trill.model",
             "https://tfhub.dev/google/nonsemantic-speech-benchmark/trill/3",
@@ -84,7 +83,7 @@ class TRILLset(Featureset):
         return emb_short
 
     def extract_sample(self, signal, sr):
-        if self.model == None:
+        if self.model is None:
             self.__init__("na", None)
         feats = self.get_embeddings_signal(signal, sr)
         return feats

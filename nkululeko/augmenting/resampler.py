@@ -31,10 +31,7 @@ class Resampler:
         # replace = eval(self.util.config_val("RESAMPLE", "replace", "False"))
         replace = self.replace
         if not self.not_testing:
-            store = self.util.get_path("store")
-        else:
-            store = "./"
-        tmp_audio = "tmp_resample.wav"
+            self.util.get_path("store")
         succes, error = 0, 0
         if not replace:
             new_files = []

@@ -63,7 +63,8 @@ class Emotion2vec(Featureset):
         try:
             # Initialize the FunASR model for emotion2vec using HuggingFace Hub
             self.model = AutoModel(
-                model=model_path, hub="hf"  # Use HuggingFace Hub instead of ModelScope
+                model=model_path,
+                hub="hf",  # Use HuggingFace Hub instead of ModelScope
             )
             self.util.debug(f"initialized emotion2vec model: {model_path}")
             self.model_initialized = True
@@ -83,7 +84,6 @@ class Emotion2vec(Featureset):
                 "extracting emotion2vec embeddings, this might take a while..."
             )
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
-            length = len(self.data_df.index)
             for idx, (file, start, end) in enumerate(
                 tqdm(self.data_df.index.to_list())
             ):
@@ -238,5 +238,5 @@ class Emotion2vec(Featureset):
             if tmp_file is not None:  # Check if tmp_file was created
                 try:
                     os.unlink(tmp_file.name)
-                except:
+                except OSError:
                     pass

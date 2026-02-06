@@ -265,19 +265,22 @@ class MLP_Reg_model(Model):
 
     def load_path(self, path, run, epoch):
         self.set_id(run, epoch)
-        with open(path, "rb") as handle:
-            self.device = self.util.config_val("MODEL", "device", "cpu")
-            layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])
-            self.store_path = path
-            drop = self.util.config_val("MODEL", "drop", False)
-            if drop:
-                self.util.debug(f"training with dropout: {drop}")
-            activation, act_func = self._get_activation()
-            self.model = self.MLP(
-                self.feats_train.shape[1], layers, self.class_num, drop, activation
-            ).to(self.device)
-            self.model.load_state_dict(torch.load(self.store_path))
-            self.model.eval()
+        from pathlib import Path
+
+        if not Path(path).exists():
+            raise FileNotFoundError(f"Model file not found: {path}")
+        self.device = self.util.config_val("MODEL", "device", "cpu")
+        layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])
+        self.store_path = path
+        drop = self.util.config_val("MODEL", "drop", False)
+        if drop:
+            self.util.debug(f"training with dropout: {drop}")
+        activation, act_func = self._get_activation()
+        self.model = self.MLP(
+            self.feats_train.shape[1], layers, 1, drop, activation
+        ).to(self.device)
+        self.model.load_state_dict(torch.load(self.store_path))
+        self.model.eval()
 
     def get_predictions(self):
         _, _, predictions = self.evaluate_model(

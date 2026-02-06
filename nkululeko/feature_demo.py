@@ -19,6 +19,7 @@ Options:
                     audmodel (requires audmodel.id in config), agender, opensmile, clap, spkrec, trill, praat,
                     squim (PESQ/SDR/STOI), mos, snr, etc.
 """
+
 import argparse
 import configparser
 import os
@@ -124,7 +125,6 @@ def main():
         print("\n" + "=" * 80, flush=True)
         print("MICROPHONE RECORDING", flush=True)
         print("=" * 80, flush=True)
-        import time
 
         duration = 5  # seconds
         sample_rate = 16000  # Hz
@@ -277,7 +277,7 @@ def main():
     if args.mic:
         try:
             os.remove(files[0])
-            print(f"Cleaned up temporary recording file")
+            print("Cleaned up temporary recording file")
         except Exception as e:
             print(f"Warning: Could not clean up temporary file: {e}")
 
@@ -393,7 +393,7 @@ def get_feature_extractor(model_name, config):
 
         # Create agender extractor and load the model
         print(
-            f"  Loading agender_agender model (this may download the model on first use)..."
+            "  Loading agender_agender model (this may download the model on first use)..."
         )
         extractor = Agender_agenderSet(model_name, None, model_name)
         extractor._load_model()
@@ -403,7 +403,7 @@ def get_feature_extractor(model_name, config):
         from nkululeko.feat_extract.feats_squim import SquimSet
 
         # SQUIM extracts PESQ, SDR (SI-SDR), and STOI metrics
-        print(f"  Loading SQUIM model for audio quality metrics (PESQ, SDR, STOI)...")
+        print("  Loading SQUIM model for audio quality metrics (PESQ, SDR, STOI)...")
         extractor = SquimSet(model_name, None, model_name)
         extractor.init_model()
         return extractor
@@ -412,7 +412,7 @@ def get_feature_extractor(model_name, config):
         from nkululeko.feat_extract.feats_squim import SquimSet
 
         # PESQ (Perceptual Evaluation of Speech Quality) via SQUIM
-        print(f"  Loading SQUIM model to extract PESQ features...")
+        print("  Loading SQUIM model to extract PESQ features...")
         extractor = SquimSet(model_name, None, model_name)
         extractor.init_model()
         return extractor
@@ -421,7 +421,7 @@ def get_feature_extractor(model_name, config):
         from nkululeko.feat_extract.feats_squim import SquimSet
 
         # SDR (Signal-to-Distortion Ratio) via SQUIM
-        print(f"  Loading SQUIM model to extract SDR features...")
+        print("  Loading SQUIM model to extract SDR features...")
         extractor = SquimSet(model_name, None, model_name)
         extractor.init_model()
         return extractor
@@ -430,7 +430,7 @@ def get_feature_extractor(model_name, config):
         from nkululeko.feat_extract.feats_mos import MosSet
 
         # MOS extracts Mean Opinion Score for subjective quality
-        print(f"  Loading MOS model for subjective quality assessment...")
+        print("  Loading MOS model for subjective quality assessment...")
         extractor = MosSet(model_name, None, model_name)
         extractor.init_model()
         return extractor
@@ -439,7 +439,7 @@ def get_feature_extractor(model_name, config):
         from nkululeko.feat_extract.feats_snr import SnrSet
 
         # SNR extracts Signal-to-Noise Ratio
-        print(f"  Loading SNR estimator...")
+        print("  Loading SNR estimator...")
         extractor = SnrSet(model_name, None, model_name)
         # SNR doesn't need explicit model initialization
         return extractor
