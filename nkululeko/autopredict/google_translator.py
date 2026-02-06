@@ -25,6 +25,15 @@ class GoogleTranslator:
             result = translator.translate(text, dest="en")
             return (await result).text
 
+    async def translate_texts(self, texts):
+        """Translate a list of texts using a single Translator session."""
+        async with Translator() as translator:
+            translations = []
+            for text in texts:
+                result = translator.translate(text, dest="en")
+                translations.append((await result).text)
+        return translations
+
     def translate_index(self, df: pd.DataFrame) -> pd.DataFrame:
         """Transcribe the audio files in the given index.
 
@@ -34,12 +43,17 @@ class GoogleTranslator:
         """
         file_name = ""
         seg_index = 0
-        translations = []
+        translations = [""] * len(df)
         translator_cache = audeer.mkdir(
             audeer.path(self.util.get_path("cache"), "translations")
         )
-        file_name = ""
-        for idx, row in tqdm(df.iterrows(), total=len(df)):
+
+        uncached_positions = []
+        uncached_texts = []
+        uncached_cache_paths = []
+        uncached_meta = []
+
+        for i, (idx, row) in enumerate(tqdm(df.iterrows(), total=len(df))):
             file = idx[0]
             start = idx[1]
             end = idx[2]
@@ -49,10 +63,24 @@ class GoogleTranslator:
             cache_name = audeer.basename_wo_ext(file) + str(seg_index)
             cache_path = audeer.path(translator_cache, cache_name + ".json")
             if os.path.isfile(cache_path):
-                translation = self.util.read_json(cache_path)["translation"]
+                translations[i] = self.util.read_json(cache_path)["translation"]
             else:
-                text = row["text"]
-                translation = asyncio.run(self.translate_text(text))
+                uncached_positions.append(i)
+                uncached_texts.append(row["text"])
+                uncached_cache_paths.append(cache_path)
+                uncached_meta.append((file, start, end))
+            seg_index += 1
+
+        if uncached_texts:
+            uncached_translations = asyncio.run(self.translate_texts(uncached_texts))
+            for i, translation, cache_path, meta in zip(
+                uncached_positions,
+                uncached_translations,
+                uncached_cache_paths,
+                uncached_meta,
+            ):
+                file, start, end = meta
+                translations[i] = translation
                 self.util.save_json(
                     cache_path,
                     {
@@ -62,8 +90,6 @@ class GoogleTranslator:
                         "end": end.total_seconds(),
                     },
                 )
-            translations.append(translation)
-            seg_index += 1
 
         df = pd.DataFrame({self.language: translations}, index=df.index)
         return df
