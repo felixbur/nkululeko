@@ -110,6 +110,9 @@ def test_extract_handles_segmented_index(sptk_set, mock_util):
             with patch("nkululeko.feat_extract.feats_sptk_core.compute_features", return_value=mock_df) as mock_compute:
                 result = sptk_set.extract()
                 
+                assert result is not None
+                assert isinstance(result, pd.DataFrame)
+                
                 # Verify compute_features was called with segmented index
                 mock_compute.assert_called_once()
                 call_kwargs = mock_compute.call_args[1]
