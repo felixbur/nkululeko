@@ -1,7 +1,6 @@
 from unittest.mock import Mock, patch
 
 import pandas as pd
-import pytest
 
 from nkululeko.autopredict.ap_emotion import EmotionPredictor
 
