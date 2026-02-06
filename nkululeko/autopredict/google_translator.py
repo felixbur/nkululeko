@@ -34,7 +34,7 @@ class GoogleTranslator:
         return translations
 
     def translate_index(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Transcribe the audio files in the given index.
+        """Translate the text in the given DataFrame.
 
         :param index: Index containing tuples of (file, start, end).
         :return: DataFrame with transcriptions indexed by the original index.
