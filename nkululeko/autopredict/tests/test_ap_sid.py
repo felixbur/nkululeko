@@ -38,7 +38,7 @@ class TestSIDPredictor:
         
         with patch("nkululeko.autopredict.ap_sid.Util", return_value=mock_util):
             with pytest.raises(Exception, match="Token required"):
-                predictor = SIDPredictor(df)
+                SIDPredictor(df)
 
     @patch("nkululeko.autopredict.ap_sid.concat_files")
     @patch("nkululeko.autopredict.ap_sid.Pipeline")
