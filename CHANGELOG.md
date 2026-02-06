@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Version 1.2.0 (26-02-08)  
+------------------------
+* added ADM model for deepfake artifact detection  
+* added focal loss function  
+* added binary cross entropy loss  
+* added weighted binary cross entropy loss  
+
 Version 1.1.9 (26-01-26)  
 ------------------------
 * fixed bug that data without speaker column caused error
