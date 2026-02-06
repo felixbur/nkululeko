@@ -36,7 +36,7 @@ class GoogleTranslator:
     def translate_index(self, df: pd.DataFrame) -> pd.DataFrame:
         """Translate the text in the given DataFrame.
 
-        :param index: Index containing tuples of (file, start, end).
+        :param df: DataFrame whose index contains tuples of (file, start, end).
         :return: DataFrame with translations indexed by the original index.
         :rtype: pd.DataFrame
         """
