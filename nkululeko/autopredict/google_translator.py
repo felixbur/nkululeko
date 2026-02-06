@@ -25,7 +25,7 @@ class GoogleTranslator:
             result = translator.translate(text, dest="en")
             return (await result).text
 
-    async def translate_texts(self, texts):
+    async def translate_texts(self, texts: list[str]) -> list[str]:
         """Translate a list of texts using a single Translator session."""
         async with Translator() as translator:
             tasks = [translator.translate(text, dest="en") for text in texts]
