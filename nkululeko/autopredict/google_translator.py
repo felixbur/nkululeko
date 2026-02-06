@@ -37,7 +37,7 @@ class GoogleTranslator:
         """Translate the text in the given DataFrame.
 
         :param index: Index containing tuples of (file, start, end).
-        :return: DataFrame with transcriptions indexed by the original index.
+        :return: DataFrame with translations indexed by the original index.
         :rtype: pd.DataFrame
         """
         file_name = ""
