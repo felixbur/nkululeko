@@ -28,10 +28,9 @@ class GoogleTranslator:
     async def translate_texts(self, texts):
         """Translate a list of texts using a single Translator session."""
         async with Translator() as translator:
-            translations = []
-            for text in texts:
-                result = translator.translate(text, dest="en")
-                translations.append((await result).text)
+            tasks = [translator.translate(text, dest="en") for text in texts]
+            results = await asyncio.gather(*tasks)
+            translations = [result.text for result in results]
         return translations
 
     def translate_index(self, df: pd.DataFrame) -> pd.DataFrame:
