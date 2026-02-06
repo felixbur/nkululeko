@@ -439,10 +439,21 @@ class Util:
             all += f"{report.result.test:.4f} "
             vals = np.append(vals, report.result.test)
         file_name = f"{res_dir}{self.get_exp_name()}_runs.txt"
+        
+        # For metrics where lower is better (EER, MSE, MAE), show min instead of max
+        if self.high_is_good():
+            best_val = vals.max()
+            best_idx = vals.argmax()
+            best_label = "max"
+        else:
+            best_val = vals.min()
+            best_idx = vals.argmin()
+            best_label = "min"
+        
         output = (
             f"{all}"
             + f"\nmean: {vals.mean():.4f}, std: {vals.std():.4f}, "
-            + f"max: {vals.max():.4f}, max_index: {vals.argmax()}"
+            + f"{best_label}: {best_val:.4f}, {best_label}_index: {best_idx}"
         )
         with open(file_name, "w") as text_file:
             text_file.write(output)
