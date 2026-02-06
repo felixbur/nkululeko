@@ -2,7 +2,6 @@ from datetime import timedelta
 from unittest.mock import Mock, patch
 
 import pandas as pd
-import pytest
 
 from nkululeko.autopredict.ap_text import TextPredictor
 
