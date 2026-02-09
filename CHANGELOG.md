@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.2.1 (26-02-09)  
+------------------------
+* Refactored google_translator.py to batch translate texts instead of one-by-one, significantly improving performance for multi-segment transcriptions
+
 Version 1.2.0 (26-02-08)  
 ------------------------
 * added ADM model for deepfake artifact detection  
