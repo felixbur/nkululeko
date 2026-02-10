@@ -126,7 +126,7 @@ All of them take *--config <my_config.ini>* as an argument.
 * **nkululeko.ensemble**: [combine several nkululeko experiments](http://blog.syntheticspeech.de/2024/06/25/nkululeko-ensemble-classifiers-with-late-fusion/) and report on late fusion results
 * **nkululeko.multidb**: do [multiple experiments](http://blog.syntheticspeech.de/2024/01/02/nkululeko-compare-several-databases/), comparing several databases cross and in itself
 * **nkululeko.demo**: [demo the current best model](http://blog.syntheticspeech.de/2022/01/24/nkululeko-try-out-demo-a-trained-model/) on the command line or for a list of files
-* **nkululeko.feature_demo**: [demo some feature extractor](https://blog.syntheticspeech.de/2026/01/14/nkululeko-how-to-only-extract-features/) on the command line or for a list of files
+* **nkululeko.feature_demo**: [demo a feature extractor](https://blog.syntheticspeech.de/2026/01/14/nkululeko-how-to-only-extract-features/) on the command line or for a list of files
 * **nkululeko.explore**: perform [data exploration](http://blog.syntheticspeech.de/2023/05/11/nkululeko-how-to-visualize-your-data-distribution/)
 * **nkululeko.augment**: [augment](http://blog.syntheticspeech.de/2023/03/13/nkululeko-how-to-augment-the-training-set/) the current training data
 * **nkululeko.aug_train**: augment the current training data [and do a training](http://blog.syntheticspeech.de/2023/03/13/nkululeko-how-to-augment-the-training-set/) including this data
