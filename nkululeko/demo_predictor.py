@@ -95,10 +95,10 @@ class Demo_predictor:
             answer = input("want to record y/n?")
             while answer == "y":
                 signal = self.record_audio(3)
-                self.predict_signal(signal, self.sr)
+                result = self.predict_signal(signal, self.sr)
+                print(result)
+                self.play_audio(signal)
                 answer = input("want to record y/n?")
-
-    #            self.play_audio(signal)
 
     def predict_signal(self, signal, sr):
         features = self.feature_extractor.extract_sample(signal, sr)
