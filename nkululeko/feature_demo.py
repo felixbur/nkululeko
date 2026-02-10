@@ -108,9 +108,46 @@ def main():
         util = Util(module)
         util.debug(f"running feature extraction demo, nkululeko version {VERSION}")
         util.debug(f"using model: {args.model}")
-        extractors = util.config_val("FEATS", "type", None)
-        extractors = ast.literal_eval(extractors)
-        args.model = extractors[0] 
+        raw_extractors = util.config_val("FEATS", "type", None)
+        extractors = []
+        # Normalize FEATS.type into a list of extractor names.
+        # Supported formats:
+        #   - Python list literal, e.g. '["wav2vec2", "opensmile"]'
+        #   - Single string, e.g. 'audmodel'
+        #   - Comma-separated string, e.g. 'wav2vec2,opensmile'
+        if isinstance(raw_extractors, list):
+            extractors = raw_extractors
+        elif isinstance(raw_extractors, str):
+            conf_str = raw_extractors.strip()
+            if conf_str:
+                try:
+                    # Try to interpret as a Python literal first.
+                    lit_val = ast.literal_eval(conf_str)
+                except (ValueError, SyntaxError):
+                    # Fallback: handle comma-separated or single string.
+                    if "," in conf_str:
+                        extractors = [
+                            part.strip()
+                            for part in conf_str.split(",")
+                            if part.strip()
+                        ]
+                    else:
+                        extractors = [conf_str]
+                else:
+                    if isinstance(lit_val, list):
+                        extractors = lit_val
+                    elif isinstance(lit_val, str):
+                        extractors = [lit_val]
+                    else:
+                        extractors = [str(lit_val)]
+        # If no valid extractors were found, keep args.model as provided/Default.
+        if extractors:
+            args.model = extractors[0]
+            util.debug(f"override model from config FEATS.type: {args.model}")
+        else:
+            util.debug(
+                "No valid FEATS.type found in config; using default/CLI model setting."
+            )
         print(f"Using configuration from: {config_file}")
     else:
         # No config provided, use defaults
