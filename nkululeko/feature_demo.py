@@ -205,7 +205,7 @@ def main():
         print(f"Reading files from {args.list}")
         list_file = pd.read_csv(args.list, header=None)
         files = list_file.iloc[:, 0].tolist()
-        if files[0] == "file":  # Handle case where CSV has header "file"
+        if files and files[0] == "file":  # Handle case where CSV has header "file"
             files = files[1:]
         # prepend folder if provided
         if args.folder != "./" and args.folder is not None:
