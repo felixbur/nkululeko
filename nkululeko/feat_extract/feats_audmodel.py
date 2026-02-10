@@ -18,7 +18,7 @@ class AudmodelSet(Featureset):
     https://audeering.github.io/audmodel/index.html
     """
 
-    def __init__(self, name, data_df, feats_type):
+    def __init__(self, name, data_df, feats_type="audmodel"):
         super().__init__(name, data_df, feats_type)
         self.model_loaded = False
         self.feats_type = feats_type
@@ -77,5 +77,6 @@ class AudmodelSet(Featureset):
     def extract_sample(self, signal, sr):
         if self.model is None:
             self.__init__("na", None)
+            self._load_model()
         result = self.model(signal, sr)
         return np.asarray(result[self.embeddings_name].flatten())

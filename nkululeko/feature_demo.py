@@ -24,6 +24,7 @@ import argparse
 import configparser
 import os
 import soundfile as sf
+import ast
 
 import audiofile
 import numpy as np
@@ -100,6 +101,16 @@ def main():
         # load configuration
         config = configparser.ConfigParser()
         config.read(config_file)
+        glob_conf.init_config(config)
+        # set the model name to the one specified in the config as feature extractor
+        # Initialize Util AFTER collecting files
+        module = "feature_demo"
+        util = Util(module)
+        util.debug(f"running feature extraction demo, nkululeko version {VERSION}")
+        util.debug(f"using model: {args.model}")
+        extractors = util.config_val("FEATS", "type", None)
+        extractors = ast.literal_eval(extractors)
+        args.model = extractors[0] 
         print(f"Using configuration from: {config_file}")
     else:
         # No config provided, use defaults
@@ -115,8 +126,8 @@ def main():
         config["FEATS"]["needs_feature_extraction"] = "True"
         config["FEATS"]["no_reuse"] = "True"
 
-    # Initialize global config
-    glob_conf.config = config
+        # Initialize global config
+        glob_conf.config = config
 
     # Collect files to process - do this BEFORE initializing the heavy models
     files = []
@@ -157,8 +168,10 @@ def main():
         print(f"Reading files from {args.list}")
         list_file = pd.read_csv(args.list, header=None)
         files = list_file.iloc[:, 0].tolist()
+        if files[0] == "file":  # Handle case where CSV has header "file"
+            files = files[1:]
         # prepend folder if provided
-        if args.folder != "./":
+        if args.folder != "./" and args.folder is not None:
             files = [os.path.join(args.folder, f) for f in files]
     elif args.folder is not None:
         # read audio files from folder
@@ -183,11 +196,6 @@ def main():
 
     print(f"\nProcessing {len(files)} file(s)...")
 
-    # Initialize Util AFTER collecting files
-    module = "feature_demo"
-    util = Util(module)
-    util.debug(f"running feature extraction demo, nkululeko version {VERSION}")
-    util.debug(f"using model: {args.model}")
 
     # Initialize feature extractor based on model type
     print(f"\nInitializing {args.model} model...")

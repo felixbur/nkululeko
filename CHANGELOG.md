@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 1.2.2 (26-02-10)  
+------------------------
+* fixed feature_demo -> didn't use model from config
+* fixed feature_demo -> didn't work without args.folder
+
 Version 1.2.1 (26-02-09)  
 ------------------------
 * Refactored google_translator.py to batch translate texts instead of one-by-one, significantly improving performance for multi-segment transcriptions
