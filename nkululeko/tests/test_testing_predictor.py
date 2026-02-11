@@ -3,7 +3,7 @@ import os
 import tempfile
 import pandas as pd
 import numpy as np
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from sklearn.preprocessing import LabelEncoder
 import nkululeko.glob_conf as glob_conf
 
