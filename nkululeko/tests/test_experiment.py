@@ -1,6 +1,5 @@
 import pytest
 import configparser
-import os
 import random
 import tempfile
 import pandas as pd
