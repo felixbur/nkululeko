@@ -1,5 +1,4 @@
 import os
-import sys
 import types
 import tempfile
 from unittest.mock import patch, MagicMock, mock_open
