@@ -1,4 +1,3 @@
-import pytest
 import argparse
 import os
 import tempfile
