@@ -49,11 +49,38 @@ class TestExperimentImportCsv:
     """Test the _import_csv method."""
 
     def test_import_csv_with_valid_file(self, mock_config, tmp_path):
-        """Test importing a valid CSV file."""
+        """Test importing a valid CSV file.
+        
+        Note: This is a minimal test that verifies _import_csv can read
+        a valid audformat CSV file. Full integration testing with dataset
+        loading is covered by the end-to-end tests.
+        """
+        from nkululeko.experiment import Experiment
+        from nkululeko import glob_conf
+        
+        # Create a CSV file in audformat-compatible format
         csv_file = tmp_path / "test.csv"
         df = pd.DataFrame({"file": ["a.wav", "b.wav"], "emotion": ["happy", "sad"]})
+        df.index.name = 'file'
         df.to_csv(csv_file)
         assert csv_file.exists()
+        
+        # Initialize glob_conf 
+        glob_conf.init_config(mock_config)
+        
+        # Create a minimal Experiment and manually set target to test _import_csv
+        exp = Experiment.__new__(Experiment)
+        exp.target = "emotion"  # Set target manually to avoid full initialization
+        
+        result_df = exp._import_csv(str(csv_file))
+        
+        # Verify the DataFrame was imported correctly
+        assert result_df is not None
+        assert isinstance(result_df, pd.DataFrame)
+        assert "emotion" in result_df.columns
+        assert len(result_df) == 2
+        assert hasattr(result_df, 'is_labeled')
+        assert result_df.is_labeled is True
 
 
 class TestExperimentHelpers:
