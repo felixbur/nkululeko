@@ -117,8 +117,7 @@ class TestDemoMain:
         args_list = None
         if args_file is None and args_list is None:
             mode = "no_input"
-        elif args_list is None:
-            mode = "single_file"
         else:
-            mode = "list"
+            mode = "single_file"
+
         assert mode == "no_input"
