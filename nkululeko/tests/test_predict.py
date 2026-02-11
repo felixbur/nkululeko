@@ -2,7 +2,6 @@ import argparse
 import os
 import tempfile
 import configparser
-from unittest.mock import patch, MagicMock
 
 
 class TestPredictArgParser:
