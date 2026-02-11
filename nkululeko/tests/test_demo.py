@@ -1,6 +1,6 @@
 import os
 import tempfile
-from unittest.mock import patch, MagicMock, mock_open
+from unittest.mock import patch
 
 
 class TestDemoArgParser:
