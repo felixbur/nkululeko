@@ -810,7 +810,7 @@ class OptimizationRunner:
             return
 
         if filepath is None:
-            results_dir = self.util.get_path("res_dir")
+            results_dir = self.util.get_exp_dir()
             filepath = os.path.join(
                 results_dir, f"optimization_results_{self.model_type}.csv"
             )
