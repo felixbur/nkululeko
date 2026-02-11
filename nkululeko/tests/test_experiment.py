@@ -3,7 +3,6 @@ import configparser
 import random
 import tempfile
 import pandas as pd
-from unittest.mock import MagicMock, patch
 import nkululeko.glob_conf as glob_conf
 
 
