@@ -1,4 +1,3 @@
-import pytest
 import nkululeko.glob_conf as glob_conf
 
 
