@@ -2,7 +2,6 @@ import pytest
 import configparser
 import tempfile
 import os
-import sys
 import types
 from unittest.mock import MagicMock, patch
 from pathlib import Path
