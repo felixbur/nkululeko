@@ -238,5 +238,5 @@ class TestEnsemblePredictions:
     def test_unknown_method_raises_error(self):
         """Test that unknown method raises ValueError."""
         from nkululeko.ensemble import ensemble_predictions
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):
             ensemble_predictions([], "invalid_method", 1.0, None, True)
