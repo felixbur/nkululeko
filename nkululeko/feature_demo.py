@@ -24,6 +24,7 @@ import argparse
 import configparser
 import os
 import soundfile as sf
+import ast
 
 import audiofile
 import numpy as np
@@ -100,6 +101,53 @@ def main():
         # load configuration
         config = configparser.ConfigParser()
         config.read(config_file)
+        glob_conf.init_config(config)
+        # set the model name to the one specified in the config as feature extractor
+        # Initialize Util AFTER collecting files
+        module = "feature_demo"
+        util = Util(module)
+        util.debug(f"running feature extraction demo, nkululeko version {VERSION}")
+        util.debug(f"using model: {args.model}")
+        raw_extractors = util.config_val("FEATS", "type", None)
+        extractors = []
+        # Normalize FEATS.type into a list of extractor names.
+        # Supported formats:
+        #   - Python list literal, e.g. '["wav2vec2", "opensmile"]'
+        #   - Single string, e.g. 'audmodel'
+        #   - Comma-separated string, e.g. 'wav2vec2,opensmile'
+        if isinstance(raw_extractors, list):
+            extractors = raw_extractors
+        elif isinstance(raw_extractors, str):
+            conf_str = raw_extractors.strip()
+            if conf_str:
+                try:
+                    # Try to interpret as a Python literal first.
+                    lit_val = ast.literal_eval(conf_str)
+                except (ValueError, SyntaxError):
+                    # Fallback: handle comma-separated or single string.
+                    if "," in conf_str:
+                        extractors = [
+                            part.strip()
+                            for part in conf_str.split(",")
+                            if part.strip()
+                        ]
+                    else:
+                        extractors = [conf_str]
+                else:
+                    if isinstance(lit_val, list):
+                        extractors = lit_val
+                    elif isinstance(lit_val, str):
+                        extractors = [lit_val]
+                    else:
+                        extractors = [str(lit_val)]
+        # If no valid extractors were found, keep args.model as provided/Default.
+        if extractors:
+            args.model = extractors[0]
+            util.debug(f"override model from config FEATS.type: {args.model}")
+        else:
+            util.debug(
+                "No valid FEATS.type found in config; using default/CLI model setting."
+            )
         print(f"Using configuration from: {config_file}")
     else:
         # No config provided, use defaults
@@ -115,8 +163,8 @@ def main():
         config["FEATS"]["needs_feature_extraction"] = "True"
         config["FEATS"]["no_reuse"] = "True"
 
-    # Initialize global config
-    glob_conf.config = config
+        # Initialize global config
+        glob_conf.config = config
 
     # Collect files to process - do this BEFORE initializing the heavy models
     files = []
@@ -157,8 +205,10 @@ def main():
         print(f"Reading files from {args.list}")
         list_file = pd.read_csv(args.list, header=None)
         files = list_file.iloc[:, 0].tolist()
+        if files and files[0] == "file":  # Handle case where CSV has header "file"
+            files = files[1:]
         # prepend folder if provided
-        if args.folder != "./":
+        if args.folder != "./" and args.folder is not None:
             files = [os.path.join(args.folder, f) for f in files]
     elif args.folder is not None:
         # read audio files from folder
@@ -183,11 +233,6 @@ def main():
 
     print(f"\nProcessing {len(files)} file(s)...")
 
-    # Initialize Util AFTER collecting files
-    module = "feature_demo"
-    util = Util(module)
-    util.debug(f"running feature extraction demo, nkululeko version {VERSION}")
-    util.debug(f"using model: {args.model}")
 
     # Initialize feature extractor based on model type
     print(f"\nInitializing {args.model} model...")
