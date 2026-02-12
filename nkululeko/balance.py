@@ -93,10 +93,22 @@ class DataBalancer:
         self.util.debug(f"Original class distribution: {orig_dist}")
 
         try:
+            # Ensure all column names are strings (mixed int/str causes SMOTE errors)
+            if isinstance(feats_train, pd.DataFrame):
+                original_columns = feats_train.columns.tolist()
+                feats_train = feats_train.copy()
+                feats_train.columns = [str(c) for c in feats_train.columns]
+            else:
+                original_columns = None
+
             # Apply the specified balancing method
             X_res, y_res = self._apply_balancing_method(
                 feats_train, df_train[target_column], method
             )
+
+            # Restore original column names if needed
+            if original_columns is not None and isinstance(X_res, pd.DataFrame):
+                X_res.columns = original_columns
 
             # Create new balanced dataframe
             balanced_df = pd.DataFrame({target_column: y_res})

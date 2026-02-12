@@ -29,4 +29,7 @@ def test_autopredict_module_imports(module_name):
             raise
         pytest.skip(f"Optional dependency missing for {full_name}: {exc}")
     except ImportError as exc:
+        missing_name = getattr(exc, "name", None)
+        if missing_name and missing_name.startswith("nkululeko."):
+            raise
         pytest.skip(f"Optional dependency missing for {full_name}: {exc}")

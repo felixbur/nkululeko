@@ -159,10 +159,20 @@ class SptkFeatureExtractor:
         # Extract requested features
         if "stft" in features_requested:
             stft_np = stft_features.cpu().numpy()
-            emb["stft_mean"] = np.mean(stft_np)
-            emb["stft_std"] = np.std(stft_np)
-            emb["stft_min"] = np.min(stft_np)
-            emb["stft_max"] = np.max(stft_np)
+            # Per-bin statistics for rich phase/spectral information
+            # stft_np shape: (n_frames, fft_length/2 + 1)
+            if stft_np.ndim >= 2:
+                n_bins = stft_np.shape[-1]
+                for i in range(n_bins):
+                    bin_data = stft_np[..., i]
+                    emb[f"stft_{i}_mean"] = np.mean(bin_data)
+                    emb[f"stft_{i}_std"] = np.std(bin_data)
+            else:
+                # Fallback for unexpected shapes
+                emb["stft_mean"] = np.mean(stft_np)
+                emb["stft_std"] = np.std(stft_np)
+                emb["stft_min"] = np.min(stft_np)
+                emb["stft_max"] = np.max(stft_np)
 
         if "fbank" in features_requested:
             fbank_features = self.fbank(stft_features)

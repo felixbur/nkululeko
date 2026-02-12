@@ -124,8 +124,8 @@ Repository = "https://github.com/felixbur/nkululeko"
 Documentation = "https://github.com/felixbur/nkululeko"
 Issues = "https://github.com/felixbur/nkululeko/issues"
 
-[tool.pytest]
-testpaths = ["tests"]
+[tool.pytest.ini_options]
+testpaths = ["tests", "nkululeko"]
 python_files = "test_*.py"
 
 # ----- setuptools_scm ----------------------------------------------------

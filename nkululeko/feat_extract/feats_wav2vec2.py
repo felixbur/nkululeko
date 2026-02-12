@@ -54,7 +54,7 @@ class Wav2vec2(Featureset):
         self.model = Wav2Vec2Model.from_pretrained(model_path, config=config).to(
             self.device
         )
-        print(f"intialized Wav2vec model on {self.device}")
+        print(f"initialized Wav2vec2 model on {self.device}")
         self.model.eval()
         self.model_initialized = True
 
@@ -81,7 +81,7 @@ class Wav2vec2(Featureset):
                     file,
                     frame_offset=int(start.total_seconds() * 16000),
                     num_frames=int((end - start).total_seconds() * 16000),
-                    normalize=True,  
+                    normalize=True,
                 )
                 assert sampling_rate == 16000, f"got {sampling_rate} instead of 16000"
                 emb = self.get_embeddings(signal, sampling_rate, file)

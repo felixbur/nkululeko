@@ -3,7 +3,7 @@ audeer>=1.0.0
 audformat>=1.3.1
 audinterface>=1.0.0
 audiofile>=1.0.0
-audiomentations==0.31.0
+audiomentations>=0.31.0
 audmetric>=1.0.0
 audonnx>=0.7.0
 confidence-intervals>=0.0.2

@@ -9,6 +9,7 @@ from audmetric import concordance_cc, mean_absolute_error, mean_squared_error
 import nkululeko.glob_conf as glob_conf
 from nkululeko.losses.loss_ccc import ConcordanceCorCoeff
 from nkululeko.models.model import Model
+from nkululeko.optimizers import get_optimizer
 from nkululeko.reporting.reporter import Reporter
 
 
@@ -58,13 +59,15 @@ class MLP_Reg_model(Model):
         self.model = self.MLP(feats_train.shape[1], layers, 1, drop, activation).to(
             self.device
         )
-        self.learning_rate = float(
-            self.util.config_val("MODEL", "learning_rate", 0.0001)
+
+        # set up optimizer
+        self.optimizer, self.learning_rate = get_optimizer(
+            self.model.parameters(),
+            self.util,
+            default_lr=0.0001,
+            default_optimizer="adam",
         )
-        # set up regularization
-        self.optimizer = torch.optim.Adam(
-            self.model.parameters(), lr=self.learning_rate
-        )
+
         # batch size
         self.batch_size = int(self.util.config_val("MODEL", "batch_size", 8))
         # number of parallel processes

@@ -29,8 +29,11 @@ class TestTimeADM:
         assert adm.fc1.in_features == 768
         assert adm.fc1.out_features == 256
         assert adm.fc2.in_features == 256
-        assert adm.fc2.out_features == 128
-        assert adm.fc3.out_features == 1
+        assert adm.fc2.out_features == 256
+        assert adm.fc3.in_features == 256
+        assert adm.fc3.out_features == 128
+        assert adm.fc_out.in_features == 128
+        assert adm.fc_out.out_features == 1
 
     def test_forward_2d(self):
         """Test forward pass with 2D input."""
@@ -49,14 +52,16 @@ class TestTimeADM:
     def test_dropout_layers(self):
         """Test dropout layers exist."""
         adm = TimeADM(feat_dim=768)
-        assert adm.dropout1.p == 0.3
-        assert adm.dropout2.p == 0.3
+        assert adm.dropout1.p == 0.2
+        assert adm.dropout2.p == 0.2
+        assert adm.dropout3.p == 0.2
 
-    def test_batch_norm_layers(self):
-        """Test batch normalization layers."""
+    def test_layer_norm_layers(self):
+        """Test layer normalization layers."""
         adm = TimeADM(feat_dim=768, hidden_dim=256)
-        assert adm.bn1.num_features == 256
-        assert adm.bn2.num_features == 128
+        assert adm.ln1.normalized_shape == (256,)
+        assert adm.ln2.normalized_shape == (256,)
+        assert adm.ln3.normalized_shape == (128,)
 
 
 class TestSpectralADM:
@@ -66,8 +71,11 @@ class TestSpectralADM:
         """Test SpectralADM initialization."""
         adm = SpectralADM(hidden_dim=128)
         assert adm.fc2.in_features == 128
-        assert adm.fc2.out_features == 64
-        assert adm.fc3.out_features == 1
+        assert adm.fc2.out_features == 128
+        assert adm.fc3.in_features == 128
+        assert adm.fc3.out_features == 64
+        assert adm.fc_out.in_features == 64
+        assert adm.fc_out.out_features == 1
 
     def test_forward_2d(self):
         """Test forward pass with 2D input."""
@@ -110,11 +118,13 @@ class TestPhaseADM:
     def test_init(self):
         """Test PhaseADM initialization."""
         adm = PhaseADM(feat_dim=64, hidden_dim=128)
-        assert adm.fc1.in_features == 64
-        assert adm.fc1.out_features == 128
+        # fc1 is LazyLinear, check after forward pass
         assert adm.fc2.in_features == 128
-        assert adm.fc2.out_features == 64
-        assert adm.fc3.out_features == 1
+        assert adm.fc2.out_features == 128
+        assert adm.fc3.in_features == 128
+        assert adm.fc3.out_features == 64
+        assert adm.fc_out.in_features == 64
+        assert adm.fc_out.out_features == 1
 
     def test_forward_2d(self):
         """Test forward pass with 2D input."""
@@ -257,6 +267,14 @@ class DummyUtil:
             ("MODEL", "focal.alpha"): "0.25",
             ("MODEL", "focal.gamma"): "2.0",
             ("MODEL", "class_weight"): "auto",
+            ("MODEL", "scheduler"): "none",
+            ("MODEL", "warmup_epochs"): "5",
+            ("MODEL", "scheduler.step_size"): "10",
+            ("MODEL", "scheduler.gamma"): "0.5",
+            ("MODEL", "max_grad_norm"): "0.0",
+            ("MODEL", "feature_noise"): "0.0",
+            ("MODEL", "threshold"): "0.5",
+            ("EXP", "epochs"): "50",
         }
         return config_map.get((section, key), default)
 
@@ -331,6 +349,10 @@ def adm_model(dummy_data, monkeypatch):
         model.sptk_feat_dim = 64
         model.store_path = "/tmp/test_adm.pt"
 
+        # Feature indices for splitting (empty means use defaults in _split_features)
+        model.fbank_indices = []
+        model.stft_indices = []
+
         # Create BCE loss
         model.criterion = torch.nn.BCEWithLogitsLoss()
 
@@ -342,6 +364,16 @@ def adm_model(dummy_data, monkeypatch):
         ).to("cpu")
 
         model.optimizer = torch.optim.Adam(model.model.parameters(), lr=0.0001)
+
+        # Set up scheduler (none for testing)
+        model.scheduler = None
+        model.scheduler_type = "none"
+        model.scheduler_needs_init = False
+
+        # Set up training hyperparameters
+        model.max_grad_norm = 0.0
+        model.feature_noise = 0.0
+        model.threshold = 0.5
 
         # Create data loaders
         model.trainloader = model.get_loader(feats_train, df_train, True)

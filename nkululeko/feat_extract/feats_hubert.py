@@ -31,38 +31,36 @@ class Hubert(Featureset):
         self.device = self.util.config_val("MODEL", "device", cuda)
         self.model_initialized = False
         self.feat_type = feat_type
+        self.hidden_layer = int(self.util.config_val("FEATS", "hubert.layer", "0"))
 
     def init_model(self):
         # load model
         self.util.debug("loading Hubert model...")
-
-        # extract ckpt based on feat_type
-        # if self.feat_type == "hubert":
-        #     ckpt = "facebook/hubert-base-ls960"
-        # elif self.feat_type == "hubert_ft":
-        #     ckpt = "facebook/hubert-large-ls960-ft"
-        # elif self.feat_type == "hubert_large":
-        #     ckpt = "facebook/hubert-large-ll60k"
-        # elif self.feat_type == "hubert_xlarge":
-        #     ckpt = "facebook/hubert-xlarge-ll60k"
-        # elif self.feat_type == "hubert_xlarge_ft":
-        #     ckpt = "facebook/hubert-xlarge-ls960-ft"
-        # else:
-        #     raise ValueError(f"feat_type {self.feat_type} not supported")
+        import transformers
 
         model_path = self.util.config_val(
-            "FEATS", "Hubert.model", f"facebook/{self.feat_type}"
+            "FEATS", "hubert.model", f"facebook/{self.feat_type}"
         )
+        config = transformers.AutoConfig.from_pretrained(model_path)
+        layer_num = config.num_hidden_layers
+        self.adjusted_layer = layer_num - self.hidden_layer
+        config.num_hidden_layers = self.adjusted_layer
+        self.util.debug(f"using hidden layer #{config.num_hidden_layers} (from input)")
         self.processor = Wav2Vec2FeatureExtractor.from_pretrained(model_path)
-        self.model = HubertModel.from_pretrained(model_path).to(self.device)
-        print(f"intialized Hubert model on {self.device}")
+        self.model = HubertModel.from_pretrained(model_path, config=config).to(
+            self.device
+        )
+        print(f"initialized Hubert model on {self.device}")
         self.model.eval()
         self.model_initialized = True
 
     def extract(self):
         """Extract the features or load them from disk if present."""
         store = self.util.get_path("store")
-        storage = f"{store}{self.name}.pkl"
+        if self.hidden_layer == 0:
+            storage = f"{store}{self.name}.pkl"
+        else:
+            storage = f"{store}{self.name}_l{str(self.hidden_layer)}.pkl"
         extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
