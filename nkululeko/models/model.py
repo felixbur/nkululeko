@@ -3,11 +3,15 @@ import ast
 import pickle
 import random
 
+from joblib import parallel_backend
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import LeaveOneGroupOut
+from sklearn.model_selection import StratifiedKFold
 import sklearn.utils
-from joblib import parallel_backend
-from sklearn.model_selection import GridSearchCV, LeaveOneGroupOut, StratifiedKFold
+
+import audeer
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.reporting.reporter import Reporter
@@ -336,3 +340,30 @@ class Model:
         self.set_id(run, epoch)
         with open(path, "rb") as handle:
             self.clf = pickle.load(handle)
+
+    # next function exports the model to onnx
+    def export_onnx(self, onnx_path, input_shape=None):
+        """Export the trained sklearn model to ONNX format.
+
+        Args:
+            onnx_path (str): Path to save the ONNX model.
+            input_shape (tuple, optional): Shape of the input features. If None, inferred from feats_train.
+        """
+        import skl2onnx
+        from skl2onnx import convert_sklearn
+        from skl2onnx.common.data_types import FloatTensorType
+
+        if not hasattr(self, "clf"):
+            self.util.error("No trained model found to export.")
+            return
+
+        if input_shape is None:
+            n_features = self.feats_train.shape[1]
+            initial_type = [("input", FloatTensorType([None, n_features]))]
+        else:
+            initial_type = [("input", FloatTensorType(input_shape))]
+
+        onnx_model = convert_sklearn(self.clf, initial_types=initial_type)
+        with open(audeer.path(onnx_path), "wb") as f:
+            f.write(onnx_model.SerializeToString())
+        self.util.debug(f"Model exported to ONNX at {onnx_path}")
