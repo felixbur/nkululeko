@@ -15,7 +15,7 @@ Nkululeko is for speech processing learners, researchers and ML practitioners fo
 
 ## Installation
 
-Nkululeko requires Python 3.9 or higher with the following build status:  
+Nkululeko requires Python 3.10 or higher with the following build status:  
 
 ![Python 3.11](https://github.com/bagustris/nkululeko/actions/workflows/py311_aud_csv.yml/badge.svg)      
 ![Python 3.12](https://github.com/bagustris/nkululeko/actions/workflows/py312.yml/badge.svg)  
@@ -31,7 +31,7 @@ pip install nkululeko
 # using uv in development mode
 uv venv --python 3.12
 source .venv/bin/activate
-uv pip install -r requirements.txt
+uv pip install -e .
 # or run directly using uv run after cloning
 uv run python -m nkululeko.nkululeko --config examples/exp_polish_tree.ini
 ```
