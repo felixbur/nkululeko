@@ -211,3 +211,156 @@ def test_run_sklearn_optimization_grid_strategy(runner, param_specs):
         assert all("params" in r and "score" in r for r in all_results)
         runner.save_results.assert_called_once()
         mock_GridSearchCV.assert_called_once()
+
+
+# ============================================================
+# Tests for ADM optimization
+# ============================================================
+
+
+@pytest.fixture
+def adm_config():
+    """Config fixture for ADM optimization tests."""
+    config = MagicMock()
+    model_section = {
+        "type": "adm",
+        "loss": "bce",
+    }
+    optim_section = {
+        "model": "adm",
+        "search_strategy": "grid",
+        "metric": "eer",
+        "adm.hidden_dim": "[128, 256]",
+        "learning_rate": "[0.0001, 0.001]",
+        "batch_size": "[16, 32]",
+        "optimizer": "['adamw', 'adam']",
+        "feature_noise": "[0.0, 0.01]",
+        "threshold": "[0.3, 0.5]",
+        "loss": "['bce', 'focal']",
+        "focal.alpha": "[0.25, 0.4]",
+        "focal.gamma": "[2.0, 3.0]",
+    }
+    config.__contains__.side_effect = lambda x: x in [
+        "OPTIM", "MODEL", "DATA", "EXP", "FEATS", "REPORT",
+    ]
+    config.__getitem__.side_effect = lambda x: {
+        "OPTIM": optim_section,
+        "MODEL": model_section,
+        "DATA": {"target": "label"},
+        "EXP": {
+            "name": "test_adm_optim",
+            "root": "/tmp",
+            "runs": "1",
+            "epochs": "5",
+        },
+        "FEATS": {"type": "['hubert-base-ls960', 'sptk']"},
+        "REPORT": {"fresh": "True"},
+    }[x]
+    config.get.side_effect = lambda section, option, fallback=None: fallback
+    config.add_section = MagicMock()
+    config.remove_option = MagicMock()
+    config.set = MagicMock()
+    return config
+
+
+@pytest.fixture
+def adm_runner(adm_config):
+    """ADM optimization runner fixture."""
+    runner = OptimizationRunner(adm_config)
+    runner.util = MagicMock()
+    runner.util.high_is_good.return_value = False  # EER: lower is better
+    runner.util.exp_is_classification.return_value = True
+    runner.util.debug = MagicMock()
+    runner.util.error = MagicMock()
+    runner.save_results = MagicMock()
+    runner.model_type = "adm"
+    runner.metric = "eer"
+    return runner
+
+
+def test_update_adm_params(adm_runner, adm_config):
+    """Test that _update_adm_params sets all ADM keys in MODEL config."""
+    params = {
+        "adm.hidden_dim": 256,
+        "learning_rate": 0.001,
+        "batch_size": 32,
+        "optimizer": "adamw",
+        "feature_noise": 0.01,
+        "threshold": 0.3,
+        "loss": "focal",
+        "focal.alpha": 0.25,
+        "focal.gamma": 2.0,
+    }
+    adm_runner._update_adm_params(params)
+
+    model = adm_config["MODEL"]
+    assert model["adm.hidden_dim"] == "256"
+    assert model["learning_rate"] == "0.001"
+    assert model["batch_size"] == "32"
+    assert model["optimizer"] == "adamw"
+    assert model["feature_noise"] == "0.01"
+    assert model["threshold"] == "0.3"
+    assert model["loss"] == "focal"
+    assert model["focal.alpha"] == "0.25"
+    assert model["focal.gamma"] == "2.0"
+
+
+def test_update_config_routes_adm(adm_runner):
+    """Test that _update_config_with_params routes to ADM handler."""
+    params = {"adm.hidden_dim": 128, "learning_rate": 0.0001}
+    adm_runner._update_config_with_params(params)
+    model = adm_runner.config["MODEL"]
+    assert model["adm.hidden_dim"] == "128"
+    assert model["learning_rate"] == "0.0001"
+
+
+def test_adm_focal_params_skipped_when_not_focal(adm_runner, adm_config):
+    """Test that focal.alpha/gamma are skipped when loss is not focal."""
+    params = {
+        "loss": "bce",
+        "focal.alpha": 0.4,
+        "focal.gamma": 3.0,
+        "adm.hidden_dim": 256,
+    }
+    adm_runner._update_adm_params(params)
+
+    model = adm_config["MODEL"]
+    assert model["loss"] == "bce"
+    assert model["adm.hidden_dim"] == "256"
+    # focal params should NOT have been set
+    assert "focal.alpha" not in model or model.get("focal.alpha") != "0.4"
+
+
+def test_adm_focal_params_applied_when_focal(adm_runner, adm_config):
+    """Test that focal.alpha/gamma are applied when loss is focal."""
+    params = {
+        "loss": "focal",
+        "focal.alpha": 0.4,
+        "focal.gamma": 3.0,
+    }
+    adm_runner._update_adm_params(params)
+
+    model = adm_config["MODEL"]
+    assert model["loss"] == "focal"
+    assert model["focal.alpha"] == "0.4"
+    assert model["focal.gamma"] == "3.0"
+
+
+def test_parse_adm_optim_params(adm_runner):
+    """Test that OPTIM section with ADM dotted keys is parsed correctly."""
+    param_specs = adm_runner.parse_optim_params()
+
+    assert adm_runner.model_type == "adm"
+    assert adm_runner.metric == "eer"
+    assert "adm.hidden_dim" in param_specs
+    assert param_specs["adm.hidden_dim"] == [128, 256]
+    assert "learning_rate" in param_specs
+    assert param_specs["learning_rate"] == [0.0001, 0.001]
+    assert "loss" in param_specs
+    assert param_specs["loss"] == ["bce", "focal"]
+    assert "focal.alpha" in param_specs
+    assert param_specs["focal.alpha"] == [0.25, 0.4]
+    assert "focal.gamma" in param_specs
+    assert param_specs["focal.gamma"] == [2.0, 3.0]
+    assert "optimizer" in param_specs
+    assert param_specs["optimizer"] == ["adamw", "adam"]

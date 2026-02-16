@@ -701,6 +701,7 @@ class OptimizationRunner:
             "precision": "precision_macro",  # Macro-averaged precision
             "recall": "recall_macro",  # Macro-averaged recall
             "sensitivity": "recall_macro",  # Sensitivity = recall
+            "eer": "balanced_accuracy",  # EER optimized via balanced accuracy (lower EER ≈ higher BA)
         }
 
         if self.util.exp_is_classification():
@@ -727,6 +728,8 @@ class OptimizationRunner:
 
         if self.model_type == "mlp":
             self._update_mlp_params(params)
+        elif self.model_type == "adm":
+            self._update_adm_params(params)
         else:
             self._update_traditional_ml_params(params)
 
@@ -760,6 +763,24 @@ class OptimizationRunner:
 
         if "loss" in params:
             self.config["MODEL"]["loss"] = params["loss"]
+
+    def _update_adm_params(self, params):
+        """Update ADM-specific parameters in the MODEL config section.
+
+        Maps optimization parameter keys to the config keys that model_adm.py reads.
+        Handles dotted keys (e.g. adm.hidden_dim, focal.alpha) and plain keys
+        (e.g. learning_rate, batch_size, optimizer, loss).
+        """
+        for param_name, param_value in params.items():
+            # Skip focal sub-params when loss is not focal
+            if param_name in ("focal.alpha", "focal.gamma"):
+                current_loss = params.get("loss", self.config["MODEL"].get("loss", "bce"))
+                if current_loss != "focal":
+                    continue
+            self.config["MODEL"][param_name] = str(param_value)
+
+        # Always add random_state for reproducibility
+        self.config["MODEL"]["random_state"] = str(self.random_state)
 
     def _update_traditional_ml_params(self, params):
         """Update traditional ML parameters using tuning_params approach."""

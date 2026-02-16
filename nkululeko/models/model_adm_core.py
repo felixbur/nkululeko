@@ -196,20 +196,33 @@ class DeepfakeADMModel(nn.Module):
         ssl_feat_dim,
         phase_feat_dim,
         fusion="gated",
+        branches=["time", "spectral", "phase"],
+        hidden_dim=256,
     ):
         super().__init__()
         self.fusion = fusion
+        self.branches = branches
 
-        self.time_adm = TimeADM(ssl_feat_dim)
-        self.spec_adm = SpectralADM()
-        self.phase_adm = PhaseADM(phase_feat_dim)
+        # Create only requested branches with configurable hidden_dim
+        self.time_adm = (
+            TimeADM(ssl_feat_dim, hidden_dim=hidden_dim) if "time" in branches else None
+        )
+        self.spec_adm = (
+            SpectralADM(hidden_dim=hidden_dim) if "spectral" in branches else None
+        )
+        self.phase_adm = (
+            PhaseADM(phase_feat_dim, hidden_dim=hidden_dim)
+            if "phase" in branches
+            else None
+        )
 
+        num_branches = len(branches)
         if fusion == "weighted":
-            self.weights = nn.Parameter(torch.ones(3))
+            self.weights = nn.Parameter(torch.ones(num_branches))
         elif fusion == "concat":
-            self.fusion_fc = nn.Linear(3, 1)
+            self.fusion_fc = nn.Linear(num_branches, 1)
         elif fusion == "gated":
-            self.gate_fc = nn.Linear(3, 3)
+            self.gate_fc = nn.Linear(num_branches, num_branches)
 
     def forward(self, ssl_feats, spec_feats, phase_feats):
         """
@@ -221,11 +234,16 @@ class DeepfakeADMModel(nn.Module):
         Returns:
             artifact_score : (B,)
         """
-        t = self.time_adm(ssl_feats)
-        s = self.spec_adm(spec_feats)
-        p = self.phase_adm(phase_feats)
+        # Compute scores only for active branches
+        branch_scores = []
+        if self.time_adm is not None:
+            branch_scores.append(self.time_adm(ssl_feats))
+        if self.spec_adm is not None:
+            branch_scores.append(self.spec_adm(spec_feats))
+        if self.phase_adm is not None:
+            branch_scores.append(self.phase_adm(phase_feats))
 
-        scores = torch.cat([t, s, p], dim=1)
+        scores = torch.cat(branch_scores, dim=1)
 
         if self.fusion == "avg":
             out = scores.mean(dim=1, keepdim=True)
@@ -233,7 +251,7 @@ class DeepfakeADMModel(nn.Module):
             out = scores.max(dim=1, keepdim=True)[0]
         elif self.fusion == "weighted":
             w = F.softmax(self.weights, dim=0)
-            out = w[0] * t + w[1] * s + w[2] * p
+            out = sum(w[i] * branch_scores[i] for i in range(len(branch_scores)))
         elif self.fusion == "concat":
             out = self.fusion_fc(scores)
         elif self.fusion == "gated":

@@ -135,12 +135,23 @@ class ADMModel(Model):
         # ADM architecture parameters
         fusion = self.util.config_val("MODEL", "adm.fusion", "weighted")
         phase_dim = len(self.stft_indices) if self.stft_indices else self.sptk_feat_dim
+        hidden_dim = int(self.util.config_val("MODEL", "adm.hidden_dim", "256"))
+
+        # Branch selection: time (SSL), spectral (fbank), phase (STFT)
+        branches_str = self.util.config_val(
+            "MODEL", "adm.branches", "time,spectral,phase"
+        )
+        branches = [b.strip() for b in branches_str.split(",")]
+        self.branches = branches
+        self.util.debug(f"ADM active branches: {branches}")
 
         # Initialize ADM model with actual feature dimensions
         self.model = DeepfakeADMModel(
             ssl_feat_dim=self.ssl_feat_dim,
             phase_feat_dim=phase_dim,
             fusion=fusion,
+            branches=branches,
+            hidden_dim=hidden_dim,
         ).to(self.device)
 
         # Learning rate and optimizer
@@ -380,11 +391,20 @@ class ADMModel(Model):
         # Recreate model architecture with actual dimensions
         fusion = self.util.config_val("MODEL", "adm.fusion", "weighted")
         phase_dim = len(self.stft_indices) if self.stft_indices else self.sptk_feat_dim
+        hidden_dim = int(self.util.config_val("MODEL", "adm.hidden_dim", "256"))
+
+        # Branch selection
+        branches_str = self.util.config_val(
+            "MODEL", "adm.branches", "time,spectral,phase"
+        )
+        branches = [b.strip() for b in branches_str.split(",")]
 
         self.model = DeepfakeADMModel(
             ssl_feat_dim=self.ssl_feat_dim,
             phase_feat_dim=phase_dim,
             fusion=fusion,
+            branches=branches,
+            hidden_dim=hidden_dim,
         ).to(self.device)
 
         try:
