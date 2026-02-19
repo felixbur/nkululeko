@@ -140,8 +140,6 @@ data/MELD-ST/
 # ignore specific files/folders
 results_*
 result_*
-test_*
-tests_*
 run_*.sh
 tmp*
 test*
@@ -174,3 +172,4 @@ nkululeko-dev/
 
 # agent settings
 AGENT.md
+experiments/
