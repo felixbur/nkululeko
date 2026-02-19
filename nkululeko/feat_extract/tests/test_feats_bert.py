@@ -28,12 +28,9 @@ def dummy_data_df():
 @pytest.fixture
 def bert_instance(dummy_data_df, dummy_util):
     # Patch Featureset to inject util and patch the problematic lines in Bert.__init__
-    with (
-        patch(
-            "nkululeko.feat_extract.feats_bert.Featureset.__init__", return_value=None
-        ),
-        patch("torch.cuda.is_available", return_value=False),
-    ):
+    with patch(
+        "nkululeko.feat_extract.feats_bert.Featureset.__init__", return_value=None
+    ), patch("torch.cuda.is_available", return_value=False):
         bert = Bert.__new__(Bert)  # Create instance without calling __init__
         # Manually set required attributes
         bert.util = dummy_util
@@ -55,29 +52,30 @@ def test_init_sets_device_and_feat_type(dummy_data_df, dummy_util):
             bert.util = dummy_util
             bert.__init__("testbert", dummy_data_df, "bert")
             # The feat_type now uses the full HuggingFace model path
-            assert bert.feat_type in ["bert-base-uncased", "google-bert/bert-base-uncased"]
+            assert bert.feat_type in [
+                "bert-base-uncased",
+                "google-bert/bert-base-uncased",
+            ]
             assert bert.model_initialized is False
 
 
 def test_init_model_calls_transformers(bert_instance):
-    with (
-        patch("transformers.AutoConfig.from_pretrained") as mock_config,
-        patch("transformers.AutoTokenizer.from_pretrained") as mock_tokenizer,
-        patch("transformers.AutoModel.from_pretrained") as mock_model,
-    ):
+    with patch("transformers.AutoConfig.from_pretrained") as mock_config, patch(
+        "transformers.AutoTokenizer.from_pretrained"
+    ) as mock_tokenizer, patch("transformers.AutoModel.from_pretrained") as mock_model:
         mock_cfg = MagicMock()
         mock_cfg.num_hidden_layers = 12
         mock_cfg.tokenizer_class = "BertTokenizer"
         mock_config.return_value = mock_cfg
-        
+
         # Mock the model properly
         mock_model_instance = MagicMock()
         mock_model_instance.to.return_value = mock_model_instance
         mock_model.return_value = mock_model_instance
-        
+
         # Mock tokenizer
         mock_tokenizer.return_value = MagicMock()
-        
+
         bert_instance.util.config_val.side_effect = (
             lambda section, key, default=None: default
         )
@@ -112,7 +110,7 @@ def test_extract_creates_and_loads_pickle(tmp_path, bert_instance):
     # Mock glob_conf to avoid the 'NoneType' error
     with patch("nkululeko.feat_extract.feats_bert.glob_conf") as mock_glob_conf:
         mock_glob_conf.config = {"DATA": {}}
-        
+
         with patch("os.path.isfile", return_value=False):
             storage = tmp_path / "testbert.pkl"
             # Remove file if exists
@@ -135,16 +133,16 @@ def test_extract_creates_and_loads_pickle(tmp_path, bert_instance):
                 return "bert-base-uncased"
             else:
                 return default
-        
+
         with patch("os.path.isfile", return_value=True):
             with patch("pandas.read_pickle") as mock_read_pickle:
                 cached_df = pd.DataFrame({"feat_0": [0.1, 0.2], "feat_1": [0.3, 0.4]})
                 mock_read_pickle.return_value = cached_df
-                
+
                 bert_instance2 = bert_instance
                 bert_instance2.util.config_val.side_effect = config_val_mock_cache
                 bert_instance2.extract()
-                
+
                 # Verify that pd.read_pickle was called
                 mock_read_pickle.assert_called_once()
                 assert isinstance(bert_instance2.df, pd.DataFrame)

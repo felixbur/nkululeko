@@ -8,7 +8,12 @@ from nkululeko.optim import OptimizationRunner
 def mock_config():
     config = MagicMock()
     config.__contains__.side_effect = lambda x: x in [
-        "OPTIM", "MODEL", "DATA", "EXP", "FEATS", "REPORT",
+        "OPTIM",
+        "MODEL",
+        "DATA",
+        "EXP",
+        "FEATS",
+        "REPORT",
     ]
     config.__getitem__.side_effect = lambda x: {
         "OPTIM": {
@@ -64,9 +69,7 @@ def _make_mock_expr():
     """Create a mock experiment with proper train/test data."""
     mock_expr = MagicMock()
     mock_expr.df_train = MagicMock()
-    mock_expr.df_train.__getitem__ = MagicMock(
-        return_value=np.array([0, 1, 0, 1])
-    )
+    mock_expr.df_train.__getitem__ = MagicMock(return_value=np.array([0, 1, 0, 1]))
     mock_expr.df_train.copy.return_value = mock_expr.df_train
     mock_expr.df_test = MagicMock()
     mock_expr.feats_train = np.array([[1, 2], [2, 3], [3, 4], [4, 5]])
@@ -97,11 +100,10 @@ def test_run_sklearn_optimization_grid(runner, param_specs):
         },
     )
 
-    with (
-        patch("nkululeko.experiment.Experiment", return_value=mock_expr),
-        patch("sklearn.model_selection.GridSearchCV", return_value=mock_search),
-        patch("nkululeko.modelrunner.Modelrunner") as mock_Modelrunner,
-        patch("nkululeko.glob_conf.config", runner.config),
+    with patch("nkululeko.experiment.Experiment", return_value=mock_expr), patch(
+        "sklearn.model_selection.GridSearchCV", return_value=mock_search
+    ), patch("nkululeko.modelrunner.Modelrunner") as mock_Modelrunner, patch(
+        "nkululeko.glob_conf.config", runner.config
     ):
         mock_runner_inst = MagicMock()
         mock_runner_inst.model.clf = MagicMock()
@@ -130,13 +132,10 @@ def test_run_sklearn_optimization_random(runner, param_specs):
         },
     )
 
-    with (
-        patch("nkululeko.experiment.Experiment", return_value=mock_expr),
-        patch(
-            "sklearn.model_selection.RandomizedSearchCV", return_value=mock_search
-        ),
-        patch("nkululeko.modelrunner.Modelrunner") as mock_Modelrunner,
-        patch("nkululeko.glob_conf.config", runner.config),
+    with patch("nkululeko.experiment.Experiment", return_value=mock_expr), patch(
+        "sklearn.model_selection.RandomizedSearchCV", return_value=mock_search
+    ), patch("nkululeko.modelrunner.Modelrunner") as mock_Modelrunner, patch(
+        "nkululeko.glob_conf.config", runner.config
     ):
         mock_runner_inst = MagicMock()
         mock_runner_inst.model.clf = MagicMock()
@@ -189,14 +188,11 @@ def test_run_sklearn_optimization_grid_strategy(runner, param_specs):
         },
     )
 
-    with (
-        patch("nkululeko.experiment.Experiment", return_value=mock_expr),
-        patch(
-            "sklearn.model_selection.GridSearchCV", return_value=mock_search
-        ) as mock_GridSearchCV,
-        patch("nkululeko.modelrunner.Modelrunner") as mock_Modelrunner,
-        patch("nkululeko.glob_conf.config", runner.config),
-    ):
+    with patch("nkululeko.experiment.Experiment", return_value=mock_expr), patch(
+        "sklearn.model_selection.GridSearchCV", return_value=mock_search
+    ) as mock_GridSearchCV, patch(
+        "nkululeko.modelrunner.Modelrunner"
+    ) as mock_Modelrunner, patch("nkululeko.glob_conf.config", runner.config):
         mock_runner_inst = MagicMock()
         mock_runner_inst.model.clf = MagicMock()
         mock_Modelrunner.return_value = mock_runner_inst
@@ -241,7 +237,12 @@ def adm_config():
         "focal.gamma": "[2.0, 3.0]",
     }
     config.__contains__.side_effect = lambda x: x in [
-        "OPTIM", "MODEL", "DATA", "EXP", "FEATS", "REPORT",
+        "OPTIM",
+        "MODEL",
+        "DATA",
+        "EXP",
+        "FEATS",
+        "REPORT",
     ]
     config.__getitem__.side_effect = lambda x: {
         "OPTIM": optim_section,

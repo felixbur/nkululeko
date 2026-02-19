@@ -3,10 +3,14 @@ import os
 import pandas as pd
 import torch
 from tqdm import tqdm
-import whisper
 
 import audeer
 import audiofile
+
+try:
+    import whisper
+except ImportError:
+    whisper = None
 
 
 class Transcriber:

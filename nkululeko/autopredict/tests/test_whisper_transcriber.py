@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+pytest.importorskip("whisper", reason="whisper not available (numba/numpy incompatibility)", exc_type=ImportError)
 from nkululeko.autopredict.whisper_transcriber import Transcriber
 
 

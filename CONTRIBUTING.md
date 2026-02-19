@@ -40,7 +40,7 @@ The preferred way to contribute to nkululeko is to fork the [main repository](ht
 5.	Start making changes.
 
 	```diff
-	-> Please never work directly on the `master` branch!
+	-> Please never work directly on the `main` branch!
 	```
 
 6.	Once you are done, make sure to format the code using black to fit Nkululeko's codestyle.
@@ -54,7 +54,7 @@ The preferred way to contribute to nkululeko is to fork the [main repository](ht
 
 7.	Make sure that the tests succeed and have enough coverage.
 
-	```./run_tests2 all ```
+	```python3 -m pytest```
 
 8.	Use Git for the to do the version controlling of this copy. When you're done editing, you know the drill `add`, `commit` then `push`:
 
