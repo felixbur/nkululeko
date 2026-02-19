@@ -375,18 +375,28 @@ class ADMModel(Model):
             data, shuffle=shuffle, batch_size=self.batch_size
         )
 
+    def set_id(self, run, epoch):
+        """Set run and epoch ID with branch configuration in filename."""
+        self.run = run
+        self.epoch = epoch
+        dir = self.util.get_path("model_dir")
+        
+        # Include branch configuration in model filename
+        # e.g., "tsp" for time+spectral+phase, "ts" for time+spectral
+        branch_suffix = "".join([b[0] for b in self.branches])
+        name = f"{self.util.get_exp_name(only_train=True)}_{branch_suffix}_{self.run}_{self.epoch:03d}.model"
+        self.store_path = dir + name
+
     def store(self):
         """Store the model to disk."""
         torch.save(self.model.state_dict(), self.store_path)
 
     def load(self, run, epoch):
         """Load a trained model from disk."""
+        # set_id() now automatically includes branch suffix in filename
         self.set_id(run, epoch)
-        dir = self.util.get_path("model_dir")
-        name = f"{self.util.get_exp_name(only_train=True)}_{self.run}_{self.epoch:03d}.model"
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
-        self.store_path = dir + name
 
         # Recreate model architecture with actual dimensions
         fusion = self.util.config_val("MODEL", "adm.fusion", "weighted")
