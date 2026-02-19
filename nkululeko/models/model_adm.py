@@ -141,7 +141,22 @@ class ADMModel(Model):
         branches_str = self.util.config_val(
             "MODEL", "adm.branches", "time,spectral,phase"
         )
-        branches = [b.strip() for b in branches_str.split(",")]
+        raw_branches = [b.strip() for b in branches_str.split(",") if b.strip()]
+        supported_branches = {"time", "spectral", "phase"}
+        unknown_branches = [b for b in raw_branches if b not in supported_branches]
+        if unknown_branches:
+            raise ValueError(
+                f"Invalid ADM branches in config: {unknown_branches}. "
+                f"Supported branches are: {sorted(supported_branches)}."
+            )
+        branches = raw_branches or ["time", "spectral", "phase"]
+        # Ensure at least one valid branch is active
+        if not branches:
+            raise ValueError(
+                "No valid ADM branches configured. "
+                "Please set [MODEL] adm.branches to a non-empty subset of "
+                "{'time','spectral','phase'}."
+            )
         self.branches = branches
         self.util.debug(f"ADM active branches: {branches}")
 
