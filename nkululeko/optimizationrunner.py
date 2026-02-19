@@ -701,10 +701,24 @@ class OptimizationRunner:
             "precision": "precision_macro",  # Macro-averaged precision
             "recall": "recall_macro",  # Macro-averaged recall
             "sensitivity": "recall_macro",  # Sensitivity = recall
-            "eer": "balanced_accuracy",  # EER optimized via balanced accuracy (lower EER ≈ higher BA)
         }
 
         if self.util.exp_is_classification():
+            # EER: use a custom scorer that computes true EER (negate so higher = better
+            # for GridSearchCV/RandomizedSearchCV which maximise the score).
+            if (self.metric or "accuracy") == "eer":
+                from sklearn.metrics import make_scorer
+
+                from nkululeko.reporting.reporter import (
+                    equal_error_rate as _eer_fn,
+                )
+
+                def _eer_scorer(y_true, y_score):
+                    return -_eer_fn(y_true, y_score)
+
+                return make_scorer(
+                    _eer_scorer, needs_proba=True, response_method="predict_proba"
+                )
             return metric_map.get(self.metric or "accuracy", "accuracy")
         else:
             # For regression tasks
@@ -774,7 +788,9 @@ class OptimizationRunner:
         for param_name, param_value in params.items():
             # Skip focal sub-params when loss is not focal
             if param_name in ("focal.alpha", "focal.gamma"):
-                current_loss = params.get("loss", self.config["MODEL"].get("loss", "bce"))
+                current_loss = params.get(
+                    "loss", self.config["MODEL"].get("loss", "bce")
+                )
                 if current_loss != "focal":
                     continue
             self.config["MODEL"][param_name] = str(param_value)

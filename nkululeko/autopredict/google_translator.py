@@ -98,10 +98,16 @@ class GoogleTranslator:
                     self.translate_texts(uncached_texts)
                 )
             except RuntimeError:
-                loop = asyncio.get_event_loop()
-                uncached_translations = loop.run_until_complete(
-                    self.translate_texts(uncached_texts)
-                )
+                # A running event loop exists (e.g., inside Jupyter / async context).
+                # Run the coroutine in a separate thread with its own event loop to
+                # avoid the "cannot be called when another event loop is running" error.
+                import concurrent.futures
+
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+                    future = pool.submit(
+                        asyncio.run, self.translate_texts(uncached_texts)
+                    )
+                    uncached_translations = future.result()
             for i, translation, cache_path, meta in zip(
                 uncached_positions,
                 uncached_translations,

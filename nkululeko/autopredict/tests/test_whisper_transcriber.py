@@ -7,12 +7,15 @@ import numpy as np
 import pandas as pd
 import pytest
 
-pytest.importorskip("whisper", reason="whisper not available (numba/numpy incompatibility)", exc_type=ImportError)
+pytest.importorskip(
+    "whisper",
+    reason="whisper not available (numba/numpy incompatibility)",
+    exc_type=ImportError,
+)
 from nkululeko.autopredict.whisper_transcriber import Transcriber
 
 
 class TestTranscriber:
-
     @patch("nkululeko.autopredict.whisper_transcriber.whisper.load_model")
     @patch("nkululeko.autopredict.whisper_transcriber.torch.cuda.is_available")
     def test_init_default_device(self, mock_cuda, mock_load_model):

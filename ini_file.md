@@ -342,6 +342,32 @@ Model and training specifications. In general, default values should work for cl
   * k_fold_cross = 10
 * **learning_rate**: learning rate for neural networks
   * learning_rate = 0.0001
+* **optimizer**: optimizer type for neural networks (case insensitive)
+  * optimizer = adam
+  * possible values:
+    * **adam**: Adam optimizer (default)
+    * **adamw**: AdamW optimizer with weight decay
+    * **sgd**: SGD optimizer with momentum
+  * related parameters:
+    * **weight_decay**: weight decay for AdamW optimizer (default: 0.01)
+      * weight_decay = 0.01
+    * **momentum**: momentum for SGD optimizer (default: 0.9)
+      * momentum = 0.9
+* **scheduler**: learning rate scheduler for neural networks (case insensitive)
+  * scheduler = cosine
+  * possible values:
+    * **cosine**: cosine annealing with linear warmup (default); steps per batch
+    * **step**: step decay — reduces LR by gamma every step_size epochs; steps per epoch
+    * **exponential**: exponential decay — multiplies LR by gamma each epoch; steps per epoch
+    * **none** / **false**: no scheduler
+  * related parameters:
+    * **warmup_epochs**: number of warmup epochs for cosine scheduler (default: 5)
+      * warmup_epochs = 5
+    * **scheduler.step_size**: epoch interval for step scheduler (default: 10)
+      * scheduler.step_size = 10
+    * **scheduler.gamma**: decay factor for step and exponential schedulers
+      * step default: 0.5; exponential default: 0.95
+      * scheduler.gamma = 0.5
 * **drop**: dropout rate for neural networks (0 to 1)  
   * drop = 0.1
 * **batch_size**: batch size for neural networks
