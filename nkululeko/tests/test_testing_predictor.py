@@ -76,7 +76,8 @@ class TestTestPredictorPredict:
         """Test the basic prediction path (no label_data, no tests)."""
         from nkululeko.testing_predictor import TestPredictor
 
-        tmpfile = tempfile.NamedTemporaryFile(suffix=".csv", delete=False).name
+        with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as tmp:
+            tmpfile = tmp.name
         predictor = TestPredictor(mock_model, sample_dataframe, label_encoder, tmpfile)
 
         result = predictor.predict_and_store()
