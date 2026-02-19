@@ -196,10 +196,12 @@ class DeepfakeADMModel(nn.Module):
         ssl_feat_dim,
         phase_feat_dim,
         fusion="gated",
-        branches=["time", "spectral", "phase"],
+        branches=None,
         hidden_dim=256,
     ):
         super().__init__()
+        if branches is None:
+            branches = ["time", "spectral", "phase"]
         self.fusion = fusion
         self.branches = branches
 
