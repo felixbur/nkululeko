@@ -19,7 +19,7 @@ class Modelrunner:
             df_train: train dataframe
             df_test: test dataframe (or dev dataframe if using train/dev/test split)
             feats_train: train features
-            feats_train: test features (or dev features if using train/dev/test split)
+            feats_test: test features (or dev features if using train/dev/test split)
             run: run number
             split_name: name of the evaluation split ('dev' or 'test')
         """
