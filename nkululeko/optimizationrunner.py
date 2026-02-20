@@ -406,7 +406,9 @@ class OptimizationRunner:
         from nkululeko.modelrunner import Modelrunner
 
         # Create a temporary runner for this fold
-        runner = Modelrunner(train_df, val_df, train_feats, val_feats, 0)
+        runner = Modelrunner(
+            train_df, val_df, train_feats, val_feats, 0, split_name="dev"
+        )
         runner._select_model(self.model_type)
 
         # Configure model with current parameters
@@ -483,7 +485,12 @@ class OptimizationRunner:
         from nkululeko.modelrunner import Modelrunner
 
         runner = Modelrunner(
-            expr.df_train, expr.df_test, expr.feats_train, expr.feats_test, 0
+            expr.df_train,
+            expr.df_test,
+            expr.feats_train,
+            expr.feats_test,
+            0,
+            split_name="test",
         )
         runner._select_model(self.model_type)
         base_clf = runner.model.clf
@@ -697,6 +704,21 @@ class OptimizationRunner:
         }
 
         if self.util.exp_is_classification():
+            # EER: use a custom scorer that computes true EER (negate so higher = better
+            # for GridSearchCV/RandomizedSearchCV which maximise the score).
+            if (self.metric or "accuracy") == "eer":
+                from sklearn.metrics import make_scorer
+
+                from nkululeko.reporting.reporter import (
+                    equal_error_rate as _eer_fn,
+                )
+
+                def _eer_scorer(y_true, y_score):
+                    return -_eer_fn(y_true, y_score)
+
+                return make_scorer(
+                    _eer_scorer, needs_proba=True, response_method="predict_proba"
+                )
             return metric_map.get(self.metric or "accuracy", "accuracy")
         else:
             # For regression tasks
@@ -720,6 +742,8 @@ class OptimizationRunner:
 
         if self.model_type == "mlp":
             self._update_mlp_params(params)
+        elif self.model_type == "adm":
+            self._update_adm_params(params)
         else:
             self._update_traditional_ml_params(params)
 
@@ -754,6 +778,26 @@ class OptimizationRunner:
         if "loss" in params:
             self.config["MODEL"]["loss"] = params["loss"]
 
+    def _update_adm_params(self, params):
+        """Update ADM-specific parameters in the MODEL config section.
+
+        Maps optimization parameter keys to the config keys that model_adm.py reads.
+        Handles dotted keys (e.g. adm.hidden_dim, focal.alpha) and plain keys
+        (e.g. learning_rate, batch_size, optimizer, loss).
+        """
+        for param_name, param_value in params.items():
+            # Skip focal sub-params when loss is not focal
+            if param_name in ("focal.alpha", "focal.gamma"):
+                current_loss = params.get(
+                    "loss", self.config["MODEL"].get("loss", "bce")
+                )
+                if current_loss != "focal":
+                    continue
+            self.config["MODEL"][param_name] = str(param_value)
+
+        # Always add random_state for reproducibility
+        self.config["MODEL"]["random_state"] = str(self.random_state)
+
     def _update_traditional_ml_params(self, params):
         """Update traditional ML parameters using tuning_params approach."""
         # For optimization, we set the specific parameter values directly
@@ -767,13 +811,13 @@ class OptimizationRunner:
         # For XGBoost specifically, also set additional reproducibility parameters
         if self.model_type in ["xgb", "xgr"]:
             # Ensure deterministic behavior
-            self.config["MODEL"][
-                "n_jobs"
-            ] = "1"  # Force single-threaded for reproducibility
+            self.config["MODEL"]["n_jobs"] = (
+                "1"  # Force single-threaded for reproducibility
+            )
             if "tree_method" not in params:
-                self.config["MODEL"][
-                    "tree_method"
-                ] = "exact"  # Deterministic tree construction
+                self.config["MODEL"]["tree_method"] = (
+                    "exact"  # Deterministic tree construction
+                )
 
     def _run_single_experiment(self):
         """Run a single experiment with current configuration."""

@@ -3,14 +3,24 @@ import os
 import pandas as pd
 import torch
 from tqdm import tqdm
-import whisper
 
 import audeer
 import audiofile
 
+try:
+    import whisper
+except ImportError:
+    whisper = None
+
 
 class Transcriber:
     def __init__(self, model_name="turbo", device=None, language="en", util=None):
+        if whisper is None:
+            raise ImportError(
+                "The 'whisper' package is not installed or could not be loaded. "
+                "Install it with: pip install openai-whisper\n"
+                "Note: whisper requires numba, which requires NumPy <= 2.3."
+            )
         if device is None:
             device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model = whisper.load_model(model_name, device=device)

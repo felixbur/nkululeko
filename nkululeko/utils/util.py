@@ -439,7 +439,7 @@ class Util:
             all += f"{report.result.test:.4f} "
             vals = np.append(vals, report.result.test)
         file_name = f"{res_dir}{self.get_exp_name()}_runs.txt"
-        
+
         # For metrics where lower is better (EER, MSE, MAE), show min instead of max
         if self.high_is_good():
             best_val = vals.max()
@@ -449,7 +449,7 @@ class Util:
             best_val = vals.min()
             best_idx = vals.argmin()
             best_label = "min"
-        
+
         output = (
             f"{all}"
             + f"\nmean: {vals.mean():.4f}, std: {vals.std():.4f}, "

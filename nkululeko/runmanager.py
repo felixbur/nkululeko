@@ -63,6 +63,7 @@ class Runmanager:
                     self.feats_train,
                     self.feats_dev,
                     run,
+                    split_name="dev",
                 )
                 self.reports, last_epoch = self.modelrunner.do_epochs()
             else:
@@ -72,6 +73,7 @@ class Runmanager:
                     self.feats_train,
                     self.feats_test,
                     run,
+                    split_name="test",
                 )
                 self.reports, last_epoch = self.modelrunner.do_epochs()
 
@@ -131,7 +133,7 @@ class Runmanager:
             if self.split3:
                 best_model = self.get_best_model()
                 self.test_report = self.modelrunner.eval_specific_model(
-                    best_model, self.df_test, self.feats_test
+                    best_model, self.df_test, self.feats_test, split_name="test"
                 )
                 self.test_report.epoch = best_report.epoch
                 plot_name = (
@@ -145,8 +147,14 @@ class Runmanager:
         best_report = self.get_best_result(self.best_results)
         formatted_result = f"{best_report.result.test:.4f}"
         measure = self.util.config_val("MODEL", "measure", "uar").upper()
+        # Determine split label based on whether we're using train/dev/test
+        split_label = (
+            f" ({self.modelrunner.split_name})"
+            if hasattr(self, "modelrunner") and hasattr(self.modelrunner, "split_name")
+            else ""
+        )
         self.util.debug(
-            f"best result all runs with run {best_report.run} and epoch {best_report.epoch} with metric {measure}: {formatted_result}"
+            f"best{split_label} result all runs with run {best_report.run} and epoch {best_report.epoch} with metric {measure}: {formatted_result}"
         )
         plot_name_suggest = self.util.get_exp_name()
         plot_name = (
@@ -231,7 +239,13 @@ class Runmanager:
                     best_result = res
                     best_r = r
         formatted_result = f"{best_result:.4f}"
+        # Determine split label based on whether we're using train/dev/test
+        split_label = (
+            f" ({self.modelrunner.split_name})"
+            if hasattr(self, "modelrunner") and hasattr(self.modelrunner, "split_name")
+            else ""
+        )
         self.util.debug(
-            f"search_best_result: order={order}, best epoch={best_r.epoch}, best result={formatted_result}"
+            f"search_best_result: order={order}, best epoch={best_r.epoch}, best{split_label} result={formatted_result}"
         )
         return best_r

@@ -10,14 +10,18 @@ from nkululeko.balance import DataBalancer
 class Modelrunner:
     """Class to model one run."""
 
-    def __init__(self, df_train, df_test, feats_train, feats_test, run):
+    def __init__(
+        self, df_train, df_test, feats_train, feats_test, run, split_name="test"
+    ):
         """Constructor setting up the dataframes.
 
         Args:
             df_train: train dataframe
-            df_test: test dataframe
+            df_test: test dataframe (or dev dataframe if using train/dev/test split)
             feats_train: train features
-            feats_train: test features
+            feats_test: test features (or dev features if using train/dev/test split)
+            run: run number
+            split_name: name of the evaluation split ('dev' or 'test')
         """
         self.df_train, self.df_test, self.feats_train, self.feats_test = (
             df_train,
@@ -27,6 +31,7 @@ class Modelrunner:
         )
         self.util = Util("modelrunner")
         self.run = run
+        self.split_name = split_name.upper()  # Store as uppercase for display
         self.target = glob_conf.config["DATA"]["target"]
         # intialize a new model
         model_type = glob_conf.config["MODEL"]["type"]
@@ -67,7 +72,7 @@ class Modelrunner:
             performance = float(test_score_metric.split(" ")[1])
             formatted_performance = f"{performance:.4f}"
             self.util.debug(
-                f"run: {self.run} epoch: {epoch}: result: "
+                f"run: {self.run} epoch: {epoch}: result ({self.split_name}): "
                 f"{test_score_metric.split(' ')[0]} {formatted_performance} {metric_label}"
             )
             if plot_epochs:
@@ -93,7 +98,7 @@ class Modelrunner:
                 formatted_performance = f"{performance:.4f}"
                 metric_label = self.util.config_val("MODEL", "measure", "uar").upper()
                 self.util.debug(
-                    f"run: {self.run} epoch: {epoch}: result: {test_score_metric.split(' ')[0]} {formatted_performance} {metric_label}"
+                    f"run: {self.run} epoch: {epoch}: result ({self.split_name}): {test_score_metric.split(' ')[0]} {formatted_performance} {metric_label}"
                 )
                 # print(f"performance: {performance.split(' ')[1]}")
                 # Update best performance based on metric direction (lower is better for EER, higher for UAR/ACC)
@@ -143,12 +148,30 @@ class Modelrunner:
         report.set_id(self.run, 0)
         return report
 
-    def eval_specific_model(self, model, df_test, feats_test):
+    def eval_specific_model(self, model, df_test, feats_test, split_name=None):
+        """Evaluate a specific model on given test/dev data.
+
+        Args:
+            model: The model to evaluate
+            df_test: Test dataframe
+            feats_test: Test features
+            split_name: Optional override for split name (e.g., 'test' for final evaluation)
+        """
         self.model = model
         self.util.debug(f"evaluating model: {self.model.store_path}")
         self.model.reset_test(df_test, feats_test)
+
+        # Temporarily override split_name if provided
+        original_split_name = self.split_name
+        if split_name:
+            self.split_name = split_name.upper()
+
         report = self.model.predict()
         report.set_id(self.run, 0)
+
+        # Restore original split_name
+        self.split_name = original_split_name
+
         return report
 
     def _check_balancing(self):

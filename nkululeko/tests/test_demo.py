@@ -1,5 +1,6 @@
 import os
 import tempfile
+import math
 from unittest.mock import patch
 
 
@@ -45,12 +46,12 @@ class TestPrintPipe:
     def test_nan_detection(self):
         """Test NaN score detection in pipeline results."""
         score = float('nan')
-        assert score != score  # NaN check used in demo.py
+        assert math.isnan(score)
 
     def test_valid_score(self):
         """Test valid score passes NaN check."""
         score = 0.95
-        assert score == score
+        assert not math.isnan(score)
 
     def test_result_formatting(self):
         """Test result string formatting."""
@@ -101,6 +102,8 @@ class TestDemoMain:
             mode = "list"
         assert mode == "single_file"
 
+    def test_demo_branches_list(self):
+        """Test the branching logic with list provided."""
         # list provided
         args_file = None
         args_list = "files.txt"
@@ -112,6 +115,8 @@ class TestDemoMain:
             mode = "list"
         assert mode == "list"
 
+    def test_demo_branches_no_input(self):
+        """Test the branching logic with neither file nor list."""
         # neither
         args_file = None
         args_list = None

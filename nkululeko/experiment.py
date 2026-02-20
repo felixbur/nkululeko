@@ -334,14 +334,26 @@ class Experiment:
                         self.df_dev[self.target]
                     )
         if self.got_speaker:
-            speakers_train = 0 if self.train_empty else self.df_train.speaker.nunique()
-            speakers_test = 0 if self.test_empty else self.df_test.speaker.nunique()
+            speakers_train = (
+                0
+                if self.train_empty or "speaker" not in self.df_train.columns
+                else self.df_train.speaker.nunique()
+            )
+            speakers_test = (
+                0
+                if self.test_empty or "speaker" not in self.df_test.columns
+                else self.df_test.speaker.nunique()
+            )
             self.util.debug(
                 f"{speakers_test} speakers in test and"
                 f" {speakers_train} speakers in train"
             )
             if self.split3:
-                speakers_dev = 0 if self.dev_empty else self.df_dev.speaker.nunique()
+                speakers_dev = (
+                    0
+                    if self.dev_empty or "speaker" not in self.df_dev.columns
+                    else self.df_dev.speaker.nunique()
+                )
                 self.util.debug(f"{speakers_dev} speakers in dev")
 
         target_factor = self.util.config_val("DATA", "target_divide_by", False)
@@ -368,8 +380,9 @@ class Experiment:
         if self.split3:
             shapes = f"{self.df_train.shape}/{self.df_dev.shape}/{self.df_test.shape}"
             self.util.debug(f"train/dev/test shape: {shapes}")
-            dev_spkrs = list(map(str, self.df_dev.speaker.unique()))
-            self.util.debug(f"dev speakers: {dev_spkrs}")
+            if self.got_speaker and "speaker" in self.df_dev.columns:
+                dev_spkrs = list(map(str, self.df_dev.speaker.unique()))
+                self.util.debug(f"dev speakers: {dev_spkrs}")
         else:
             self.util.debug(
                 f"train/test shape: {self.df_train.shape}/{self.df_test.shape}"

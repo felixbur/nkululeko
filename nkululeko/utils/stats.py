@@ -1,5 +1,6 @@
 from itertools import combinations
 import math
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
@@ -51,7 +52,7 @@ def all_combinations(items_list):
 
 def get_effect_size(
     df: pd.DataFrame, target: str, variable: str
-) -> tuple[str, str, dict]:
+) -> Tuple[str, str, dict]:
     """Get the effect size as Cohen's D.
 
     Effect size is computed  from a real numbered variable on a categorical target.
@@ -117,7 +118,7 @@ def p_value_to_string(p_val: float) -> str:
 
 def get_t_test_effect(
     variable1: np.array, variable2: np.array
-) -> tuple[float, float, str]:
+) -> Tuple[float, float, str]:
     """Get t-test statistics for two real-numbered distributions.
 
     Performs independent samples t-test between two continuous variables.
@@ -151,7 +152,7 @@ def get_t_test_effect(
 
 def get_mannwhitney_effect(
     variable1: np.array, variable2: np.array
-) -> tuple[float, float, str]:
+) -> Tuple[float, float, str]:
     """Get Mann-Whitney U test statistics for two real-numbered distributions.
 
     Performs Mann-Whitney U test between two continuous variables.
@@ -188,7 +189,7 @@ def normaltest(variable1: np.array):
 
 def get_2cont_effect(
     variable1: np.array, variable2: np.array
-) -> tuple[float, float, str]:
+) -> Tuple[float, float, str]:
     """Calculate statistical significance between two continuous variables.
 
     Automatically selects the appropriate statistical test based on data distribution:
@@ -217,7 +218,7 @@ def get_2cont_effect(
 
 def find_most_significant_difference_ttests(
     distributions: dict,
-) -> tuple[str, float, float, str, dict]:
+) -> Tuple[str, float, float, str, dict]:
     """Find the combination with the most significant t-test difference among n distributions.
 
     Args:
@@ -265,7 +266,7 @@ def find_most_significant_difference_ttests(
     }
 
 
-def get_kruskal_wallis_effect(distributions: dict) -> tuple[float, float, str]:
+def get_kruskal_wallis_effect(distributions: dict) -> Tuple[float, float, str]:
     """Get Kruskal-Wallis test statistics for multiple real-numbered distributions.
 
     Performs Kruskal-Wallis test among multiple continuous variables.
@@ -297,7 +298,7 @@ def get_kruskal_wallis_effect(distributions: dict) -> tuple[float, float, str]:
 
 def find_most_significant_difference(
     distributions: dict, mean_featnum: float = 0
-) -> tuple[str, dict, dict]:
+) -> Tuple[str, dict, dict]:
     """Find the most significant difference between multiple distributions.
 
     Automatically selects the appropriate statistical test based on the number
