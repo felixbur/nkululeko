@@ -51,6 +51,9 @@ class DummyExperiment:
     def get_best_report(self, reports):
         return reports[0]
 
+    def evaluate_per_test_set(self):
+        pass
+
     def store_report(self):
         pass
 

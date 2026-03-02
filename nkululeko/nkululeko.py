@@ -53,6 +53,10 @@ def doit(config_file):
     # run the experiment
     reports, last_epochs = expr.run()
     result = expr.get_best_report(reports).result.test
+
+    # evaluate per test dataset when multiple test sets are present
+    expr.evaluate_per_test_set()
+
     expr.store_report()
     print("DONE")
     return result, int(np.asarray(last_epochs).min())

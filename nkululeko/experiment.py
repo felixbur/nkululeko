@@ -3,6 +3,7 @@ import ast
 import os
 import pickle
 import random
+import re
 import time
 
 import audeer
@@ -392,6 +393,83 @@ class Experiment:
             test_spkrs = list(map(str, self.df_test.speaker.unique()))
             self.util.debug(f"train speakers: {train_spkrs}")
             self.util.debug(f"test speakers: {test_spkrs}")
+
+        # Build per-dataset test mapping for multi-test-set evaluation
+        self._build_test_ds_df()
+
+    def _build_test_ds_df(self):
+        """Build a dict mapping dataset name to its portion of the (encoded) test set.
+
+        This enables per-dataset evaluation when multiple datasets contribute test
+        samples.  Individual split caches (``{name}_testdf.pkl``) created by
+        :meth:`~nkululeko.data.dataset.Dataset.split` are used to identify which
+        test samples belong to which dataset.
+        """
+        self.test_ds_df = {}
+        if self.test_empty:
+            return
+        store_path = self.util.get_path("store")
+        for name in self.datasets:
+            storage_test = f"{store_path}{name}_testdf.pkl"
+            if os.path.isfile(storage_test):
+                try:
+                    ds_test_cached = pd.read_pickle(storage_test)
+                    if ds_test_cached.shape[0] > 0:
+                        ds_test = self.df_test[
+                            self.df_test.index.isin(ds_test_cached.index)
+                        ]
+                        if ds_test.shape[0] > 0:
+                            self.test_ds_df[name] = ds_test
+                except (pickle.UnpicklingError, ValueError, AttributeError) as e:
+                    self.util.warn(f"{name}: could not load split cache: {e}")
+
+    def evaluate_per_test_set(self):
+        """Evaluate the best model on each test dataset individually.
+
+        When multiple datasets contribute test samples, this method evaluates
+        the best trained model on each dataset separately and reports the
+        per-dataset results (confusion matrix, UAR/MSE, …).  It is a no-op
+        when fewer than two test datasets are present.
+        """
+        if not hasattr(self, "test_ds_df") or len(self.test_ds_df) <= 1:
+            return
+        if self.test_empty:
+            return
+        if not hasattr(self, "runmgr") or not hasattr(self.runmgr, "modelrunner"):
+            return
+        self.util.debug(
+            f"Evaluating {len(self.test_ds_df)} test datasets individually…"
+        )
+        best_model = self.runmgr.get_best_model()
+        plot_name_suggest = self.util.get_exp_name()
+        for ds_name, df_test_ds in self.test_ds_df.items():
+            feats_test_ds = self.feats_test[
+                self.feats_test.index.isin(df_test_ds.index)
+            ]
+            if feats_test_ds.shape[0] == 0:
+                self.util.warn(
+                    f"{ds_name}: no features found for test set, skipping"
+                )
+                continue
+            df_test_aligned = df_test_ds[df_test_ds.index.isin(feats_test_ds.index)]
+            if df_test_aligned.shape[0] == 0:
+                self.util.warn(
+                    f"{ds_name}: no samples after alignment with features, skipping"
+                )
+                continue
+            self.util.debug(
+                f"Evaluating on test dataset {ds_name}:"
+                f" {df_test_aligned.shape[0]} samples"
+            )
+            report = self.runmgr.modelrunner.eval_specific_model(
+                best_model, df_test_aligned, feats_test_ds
+            )
+            safe_name = re.sub(r"[^\w-]", "_", ds_name)
+            plot_name = (
+                self.util.config_val("PLOT", "name", plot_name_suggest)
+                + f"_{safe_name}_test"
+            )
+            self.runmgr.print_report(report, plot_name)
 
     def _add_random_target(self, df):
         labels = glob_conf.labels
