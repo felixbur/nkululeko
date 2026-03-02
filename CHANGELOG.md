@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.3.0 (26-03-02)  
+------------------------
+* multiple test sets with per-dataset result reporting
+
 Version 1.2.3 (26-02-23)  
 ------------------------
 * refactored optimizer and ADM model

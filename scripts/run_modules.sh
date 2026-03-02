@@ -88,6 +88,7 @@ nkululeko_ini_files=(
     exp_agedb_os_mlp.ini
     exp_polish_gmm.ini
     exp_emodb-aug_os_xgb.ini
+    exp_multi_testsets_neutral_angry.ini
 )
 
 # test augmentation
