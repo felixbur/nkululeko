@@ -1,8 +1,7 @@
 import pandas as pd
 import pytest
 
-from ..model_xgb import XGB_model
-
+from nkululeko.models.model_xgb import XGB_model
 
 class DummyUtil:
     def config_val(self, section, key, default):
