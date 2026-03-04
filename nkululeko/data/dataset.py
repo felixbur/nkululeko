@@ -135,15 +135,13 @@ class Dataset:
             self.util.debug(f"{self.name}: reusing previously stored file {store_file}")
             self.df = self.util.get_store(store_file, store_format)
             self.is_labeled = self.target in self.df
-            self.got_gender = "gender" in self.df
-            self.got_age = "age" in self.df
-            self.got_speaker = "speaker" in self.df
+            self.got_gender = COL_SEX in self.df
+            self.got_age = COL_AGE in self.df
+            self.got_speaker = COL_SPEAKER in self.df
             self.util.copy_flags(self, self.df)
             self._report_load()
             return
         tables = self._get_tables()
-        if len(tables) > 0:
-            self.util.debug(f"{self.name}: loading tables: {tables}")
         # map the audio file paths
         self.db.map_files(lambda x: os.path.join(self.root, x))
         # The label for the target column
@@ -155,7 +153,8 @@ class Dataset:
                 df = self.db.get(self.col_label, columns)
             else:
                 df = pd.DataFrame(index=self.db.files)
-        if len(tables) > 0:
+        elif len(tables) > 0:
+            self.util.debug(f"{self.name}: using tables: {tables}")
             if columns:
                 df = self.db.get(self.col_label, columns, tables=tables)
                 if df.empty:
@@ -171,9 +170,9 @@ class Dataset:
         # check if columns should be renamed
         df = self._check_cols(df)
         self.is_labeled = self.target in df
-        self.got_gender = "gender" in df
-        self.got_age = "age" in df
-        self.got_speaker = "speaker" in df
+        self.got_gender = COL_SEX in df
+        self.got_age = COL_AGE in df
+        self.got_speaker = COL_SPEAKER in df
         if df.shape[0] > 0 and self.target == "none":
             self.df = df
             return
