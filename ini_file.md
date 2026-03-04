@@ -85,7 +85,7 @@
 * **db_name.columns**: names of the columns to load from the data (only for audformat databases) 
   * my_data.columns = ["age", "gender", "speaker", "diagnosis"]
 * **db_name.label**: name of the target variable for this database (if different from DATA.target) 
-  * my_data.label = ["expression"]
+  * my_data.label = "expression"
 * **db_name.colnames**: mapping to rename columns to standard names
   * my_data.colnames = {'speaker':'Participant ID', 'sex':'gender', 'Age': 'age'}
 * **db_name.split_strategy**: How to identify sets for train/development data splits within one database
