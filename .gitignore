@@ -155,7 +155,8 @@ nkululeko-dev/
 !run_test?.sh
 # add exception for tests/ directory
 !tests/
-!tests/**
+!tests/**/
+!tests/**/*.py
 
 # xbow
 xbow_codebook/
