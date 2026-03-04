@@ -142,7 +142,7 @@ class Dataset:
             self._report_load()
             return
         tables = self._get_tables()
-        if len(tables) < 0:
+        if len(tables) > 0:
             self.util.debug(f"{self.name}: loading tables: {tables}")
         # map the audio file paths
         self.db.map_files(lambda x: os.path.join(self.root, x))
