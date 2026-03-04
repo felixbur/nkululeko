@@ -173,7 +173,7 @@ class Dataset:
         self.got_gender = COL_SEX in df
         self.got_age = COL_AGE in df
         self.got_speaker = COL_SPEAKER in df
-        if df.shape[0] > 0 and self.target == "none":
+        if df.shape[0] > 0 and (self.target is None or self.target == "none"):
             self.df = df
             return
         if df.shape[0] == 0:
