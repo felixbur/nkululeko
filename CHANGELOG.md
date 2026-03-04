@@ -3,7 +3,7 @@ Changelog
 
 Version 1.3.1 (26-03-04)  
 ------------------------
-* simplified code (auduformat database loading)
+* simplified code (audformat database loading)
 
 Version 1.3.0 (26-03-02)  
 ------------------------
