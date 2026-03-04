@@ -153,6 +153,10 @@ nkululeko-dev/
 
 # add exception for run_test?.sh
 !run_test?.sh
+# add exception for tests/ directory
+!tests/
+!tests/**/
+!tests/**/*.py
 
 # xbow
 xbow_codebook/
@@ -168,7 +172,6 @@ docs/build/
 # Singularity build sandboxes
 nkululeko-dev/
 *.sif
-
 
 # agent settings
 AGENT.md
