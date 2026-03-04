@@ -101,13 +101,13 @@ class Experiment:
             if data.got_speaker:
                 self.got_speaker = True
             self.datasets.update({d: data})
-        self.target = self.util.config_val("DATA", "target", "none")
+        self.target = self.util.config_val("DATA", "target", None)
         glob_conf.set_target(self.target)
         # print target via debug
         self.util.debug(f"target: {self.target}")
         # print keys/column
         dbs = ",".join(list(self.datasets.keys()))
-        if self.target == "none":
+        if self.target is None:
             self.util.debug(f"loaded databases {dbs}")
             return
         labels = self.util.config_val("DATA", "labels", False)
