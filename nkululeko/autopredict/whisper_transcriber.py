@@ -34,7 +34,7 @@ class Transcriber:
         :param audio_path: Path to the audio file to transcribe.
         :return: Transcription text.
         """
-        if self.device =="cpu":
+        if self.device == "cpu":
             result = self.model.transcribe(
                 audio_path, language=self.language, without_timestamps=True, fp16=False
             )
