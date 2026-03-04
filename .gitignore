@@ -173,7 +173,6 @@ docs/build/
 nkululeko-dev/
 *.sif
 
-
 # agent settings
 AGENT.md
 experiments/
