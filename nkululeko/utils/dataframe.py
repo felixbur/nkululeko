@@ -19,7 +19,16 @@ class DataFrameMixin:
             or isinstance(pd_series.dtype, pd.BooleanDtype)
             or isinstance(pd_series.dtype, pd.StringDtype)
         )
-
+    
+    def is_numeric(self, pd_series):
+        """Check if a dataframe column is numeric."""
+        return (
+            pd_series.dtype.name == "int64"
+            or pd_series.dtype.name == "float64"
+            or isinstance(pd_series.dtype, pd.Int64Dtype)
+            or isinstance(pd_series.dtype, pd.Float64Dtype)
+        )
+     
     def make_segmented_index(self, df):
         if len(df) == 0:
             return df

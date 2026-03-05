@@ -159,6 +159,8 @@ class Dataset:
                 self.target = self.col_label
                 glob_conf.config["DATA"]["target"] = self.target
                 df = self.db.get(self.col_label, columns)
+                if self.util.is_numeric(df[self.col_label]):
+                    glob_conf.config["EXP"]["type"] = "regression"
             else:
                 df = pd.DataFrame(index=self.db.files)
         elif len(tables) > 0:
@@ -184,7 +186,7 @@ class Dataset:
         self.got_gender = COL_SEX in df
         self.got_age = COL_AGE in df
         self.got_speaker = COL_SPEAKER in df
-        if df.shape[0] > 0 and (self.target is None or self.target == "none"):
+        if df.shape[0] > 0 and self.target is None:
             self.df = df
             return
         if df.shape[0] == 0:

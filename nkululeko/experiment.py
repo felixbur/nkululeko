@@ -321,7 +321,7 @@ class Experiment:
                 self.df_train[self.target] = self.label_encoder.fit_transform(
                     self.df_train[self.target]
                 )
-            if not self.test_empty:
+            if not self.test_empty and self.util.exp_is_classification():
                 if self.df_test.is_labeled:
                     self.util.debug(f"Categories test: {test_cats}")
                 if not self.train_empty:
