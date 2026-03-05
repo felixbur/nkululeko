@@ -101,13 +101,13 @@ class Experiment:
             if data.got_speaker:
                 self.got_speaker = True
             self.datasets.update({d: data})
-        self.target = self.util.config_val("DATA", "target", "none")
+        self.target = self.util.config_val("DATA", "target", None)
         glob_conf.set_target(self.target)
         # print target via debug
         self.util.debug(f"target: {self.target}")
         # print keys/column
         dbs = ",".join(list(self.datasets.keys()))
-        if self.target == "none":
+        if self.target is None:
             self.util.debug(f"loaded databases {dbs}")
             return
         labels = self.util.config_val("DATA", "labels", False)
@@ -321,7 +321,7 @@ class Experiment:
                 self.df_train[self.target] = self.label_encoder.fit_transform(
                     self.df_train[self.target]
                 )
-            if not self.test_empty:
+            if not self.test_empty and self.util.exp_is_classification():
                 if self.df_test.is_labeled:
                     self.util.debug(f"Categories test: {test_cats}")
                 if not self.train_empty:

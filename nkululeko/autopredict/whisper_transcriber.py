@@ -23,6 +23,7 @@ class Transcriber:
             )
         if device is None:
             device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = device
         self.model = whisper.load_model(model_name, device=device)
         self.language = language
         self.util = util
@@ -33,9 +34,15 @@ class Transcriber:
         :param audio_path: Path to the audio file to transcribe.
         :return: Transcription text.
         """
-        result = self.model.transcribe(
-            audio_path, language=self.language, without_timestamps=True
-        )
+        if self.device == "cpu":
+            result = self.model.transcribe(
+                audio_path, language=self.language, without_timestamps=True, fp16=False
+            )
+        else:
+            result = self.model.transcribe(
+                audio_path, language=self.language, without_timestamps=True
+            )
+ 
         result = result["text"].strip()
         return result
 
