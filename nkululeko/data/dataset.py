@@ -35,6 +35,12 @@ class Dataset:
         self.target_tables_append = eval(
             self.util.config_val_data(self.name, "target_tables_append", "False")
         )
+        if self.target_tables_append:
+            self.util.warn(
+                f"{self.name}: 'target_tables_append' is no longer supported "
+                "and has no effect. Tables are now merged automatically via "
+                "audformat db.get(). Please remove it from your config."
+            )        
         self.start_fresh = eval(self.util.config_val("DATA", "no_reuse", "False"))
         self.is_labeled, self.got_speaker, self.got_gender, self.got_age = (
             False,
@@ -158,8 +164,11 @@ class Dataset:
             if columns:
                 df = self.db.get(self.col_label, columns, tables=tables)
                 if df.empty:
-                    # little hack for emodb and target=age
-                    df = self.db.get("emotion", columns, tables=tables)
+                    self.util.error(
+                        f"{self.name}: target '{self.col_label}' not found in "
+                        f"tables {tables}. Consider setting "
+                        f"'{self.name}.target_tables' explicitly."
+                    )
             else:
                 df = self.db.get(self.col_label, tables=tables)
         else:
