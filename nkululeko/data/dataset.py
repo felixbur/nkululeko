@@ -156,6 +156,8 @@ class Dataset:
         if self.col_label is None:
             if columns:
                 self.col_label = columns[0]
+                self.target = self.col_label
+                glob_conf.config["DATA"]["target"] = self.target
                 df = self.db.get(self.col_label, columns)
             else:
                 df = pd.DataFrame(index=self.db.files)
