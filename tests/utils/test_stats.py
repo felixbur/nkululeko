@@ -23,21 +23,21 @@ class TestCheckNa:
     def test_nans_replaced_with_zero(self):
         a = np.array([1.0, float("nan"), 3.0])
         result = check_na(a)
-        assert result[1] == 0.0
+        assert result[1] == pytest.approx(0.0)
         assert not np.isnan(result).any()
 
     def test_multiple_nans_all_replaced(self):
         a = np.array([float("nan"), float("nan"), 5.0])
         result = check_na(a)
-        assert result[0] == 0.0
-        assert result[1] == 0.0
+        assert result[0] == pytest.approx(0.0)
+        assert result[1] == pytest.approx(0.0)
 
 
 class TestCohenD:
     def test_identical_distributions_zero(self):
         d = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
         result = cohen_d(d, d)
-        assert result == 0.0
+        assert result == pytest.approx(0.0)
 
     def test_clearly_separated_distributions_large(self):
         d1 = np.zeros(50)

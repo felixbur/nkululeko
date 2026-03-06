@@ -9,9 +9,9 @@ from nkululeko.reporting.result import Result
 
 
 @pytest.fixture(autouse=True)
-def setup_glob_conf():
+def setup_glob_conf(tmp_path):
     config = configparser.ConfigParser()
-    config["EXP"] = {"type": "classification", "name": "testexp", "root": "/tmp"}
+    config["EXP"] = {"type": "classification", "name": "testexp", "root": str(tmp_path)}
     config["DATA"] = {"target": "emotion", "databases": "['emodb']"}
     config["MODEL"] = {"type": "xgb"}
     config["FEATS"] = {"type": "['os']"}
@@ -30,10 +30,10 @@ def result():
 class TestResultInit:
     def test_attributes_set(self):
         r = Result(0.5, 0.6, 0.1, 0.2, "UAR")
-        assert r.test == 0.5
-        assert r.train == 0.6
-        assert r.loss == 0.1
-        assert r.loss_eval == 0.2
+        assert r.test == pytest.approx(0.5)
+        assert r.train == pytest.approx(0.6)
+        assert r.loss == pytest.approx(0.1)
+        assert r.loss_eval == pytest.approx(0.2)
         assert r.metric == "UAR"
 
     def test_util_is_created(self):
@@ -48,8 +48,8 @@ class TestGetResult:
 
 class TestSetUpperLower:
     def test_upper_lower_stored(self, result):
-        assert result.upper == 0.80
-        assert result.lower == 0.70
+        assert result.upper == pytest.approx(0.80)
+        assert result.lower == pytest.approx(0.70)
 
 
 class TestToString:

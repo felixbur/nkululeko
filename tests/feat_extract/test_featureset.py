@@ -11,9 +11,9 @@ from nkululeko.feat_extract.featureset import Featureset
 
 
 @pytest.fixture(autouse=True)
-def setup_glob_conf():
+def setup_glob_conf(tmp_path):
     config = configparser.ConfigParser()
-    config["EXP"] = {"type": "classification", "name": "testexp", "root": "/tmp"}
+    config["EXP"] = {"type": "classification", "name": "testexp", "root": str(tmp_path)}
     config["DATA"] = {"target": "emotion", "databases": "['emodb']"}
     config["MODEL"] = {"type": "xgb", "n_jobs": "1"}
     config["FEATS"] = {"type": "['os']"}

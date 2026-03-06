@@ -9,13 +9,13 @@ from nkululeko.utils.util import Util
 
 
 @pytest.fixture(autouse=True)
-def setup_glob_conf():
+def setup_glob_conf(tmp_path):
     """Provide a minimal valid config for every test."""
     config = configparser.ConfigParser()
     config["EXP"] = {
         "type": "classification",
         "name": "testexp",
-        "root": "/tmp",
+        "root": str(tmp_path),
     }
     config["DATA"] = {
         "target": "emotion",
@@ -155,7 +155,7 @@ class TestHighIsGood:
 class TestNumericHelpers:
     def test_to_3_digits_truncates(self):
         u = Util("test")
-        assert u.to_3_digits(0.12345) == 0.123
+        assert u.to_3_digits(0.12345) == pytest.approx(0.123)
 
     def test_to_3_digits_str_format(self):
         u = Util("test")
@@ -167,7 +167,7 @@ class TestNumericHelpers:
 
     def test_to_4_digits_truncates(self):
         u = Util("test")
-        assert u.to_4_digits(0.123456) == 0.1234
+        assert u.to_4_digits(0.123456) == pytest.approx(0.1234)
 
     def test_to_4_digits_str_format(self):
         u = Util("test")

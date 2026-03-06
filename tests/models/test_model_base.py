@@ -12,9 +12,9 @@ from nkululeko.models.model import Model
 
 
 @pytest.fixture(autouse=True)
-def setup_glob_conf():
+def setup_glob_conf(tmp_path):
     config = configparser.ConfigParser()
-    config["EXP"] = {"type": "classification", "name": "testexp", "root": "/tmp"}
+    config["EXP"] = {"type": "classification", "name": "testexp", "root": str(tmp_path)}
     config["DATA"] = {"target": "emotion", "databases": "['emodb']"}
     config["MODEL"] = {"type": "xgb", "n_jobs": "2"}
     config["FEATS"] = {"type": "['os']"}
