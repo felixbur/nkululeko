@@ -107,7 +107,8 @@ class Experiment:
         self.util.debug(f"target: {self.target}")
         # print keys/column
         dbs = ",".join(list(self.datasets.keys()))
-        if self.target is None:
+        # Support both None and 'none' for backward compatibility
+        if self.target is None or self.target == "none":
             self.util.debug(f"loaded databases {dbs}")
             return
         labels = self.util.config_val("DATA", "labels", False)
@@ -218,7 +219,8 @@ class Experiment:
                     d.split_3()
                 else:
                     d.split()
-                if self.target != "none":
+                # Prepare labels only for supervised experiments
+                if self.target is not None and self.target != "none":
                     d.prepare_labels()
                 if d.df_train.shape[0] == 0:
                     self.util.debug(f"warn: {d.name} train empty")
@@ -249,7 +251,8 @@ class Experiment:
                 storage_dev = f"{store}devdf.csv"
                 self.df_dev.to_csv(storage_dev)
 
-        if self.target == "none":
+        # Return early for unlabeled/unsupervised runs
+        if self.target is None or self.target == "none":
             return
         self.util.copy_flags(self, self.df_test)
         self.util.copy_flags(self, self.df_train)
@@ -321,7 +324,7 @@ class Experiment:
                 self.df_train[self.target] = self.label_encoder.fit_transform(
                     self.df_train[self.target]
                 )
-            if not self.test_empty and self.util.exp_is_classification():
+            if not self.test_empty:
                 if self.df_test.is_labeled:
                     self.util.debug(f"Categories test: {test_cats}")
                 if not self.train_empty:
@@ -818,7 +821,7 @@ class Experiment:
         list_of_dimreds = eval(self.util.config_val("EXPL", "scatter", "False"))
 
         # Priority: use [EXPL][scatter.target] if available, otherwise use [DATA][target] value
-        if hasattr(self, "target") and self.target != "none":
+        if hasattr(self, "target") and self.target is not None and self.target != "none":
             default_scatter_target = f"['{self.target}']"
         else:
             default_scatter_target = "['class_label']"
