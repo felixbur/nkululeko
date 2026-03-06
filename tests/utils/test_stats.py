@@ -111,5 +111,5 @@ class TestGetEffectSize:
 
     def test_single_category_returns_zero_effect(self):
         df = pd.DataFrame({"target": ["A"] * 10, "feature": np.ones(10)})
-        combo_str, cohen_str, results_dict = get_effect_size(df, "target", "feature")
+        combo_str, _, _ = get_effect_size(df, "target", "feature")
         assert combo_str == "A"

@@ -62,8 +62,9 @@ class TestFeaturesetFilter:
         """filter() should keep only rows whose index is in data_df."""
         # Attach a feature df with same index + 2 extra rows
         extra_idx = pd.RangeIndex(7)
+        rng = np.random.default_rng(42)
         featureset.df = pd.DataFrame(
-            np.random.rand(7, 3), columns=["f1", "f2", "f3"], index=extra_idx
+            rng.random((7, 3)), columns=["f1", "f2", "f3"], index=extra_idx
         )
         featureset.filter()
         assert len(featureset.df) == 5
@@ -72,8 +73,9 @@ class TestFeaturesetFilter:
     def test_filter_subset_selection_from_config(self, featureset, data_df):
         """When FEATS.features is set, filter() should select those columns."""
         glob_conf.config["FEATS"]["features"] = "['f1', 'f2']"
+        rng = np.random.default_rng(42)
         featureset.df = pd.DataFrame(
-            np.random.rand(5, 3), columns=["f1", "f2", "f3"], index=data_df.index
+            rng.random((5, 3)), columns=["f1", "f2", "f3"], index=data_df.index
         )
         featureset.filter()
         assert list(featureset.df.columns) == ["f1", "f2"]
@@ -83,8 +85,9 @@ class TestFeaturesetFilter:
     ):
         """Non-existent selected features are skipped, not raised."""
         glob_conf.config["FEATS"]["features"] = "['f1', 'ghost']"
+        rng = np.random.default_rng(42)
         featureset.df = pd.DataFrame(
-            np.random.rand(5, 2), columns=["f1", "f2"], index=data_df.index
+            rng.random((5, 2)), columns=["f1", "f2"], index=data_df.index
         )
         featureset.filter()
         assert "f1" in featureset.df.columns

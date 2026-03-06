@@ -28,9 +28,9 @@ def test_eer():
     
     # Test case 2: Random classification
     print("\nTest 2: Random-like classification (EER should be ~0.5)")
-    np.random.seed(42)
-    y_true = np.random.randint(0, 2, 100)
-    y_score = np.random.rand(100)
+    rng = np.random.default_rng(42)
+    y_true = rng.integers(0, 2, 100)
+    y_score = rng.random(100)
     eer = equal_error_rate(y_true, y_score)
     print(f"  EER = {eer:.4f}")
     assert 0.3 < eer < 0.7, "EER should be around 0.5 for random classification"

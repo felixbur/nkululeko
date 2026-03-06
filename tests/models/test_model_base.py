@@ -27,8 +27,9 @@ def setup_glob_conf(tmp_path):
 def dummy_dfs():
     df_train = pd.DataFrame({"emotion": ["happy", "sad", "angry", "happy"]})
     df_test = pd.DataFrame({"emotion": ["sad", "angry"]})
-    feats_train = pd.DataFrame(np.random.rand(4, 5))
-    feats_test = pd.DataFrame(np.random.rand(2, 5))
+    rng = np.random.default_rng(42)
+    feats_train = pd.DataFrame(rng.random((4, 5)))
+    feats_test = pd.DataFrame(rng.random((2, 5)))
     return df_train, df_test, feats_train, feats_test
 
 
@@ -85,7 +86,8 @@ class TestModelSetModelType:
 class TestModelSetTestdata:
     def test_replaces_test_data(self, model):
         new_df = pd.DataFrame({"emotion": ["happy"]})
-        new_feats = pd.DataFrame(np.random.rand(1, 5))
+        rng = np.random.default_rng(42)
+        new_feats = pd.DataFrame(rng.random((1, 5)))
         model.set_testdata(new_df, new_feats)
         assert model.df_test is new_df
         assert model.feats_test is new_feats
@@ -94,7 +96,8 @@ class TestModelSetTestdata:
 class TestModelResetTest:
     def test_reset_test(self, model):
         new_df = pd.DataFrame({"emotion": ["angry"]})
-        new_feats = pd.DataFrame(np.random.rand(1, 5))
+        rng = np.random.default_rng(42)
+        new_feats = pd.DataFrame(rng.random((1, 5)))
         model.reset_test(new_df, new_feats)
         assert model.df_test is new_df
         assert model.feats_test is new_feats
