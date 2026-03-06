@@ -4,12 +4,13 @@ on:
   push:
     branches:
       - master
+      - main
   pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
-  sonarqube:
-    name: Coverage and SonarQube
+  coverage:
+    name: Run pytest with coverage
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,7 +30,7 @@ jobs:
           uv venv
           source .venv/bin/activate
           uv pip install -e .
-          uv pip install -r requirements-test.txt
+          uv pip install -r requirements-test.txt pytest-cov
 
       - name: Run pytest with coverage
         run: |
@@ -37,8 +38,29 @@ jobs:
           pytest --cov=nkululeko --cov-report=xml --cov-branch
         continue-on-error: true
 
-      - name: SonarQube Scan
-        if: github.repository == 'bagustris/nkululeko'
-        uses: SonarSource/sonarqube-scan-action@v7
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+#   sonarqube:
+#     name: SonarQube Scan
+#     runs-on: ubuntu-latest
+#     needs: coverage
+#     # Only run in the fork that has the SONAR_TOKEN secret
+#     if: github.repository == 'bagustris/nkululeko'
+#     steps:
+#       - uses: actions/checkout@v4
+#         with:
+#           fetch-depth: 0
+
+#       - name: Download coverage report
+#         uses: actions/download-artifact@v4
+#         with:
+#           name: coverage-report
+
+#       - name: SonarQube Scan
+#         uses: SonarSource/sonarqube-scan-action@v7
+#         env:
+#           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
