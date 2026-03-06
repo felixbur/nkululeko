@@ -4,6 +4,7 @@ import ast
 import audformat
 import numpy as np
 import pandas as pd
+from pandas.api.types import is_numeric_dtype
 
 
 class DataFrameMixin:
@@ -21,13 +22,12 @@ class DataFrameMixin:
         )
     
     def is_numeric(self, pd_series):
-        """Check if a dataframe column is numeric."""
-        return (
-            pd_series.dtype.name == "int64"
-            or pd_series.dtype.name == "float64"
-            or isinstance(pd_series.dtype, pd.Int64Dtype)
-            or isinstance(pd_series.dtype, pd.Float64Dtype)
-        )
+        """Check if a dataframe column is numeric.
+        
+        Uses pandas.api.types.is_numeric_dtype to properly handle all numeric dtypes
+        including int32, float32, int64, float64, and nullable integer/float types.
+        """
+        return is_numeric_dtype(pd_series)
      
     def make_segmented_index(self, df):
         if len(df) == 0:
