@@ -4,13 +4,13 @@ on:
   push:
     branches:
       - master
-  pull_request:
-    types: [opened, synchronize, reopened]
 
 jobs:
   sonarqube:
     name: SonarQube Cloud
     runs-on: ubuntu-latest
+    # Only run on the fork that owns the SONAR_TOKEN secret
+    if: github.repository == 'bagustris/nkululeko'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -38,6 +38,6 @@ jobs:
         continue-on-error: true  # don't block scan if some tests fail
 
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v6
+        uses: SonarSource/sonarqube-scan-action@v7
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
