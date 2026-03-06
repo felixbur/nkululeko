@@ -1,0 +1,41 @@
+name: SonarQube Cloud
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  sonarqube:
+    name: SonarQube Cloud
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history needed for blame info
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install dependencies
+        run: |
+          uv venv
+          uv pip install -e ".[dev]" pytest pytest-cov
+
+      - name: Run pytest with coverage
+        run: |
+          source .venv/bin/activate
+          pytest --cov=nkululeko --cov-report=xml --cov-branch
+        continue-on-error: true  # don't block scan if some tests fail
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

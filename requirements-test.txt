@@ -20,6 +20,8 @@ diffsptk>=3.3.1
 imblearn>=0.0.0
 shap>=0.47.2
 splitutils>=0.0.1
+pytest>=7.0.0
+pytest-cov>=4.0.0
 
 # Skip these heavy ones for CI:
 # torch, torchaudio, torchvision
