@@ -127,7 +127,6 @@ Issues = "https://github.com/felixbur/nkululeko/issues"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = "test_*.py"
-addopts = "--cov=nkululeko --cov-report=xml --cov-branch"
 
 [tool.coverage.run]
 source = ["nkululeko"]
