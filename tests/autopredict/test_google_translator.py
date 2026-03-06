@@ -76,7 +76,7 @@ class TestGoogleTranslator:
         mock_audeer.path.side_effect = lambda *args: "/".join(args)
         mock_audeer.basename_wo_ext.return_value = "file1"
         mock_isfile.return_value = True
-        mock_asyncio.run.return_value = ["hallo"]
+        mock_asyncio.run.side_effect = lambda coro: (coro.close(), ["hallo"])[1]
 
         translator = GoogleTranslator(language="de", util=mock_util)
 
@@ -105,7 +105,7 @@ class TestGoogleTranslator:
         mock_isfile.return_value = False
 
         # Mock the batch translation
-        mock_asyncio.run.return_value = ["hello", "world"]
+        mock_asyncio.run.side_effect = lambda coro: (coro.close(), ["hello", "world"])[1]
 
         translator = GoogleTranslator(language="en", util=mock_util)
 
