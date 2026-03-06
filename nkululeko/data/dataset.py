@@ -108,7 +108,7 @@ class Dataset:
                     df = db.get(col)
                     if not df.empty:
                         columns.append(col)
-                except KeyError:
+                except (KeyError, audformat.core.errors.BadKeyError):
                     # Column/scheme not defined in this database
                     pass
         self.util.debug(f"{self.name}: loading columns: {columns}")

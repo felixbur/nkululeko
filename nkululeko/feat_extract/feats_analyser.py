@@ -84,11 +84,9 @@ class FeatureAnalyser:
 
             self.util.debug(f"using SHAP explainer for {model_name} model")
 
-            # Use .values for background data to avoid DataFrame compatibility issues,
-            # but preserve feature names explicitly for interpretability
             explainer = shap.Explainer(
                 model_func,
-                self.features.values,
+                self.features,
                 output_names=glob_conf.labels,
                 feature_names=self.features.columns.tolist(),
                 algorithm="permutation",

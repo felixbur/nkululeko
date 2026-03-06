@@ -23,9 +23,8 @@ class Transcriber:
             )
         if device is None:
             device = "cuda" if torch.cuda.is_available() else "cpu"
-        # Normalize device to string for reliable comparison
-        self.device = str(device) if hasattr(device, 'type') else device
-        self.model = whisper.load_model(model_name, device=device)
+        self.device = str(device)
+        self.model = whisper.load_model(model_name, device=self.device)
         self.language = language
         self.util = util
 
