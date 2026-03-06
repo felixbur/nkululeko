@@ -13,7 +13,7 @@ import nkululeko.glob_conf as glob_conf
 from nkululeko.plots import Plots
 from nkululeko.reporting.report_item import ReportItem
 from nkululeko.utils.util import Util
-
+from nkululeko.constants import COL_AGE, COL_SEX, COL_SPEAKER
 
 class Dataset:
     """Class to represent datasets"""
@@ -29,12 +29,18 @@ class Dataset:
         """Constructor setting up name and configuration"""
         self.name = name
         self.util = Util("dataset")
-        self.target = self.util.config_val("DATA", "target", "none")
+        self.target = self.util.config_val("DATA", "target", None)
         self.plot = Plots()
         self.limit = int(self.util.config_val_data(self.name, "limit", 0))
         self.target_tables_append = eval(
             self.util.config_val_data(self.name, "target_tables_append", "False")
         )
+        if self.target_tables_append:
+            self.util.warn(
+                f"{self.name}: 'target_tables_append' is no longer supported "
+                "and has no effect. Tables are now merged automatically via "
+                "audformat db.get(). Please remove it from your config."
+            )        
         self.start_fresh = eval(self.util.config_val("DATA", "no_reuse", "False"))
         self.is_labeled, self.got_speaker, self.got_gender, self.got_age = (
             False,
@@ -89,6 +95,27 @@ class Dataset:
                     )
         return df
 
+    def _get_columns(self, db: audformat.Database):
+        columns = self.util.config_val_data(self.name, "columns", False)
+        if columns:
+            columns = ast.literal_eval(columns)
+        else:
+            columns = []
+        if COL_AGE not in columns:
+            df = db.get(COL_AGE)
+            if not df.empty:
+                columns.append(COL_AGE)
+        if COL_SEX not in columns:
+            df = db.get(COL_SEX)
+            if not df.empty:
+                columns.append(COL_SEX)
+        if COL_SPEAKER not in columns:
+            df = db.get(COL_SPEAKER)
+            if not df.empty:
+                columns.append(COL_SPEAKER)
+        self.util.debug(f"{self.name}: loading columns: {columns}")
+        return columns
+
     def _report_load(self):
         speaker_num = 0
         if self.got_speaker:
@@ -114,86 +141,56 @@ class Dataset:
             self.util.debug(f"{self.name}: reusing previously stored file {store_file}")
             self.df = self.util.get_store(store_file, store_format)
             self.is_labeled = self.target in self.df
-            self.got_gender = "gender" in self.df
-            self.got_age = "age" in self.df
-            self.got_speaker = "speaker" in self.df
+            self.got_gender = COL_SEX in self.df
+            self.got_age = COL_AGE in self.df
+            self.got_speaker = COL_SPEAKER in self.df
             self.util.copy_flags(self, self.df)
             self._report_load()
             return
         tables = self._get_tables()
-        self.util.debug(f"{self.name}: loading tables: {tables}")
-        # db = audb.load(root, )
         # map the audio file paths
         self.db.map_files(lambda x: os.path.join(self.root, x))
-        # the dataframes (potentially more than one) with at least the file names
-        df_files = self.util.config_val_data(self.name, "files_tables", "['files']")
-        df_files_tables = ast.literal_eval(df_files)
         # The label for the target column
+        columns = self._get_columns(self.db)
         self.col_label = self.util.config_val_data(self.name, "label", self.target)
-        (
-            df,
-            self.is_labeled,
-            self.got_speaker,
-            self.got_gender,
-            self.got_age,
-        ) = self._get_df_for_lists(self.db, df_files_tables)
-        if df.shape[0] > 0 and self.target == "none":
+        if self.col_label is None:
+            if columns:
+                self.col_label = columns[0]
+                self.target = self.col_label
+                glob_conf.config["DATA"]["target"] = self.target
+                df = self.db.get(self.col_label, columns)
+                if self.util.is_numeric(df[self.col_label]):
+                    glob_conf.config["EXP"]["type"] = "regression"
+            else:
+                df = pd.DataFrame(index=self.db.files)
+        elif len(tables) > 0:
+            self.util.debug(f"{self.name}: using tables: {tables}")
+            if columns:
+                df = self.db.get(self.col_label, columns, tables=tables)
+                if df.empty:
+                    self.util.error(
+                        f"{self.name}: target '{self.col_label}' not found in "
+                        f"tables {tables}. Consider setting "
+                        f"'{self.name}.target_tables' explicitly."
+                    )
+            else:
+                df = self.db.get(self.col_label, tables=tables)
+        else:
+            if columns:
+                df = self.db.get(self.col_label, columns)
+            else:
+                df = self.db.get(self.col_label)
+        # check if columns should be renamed
+        df = self._check_cols(df)
+        self.is_labeled = self.target in df
+        self.got_gender = COL_SEX in df
+        self.got_age = COL_AGE in df
+        self.got_speaker = COL_SPEAKER in df
+        if df.shape[0] > 0 and self.target is None:
             self.df = df
             return
-        if False in {
-            self.is_labeled,
-            self.got_speaker,
-            self.got_gender,
-            self.got_age,
-        }:
-            try:
-                # There might be a separate table with the targets, e.g. emotion or age
-                df_targets = self.util.config_val_data(
-                    self.name, "target_tables", f"['{self.target}']"
-                )
-                df_target_tables = ast.literal_eval(df_targets)
-                (
-                    df_target,
-                    got_target2,
-                    got_speaker2,
-                    got_gender2,
-                    got_age2,
-                ) = self._get_df_for_lists(self.db, df_target_tables)
-                self.is_labeled = got_target2 or self.is_labeled
-                self.got_speaker = got_speaker2 or self.got_speaker
-                self.got_gender = got_gender2 or self.got_gender
-                self.got_age = got_age2 or self.got_age
-                if audformat.is_filewise_index(df_target.index):
-                    try:
-                        df_target = df_target.loc[df.index.get_level_values("file")]
-                        df_target = df_target.set_index(df.index)
-                    except KeyError:
-                        # just a try...
-                        pass
-                try:
-                    if got_target2:
-                        df[self.target] = df_target[self.target]
-                    if got_speaker2:
-                        df["speaker"] = df_target["speaker"]
-                    if got_gender2:
-                        df["gender"] = df_target["gender"]
-                    if got_age2:
-                        df["age"] = df_target["age"].astype(int)
-                except ValueError as ve:
-                    self.util.error(
-                        f"{ve}\nYou might need to set "
-                        + "data.target_tables_append = True"
-                    )
-                # copy other column
-                for column in df_target.columns:
-                    if column not in [self.target, "age", "speaker", "gender"]:
-                        df[column] = df_target[column]
-            except audformat.core.errors.BadKeyError:
-                if not self.is_labeled:
-                    self.util.error(
-                        f"Giving up: no target ({self.target}) column found"
-                    )
-
+        if df.shape[0] == 0:
+            self.util.error(f"{self.name}: no data found in database for tables {tables}")
         if self.is_labeled:
             # remember the target in case they get labelencoded later
             df["class_label"] = df[self.target]
@@ -271,91 +268,6 @@ class Dataset:
         store_format = self.util.config_val("FEATS", "store_format", "pkl")
         store_file = f"{store}{self.name}.{store_format}"
         self.util.write_store(self.df, store_file, store_format)
-
-    def _get_df_for_lists(self, db, df_files):
-        is_labeled, got_speaker, got_gender, got_age = (
-            False,
-            False,
-            False,
-            False,
-        )
-        df = pd.DataFrame()
-        for table in df_files:
-            source_df = db.tables[table].df
-            # check if columns should be renamed
-            source_df = self._check_cols(source_df)
-            # create a dataframe with the index (the filenames)
-            df_local = pd.DataFrame(index=source_df.index)
-            # try to get the targets from this dataframe
-            try:
-                # try to get the target values
-                df_local[self.target] = source_df[self.col_label]
-                is_labeled = True
-            except (KeyError, ValueError, audformat.errors.BadKeyError):
-                pass
-            try:
-                # try to get the speaker values
-                df_local["speaker"] = source_df["speaker"]
-                got_speaker = True
-            except (KeyError, ValueError, audformat.errors.BadKeyError):
-                pass
-            try:
-                # try to get the gender values
-                if "gender" in source_df:
-                    df_local["gender"] = source_df["gender"]
-                else:
-                    # try to get the gender via the speaker description
-                    gender_map = db["speaker"].get().to_dict()["gender"]
-                    df_local["gender"] = df_local["speaker"].map(gender_map).astype(str)
-                got_gender = True
-            except (KeyError, ValueError, audformat.errors.BadKeyError):
-                pass
-            try:
-                # try to get the age values
-                if "age" in source_df:
-                    df_local["age"] = source_df["age"].astype(int)
-                else:
-                    # try to get the age via the speaker description
-                    age_map = db["speaker"].get().to_dict()["age"]
-                    df_local["age"] = df_local["speaker"].map(age_map).astype(int)
-                got_age = True
-            except (KeyError, ValueError, audformat.errors.BadKeyError):
-                pass
-            try:
-                # also it might be possible that the sex is part of the speaker description
-                df_local["gender"] = db[table]["speaker"].get(map="gender")
-                got_gender = True
-            except (ValueError, audformat.errors.BadKeyError):
-                pass
-            try:
-                # also it might be possible that the sex is part of the speaker description
-                df_local["gender"] = db[table]["speaker"].get(map="sex")
-                got_gender = True
-            except (ValueError, audformat.errors.BadKeyError):
-                pass
-            try:
-                # also it might be possible that the age is part of the speaker description
-                df_local["age"] = db[table]["speaker"].get(map="age").astype(int)
-                got_age = True
-            except (ValueError, audformat.errors.BadKeyError):
-                pass
-            try:
-                # same for the target, e.g. "age"
-                df_local[self.target] = db[table]["speaker"].get(map=self.target)
-                is_labeled = True
-            except (ValueError, audformat.core.errors.BadKeyError):
-                pass
-            # copy other column
-            for column in source_df.columns:
-                if column not in [self.target, "age", "speaker", "gender"]:
-                    df_local[column] = source_df[column]
-            # ensure segmented index
-            df_local = self.util.make_segmented_index(df_local)
-            if self.target_tables_append:
-                df = pd.concat([df, df_local], axis=0)
-            else:
-                df = pd.concat([df, df_local], axis=1)
-        return df, is_labeled, got_speaker, got_gender, got_age
 
     def split(self):
         """Split the datbase into train and development set"""

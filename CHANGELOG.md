@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.3.1 (26-03-04)  
+------------------------
+* simplified code (audformat database loading)
+
 Version 1.3.0 (26-03-02)  
 ------------------------
 * multiple test sets with per-dataset result reporting
