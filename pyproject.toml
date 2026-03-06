@@ -125,8 +125,19 @@ Documentation = "https://github.com/felixbur/nkululeko"
 Issues = "https://github.com/felixbur/nkululeko/issues"
 
 [tool.pytest.ini_options]
-testpaths = ["tests", "nkululeko"]
+testpaths = ["tests"]
 python_files = "test_*.py"
+
+[tool.coverage.run]
+source = ["nkululeko"]
+branch = true
+relative_files = true
+
+[tool.coverage.report]
+omit = [
+    "nkululeko/openXBOW/*",
+    "nkululeko/__pycache__/*",
+]
 
 # ----- setuptools_scm ----------------------------------------------------
 #

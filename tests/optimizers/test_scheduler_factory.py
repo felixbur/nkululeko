@@ -202,7 +202,8 @@ class TestStepScheduler:
             simple_optimizer, util, steps_per_epoch=100, total_epochs=10
         )
 
-        # Step scheduler twice
+        # Step scheduler twice (optimizer must step first to satisfy PyTorch order check)
+        simple_optimizer.step()
         step_scheduler(scheduler, "cosine", step_per_batch=True)
         step_scheduler(scheduler, "cosine", step_per_batch=True)
 
@@ -225,6 +226,7 @@ class TestStepScheduler:
         assert lr_after_batch_steps == initial_lr
 
         # Step per epoch SHOULD change LR for step scheduler (with step_size=1)
+        simple_optimizer.step()  # optimizer must step before scheduler
         step_scheduler(scheduler, sched_type, step_per_batch=False)
         lr_after_epoch_step = simple_optimizer.param_groups[0]["lr"]
         assert lr_after_epoch_step != initial_lr
@@ -247,7 +249,8 @@ class TestStepScheduler:
 
         initial_lr = simple_optimizer.param_groups[0]["lr"]
 
-        # Step per epoch should decrease LR
+        # Step per epoch should decrease LR (optimizer must step first)
+        simple_optimizer.step()
         step_scheduler(scheduler, sched_type, step_per_batch=False)
         lr_after = simple_optimizer.param_groups[0]["lr"]
 
