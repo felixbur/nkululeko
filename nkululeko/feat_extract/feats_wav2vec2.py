@@ -72,6 +72,7 @@ class Wav2vec2(Featureset):
             self.util.debug(
                 "extracting wav2vec2 embeddings, this might take a while..."
             )
+
             def _load_file(file, start, end):
                 signal, sampling_rate = torchaudio.load(
                     file,
@@ -79,9 +80,7 @@ class Wav2vec2(Featureset):
                     num_frames=int((end - start).total_seconds() * 16000),
                     normalize=True,
                 )
-                assert (
-                    sampling_rate == 16000
-                ), f"got {sampling_rate} instead of 16000"
+                assert sampling_rate == 16000, f"got {sampling_rate} instead of 16000"
                 return self.get_embeddings(signal, sampling_rate, file)
 
             self.df = self._extract_embeddings_with_error_handling(_load_file)

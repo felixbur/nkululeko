@@ -59,6 +59,7 @@ class SquimSet(Featureset):
             if not self.model_initialized:
                 self.init_model()
             self.util.debug("predicting SQUIM, this might take a while...")
+
             def _load_file(file, start, end):
                 signal, sampling_rate = audiofile.read(
                     file,

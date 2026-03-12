@@ -41,9 +41,7 @@ class Featureset:
             pd.DataFrame of embeddings with filtered index.
         """
         emb_series = pd.Series(index=self.data_df.index, dtype=object)
-        for idx, (file, start, end) in enumerate(
-            tqdm(self.data_df.index.to_list())
-        ):
+        for idx, (file, start, end) in enumerate(tqdm(self.data_df.index.to_list())):
             try:
                 emb = extract_fn(file, start, end)
                 emb_series.iloc[idx] = emb

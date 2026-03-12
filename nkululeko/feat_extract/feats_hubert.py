@@ -66,15 +66,14 @@ class Hubert(Featureset):
             if not self.model_initialized:
                 self.init_model()
             self.util.debug("extracting Hubert embeddings, this might take a while...")
+
             def _load_file(file, start, end):
                 signal, sampling_rate = torchaudio.load(
                     file,
                     frame_offset=int(start.total_seconds() * 16000),
                     num_frames=int((end - start).total_seconds() * 16000),
                 )
-                assert (
-                    sampling_rate == 16000
-                ), f"expected 16000 Hz, got {sampling_rate}"
+                assert sampling_rate == 16000, f"expected 16000 Hz, got {sampling_rate}"
                 return self.get_embeddings(signal, sampling_rate, file)
 
             self.df = self._extract_embeddings_with_error_handling(_load_file)

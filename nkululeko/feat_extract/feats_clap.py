@@ -38,6 +38,7 @@ class ClapSet(Featureset):
             if not self.model_initialized:
                 self.init_model()
             self.util.debug("extracting clap embeddings, this might take a while...")
+
             def _load_file(file, start, end):
                 signal, sampling_rate = audiofile.read(
                     file,

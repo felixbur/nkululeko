@@ -42,6 +42,7 @@ class Ast(Featureset):
             if not self.model_initialized:
                 self.init_model()
             self.util.debug("extracting wavlm embeddings, this might take a while...")
+
             def _load_file(file, start, end):
                 signal, sampling_rate = torchaudio.load(
                     file,
