@@ -285,30 +285,45 @@ def compute_features(
     length = len(file_index)
 
     # Extract features for each file
+    skipped = 0
     for idx, row_index in enumerate(tqdm(file_index.to_list(), total=length)):
         # Handle both tuple (file, start, end) and string file formats
-        if isinstance(row_index, tuple) and len(row_index) == 3:
-            file, start, end = row_index
-            signal, sampling_rate = audiofile.read(
-                file,
-                offset=start.total_seconds(),
-                duration=(end - start).total_seconds(),
-                always_2d=True,
+        try:
+            if isinstance(row_index, tuple) and len(row_index) == 3:
+                file, start, end = row_index
+                signal, sampling_rate = audiofile.read(
+                    file,
+                    offset=start.total_seconds(),
+                    duration=(end - start).total_seconds(),
+                    always_2d=True,
+                )
+            else:
+                # Single file path - read entire file
+                file = row_index if isinstance(row_index, str) else str(row_index)
+                signal, sampling_rate = audiofile.read(file, always_2d=True)
+
+            # Convert to tensor
+            signal_tensor = torch.tensor(signal[0], device=device).float()
+
+            # Extract features
+            emb = extractor.extract_features_from_signal(
+                signal_tensor, features_requested
             )
-        else:
-            # Single file path - read entire file
-            file = row_index if isinstance(row_index, str) else str(row_index)
-            signal, sampling_rate = audiofile.read(file, always_2d=True)
+            emb_series[row_index] = emb
+        except Exception as e:
+            print(f"WARNING: featureset: skipping {file}: {e}")
+            skipped += 1
 
-        # Convert to tensor
-        signal_tensor = torch.tensor(signal[0], device=device).float()
+    if skipped:
+        print(
+            f"WARNING: featureset: skipped {skipped} files that failed to load or extract features"
+        )
 
-        # Extract features
-        emb = extractor.extract_features_from_signal(signal_tensor, features_requested)
-        emb_series[row_index] = emb
-
-    # Convert to DataFrame
-    df = pd.DataFrame(emb_series.values.tolist(), index=file_index)
+    # Convert to DataFrame, dropping any files that failed
+    valid = emb_series.notna()
+    if not valid.all():
+        emb_series = emb_series[valid]
+    df = pd.DataFrame(emb_series.values.tolist(), index=emb_series.index)
 
     # Fill NaN values with mean
     for col in df.columns:
