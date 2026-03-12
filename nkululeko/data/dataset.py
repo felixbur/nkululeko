@@ -101,18 +101,16 @@ class Dataset:
             columns = ast.literal_eval(columns)
         else:
             columns = []
-        if COL_AGE not in columns:
-            df = db.get(COL_AGE)
-            if not df.empty:
-                columns.append(COL_AGE)
-        if COL_SEX not in columns:
-            df = db.get(COL_SEX)
-            if not df.empty:
-                columns.append(COL_SEX)
-        if COL_SPEAKER not in columns:
-            df = db.get(COL_SPEAKER)
-            if not df.empty:
-                columns.append(COL_SPEAKER)
+        # Probe for standard columns, handling missing schemas gracefully
+        for col in [COL_AGE, COL_SEX, COL_SPEAKER]:
+            if col not in columns:
+                try:
+                    df = db.get(col)
+                    if not df.empty:
+                        columns.append(col)
+                except (KeyError, audformat.core.errors.BadKeyError):
+                    # Column/scheme not defined in this database
+                    pass
         self.util.debug(f"{self.name}: loading columns: {columns}")
         return columns
 
@@ -158,6 +156,12 @@ class Dataset:
                 self.col_label = columns[0]
                 self.target = self.col_label
                 glob_conf.config["DATA"]["target"] = self.target
+                # Warn about automatic target selection which might pick wrong column
+                self.util.warn(
+                    f"{self.name}: No target specified, automatically selected '{self.col_label}' "
+                    f"from available columns {columns}. To avoid unintended behavior, explicitly "
+                    f"set 'DATA.target' or '{self.name}.label' in your configuration."
+                )
                 df = self.db.get(self.col_label, columns)
                 if self.util.is_numeric(df[self.col_label]):
                     glob_conf.config["EXP"]["type"] = "regression"
