@@ -7,7 +7,6 @@ import os
 import pandas as pd
 import torch
 import torchaudio
-from tqdm import tqdm
 import transformers
 from transformers import Wav2Vec2FeatureExtractor
 from transformers import WavLMModel
@@ -42,6 +41,10 @@ class Wavlm(Featureset):
         )
         config = transformers.AutoConfig.from_pretrained(model_path)
         layer_num = config.num_hidden_layers
+        if self.hidden_layer < 0 or self.hidden_layer >= layer_num:
+            self.util.error(
+                f"wavlm.layer={self.hidden_layer} is out of range [0, {layer_num - 1}]"
+            )
         self.adjusted_layer = layer_num - self.hidden_layer
         config.num_hidden_layers = self.adjusted_layer
         self.util.debug(
@@ -52,7 +55,7 @@ class Wavlm(Featureset):
         self.model = WavLMModel.from_pretrained(model_path, config=config).to(
             self.device
         )
-        print(f"initialized WavLM model on {self.device}")
+        self.util.debug(f"initialized WavLM model on {self.device}")
         self.model.eval()
         self.model_initialized = True
 
@@ -69,28 +72,18 @@ class Wavlm(Featureset):
             if not self.model_initialized:
                 self.init_model()
             self.util.debug("extracting wavlm embeddings, this might take a while...")
-            emb_series = pd.Series(index=self.data_df.index, dtype=object)
-            for idx, (file, start, end) in enumerate(
-                tqdm(self.data_df.index.to_list())
-            ):
-                try:
-                    signal, sampling_rate = torchaudio.load(
-                        file,
-                        frame_offset=int(start.total_seconds() * 16000),
-                        num_frames=int((end - start).total_seconds() * 16000),
-                    )
-                    assert (
-                        sampling_rate == 16000
-                    ), f"sampling rate should be 16000 but is {sampling_rate}"
-                    emb = self.get_embeddings(signal, sampling_rate, file)
-                    emb_series.iloc[idx] = emb
-                except Exception as e:
-                    self.util.warn(f"skipping {file}: {e}")
-            valid = emb_series.notna()
-            if not valid.all():
-                self.util.warn(f"skipped {(~valid).sum()} files that failed to load")
-                emb_series = emb_series[valid]
-            self.df = pd.DataFrame(emb_series.values.tolist(), index=emb_series.index)
+            def _load_file(file, start, end):
+                signal, sampling_rate = torchaudio.load(
+                    file,
+                    frame_offset=int(start.total_seconds() * 16000),
+                    num_frames=int((end - start).total_seconds() * 16000),
+                )
+                assert (
+                    sampling_rate == 16000
+                ), f"sampling rate should be 16000 but is {sampling_rate}"
+                return self.get_embeddings(signal, sampling_rate, file)
+
+            self.df = self._extract_embeddings_with_error_handling(_load_file)
             self.df.to_pickle(storage)
             try:
                 glob_conf.config["DATA"]["needs_feature_extraction"] = "false"

@@ -11,7 +11,6 @@ import os
 import pandas as pd
 import torch
 import torchaudio
-from tqdm import tqdm
 import transformers
 from transformers import Wav2Vec2FeatureExtractor
 from transformers import Wav2Vec2Model
@@ -73,31 +72,19 @@ class Wav2vec2(Featureset):
             self.util.debug(
                 "extracting wav2vec2 embeddings, this might take a while..."
             )
-            emb_series = pd.Series(index=self.data_df.index, dtype=object)
-            for idx, (file, start, end) in enumerate(
-                tqdm(self.data_df.index.to_list())
-            ):
-                try:
-                    signal, sampling_rate = torchaudio.load(
-                        file,
-                        frame_offset=int(start.total_seconds() * 16000),
-                        num_frames=int((end - start).total_seconds() * 16000),
-                        normalize=True,
-                    )
-                    assert (
-                        sampling_rate == 16000
-                    ), f"got {sampling_rate} instead of 16000"
-                    emb = self.get_embeddings(signal, sampling_rate, file)
-                    emb_series.iloc[idx] = emb
-                except Exception as e:
-                    self.util.warn(f"skipping {file}: {e}")
-            # print(f"emb_series shape: {emb_series.shape}")
-            valid = emb_series.notna()
-            if not valid.all():
-                self.util.warn(f"skipped {(~valid).sum()} files that failed to load")
-                emb_series = emb_series[valid]
-            self.df = pd.DataFrame(emb_series.values.tolist(), index=emb_series.index)
-            # print(f"df shape: {self.df.shape}")
+            def _load_file(file, start, end):
+                signal, sampling_rate = torchaudio.load(
+                    file,
+                    frame_offset=int(start.total_seconds() * 16000),
+                    num_frames=int((end - start).total_seconds() * 16000),
+                    normalize=True,
+                )
+                assert (
+                    sampling_rate == 16000
+                ), f"got {sampling_rate} instead of 16000"
+                return self.get_embeddings(signal, sampling_rate, file)
+
+            self.df = self._extract_embeddings_with_error_handling(_load_file)
             self.df.to_pickle(storage)
             try:
                 glob_conf.config["DATA"]["needs_feature_extraction"] = "false"

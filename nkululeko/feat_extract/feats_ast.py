@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 import torch
 import torchaudio
-from tqdm import tqdm
 from transformers import ASTModel, AutoProcessor
 
 import nkululeko.glob_conf as glob_conf
@@ -43,31 +42,21 @@ class Ast(Featureset):
             if not self.model_initialized:
                 self.init_model()
             self.util.debug("extracting wavlm embeddings, this might take a while...")
-            emb_series = pd.Series(index=self.data_df.index, dtype=object)
-            for idx, (file, start, end) in enumerate(
-                tqdm(self.data_df.index.to_list())
-            ):
-                try:
-                    signal, sampling_rate = torchaudio.load(
-                        file,
-                        frame_offset=int(start.total_seconds() * 16000),
-                        num_frames=int((end - start).total_seconds() * 16000),
-                    )
-                    # make mono if stereo
-                    if signal.shape[0] == 2:
-                        signal = torch.mean(signal, dim=0, keepdim=True)
-                    assert (
-                        sampling_rate == 16000
-                    ), f"sampling rate should be 16000 but is {sampling_rate}"
-                    emb = self.get_embeddings(signal, sampling_rate, file)
-                    emb_series.iloc[idx] = emb
-                except Exception as e:
-                    self.util.warn(f"skipping {file}: {e}")
-            valid = emb_series.notna()
-            if not valid.all():
-                self.util.warn(f"skipped {(~valid).sum()} files that failed to load")
-                emb_series = emb_series[valid]
-            self.df = pd.DataFrame(emb_series.values.tolist(), index=emb_series.index)
+            def _load_file(file, start, end):
+                signal, sampling_rate = torchaudio.load(
+                    file,
+                    frame_offset=int(start.total_seconds() * 16000),
+                    num_frames=int((end - start).total_seconds() * 16000),
+                )
+                # make mono if stereo
+                if signal.shape[0] == 2:
+                    signal = torch.mean(signal, dim=0, keepdim=True)
+                assert (
+                    sampling_rate == 16000
+                ), f"sampling rate should be 16000 but is {sampling_rate}"
+                return self.get_embeddings(signal, sampling_rate, file)
+
+            self.df = self._extract_embeddings_with_error_handling(_load_file)
             self.df.to_pickle(storage)
             try:
                 glob_conf.config["DATA"]["needs_feature_extraction"] = "false"

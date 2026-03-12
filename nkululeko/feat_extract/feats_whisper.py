@@ -64,7 +64,7 @@ class Whisper(Featureset):
                     self.util.warn(f"skipping {file}: {e}")
             if len(valid_index) < len(self.data_df):
                 self.util.warn(
-                    f"skipped {len(self.data_df) - len(valid_index)} files that failed to load"
+                    f"skipped {len(self.data_df) - len(valid_index)} files that failed to load or extract embeddings"
                 )
             # print(f"emb_series shape: {emb_series.shape}")
             self.df = pd.DataFrame(

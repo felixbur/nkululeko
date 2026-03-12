@@ -548,11 +548,11 @@ class Reporter:
                 rpt_str = f"{json.dumps(rpt)}\n{f1_per_class}"
                 # Append EER (and UAR) when measure=eer
                 if self.metric == "eer":
-                    eer_val = self.result.test
+                    eer_val = float(self.result.test)
                     uar_val = getattr(self, "uar_result", None)
                     rpt_str += f"\nEER: {eer_val:.4f}"
                     if uar_val is not None:
-                        rpt_str += f", UAR: {uar_val:.4f}"
+                        rpt_str += f", UAR: {float(uar_val):.4f}"
                 text_file.write(rpt_str)
                 glob_conf.report.add_item(
                     ReportItem(
