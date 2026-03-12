@@ -64,15 +64,22 @@ class SquimSet(Featureset):
             for idx, (file, start, end) in enumerate(
                 tqdm(self.data_df.index.to_list())
             ):
-                signal, sampling_rate = audiofile.read(
-                    file,
-                    offset=start.total_seconds(),
-                    duration=(end - start).total_seconds(),
-                    always_2d=True,
-                )
-                emb = self.get_embeddings(signal, sampling_rate, file)
-                emb_series[idx] = emb
-            self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
+                try:
+                    signal, sampling_rate = audiofile.read(
+                        file,
+                        offset=start.total_seconds(),
+                        duration=(end - start).total_seconds(),
+                        always_2d=True,
+                    )
+                    emb = self.get_embeddings(signal, sampling_rate, file)
+                    emb_series.iloc[idx] = emb
+                except Exception as e:
+                    self.util.warn(f"skipping {file}: {e}")
+            valid = emb_series.notna()
+            if not valid.all():
+                self.util.warn(f"skipped {(~valid).sum()} files that failed to load")
+                emb_series = emb_series[valid]
+            self.df = pd.DataFrame(emb_series.values.tolist(), index=emb_series.index)
             self.df.columns = ["pesq", "sdr", "stoi"]
             self.util.write_store(self.df, storage, store_format)
             try:

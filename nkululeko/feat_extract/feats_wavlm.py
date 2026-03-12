@@ -8,6 +8,7 @@ import pandas as pd
 import torch
 import torchaudio
 from tqdm import tqdm
+import transformers
 from transformers import Wav2Vec2FeatureExtractor
 from transformers import WavLMModel
 
@@ -30,6 +31,7 @@ class Wavlm(Featureset):
         self.device = self.util.config_val("MODEL", "device", cuda)
         self.model_initialized = False
         self.feat_type = feats_type
+        self.hidden_layer = int(self.util.config_val("FEATS", "wavlm.layer", "0"))
 
     def init_model(self):
         # load model
@@ -38,16 +40,29 @@ class Wavlm(Featureset):
         model_path = self.util.config_val(
             "FEATS", "WavLM.model", f"microsoft/{self.feat_type}"
         )
+        config = transformers.AutoConfig.from_pretrained(model_path)
+        layer_num = config.num_hidden_layers
+        self.adjusted_layer = layer_num - self.hidden_layer
+        config.num_hidden_layers = self.adjusted_layer
+        self.util.debug(
+            f"using hidden layer #{config.num_hidden_layers} (from input, "
+            f"{self.hidden_layer} from last)"
+        )
         self.processor = Wav2Vec2FeatureExtractor.from_pretrained(model_path)
-        self.model = WavLMModel.from_pretrained(model_path).to(self.device)
-        print(f"intialized WavLM model on {self.device}")
+        self.model = WavLMModel.from_pretrained(model_path, config=config).to(
+            self.device
+        )
+        print(f"initialized WavLM model on {self.device}")
         self.model.eval()
         self.model_initialized = True
 
     def extract(self):
         """Extract the features or load them from disk if present."""
         store = self.util.get_path("store")
-        storage = f"{store}{self.name}.pkl"
+        if self.hidden_layer == 0:
+            storage = f"{store}{self.name}.pkl"
+        else:
+            storage = f"{store}{self.name}_l{str(self.hidden_layer)}.pkl"
         extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
@@ -58,17 +73,24 @@ class Wavlm(Featureset):
             for idx, (file, start, end) in enumerate(
                 tqdm(self.data_df.index.to_list())
             ):
-                signal, sampling_rate = torchaudio.load(
-                    file,
-                    frame_offset=int(start.total_seconds() * 16000),
-                    num_frames=int((end - start).total_seconds() * 16000),
-                )
-                assert (
-                    sampling_rate == 16000
-                ), f"sampling rate should be 16000 but is {sampling_rate}"
-                emb = self.get_embeddings(signal, sampling_rate, file)
-                emb_series.iloc[idx] = emb
-            self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
+                try:
+                    signal, sampling_rate = torchaudio.load(
+                        file,
+                        frame_offset=int(start.total_seconds() * 16000),
+                        num_frames=int((end - start).total_seconds() * 16000),
+                    )
+                    assert (
+                        sampling_rate == 16000
+                    ), f"sampling rate should be 16000 but is {sampling_rate}"
+                    emb = self.get_embeddings(signal, sampling_rate, file)
+                    emb_series.iloc[idx] = emb
+                except Exception as e:
+                    self.util.warn(f"skipping {file}: {e}")
+            valid = emb_series.notna()
+            if not valid.all():
+                self.util.warn(f"skipped {(~valid).sum()} files that failed to load")
+                emb_series = emb_series[valid]
+            self.df = pd.DataFrame(emb_series.values.tolist(), index=emb_series.index)
             self.df.to_pickle(storage)
             try:
                 glob_conf.config["DATA"]["needs_feature_extraction"] = "false"

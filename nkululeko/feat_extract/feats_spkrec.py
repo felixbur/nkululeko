@@ -60,20 +60,29 @@ class Spkrec(Featureset):
             for idx, (file, start, end) in enumerate(
                 tqdm(self.data_df.index.to_list())
             ):
-                signal, sampling_rate = torchaudio.load(
-                    file,
-                    frame_offset=int(start.total_seconds() * 16000),
-                    num_frames=int((end - start).total_seconds() * 16000),
-                )
-                assert sampling_rate == 16000
-                # check if signal is stereo, if so, take first channel
-                if signal.shape[0] == 2:
-                    signal = signal[0]
-                emb = self.get_embeddings(signal, sampling_rate, file)
-                # fill series with embeddings
-                emb_series.iloc[idx] = emb
+                try:
+                    signal, sampling_rate = torchaudio.load(
+                        file,
+                        frame_offset=int(start.total_seconds() * 16000),
+                        num_frames=int((end - start).total_seconds() * 16000),
+                    )
+                    assert (
+                        sampling_rate == 16000
+                    ), f"expected 16000 Hz, got {sampling_rate}"
+                    # check if signal is stereo, if so, take first channel
+                    if signal.shape[0] == 2:
+                        signal = signal[0]
+                    emb = self.get_embeddings(signal, sampling_rate, file)
+                    # fill series with embeddings
+                    emb_series.iloc[idx] = emb
+                except Exception as e:
+                    self.util.warn(f"skipping {file}: {e}")
             # print(f"emb_series shape: {emb_series.shape}")
-            self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
+            valid = emb_series.notna()
+            if not valid.all():
+                self.util.warn(f"skipped {(~valid).sum()} files that failed to load")
+                emb_series = emb_series[valid]
+            self.df = pd.DataFrame(emb_series.values.tolist(), index=emb_series.index)
             print(f"df shape: {self.df.shape}")
             self.df.to_pickle(storage)
             try:
