@@ -36,6 +36,6 @@ jobs:
         run: |
           source .venv/bin/activate
           set -o pipefail
-          pytest --cov=nkululeko --cov-report=xml --cov-branch | tee pytest-coverage.txt  
+          pytest --cov=nkululeko tests/
         continue-on-error: true
 
