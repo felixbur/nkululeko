@@ -86,8 +86,9 @@ class FeatureAnalyser:
 
             explainer = shap.Explainer(
                 model_func,
-                self.features.values,
+                self.features,
                 output_names=glob_conf.labels,
+                feature_names=self.features.columns.tolist(),
                 algorithm="permutation",
                 npermutations=5,
             )

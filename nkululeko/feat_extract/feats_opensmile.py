@@ -87,7 +87,7 @@ class Opensmileset(Featureset):
         except (AttributeError, SyntaxError) as e:
             self.util.error(f"Invalid feature level: {self.featlevel}. Error: {str(e)}")
             raise ValueError(f"Invalid feature level: {self.featlevel}")
-        self.print_feats = eval(self.util.config_val("FEATS", "print_feats", "False"))
+        self.print_feats = self.util.config_val("FEATS", "print_feats", "False").lower() == "true"
 
     def extract(self) -> pd.DataFrame:
         """Extract the features based on the initialized dataset or load them from disk if available.
