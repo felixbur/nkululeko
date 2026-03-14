@@ -2,7 +2,6 @@
 import ast
 
 import pandas as pd
-from tqdm import tqdm
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.util import Util
@@ -41,7 +40,17 @@ class Featureset:
             pd.DataFrame of embeddings with filtered index.
         """
         emb_series = pd.Series(index=self.data_df.index, dtype=object)
-        for idx, (file, start, end) in enumerate(tqdm(self.data_df.index.to_list())):
+        iterable = self.data_df.index.to_list()
+        try:
+            # Use tqdm for a progress bar if available, but don't require it.
+            from tqdm import tqdm  # type: ignore[import-not-found]
+
+            iterable = tqdm(iterable)
+        except ImportError:
+            # Fall back to plain iteration without a progress bar.
+            pass
+
+        for idx, (file, start, end) in enumerate(iterable):
             try:
                 emb = extract_fn(file, start, end)
                 emb_series.iloc[idx] = emb
