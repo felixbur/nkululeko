@@ -44,21 +44,35 @@ class Whisper(Featureset):
                 self.init_model()
             self.util.debug("extracting whisper embeddings, this might take a while...")
             emb_series = []
+            valid_index = []
             for (file, start, end), _ in audeer.progress_bar(
                 self.data_df.iterrows(),
                 total=len(self.data_df),
                 desc=f"Running whisper on {len(self.data_df)} audiofiles",
             ):
-                if end == pd.NaT:
-                    signal, sr = audiofile.read(file, offset=start)
-                else:
-                    signal, sr = audiofile.read(
-                        file, duration=end - start, offset=start
-                    )
-                emb = self.get_embeddings(signal, sr, file)
-                emb_series.append(emb)
+                try:
+                    if end == pd.NaT:
+                        signal, sr = audiofile.read(file, offset=start)
+                    else:
+                        signal, sr = audiofile.read(
+                            file, duration=end - start, offset=start
+                        )
+                    emb = self.get_embeddings(signal, sr, file)
+                    emb_series.append(emb)
+                    valid_index.append((file, start, end))
+                except Exception as e:
+                    self.util.warn(f"skipping {file}: {e}")
+            if len(valid_index) < len(self.data_df):
+                self.util.warn(
+                    f"skipped {len(self.data_df) - len(valid_index)} files that failed to load or extract embeddings"
+                )
             # print(f"emb_series shape: {emb_series.shape}")
-            self.df = pd.DataFrame(emb_series, index=self.data_df.index)
+            self.df = pd.DataFrame(
+                emb_series,
+                index=pd.MultiIndex.from_tuples(
+                    valid_index, names=self.data_df.index.names
+                ),
+            )
             # print(f"df shape: {self.df.shape}")
             self.df.to_pickle(storage)
             try:

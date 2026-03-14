@@ -6,6 +6,8 @@ features from audio signals using the diffsptk library.
 https://github.com/sp-nitech/diffsptk
 """
 
+import subprocess
+
 import numpy as np
 import pandas as pd
 import torch
@@ -243,6 +245,44 @@ class SptkFeatureExtractor:
         return emb
 
 
+def _read_audio(file, offset=None, duration=None):
+    """Read audio file with fallback to ffmpeg for formats unsupported by libsndfile.
+
+    Some FLAC files (e.g. ASVspoof 2021 with GSM/PSTN codec simulation) cannot be
+    decoded by libsndfile and raise "unknown error in flac decoder". ffmpeg handles
+    these files correctly.
+
+    Returns:
+        Tuple of (signal_2d, sample_rate) where signal_2d has shape (1, n_samples).
+    """
+    try:
+        kwargs = {"always_2d": True}
+        if offset is not None:
+            kwargs["offset"] = offset
+        if duration is not None:
+            kwargs["duration"] = duration
+        signal, sampling_rate = audiofile.read(file, **kwargs)
+        # Downmix to mono if multi-channel
+        if signal.shape[0] > 1:
+            signal = signal.mean(axis=0, keepdims=True)
+        return signal, sampling_rate
+    except Exception:
+        # Fall back to ffmpeg for files libsndfile cannot decode
+        cmd = ["ffmpeg", "-v", "quiet", "-i", file]
+        if offset is not None:
+            cmd += ["-ss", str(offset)]
+        if duration is not None:
+            cmd += ["-t", str(duration)]
+        cmd += ["-f", "s16le", "-acodec", "pcm_s16le", "-ar", str(SR), "-ac", "1", "-"]
+        result = subprocess.run(cmd, capture_output=True)
+        if result.returncode != 0 or len(result.stdout) == 0:
+            raise RuntimeError(
+                f"ffmpeg failed to decode {file}: {result.stderr.decode()}"
+            )
+        audio = np.frombuffer(result.stdout, dtype=np.int16).astype(np.float32) / 32768.0
+        return audio[np.newaxis, :], SR  # Return shape (1, n_samples)
+
+
 def compute_features(
     file_index,
     frame_length=FRAME_LENGTH,
@@ -285,30 +325,44 @@ def compute_features(
     length = len(file_index)
 
     # Extract features for each file
+    skipped = 0
     for idx, row_index in enumerate(tqdm(file_index.to_list(), total=length)):
         # Handle both tuple (file, start, end) and string file formats
-        if isinstance(row_index, tuple) and len(row_index) == 3:
-            file, start, end = row_index
-            signal, sampling_rate = audiofile.read(
-                file,
-                offset=start.total_seconds(),
-                duration=(end - start).total_seconds(),
-                always_2d=True,
+        try:
+            if isinstance(row_index, tuple) and len(row_index) == 3:
+                file, start, end = row_index
+                signal, sampling_rate = _read_audio(
+                    file,
+                    offset=start.total_seconds(),
+                    duration=(end - start).total_seconds(),
+                )
+            else:
+                # Single file path - read entire file
+                file = row_index if isinstance(row_index, str) else str(row_index)
+                signal, sampling_rate = _read_audio(file)
+
+            # Convert to tensor
+            signal_tensor = torch.tensor(signal[0], device=device).float()
+
+            # Extract features
+            emb = extractor.extract_features_from_signal(
+                signal_tensor, features_requested
             )
-        else:
-            # Single file path - read entire file
-            file = row_index if isinstance(row_index, str) else str(row_index)
-            signal, sampling_rate = audiofile.read(file, always_2d=True)
+            emb_series[row_index] = emb
+        except Exception as e:
+            print(f"WARNING: featureset: skipping {file}: {e}")
+            skipped += 1
 
-        # Convert to tensor
-        signal_tensor = torch.tensor(signal[0], device=device).float()
+    if skipped:
+        print(
+            f"WARNING: featureset: skipped {skipped} files that failed to load or extract features"
+        )
 
-        # Extract features
-        emb = extractor.extract_features_from_signal(signal_tensor, features_requested)
-        emb_series[row_index] = emb
-
-    # Convert to DataFrame
-    df = pd.DataFrame(emb_series.values.tolist(), index=file_index)
+    # Convert to DataFrame, dropping any files that failed
+    valid = emb_series.notna()
+    if not valid.all():
+        emb_series = emb_series[valid]
+    df = pd.DataFrame(emb_series.values.tolist(), index=emb_series.index)
 
     # Fill NaN values with mean
     for col in df.columns:

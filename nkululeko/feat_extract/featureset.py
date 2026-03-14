@@ -30,6 +30,40 @@ class Featureset:
     def extract(self):
         pass
 
+    def _extract_embeddings_with_error_handling(self, extract_fn):
+        """Process each file with extract_fn, skip failures, return filtered DataFrame.
+
+        Args:
+            extract_fn: callable(file, start, end) -> embedding array
+
+        Returns:
+            pd.DataFrame of embeddings with filtered index.
+        """
+        emb_series = pd.Series(index=self.data_df.index, dtype=object)
+        iterable = self.data_df.index.to_list()
+        try:
+            # Use tqdm for a progress bar if available, but don't require it.
+            from tqdm import tqdm  # type: ignore[import-not-found]
+
+            iterable = tqdm(iterable)
+        except ImportError:
+            # Fall back to plain iteration without a progress bar.
+            pass
+
+        for idx, (file, start, end) in enumerate(iterable):
+            try:
+                emb = extract_fn(file, start, end)
+                emb_series.iloc[idx] = emb
+            except Exception as e:
+                self.util.warn(f"skipping {file}: {e}")
+        valid = emb_series.notna()
+        if not valid.all():
+            self.util.warn(
+                f"skipped {(~valid).sum()} files that failed to load or extract embeddings"
+            )
+            emb_series = emb_series[valid]
+        return pd.DataFrame(emb_series.values.tolist(), index=emb_series.index)
+
     def filter(self):
         # use only the features that are indexed in the target dataframes
         self.df = self.df[self.df.index.isin(self.data_df.index)]

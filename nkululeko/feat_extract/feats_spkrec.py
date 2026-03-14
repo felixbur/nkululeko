@@ -11,7 +11,6 @@ import pandas as pd
 import torch
 import torchaudio
 from speechbrain.inference import EncoderClassifier
-from tqdm import tqdm
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
@@ -56,25 +55,21 @@ class Spkrec(Featureset):
             if not self.classifier_initialized:
                 self.init_model()
             self.util.debug("extracting Spkrec embeddings, this might take a while...")
-            emb_series = pd.Series(index=self.data_df.index, dtype=object)
-            for idx, (file, start, end) in enumerate(
-                tqdm(self.data_df.index.to_list())
-            ):
+
+            def _load_file(file, start, end):
                 signal, sampling_rate = torchaudio.load(
                     file,
                     frame_offset=int(start.total_seconds() * 16000),
                     num_frames=int((end - start).total_seconds() * 16000),
                 )
-                assert sampling_rate == 16000
+                assert sampling_rate == 16000, f"expected 16000 Hz, got {sampling_rate}"
                 # check if signal is stereo, if so, take first channel
                 if signal.shape[0] == 2:
                     signal = signal[0]
-                emb = self.get_embeddings(signal, sampling_rate, file)
-                # fill series with embeddings
-                emb_series.iloc[idx] = emb
-            # print(f"emb_series shape: {emb_series.shape}")
-            self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
-            print(f"df shape: {self.df.shape}")
+                return self.get_embeddings(signal, sampling_rate, file)
+
+            self.df = self._extract_embeddings_with_error_handling(_load_file)
+            self.util.debug(f"df shape: {self.df.shape}")
             self.df.to_pickle(storage)
             try:
                 glob_conf.config["DATA"]["needs_feature_extraction"] = "false"

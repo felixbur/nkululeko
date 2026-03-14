@@ -19,7 +19,6 @@ import pandas as pd
 import torch
 import torchaudio
 from torchaudio.pipelines import SQUIM_OBJECTIVE
-from tqdm import tqdm
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
@@ -60,20 +59,19 @@ class SquimSet(Featureset):
             if not self.model_initialized:
                 self.init_model()
             self.util.debug("predicting SQUIM, this might take a while...")
-            emb_series = pd.Series(index=self.data_df.index, dtype=object)
-            for idx, (file, start, end) in enumerate(
-                tqdm(self.data_df.index.to_list())
-            ):
+
+            def _load_file(file, start, end):
                 signal, sampling_rate = audiofile.read(
                     file,
                     offset=start.total_seconds(),
                     duration=(end - start).total_seconds(),
                     always_2d=True,
                 )
-                emb = self.get_embeddings(signal, sampling_rate, file)
-                emb_series[idx] = emb
-            self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
-            self.df.columns = ["pesq", "sdr", "stoi"]
+                return self.get_embeddings(signal, sampling_rate, file)
+
+            self.df = self._extract_embeddings_with_error_handling(_load_file)
+            if not self.df.empty:
+                self.df.columns = ["pesq", "sdr", "stoi"]
             self.util.write_store(self.df, storage, store_format)
             try:
                 glob_conf.config["DATA"]["needs_feature_extraction"] = "false"

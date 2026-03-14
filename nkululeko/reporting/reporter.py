@@ -546,7 +546,13 @@ class Reporter:
                 # convert all keys to strings
                 rpt = dict((str(key), value) for (key, value) in rpt.items())
                 rpt_str = f"{json.dumps(rpt)}\n{f1_per_class}"
-                # rpt_str += f"\n{auc_auc}"
+                # Append EER (and UAR) when measure=eer
+                if self.metric == "eer":
+                    eer_val = float(self.result.test)
+                    uar_val = getattr(self, "uar_result", None)
+                    rpt_str += f"\nEER: {eer_val:.4f}"
+                    if uar_val is not None:
+                        rpt_str += f", UAR: {float(uar_val):.4f}"
                 text_file.write(rpt_str)
                 glob_conf.report.add_item(
                     ReportItem(

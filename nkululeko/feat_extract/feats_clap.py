@@ -5,7 +5,6 @@ import os
 import audiofile
 import laion_clap
 import pandas as pd
-from tqdm import tqdm
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
@@ -39,19 +38,17 @@ class ClapSet(Featureset):
             if not self.model_initialized:
                 self.init_model()
             self.util.debug("extracting clap embeddings, this might take a while...")
-            emb_series = pd.Series(index=self.data_df.index, dtype=object)
-            for idx, (file, start, end) in enumerate(
-                tqdm(self.data_df.index.to_list())
-            ):
+
+            def _load_file(file, start, end):
                 signal, sampling_rate = audiofile.read(
                     file,
                     offset=start.total_seconds(),
                     duration=(end - start).total_seconds(),
                     always_2d=True,
                 )
-                emb = self.get_embeddings(signal, sampling_rate)
-                emb_series[idx] = emb
-            self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
+                return self.get_embeddings(signal, sampling_rate)
+
+            self.df = self._extract_embeddings_with_error_handling(_load_file)
             self.util.write_store(self.df, storage, store_format)
             try:
                 glob_conf.config["DATA"]["needs_feature_extraction"] = "false"
