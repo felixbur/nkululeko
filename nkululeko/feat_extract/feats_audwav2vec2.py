@@ -105,7 +105,7 @@ class Audwav2vec2Set(Featureset):
         cache_name = f"{audeer.basename_wo_ext(index_tuple[0])}_{start}_{end}"
         cache_path = audeer.path(segment_cache, cache_name + ".csv")
         if os.path.isfile(cache_path):
-            self.util.debug(f"loading cached features for {index_tuple[0]} from {cache_path}")
+            # self.util.debug(f"loading cached features for {index_tuple[0]} from {cache_path}")
             df_part = audformat.utils.read_csv(cache_path)
         else:
             features = self.extract_sample(signal, sr)
