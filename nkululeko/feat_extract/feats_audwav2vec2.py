@@ -4,6 +4,7 @@ import pandas as pd
 import audeer
 import audinterface
 import audiofile
+import audformat
 import audonnx
 import numpy as np
 import torch
@@ -96,9 +97,24 @@ class Audwav2vec2Set(Featureset):
         Returns:
             pd.DataFrame: Features as a single-row DataFrame with proper index
         """
-        features = self.extract_sample(signal, sr)
-        # Create DataFrame with proper index matching data_df structure
-        return pd.DataFrame([features], index=[index_tuple])
+        segment_cache = audeer.mkdir(
+            audeer.path(self.util.get_path("cache"), "segments_paynnote")
+        )
+        start = index_tuple[1].total_seconds() if index_tuple[1] is not pd.NaT else 0
+        end = index_tuple[2].total_seconds() if index_tuple[2] is not pd.NaT else -1
+        cache_name = f"{audeer.basename_wo_ext(index_tuple[0])}_{start}_{end}"
+        cache_path = audeer.path(segment_cache, cache_name + ".csv")
+        if os.path.isfile(cache_path):
+            self.util.debug(f"loading cached features for {index_tuple[0]} from {cache_path}")
+            df_part = audformat.utils.read_csv(cache_path)
+        else:
+            features = self.extract_sample(signal, sr)
+            # Create DataFrame with proper index matching data_df structure
+            index_part = audformat.segmented_index(index_tuple[0], index_tuple[1], index_tuple[2])
+            df_part = pd.DataFrame([features], index=index_part)
+            df_part.to_csv(cache_path)
+        
+        return df_part
 
     def extract_sample(self, signal, sr):
         if not self.model_loaded:
