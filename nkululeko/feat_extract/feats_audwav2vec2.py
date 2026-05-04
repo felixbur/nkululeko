@@ -98,7 +98,7 @@ class Audwav2vec2Set(Featureset):
             pd.DataFrame: Features as a single-row DataFrame with proper index
         """
         segment_cache = audeer.mkdir(
-            audeer.path(self.util.get_path("cache"), "segments_paynnote")
+            audeer.path(self.util.get_path("cache"), "feats_audwav2vec2")
         )
         start = index_tuple[1].total_seconds() if index_tuple[1] is not pd.NaT else 0
         end = index_tuple[2].total_seconds() if index_tuple[2] is not pd.NaT else -1
