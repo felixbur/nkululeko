@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.6.3 (26-05-04)
+------------------------
+* caching for audwav2vwc2 features
+
 Version 1.6.2 (26-04-28)
 ------------------------
 * minor bug fixes: 
