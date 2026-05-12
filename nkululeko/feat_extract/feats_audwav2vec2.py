@@ -65,6 +65,7 @@ class Audwav2vec2Set(Featureset):
             )
             df = pd.DataFrame()
             for file, start, end in tqdm(self.data_df.index):
+                signal, sr = None, None
                 try:
                     if end == pd.NaT:
                         signal, sr = audiofile.read(file, offset=start)
