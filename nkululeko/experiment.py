@@ -782,9 +782,22 @@ class Experiment:
             pickle.dump(self.__dict__, f)
             f.close()
         except (TypeError, AttributeError) as error:
-            self.datasplitter.feature_extractor.feat_extractor.model = None
-            if hasattr(self.datasplitter.feature_extractor.feat_extractor, "model_interface"):
-                self.datasplitter.feature_extractor.feat_extractor.model_interface = None
+            # Strip the un-picklable inner model(s) from every FeatureExtractor
+            # stored on the experiment. There are typically two: one set in
+            # fill_train_and_tests() and one inside Datasplitter.extract_feats().
+            # Both may hold the same kind of feat_extractor (e.g. an ONNX
+            # InferenceSession from audwav2vec2 / agender), so nulling just
+            # one isn't enough.
+            for fe in self._collect_feature_extractors():
+                inner = getattr(fe, "feat_extractor", None)
+                if inner is None:
+                    continue
+                if hasattr(inner, "model"):
+                    inner.model = None
+                if hasattr(inner, "model_interface"):
+                    inner.model_interface = None
+                if hasattr(inner, "model_loaded"):
+                    inner.model_loaded = False
             f = open(filename, "wb")
             pickle.dump(self.__dict__, f)
             f.close()
@@ -797,6 +810,23 @@ class Experiment:
                 "Save experiment: Can't pickle local object, NOT saving: "
                 + f"{type(error).__name__} {error}"
             )
+
+    def _collect_feature_extractors(self):
+        """Return every FeatureExtractor reachable from `self`.
+
+        Currently looks at `self.feature_extractor` and
+        `self.datasplitter.feature_extractor`. Returns an iterable of objects
+        that may have a `feat_extractor` attribute.
+        """
+        seen = []
+        fe = getattr(self, "feature_extractor", None)
+        if fe is not None:
+            seen.append(fe)
+        ds = getattr(self, "datasplitter", None)
+        ds_fe = getattr(ds, "feature_extractor", None) if ds is not None else None
+        if ds_fe is not None and ds_fe is not fe:
+            seen.append(ds_fe)
+        return seen
 
     def save_onnx(self, filename):
         # export the model to onnx
