@@ -67,26 +67,31 @@ python -m nkululeko.nkululeko --config myconf.ini
 
 This trains on the train/dev data and evaluates on the test set in one go.
 
-## Confirming Results with the Test Module
+## Confirming Results with the Predict Module
 
-After running your experiment, you can use the **test module** to re-evaluate your saved model on the test set. This is useful to:
+After running your experiment, you can use the unified **predict module** to
+re-evaluate your saved model on a labeled test set. This is useful to:
 
 - Confirm the results from your experiment
 - Evaluate the model on additional test sets
 - Generate detailed test reports
 
-### Using the Test Module
+### Using the predict module in model mode
 
 First, ensure your model is saved by setting `save = True` in both `[EXP]` and `[MODEL]` sections. Then run:
 
 ```bash
-python -m nkululeko.test --config myconf.ini
+python -m nkululeko.predict \
+    --config myconf.ini \
+    --type model \
+    --list ./data/polish/polish_test.csv \
+    --outfile polish_test_predict.csv
 ```
 
-The test module will:
-1. Load the saved best model
-2. Evaluate it on the test set(s)
-3. Generate results with `test` suffix in the output files
+The predict module will:
+1. Load the saved best model from the experiment
+2. Run it on every audio file listed in the CSV
+3. Write predictions next to the original columns into `--outfile`
 
 ### Defining Test Databases
 

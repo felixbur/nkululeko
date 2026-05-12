@@ -1,85 +1,985 @@
+"""Tests for the unified nkululeko.predict module.
+
+Covers:
+
+- pure helpers (`_first_extractor`, `_flatten_features`, `_build_segmented_df`)
+- the AUTOPREDICT_TARGETS table
+- the argparse CLI (`_build_parser`)
+- config loading (`_load_config`)
+- input-mode handlers (`_run_files`, `_run_list`, `_run_folder`) with the
+  prediction backend mocked
+- dispatch logic (`_predict_df`) between model / autopredict / feature paths
+- the backwards-compatible `do_test` entry point
+- `main()` smoke behaviour (`--help`, missing input)
+"""
+
 import argparse
+import configparser
 import os
-import tempfile
+import sys
+from unittest.mock import MagicMock, patch
+
+import audformat
+import numpy as np
+import pandas as pd
+import pytest
+import soundfile as sf
 
 
-class TestPredictArgParser:
-    """Test predict module argument parsing."""
+def _write_silent_wav(path, samples=1600, sr=16000):
+    """Write a tiny valid WAV file used by tests that need a real audio file
+    on disk (e.g. anything that exercises `_resolve_nat_ends`)."""
+    sf.write(str(path), np.zeros(samples, dtype="float32"), sr)
 
-    def test_parser_default_config(self):
-        parser = argparse.ArgumentParser()
-        parser.add_argument("--config", default="exp.ini")
-        args = parser.parse_args([])
+
+# ---------------------------------------------------------------------------
+# Pure helpers
+# ---------------------------------------------------------------------------
+
+
+class TestFirstExtractor:
+    """`_first_extractor` normalizes the various FEATS.type encodings."""
+
+    def test_list_value(self):
+        from nkululeko.predict import _first_extractor
+
+        assert _first_extractor(["wav2vec2", "opensmile"]) == "wav2vec2"
+
+    def test_empty_list_value(self):
+        from nkululeko.predict import _first_extractor
+
+        assert _first_extractor([]) is None
+
+    def test_python_literal_list_string(self):
+        from nkululeko.predict import _first_extractor
+
+        assert _first_extractor("['wav2vec2', 'opensmile']") == "wav2vec2"
+
+    def test_plain_string(self):
+        from nkululeko.predict import _first_extractor
+
+        assert _first_extractor("audmodel") == "audmodel"
+
+    def test_comma_separated(self):
+        from nkululeko.predict import _first_extractor
+
+        assert _first_extractor("wav2vec2,opensmile") == "wav2vec2"
+
+    def test_quoted_single_string(self):
+        from nkululeko.predict import _first_extractor
+
+        # ast.literal_eval interprets a single quoted string literal.
+        assert _first_extractor("'audmodel'") == "audmodel"
+
+
+class TestFlattenFeatures:
+    """`_flatten_features` produces a 1-D ndarray for every supported input."""
+
+    def test_scalar(self):
+        from nkululeko.predict import _flatten_features
+
+        np.testing.assert_array_equal(
+            _flatten_features(3.14), np.array([3.14])
+        )
+
+    def test_int_scalar(self):
+        from nkululeko.predict import _flatten_features
+
+        np.testing.assert_array_equal(_flatten_features(2), np.array([2]))
+
+    def test_tuple(self):
+        from nkululeko.predict import _flatten_features
+
+        np.testing.assert_array_equal(
+            _flatten_features((1.0, 2.0, 3.0)), np.array([1.0, 2.0, 3.0])
+        )
+
+    def test_1d_array(self):
+        from nkululeko.predict import _flatten_features
+
+        arr = np.array([1, 2, 3])
+        np.testing.assert_array_equal(_flatten_features(arr), arr)
+
+    def test_2d_array_flattens(self):
+        from nkululeko.predict import _flatten_features
+
+        out = _flatten_features(np.array([[1, 2], [3, 4]]))
+        assert out.shape == (4,)
+        np.testing.assert_array_equal(out, np.array([1, 2, 3, 4]))
+
+    def test_series(self):
+        from nkululeko.predict import _flatten_features
+
+        out = _flatten_features(pd.Series([1, 2, 3]))
+        np.testing.assert_array_equal(out, np.array([1, 2, 3]))
+
+    def test_dataframe(self):
+        from nkululeko.predict import _flatten_features
+
+        out = _flatten_features(pd.DataFrame({"a": [1], "b": [2]}))
+        assert out.shape == (2,)
+
+    def test_list(self):
+        from nkululeko.predict import _flatten_features
+
+        np.testing.assert_array_equal(
+            _flatten_features([1.0, 2.0]), np.array([1.0, 2.0])
+        )
+
+
+class TestBuildSegmentedDf:
+    """`_build_segmented_df` produces a 0-column audformat-segmented frame."""
+
+    def test_segmented_index(self, tmp_path):
+        from nkululeko.predict import _build_segmented_df
+
+        a = tmp_path / "a.wav"
+        b = tmp_path / "b.wav"
+        _write_silent_wav(a)
+        _write_silent_wav(b)
+
+        df = _build_segmented_df([str(a), str(b)])
+        assert df.shape == (2, 0)
+        assert audformat.is_segmented_index(df.index)
+        files = df.index.get_level_values("file").tolist()
+        assert files == [str(a), str(b)]
+
+    def test_relative_paths_made_absolute(self, tmp_path, monkeypatch):
+        from nkululeko.predict import _build_segmented_df
+
+        monkeypatch.chdir(tmp_path)
+        _write_silent_wav("a.wav")
+        df = _build_segmented_df(["a.wav"])
+        path = df.index.get_level_values("file")[0]
+        assert os.path.isabs(path)
+
+    def test_nat_ends_resolved_to_real_duration(self, tmp_path):
+        """Regression: feature extractors emit indices with real end times.
+        `_build_segmented_df` must do the same so `Featureset.filter()` can
+        match by index equality (otherwise predictions become NaN)."""
+        from nkululeko.predict import _build_segmented_df
+
+        wav = tmp_path / "x.wav"
+        _write_silent_wav(wav, samples=16000, sr=16000)  # exactly 1 s
+
+        df = _build_segmented_df([str(wav)])
+        end = df.index.get_level_values("end")[0]
+        assert not pd.isna(end)
+        assert end == pd.Timedelta(seconds=1)
+
+
+class TestAutopredictTargets:
+    """Sanity check for the autopredict-target table."""
+
+    def test_standard_targets_present(self):
+        from nkululeko.predict import AUTOPREDICT_TARGETS
+
+        for t in (
+            "age",
+            "gender",
+            "emotion",
+            "mos",
+            "snr",
+            "speaker",
+            "arousal",
+            "valence",
+            "dominance",
+            "pesq",
+            "sdr",
+            "stoi",
+            "text",
+            "translation",
+            "textclassification",
+        ):
+            assert t in AUTOPREDICT_TARGETS
+
+
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
+
+
+class TestBuildParser:
+    def test_defaults(self):
+        from nkululeko.predict import DEFAULT_OUTFILE, _build_parser
+
+        args = _build_parser().parse_args([])
+        assert args.file is None
+        assert args.folder is None
+        assert args.list_path is None
+        assert args.mic is False
+        assert args.outfile == DEFAULT_OUTFILE
+        assert args.ptype == "feats"
+        assert args.config is None
+        assert args.model is None
+        # Playback is enabled by default in --mic mode.
+        assert args.no_playback is False
+
+    def test_no_playback_flag(self):
+        from nkululeko.predict import _build_parser
+
+        args = _build_parser().parse_args(["--no_playback"])
+        assert args.no_playback is True
+
+    def test_file_accepts_multiple_values(self):
+        from nkululeko.predict import _build_parser
+
+        args = _build_parser().parse_args(["--file", "a.wav", "b.wav"])
+        assert args.file == ["a.wav", "b.wav"]
+
+    def test_list_path_attribute_name(self):
+        """--list maps to the `list_path` attribute (since `list` is reserved)."""
+        from nkululeko.predict import _build_parser
+
+        args = _build_parser().parse_args(["--list", "in.csv"])
+        assert args.list_path == "in.csv"
+
+    def test_mutually_exclusive_sources(self):
+        from nkululeko.predict import _build_parser
+
+        parser = _build_parser()
+        with pytest.raises(SystemExit):
+            parser.parse_args(["--file", "a.wav", "--mic"])
+
+    def test_type_choice_validated(self):
+        from nkululeko.predict import _build_parser
+
+        with pytest.raises(SystemExit):
+            _build_parser().parse_args(["--type", "bogus"])
+
+    def test_full_argument_set(self):
+        from nkululeko.predict import _build_parser
+
+        args = _build_parser().parse_args(
+            [
+                "--list",
+                "in.csv",
+                "--config",
+                "exp.ini",
+                "--type",
+                "model",
+                "--outfile",
+                "out.csv",
+                "--model",
+                "emotion",
+            ]
+        )
+        assert args.list_path == "in.csv"
         assert args.config == "exp.ini"
-
-    def test_parser_custom_config(self):
-        parser = argparse.ArgumentParser()
-        parser.add_argument("--config", default="exp.ini")
-        args = parser.parse_args(["--config", "my_config.ini"])
-        assert args.config == "my_config.ini"
+        assert args.ptype == "model"
+        assert args.outfile == "out.csv"
+        assert args.model == "emotion"
 
 
-class TestPredictConfigCheck:
-    """Test config file existence checks."""
-
-    def test_missing_config_detected(self):
-        assert not os.path.isfile("nonexistent_predict.ini")
-
-    def test_existing_config_detected(self):
-        with tempfile.NamedTemporaryFile(suffix=".ini", delete=False) as f:
-            tmpfile = f.name
-        assert os.path.isfile(tmpfile)
-        os.remove(tmpfile)
+# ---------------------------------------------------------------------------
+# Config loading
+# ---------------------------------------------------------------------------
 
 
-class TestPredictOutputLogic:
-    """Test output processing logic from predict module."""
+class TestLoadConfig:
+    def test_default_config_when_no_arg(self):
+        import ast
 
-    def test_sample_selection_default(self):
-        """Test default sample selection is 'all'."""
-        sample_selection = "all"
-        name = f"{sample_selection}_predicted"
-        assert name == "all_predicted"
+        from nkululeko.predict import _load_config
 
-    def test_sample_selection_custom(self):
-        """Test custom sample selection naming."""
-        sample_selection = "train"
-        name = f"{sample_selection}_predicted"
-        assert name == "train_predicted"
+        args = argparse.Namespace(config=None)
+        config = _load_config(args)
+        for section in ("EXP", "DATA", "FEATS", "MODEL"):
+            assert section in config
+        # DATA.databases must remain parseable for downstream consumers.
+        ast.literal_eval(config["DATA"]["databases"])
+        # no_reuse is the safe default for ad-hoc runs (no cache reuse).
+        assert config["FEATS"]["no_reuse"] == "True"
 
-    def test_class_label_rename_logic(self):
-        """Test the class_label column rename logic."""
-        import pandas as pd
+    def test_loads_explicit_config_and_adds_missing_sections(self, tmp_path):
+        from nkululeko.predict import _load_config
 
-        target = "emotion"
-        df = pd.DataFrame(
+        src = configparser.ConfigParser()
+        src["EXP"] = {"root": "./", "name": "x"}
+        src["DATA"] = {"target": "emotion"}
+        p = tmp_path / "x.ini"
+        with open(p, "w") as fh:
+            src.write(fh)
+
+        args = argparse.Namespace(config=str(p))
+        loaded = _load_config(args)
+        assert loaded["EXP"]["name"] == "x"
+        assert "FEATS" in loaded
+        assert "MODEL" in loaded
+        # databases gets a default when not provided
+        assert "databases" in loaded["DATA"]
+
+    def test_nonexistent_config_exits(self):
+        from nkululeko.predict import _load_config
+
+        args = argparse.Namespace(config="/does/not/exist.ini")
+        with pytest.raises(SystemExit):
+            _load_config(args)
+
+
+# ---------------------------------------------------------------------------
+# _run_files
+# ---------------------------------------------------------------------------
+
+
+class TestRunFiles:
+    """`_run_files` writes a `<name>_result.txt` per valid input file."""
+
+    def test_per_file_output(self, tmp_path):
+        f1 = tmp_path / "one.wav"
+        f2 = tmp_path / "two.wav"
+        _write_silent_wav(f1)
+        _write_silent_wav(f2)
+
+        def fake_predict_df(seg_df, args, util):
+            return pd.DataFrame(
+                {"emotion_pred": ["happy", "sad"]},
+                index=seg_df.index,
+            )
+
+        from nkululeko.predict import _run_files
+
+        util = MagicMock()
+        with patch("nkululeko.predict._predict_df", side_effect=fake_predict_df):
+            _run_files([str(f1), str(f2)], argparse.Namespace(), util)
+
+        r1 = tmp_path / "one_result.txt"
+        r2 = tmp_path / "two_result.txt"
+        assert r1.is_file()
+        assert r2.is_file()
+        assert "emotion_pred: happy" in r1.read_text()
+        assert "emotion_pred: sad" in r2.read_text()
+
+    def test_multi_column_predictions(self, tmp_path):
+        """Every prediction column is written to the per-file output."""
+        audio = tmp_path / "x.wav"
+        _write_silent_wav(audio)
+
+        def fake_predict_df(seg_df, args, util):
+            return pd.DataFrame(
+                {"angry": [0.8], "happy": [0.1], "predicted": ["angry"]},
+                index=seg_df.index,
+            )
+
+        from nkululeko.predict import _run_files
+
+        util = MagicMock()
+        with patch("nkululeko.predict._predict_df", side_effect=fake_predict_df):
+            _run_files([str(audio)], argparse.Namespace(), util)
+
+        body = (tmp_path / "x_result.txt").read_text()
+        assert "angry: 0.8" in body
+        assert "happy: 0.1" in body
+        assert "predicted: angry" in body
+
+    def test_skips_missing_files(self, tmp_path):
+        f1 = tmp_path / "real.wav"
+        _write_silent_wav(f1)
+        missing = tmp_path / "ghost.wav"
+
+        def fake_predict_df(seg_df, args, util):
+            return pd.DataFrame({"col": ["x"]}, index=seg_df.index)
+
+        from nkululeko.predict import _run_files
+
+        util = MagicMock()
+        with patch("nkululeko.predict._predict_df", side_effect=fake_predict_df):
+            _run_files([str(f1), str(missing)], argparse.Namespace(), util)
+
+        assert util.warn.called
+        assert (tmp_path / "real_result.txt").is_file()
+        assert not (tmp_path / "ghost_result.txt").is_file()
+
+    def test_no_valid_files_calls_error(self):
+        from nkululeko.predict import _run_files
+
+        util = MagicMock()
+        util.error.side_effect = SystemExit
+        with pytest.raises(SystemExit):
+            _run_files(["/nope/missing.wav"], argparse.Namespace(), util)
+
+
+# ---------------------------------------------------------------------------
+# _run_list
+# ---------------------------------------------------------------------------
+
+
+class TestRunList:
+    def test_preserves_original_columns(self, tmp_path):
+        f1 = tmp_path / "a.wav"
+        f2 = tmp_path / "b.wav"
+        _write_silent_wav(f1)
+        _write_silent_wav(f2)
+
+        csv = tmp_path / "in.csv"
+        pd.DataFrame(
             {
-                "emotion": [0, 1, 2],
-                "class_label": ["happy", "sad", "angry"],
-                "speaker": ["s1", "s2", "s3"],
-            }
-        )
-        if "class_label" in df.columns:
-            df = df.drop(columns=[target])
-            df = df.rename(columns={"class_label": target})
-        assert target in df.columns
-        assert "class_label" not in df.columns
-        assert df[target].tolist() == ["happy", "sad", "angry"]
-
-    def test_output_csv_saving(self):
-        """Test CSV output saving."""
-        import pandas as pd
-
-        df = pd.DataFrame(
-            {
-                "emotion": ["happy", "sad"],
+                "file": [str(f1), str(f2)],
                 "speaker": ["s1", "s2"],
+                "note": ["x", "y"],
             }
+        ).to_csv(csv, index=False)
+
+        outfile = tmp_path / "out.csv"
+
+        def fake_predict_df(seg_df, args, util):
+            return pd.DataFrame(
+                {"snr_pred": [1.5, 2.5]},
+                index=seg_df.index,
+            )
+
+        from nkululeko.predict import _run_list
+
+        args = argparse.Namespace(outfile=str(outfile))
+        util = MagicMock()
+        with patch("nkululeko.predict._predict_df", side_effect=fake_predict_df):
+            _run_list(str(csv), args, util)
+
+        result = pd.read_csv(outfile)
+        # Original columns survive, prediction column is appended.
+        assert "speaker" in result.columns
+        assert "note" in result.columns
+        assert "snr_pred" in result.columns
+        assert sorted(result["speaker"].tolist()) == ["s1", "s2"]
+
+    def test_missing_csv_errors(self):
+        from nkululeko.predict import _run_list
+
+        util = MagicMock()
+        util.error.side_effect = SystemExit
+        with pytest.raises(SystemExit):
+            _run_list("/no/such.csv", argparse.Namespace(outfile="x.csv"), util)
+
+    def test_single_column_file_list(self, tmp_path):
+        """A CSV with only a `file` column is parsed by audformat as an Index
+        (not a DataFrame); _run_list must handle that case."""
+        f1 = tmp_path / "a.wav"
+        f2 = tmp_path / "b.wav"
+        _write_silent_wav(f1)
+        _write_silent_wav(f2)
+
+        csv = tmp_path / "files_only.csv"
+        with open(csv, "w") as fh:
+            fh.write("file\n")
+            fh.write(f"{f1}\n")
+            fh.write(f"{f2}\n")
+
+        outfile = tmp_path / "out.csv"
+
+        def fake_predict_df(seg_df, args, util):
+            return pd.DataFrame(
+                {"snr_pred": [1.0, 2.0]},
+                index=seg_df.index,
+            )
+
+        from nkululeko.predict import _run_list
+
+        args = argparse.Namespace(outfile=str(outfile))
+        util = MagicMock()
+        with patch("nkululeko.predict._predict_df", side_effect=fake_predict_df):
+            _run_list(str(csv), args, util)
+
+        result = pd.read_csv(outfile)
+        assert "snr_pred" in result.columns
+        assert len(result) == 2
+
+
+# ---------------------------------------------------------------------------
+# _run_folder
+# ---------------------------------------------------------------------------
+
+
+class TestRunFolder:
+    def test_empty_folder_calls_error(self, tmp_path):
+        from nkululeko.predict import _run_folder
+
+        util = MagicMock()
+        util.error.side_effect = SystemExit
+        with pytest.raises(SystemExit):
+            _run_folder(str(tmp_path), argparse.Namespace(outfile="x.csv"), util)
+
+    def test_nonexistent_folder_calls_error(self):
+        from nkululeko.predict import _run_folder
+
+        util = MagicMock()
+        util.error.side_effect = SystemExit
+        with pytest.raises(SystemExit):
+            _run_folder("/no/such/folder", argparse.Namespace(outfile="x.csv"), util)
+
+    def test_finds_audio_and_writes_csv(self, tmp_path):
+        _write_silent_wav(tmp_path / "a.wav")
+        _write_silent_wav(tmp_path / "b.wav")
+        (tmp_path / "notes.txt").touch()  # ignored extension
+
+        out = tmp_path / "out.csv"
+
+        def fake_predict_df(seg_df, args, util):
+            return pd.DataFrame(
+                {"x_pred": list(range(len(seg_df)))},
+                index=seg_df.index,
+            )
+
+        from nkululeko.predict import _run_folder
+
+        util = MagicMock()
+        args = argparse.Namespace(outfile=str(out))
+        with patch("nkululeko.predict._predict_df", side_effect=fake_predict_df):
+            _run_folder(str(tmp_path), args, util)
+
+        df = pd.read_csv(out)
+        # 2 audio files (txt excluded)
+        assert len(df) == 2
+        assert "x_pred" in df.columns
+
+
+# ---------------------------------------------------------------------------
+# _run_mic
+# ---------------------------------------------------------------------------
+
+
+def _run_mic_with_mocks(args, monkeypatch):
+    """Invoke `_run_mic` with one recording iteration and quit.
+
+    Returns the mocked `sounddevice` module so callers can inspect calls.
+    """
+    sd_mock = MagicMock()
+    sd_mock.rec.return_value = np.zeros((1600, 1), dtype="float32")
+    sf_mock = MagicMock()
+    monkeypatch.setitem(sys.modules, "sounddevice", sd_mock)
+    monkeypatch.setitem(sys.modules, "soundfile", sf_mock)
+
+    # First input() returns "" (record once), second returns "q" (quit).
+    answers = iter(["", "q"])
+    monkeypatch.setattr("builtins.input", lambda *a, **kw: next(answers))
+
+    # Skip touching real files / extractors.
+    util = MagicMock()
+    from nkululeko import predict as predict_mod
+
+    monkeypatch.setattr(
+        predict_mod,
+        "_build_segmented_df",
+        lambda files: pd.DataFrame(index=pd.MultiIndex.from_tuples(
+            [(files[0], pd.Timedelta(0), pd.Timedelta(seconds=1))],
+            names=["file", "start", "end"],
+        )),
+    )
+    monkeypatch.setattr(
+        predict_mod,
+        "_predict_df",
+        lambda seg_df, args, util: pd.DataFrame(
+            {"age_pred": [42]}, index=seg_df.index
+        ),
+    )
+    monkeypatch.setattr(os, "remove", lambda *a, **kw: None)
+
+    predict_mod._run_mic(args, util)
+    return sd_mock
+
+
+class TestRunMic:
+    def test_playback_by_default(self, monkeypatch):
+        args = argparse.Namespace(no_playback=False)
+        sd = _run_mic_with_mocks(args, monkeypatch)
+        assert sd.rec.called
+        assert sd.play.called  # playback ran
+
+    def test_no_playback_when_flag_set(self, monkeypatch):
+        args = argparse.Namespace(no_playback=True)
+        sd = _run_mic_with_mocks(args, monkeypatch)
+        assert sd.rec.called
+        assert not sd.play.called  # playback suppressed
+
+    def test_playback_failure_warns_but_continues(self, monkeypatch):
+        """A playback exception must be caught — prediction still runs."""
+        sd_mock = MagicMock()
+        sd_mock.rec.return_value = np.zeros((1600, 1), dtype="float32")
+        sd_mock.play.side_effect = RuntimeError("no audio device")
+        sf_mock = MagicMock()
+        monkeypatch.setitem(sys.modules, "sounddevice", sd_mock)
+        monkeypatch.setitem(sys.modules, "soundfile", sf_mock)
+
+        answers = iter(["", "q"])
+        monkeypatch.setattr("builtins.input", lambda *a, **kw: next(answers))
+
+        from nkululeko import predict as predict_mod
+
+        monkeypatch.setattr(
+            predict_mod,
+            "_build_segmented_df",
+            lambda files: pd.DataFrame(index=pd.MultiIndex.from_tuples(
+                [(files[0], pd.Timedelta(0), pd.Timedelta(seconds=1))],
+                names=["file", "start", "end"],
+            )),
         )
-        with tempfile.NamedTemporaryFile(suffix=".csv", delete=False, mode="w") as f:
-            tmpfile = f.name
-        df.to_csv(tmpfile)
-        loaded = pd.read_csv(tmpfile, index_col=0)
-        assert loaded.shape == (2, 2)
-        assert "emotion" in loaded.columns
-        os.remove(tmpfile)
+        predict_mock = MagicMock(
+            return_value=pd.DataFrame(
+                {"age_pred": [42]},
+                index=pd.MultiIndex.from_tuples(
+                    [("x", pd.Timedelta(0), pd.Timedelta(seconds=1))],
+                    names=["file", "start", "end"],
+                ),
+            )
+        )
+        monkeypatch.setattr(predict_mod, "_predict_df", predict_mock)
+        monkeypatch.setattr(os, "remove", lambda *a, **kw: None)
+
+        util = MagicMock()
+        args = argparse.Namespace(no_playback=False)
+        predict_mod._run_mic(args, util)
+
+        # Prediction ran despite playback failure; util.warn was invoked.
+        assert predict_mock.called
+        assert util.warn.called
+
+
+# ---------------------------------------------------------------------------
+# _predict_df dispatch
+# ---------------------------------------------------------------------------
+
+
+class TestPredictDfDispatch:
+    def test_model_path(self):
+        from nkululeko.predict import _predict_df
+
+        args = argparse.Namespace(ptype="model", model=None)
+        util = MagicMock()
+        with patch(
+            "nkululeko.predict._predict_with_model", return_value="MODEL"
+        ) as mock:
+            assert _predict_df(pd.DataFrame(), args, util) == "MODEL"
+            mock.assert_called_once()
+
+    def test_autopredict_path(self):
+        from nkululeko.predict import _predict_df
+
+        args = argparse.Namespace(ptype="feats", model="emotion")
+        util = MagicMock()
+        with patch(
+            "nkululeko.predict._predict_with_autopredict", return_value="AP"
+        ) as mock:
+            assert _predict_df(pd.DataFrame(), args, util) == "AP"
+            mock.assert_called_once()
+            # target arg is the lowercased model name
+            assert mock.call_args.args[1] == "emotion"
+
+    def test_autopredict_case_insensitive(self):
+        from nkululeko.predict import _predict_df
+
+        args = argparse.Namespace(ptype="feats", model="EMOTION")
+        util = MagicMock()
+        with patch(
+            "nkululeko.predict._predict_with_autopredict", return_value="AP"
+        ) as mock:
+            _predict_df(pd.DataFrame(), args, util)
+            assert mock.call_args.args[1] == "emotion"
+
+    def test_feature_extractor_fallback(self):
+        from nkululeko.predict import _predict_df
+
+        args = argparse.Namespace(ptype="feats", model="wav2vec2")
+        util = MagicMock()
+        with patch(
+            "nkululeko.predict._predict_with_features", return_value="FEAT"
+        ) as mock:
+            assert _predict_df(pd.DataFrame(), args, util) == "FEAT"
+            mock.assert_called_once()
+
+    def test_overlapping_name_resolves_to_autopredict(self):
+        """`mos` and `snr` are both autopredict targets and extractor names —
+        the dispatch must prefer the autopredict path."""
+        from nkululeko.predict import _predict_df
+
+        util = MagicMock()
+        for name in ("mos", "snr"):
+            args = argparse.Namespace(ptype="feats", model=name)
+            with patch(
+                "nkululeko.predict._predict_with_autopredict", return_value="AP"
+            ) as ap, patch(
+                "nkululeko.predict._predict_with_features"
+            ) as feat:
+                _predict_df(pd.DataFrame(), args, util)
+                ap.assert_called_once()
+                feat.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# _get_feature_extractor dispatch
+# ---------------------------------------------------------------------------
+
+
+class TestGetFeatureExtractor:
+    """Regression: specific aud* extractors must not be swallowed by the
+    generic `wav2vec2 in name` / `wav2vec in name` substring checks."""
+
+    def test_audwav2vec2_dispatches_to_audwav2vec2set(self, monkeypatch):
+        """Bug: `audwav2vec2` was matched by `"wav2vec2" in name` and routed
+        to the generic `Wav2vec2` loader, which then tried to fetch the
+        bogus HF model `facebook/audwav2vec2` and crashed."""
+        from nkululeko.predict import _get_feature_extractor
+
+        # Track which extractor class was instantiated.
+        captured = {}
+
+        class FakeAudwav2vec2Set:
+            def __init__(self, name, data, ftype):
+                captured["cls"] = "audwav2vec2"
+
+            def _load_model(self):
+                pass
+
+        class FakeWav2vec2:
+            def __init__(self, *a, **kw):
+                captured["cls"] = "wav2vec2"
+
+            def init_model(self):
+                pass
+
+        # Replace both modules so we can tell which branch was taken without
+        # actually downloading any models.
+        from nkululeko.feat_extract import feats_audwav2vec2, feats_wav2vec2
+
+        monkeypatch.setattr(
+            feats_audwav2vec2, "Audwav2vec2Set", FakeAudwav2vec2Set
+        )
+        monkeypatch.setattr(feats_wav2vec2, "Wav2vec2", FakeWav2vec2)
+
+        _get_feature_extractor("audwav2vec2", MagicMock())
+        assert captured["cls"] == "audwav2vec2"
+
+    def test_auddim_dispatches_to_auddimset(self, monkeypatch):
+        from nkululeko.predict import _get_feature_extractor
+
+        captured = {}
+
+        class FakeAuddimSet:
+            def __init__(self, *a, **kw):
+                captured["cls"] = "auddim"
+
+            def _load_model(self):
+                pass
+
+        from nkululeko.feat_extract import feats_auddim
+
+        monkeypatch.setattr(feats_auddim, "AuddimSet", FakeAuddimSet)
+        _get_feature_extractor("auddim", MagicMock())
+        assert captured["cls"] == "auddim"
+
+    def test_plain_wav2vec2_still_dispatches_to_generic(self, monkeypatch):
+        """Ensure the fix didn't accidentally divert plain `wav2vec2` names."""
+        from nkululeko.predict import _get_feature_extractor
+
+        captured = {}
+
+        class FakeWav2vec2:
+            def __init__(self, *a, **kw):
+                captured["cls"] = "wav2vec2"
+
+            def init_model(self):
+                pass
+
+        from nkululeko.feat_extract import feats_wav2vec2
+
+        monkeypatch.setattr(feats_wav2vec2, "Wav2vec2", FakeWav2vec2)
+        _get_feature_extractor("wav2vec2-large-robust", MagicMock())
+        assert captured["cls"] == "wav2vec2"
+
+    def test_unknown_extractor_calls_error(self):
+        from nkululeko.predict import _get_feature_extractor
+
+        util = MagicMock()
+        util.error.side_effect = SystemExit
+        with pytest.raises(SystemExit):
+            _get_feature_extractor("totally-unknown-thing", util)
+
+
+# ---------------------------------------------------------------------------
+# _predict_with_model
+# ---------------------------------------------------------------------------
+
+
+class TestPredictWithModel:
+    """Regression: --type model must build a fresh feature extractor from
+    FEATS.type, not use the (lie-prone) pickled extractor on the experiment.
+
+    Background: experiment.save() strips inner model/model_interface fields
+    so the object can be pickled, but leaves `model_loaded=True` behind.
+    A pickled extractor therefore reports as "loaded" but would AttributeError
+    in extract_sample(). We must always re-instantiate."""
+
+    def test_missing_feats_type_calls_error(self, monkeypatch):
+        from nkululeko.predict import _predict_with_model
+
+        # Minimal in-memory config without FEATS.type set.
+        import configparser
+
+        import nkululeko.glob_conf as glob_conf
+
+        cfg = configparser.ConfigParser()
+        cfg["EXP"] = {"root": "./", "name": "x"}
+        cfg["DATA"] = {"databases": "['adhoc']"}
+        cfg["FEATS"] = {}
+        cfg["MODEL"] = {}
+        monkeypatch.setattr(glob_conf, "config", cfg)
+
+        # Stub out Experiment to avoid pickle / filesystem access.
+        from nkululeko import predict as predict_mod
+
+        fake_expr = MagicMock()
+        monkeypatch.setattr(
+            predict_mod, "Experiment", lambda *a, **kw: fake_expr, raising=False,
+        )
+        # Patch the import inside _predict_with_model.
+        import nkululeko.experiment as expmod
+
+        monkeypatch.setattr(expmod, "Experiment", lambda *a, **kw: fake_expr)
+
+        util = MagicMock()
+        util.error.side_effect = SystemExit
+        util.get_save_name.return_value = "/tmp/does_not_matter"
+
+        with pytest.raises(SystemExit):
+            _predict_with_model(pd.DataFrame(), argparse.Namespace(), util)
+
+    def test_builds_fresh_extractor_from_feats_type(self, monkeypatch, tmp_path):
+        """`_predict_with_model` should call `_get_feature_extractor(name)`
+        where `name` is the first entry of `FEATS.type`."""
+        import configparser
+
+        import nkululeko.glob_conf as glob_conf
+        from nkululeko import predict as predict_mod
+
+        # Real audio file so duration-resolution works upstream.
+        wav = tmp_path / "x.wav"
+        _write_silent_wav(wav)
+
+        cfg = configparser.ConfigParser()
+        cfg["EXP"] = {"root": str(tmp_path), "name": "x"}
+        cfg["DATA"] = {"databases": "['adhoc']", "target": "emotion"}
+        cfg["FEATS"] = {"type": "['praat']"}
+        cfg["MODEL"] = {}
+        monkeypatch.setattr(glob_conf, "config", cfg)
+
+        # Fake experiment with the bits _predict_with_model uses.
+        fake_model = MagicMock()
+        fake_model.predict_sample.return_value = {0: 0.7, 1: 0.3}
+        fake_expr = MagicMock()
+        fake_expr.runmgr.get_best_model.return_value = fake_model
+        # Sentinel value on the pickled feature_extractor — we should NOT use it.
+        fake_expr.feature_extractor = MagicMock(name="PICKLED-EXTRACTOR-UNUSED")
+        fake_expr.label_encoder = None
+        import nkululeko.experiment as expmod
+
+        monkeypatch.setattr(expmod, "Experiment", lambda *a, **kw: fake_expr)
+
+        # Spy on _get_feature_extractor.
+        fresh_extractor = MagicMock()
+        fresh_extractor.extract_sample.return_value = np.array([1.0, 2.0])
+        spy = MagicMock(return_value=fresh_extractor)
+        monkeypatch.setattr(predict_mod, "_get_feature_extractor", spy)
+
+        # Build the input.
+        seg_df = predict_mod._build_segmented_df([str(wav)])
+
+        util = MagicMock()
+        util.get_save_name.return_value = "/tmp/whatever"
+        util.exp_is_classification.return_value = True
+        util.config_val.side_effect = lambda section, key, default: (
+            cfg[section][key] if section in cfg and key in cfg[section] else default
+        )
+
+        preds = predict_mod._predict_with_model(seg_df, argparse.Namespace(), util)
+
+        # Spy was called with the FEATS.type entry, not "PICKLED-EXTRACTOR-UNUSED".
+        assert spy.called
+        assert spy.call_args.args[0] == "praat"
+        # Pickled extractor was not consulted.
+        fake_expr.feature_extractor.extract_sample.assert_not_called()
+        # The fresh extractor produced features and we got back a prediction row.
+        assert len(preds) == 1
+
+
+# ---------------------------------------------------------------------------
+# do_test backwards-compat shim
+# ---------------------------------------------------------------------------
+
+
+class TestDoTest:
+    def test_missing_config_exits(self):
+        from nkululeko.predict import do_test
+
+        with pytest.raises(SystemExit):
+            do_test("/no/such/config.ini", "out.csv")
+
+
+# ---------------------------------------------------------------------------
+# main() smoke
+# ---------------------------------------------------------------------------
+
+
+class TestMain:
+    def test_help_exits_cleanly(self):
+        from nkululeko.predict import main
+
+        with patch.object(sys, "argv", ["predict.py", "--help"]):
+            with pytest.raises(SystemExit) as exc:
+                main()
+            assert exc.value.code == 0
+
+    def test_no_input_errors(self):
+        """Without --file/--folder/--list/--mic, util.error is invoked."""
+        from nkululeko.predict import main
+
+        # `--model snr` satisfies the FEATS-type pre-check so we hit the
+        # "no input given" branch (util.error -> sys.exit).
+        with patch.object(sys, "argv", ["predict.py", "--model", "snr"]):
+            with pytest.raises(SystemExit):
+                main()
+
+    def test_type_model_requires_config(self):
+        """`--type model` without `--config` must call util.error -> exit."""
+        from nkululeko.predict import main
+
+        with patch.object(
+            sys,
+            "argv",
+            ["predict.py", "--type", "model", "--file", "x.wav"],
+        ):
+            with pytest.raises(SystemExit):
+                main()
+
+
+# ---------------------------------------------------------------------------
+# Integration through main() with backends mocked
+# ---------------------------------------------------------------------------
+
+
+class TestMainEndToEnd:
+    def test_main_dispatches_to_files(self, tmp_path):
+        """End-to-end: main() drives _run_files for --file, given a stub backend."""
+        from nkululeko import predict as predict_mod
+
+        audio = tmp_path / "sample.wav"
+        _write_silent_wav(audio)
+
+        def fake_predict_df(seg_df, args, util):
+            return pd.DataFrame(
+                {"snr_pred": [42.0]},
+                index=seg_df.index,
+            )
+
+        argv = [
+            "predict.py",
+            "--file",
+            str(audio),
+            "--model",
+            "snr",
+        ]
+        with patch.object(sys, "argv", argv), patch.object(
+            predict_mod, "_predict_df", side_effect=fake_predict_df
+        ):
+            predict_mod.main()
+
+        out = tmp_path / "sample_result.txt"
+        assert out.is_file()
+        assert "snr_pred: 42.0" in out.read_text()

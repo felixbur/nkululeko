@@ -1,186 +1,161 @@
 # Nkululeko Predict Module
 
-The Nkululeko Predict module provides automated prediction capabilities for various audio characteristics using pre-trained models. This module allows you to add predicted labels to your datasets without training new models.
+`nkululeko.predict` is the unified prediction module of Nkululeko. It replaces
+the previous `nkululeko.demo`, `nkululeko.feature_demo` and `nkululeko.testing`
+modules and bundles all of their functionality behind a single command-line
+interface.
 
-## Overview
+You can use it to predict labels for:
 
-The predict module (`nkululeko.predict`) automatically predicts labels for audio samples using existing models and adds them to your dataframe. It supports prediction for various targets including speaker identity, gender, age, emotions, and audio quality metrics.
+- one or more individual audio files (`--file`)
+- every audio file inside a folder (`--folder`)
+- the audio paths listed in a CSV (`--list`, original columns are preserved)
+- a live microphone recording (`--mic`)
 
-## Usage
+…using one of two prediction sources:
 
-### Command Line Interface
+- a **feature extractor** or **autopredict target** such as `age`, `gender`,
+  `emotion`, `mos`, `snr` (`--type feats`, the default)
+- the **best model from a previously trained experiment**
+  (`--type model`, requires `--config`)
+
+## Command-line interface
+
+```text
+python -m nkululeko.predict
+    [--file AUDIO [AUDIO ...] | --folder FOLDER | --list CSV | --mic]
+    [--model MODEL] [--type {feats,model}]
+    [--config CONFIG.ini] [--outfile OUTFILE]
+```
+
+| Argument | Description |
+|---|---|
+| `--file AUDIO [AUDIO ...]` | One or more audio files. A single space-separated string also works (e.g. `--file "a.wav b.wav"`). Writes a per-file `<name>_result.txt` next to each input and prints results to stdout. |
+| `--folder FOLDER` | Folder to scan recursively for audio (`wav`, `mp3`, `flac`, `ogg`, `m4a`, `au`, `aac`). Writes a single CSV to `--outfile`. |
+| `--list CSV` | CSV with audio paths. Existing columns and the audformat index are preserved; prediction columns are appended. Writes a single CSV to `--outfile`. |
+| `--mic` | Record `5` seconds from the microphone in a loop and print predictions to stdout. |
+| `--model MODEL` | Either an autopredict target name (`age`, `gender`, `emotion`, `mos`, `snr`, `pesq`, `sdr`, `stoi`, `arousal`, `valence`, `dominance`, `speaker`, `text`, `textclassification`, `translation`) **or** a feature-extractor name (`wav2vec2-...`, `opensmile`, `audmodel`, `emotion2vec-...`, `praat`, `clap`, `spkrec`, `trill`, `agender`, `whisper-...`, `ast`, `hubert-...`, `wavlm-...`, `squim`, `mos`, `snr`). When `--type model`, `--model` is ignored — the trained model from the experiment is used. |
+| `--type {feats,model}` | `feats` (default): use `--model` as autopredict target or feature extractor. `model`: load the best model from the experiment defined by `--config`. |
+| `--config CONFIG.ini` | Optional INI file. Required for `--type model`. With `--type feats` it may supply `FEATS.type` so that `--model` can be omitted. |
+| `--outfile OUTFILE` | Output CSV path for `--list` and `--folder`. Default: `./prediction_result.csv`. |
+
+The four input arguments (`--file`, `--folder`, `--list`, `--mic`) are mutually
+exclusive.
+
+## Examples
+
+### Predict emotion for a couple of audio files
 
 ```bash
-python3 -m nkululeko.predict --config CONFIG_FILE
+python -m nkululeko.predict --file test.mp3 test2.wav --model emotion
 ```
 
-**Arguments:**
-- `--config`: Path to the configuration file (default: `exp.ini`)
+This writes `test_result.txt` and `test2_result.txt` next to each input and
+also prints the predictions to stdout. With `--model emotion`, the
+`nkululeko.autopredict.ap_emotion` predictor is used.
 
-### Configuration
+### Predict SNR for every audio file in a folder
 
-The predict module is controlled through the `[PREDICT]` section in your configuration file:
-
-```ini
-[PREDICT]
-targets = ['gender', 'age', 'emotion']  # List of targets to predict
-split = all                             # Which split to predict: all, train, or test
+```bash
+python -m nkululeko.predict --folder ./recordings --model snr --outfile snr.csv
 ```
 
-**Configuration Parameters:**
-- `targets`: List of prediction targets (see available targets below)
-- `split`: Data split selection
-  - `all`: Predict for both train and test sets (default)
-  - `train`: Predict only for training set
-  - `test`: Predict only for test set
+The output CSV contains the audformat segmented index plus the new
+`snr_pred` column.
 
-## Available Autopredict Targets
+### Add prediction columns to an existing CSV, keeping all original columns
 
-The following autopredict targets are available, each implemented in corresponding `ap_*.py` files:
-
-### Speaker and Identity
-- **`speaker`** (`ap_sid.py`): Speaker identification prediction
-  - Uses speaker identification models to predict speaker identity
-
-### Demographic Attributes
-- **`gender`** (`ap_gender.py`): Biological sex prediction
-  - Uses audEERING's agender model for gender classification
-  - Predicts: male, female
-
-- **`age`** (`ap_age.py`): Age prediction
-  - Predicts speaker age using pre-trained age estimation models
-
-### Emotional Attributes
-- **`emotion`** (`ap_emotion.py`): Emotion classification
-  - Uses emotion2vec models for emotion prediction
-  - Supports multi-class emotion recognition
-
-- **`arousal`** (`ap_arousal.py`): Arousal level prediction
-  - Predicts emotional arousal (activation level)
-  - Continuous value prediction
-
-- **`valence`** (`ap_valence.py`): Valence prediction
-  - Predicts emotional valence (positive/negative)
-  - Continuous value prediction
-
-- **`dominance`** (`ap_dominance.py`): Dominance prediction
-  - Predicts emotional dominance dimension
-  - Continuous value prediction
-
-### Audio Quality Metrics
-- **`mos`** (`ap_mos.py`): Mean Opinion Score prediction
-  - Predicts subjective audio quality (MOS)
-  - Range typically 1-5
-
-- **`pesq`** (`ap_pesq.py`): PESQ score prediction
-  - Perceptual Evaluation of Speech Quality
-  - Objective speech quality metric
-
-- **`stoi`** (`ap_stoi.py`): STOI prediction
-  - Short-Time Objective Intelligibility measure
-  - Speech intelligibility metric
-
-- **`sdr`** (`ap_sdr.py`): Signal-to-Distortion Ratio prediction
-  - Measures signal quality relative to distortion
-
-- **`snr`** (`ap_snr.py`): Signal-to-Noise Ratio prediction
-  - Estimates background noise level relative to speech signal
-
-## Example Configuration
-
-```ini
-[EXP]
-root = ./experiments/
-name = audio_prediction_experiment
-
-[DATA]
-databases = ['mydata']
-mydata = ./data/audio_files.csv
-mydata.type = csv
-target = emotion
-
-[PREDICT]
-targets = ['gender', 'age', 'arousal', 'valence', 'mos']
-split = all
-
-[PLOT]
-name = prediction_results
+```bash
+python -m nkululeko.predict \
+    --list testdata.csv \
+    --model mos \
+    --outfile testdata_with_mos.csv
 ```
 
-## Workflow
+If `testdata.csv` is a valid audformat CSV (segmented or filewise index), the
+index is preserved. Otherwise the first column is interpreted as the audio
+path. Any further columns are passed through to the output.
 
-1. **Load Configuration**: Read experiment configuration from INI file
-2. **Load Datasets**: Load audio data according to DATA section
-3. **Split Data**: Create train/test splits as specified
-4. **Feature Extraction**: Extract features required for each predictor
-5. **Prediction**: Apply pre-trained models for each target
-6. **Add Labels**: Add predicted labels as new columns to the dataframe
-7. **Save Results**: Save the augmented dataset with predictions
+### Use the best model of a trained experiment
 
-## Output
-
-The predict module:
-- Adds predicted labels as new columns to your dataset (e.g., `gender_pred`, `age_pred`)
-- Saves the augmented dataset as `{dataset_name}_predicted.csv`
-- Preserves original data while adding prediction columns
-
-## Implementation Details
-
-### Predictor Architecture
-Each autopredict target follows a consistent pattern:
-```python
-class TargetPredictor:
-    def __init__(self, df):
-        self.df = df
-        self.util = Util("targetPredictor")
-    
-    def predict(self, split_selection):
-        # Extract features using appropriate feature extractor
-        # Apply pre-trained model
-        # Return dataframe with predictions
+```bash
+python -m nkululeko.predict \
+    --list testdata.csv \
+    --config config.ini \
+    --type model
 ```
 
-### Feature Extraction
-Predictors use the `FeatureExtractor` class to extract relevant features:
-- Audio features (e.g., OpenSMILE, wav2vec2)
-- Specialized features for specific tasks (e.g., agender for gender)
-- Pre-computed embeddings (e.g., emotion2vec for emotions)
+This loads the experiment specified in `config.ini` (which must have been
+trained with `MODEL.save = True`) and runs its best model on each file in the
+list. For classification, the output contains one column per class label with
+the probability/score and a `predicted` column with the top-1 label. For
+regression, a single `predicted` column is written.
 
-### Model Integration
-- Uses pre-trained models from various sources
-- audEERING models for demographic prediction
-- emotion2vec for emotional attributes
-- Specialized audio quality assessment tools
+### Loop over microphone input using the FEATS section of a config
 
-## Dependencies
+```bash
+python -m nkululeko.predict --mic --config config.ini
+```
 
-Different predictors may require additional dependencies:
-- **audEERING models**: `audonnx`
-- **emotion2vec**: `funasr`
-- **Audio quality metrics**: Various specialized libraries
+Press *Enter* to record `5` seconds, *q* + *Enter* to quit.
 
-## Use Cases
+## Autopredict targets
 
-1. **Dataset Augmentation**: Add demographic or emotional labels to unlabeled audio
-2. **Quality Assessment**: Evaluate audio quality metrics for large datasets
-3. **Multi-label Datasets**: Create comprehensive labels for audio collections
-4. **Preprocessing**: Prepare datasets with rich metadata for downstream tasks
-5. **Analysis**: Understand characteristics of audio datasets
+When `--model NAME` matches one of the autopredict targets below, the matching
+`nkululeko.autopredict.*` predictor is used. The added column name follows the
+`<target>_pred` convention.
 
-## Tips and Best Practices
+| Target | Predictor module | Added column |
+|---|---|---|
+| `speaker` | `ap_sid.SIDPredictor` | `speaker_pred` |
+| `gender` | `ap_gender.GenderPredictor` (audEERING agender) | `gender_pred` |
+| `age` | `ap_age.AgePredictor` (audEERING agender) | `age_pred` |
+| `emotion` | `ap_emotion.EmotionPredictor` (emotion2vec) | `emotion_pred` |
+| `arousal` | `ap_arousal.ArousalPredictor` (audEERING dim) | `arousal_pred` |
+| `valence` | `ap_valence.ValencePredictor` (audEERING dim) | `valence_pred` |
+| `dominance` | `ap_dominance.DominancePredictor` (audEERING dim) | `dominance_pred` |
+| `mos` | `ap_mos.MOSPredictor` | `mos_pred` |
+| `pesq` | `ap_pesq.PESQPredictor` (SQUIM) | `pesq_pred` |
+| `sdr` | `ap_sdr.SDRPredictor` (SQUIM) | `sdr_pred` |
+| `stoi` | `ap_stoi.STOIPredictor` (SQUIM) | `stoi_pred` |
+| `snr` | `ap_snr.SNRPredictor` | `snr_pred` |
+| `text` | `ap_text.TextPredictor` (whisper transcription) | `text` |
+| `textclassification` | `ap_textclassifier.TextClassificationPredictor` | `text_pred` |
+| `translation` | `ap_translate.TextTranslator` | `text_translated` |
 
-1. **Target Selection**: Choose targets relevant to your analysis goals
-2. **Split Strategy**: Use `split = all` for complete dataset labeling
-3. **Performance**: Some predictors require significant computational resources
-4. **Validation**: Consider validating predictions on known subsets
-5. **Integration**: Use predicted labels as features in subsequent experiments
+## Feature extractors
 
-## Error Handling
+If `--model` does **not** match an autopredict target, it is interpreted as a
+feature-extractor name. The output columns are `feat_0`, `feat_1`, …. Examples:
 
-The module includes robust error handling:
-- Validates target specifications
-- Handles missing or corrupted audio files
-- Provides informative error messages
-- Continues processing when individual predictions fail
+```bash
+python -m nkululeko.predict --file test.wav --model praat
+python -m nkululeko.predict --folder ./voices --model wav2vec2-large-robust-ft-swbd-300h --outfile feats.csv
+python -m nkululeko.predict --list audio.csv --model audmodel --outfile feats.csv --config has_audmodel_id.ini
+```
 
-This predict module enables efficient automated labeling of audio datasets, supporting rapid prototyping and comprehensive audio analysis workflows in Nkululeko.
+Recognized prefixes / names: `wav2vec2*`, `hubert*`, `wavlm*`, `whisper*`,
+`ast*`, `emotion2vec*`, `opensmile`/`gemaps`/`compare`, `clap*`, `spkrec*` /
+`xvect*` / `ecapa*`, `trill*`, `praat*`, `audmodel*`, `agender*`, `squim*` /
+`pesq*` / `sdr*`, `mos*`, `snr*`.
+
+> **Note on overlapping names.** `mos` and `snr` are both autopredict targets
+> *and* feature extractors. They resolve to the autopredict path. If you need
+> the raw feature extractor for these, use the lower-level extractor classes
+> directly.
+
+## Output formats
+
+| Mode | Where the result is written |
+|---|---|
+| `--file` | `<name>_result.txt` per input file (one `key: value` per line), plus stdout. |
+| `--folder` | Single CSV at `--outfile` with the audformat segmented index of the discovered files and the prediction columns. |
+| `--list` | Single CSV at `--outfile` with the original columns of the input CSV plus the prediction columns. The audformat index is preserved when the input is a valid audformat CSV. |
+| `--mic` | stdout only. |
+
+## See also
+
+- [demo.md](demo.md) — tutorial for using a previously trained model (`--type model`).
+- [emotion_prediction.md](emotion_prediction.md) — predicting emotions on unlabeled audio.
+- [predict_speaker.md](predict_speaker.md) — predicting speaker identity.
+- [text_processing.md](text_processing.md) — transcription, translation and text classification.

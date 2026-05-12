@@ -7,7 +7,7 @@ import os.path
 import sys
 
 from nkululeko.nkululeko import doit as nkulu
-from nkululeko.testing import do_it as test_mod
+from nkululeko.predict import do_test as test_mod
 
 
 def run_flags_experiments(config_file):

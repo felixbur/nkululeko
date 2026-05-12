@@ -14,7 +14,7 @@ This page describes the architecture and main components of Nkululeko, providing
   - **`nkululeko/models/`**: Machine learning model implementations
   - **`nkululeko/reporting/`**: Reporting and visualization tools
   - **`nkululeko/utils/`**: Utility functions and helpers
-  - **`nkululeko/explore.py`**, **`nkululeko/demo.py`**, etc.: Command-line module entry points
+  - **`nkululeko/explore.py`**, **`nkululeko/predict.py`**, etc.: Command-line module entry points
 - **`tests/`**: Contains configuration files for testing
 - **`data/`**: Storage for datasets or symbolic links to datasets
 - **`.github/workflows/`**: CI/CD configuration files
@@ -108,8 +108,7 @@ Each module provides specific functionality:
 
 - `nkululeko.nkululeko`: Main experiment runner
 - `nkululeko.explore`: Data and feature exploration
-- `nkululeko.demo`: Model demonstration
-- `nkululeko.test`: Model testing
+- `nkululeko.predict`: Unified prediction (single files, folder, CSV list, microphone; feature extractors, autopredict targets, or a trained model)
 - `nkululeko.augment`: Data augmentation
 - `nkululeko.ensemble`: Model ensemble creation
 - `nkululeko.multidb`: Cross-database experimentation

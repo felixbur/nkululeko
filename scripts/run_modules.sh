@@ -17,9 +17,9 @@ function Help {
     echo "Options:"
     echo "  nkululeko: test basic nkululeko"
     echo "  augment: test augmentation"
-    echo "  predict: test prediction"
-    echo "  demo: test demo"
-    echo "  testing: test testing module"
+    echo "  predict: test the unified predict module with autopredict targets / feature extractors"
+    echo "  demo: test predict --type model on classification configs (replaces the old nkululeko.demo)"
+    echo "  testing: test predict --type model on saved-test-set configs (replaces the old nkululeko.testing)"
     echo "  multidb: test multidb"
     echo "  explore: test explore module (must be run last)"
     echo "  all: test all modules"
@@ -100,12 +100,16 @@ augment_ini_files=(
     emodb_aug_train.ini
 )
 
-# test prediction
+# test predict: exercise the new unified predict module on data/test/samples.csv.
+# Each entry is passed as --model <NAME> to nkululeko.predict.
+# Names matching AUTOPREDICT_TARGETS (e.g. snr) hit the autopredict path;
+# others (e.g. praat, opensmile) are treated as feature-extractor names.
+# Kept short to keep the smoke fast and avoid heavyweight model downloads.
 predict_ini_files=(
-    exp_emodb_predict.ini
-    exp_ravdess_predict_text.ini
-    exp_emodb_textclassifier.ini
-) 
+    snr
+    praat
+    opensmile
+)
 # test demo
 demo_ini_files=(
     exp_emodb_os_xgb.ini
@@ -164,14 +168,37 @@ success_count=0
 failed_count=0
 for module in "${modules[@]}"
 do
-    # Run the test over the selected modules
-    ini_files="${module}_ini_files[@]"
+    # Resolve which list of entries to iterate over for this module.
+    # `testing` reuses the test_ini_files array; everything else uses
+    # `<module>_ini_files`.
+    if [ "$module" == "testing" ]; then
+        ini_files="test_ini_files[@]"
+    else
+        ini_files="${module}_ini_files[@]"
+    fi
+
     for ini_file in "${!ini_files}"
     do
-        # if module is "demo" add "--list" argument
-        if [ "$module" == "demo" ]; then
-            RunTest python3 -m "nkululeko.$module" --config "examples/$ini_file" --list "data/test/samples.csv"
-        
+        # demo and testing both run the new predict module in model mode
+        # against a small list of audio samples.
+        if [ "$module" == "demo" ] || [ "$module" == "testing" ]; then
+            outfile="/tmp/${module}_${ini_file%.ini}_pred.csv"
+            RunTest python3 -m nkululeko.predict \
+                --type model \
+                --config "$example_dir/$ini_file" \
+                --list "data/test/samples.csv" \
+                --outfile "$outfile"
+
+        # The new predict module is driven directly via CLI args, not by a
+        # [PREDICT] section. Each entry in predict_ini_files is a model
+        # name (autopredict target or feature-extractor name).
+        elif [ "$module" == "predict" ]; then
+            outfile="/tmp/predict_${ini_file}.csv"
+            RunTest python3 -m nkululeko.predict \
+                --list "data/test/samples.csv" \
+                --model "$ini_file" \
+                --outfile "$outfile"
+
         # for ensemble module
         elif [ "$module" == "ensemble" ]; then
             # combine all ini files

@@ -74,6 +74,10 @@ class Audwav2vec2Set(Featureset):
                         )
                     f_df = self.extract_sample_df(signal, sr, (file, start, end))
                 except Exception as ror:
+                    tmp_file_name = "tmp_audio.wav"
+                    if signal is not None and sr is not None:
+                        audiofile.write(tmp_file_name, signal, sr)
+                        self.util.debug(f"segment from {file} written to {tmp_file_name} for debugging.")
                     self.util.error(f"error {ror} on file {file}")
                 df = pd.concat([df, f_df])
             self.df = df

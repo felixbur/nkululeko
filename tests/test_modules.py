@@ -20,29 +20,23 @@ class TestModules(unittest.TestCase):
 
     def test_import(self):
         """Test that main modules can be imported."""
-        import nkululeko.augment
-        import nkululeko.demo
-        import nkululeko.explore
-        import nkululeko.nkululeko
-        import nkululeko.predict
+        import nkululeko.augment  # noqa: F401
+        import nkululeko.explore  # noqa: F401
+        import nkululeko.nkululeko  # noqa: F401
+        import nkululeko.predict  # noqa: F401
 
         try:
-            import nkululeko.resample
+            import nkululeko.resample  # noqa: F401
         except (ImportError, OSError):
             print("Skipping resample module import (requires torchaudio)")
 
         try:
-            import nkululeko.segment
+            import nkululeko.segment  # noqa: F401
         except ImportError:
             print("Skipping segment module import (may require optional dependencies)")
 
         try:
-            import nkululeko.test
-        except ImportError:
-            print("Skipping test module import (may require optional dependencies)")
-
-        try:
-            import nkululeko.ensemble
+            import nkululeko.ensemble  # noqa: F401
         except ImportError:
             print("Skipping ensemble module import (may require optional dependencies)")
 
