@@ -26,6 +26,7 @@ python -m nkululeko.predict
     [--file AUDIO [AUDIO ...] | --folder FOLDER | --list CSV | --mic]
     [--model MODEL] [--type {feats,model}]
     [--config CONFIG.ini] [--outfile OUTFILE]
+    [--language LANG] [--no_playback]
 ```
 
 | Argument | Description |
@@ -38,6 +39,8 @@ python -m nkululeko.predict
 | `--type {feats,model}` | `feats` (default): use `--model` as autopredict target or feature extractor. `model`: load the best model from the experiment defined by `--config`. |
 | `--config CONFIG.ini` | Optional INI file. Required for `--type model`. With `--type feats` it may supply `FEATS.type` so that `--model` can be omitted. |
 | `--outfile OUTFILE` | Output CSV path for `--list` and `--folder`. Default: `./prediction_result.csv`. |
+| `--language LANG` | ISO 639-1 code (`en`, `de`, `pl`, …) for the `text` and `translation` autopredict targets. For `--model text` it sets the Whisper source language (overrides `EXP.language`). For `--model translation` it sets the Google Translate target language (overrides `PREDICT.target_language`). |
+| `--no_playback` | In `--mic` mode, suppress the playback of the recording before prediction. |
 
 The four input arguments (`--file`, `--folder`, `--list`, `--mic`) are mutually
 exclusive.
@@ -98,6 +101,26 @@ python -m nkululeko.predict --mic --config config.ini
 ```
 
 Press *Enter* to record `5` seconds, *q* + *Enter* to quit.
+
+### Transcribe German audio with Whisper
+
+```bash
+python -m nkululeko.predict --file lecture.mp3 --model text --language de
+```
+
+`--language de` overrides `EXP.language` for the Whisper source language.
+
+### Translate transcriptions to French
+
+```bash
+python -m nkululeko.predict \
+    --list transcribed.csv \
+    --model translation \
+    --language fr \
+    --outfile translated.csv
+```
+
+`--language fr` overrides `PREDICT.target_language` for Google Translate.
 
 ## Autopredict targets
 

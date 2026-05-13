@@ -88,14 +88,15 @@ python -m nkululeko.predict \
     --list ./emodb_transcribed.csv \
     --model translation \
     --config examples/exp_emodb_translate.ini \
+    --language es
     --outfile ./emodb_translated.csv
 ```
 
 ### Output
 
 ```csv
-file,start,end,emotion,text,translation
-./data/emodb/wav/03a01Fa.wav,0 days,,happiness,Der Lappen liegt auf dem Eisschrank.,The rag is on the freezer.
+file,start,end,emotion,text,es
+./data/emodb/wav/03a01Fa.wav,0 days,,happiness,Der Lappen liegt auf dem Eisschrank.,El trapo está sobre la nevera.
 ```
 
 ## Step 3: Classify text topics

@@ -122,6 +122,16 @@ def _build_parser():
         help="Suppress playback of the recording in --mic mode.",
     )
     parser.add_argument(
+        "--language",
+        help=(
+            "Language for the text/translation autopredict targets. "
+            "For --model text it sets the Whisper source language "
+            "(EXP.language). For --model translation it sets the Google "
+            "Translate target language (PREDICT.target_language). "
+            "ISO 639-1 code, e.g. 'en', 'de', 'pl'."
+        ),
+    )
+    parser.add_argument(
         "--outfile",
         default=DEFAULT_OUTFILE,
         help=(
@@ -159,11 +169,18 @@ def main():
     if args.file and len(args.file) == 1 and " " in args.file[0].strip():
         args.file = args.file[0].split()
 
+    module_name = "predict"
     config = _load_config(args)
+    if args.language:
+        _apply_language_override(config, args.language)
     glob_conf.init_config(config)
-    glob_conf.set_module("predict")
-    util = Util("predict", has_config=True)
-    util.debug(f"nkululeko {VERSION}: unified predict")
+    glob_conf.set_module(module_name)
+    util = Util(module_name, has_config=True)
+    util.debug(f"nkululeko {VERSION}: {module_name}")
+    if args.language:
+        util.debug(
+            f"language override: EXP.language=PREDICT.target_language={args.language}"
+        )
 
     if args.ptype == "model" and not args.config:
         util.error("--type model requires --config CONFIG.ini")
@@ -272,6 +289,22 @@ def _first_extractor(value):
         if "," in s:
             return s.split(",", 1)[0].strip()
         return s
+
+
+def _apply_language_override(config, language):
+    """Write a CLI `--language` override into the config.
+
+    Sets both ``EXP.language`` (consumed by ``--model text`` as the Whisper
+    source language) and ``PREDICT.target_language`` (consumed by
+    ``--model translation`` as the Google Translate target language). The
+    same value is written to both because the two autopredict targets are
+    mutually exclusive in a single invocation.
+    """
+    for section in ("EXP", "PREDICT"):
+        if section not in config:
+            config.add_section(section)
+    config["EXP"]["language"] = language
+    config["PREDICT"]["target_language"] = language
 
 
 def _build_segmented_df(files):

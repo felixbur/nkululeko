@@ -221,6 +221,18 @@ class TestBuildParser:
         args = _build_parser().parse_args(["--no_playback"])
         assert args.no_playback is True
 
+    def test_language_flag_defaults_to_none(self):
+        from nkululeko.predict import _build_parser
+
+        args = _build_parser().parse_args([])
+        assert args.language is None
+
+    def test_language_flag_accepts_iso_code(self):
+        from nkululeko.predict import _build_parser
+
+        args = _build_parser().parse_args(["--language", "de"])
+        assert args.language == "de"
+
     def test_file_accepts_multiple_values(self):
         from nkululeko.predict import _build_parser
 
@@ -315,6 +327,75 @@ class TestLoadConfig:
         args = argparse.Namespace(config="/does/not/exist.ini")
         with pytest.raises(SystemExit):
             _load_config(args)
+
+
+class TestApplyLanguageOverride:
+    """`_apply_language_override` writes the CLI value into both config keys."""
+
+    def test_sets_both_keys(self):
+        from nkululeko.predict import _apply_language_override
+
+        cfg = configparser.ConfigParser()
+        cfg["EXP"] = {"name": "x"}
+        _apply_language_override(cfg, "de")
+        assert cfg["EXP"]["language"] == "de"
+        assert cfg["PREDICT"]["target_language"] == "de"
+
+    def test_creates_missing_sections(self):
+        from nkululeko.predict import _apply_language_override
+
+        cfg = configparser.ConfigParser()
+        _apply_language_override(cfg, "pl")
+        assert "EXP" in cfg
+        assert "PREDICT" in cfg
+        assert cfg["EXP"]["language"] == "pl"
+        assert cfg["PREDICT"]["target_language"] == "pl"
+
+    def test_overrides_existing_values(self):
+        from nkululeko.predict import _apply_language_override
+
+        cfg = configparser.ConfigParser()
+        cfg["EXP"] = {"language": "de"}
+        cfg["PREDICT"] = {"target_language": "de"}
+        _apply_language_override(cfg, "en")
+        assert cfg["EXP"]["language"] == "en"
+        assert cfg["PREDICT"]["target_language"] == "en"
+
+
+class TestMainLanguageOverride:
+    """End-to-end: `--language` writes into glob_conf.config before dispatch."""
+
+    def test_main_propagates_language_into_glob_conf(self, tmp_path):
+        from nkululeko import predict as predict_mod
+        import nkululeko.glob_conf as glob_conf
+
+        # Real wav so _build_segmented_df can read its duration.
+        wav = tmp_path / "x.wav"
+        _write_silent_wav(wav)
+
+        # Capture glob_conf.config at the moment _predict_df is called.
+        captured = {}
+
+        def fake_predict_df(seg_df, args, util):
+            captured["language"] = glob_conf.config["EXP"]["language"]
+            captured["target_language"] = glob_conf.config["PREDICT"][
+                "target_language"
+            ]
+            return pd.DataFrame({"text": ["hi"]}, index=seg_df.index)
+
+        argv = [
+            "predict.py",
+            "--file", str(wav),
+            "--model", "text",
+            "--language", "de",
+        ]
+        with patch.object(sys, "argv", argv), patch.object(
+            predict_mod, "_predict_df", side_effect=fake_predict_df
+        ):
+            predict_mod.main()
+
+        assert captured["language"] == "de"
+        assert captured["target_language"] == "de"
 
 
 # ---------------------------------------------------------------------------
