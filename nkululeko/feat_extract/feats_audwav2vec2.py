@@ -8,6 +8,7 @@ import audformat
 import audonnx
 import numpy as np
 import torch
+import uuid
 from tqdm import tqdm
 import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
@@ -75,7 +76,7 @@ class Audwav2vec2Set(Featureset):
                         )
                     f_df = self.extract_sample_df(signal, sr, (file, start, end))
                 except Exception as ror:
-                    tmp_file_name = "tmp_audio.wav"
+                    tmp_file_name = f"tmp_{uuid.uuid4()}.wav"
                     if signal is not None and sr is not None:
                         audiofile.write(tmp_file_name, signal, sr)
                         self.util.debug(f"segment from {file} written to {tmp_file_name} for debugging.")
