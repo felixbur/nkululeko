@@ -88,9 +88,14 @@ python -m nkululeko.predict \
     --list ./emodb_transcribed.csv \
     --model translation \
     --config examples/exp_emodb_translate.ini \
-    --language es
+    --language es \
     --outfile ./emodb_translated.csv
 ```
+
+> **Note**: `--language es` overrides both `EXP.language` and
+> `PREDICT.target_language` from the INI. For `--model translation` only the
+> target language matters, so the output column is named after `--language`
+> (`es` here). Drop `--language` to fall back to the INI's `target_language`.
 
 ### Output
 
