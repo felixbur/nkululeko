@@ -31,8 +31,10 @@ Examples:
 
 import argparse
 import ast
+import atexit
 import configparser
 import os
+import shutil
 import sys
 import tempfile
 
@@ -277,11 +279,25 @@ def _load_config(args):
 
     config = configparser.ConfigParser()
     tmp_root = tempfile.mkdtemp(prefix="nkulu_predict_")
+    # Clean up the temp root when the process exits — survives normal
+    # return, util.error() -> sys.exit(), KeyboardInterrupt, etc.
+    atexit.register(_cleanup_path, tmp_root)
     config["EXP"] = {"root": tmp_root, "name": "predict"}
     config["DATA"] = {"databases": "['adhoc']", "target": "predicted"}
     config["FEATS"] = {"no_reuse": "True", "needs_feature_extraction": "True"}
     config["MODEL"] = {}
     return config
+
+
+def _cleanup_path(path):
+    """Best-effort recursive removal of `path`. Safe to call multiple times
+    and safe if the path no longer exists. Suitable for atexit registration."""
+    if not path:
+        return
+    try:
+        shutil.rmtree(path, ignore_errors=True)
+    except OSError:
+        pass
 
 
 def _first_extractor(value):

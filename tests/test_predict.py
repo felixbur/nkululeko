@@ -328,6 +328,59 @@ class TestLoadConfig:
         with pytest.raises(SystemExit):
             _load_config(args)
 
+    def test_tmp_root_created_and_atexit_cleans_up(self):
+        """When --config is omitted, _load_config creates a temp root and
+        registers an atexit handler to delete it. We can't easily wait for
+        interpreter shutdown, so we exercise the registered cleanup helper
+        directly to confirm the directory is removed."""
+        import atexit
+        import tempfile as _tempfile
+
+        from nkululeko.predict import _cleanup_path, _load_config
+
+        args = argparse.Namespace(config=None)
+        config = _load_config(args)
+        tmp_root = config["EXP"]["root"]
+        try:
+            assert os.path.isdir(tmp_root)
+            assert tmp_root.startswith(_tempfile.gettempdir())
+            # Confirm the atexit handler will clean it up.
+            _cleanup_path(tmp_root)
+            assert not os.path.exists(tmp_root)
+        finally:
+            # Unregister so the suite-shutdown atexit doesn't fire on a
+            # stale path from this test.
+            atexit.unregister(_cleanup_path)
+
+    def test_cleanup_path_missing_dir_is_noop(self):
+        """`_cleanup_path` on a missing path must not raise."""
+        from nkululeko.predict import _cleanup_path
+
+        _cleanup_path("/no/such/path/that/should/exist")  # should not raise
+
+    def test_cleanup_path_none_is_noop(self):
+        from nkululeko.predict import _cleanup_path
+
+        _cleanup_path(None)  # should not raise
+
+    def test_explicit_config_does_not_create_tmp_root(self, tmp_path):
+        """`_load_config` with an explicit --config must not create a temp
+        root nor register a cleanup."""
+        import atexit
+
+        from nkululeko.predict import _load_config
+
+        cfg_path = tmp_path / "x.ini"
+        cfg_path.write_text("[EXP]\nname = x\nroot = ./\n")
+
+        args = argparse.Namespace(config=str(cfg_path))
+        # If a cleanup were wrongly registered, the assertion below would
+        # not catch it directly — but the EXP.root won't point at a temp
+        # dir, which is the observable contract.
+        config = _load_config(args)
+        assert config["EXP"]["root"] == "./"
+        atexit.unregister(__import__("nkululeko.predict", fromlist=["_cleanup_path"])._cleanup_path)
+
 
 class TestApplyLanguageOverride:
     """`_apply_language_override` writes the CLI value into both config keys."""
