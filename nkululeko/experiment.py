@@ -15,6 +15,7 @@ from nkululeko.data.dataset_csv import Dataset_CSV
 from nkululeko.data.datasplitter import Datasplitter
 from nkululeko.demo_predictor import Demo_predictor
 from nkululeko.feat_extract.feats_analyser import FeatureAnalyser
+from nkululeko.feature_extractor import FeatureExtractor
 from nkululeko.plots import Plots
 from nkululeko.reporting.report import Report
 from nkululeko.runmanager import Runmanager
@@ -145,15 +146,22 @@ class Experiment:
         # print(df.head())
         return df
 
-    def fill_tests(self):
-        """Only fill a new test set"""
+    def fill_tests(self, encode=True):
+        """Only fill a new test set.
 
+        Args:
+            encode: When True (default), integer-encode the target column using
+                the training label encoder and cache the result.  Pass False to
+                keep original string labels (the caller is then responsible for
+                encoding before passing the dataframe to a model).
+        """
         test_dbs = ast.literal_eval(glob_conf.config["DATA"]["tests"])
         self.df_test = pd.DataFrame()
         start_fresh = eval(self.util.config_val("DATA", "no_reuse", "False"))
         store = self.util.get_path("store")
         storage_test = f"{store}extra_testdf.csv"
-        if os.path.isfile(storage_test) and not start_fresh:
+        # Only use the cached (integer-encoded) CSV when encode=True
+        if encode and os.path.isfile(storage_test) and not start_fresh:
             self.util.debug(f"reusing previously stored {storage_test}")
             self.df_test = self._import_csv(storage_test)
         else:
@@ -180,11 +188,12 @@ class Experiment:
                 self.df_test.is_labeled = data.is_labeled
             self.df_test.got_gender = self.got_gender
             self.df_test.got_speaker = self.got_speaker
-            self.df_test["class_label"] = self.df_test[self.target]
-            self.df_test[self.target] = self.label_encoder.transform(
-                self.df_test[self.target]
-            )
-            self.df_test.to_csv(storage_test)
+            if encode:
+                self.df_test["class_label"] = self.df_test[self.target]
+                self.df_test[self.target] = self.label_encoder.transform(
+                    self.df_test[self.target]
+                )
+                self.df_test.to_csv(storage_test)
 
     def fill_train_and_tests(self):
         if self.split3:

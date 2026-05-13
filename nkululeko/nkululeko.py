@@ -3,12 +3,15 @@
 # nkululeko.py: Entry script to do a Nkululeko experiment
 
 import argparse
+import ast
 import configparser
+import os
 from pathlib import Path
 
 import numpy as np
 
 import nkululeko.experiment as exp
+import nkululeko.glob_conf as glob_conf
 from nkululeko.constants import VERSION
 from nkululeko.utils.util import Util
 
@@ -36,6 +39,48 @@ def doit(config_file):
         import warnings
 
         warnings.filterwarnings("ignore")
+
+    # When DATA.tests is provided and a saved experiment already exists, skip
+    # training and evaluate the stored best model on the new test set instead.
+    has_tests = util.config_val("DATA", "tests", False)
+    save_name = util.get_save_name()
+    if has_tests and os.path.isfile(save_name):
+        util.debug(
+            f"DATA.tests is set and saved experiment found at {save_name}"
+            " — loading best model, skipping training"
+        )
+        expr.load(save_name)
+        # Restore the label encoder in the global namespace so the Reporter
+        # can map integer class indices back to string label names.
+        glob_conf.set_label_encoder(expr.label_encoder)
+
+        # Load test data with original string labels (no encoding).
+        expr.fill_tests(encode=False)
+        expr.extract_test_feats()
+
+        best_model = expr.runmgr.get_best_model()
+
+        # Integer-encode the target column in-place so model.predict() can
+        # compare predictions against numeric ground-truth values.
+        expr.df_test[expr.target] = expr.label_encoder.transform(
+            expr.df_test[expr.target]
+        )
+        best_model.reset_test(expr.df_test, expr.feats_test)
+        report = best_model.predict()
+        report.set_id(best_model.run, best_model.epoch)
+
+        # Print classification report and save confusion matrix plot.
+        test_dbs_str = "-".join(ast.literal_eval(has_tests))
+        plot_name = (
+            util.get_exp_name()
+            + f"_{test_dbs_str}_{best_model.run}_{best_model.epoch:03d}_cnf"
+        )
+        report.print_results(best_model.epoch, file_name=plot_name)
+        report.plot_confmatrix(plot_name, best_model.epoch)
+
+        result = report.result.test
+        print("DONE")
+        return result, best_model.epoch
 
     # load the data
     expr.load_datasets()
