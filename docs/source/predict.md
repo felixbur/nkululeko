@@ -120,8 +120,8 @@ When `--model NAME` matches one of the autopredict targets below, the matching
 | `stoi` | `ap_stoi.STOIPredictor` (SQUIM) | `stoi_pred` |
 | `snr` | `ap_snr.SNRPredictor` | `snr_pred` |
 | `text` | `ap_text.TextPredictor` (whisper transcription) | `text` |
-| `textclassification` | `ap_textclassifier.TextClassificationPredictor` | `text_pred` |
-| `translation` | `ap_translate.TextTranslator` | `text_translated` |
+| `textclassification` | `ap_textclassifier.TextClassificationPredictor` | `classification_winner` + one column per candidate label |
+| `translation` | `ap_translate.TextTranslator` | column named after `PREDICT.target_language` (default: `en`) |
 
 ## Feature extractors
 
