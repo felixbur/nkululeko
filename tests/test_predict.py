@@ -994,6 +994,158 @@ class TestDoTest:
 
 
 # ---------------------------------------------------------------------------
+# _run_from_config
+# ---------------------------------------------------------------------------
+
+
+def _make_segmented_df(files):
+    """Build a small audformat-segmented DataFrame for fake df_train/df_test."""
+    starts = [pd.Timedelta(0)] * len(files)
+    ends = [pd.Timedelta(seconds=1)] * len(files)
+    idx = audformat.segmented_index(files=files, starts=starts, ends=ends)
+    return pd.DataFrame({"emotion": ["happy"] * len(files)}, index=idx)
+
+
+class _FakeExperimentFactory:
+    """Builds a fake Experiment with the methods _run_from_config calls."""
+
+    def __init__(self, df_train, df_test):
+        self._df_train = df_train
+        self._df_test = df_test
+
+    def __call__(self, config):
+        e = MagicMock()
+        e.df_train = self._df_train
+        e.df_test = self._df_test
+        return e
+
+
+class TestRunFromConfig:
+    """`_run_from_config` reads EXP.sample_selection (defaults to 'all'),
+    runs the prediction over the selected subset, and writes one CSV."""
+
+    def _run(self, monkeypatch, tmp_path, sample_selection=None, n_train=2, n_test=3):
+        """Drive _run_from_config with a stubbed Experiment + predict_df."""
+        import configparser
+
+        import nkululeko.glob_conf as glob_conf
+        from nkululeko import predict as predict_mod
+        import nkululeko.experiment as expmod
+
+        # Real wavs so segmented indices are valid; n_train+n_test files.
+        train_files, test_files = [], []
+        for i in range(n_train):
+            p = tmp_path / f"train_{i}.wav"
+            _write_silent_wav(p)
+            train_files.append(str(p))
+        for i in range(n_test):
+            p = tmp_path / f"test_{i}.wav"
+            _write_silent_wav(p)
+            test_files.append(str(p))
+
+        df_train = _make_segmented_df(train_files)
+        df_test = _make_segmented_df(test_files)
+        monkeypatch.setattr(
+            expmod, "Experiment", _FakeExperimentFactory(df_train, df_test)
+        )
+
+        # Minimal config; EXP.sample_selection only set when caller asks.
+        cfg = configparser.ConfigParser()
+        cfg["EXP"] = {"name": "x", "root": str(tmp_path)}
+        if sample_selection is not None:
+            cfg["EXP"]["sample_selection"] = sample_selection
+        cfg["DATA"] = {"databases": "['adhoc']"}
+        cfg["FEATS"] = {}
+        cfg["MODEL"] = {}
+        monkeypatch.setattr(glob_conf, "config", cfg)
+
+        # Capture the seg_df passed to _predict_df so we can assert on size.
+        seen = {}
+
+        def fake_predict_df(seg_df, args, util):
+            seen["n_rows"] = len(seg_df)
+            return pd.DataFrame({"snr_pred": [1.0] * len(seg_df)}, index=seg_df.index)
+
+        monkeypatch.setattr(predict_mod, "_predict_df", fake_predict_df)
+
+        out = tmp_path / "out.csv"
+        args = argparse.Namespace(
+            config="dummy.ini",
+            outfile=str(out),
+            ptype="feats",
+            model="snr",
+        )
+        util = MagicMock()
+        util.error.side_effect = SystemExit
+        util.config_val.side_effect = lambda section, key, default: (
+            cfg[section][key] if section in cfg and key in cfg[section] else default
+        )
+
+        predict_mod._run_from_config(args, util)
+        return seen, out
+
+    def test_defaults_to_all(self, monkeypatch, tmp_path):
+        seen, out = self._run(monkeypatch, tmp_path, sample_selection=None, n_train=2, n_test=3)
+        # default = all -> concatenated rows
+        assert seen["n_rows"] == 5
+        assert out.is_file()
+        # Output has the prediction column merged in.
+        result = pd.read_csv(out)
+        assert "snr_pred" in result.columns
+
+    def test_sample_selection_all(self, monkeypatch, tmp_path):
+        seen, _ = self._run(monkeypatch, tmp_path, sample_selection="all", n_train=2, n_test=3)
+        assert seen["n_rows"] == 5
+
+    def test_sample_selection_train(self, monkeypatch, tmp_path):
+        seen, _ = self._run(monkeypatch, tmp_path, sample_selection="train", n_train=2, n_test=3)
+        assert seen["n_rows"] == 2
+
+    def test_sample_selection_test(self, monkeypatch, tmp_path):
+        seen, _ = self._run(monkeypatch, tmp_path, sample_selection="test", n_train=2, n_test=3)
+        assert seen["n_rows"] == 3
+
+    def test_unknown_sample_selection_errors(self, monkeypatch, tmp_path):
+        with pytest.raises(SystemExit):
+            self._run(monkeypatch, tmp_path, sample_selection="bogus")
+
+    def test_empty_selection_errors(self, monkeypatch, tmp_path):
+        with pytest.raises(SystemExit):
+            self._run(monkeypatch, tmp_path, sample_selection="train", n_train=0, n_test=3)
+
+
+class TestMainFallthroughToConfig:
+    """End-to-end: --config without any input flag dispatches to _run_from_config."""
+
+    def test_main_with_only_config_calls_run_from_config(self, tmp_path, monkeypatch):
+        from nkululeko import predict as predict_mod
+
+        # Write a real config file so _load_config can read it.
+        cfg_path = tmp_path / "exp.ini"
+        cfg_path.write_text(
+            "[EXP]\nroot = ./\nname = x\nsample_selection = train\n"
+            "[DATA]\ndatabases = ['adhoc']\n"
+            "[FEATS]\ntype = ['snr']\n"
+            "[MODEL]\n"
+        )
+
+        called = {"yes": False}
+
+        def fake_run_from_config(args, util):
+            called["yes"] = True
+            # match the EXP.sample_selection we set above
+            assert util.config_val("EXP", "sample_selection", "all") == "train"
+
+        monkeypatch.setattr(predict_mod, "_run_from_config", fake_run_from_config)
+
+        argv = ["predict.py", "--config", str(cfg_path)]
+        with patch.object(sys, "argv", argv):
+            predict_mod.main()
+
+        assert called["yes"]
+
+
+# ---------------------------------------------------------------------------
 # main() smoke
 # ---------------------------------------------------------------------------
 
@@ -1007,8 +1159,10 @@ class TestMain:
                 main()
             assert exc.value.code == 0
 
-    def test_no_input_errors(self):
-        """Without --file/--folder/--list/--mic, util.error is invoked."""
+    def test_no_input_and_no_config_errors(self):
+        """Without --file/--folder/--list/--mic AND without --config,
+        util.error is invoked. (With --config we fall through to
+        _run_from_config; see TestRunFromConfig.)"""
         from nkululeko.predict import main
 
         # `--model snr` satisfies the FEATS-type pre-check so we hit the

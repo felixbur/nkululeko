@@ -11,6 +11,9 @@ You can use it to predict labels for:
 - every audio file inside a folder (`--folder`)
 - the audio paths listed in a CSV (`--list`, original columns are preserved)
 - a live microphone recording (`--mic`)
+- the dataframe defined by an experiment config — pass `--config` without
+  any of the input flags above and the module loads the databases declared
+  in `[DATA]` (subset via `EXP.sample_selection`, default `all`)
 
 …using one of two prediction sources:
 
@@ -37,7 +40,7 @@ python -m nkululeko.predict
 | `--mic` | Record `5` seconds from the microphone in a loop and print predictions to stdout. |
 | `--model MODEL` | Either an autopredict target name (`age`, `gender`, `emotion`, `mos`, `snr`, `pesq`, `sdr`, `stoi`, `arousal`, `valence`, `dominance`, `speaker`, `text`, `textclassification`, `translation`) **or** a feature-extractor name (`wav2vec2-...`, `opensmile`, `audmodel`, `emotion2vec-...`, `praat`, `clap`, `spkrec`, `trill`, `agender`, `whisper-...`, `ast`, `hubert-...`, `wavlm-...`, `squim`, `mos`, `snr`). When `--type model`, `--model` is ignored — the trained model from the experiment is used. |
 | `--type {feats,model}` | `feats` (default): use `--model` as autopredict target or feature extractor. `model`: load the best model from the experiment defined by `--config`. |
-| `--config CONFIG.ini` | Optional INI file. Required for `--type model`. With `--type feats` it may supply `FEATS.type` so that `--model` can be omitted. |
+| `--config CONFIG.ini` | Optional INI file. Required for `--type model`. With `--type feats` it may supply `FEATS.type` so that `--model` can be omitted. When passed alone (without `--file`/`--folder`/`--list`/`--mic`), the dataframe defined by the experiment's `[DATA]` section is used; `EXP.sample_selection` (default `all`) selects `train` / `test` / `all`. |
 | `--outfile OUTFILE` | Output CSV path for `--list` and `--folder`. Default: `./prediction_result.csv`. |
 | `--language LANG` | ISO 639-1 code (`en`, `de`, `pl`, …) for the `text` and `translation` autopredict targets. For `--model text` it sets the Whisper source language (overrides `EXP.language`). For `--model translation` it sets the Google Translate target language (overrides `PREDICT.target_language`). |
 | `--no_playback` | In `--mic` mode, suppress the playback of the recording before prediction. |
@@ -109,6 +112,22 @@ python -m nkululeko.predict --file lecture.mp3 --model text --language de
 ```
 
 `--language de` overrides `EXP.language` for the Whisper source language.
+
+### Predict over the dataframe defined by a config
+
+When you only pass `--config`, the module loads the databases declared in the
+config's `[DATA]` section and runs over the selection from
+`EXP.sample_selection` (default `all`):
+
+```bash
+python -m nkululeko.predict \
+    --config experiments/emodb/exp.ini \
+    --model snr \
+    --outfile emodb_snr.csv
+```
+
+Set `EXP.sample_selection = train` (or `test`) in the INI to restrict the
+run to that subset.
 
 ### Translate transcriptions to French
 

@@ -201,8 +201,17 @@ def main():
         _run_folder(args.folder, args, util)
     elif args.list_path:
         _run_list(args.list_path, args, util)
+    elif args.config:
+        # No explicit input — use the dataframe defined by the experiment
+        # config. EXP.sample_selection (default "all") picks train / test /
+        # all from the loaded dataset(s).
+        _run_from_config(args, util)
     else:
-        util.error("no input given: provide one of --file, --folder, --list, --mic")
+        util.error(
+            "no input given: provide one of --file, --folder, --list, --mic, "
+            "or --config (loads the dataframe defined by the experiment's "
+            "[DATA] section, selection via EXP.sample_selection)"
+        )
 
     util.debug("DONE")
 
@@ -491,6 +500,52 @@ def _run_mic(args, util):
                 os.remove(tmp.name)
             except OSError:
                 pass
+
+
+def _run_from_config(args, util):
+    """Predict over the dataframe defined by the experiment's [DATA] section.
+
+    Triggered when none of --file/--folder/--list/--mic is provided but
+    --config is. ``EXP.sample_selection`` (default ``"all"``) selects
+    train / test / all from the loaded dataset(s).
+    """
+    from nkululeko.experiment import Experiment
+
+    expr = Experiment(glob_conf.config)
+    expr.set_module("predict")
+    util.debug(f"loading dataframe from config {args.config!r}")
+    expr.load_datasets()
+    expr.fill_train_and_tests()
+
+    sample_selection = util.config_val("EXP", "sample_selection", "all")
+    if sample_selection == "all":
+        seg_df = pd.concat([expr.df_train, expr.df_test])
+    elif sample_selection == "train":
+        seg_df = expr.df_train
+    elif sample_selection == "test":
+        seg_df = expr.df_test
+    else:
+        util.error(
+            f"unknown EXP.sample_selection {sample_selection!r}; "
+            "expected one of: all, train, test"
+        )
+    util.debug(
+        f"running over EXP.sample_selection={sample_selection}: "
+        f"{len(seg_df)} rows"
+    )
+
+    if len(seg_df) == 0:
+        util.error("selected dataframe is empty; nothing to predict")
+
+    preds = _predict_df(seg_df, args, util)
+
+    out_df = seg_df.copy()
+    for col in preds.columns:
+        out_df[col] = preds[col]
+
+    out_path = args.outfile or DEFAULT_OUTFILE
+    out_df.to_csv(out_path)
+    util.debug(f"wrote {out_path}")
 
 
 # ---------------------------------------------------------------------------
