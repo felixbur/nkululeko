@@ -73,5 +73,15 @@ Important classes/functions (high-level):
 3. Use balanced splits (`speaker_split`) for speaker leakage prevention.
 4. Limit `max_feats` when exploring importance to keep plots readable.
 
+## Testing a New Database with an Existing Model
+
+When `DATA.tests` is set in the config **and** a saved experiment `.pkl`
+already exists, `nkululeko.nkululeko` skips training automatically and
+evaluates the stored best model on the new test database instead.  This
+produces a confusion matrix, a per-class text report, and a predictions CSV
+with all original test columns plus a `predicted` column.
+
+See [test_new_database.md](test_new_database.md) for a step-by-step guide.
+
 ## Related
 See `explore.md` for dataset analysis without training and `optim.md` for hyperparameter search.
