@@ -289,10 +289,12 @@ def _first_extractor(value):
     if isinstance(value, list):
         return value[0] if value else None
     s = str(value).strip()
+    if not s:
+        return None
     try:
         lit = ast.literal_eval(s)
-        if isinstance(lit, list) and lit:
-            return str(lit[0])
+        if isinstance(lit, list):
+            return str(lit[0]) if lit else None
         return str(lit)
     except (ValueError, SyntaxError):
         if "," in s:
