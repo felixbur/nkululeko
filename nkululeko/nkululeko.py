@@ -43,8 +43,8 @@ def doit(config_file):
     # When DATA.tests is provided and a saved experiment already exists, skip
     # training and evaluate the stored best model on the new test set instead.
     has_tests = util.config_val("DATA", "tests", False)
-    save_name = util.get_save_name()
-    if has_tests and os.path.isfile(save_name):
+    save_name = has_tests and util.get_save_name()
+    if save_name and os.path.isfile(save_name):
         util.debug(
             f"DATA.tests is set and saved experiment found at {save_name}"
             " — loading best model, skipping training"
@@ -77,6 +77,22 @@ def doit(config_file):
         )
         report.print_results(best_model.epoch, file_name=plot_name)
         report.plot_confmatrix(plot_name, best_model.epoch)
+
+        # Save result CSV: all original test columns plus decoded predictions.
+        res_dir = util.get_path("res_dir")
+        csv_path = os.path.join(
+            res_dir,
+            plot_name.replace("_cnf", "_predictions") + ".csv",
+        )
+        result_df = expr.df_test.copy()
+        result_df[expr.target] = expr.label_encoder.inverse_transform(
+            result_df[expr.target].astype(int)
+        )
+        result_df["predicted"] = expr.label_encoder.inverse_transform(
+            report.preds.astype(int)
+        )
+        result_df.to_csv(csv_path)
+        util.debug(f"predictions CSV saved to: {csv_path}")
 
         result = report.result.test
         print("DONE")
