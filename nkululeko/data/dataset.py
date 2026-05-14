@@ -296,7 +296,9 @@ class Dataset:
             if entry_train_tables:
                 train_tables = ast.literal_eval(entry_train_tables)
                 for train_table in train_tables:
-                    traindf = pd.concat([traindf, self.db.tables[train_table].df]).dropna()
+                    traindf = pd.concat(
+                        [traindf, self.db.tables[train_table].df]
+                    ).dropna()
             # use only the train and test samples that were not perhaps filtered out by an earlier processing step
             # testdf.index.map(lambda x: os.path.join(self.root, x))
             #            testdf.index = testdf.index.to_series().apply(lambda x: self.root+x)

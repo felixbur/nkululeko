@@ -8,6 +8,7 @@ import audformat
 import audonnx
 import numpy as np
 import torch
+import uuid
 from tqdm import tqdm
 import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
@@ -65,6 +66,7 @@ class Audwav2vec2Set(Featureset):
             )
             df = pd.DataFrame()
             for file, start, end in tqdm(self.data_df.index):
+                signal, sr = None, None
                 try:
                     if end == pd.NaT:
                         signal, sr = audiofile.read(file, offset=start)
@@ -74,6 +76,13 @@ class Audwav2vec2Set(Featureset):
                         )
                     f_df = self.extract_sample_df(signal, sr, (file, start, end))
                 except Exception as ror:
+                    tmp_file_name = f"tmp_{uuid.uuid4()}.wav"
+                    if signal is not None and sr is not None:
+                        try:
+                            audiofile.write(tmp_file_name, signal, sr)                        
+                            self.util.debug(f"segment from {file} written to {tmp_file_name} for debugging.")                                                              
+                        except Exception as write_err:                                      
+                            self.util.warn(f"could not write debug audio: {write_err}")   
                     self.util.error(f"error {ror} on file {file}")
                 df = pd.concat([df, f_df])
             self.df = df
@@ -110,10 +119,12 @@ class Audwav2vec2Set(Featureset):
         else:
             features = self.extract_sample(signal, sr)
             # Create DataFrame with proper index matching data_df structure
-            index_part = audformat.segmented_index(index_tuple[0], index_tuple[1], index_tuple[2])
+            index_part = audformat.segmented_index(
+                index_tuple[0], index_tuple[1], index_tuple[2]
+            )
             df_part = pd.DataFrame([features], index=index_part)
             df_part.to_csv(cache_path)
-        
+
         return df_part
 
     def extract_sample(self, signal, sr):

@@ -238,3 +238,178 @@ class TestBuildTestDsDf:
         exp.runmgr = object()  # no 'modelrunner' attribute
         # Must not raise
         exp.evaluate_per_test_set()
+
+
+# --- Module-level helpers for the save() regression tests below ----------
+# pickle requires classes to be defined at module level (or otherwise
+# importable) — closures in tests can't be pickled.
+
+
+class _FakeModel:
+    """Stand-in for `runmgr.modelrunner.model`; picklable, not an ANN."""
+
+    def is_ann(self):
+        return False
+
+
+class _FakeModelrunner:
+    def __init__(self):
+        self.model = _FakeModel()
+
+
+class _FakeRunmgr:
+    def __init__(self):
+        self.modelrunner = _FakeModelrunner()
+
+
+class _CollectingUtil:
+    """Picklable substitute for `Util`; `warn` accumulates messages."""
+
+    def __init__(self):
+        self.warnings = []
+
+    def warn(self, msg):
+        self.warnings.append(msg)
+
+
+class _Unpicklable:
+    """Stands in for an audonnx `InferenceSession`: pickling raises."""
+
+    def __reduce__(self):
+        raise TypeError("cannot pickle me")
+
+
+class _FakeInnerExtractor:
+    """Picklable `feat_extractor` placeholder that owns an un-picklable model."""
+
+    def __init__(self, bad_obj):
+        self.model = bad_obj
+        self.model_interface = bad_obj
+        self.model_loaded = True
+
+
+class _FakeFeatureExtractor:
+    def __init__(self, bad_obj):
+        self.feat_extractor = _FakeInnerExtractor(bad_obj)
+
+
+class _FakeDatasplitter:
+    def __init__(self, feature_extractor):
+        self.feature_extractor = feature_extractor
+
+
+class TestExperimentSave:
+    """Regression for Experiment.save():
+
+    When the inner feature extractor holds an un-picklable object (e.g. an
+    audonnx InferenceSession used by `Audwav2vec2Set` / `AgenderSet`), the
+    initial pickle.dump fails and we fall into the except handler. That
+    handler must strip the model/model_interface fields from EVERY
+    FeatureExtractor on the experiment, not just the one inside
+    Datasplitter -- otherwise the retry pickle still hits the same object.
+    """
+
+    def test_save_strips_models_from_both_feature_extractors(
+        self, mock_config, tmp_path
+    ):
+        import pickle as _pickle
+
+        from nkululeko.experiment import Experiment
+
+        glob_conf.init_config(mock_config)
+
+        bad = _Unpicklable()
+        ext_top = _FakeFeatureExtractor(bad)
+        ext_ds = _FakeFeatureExtractor(bad)
+
+        exp = Experiment.__new__(Experiment)
+        exp.runmgr = _FakeRunmgr()
+        exp.util = _CollectingUtil()
+        exp.feature_extractor = ext_top
+        exp.datasplitter = _FakeDatasplitter(ext_ds)
+
+        out = tmp_path / "exp.pkl"
+        exp.save(str(out))
+
+        # Both inner extractors had their model nulled.
+        assert ext_top.feat_extractor.model is None
+        assert ext_ds.feat_extractor.model is None
+        # model_interface was also dropped.
+        assert ext_top.feat_extractor.model_interface is None
+        assert ext_ds.feat_extractor.model_interface is None
+        # model_loaded was reset, so a fresh load is forced after unpickle.
+        assert ext_top.feat_extractor.model_loaded is False
+        assert ext_ds.feat_extractor.model_loaded is False
+
+        # The retry pickle succeeded and produced a file we can load back.
+        assert out.is_file()
+        with open(out, "rb") as fh:
+            d = _pickle.load(fh)
+        assert "feature_extractor" in d
+        assert d["feature_extractor"].feat_extractor.model_loaded is False
+
+        # save() must have warned about the stripped model.
+        assert any(
+            "Can't pickle the feature extraction model" in w for w in exp.util.warnings
+        )
+
+    def test_save_handles_single_extractor(self, mock_config, tmp_path):
+        """If only one extractor is reachable (no datasplitter), save still works."""
+        from nkululeko.experiment import Experiment
+
+        glob_conf.init_config(mock_config)
+
+        ext = _FakeFeatureExtractor(_Unpicklable())
+
+        exp = Experiment.__new__(Experiment)
+        exp.runmgr = _FakeRunmgr()
+        exp.util = _CollectingUtil()
+        exp.feature_extractor = ext
+        # No `datasplitter` attribute on purpose.
+
+        out = tmp_path / "exp.pkl"
+        exp.save(str(out))
+
+        assert ext.feat_extractor.model is None
+        assert out.is_file()
+
+
+class TestExperimentCollectFeatureExtractors:
+    """`_collect_feature_extractors` finds every FeatureExtractor on the experiment."""
+
+    def test_collects_both_when_distinct(self):
+        from types import SimpleNamespace
+
+        from nkululeko.experiment import Experiment
+
+        a = SimpleNamespace(feat_extractor=None)
+        b = SimpleNamespace(feat_extractor=None)
+        exp = Experiment.__new__(Experiment)
+        exp.feature_extractor = a
+        exp.datasplitter = SimpleNamespace(feature_extractor=b)
+
+        result = exp._collect_feature_extractors()
+        assert len(result) == 2
+        assert a in result
+        assert b in result
+
+    def test_dedupes_when_same_instance(self):
+        """If `self.feature_extractor` and `datasplitter.feature_extractor`
+        point at the same object, return it only once."""
+        from types import SimpleNamespace
+
+        from nkululeko.experiment import Experiment
+
+        shared = SimpleNamespace(feat_extractor=None)
+        exp = Experiment.__new__(Experiment)
+        exp.feature_extractor = shared
+        exp.datasplitter = SimpleNamespace(feature_extractor=shared)
+
+        result = exp._collect_feature_extractors()
+        assert result == [shared]
+
+    def test_returns_empty_when_none(self):
+        from nkululeko.experiment import Experiment
+
+        exp = Experiment.__new__(Experiment)
+        assert exp._collect_feature_extractors() == []

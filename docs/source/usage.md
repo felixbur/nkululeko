@@ -35,12 +35,15 @@ type = xgb
 Besides [nkululeko.nkululeko], there are other functionalities. The complet functions are:
 
 -   **nkululeko.nkululeko**: doing experiments
--   **nkululeko.demo**: demo the current best model on command line
--   **nkululeko.test**: predict a series of files with the current
-    best model
+-   **nkululeko.predict**: unified prediction module. Predicts labels for
+    one or more audio files (`--file`), a folder of audio (`--folder`),
+    a CSV list (`--list`) or microphone input (`--mic`), using either a
+    feature extractor / autopredict target (`--type feats`, the default)
+    or the best model from a trained experiment (`--type model`).
+    Replaces the former `nkululeko.demo`, `nkululeko.feature_demo` and
+    `nkululeko.testing` modules.
 -   **nkululeko.explore**: perform data exploration
 -   **nkululeko.augment**: augment the current training data
--   **nkululeko.predict**: predict a series of files with a given model
 -   **nkululeko.ensemble**: ensemble a series of models
 
 See the CLI References (Modules) and [API documentation](ini_file.md) for more details.

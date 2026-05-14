@@ -370,7 +370,9 @@ class TestFindMostSignificantDifferenceMannWhitney:
 
     def test_raises_with_one_distribution(self):
         with pytest.raises(ValueError):
-            find_most_significant_difference_mannwhitney({"only": np.array([1.0, 2.0, 3.0])})
+            find_most_significant_difference_mannwhitney(
+                {"only": np.array([1.0, 2.0, 3.0])}
+            )
 
     def test_all_results_keys_present(self):
         rng = np.random.default_rng(3)
@@ -380,7 +382,12 @@ class TestFindMostSignificantDifferenceMannWhitney:
         }
         result = find_most_significant_difference_mannwhitney(dists)
         assert set(result.keys()) == {
-            "approach", "combo", "u_stat", "p_value", "significance", "all_results"
+            "approach",
+            "combo",
+            "u_stat",
+            "p_value",
+            "significance",
+            "all_results",
         }
 
 

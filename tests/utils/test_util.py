@@ -349,6 +349,7 @@ class TestGetPath:
         glob_conf.config["EXP"]["name"] = "newexp"
         u = Util("test")
         import os
+
         path = u.get_path("res_dir")
         assert os.path.isdir(path)
 
@@ -362,6 +363,7 @@ class TestCheckClassLabel:
     def test_renames_class_label_to_target(self):
         u = Util("test")
         import pandas as pd
+
         df = pd.DataFrame({"emotion": [1, 2], "class_label": ["A", "B"]})
         result = u.check_class_label(df)
         assert "class_label" not in result.columns
@@ -372,6 +374,7 @@ class TestCheckClassLabel:
     def test_no_class_label_column_unchanged(self):
         u = Util("test")
         import pandas as pd
+
         df = pd.DataFrame({"emotion": [1, 2, 3], "other": [4, 5, 6]})
         result = u.check_class_label(df)
         assert list(result.columns) == ["emotion", "other"]
@@ -381,6 +384,7 @@ class TestCheckClassLabel:
         del glob_conf.config["DATA"]["target"]
         u = Util("test")
         import pandas as pd
+
         df = pd.DataFrame({"emotion": [1], "class_label": ["A"]})
         result = u.check_class_label(df)
         # target is None → condition is False, no rename

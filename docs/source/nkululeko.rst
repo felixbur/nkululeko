@@ -52,22 +52,6 @@ nkululeko.constants module
    :undoc-members:
    :show-inheritance:
 
-nkululeko.demo module
----------------------
-
-.. automodule:: nkululeko.demo
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-nkululeko.demo\_feats module
-----------------------------
-
-.. automodule:: nkululeko.demo_feats
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 nkululeko.demo\_predictor module
 --------------------------------
 
@@ -228,18 +212,10 @@ nkululeko.syllable\_nuclei module
    :undoc-members:
    :show-inheritance:
 
-nkululeko.test module
----------------------
+nkululeko.testing\_predictor module
+-----------------------------------
 
-.. automodule:: nkululeko.test
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-nkululeko.test\_predictor module
---------------------------------
-
-.. automodule:: nkululeko.test_predictor
+.. automodule:: nkululeko.testing_predictor
    :members:
    :undoc-members:
    :show-inheritance:

@@ -183,10 +183,17 @@ def test_speaker_scale_no_dev_returns_two(sample_data):
 
 
 def test_speaker_scale_with_dev_returns_three(sample_data):
-    train_data_df, test_data_df, dev_data_df, train_feats, test_feats, dev_feats = sample_data
+    train_data_df, test_data_df, dev_data_df, train_feats, test_feats, dev_feats = (
+        sample_data
+    )
     scaler = Scaler(
-        train_data_df, test_data_df, train_feats.copy(), test_feats.copy(), "speaker",
-        dev_x=dev_data_df, dev_y=dev_feats.copy()
+        train_data_df,
+        test_data_df,
+        train_feats.copy(),
+        test_feats.copy(),
+        "speaker",
+        dev_x=dev_data_df,
+        dev_y=dev_feats.copy(),
     )
     result = scaler.speaker_scale()
     assert len(result) == 3
@@ -213,36 +220,28 @@ def test_speaker_scale_df_normalizes_per_speaker():
 
 def test_bin_low_values_become_zero(sample_data):
     train_data_df, test_data_df, _, train_feats, test_feats, _ = sample_data
-    scaler = Scaler(
-        train_data_df, test_data_df, train_feats, test_feats, "bins"
-    )
+    scaler = Scaler(train_data_df, test_data_df, train_feats, test_feats, "bins")
     result = scaler._bin(np.array([0.0, 1.0]), b1=5.0, b2=9.0)
     assert result.tolist() == ["0", "0"]
 
 
 def test_bin_middle_values_become_half(sample_data):
     train_data_df, test_data_df, _, train_feats, test_feats, _ = sample_data
-    scaler = Scaler(
-        train_data_df, test_data_df, train_feats, test_feats, "bins"
-    )
+    scaler = Scaler(train_data_df, test_data_df, train_feats, test_feats, "bins")
     result = scaler._bin(np.array([6.0, 7.0]), b1=5.0, b2=9.0)
     assert result.tolist() == ["0.5", "0.5"]
 
 
 def test_bin_high_values_become_one(sample_data):
     train_data_df, test_data_df, _, train_feats, test_feats, _ = sample_data
-    scaler = Scaler(
-        train_data_df, test_data_df, train_feats, test_feats, "bins"
-    )
+    scaler = Scaler(train_data_df, test_data_df, train_feats, test_feats, "bins")
     result = scaler._bin(np.array([10.0, 20.0]), b1=5.0, b2=9.0)
     assert result.tolist() == ["1", "1"]
 
 
 def test_bin_returns_series(sample_data):
     train_data_df, test_data_df, _, train_feats, test_feats, _ = sample_data
-    scaler = Scaler(
-        train_data_df, test_data_df, train_feats, test_feats, "bins"
-    )
+    scaler = Scaler(train_data_df, test_data_df, train_feats, test_feats, "bins")
     result = scaler._bin(np.array([1.0, 5.0, 10.0]), b1=3.0, b2=7.0)
     assert isinstance(result, pd.Series)
     assert set(result.tolist()).issubset({"0", "0.5", "1"})

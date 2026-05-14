@@ -15,6 +15,7 @@ from nkululeko.data.dataset_csv import Dataset_CSV
 from nkululeko.data.datasplitter import Datasplitter
 from nkululeko.demo_predictor import Demo_predictor
 from nkululeko.feat_extract.feats_analyser import FeatureAnalyser
+from nkululeko.feature_extractor import FeatureExtractor
 from nkululeko.plots import Plots
 from nkululeko.reporting.report import Report
 from nkululeko.runmanager import Runmanager
@@ -145,15 +146,22 @@ class Experiment:
         # print(df.head())
         return df
 
-    def fill_tests(self):
-        """Only fill a new test set"""
+    def fill_tests(self, encode=True):
+        """Only fill a new test set.
 
+        Args:
+            encode: When True (default), integer-encode the target column using
+                the training label encoder and cache the result.  Pass False to
+                keep original string labels (the caller is then responsible for
+                encoding before passing the dataframe to a model).
+        """
         test_dbs = ast.literal_eval(glob_conf.config["DATA"]["tests"])
         self.df_test = pd.DataFrame()
         start_fresh = eval(self.util.config_val("DATA", "no_reuse", "False"))
         store = self.util.get_path("store")
         storage_test = f"{store}extra_testdf.csv"
-        if os.path.isfile(storage_test) and not start_fresh:
+        # Only use the cached (integer-encoded) CSV when encode=True
+        if encode and os.path.isfile(storage_test) and not start_fresh:
             self.util.debug(f"reusing previously stored {storage_test}")
             self.df_test = self._import_csv(storage_test)
         else:
@@ -180,11 +188,12 @@ class Experiment:
                 self.df_test.is_labeled = data.is_labeled
             self.df_test.got_gender = self.got_gender
             self.df_test.got_speaker = self.got_speaker
-            self.df_test["class_label"] = self.df_test[self.target]
-            self.df_test[self.target] = self.label_encoder.transform(
-                self.df_test[self.target]
-            )
-            self.df_test.to_csv(storage_test)
+            if encode:
+                self.df_test["class_label"] = self.df_test[self.target]
+                self.df_test[self.target] = self.label_encoder.transform(
+                    self.df_test[self.target]
+                )
+                self.df_test.to_csv(storage_test)
 
     def fill_train_and_tests(self):
         if self.split3:
@@ -782,9 +791,22 @@ class Experiment:
             pickle.dump(self.__dict__, f)
             f.close()
         except (TypeError, AttributeError) as error:
-            self.datasplitter.feature_extractor.feat_extractor.model = None
-            if hasattr(self.datasplitter.feature_extractor.feat_extractor, "model_interface"):
-                self.datasplitter.feature_extractor.feat_extractor.model_interface = None
+            # Strip the un-picklable inner model(s) from every FeatureExtractor
+            # stored on the experiment. There are typically two: one set in
+            # fill_train_and_tests() and one inside Datasplitter.extract_feats().
+            # Both may hold the same kind of feat_extractor (e.g. an ONNX
+            # InferenceSession from audwav2vec2 / agender), so nulling just
+            # one isn't enough.
+            for fe in self._collect_feature_extractors():
+                inner = getattr(fe, "feat_extractor", None)
+                if inner is None:
+                    continue
+                if hasattr(inner, "model"):
+                    inner.model = None
+                if hasattr(inner, "model_interface"):
+                    inner.model_interface = None
+                if hasattr(inner, "model_loaded"):
+                    inner.model_loaded = False
             f = open(filename, "wb")
             pickle.dump(self.__dict__, f)
             f.close()
@@ -797,6 +819,23 @@ class Experiment:
                 "Save experiment: Can't pickle local object, NOT saving: "
                 + f"{type(error).__name__} {error}"
             )
+
+    def _collect_feature_extractors(self):
+        """Return every FeatureExtractor reachable from `self`.
+
+        Currently looks at `self.feature_extractor` and
+        `self.datasplitter.feature_extractor`. Returns an iterable of objects
+        that may have a `feat_extractor` attribute.
+        """
+        seen = []
+        fe = getattr(self, "feature_extractor", None)
+        if fe is not None:
+            seen.append(fe)
+        ds = getattr(self, "datasplitter", None)
+        ds_fe = getattr(ds, "feature_extractor", None) if ds is not None else None
+        if ds_fe is not None and ds_fe is not fe:
+            seen.append(ds_fe)
+        return seen
 
     def save_onnx(self, filename):
         # export the model to onnx

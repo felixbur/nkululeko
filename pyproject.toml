@@ -108,14 +108,13 @@ all = [
 "nkululeko.explore" = "nkululeko.explore:main"
 "nkululeko.nkululeko" = "nkululeko.nkululeko:main"
 "nkululeko.augment" = "nkululeko.augment:main"
-"nkululeko.demo" = "nkululeko.demo:main"
-"nkululeko.feature_demo" = "nkululeko.feature_demo:main"
 "nkululeko.export" = "nkululeko.export:main"
 "nkululeko.predict" = "nkululeko.predict:main"
 "nkululeko.resample" = "nkululeko.resample:main"
 "nkululeko.segment" = "nkululeko.segment:main"
-"nkululeko.test" = "nkululeko.test:main"
 "nkululeko.ensemble" = "nkululeko.ensemble:main"
+"nkululeko.multidb" = "nkululeko.multidb:main"
+"nkululeko.optim" = "nkululeko.optim:main" 
 
 [project.urls]
 Homepage = "https://github.com/felixbur/nkululeko"

@@ -263,6 +263,7 @@ class TestSegmentSilence(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         from nkululeko.utils.dataframe import segment_silence
+
         cls.segment_silence = staticmethod(segment_silence)
 
     def _make_seg_df(self, entries, columns=None):
@@ -279,16 +280,20 @@ class TestSegmentSilence(unittest.TestCase):
         df = self._make_seg_df([("f.wav", 1.0, 3.0), ("f.wav", 5.0, 7.0)])
         result = self.segment_silence(df, with_borders=False)
         self.assertEqual(len(result), 1)
-        self.assertEqual(result.index[0], ("f.wav", timedelta(seconds=3), timedelta(seconds=5)))
+        self.assertEqual(
+            result.index[0], ("f.wav", timedelta(seconds=3), timedelta(seconds=5))
+        )
 
     def test_segment_silence_multiple_files(self):
         """Each file's gaps are computed independently."""
-        df = self._make_seg_df([
-            ("a.wav", 0.0, 2.0),
-            ("a.wav", 4.0, 6.0),
-            ("b.wav", 1.0, 3.0),
-            ("b.wav", 7.0, 9.0),
-        ])
+        df = self._make_seg_df(
+            [
+                ("a.wav", 0.0, 2.0),
+                ("a.wav", 4.0, 6.0),
+                ("b.wav", 1.0, 3.0),
+                ("b.wav", 7.0, 9.0),
+            ]
+        )
         result = self.segment_silence(df, with_borders=False)
         self.assertEqual(len(result), 2)
         files = result.index.get_level_values("file").tolist()

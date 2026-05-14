@@ -80,3 +80,42 @@ class TestSNREstimator:
         assert isinstance(estimated_snr, (float, np.floating))
         assert not np.isnan(estimated_snr)
         assert not np.isinf(estimated_snr)
+
+    def test_estimate_snr_all_zero_signal_no_warnings(self):
+        """Regression: pure-silence input must not trigger log(0) or
+        divide-by-zero warnings; it should return a finite SNR (0 dB)."""
+        import warnings
+
+        signal = np.zeros(16000, dtype="float32")
+        estimator = SNREstimator(signal, 16000)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", RuntimeWarning)
+            snr, log_energies, low, high = estimator.estimate_snr()
+
+        assert np.isfinite(snr)
+        assert snr == pytest.approx(0.0)
+
+    def test_estimate_snr_constant_signal_no_warnings(self):
+        """Regression: a constant non-zero signal makes low == high quartile;
+        the linear-domain ratio is 1 → 0 dB, no warnings."""
+        import warnings
+
+        signal = np.ones(16000, dtype="float32") * 0.5
+        estimator = SNREstimator(signal, 16000)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", RuntimeWarning)
+            snr, *_ = estimator.estimate_snr()
+
+        assert np.isfinite(snr)
+
+    def test_estimate_snr_short_signal(self):
+        """Regression: a signal shorter than one window must return cleanly
+        instead of producing an empty `frames` list that breaks percentile."""
+        signal = np.zeros(100, dtype="float32")  # < frame_length=320
+        estimator = SNREstimator(signal, 16000)
+
+        snr, log_energies, low, high = estimator.estimate_snr()
+        assert snr == 0.0
+        assert log_energies == []

@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 1.7.0 (26-05-14)
+------------------------
+* complete re-write (unification) of demo, feature_demo, testing and predict modules
+* changed tests in nkululeko module, delivers now a complete report on the best model without retraining
+
+
 Version 1.6.3 (26-05-04)
 ------------------------
 * caching for audwav2vwc2 features

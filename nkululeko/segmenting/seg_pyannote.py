@@ -4,6 +4,7 @@ Segment a dataset with the Pyannote segmenter.
 Also adds speaker ids to the segments.
 
 """
+
 import os
 import pandas as pd
 from pyannote.audio import Pipeline
@@ -96,13 +97,15 @@ class Pyannote_segmenter:
                 min_length = 2
             self.util.debug(f"segmenting with max length: {max_length + min_length}")
         for file, values in tqdm(df.iterrows()):
-            cache_name = audeer.basename_wo_ext(file[0]) 
+            cache_name = audeer.basename_wo_ext(file[0])
             cache_path = audeer.path(segment_cache, cache_name + ".csv")
             if os.path.isfile(cache_path):
                 df = audformat.utils.read_csv(cache_path)
             else:
                 if max_length:
-                    index, speakers = self.get_segmentation(file, min_length, max_length)
+                    index, speakers = self.get_segmentation(
+                        file, min_length, max_length
+                    )
                 else:
                     index, speakers = self.get_segmentation_simple(file)
                 df = pd.DataFrame(

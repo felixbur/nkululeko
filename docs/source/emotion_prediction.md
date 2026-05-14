@@ -1,196 +1,133 @@
 # Emotion Prediction with Emotion2vec
 
-This tutorial demonstrates how to use nkululeko's emotion prediction capabilities with emotion2vec models.
+This tutorial demonstrates how to use Nkululeko's emotion prediction
+capabilities with `emotion2vec` models.
 
 ## Overview
 
-Nkululeko's prediction module (`nkululeko.predict`) can automatically predict emotions from audio using pre-trained emotion2vec models. This is useful for:
+The unified prediction module ([`nkululeko.predict`](predict.md)) can
+automatically predict emotions from audio. With `--model emotion` the
+`emotion` autopredict target is used, which is currently backed by
+`emotion2vec`. This is useful for:
 
 - Analyzing unlabeled audio data
-- Generating emotion annotations for new datasets  
+- Generating emotion annotations for new datasets
 - Comparing predicted vs. actual emotions
 - Building emotion-aware applications
 
 ## Quick Start
 
-### 1. Configuration
-
-Create an INI file with a `[PREDICT]` section:
-
-```ini
-[EXP]
-root = results/
-name = emotion_prediction_example
-
-[DATA]
-databases = ['train', 'test']
-train = ./data/your_dataset/train.csv
-train.type = csv
-test = ./data/your_dataset/test.csv  
-test.type = csv
-target = emotion
-labels = ['anger', 'neutral', 'fear', 'happiness', 'sadness']
-
-[FEATS]
-type = []
-
-[PREDICT]
-targets = ['emotion']
-sample_selection = all
-```
-
-### 2. Run Prediction
+### 1. Predict emotion for a few files
 
 ```bash
-python -m nkululeko.predict --config your_config.ini
+python -m nkululeko.predict --file sample1.wav sample2.wav --model emotion
 ```
 
-### 3. View Results
+This writes `sample1_result.txt` and `sample2_result.txt` next to each input
+file (and prints the same predictions to stdout).
 
-The prediction results are saved as CSV files in your results directory:
-- `train_dev_test_predicted.csv` - Contains original data plus `emotion_pred` column
+### 2. Predict for a whole folder
 
-## Configuration Details
-
-### PREDICT Section
-
-- **targets**: List of prediction targets. Use `['emotion']` for emotion prediction
-- **sample_selection**: Which samples to predict on:
-  - `all` - Predict on all samples (train + dev + test)
-  - `train` - Predict only on training samples
-  - `test` - Predict only on test samples
-
-### FEATS Section
-
-- **type**: Use `[]` (empty list) for prediction mode
-- This bypasses traditional feature extraction since emotion2vec handles audio directly
-
-## Supported Models
-
-The emotion predictor uses emotion2vec-large model which automatically maps to:
-- `iic/emotion2vec_plus_large` - Large emotion2vec model with enhanced performance
-
-## Example: Polish Emotion Dataset
-
-Here's a complete example using the built-in Polish emotion dataset:
-
-```ini
-[EXP]
-root = results/
-name = polish_emotion_prediction
-
-[DATA]
-databases = ['train', 'dev', 'test']
-train = ./data/polish/polish_train.csv
-train.type = csv
-train.absolute_path = False
-dev = ./data/polish/polish_dev.csv
-dev.type = csv  
-dev.absolute_path = False
-test = ./data/polish/polish_test.csv
-test.type = csv
-test.absolute_path = False
-target = emotion
-labels = ['anger', 'neutral', 'fear']
-
-[FEATS]
-type = []
-
-[PREDICT]
-targets = ['emotion']
-sample_selection = all
-
-[PLOT]
-name = polish_emotion_results
-```
-
-Run with:
 ```bash
-python -m nkululeko.predict --config exp_polish_emotion_predict.ini
+python -m nkululeko.predict \
+    --folder ./recordings \
+    --model emotion \
+    --outfile ./recordings_emotion.csv
 ```
 
-## Output Format
+### 3. Augment an existing CSV with an `emotion_pred` column
 
-The prediction output CSV contains:
-- All original columns from your dataset
-- `emotion_pred` - Predicted emotion labels
+```bash
+python -m nkululeko.predict \
+    --list ./your_dataset.csv \
+    --model emotion \
+    --outfile ./your_dataset_with_emotion.csv
+```
 
-Example output:
+All original columns of `your_dataset.csv` are preserved. A new `emotion_pred`
+column is appended.
+
+## Output format
+
+Example output CSV after `--list ... --model emotion`:
+
 ```csv
-file,speaker,gender,emotion,emotion_pred
-audio1.wav,speaker1,male,anger,anger
-audio2.wav,speaker2,female,neutral,neutral
-audio3.wav,speaker1,male,fear,fear
+file,start,end,speaker,gender,emotion,emotion_pred
+audio1.wav,0 days,,speaker1,male,anger,anger
+audio2.wav,0 days,,speaker2,female,neutral,neutral
+audio3.wav,0 days,,speaker1,male,fear,fear
 ```
 
-## Advanced Usage
+The audformat segmented index (`file`, `start`, `end`) is preserved when the
+input CSV is a valid audformat file. For a plain CSV, the first column is
+interpreted as the audio path.
 
-### Multiple Prediction Targets
+## Combining with other autopredict targets
 
-You can predict multiple audio properties simultaneously:
+Each invocation of `nkululeko.predict` runs one prediction target. To enrich
+your CSV with multiple targets (emotion + arousal + age + gender), run the
+command multiple times, threading the output of one run into the input of the
+next:
 
-```ini
-[PREDICT]
-targets = ['emotion', 'arousal', 'age', 'gender']
-sample_selection = all
+```bash
+python -m nkululeko.predict --list data.csv --model emotion --outfile step1.csv
+python -m nkululeko.predict --list step1.csv --model arousal --outfile step2.csv
+python -m nkululeko.predict --list step2.csv --model age --outfile step3.csv
+python -m nkululeko.predict --list step3.csv --model gender --outfile final.csv
 ```
 
-This will add multiple prediction columns: `emotion_pred`, `arousal_pred`, `age_pred`, `gender_pred`.
+`final.csv` will contain the original columns plus `emotion_pred`,
+`arousal_pred`, `age_pred` and `gender_pred`.
 
-### Selective Sample Prediction
+## Supported models
 
-Predict only on specific data splits:
+The emotion predictor uses an `emotion2vec` feature extractor, currently
+`iic/emotion2vec_plus_large`.
 
-```ini
-[PREDICT]
-targets = ['emotion']
-sample_selection = test  # Only predict on test set
-```
+## Technical details
 
-## Technical Details
+### Pipeline
 
-### Model Architecture
+1. `emotion2vec-large` extracts 768-dimensional embeddings for each segment.
+2. The pretrained emotion head produces the predicted emotion label.
+3. The predicted labels are written as a new `emotion_pred` column.
 
-The emotion predictor:
-1. Uses emotion2vec-large feature extractor to generate 768-dimensional embeddings
-2. Applies the pre-trained emotion classification head
-3. Returns emotion predictions for each audio sample
+### Performance
 
-### Performance Considerations
-
-- Processing time scales with audio duration and number of files
-- GPU acceleration is automatically used if available
-- Large datasets may require batch processing
+- Processing time scales with audio duration and the number of files.
+- GPU acceleration is used automatically when available.
+- Large datasets may require running in batches by splitting the input CSV.
 
 ### Limitations
 
-- Current implementation returns placeholder predictions ("neutral")
-- Full emotion classification requires additional model training
-- Prediction accuracy depends on similarity between your data and training data
+- The bundled `EmotionPredictor` currently emits a placeholder label
+  (`neutral`) until the emotion head is fully wired up.
+- Prediction quality depends on how closely your data resembles the
+  emotion2vec training distribution.
 
 ## Troubleshooting
 
-### Common Issues
+**ModuleNotFoundError**: Run from a directory where `nkululeko` is installed
+or available on `PYTHONPATH`:
 
-**ModuleNotFoundError**: Make sure to run from the nkululeko repository root:
 ```bash
-cd /path/to/nkululeko
-python -m nkululeko.predict --config your_config.ini
+python -m nkululeko.predict --file your.wav --model emotion
 ```
 
-**Empty predictions**: Check that your audio files exist and are readable:
+**Empty predictions**: Make sure the audio files exist and are readable:
+
 ```bash
-# Verify audio files
-ls -la data/your_dataset/audio/
+ls -la ./recordings/
 ```
 
-**Memory errors**: Reduce batch size or process smaller subsets of data.
+**Memory errors**: Process smaller subsets of data or run on a machine with
+more RAM/VRAM.
 
-## Next Steps
+## Next steps
 
-- Explore other prediction targets: age, gender, arousal, dominance
-- Combine predictions with traditional ML models
-- Use predictions for data analysis and visualization
-- Build emotion-aware applications using the prediction API
-
-For more advanced usage, see the [API documentation](modules.rst) and [examples directory](https://github.com/bagustris/nkululeko/tree/master/examples).
+- Try other autopredict targets: `age`, `gender`, `arousal`, `dominance`,
+  `mos`, `snr`, `speaker`. See [predict.md](predict.md).
+- Use the predict module in `--type model` mode to apply a Nkululeko model
+  you trained yourself: see [demo.md](demo.md).
+- Combine predicted labels with traditional ML pipelines via
+  [`nkululeko.nkululeko`](usage.md).

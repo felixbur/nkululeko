@@ -34,6 +34,9 @@ class SNREstimator:
         >>> estimated_snr, log_energies, energy_threshold_low, energy_threshold_high = snr_estimator.estimate_snr()
     """
 
+    # Floor for frame energy so log/log10 stay finite on silent frames.
+    _ENERGY_FLOOR = 1e-12
+
     def __init__(self, input_data, sample_rate, window_size=320, hop_size=160):
         self.audio_data = input_data
         self.sample_rate = sample_rate
@@ -41,6 +44,9 @@ class SNREstimator:
         self.hop_length = hop_size
 
     def frame_audio(self, signal):
+        # Guard against signals shorter than one frame.
+        if len(signal) < self.frame_length:
+            return []
         num_frames = 1 + (len(signal) - self.frame_length) // self.hop_length
         frames = [
             signal[i * self.hop_length : (i * self.hop_length) + self.frame_length]
@@ -50,13 +56,23 @@ class SNREstimator:
 
     def calculate_log_energy(self, frame):
         energy = np.sum(frame**2)
-        return np.log(energy)
+        # Floor zero-energy (silent) frames to avoid log(0) = -inf.
+        return np.log(max(float(energy), self._ENERGY_FLOOR))
 
     def calculate_snr(self, energy_high, energy_low):
-        return 10 * np.log10(energy_high / energy_low)
+        # Floor both terms so silent / constant signals return 0 dB instead
+        # of triggering divide-by-zero on the linear-domain ratio.
+        return 10 * np.log10(
+            max(float(energy_high), self._ENERGY_FLOOR)
+            / max(float(energy_low), self._ENERGY_FLOOR)
+        )
 
     def estimate_snr(self):
         frames = self.frame_audio(self.audio_data)
+        # Signal too short to contain one window — no SNR can be estimated.
+        if not frames:
+            return 0.0, [], 0.0, 0.0
+
         log_energies = [
             self.calculate_log_energy(frame * hamming(self.frame_length))
             for frame in frames

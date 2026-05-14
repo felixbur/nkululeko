@@ -70,68 +70,56 @@ The SEGMENT module produces:
 
 ## Method 2: PREDICT Module
 
-Use this when you want to identify speakers **across the entire database** (e.g., clustering utterances by speaker).
+Use this when you want to identify speakers **across a list of audio files**
+(e.g., clustering utterances by speaker). The unified
+[`nkululeko.predict`](predict.md) module dispatches `--model speaker` to the
+`speaker` autopredict target.
 
-```ini
-[EXP]
-root = ./examples/results/
-name = exp_emodb_predict_speaker
-
-[DATA]
-databases = ['emodb']
-emodb = ./data/emodb/emodb
-emodb.split_strategy = random
-target = emotion
-
-[FEATS]
-type = ['os']
-scale = standard
-
-[PREDICT]
-targets = ['speaker']
-sample_selection = all
-
-[MODEL]
-type = xgb
-device = cuda
+```bash
+python -m nkululeko.predict \
+    --list ./data/emodb/emodb_files.csv \
+    --model speaker \
+    --outfile ./emodb_speakers.csv
 ```
 
-### PREDICT Options
+The output CSV preserves the original columns of `emodb_files.csv` and adds a
+`speaker_pred` column. The same command works with `--folder` or `--file`.
 
-| Option | Description |
-|--------|-------------|
-| `targets` | What to predict: `['speaker']`, `['gender']`, `['age']`, etc. |
-| `sample_selection` | Which samples: `all`, `train`, or `test` |
+### Available autopredict targets
 
-### Available Prediction Targets
+`--model` accepts any of the autopredict targets, including:
 
-The PREDICT module supports multiple targets:
-- `speaker` - Speaker identity
-- `gender` - Male/Female
-- `age` - Age estimation
-- `snr` - Signal-to-noise ratio
-- `valence`, `arousal`, `dominance` - Emotional dimensions
-- `pesq`, `mos` - Speech quality metrics
-- `text` - Transcription (via Whisper)
+- `speaker` — speaker identity
+- `gender` — male/female
+- `age` — age estimation
+- `snr` — signal-to-noise ratio
+- `valence`, `arousal`, `dominance` — emotional dimensions
+- `pesq`, `mos`, `sdr`, `stoi` — speech quality metrics
+- `emotion` — emotion classification
+- `text`, `translation`, `textclassification` — text processing
+
+See [predict.md](predict.md) for the full list and per-target details.
 
 ## Running the Experiments
 
-### With SEGMENT module:
+### With the SEGMENT module:
 
 ```bash
 python -m nkululeko.segment --config examples/exp_emodb_segment_speaker.ini
 ```
 
-### With PREDICT module:
+### With the PREDICT module:
 
 ```bash
-python -m nkululeko.predict --config examples/exp_emodb_predict_speaker.ini
+python -m nkululeko.predict \
+    --list ./data/emodb/emodb_files.csv \
+    --model speaker \
+    --outfile ./emodb_speakers.csv
 ```
 
 ## Example Files
 
 - [`exp_emodb_segment_speaker.ini`](https://github.com/felixbur/nkululeko/blob/main/examples/exp_emodb_segment_speaker.ini): SEGMENT-based speaker diarization
-- [`exp_emodb_predict_speaker.ini`](https://github.com/felixbur/nkululeko/blob/main/examples/exp_emodb_predict_speaker.ini): PREDICT-based speaker identification
 - [`exp_androids_segment.ini`](https://github.com/felixbur/nkululeko/blob/main/examples/exp_androids_segment.ini): Silero VAD segmentation
 
 ## Tips
