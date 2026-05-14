@@ -195,7 +195,9 @@ class DataFrameMixin:
         return (values - old_min) / (old_max - old_min) * (new_max - new_min) + new_min
 
 
-def segment_silence(df: pd.DataFrame, with_borders: bool=True, remove_speaker_id: bool=False) -> pd.DataFrame:
+def segment_silence(
+    df: pd.DataFrame, with_borders: bool = True, remove_speaker_id: bool = False
+) -> pd.DataFrame:
     """Take an already segmented (based on VAD) DataFrame and return the silence segments.
 
     Finds the gaps between speech segments within each file. Optionally includes
@@ -235,7 +237,9 @@ def segment_silence(df: pd.DataFrame, with_borders: bool=True, remove_speaker_id
                 silence_data.append(first_row)
 
         if with_borders and ends[-1] < file_df.index.get_level_values("end").max():
-            silence_entries.append((file, ends[-1], file_df.index.get_level_values("end").max()))
+            silence_entries.append(
+                (file, ends[-1], file_df.index.get_level_values("end").max())
+            )
             silence_data.append(last_row)
 
     if not silence_entries:

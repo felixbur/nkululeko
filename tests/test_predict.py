@@ -78,9 +78,7 @@ class TestFlattenFeatures:
     def test_scalar(self):
         from nkululeko.predict import _flatten_features
 
-        np.testing.assert_array_equal(
-            _flatten_features(3.14), np.array([3.14])
-        )
+        np.testing.assert_array_equal(_flatten_features(3.14), np.array([3.14]))
 
     def test_int_scalar(self):
         from nkululeko.predict import _flatten_features
@@ -379,7 +377,8 @@ class TestLoadConfig:
         # dir, which is the observable contract.
         config = _load_config(args)
         assert config["EXP"]["root"] == "./"
-        atexit.unregister(__import__("nkululeko.predict", fromlist=["_cleanup_path"])._cleanup_path)
+        # No temp dir should have been created when an explicit config is supplied.   
+        assert "nkulu_predict_" not in config["EXP"]["root"] 
 
 
 class TestApplyLanguageOverride:
@@ -431,19 +430,21 @@ class TestMainLanguageOverride:
 
         def fake_predict_df(seg_df, args, util):
             captured["language"] = glob_conf.config["EXP"]["language"]
-            captured["target_language"] = glob_conf.config["PREDICT"][
-                "target_language"
-            ]
+            captured["target_language"] = glob_conf.config["PREDICT"]["target_language"]
             return pd.DataFrame({"text": ["hi"]}, index=seg_df.index)
 
         argv = [
             "predict.py",
-            "--file", str(wav),
-            "--model", "text",
-            "--language", "de",
+            "--file",
+            str(wav),
+            "--model",
+            "text",
+            "--language",
+            "de",
         ]
-        with patch.object(sys, "argv", argv), patch.object(
-            predict_mod, "_predict_df", side_effect=fake_predict_df
+        with (
+            patch.object(sys, "argv", argv),
+            patch.object(predict_mod, "_predict_df", side_effect=fake_predict_df),
         ):
             predict_mod.main()
 
@@ -693,17 +694,17 @@ def _run_mic_with_mocks(args, monkeypatch):
     monkeypatch.setattr(
         predict_mod,
         "_build_segmented_df",
-        lambda files: pd.DataFrame(index=pd.MultiIndex.from_tuples(
-            [(files[0], pd.Timedelta(0), pd.Timedelta(seconds=1))],
-            names=["file", "start", "end"],
-        )),
+        lambda files: pd.DataFrame(
+            index=pd.MultiIndex.from_tuples(
+                [(files[0], pd.Timedelta(0), pd.Timedelta(seconds=1))],
+                names=["file", "start", "end"],
+            )
+        ),
     )
     monkeypatch.setattr(
         predict_mod,
         "_predict_df",
-        lambda seg_df, args, util: pd.DataFrame(
-            {"age_pred": [42]}, index=seg_df.index
-        ),
+        lambda seg_df, args, util: pd.DataFrame({"age_pred": [42]}, index=seg_df.index),
     )
     monkeypatch.setattr(os, "remove", lambda *a, **kw: None)
 
@@ -741,10 +742,12 @@ class TestRunMic:
         monkeypatch.setattr(
             predict_mod,
             "_build_segmented_df",
-            lambda files: pd.DataFrame(index=pd.MultiIndex.from_tuples(
-                [(files[0], pd.Timedelta(0), pd.Timedelta(seconds=1))],
-                names=["file", "start", "end"],
-            )),
+            lambda files: pd.DataFrame(
+                index=pd.MultiIndex.from_tuples(
+                    [(files[0], pd.Timedelta(0), pd.Timedelta(seconds=1))],
+                    names=["file", "start", "end"],
+                )
+            ),
         )
         predict_mock = MagicMock(
             return_value=pd.DataFrame(
@@ -827,11 +830,12 @@ class TestPredictDfDispatch:
         util = MagicMock()
         for name in ("mos", "snr"):
             args = argparse.Namespace(ptype="feats", model=name)
-            with patch(
-                "nkululeko.predict._predict_with_autopredict", return_value="AP"
-            ) as ap, patch(
-                "nkululeko.predict._predict_with_features"
-            ) as feat:
+            with (
+                patch(
+                    "nkululeko.predict._predict_with_autopredict", return_value="AP"
+                ) as ap,
+                patch("nkululeko.predict._predict_with_features") as feat,
+            ):
                 _predict_df(pd.DataFrame(), args, util)
                 ap.assert_called_once()
                 feat.assert_not_called()
@@ -873,9 +877,7 @@ class TestGetFeatureExtractor:
         # actually downloading any models.
         from nkululeko.feat_extract import feats_audwav2vec2, feats_wav2vec2
 
-        monkeypatch.setattr(
-            feats_audwav2vec2, "Audwav2vec2Set", FakeAudwav2vec2Set
-        )
+        monkeypatch.setattr(feats_audwav2vec2, "Audwav2vec2Set", FakeAudwav2vec2Set)
         monkeypatch.setattr(feats_wav2vec2, "Wav2vec2", FakeWav2vec2)
 
         _get_feature_extractor("audwav2vec2", MagicMock())
@@ -961,7 +963,10 @@ class TestPredictWithModel:
 
         fake_expr = MagicMock()
         monkeypatch.setattr(
-            predict_mod, "Experiment", lambda *a, **kw: fake_expr, raising=False,
+            predict_mod,
+            "Experiment",
+            lambda *a, **kw: fake_expr,
+            raising=False,
         )
         # Patch the import inside _predict_with_model.
         import nkululeko.experiment as expmod
@@ -1138,7 +1143,9 @@ class TestRunFromConfig:
         return seen, out
 
     def test_defaults_to_all(self, monkeypatch, tmp_path):
-        seen, out = self._run(monkeypatch, tmp_path, sample_selection=None, n_train=2, n_test=3)
+        seen, out = self._run(
+            monkeypatch, tmp_path, sample_selection=None, n_train=2, n_test=3
+        )
         # default = all -> concatenated rows
         assert seen["n_rows"] == 5
         assert out.is_file()
@@ -1147,15 +1154,21 @@ class TestRunFromConfig:
         assert "snr_pred" in result.columns
 
     def test_sample_selection_all(self, monkeypatch, tmp_path):
-        seen, _ = self._run(monkeypatch, tmp_path, sample_selection="all", n_train=2, n_test=3)
+        seen, _ = self._run(
+            monkeypatch, tmp_path, sample_selection="all", n_train=2, n_test=3
+        )
         assert seen["n_rows"] == 5
 
     def test_sample_selection_train(self, monkeypatch, tmp_path):
-        seen, _ = self._run(monkeypatch, tmp_path, sample_selection="train", n_train=2, n_test=3)
+        seen, _ = self._run(
+            monkeypatch, tmp_path, sample_selection="train", n_train=2, n_test=3
+        )
         assert seen["n_rows"] == 2
 
     def test_sample_selection_test(self, monkeypatch, tmp_path):
-        seen, _ = self._run(monkeypatch, tmp_path, sample_selection="test", n_train=2, n_test=3)
+        seen, _ = self._run(
+            monkeypatch, tmp_path, sample_selection="test", n_train=2, n_test=3
+        )
         assert seen["n_rows"] == 3
 
     def test_unknown_sample_selection_errors(self, monkeypatch, tmp_path):
@@ -1164,7 +1177,9 @@ class TestRunFromConfig:
 
     def test_empty_selection_errors(self, monkeypatch, tmp_path):
         with pytest.raises(SystemExit):
-            self._run(monkeypatch, tmp_path, sample_selection="train", n_train=0, n_test=3)
+            self._run(
+                monkeypatch, tmp_path, sample_selection="train", n_train=0, n_test=3
+            )
 
 
 class TestMainFallthroughToConfig:
@@ -1263,8 +1278,9 @@ class TestMainEndToEnd:
             "--model",
             "snr",
         ]
-        with patch.object(sys, "argv", argv), patch.object(
-            predict_mod, "_predict_df", side_effect=fake_predict_df
+        with (
+            patch.object(sys, "argv", argv),
+            patch.object(predict_mod, "_predict_df", side_effect=fake_predict_df),
         ):
             predict_mod.main()
 

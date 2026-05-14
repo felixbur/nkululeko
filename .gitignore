@@ -1,4 +1,4 @@
-# Python bytecode
+## Python bytecode
 __pycache__/
 *.py[cod]
 *$py.class
@@ -166,7 +166,6 @@ nkulu_work/
 docs/_build/
 docs/_static/
 docs/_templates/
-docs/source/
 docs/build/
 
 # Singularity build sandboxes

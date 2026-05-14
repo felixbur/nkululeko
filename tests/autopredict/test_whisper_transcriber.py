@@ -51,7 +51,7 @@ class TestTranscriber:
         result = transcriber.transcribe_file("test.wav")
 
         mock_model.transcribe.assert_called_once_with(
-            "test.wav", language="en", without_timestamps=True
+            "test.wav", language="en", without_timestamps=True, fp16=False
         )
         assert result == "Hello world"
 

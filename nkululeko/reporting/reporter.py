@@ -315,6 +315,7 @@ class Reporter:
         bins = ast.literal_eval(glob_conf.config["DATA"]["bins"])
         self.truths = np.digitize(self.truths, bins) - 1
         self.preds = np.digitize(self.preds, bins) - 1
+
     def plot_confmatrix(self, plot_name, epoch=None):
         """Plot a confusionmatrix to the store.
 

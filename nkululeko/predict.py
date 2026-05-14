@@ -37,6 +37,7 @@ import os
 import shutil
 import sys
 import tempfile
+from tracemalloc import start
 
 import audformat
 import audiofile
@@ -136,9 +137,7 @@ def _build_parser():
     parser.add_argument(
         "--outfile",
         default=DEFAULT_OUTFILE,
-        help=(
-            f"Output CSV path for --list/--folder (default: {DEFAULT_OUTFILE})."
-        ),
+        help=(f"Output CSV path for --list/--folder (default: {DEFAULT_OUTFILE})."),
     )
     parser.add_argument(
         "--model",
@@ -190,9 +189,7 @@ def main():
     if args.ptype == "feats" and not args.model:
         feats_type = util.config_val("FEATS", "type", None)
         if feats_type is None:
-            util.error(
-                "--type feats requires --model or FEATS.type in --config"
-            )
+            util.error("--type feats requires --model or FEATS.type in --config")
         args.model = _first_extractor(feats_type)
 
     if args.mic:
@@ -241,9 +238,7 @@ def do_test(config_file, outfile):
     expr = Experiment(config)
     expr.set_module("test")
     util = Util("test", has_config=True)
-    util.debug(
-        f"running {expr.name} from config {config_file}, nkululeko {VERSION}"
-    )
+    util.debug(f"running {expr.name} from config {config_file}, nkululeko {VERSION}")
 
     expr.load(f"{util.get_save_name()}")
     expr.fill_train_and_tests()
@@ -445,7 +440,13 @@ def _run_list(csv_path, args, util):
         # plain CSV: first column is the audio path
         if in_df.empty or len(in_df.columns) == 0:
             util.error(f"empty CSV: {csv_path}")
-        path_col = in_df.columns[0]
+        # Skip a leading Unnamed index column that pandas writes by default.          
+        first_col = in_df.columns[0]                                                
+        if first_col == "Unnamed: 0" or first_col.startswith("Unnamed:"):             
+            in_df = in_df.set_index(first_col)                                        
+            path_col = in_df.columns[0]                                               
+        else:                                                                         
+            path_col = first_col  
         files = in_df[path_col].astype(str).tolist()
         seg_index = audformat.segmented_index(
             files=[os.path.abspath(f) for f in files],
@@ -548,8 +549,7 @@ def _run_from_config(args, util):
             "expected one of: all, train, test"
         )
     util.debug(
-        f"running over EXP.sample_selection={sample_selection}: "
-        f"{len(seg_df)} rows"
+        f"running over EXP.sample_selection={sample_selection}: {len(seg_df)} rows"
     )
 
     if len(seg_df) == 0:
@@ -619,14 +619,17 @@ def _dispatch_autopredict(target, df):
         from nkululeko.autopredict.ap_stoi import STOIPredictor as P
     elif target == "text":
         from nkululeko.autopredict.ap_text import TextPredictor as P
+
         return P(df, Util("predict")).predict("all")
     elif target == "textclassification":
         from nkululeko.autopredict.ap_textclassifier import (
             TextClassificationPredictor as P,
         )
+
         return P(df, Util("predict")).predict("all")
     elif target == "translation":
         from nkululeko.autopredict.ap_translate import TextTranslator as P
+
         return P(df, Util("predict")).predict("all")
     elif target == "arousal":
         from nkululeko.autopredict.ap_arousal import ArousalPredictor as P
@@ -640,6 +643,30 @@ def _dispatch_autopredict(target, df):
         raise ValueError(f"unknown autopredict target: {target}")
     return P(df).predict("all")
 
+def _unpack_index(idx):                      
+    """Return (file, offset_s, duration_s_or_None) from a segmented index     
+entry."""                                                                     
+    if isinstance(idx, tuple):
+        file, start, end = idx
+        offset = (
+            start.total_seconds()
+            if hasattr(start, "total_seconds")
+            else float(start)
+        )
+        duration = None
+        if end is not pd.NaT and end is not None and not pd.isna(end):
+            duration = (
+                (end - start).total_seconds()
+                if hasattr(end - start, "total_seconds")
+                else None
+            )
+            if duration is not None and duration <= 0:
+                duration = None
+    else:
+        file = idx
+        offset = 0
+        duration = None
+    return file, offset, duration                                             
 
 def _predict_with_features(seg_df, model_name, util):
     """Extract features for each segment and return them as a DataFrame."""
@@ -651,27 +678,7 @@ def _predict_with_features(seg_df, model_name, util):
     rows = []
     index_keep = []
     for i, idx in enumerate(seg_df.index.to_list()):
-        if isinstance(idx, tuple):
-            file, start, end = idx
-            offset = (
-                start.total_seconds()
-                if hasattr(start, "total_seconds")
-                else float(start)
-            )
-            duration = None
-            if end is not pd.NaT and end is not None and not pd.isna(end):
-                duration = (
-                    (end - start).total_seconds()
-                    if hasattr(end - start, "total_seconds")
-                    else None
-                )
-                if duration is not None and duration <= 0:
-                    duration = None
-        else:
-            file = idx
-            offset = 0
-            duration = None
-
+        file, offset, duration = _unpack_index(idx)
         if not os.path.isfile(file):
             util.warn(f"file not found, skipping: {file}")
             continue
@@ -745,27 +752,7 @@ def _predict_with_model(seg_df, args, util):
     pred_rows = []
     index_keep = []
     for idx in seg_df.index.to_list():
-        if isinstance(idx, tuple):
-            file, start, end = idx
-            offset = (
-                start.total_seconds()
-                if hasattr(start, "total_seconds")
-                else float(start)
-            )
-            duration = None
-            if end is not pd.NaT and end is not None and not pd.isna(end):
-                duration = (
-                    (end - start).total_seconds()
-                    if hasattr(end - start, "total_seconds")
-                    else None
-                )
-                if duration is not None and duration <= 0:
-                    duration = None
-        else:
-            file = idx
-            offset = 0
-            duration = None
-
+        file, offset, duration = _unpack_index(idx)
         if not os.path.isfile(file):
             util.warn(f"file not found, skipping: {file}")
             continue
@@ -788,9 +775,9 @@ def _predict_with_model(seg_df, args, util):
             if lab_enc is not None:
                 for k, v in result_dict.items():
                     try:
-                        label = lab_enc.inverse_transform(
-                            np.array(int(k)).reshape(1)
-                        )[0]
+                        label = lab_enc.inverse_transform(np.array(int(k)).reshape(1))[
+                            0
+                        ]
                     except Exception:
                         label = str(k)
                     row[label] = f"{v:.3f}"
@@ -828,42 +815,50 @@ def _get_feature_extractor(model_name, util):
     # below (e.g. "audwav2vec2" contains "wav2vec2").
     if "audwav2vec2" in model_lower:
         from nkululeko.feat_extract.feats_audwav2vec2 import Audwav2vec2Set
+
         ext = Audwav2vec2Set(model_name, None, model_name)
         ext._load_model()
         return ext
     if "auddim" in model_lower:
         from nkululeko.feat_extract.feats_auddim import AuddimSet
+
         ext = AuddimSet(model_name, None, model_name)
         ext._load_model()
         return ext
 
     if "wav2vec2" in model_lower or "wav2vec" in model_lower:
         from nkululeko.feat_extract.feats_wav2vec2 import Wav2vec2
+
         ext = Wav2vec2(model_name, None, model_name)
         ext.init_model()
         return ext
     if "hubert" in model_lower:
         from nkululeko.feat_extract.feats_hubert import Hubert
+
         ext = Hubert(model_name, None, model_name)
         ext.init_model()
         return ext
     if "wavlm" in model_lower:
         from nkululeko.feat_extract.feats_wavlm import Wavlm
+
         ext = Wavlm(model_name, None, model_name)
         ext.init_model()
         return ext
     if "whisper" in model_lower:
         from nkululeko.feat_extract.feats_whisper import Whisper
+
         ext = Whisper(model_name, None, model_name)
         ext.init_model()
         return ext
     if "ast" in model_lower:
         from nkululeko.feat_extract.feats_ast import Ast
+
         ext = Ast(model_name, None, model_name)
         ext.init_model()
         return ext
     if "emotion2vec" in model_lower:
         from nkululeko.feat_extract.feats_emotion2vec import Emotion2vec
+
         ext = Emotion2vec(model_name, None, model_name)
         ext.init_model()
         return ext
@@ -873,27 +868,33 @@ def _get_feature_extractor(model_name, util):
         or "compare" in model_lower
     ):
         from nkululeko.feat_extract.feats_opensmile import Opensmileset
+
         return Opensmileset(model_name, None, model_name)
     if "clap" in model_lower:
         from nkululeko.feat_extract.feats_clap import ClapSet
+
         ext = ClapSet(model_name, None, model_name)
         ext._load_model()
         return ext
     if "spkrec" in model_lower or "xvect" in model_lower or "ecapa" in model_lower:
         from nkululeko.feat_extract.feats_spkrec import Spkrec
+
         ext = Spkrec(model_name, None, model_name)
         ext.init_model()
         return ext
     if "trill" in model_lower:
         from nkululeko.feat_extract.feats_trill import TRILLset
+
         ext = TRILLset(model_name, None, model_name)
         ext._load_model()
         return ext
     if "praat" in model_lower:
         from nkululeko.feat_extract.feats_praat import PraatSet
+
         return PraatSet(model_name, None, model_name)
     if "audmodel" in model_lower:
         from nkululeko.feat_extract.feats_audmodel import AudmodelSet
+
         ext = AudmodelSet(model_name, None, model_name)
         ext._load_model()
         return ext
@@ -901,24 +902,29 @@ def _get_feature_extractor(model_name, util):
         from nkululeko.feat_extract.feats_agender_agender import (
             Agender_agenderSet,
         )
+
         ext = Agender_agenderSet(model_name, None, model_name)
         ext._load_model()
         return ext
     if "squim" in model_lower or "pesq" in model_lower or "sdr" in model_lower:
         from nkululeko.feat_extract.feats_squim import SquimSet
+
         ext = SquimSet(model_name, None, model_name)
         ext.init_model()
         return ext
     if "mos" in model_lower:
         from nkululeko.feat_extract.feats_mos import MosSet
+
         ext = MosSet(model_name, None, model_name)
         ext.init_model()
         return ext
     if "snr" in model_lower:
         from nkululeko.feat_extract.feats_snr import SnrSet
+
         return SnrSet(model_name, None, model_name)
     if "sptk" in model_lower:
         from nkululeko.feat_extract.feats_sptk import SptkSet
+
         return SptkSet(model_name, None, model_name)
 
     util.error(f"unknown feature extractor: {model_name}")

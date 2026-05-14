@@ -38,7 +38,9 @@ class MosSet(Featureset):
         # load model
         self.util.debug("loading MOS model...")
         self.subjective_model = SQUIM_SUBJECTIVE.get_model()
-        NMR_SPEECH = _download_asset("tutorial-assets/ctc-decoding/1688-142285-0007.wav")
+        NMR_SPEECH = _download_asset(
+            "tutorial-assets/ctc-decoding/1688-142285-0007.wav"
+        )
         self.WAVEFORM_NMR, SAMPLE_RATE_NMR = torchaudio.load(NMR_SPEECH)
         self.model_initialized = True
 

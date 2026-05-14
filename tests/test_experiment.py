@@ -309,7 +309,9 @@ class TestExperimentSave:
     Datasplitter -- otherwise the retry pickle still hits the same object.
     """
 
-    def test_save_strips_models_from_both_feature_extractors(self, mock_config, tmp_path):
+    def test_save_strips_models_from_both_feature_extractors(
+        self, mock_config, tmp_path
+    ):
         import pickle as _pickle
 
         from nkululeko.experiment import Experiment
@@ -348,8 +350,7 @@ class TestExperimentSave:
 
         # save() must have warned about the stripped model.
         assert any(
-            "Can't pickle the feature extraction model" in w
-            for w in exp.util.warnings
+            "Can't pickle the feature extraction model" in w for w in exp.util.warnings
         )
 
     def test_save_handles_single_extractor(self, mock_config, tmp_path):

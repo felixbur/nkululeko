@@ -113,6 +113,8 @@ all = [
 "nkululeko.resample" = "nkululeko.resample:main"
 "nkululeko.segment" = "nkululeko.segment:main"
 "nkululeko.ensemble" = "nkululeko.ensemble:main"
+"nkululeko.multidb" = "nkululeko.multidb:main"
+"nkululeko.optim" = "nkululeko.optim:main" 
 
 [project.urls]
 Homepage = "https://github.com/felixbur/nkululeko"

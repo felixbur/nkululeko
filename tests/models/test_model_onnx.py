@@ -73,16 +73,22 @@ def _onnx_mocks():
     fake_skl2onnx.convert_sklearn = MagicMock(return_value=fake_onnx_model)
 
     fake_data_types = MagicMock()
-    fake_data_types.FloatTensorType = MagicMock(side_effect=lambda shape: ("FTT", shape))
+    fake_data_types.FloatTensorType = MagicMock(
+        side_effect=lambda shape: ("FTT", shape)
+    )
 
     fake_common = MagicMock()
     fake_common.data_types = fake_data_types
 
-    return {
-        "skl2onnx": fake_skl2onnx,
-        "skl2onnx.common": fake_common,
-        "skl2onnx.common.data_types": fake_data_types,
-    }, fake_skl2onnx, fake_onnx_model
+    return (
+        {
+            "skl2onnx": fake_skl2onnx,
+            "skl2onnx.common": fake_common,
+            "skl2onnx.common.data_types": fake_data_types,
+        },
+        fake_skl2onnx,
+        fake_onnx_model,
+    )
 
 
 class TestExportOnnx:
