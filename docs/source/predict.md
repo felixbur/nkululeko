@@ -1,4 +1,4 @@
-# Nkululeko Predict Module
+# nkululeko.predict
 
 `nkululeko.predict` is the unified prediction module of Nkululeko. It replaces
 the previous `nkululeko.demo`, `nkululeko.feature_demo` and `nkululeko.testing`

@@ -24,12 +24,14 @@ If there are only two categories, a Mann-Whitney U test for significance is give
 ![Feature distribution for two categories](./images/feat_dist_2.png)
 
 ### t-SNE plots
-A t-SNE plot can give you an estimate of whether your acoustic features are useful at all:
+A t-SNE plot can give you an estimate of whether your acoustic features are useful at all.
+Your feature space gets tranferred into 2 or 3-dimensional space and the color of the blobs reflect your target class distribution.
+Beneath t-SNE, [you can choose from UMAP and PCA](https://github.com/felixbur/nkululeko/blob/main/ini_file.md#expl). 
 
 ![t-SNE plot](./images/tsne.png)
 
 ### Data distribution
-Sometimes, you only want to take a look at your data:
+Sometimes, you only want to take a look at your data. In this example, you see that the biological sex of the speakers is approximately uniformly distributed with respect to some emotional speech database.
 
 ![Data distribution](./images/data_plot.png)
 

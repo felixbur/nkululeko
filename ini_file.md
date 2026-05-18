@@ -71,8 +71,18 @@
   * type = continuous
 * **databases**: list of databases to be used in the experiment
   * databases = ['emodb', 'timit']
-* **tests**: Datasets to be used as test data for the given best model. The databases do NOT have to appear in the **databases** field!
+* **tests**: Datasets to be used as test data for the stored best model.
+  The databases listed here do **not** have to appear in the `databases`
+  field.  When `nkululeko.nkululeko` is run with this option set **and** a
+  saved experiment file already exists on disk, training is skipped
+  entirely: the module loads the stored best model, evaluates it on the
+  listed test databases, and writes a confusion matrix, a per-class text
+  report, and a predictions CSV (with all original test columns plus a
+  `predicted` column) to the results directory.  On the very first run
+  (no saved file yet) the module trains normally and saves the experiment.
+  See [test_new_database.md](test_new_database.md) for a step-by-step guide.
   * tests = ['emovo']
+  * tests = ['ravdess', 'cremad']   ; multiple databases are concatenated
 * **root_folders**: specify an additional configuration specifically for all entries starting with a dataset name, acting as global defaults.
   * root_folders = data_roots.ini
 * **db_name**: path with audformatted repository for each database listed in 'databases*. If this path is not absolute, it will be treated relative to the experiment folder.

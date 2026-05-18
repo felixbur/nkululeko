@@ -32,16 +32,24 @@ type = ['os']
 type = xgb
 ```
 
-Besides [nkululeko.nkululeko], there are other functionalities. The complet functions are:
+Besides [nkululeko.nkululeko], there are other functionalities. The complete functions are:
 
--   **nkululeko.nkululeko**: doing experiments
+-   **nkululeko.nkululeko**: run experiments — trains a model and evaluates
+    it.  When `DATA.tests` is set in the INI file **and** a saved
+    experiment already exists on disk, training is skipped automatically
+    and the stored best model is evaluated on the new test database instead
+    (produces a confusion matrix, a text report, and a predictions CSV).
+    See [test_new_database.md](test_new_database.md).
 -   **nkululeko.predict**: unified prediction module. Predicts labels for
     one or more audio files (`--file`), a folder of audio (`--folder`),
     a CSV list (`--list`) or microphone input (`--mic`), using either a
     feature extractor / autopredict target (`--type feats`, the default)
     or the best model from a trained experiment (`--type model`).
+    Autopredict targets include `age`, `gender`, `emotion`, `arousal`,
+    `valence`, `dominance`, `mos`, `snr`, `pesq`, `sdr`, `stoi`, `text`,
+    `textclassification`, and `translation`.
     Replaces the former `nkululeko.demo`, `nkululeko.feature_demo` and
-    `nkululeko.testing` modules.
+    `nkululeko.testing` modules.  See [predict.md](predict.md).
 -   **nkululeko.explore**: perform data exploration
 -   **nkululeko.augment**: augment the current training data
 -   **nkululeko.ensemble**: ensemble a series of models

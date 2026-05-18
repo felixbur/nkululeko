@@ -113,6 +113,9 @@ the per-class scores to stdout. Press *q* + *Enter* to exit.
 ## Related
 
 - [predict.md](predict.md) — full reference for `nkululeko.predict`.
+- [test_new_database.md](test_new_database.md) — automatic fast path: run
+  `nkululeko.nkululeko` with `DATA.tests` set to evaluate a saved model on
+  a new database without retraining.
 - [test_module.md](test_module.md) — using the predict module to re-evaluate
   on labeled test data.
 - Background blog post:
