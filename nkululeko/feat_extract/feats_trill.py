@@ -5,6 +5,7 @@ import audiofile as af
 import pandas as pd
 
 import tensorflow as tf
+import tensorflow_hub as hub
 from tqdm import tqdm
 
 import nkululeko.glob_conf as glob_conf
@@ -33,14 +34,16 @@ class TRILLset(Featureset):
             :return: None
         """
         super().__init__(name, data_df, feats_type)
-        # Load the model from the configured path
-        self.util.config_val(
+        self.model = None
+        self.model_path = self.util.config_val(
             "FEATS",
             "trill.model",
             "https://tfhub.dev/google/nonsemantic-speech-benchmark/trill/3",
         )
-        # self.model = hub.load(model_path)
-        self.feats_type = feats_type
+
+    def _load_model(self):
+        """Load the TRILL model from TensorFlow Hub."""
+        self.model = hub.load(self.model_path)
 
     def extract(self):
         store = self.util.get_path("store")
@@ -49,6 +52,8 @@ class TRILLset(Featureset):
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
         if extract or no_reuse or not os.path.isfile(storage):
             self.util.debug("extracting TRILL embeddings, this might take a while...")
+            if self.model is None:
+                self._load_model()
             emb_series = pd.Series(index=self.data_df.index, dtype=object)
             for idx, file in enumerate(tqdm(self.data_df.index.get_level_values(0))):
                 emb = self.get_embeddings(file)
@@ -84,6 +89,6 @@ class TRILLset(Featureset):
 
     def extract_sample(self, signal, sr):
         if self.model is None:
-            self.__init__("na", None, self.feats_type)
+            self._load_model()
         feats = self.get_embeddings_signal(signal, sr)
         return feats
