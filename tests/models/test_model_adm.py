@@ -52,9 +52,9 @@ class TestTimeADM:
     def test_dropout_layers(self):
         """Test dropout layers exist."""
         adm = TimeADM(feat_dim=768)
-        assert adm.dropout1.p == 0.2
-        assert adm.dropout2.p == 0.2
-        assert adm.dropout3.p == 0.2
+        assert adm.dropout1.p == pytest.approx(0.2)
+        assert adm.dropout2.p == pytest.approx(0.2)
+        assert adm.dropout3.p == pytest.approx(0.2)
 
     def test_layer_norm_layers(self):
         """Test layer normalization layers."""
@@ -522,8 +522,8 @@ class TestADMModelLossFunctions:
             model.criterion = FocalLoss(alpha=0.25, gamma=2.0)
 
             assert isinstance(model.criterion, FocalLoss)
-            assert model.criterion.alpha == 0.25
-            assert model.criterion.gamma == 2.0
+            assert model.criterion.alpha == pytest.approx(0.25)
+            assert model.criterion.gamma == pytest.approx(2.0)
 
     def test_weighted_bce_loss(self, dummy_data, monkeypatch):
         """Test model with Weighted BCE loss."""

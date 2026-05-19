@@ -195,8 +195,7 @@ class TestComputeClassWeights:
         label_names = ["fake", "real"]
         pos_weight = compute_class_weights(sample_labels, label_names, mode="balanced")
 
-        # 4 fake, 2 real -> pos_weight = 4/2 = 2.0
-        assert pos_weight == 2.0
+        assert pos_weight == pytest.approx(2.0)
 
     def test_balanced_mode_equal_distribution(self):
         """Test balanced mode with equal class distribution."""
@@ -204,7 +203,7 @@ class TestComputeClassWeights:
         label_names = ["fake", "real"]
         pos_weight = compute_class_weights(labels, label_names, mode="balanced")
 
-        assert pos_weight == 1.0
+        assert pos_weight == pytest.approx(1.0)
 
     def test_sqrt_mode(self, sample_labels):
         """Test sqrt mode."""
@@ -221,7 +220,7 @@ class TestComputeClassWeights:
         label_names = ["fake", "real"]
         pos_weight = compute_class_weights(labels, label_names, mode="balanced")
 
-        assert pos_weight == 3.0
+        assert pos_weight == pytest.approx(3.0)
 
     def test_with_numpy_array(self):
         """Test with numpy array input."""
@@ -229,7 +228,7 @@ class TestComputeClassWeights:
         label_names = ["fake", "real"]
         pos_weight = compute_class_weights(labels, label_names, mode="balanced")
 
-        assert pos_weight == 2.0
+        assert pos_weight == pytest.approx(2.0)
 
     def test_zero_positive_samples(self):
         """Test edge case with no positive samples."""
@@ -238,7 +237,7 @@ class TestComputeClassWeights:
         pos_weight = compute_class_weights(labels, label_names, mode="balanced")
 
         # Should return 1.0 to avoid division by zero
-        assert pos_weight == 1.0
+        assert pos_weight == pytest.approx(1.0)
 
     def test_highly_imbalanced(self):
         """Test with highly imbalanced dataset."""
@@ -246,7 +245,7 @@ class TestComputeClassWeights:
         label_names = ["fake", "real"]
         pos_weight = compute_class_weights(labels, label_names, mode="balanced")
 
-        assert pos_weight == 10.0
+        assert pos_weight == pytest.approx(10.0)
 
     def test_invalid_mode(self, sample_labels):
         """Test that invalid mode raises ValueError."""
@@ -261,7 +260,7 @@ class TestComputeClassWeights:
         label_names = ["negative", "positive"]
         pos_weight = compute_class_weights(labels, label_names, mode="balanced")
 
-        assert pos_weight == 2.0
+        assert pos_weight == pytest.approx(2.0)
 
     def test_numeric_labels(self):
         """Test with numeric labels (0s and 1s)."""
@@ -269,4 +268,4 @@ class TestComputeClassWeights:
         label_names = [0, 1]
         pos_weight = compute_class_weights(labels, label_names, mode="balanced")
 
-        assert pos_weight == 3.0
+        assert pos_weight == pytest.approx(3.0)

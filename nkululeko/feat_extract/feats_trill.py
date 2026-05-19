@@ -84,6 +84,6 @@ class TRILLset(Featureset):
 
     def extract_sample(self, signal, sr):
         if self.model is None:
-            self.__init__("na", None)
+            self.__init__("na", None, self.feats_type)
         feats = self.get_embeddings_signal(signal, sr)
         return feats

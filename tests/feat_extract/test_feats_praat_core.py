@@ -64,10 +64,10 @@ class TestAudioFeatureExtractor:
             mock_sound, mock_pitch, mock_point_process
         )
 
-        assert result["meanF0Hz"] == 150.0
-        assert result["stdevF0Hz"] == 25.0
-        assert result["HNR"] == 0.8
-        assert result["localJitter"] == 0.01
+        assert result["meanF0Hz"] == pytest.approx(150.0)
+        assert result["stdevF0Hz"] == pytest.approx(25.0)
+        assert result["HNR"] == pytest.approx(0.8)
+        assert result["localJitter"] == pytest.approx(0.01)
         assert len(result) == 14
 
     @patch("nkululeko.feat_extract.feats_praat_core.call")
@@ -151,7 +151,7 @@ class TestAudioFeatureExtractor:
         assert not np.isnan(result["pause_mean_duration"])
         assert not np.isnan(result["pause_std_duration"])
         assert not np.isnan(result["pause_cv"])
-        assert result["pause_mean_duration"] == 0.3
+        assert result["pause_mean_duration"] == pytest.approx(0.3)
         assert len(result) == 6
 
 

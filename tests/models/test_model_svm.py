@@ -46,7 +46,7 @@ def test_svm_model_set_c(polish_data):
     model = SVM_model(df_train, df_test, feats_train, feats_test)
     old_c = model.clf.C
     model.set_c(2.0)
-    assert model.clf.C == 2.0
+    assert model.clf.C == pytest.approx(2.0)
     assert model.clf.C != old_c
 
 

@@ -75,6 +75,6 @@ class AuddimSet(Featureset):
 
     def extract_sample(self, signal, sr):
         if self.model is None:
-            self.__init__("na", None)
+            self.__init__("na", None, self.feats_types)
         result = self.model(signal, sr)
         return np.asarray(result["logits"].flatten())

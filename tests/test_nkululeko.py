@@ -95,7 +95,7 @@ class TestNkululekoDoit:
                 from nkululeko.nkululeko import doit
 
                 result, last_epoch = doit(config_file)
-                assert result == 0.85
+                assert result == pytest.approx(0.85)
                 assert isinstance(last_epoch, int)
                 assert last_epoch == 5
         finally:
@@ -250,7 +250,7 @@ class TestNkululekoFastPath:
 
                 result, epoch = doit(str(config_file))
 
-            assert result == 0.77
+            assert result == pytest.approx(0.77)
             assert epoch == 7
             assert "load" in calls
             assert "fill_tests(encode=False)" in calls

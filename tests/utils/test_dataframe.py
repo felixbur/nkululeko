@@ -1,5 +1,6 @@
 # test_dataframe.py - unit tests for nkululeko/utils/dataframe.py
 import configparser
+import math
 import unittest
 from datetime import timedelta
 
@@ -72,7 +73,7 @@ class TestDataFrameMixin(unittest.TestCase):
         u = make_util()
         result = u.scale_to_range([5, 5, 5], 0, 1)
         # all values become midpoint
-        self.assertTrue(all(v == 0.5 for v in result))
+        self.assertTrue(all(math.isclose(v, 0.5) for v in result))
 
     def test_scale_to_range_empty(self):
         u = make_util()

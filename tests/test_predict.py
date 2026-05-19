@@ -943,7 +943,7 @@ class TestPredictWithModel:
     A pickled extractor therefore reports as "loaded" but would AttributeError
     in extract_sample(). We must always re-instantiate."""
 
-    def test_missing_feats_type_calls_error(self, monkeypatch):
+    def test_missing_feats_type_calls_error(self, monkeypatch, tmp_path):
         from nkululeko.predict import _predict_with_model
 
         # Minimal in-memory config without FEATS.type set.
@@ -975,7 +975,7 @@ class TestPredictWithModel:
 
         util = MagicMock()
         util.error.side_effect = SystemExit
-        util.get_save_name.return_value = "/tmp/does_not_matter"
+        util.get_save_name.return_value = str(tmp_path / "does_not_matter")
 
         with pytest.raises(SystemExit):
             _predict_with_model(pd.DataFrame(), argparse.Namespace(), util)
@@ -1021,7 +1021,7 @@ class TestPredictWithModel:
         seg_df = predict_mod._build_segmented_df([str(wav)])
 
         util = MagicMock()
-        util.get_save_name.return_value = "/tmp/whatever"
+        util.get_save_name.return_value = str(tmp_path / "whatever")
         util.exp_is_classification.return_value = True
         util.config_val.side_effect = lambda section, key, default: (
             cfg[section][key] if section in cfg and key in cfg[section] else default
