@@ -1,6 +1,7 @@
 ## Nkululeko
 
 [![status](https://joss.theoj.org/papers/215dd49c152e467586ed73f16f27d53a/status.svg)](https://joss.theoj.org/papers/215dd49c152e467586ed73f16f27d53a)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/felixbur/nkululeko) 
 
 Nkululeko is a software to detect speaker characteristics by machine learning experiments with a high-level interface. The idea is to have a framework (based on e.g. sklearn and torch) that can be used to rapidly and automatically analyse audio data and explore machine learning models based on that data. 
 
