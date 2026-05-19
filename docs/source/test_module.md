@@ -110,6 +110,13 @@ crema-d = ./data/crema-d/crema-d
 crema-d.split_strategy = test
 ```
 
+> **Automatic fast path**: when `DATA.tests` is set and a saved experiment
+> already exists on disk, `nkululeko.nkululeko` skips training on subsequent
+> runs and evaluates the stored best model on the test databases directly.
+> The same config file therefore works for both the initial training run and
+> all later test evaluations without any changes.
+> See [test_new_database.md](test_new_database.md) for the full workflow.
+
 ## Cross-Database Evaluation
 
 A common use case is training on one database and testing on another:

@@ -77,8 +77,7 @@ There is also `a deepwiki available <https://deepwiki.com/felixbur/nkululeko>`__
    resample.md
    segment.md
    optim.md
-   test.md
-   demo.md
+   predict.md
    multidb.md
    ensemble.md
    flags.md
