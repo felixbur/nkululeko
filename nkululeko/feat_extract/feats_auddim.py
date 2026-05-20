@@ -22,7 +22,6 @@ class AuddimSet(Featureset):
     def __init__(self, name, data_df, feats_type):
         super().__init__(name, data_df, feats_type)
         self.model_loaded = False
-        self.feats_types = feats_type
 
     def _load_model(self):
         model_url = "https://zenodo.org/record/6221127/files/w2v2-L-robust-12.6bc4a7fd-1.1.0.zip"
@@ -75,6 +74,6 @@ class AuddimSet(Featureset):
 
     def extract_sample(self, signal, sr):
         if self.model is None:
-            self.__init__("na", None)
+            self._load_model()
         result = self.model(signal, sr)
         return np.asarray(result["logits"].flatten())

@@ -118,7 +118,7 @@ def test_run_sklearn_optimization_grid(runner, param_specs):
         )
 
         assert best_params == {"C": 1.0, "kernel": "linear"}
-        assert best_score == 0.9
+        assert best_score == pytest.approx(0.9)
         assert isinstance(all_results, list)
         assert all("params" in r and "score" in r for r in all_results)
         runner.save_results.assert_called_once()
@@ -151,7 +151,7 @@ def test_run_sklearn_optimization_random(runner, param_specs):
         )
 
         assert best_params == {"C": 0.1, "kernel": "rbf"}
-        assert best_score == 0.85
+        assert best_score == pytest.approx(0.85)
         assert isinstance(all_results, list)
         assert all("params" in r and "score" in r for r in all_results)
         runner.save_results.assert_called_once()
@@ -210,7 +210,7 @@ def test_run_sklearn_optimization_grid_strategy(runner, param_specs):
         )
 
         assert best_params == {"C": 1.0, "kernel": "linear"}
-        assert best_score == 0.9
+        assert best_score == pytest.approx(0.9)
         assert isinstance(all_results, list)
         assert all("params" in r and "score" in r for r in all_results)
         runner.save_results.assert_called_once()

@@ -56,6 +56,6 @@ class TestMOSPredictor:
 
         assert "mos_pred" in result.columns
         # NaN and inf values should be replaced with 0
-        assert result["mos_pred"].iloc[1] == 0.0
-        assert result["mos_pred"].iloc[2] == 0.0
-        assert result["mos_pred"].iloc[3] == 0.0
+        assert result["mos_pred"].iloc[1] == pytest.approx(0.0)
+        assert result["mos_pred"].iloc[2] == pytest.approx(0.0)
+        assert result["mos_pred"].iloc[3] == pytest.approx(0.0)

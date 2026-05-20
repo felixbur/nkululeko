@@ -45,7 +45,7 @@ class TestGetOptimizer:
         )
 
         assert isinstance(optimizer, torch.optim.Adam)
-        assert lr == 0.001
+        assert lr == pytest.approx(0.001)
         assert len(util.debug_messages) > 0
         assert "adam" in util.debug_messages[0].lower()
 
@@ -57,7 +57,7 @@ class TestGetOptimizer:
         )
 
         assert isinstance(optimizer, torch.optim.Adam)
-        assert lr == 0.0005
+        assert lr == pytest.approx(0.0005)
 
     def test_adamw_optimizer(self, simple_model):
         """Test creating AdamW optimizer."""
@@ -82,7 +82,7 @@ class TestGetOptimizer:
 
         assert isinstance(optimizer, torch.optim.AdamW)
         # Check weight_decay is set (access from param_groups)
-        assert optimizer.param_groups[0]["weight_decay"] == 0.05
+        assert optimizer.param_groups[0]["weight_decay"] == pytest.approx(0.05)
 
     def test_sgd_optimizer(self, simple_model):
         """Test creating SGD optimizer."""
@@ -90,7 +90,7 @@ class TestGetOptimizer:
         optimizer, lr = get_optimizer(simple_model.parameters(), util, default_lr=0.01)
 
         assert isinstance(optimizer, torch.optim.SGD)
-        assert optimizer.param_groups[0]["momentum"] == 0.9
+        assert optimizer.param_groups[0]["momentum"] == pytest.approx(0.9)
 
     def test_sgd_custom_momentum(self, simple_model):
         """Test SGD with custom momentum."""
@@ -98,7 +98,7 @@ class TestGetOptimizer:
         optimizer, lr = get_optimizer(simple_model.parameters(), util)
 
         assert isinstance(optimizer, torch.optim.SGD)
-        assert optimizer.param_groups[0]["momentum"] == 0.95
+        assert optimizer.param_groups[0]["momentum"] == pytest.approx(0.95)
 
     def test_optimizer_case_insensitive(self, simple_model):
         """Test that optimizer type is case insensitive."""
@@ -123,7 +123,7 @@ class TestGetOptimizer:
         util = MockUtil({"MODEL.learning_rate": "0.005"})
         _, lr = get_optimizer(simple_model.parameters(), util)
 
-        assert lr == 0.005
+        assert lr == pytest.approx(0.005)
 
     def test_optimizer_parameters_linked(self, simple_model):
         """Test that optimizer is linked to model parameters."""

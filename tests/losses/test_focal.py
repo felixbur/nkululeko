@@ -35,8 +35,8 @@ class TestFocalLoss:
         """Test default parameter values."""
         loss_fn = FocalLoss()
 
-        assert loss_fn.alpha == 0.25
-        assert loss_fn.gamma == 2.0
+        assert loss_fn.alpha == pytest.approx(0.25)
+        assert loss_fn.gamma == pytest.approx(2.0)
         assert loss_fn.reduction == "mean"
 
     def test_gamma_zero_equals_bce(self, sample_inputs, sample_targets):

@@ -51,6 +51,6 @@ class TestSNRPredictor:
 
         result = predictor.predict("train")
 
-        assert result["snr_pred"].iloc[1] == 0.0
-        assert result["snr_pred"].iloc[2] == 0.0
-        assert result["snr_pred"].iloc[3] == 0.0
+        assert result["snr_pred"].iloc[1] == pytest.approx(0.0)
+        assert result["snr_pred"].iloc[2] == pytest.approx(0.0)
+        assert result["snr_pred"].iloc[3] == pytest.approx(0.0)

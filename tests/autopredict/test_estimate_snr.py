@@ -117,5 +117,5 @@ class TestSNREstimator:
         estimator = SNREstimator(signal, 16000)
 
         snr, log_energies, low, high = estimator.estimate_snr()
-        assert snr == 0.0
+        assert snr == pytest.approx(0.0)
         assert log_energies == []
