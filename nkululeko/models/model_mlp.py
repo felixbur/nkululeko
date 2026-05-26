@@ -8,7 +8,6 @@ from sklearn.metrics import recall_score
 import torch
 
 import nkululeko.glob_conf as glob_conf
-from nkululeko.losses.loss_softf1loss import SoftF1Loss
 from nkululeko.models.model import Model
 from nkululeko.optimizers import get_optimizer
 from nkululeko.reporting.reporter import Reporter
@@ -39,16 +38,7 @@ class MLPModel(Model):
         labels = glob_conf.labels
         self.class_num = len(labels)
         # set up loss criterion
-        criterion = self.util.config_val("MODEL", "loss", "cross")
-        if criterion == "cross":
-            self.criterion = torch.nn.CrossEntropyLoss()
-        elif criterion == "f1":
-            self.criterion = SoftF1Loss(
-                num_classes=self.class_num, weight=None, epsilon=1e-7
-            )
-        else:
-            self.util.error(f"unknown loss function: {criterion}")
-        self.util.debug("using model with cross entropy loss function")
+        self._setup_criterion()
         activation, act_func = self._get_activation()
         self.util.debug(f"using activation function: {act_func}")
         # set up the model, use GPU if availabe

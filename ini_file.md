@@ -408,6 +408,12 @@ Model and training specifications. In general, default values should work for cl
     * **mse**: Mean squared error (for regression)
     * **mae**: Mean absolute error (for regression)
     * **weighted_bce**: Weighted BinaryCrossEntropyLoss (for imbalanced binary classification)
+* **label_smoothing**: label smoothing for cross-entropy loss. Accepts either a boolean or a float in [0.0, 1.0]. Helps prevent overconfidence and can improve generalization.
+  * label_smoothing = 0.1
+  * Set to `True` to use the default value of 0.1
+  * Set to a float between 0.0 and 1.0 for a custom smoothing factor
+  * Invalid or out-of-range values fall back to 0.0 with a warning
+  * Default: 0.0 (no smoothing)
 * **measure**: A measure/metric to report progress with experiments. For classification, default is UAR. For regression, default is MSE.
   * measure = mse
   * possible values:

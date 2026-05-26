@@ -39,6 +39,73 @@ class Model:
         self.xfoldx = self.util.config_val("MODEL", "k_fold_cross", False)
         self.n_jobs = int(self.util.config_val("MODEL", "n_jobs", "8"))
 
+    def _get_label_smoothing(self):
+        """Parse label_smoothing config value for cross-entropy loss.
+
+        Returns 0.0 (no smoothing) by default.
+        Accepts a float in [0.0, 1.0] or the string "true" (shorthand for 0.1).
+        Invalid or out-of-range values fall back to 0.0 with a warning.
+        """
+        ls = self.util.config_val("MODEL", "label_smoothing", "False")
+        ls_str = str(ls).strip().lower()
+
+        # Explicit false/disabled
+        if ls_str in ("false", "no", "none", ""):
+            return 0.0
+
+        # Boolean shorthand "true" → default 0.1
+        if ls_str == "true":
+            self.util.debug("using label smoothing: 0.1 (default)")
+            return 0.1
+
+        # Try to parse as float
+        try:
+            smoothing = float(ls_str)
+        except (ValueError, TypeError):
+            self.util.warn(
+                f"invalid MODEL.label_smoothing value '{ls}', "
+                "falling back to 0.0 (no label smoothing)"
+            )
+            return 0.0
+
+        # Validate range: PyTorch requires 0.0 <= label_smoothing <= 1.0
+        if smoothing < 0.0 or smoothing > 1.0:
+            self.util.warn(
+                f"MODEL.label_smoothing={smoothing} is out of range [0.0, 1.0], "
+                "falling back to 0.0"
+            )
+            return 0.0
+
+        if smoothing > 0.0:
+            self.util.debug(f"using label smoothing: {smoothing}")
+        return smoothing
+
+    def _setup_criterion(self):
+        """Set up the loss criterion from config. Shared by MLP and CNN models.
+
+        Requires self.class_num to be set before calling.
+        Sets self.criterion.
+        Returns the criterion name string for debug logging.
+        """
+        import torch
+
+        from nkululeko.losses.loss_softf1loss import SoftF1Loss
+
+        criterion = self.util.config_val("MODEL", "loss", "cross")
+        if criterion == "cross":
+            label_smoothing = self._get_label_smoothing()
+            self.criterion = torch.nn.CrossEntropyLoss(
+                label_smoothing=label_smoothing,
+            )
+        elif criterion == "f1":
+            self.criterion = SoftF1Loss(
+                num_classes=self.class_num, weight=None, epsilon=1e-7
+            )
+        else:
+            self.util.error(f"unknown loss function: {criterion}")
+        self.util.debug(f"using model with {criterion} loss function")
+        return criterion
+
     def set_model_type(self, type):
         self.model_type = type
 
