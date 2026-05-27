@@ -43,6 +43,7 @@ import audformat
 import audiofile
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.constants import VERSION, SAMPLING_RATE
@@ -677,7 +678,7 @@ def _predict_with_features(seg_df, model_name, util):
 
     rows = []
     index_keep = []
-    for i, idx in enumerate(seg_df.index.to_list()):
+    for i, idx in enumerate(tqdm(seg_df.index.to_list(), desc="extracting features", unit="file")):
         file, offset, duration = _unpack_index(idx)
         if not os.path.isfile(file):
             util.warn(f"file not found, skipping: {file}")
@@ -751,7 +752,7 @@ def _predict_with_model(seg_df, args, util):
 
     pred_rows = []
     index_keep = []
-    for idx in seg_df.index.to_list():
+    for idx in tqdm(seg_df.index.to_list(), desc="predicting", unit="file"):
         file, offset, duration = _unpack_index(idx)
         if not os.path.isfile(file):
             util.warn(f"file not found, skipping: {file}")

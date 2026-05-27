@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 1.7.1 (26-05-27)
+------------------------
+* Add label_smoothing support for cross-entropy loss
+* add progress bar when predicting file lists
+
+
 Version 1.7.0 (26-05-14)
 ------------------------
 * complete re-write (unification) of demo, feature_demo, testing and predict modules
