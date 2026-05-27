@@ -433,6 +433,7 @@ class TunedModel(BaseModel):
         if self.is_classifier:
             criterion = self.util.config_val("MODEL", "loss", "cross")
             if criterion == "cross":
+                label_smoothing = self._get_label_smoothing()
                 if self.util.config_val("MODEL", "class_weight", False):
                     counts = targets[0].value_counts().sort_index()
                     train_weights = 1 / counts
@@ -440,9 +441,12 @@ class TunedModel(BaseModel):
                     self.util.debug(f"train weights: {train_weights}")
                     criterion = torch.nn.CrossEntropyLoss(
                         weight=torch.Tensor(train_weights).to("cuda"),
+                        label_smoothing=label_smoothing,
                     )
                 else:
-                    criterion = torch.nn.CrossEntropyLoss()
+                    criterion = torch.nn.CrossEntropyLoss(
+                        label_smoothing=label_smoothing,
+                    )
             else:
                 self.util.error(f"criterion {criterion} not supported for classifier")
         else:
