@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.7.3 (26-05-28)
+------------------------
+* added caching for audmodel
+
 Version 1.7.2 (26-05-28)
 ------------------------
 * fixed database.colnames bug
