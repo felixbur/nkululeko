@@ -238,16 +238,35 @@ def export_bundle(config_file, output_dir=None):
     audeer.mkdir(output_dir)
     util.debug(f"exporting bundle to: {output_dir}")
 
-    # 1. Copy model
+    # 1. Copy model. The bundle/infer format loads the model with pickle.load,
+    #    so only plain-pickle models (e.g. svm, xgb, knn) can be bundled.
+    #    torch-based models (ann/cnn/mlp) are saved via torch.save and would
+    #    produce a broken bundle, so reject them here with a clear message.
     model_path = _get_model_path(util, run, epoch)
     if not os.path.isfile(model_path):
         util.error(
             f"Model file not found: {model_path}. "
             "Ensure [MODEL] save = True was set during training."
         )
-    dest_model = os.path.join(output_dir, "model.pkl")
     with open(model_path, "rb") as f:
         model_data = f.read()
+    # torch.save (default serialization) writes a ZIP archive with this magic.
+    if model_data[:4] == b"PK\x03\x04":
+        util.error(
+            f"Model '{model_type}' at {model_path} is a torch-saved model, "
+            "which the bundle format does not support. Only plain pickle "
+            "models (e.g. svm, xgb, knn) can be exported as a bundle."
+        )
+    try:
+        pickle.loads(model_data)
+    except (pickle.UnpicklingError, EOFError, ValueError, AttributeError,
+            ImportError, ModuleNotFoundError, TypeError) as e:
+        util.error(
+            f"Model at {model_path} is not a valid pickle and cannot be "
+            f"bundled ({e}). Only plain pickle models (e.g. svm, xgb, knn) "
+            "are supported."
+        )
+    dest_model = os.path.join(output_dir, "model.pkl")
     with open(dest_model, "wb") as f:
         f.write(model_data)
     util.debug(f"  model -> {dest_model}")

@@ -14,17 +14,16 @@ Usage:
 """
 
 import argparse
-import ast
+import atexit
 import configparser
 import json
 import os
 import pickle
+import shutil
 import sys
 import tempfile
 
 import audformat
-import audiofile
-import numpy as np
 import pandas as pd
 
 import nkululeko.glob_conf as glob_conf
@@ -46,6 +45,40 @@ def _find_audio_files(folder):
     return files
 
 
+def _fail(msg):
+    """Print an error to stderr and exit with a non-zero status."""
+    print(f"ERROR: {msg}", file=sys.stderr)
+    sys.exit(1)
+
+
+def _cleanup_path(path):
+    """Best-effort recursive removal of `path`. Safe to call multiple times
+    and safe if the path no longer exists. Suitable for atexit registration."""
+    if not path:
+        return
+    try:
+        shutil.rmtree(path, ignore_errors=True)
+    except OSError:
+        pass
+
+
+def _load_pickle(path, what):
+    """Load a pickle artifact, exiting with a clear message on failure.
+
+    A bundle that lists an artifact in its manifest but is missing or has a
+    corrupt file is treated as a bundle integrity error rather than allowing
+    inference to silently proceed (which can change predictions).
+    """
+    if not os.path.isfile(path):
+        _fail(f"bundle integrity error: {what} file not found: {path}")
+    try:
+        with open(path, "rb") as f:
+            return pickle.load(f)
+    except (pickle.UnpicklingError, EOFError, ValueError, AttributeError,
+            ImportError, ModuleNotFoundError) as e:
+        _fail(f"could not load {what} from {path}: {e}")
+
+
 def _load_bundle(bundle_dir):
     """Load all bundle artifacts and return them as a dict.
 
@@ -56,45 +89,45 @@ def _load_bundle(bundle_dir):
 
     manifest_path = os.path.join(bundle_dir, "manifest.json")
     if not os.path.isfile(manifest_path):
-        print(
-            f"ERROR: not a valid bundle directory (missing manifest.json): {bundle_dir}",
-            file=sys.stderr,
-        )
-        sys.exit(1)
+        _fail(f"not a valid bundle directory (missing manifest.json): {bundle_dir}")
 
     with open(manifest_path, "r") as f:
         manifest = json.load(f)
 
+    # SECURITY: the artifacts below are loaded with pickle, which can execute
+    # arbitrary code during unpickling. Only run inference on bundles obtained
+    # from sources you trust.
+    print(
+        "WARNING: loading a bundle unpickles its model/scaler/encoder artifacts. "
+        "Pickle can execute arbitrary code — only use bundles from trusted sources.",
+        file=sys.stderr,
+    )
+
     artifacts = manifest.get("artifacts", {})
 
-    # Load inference config
+    # Load inference config (fail fast if missing or unreadable)
     ini_path = os.path.join(bundle_dir, artifacts.get("inference_config", "inference.ini"))
+    if not os.path.isfile(ini_path):
+        _fail(f"bundle integrity error: inference config not found: {ini_path}")
     config = configparser.ConfigParser()
-    config.read(ini_path)
+    if not config.read(ini_path):
+        _fail(f"could not read bundle inference config: {ini_path}")
 
     # Load model
     model_path = os.path.join(bundle_dir, artifacts.get("model", "model.pkl"))
-    if not os.path.isfile(model_path):
-        print(f"ERROR: model file not found: {model_path}", file=sys.stderr)
-        sys.exit(1)
-    with open(model_path, "rb") as f:
-        model_clf = pickle.load(f)
+    model_clf = _load_pickle(model_path, "model")
 
-    # Load scaler (optional)
+    # Load scaler (required if listed in the manifest)
     scaler = None
     if "scaler" in artifacts:
-        scaler_path = os.path.join(bundle_dir, artifacts["scaler"])
-        if os.path.isfile(scaler_path):
-            with open(scaler_path, "rb") as f:
-                scaler = pickle.load(f)
+        scaler = _load_pickle(os.path.join(bundle_dir, artifacts["scaler"]), "scaler")
 
-    # Load label encoder (optional)
+    # Load label encoder (required if listed in the manifest)
     label_encoder = None
     if "label_encoder" in artifacts:
-        le_path = os.path.join(bundle_dir, artifacts["label_encoder"])
-        if os.path.isfile(le_path):
-            with open(le_path, "rb") as f:
-                label_encoder = pickle.load(f)
+        label_encoder = _load_pickle(
+            os.path.join(bundle_dir, artifacts["label_encoder"]), "label_encoder"
+        )
 
     # Load feature schema
     feature_schema = None
@@ -124,7 +157,10 @@ def _setup_glob_conf(bundle):
             config.add_section(section)
     # Set up minimal EXP config for Util to work
     if "root" not in config["EXP"]:
-        config["EXP"]["root"] = tempfile.mkdtemp(prefix="nkulu_infer_")
+        tmp_root = tempfile.mkdtemp(prefix="nkulu_infer_")
+        # Clean up the temp root when the process exits — matches nkululeko.predict.
+        atexit.register(_cleanup_path, tmp_root)
+        config["EXP"]["root"] = tmp_root
     if "name" not in config["EXP"]:
         config["EXP"]["name"] = "infer"
     if "databases" not in config["DATA"]:
@@ -235,6 +271,12 @@ def _predict_from_bundle(feats, bundle, util):
         results["predicted"] = pred_labels
     else:
         predictions = model_clf.predict(feats.values)
+        # For classifiers without predict_proba, still decode numeric class IDs
+        # to human-readable labels when a label encoder is available.
+        if is_classification and label_encoder is not None:
+            predictions = label_encoder.inverse_transform(
+                [int(p) for p in predictions]
+            )
         results["predicted"] = predictions
 
     return results
@@ -304,7 +346,8 @@ def _run_list(list_path, bundle, util, outfile):
     try:
         in_df = audformat.utils.read_csv(list_path)
         if audformat.is_segmented_index(in_df.index):
-            files = list(set(in_df.index.get_level_values("file")))
+            # Order-preserving dedupe to keep deterministic processing order.
+            files = list(dict.fromkeys(in_df.index.get_level_values("file")))
         else:
             files = list(in_df.index)
     except (ValueError, AttributeError, KeyError):
