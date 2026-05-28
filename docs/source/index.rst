@@ -64,6 +64,7 @@ There is also `a deepwiki available <https://deepwiki.com/felixbur/nkululeko>`__
    test_module.md
    test_new_database.md
    split_data.md
+   bundle.md
 
    ../EER_IMPLEMENTATION.md
 
