@@ -27,11 +27,8 @@ import audformat
 import pandas as pd
 
 import nkululeko.glob_conf as glob_conf
-from nkululeko.constants import VERSION
+from nkululeko.constants import AUDIO_EXTS, VERSION
 from nkululeko.utils.util import Util
-
-
-AUDIO_EXTS = ["aac", "au", "flac", "m4a", "mp3", "ogg", "wav"]
 
 
 def _find_audio_files(folder):
