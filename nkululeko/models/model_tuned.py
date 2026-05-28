@@ -440,7 +440,7 @@ class TunedModel(BaseModel):
                     train_weights /= train_weights.sum()
                     self.util.debug(f"train weights: {train_weights}")
                     criterion = torch.nn.CrossEntropyLoss(
-                        weight=torch.Tensor(train_weights).to("cuda"),
+                        weight=torch.Tensor(train_weights).to(self.device),
                         label_smoothing=label_smoothing,
                     )
                 else:
