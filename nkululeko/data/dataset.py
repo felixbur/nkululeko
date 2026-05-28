@@ -81,6 +81,17 @@ class Dataset:
             self.util.error(f"{self.name}: no audformat database found at {root}")
         return root
 
+    def _check_original_target(self, target):
+        rename_cols = self.util.config_val_data(self.name, "colnames", False)
+        if rename_cols:
+            col_dict = ast.literal_eval(rename_cols)
+            if target in col_dict.values():
+                for key in col_dict.keys():
+                    if col_dict[key] == target:
+                        return key
+        return target
+            
+
     def _check_cols(self, df):
         rename_cols = self.util.config_val_data(self.name, "colnames", False)
         if rename_cols:
@@ -139,6 +150,7 @@ class Dataset:
         # The label for the target column
         columns = self._get_columns(self.db)
         self.col_label = self.util.config_val_data(self.name, "label", self.target)
+        self.col_label = self._check_original_target(self.col_label)
         if self.col_label is None:
             if columns:
                 self.col_label = columns[0]
@@ -176,6 +188,7 @@ class Dataset:
         df = df.dropna()
         # check if columns should be renamed
         df = self._check_cols(df)
+        self.col_label = self.util.config_val_data(self.name, "label", self.target)
         self.is_labeled = self.target in df
         self.got_gender = COL_SEX in df
         self.got_age = COL_AGE in df
