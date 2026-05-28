@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.7.2 (26-05-28)
+------------------------
+* fixed database.colnames bug
+
 Version 1.7.1 (26-05-27)
 ------------------------
 * Add label_smoothing support for cross-entropy loss
