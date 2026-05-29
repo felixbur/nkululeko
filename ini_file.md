@@ -515,6 +515,8 @@ Model and training specifications. In general, default values should work for cl
   * data_name = exported_database
 * **segments_as_files**: Whether original files should be used, or segments split (resulting potentially in many new files).
   * segments_as_files = False
+* **bundle_path**: Output directory for [the portable model bundle](bundle.md) created by `python -m nkululeko.bundle`. Defaults to `<root>/<name>/export`. Overridden by the `--output` CLI flag.
+  * bundle_path = ./my_polish_bundle
 
 ### CROSSDB
 
