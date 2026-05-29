@@ -8,6 +8,7 @@ Multi-stream neural model that detects synthesis artifacts using:
 - PhaseADM: phase-dynamics artifacts from STFT features
 """
 
+import json
 import numpy as np
 import pandas as pd
 import torch
@@ -295,9 +296,7 @@ class ADMModel(Model):
         with torch.no_grad():
             for index, (features, labels) in enumerate(loader):
                 start_index = index * loader.batch_size
-                end_index = (index + 1) * loader.batch_size
-                if end_index > len(loader.dataset):
-                    end_index = len(loader.dataset)
+                end_index = start_index + len(labels)  # use actual batch size (last batch may be smaller)
 
                 # Convert features to float32
                 features = features.float()
@@ -338,8 +337,9 @@ class ADMModel(Model):
         """Convert logits to probability dataframe."""
         # For binary classification with BCEWithLogitsLoss
         proba_d = {}
-        classes = self.df_test[self.target].unique()
-        classes.sort()
+        # Use all known classes from glob_conf to ensure both classes are always
+        # present, even if the test set only contains one class.
+        classes = np.arange(len(glob_conf.labels))
 
         # Apply sigmoid to get probabilities; clean non-finite logits first
         logits_clean = torch.nan_to_num(logits, nan=0.0, posinf=10.0, neginf=-10.0)
@@ -411,8 +411,16 @@ class ADMModel(Model):
         self.store_path = dir + name
 
     def store(self):
-        """Store the model to disk."""
+        """Store the model weights and feature split metadata to disk."""
         torch.save(self.model.state_dict(), self.store_path)
+        meta = {
+            "ssl_feat_dim": self.ssl_feat_dim,
+            "sptk_feat_dim": self.sptk_feat_dim,
+            "fbank_indices": self.fbank_indices,
+            "stft_indices": self.stft_indices,
+        }
+        with open(self.store_path + ".meta.json", "w") as f:
+            json.dump(meta, f)
 
     def load(self, run, epoch):
         """Load a trained model from disk."""
@@ -420,6 +428,22 @@ class ADMModel(Model):
         self.set_id(run, epoch)
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
+
+        # Restore feature split metadata if available, otherwise fall back to
+        # instance attributes set by __init__
+        meta_path = self.store_path + ".meta.json"
+        try:
+            with open(meta_path) as f:
+                meta = json.load(f)
+            self.ssl_feat_dim = meta["ssl_feat_dim"]
+            self.sptk_feat_dim = meta["sptk_feat_dim"]
+            self.fbank_indices = meta["fbank_indices"]
+            self.stft_indices = meta["stft_indices"]
+        except FileNotFoundError:
+            self.util.debug(
+                f"ADM metadata file not found ({meta_path}), "
+                "using feature indices from current feature data"
+            )
 
         # Recreate model architecture with actual dimensions
         fusion = self.util.config_val("MODEL", "adm.fusion", "weighted")
@@ -441,7 +465,9 @@ class ADMModel(Model):
         ).to(self.device)
 
         try:
-            self.model.load_state_dict(torch.load(self.store_path))
+            self.model.load_state_dict(
+                torch.load(self.store_path, weights_only=True)
+            )
         except FileNotFoundError:
             self.util.error(f"model file not found: {self.store_path}")
         self.model.eval()
