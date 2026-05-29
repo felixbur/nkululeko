@@ -390,12 +390,14 @@ class ADMModel(Model):
         return (predictions.numpy(), self.get_probas(logits))
 
     def get_loader(self, df_x, df_y, shuffle):
-        """Create a data loader for training or testing."""
-        data = []
-        for i in range(len(df_x)):
-            data.append([df_x.values[i], df_y[self.target].iloc[i]])
+        """Create a data loader using TensorDataset for efficient batch loading."""
+        features_tensor = torch.tensor(df_x.values, dtype=torch.float32)
+        labels_tensor = torch.tensor(
+            df_y[self.target].values.astype(float), dtype=torch.float32
+        )
+        dataset = torch.utils.data.TensorDataset(features_tensor, labels_tensor)
         return torch.utils.data.DataLoader(
-            data, shuffle=shuffle, batch_size=self.batch_size
+            dataset, shuffle=shuffle, batch_size=self.batch_size
         )
 
     def set_id(self, run, epoch):
