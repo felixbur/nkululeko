@@ -394,13 +394,35 @@ class ADMModel(Model):
     def get_loader(self, df_x, df_y, shuffle):
         """Create a data loader using TensorDataset for efficient batch loading."""
         features_tensor = torch.tensor(df_x.values, dtype=torch.float32)
-        labels_tensor = torch.tensor(
-            df_y[self.target].values.astype(float), dtype=torch.float32
-        )
+        label_values = self._encode_labels(df_y[self.target])
+        labels_tensor = torch.tensor(label_values, dtype=torch.float32)
         dataset = torch.utils.data.TensorDataset(features_tensor, labels_tensor)
         return torch.utils.data.DataLoader(
             dataset, shuffle=shuffle, batch_size=self.batch_size
         )
+
+    def _encode_labels(self, labels):
+        """Encode class labels as floats for binary BCE training/evaluation."""
+        try:
+            return pd.to_numeric(labels, errors="raise").to_numpy(dtype=float)
+        except (TypeError, ValueError):
+            pass
+
+        if glob_conf.label_encoder is not None:
+            try:
+                return glob_conf.label_encoder.transform(labels).astype(float)
+            except ValueError:
+                pass
+
+        label_names = list(glob_conf.labels or [])
+        label_map = {label: index for index, label in enumerate(label_names)}
+        unknown_labels = sorted(set(labels.dropna()) - set(label_map))
+        if unknown_labels:
+            raise ValueError(
+                f"unknown labels for ADM model: {unknown_labels}; "
+                f"known labels are: {label_names}"
+            )
+        return labels.map(label_map).to_numpy(dtype=float)
 
     def set_id(self, run, epoch):
         """Set run and epoch ID with branch configuration in filename."""
