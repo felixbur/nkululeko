@@ -8,7 +8,9 @@ Multi-stream neural model that detects synthesis artifacts using:
 - PhaseADM: phase-dynamics artifacts from STFT features
 """
 
+import hashlib
 import json
+import os
 import numpy as np
 import pandas as pd
 import torch
@@ -421,7 +423,9 @@ class ADMModel(Model):
             "fbank_indices": self.fbank_indices,
             "stft_indices": self.stft_indices,
         }
-        with open(self.store_path + ".meta.json", "w") as f:
+        # Keep metadata filename short to avoid ENAMETOOLONG on long experiment names.
+        meta_path = self._get_meta_path(self.store_path)
+        with open(meta_path, "w") as f:
             json.dump(meta, f)
 
     def load(self, run, epoch):
@@ -432,18 +436,29 @@ class ADMModel(Model):
         self.device = self.util.config_val("MODEL", "device", cuda)
 
         # Restore feature split metadata if available, otherwise fall back to
-        # instance attributes set by __init__
-        meta_path = self.store_path + ".meta.json"
+        # instance attributes set by __init__. Support both the current short
+        # hashed sidecar name and the legacy "<model>.meta.json" sidecar.
+        meta_path = self._get_meta_path(self.store_path)
+        legacy_meta_path = self.store_path + ".meta.json"
+        meta = None
         try:
             with open(meta_path) as f:
                 meta = json.load(f)
+        except FileNotFoundError:
+            try:
+                with open(legacy_meta_path) as f:
+                    meta = json.load(f)
+            except FileNotFoundError:
+                pass
+
+        if meta is not None:
             self.ssl_feat_dim = meta["ssl_feat_dim"]
             self.sptk_feat_dim = meta["sptk_feat_dim"]
             self.fbank_indices = meta["fbank_indices"]
             self.stft_indices = meta["stft_indices"]
-        except FileNotFoundError:
+        else:
             self.util.debug(
-                f"ADM metadata file not found ({meta_path}), "
+                f"ADM metadata file not found ({meta_path} or {legacy_meta_path}), "
                 "using feature indices from current feature data"
             )
 
@@ -473,3 +488,10 @@ class ADMModel(Model):
         except FileNotFoundError:
             self.util.error(f"model file not found: {self.store_path}")
         self.model.eval()
+
+    @staticmethod
+    def _get_meta_path(model_path):
+        """Build a short metadata sidecar path for a model file."""
+        model_dir = os.path.dirname(model_path)
+        model_hash = hashlib.sha1(model_path.encode("utf-8")).hexdigest()[:16]
+        return os.path.join(model_dir, f"adm_meta_{model_hash}.json")
