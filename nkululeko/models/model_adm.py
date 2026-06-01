@@ -8,9 +8,9 @@ Multi-stream neural model that detects synthesis artifacts using:
 - PhaseADM: phase-dynamics artifacts from STFT features
 """
 
-import hashlib
 import json
 import os
+import zlib
 import numpy as np
 import pandas as pd
 import torch
@@ -493,5 +493,5 @@ class ADMModel(Model):
     def _get_meta_path(model_path):
         """Build a short metadata sidecar path for a model file."""
         model_dir = os.path.dirname(model_path)
-        model_hash = hashlib.sha1(model_path.encode("utf-8")).hexdigest()[:16]
-        return os.path.join(model_dir, f"adm_meta_{model_hash}.json")
+        model_id = zlib.crc32(model_path.encode("utf-8"))
+        return os.path.join(model_dir, f"adm_meta_{model_id:08x}.json")
