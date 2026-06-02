@@ -549,6 +549,8 @@ Model and training specifications. In general, default values should work for cl
   * runs_compare = features
 * **titles**: if titles should be added to the plots
   * titles = True
+* **kind**: kind of plot for EXPL.feature distributions: [violin, bar, box, swarw, strip]
+  * kind = violin
 
 ### RESAMPLE
 
