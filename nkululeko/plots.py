@@ -629,10 +629,12 @@ class Plots:
     def plot_feature(self, title, feature, label, df_labels, df_features):
         # remove fullstops in the name
         feature_name = str(feature).replace(".", "-")
+        # which kind of plot?
+        kind = self.util.config_val("PLOT", "kind", "violin")
         # one up because of the runs
         fig_dir = audeer.path(self.util.get_path("fig_dir"), "..")
         filename = audeer.path(
-            fig_dir, f"feat_dist_{title}_{feature_name}.{self.format}"
+            fig_dir, f"feat_dist_{title}_{feature_name}_{kind}.{self.format}"
         )
         ignore_gender = eval(self.util.config_val("EXPL", "ignore_gender", "False"))
         sample_num = df_labels.shape[0]
@@ -651,14 +653,52 @@ class Plots:
                         "gender": df_labels["gender"],
                     }
                 )
-                ax = sns.violinplot(
-                    data=df_plot, x=label, y=feature, hue="gender", split=True
-                )
+                if kind == "violin":
+                    ax = sns.violinplot(
+                        data=df_plot, x=label, y=feature, hue="gender", split=True
+                    )
+                elif kind == "box":
+                    ax = sns.boxplot(
+                        data=df_plot, x=label, y=feature, hue="gender"
+                    )
+                elif kind == "bar":
+                    ax = sns.barplot(
+                        data=df_plot, x=label, y=feature, hue="gender"
+                    )
+                    # scale the y axis to 10 % lower and higher than the max and min of the feature for better visualization
+                    min = df_plot[feature].min()
+                    max = df_plot[feature].max()
+                    ax.set_ylim(min - 0.1 * abs(min), max + 0.05 * abs(max))
+                elif kind == "strip":
+                    ax = sns.stripplot(
+                        data=df_plot, x=label, y=feature, hue="gender"
+                    )
+                elif kind == "swarm":
+                    ax = sns.swarmplot(
+                        data=df_plot, x=label, y=feature, hue="gender"
+                    )
+                else:
+                    self.util.error(f"unknown plot kind: {kind}")
             else:
                 df_plot = pd.DataFrame(
                     {label: df_labels[label], feature: df_features[feature]}
                 )
-                ax = sns.violinplot(data=df_plot, x=label, y=feature)
+                if kind == "violin":
+                    ax = sns.violinplot(data=df_plot, x=label, y=feature)
+                elif kind == "box":
+                    ax = sns.boxplot(data=df_plot, x=label, y=feature)
+                    # scale the y axis to 10 % lower and higher than the max and min of the feature for better visualization
+                    min = df_plot[feature].min()
+                    max = df_plot[feature].max()
+                    ax.set_ylim(min - 0.1 * abs(min), max + 0.05 * abs(max))
+                elif kind == "bar":
+                    ax = sns.barplot(data=df_plot, x=label, y=feature)
+                elif kind == "strip":
+                    ax = sns.stripplot(data=df_plot, x=label, y=feature)
+                elif kind == "swarm":
+                    ax = sns.swarmplot(data=df_plot, x=label, y=feature)
+                else:
+                    self.util.error(f"unknown plot kind: {kind}")
             val_dict, mean_featnum = self.util.df_to_categorical_dict(
                 df_plot, label, feature
             )
@@ -700,6 +740,7 @@ class Plots:
             ax, caption = self._plot2cont(plot_df, label, feature, feature)
         fig = ax.figure
         plt.tight_layout()
+        self.util.debug(f"plotted feature distribution to {filename}")
         plt.savefig(filename)
         fig.clear()
         plt.close(fig)

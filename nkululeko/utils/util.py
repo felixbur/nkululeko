@@ -35,6 +35,7 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         "n_jobs",
         "uar",
         "mse",
+        "kind",
     ]
 
     def __init__(self, caller=None, has_config=True):
