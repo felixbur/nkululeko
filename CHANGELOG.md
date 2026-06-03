@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.7.5 (26-06-02)
+------------------------
+* fixed bug in barplots for EXPL.feature distribution
+
 Version 1.7.4 (26-06-02)
 ------------------------
 * added different plots for EXPL.feature distribution
