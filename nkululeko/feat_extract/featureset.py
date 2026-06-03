@@ -66,7 +66,8 @@ class Featureset:
 
     def filter(self):
         # use only the features that are indexed in the target dataframes
-        self.df = self.df[self.df.index.isin(self.data_df.index)]
+        self.df = self.util.filter_filepath(self.data_df, self.df)
+        # self.df = self.df[self.df.index.isin(self.data_df.index)]
         try:
             # use only some features
             selected_features = ast.literal_eval(glob_conf.config["FEATS"]["features"])
@@ -85,5 +86,5 @@ class Featureset:
                 self.util.debug(
                     f"new feats shape after selecting features for {self.feats_type}: {self.df.shape}"
                 )
-        except KeyError:
+        except KeyError as ke:
             pass

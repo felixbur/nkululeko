@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.7.6 (26-06-03)
+------------------------
+* ease the transfer of projects by aligning file_paths
+
 Version 1.7.5 (26-06-02)
 ------------------------
 * fixed bug in barplots for EXPL.feature distribution

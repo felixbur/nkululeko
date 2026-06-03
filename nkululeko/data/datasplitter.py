@@ -312,12 +312,15 @@ class Datasplitter:
             else:
                 return None, None
         if not self.df_train.empty:
-            self.feats_train = all_feats[all_feats.index.isin(self.df_train.index)]
+            self.feats_train = self.util.filter_filepath(self.df_train, all_feats)
+            # self.feats_train = all_feats[all_feats.index.isin(self.df_train.index)]
         if not self.df_test.empty:
-            self.feats_test = all_feats[all_feats.index.isin(self.df_test.index)]
+            self.feats_test = self.util.filter_filepath(self.df_test, all_feats)
+            # self.feats_test = all_feats[all_feats.index.isin(self.df_test.index)]
         if self.split3:
             if not self.df_dev.empty:
-                self.feats_dev = all_feats[all_feats.index.isin(self.df_dev.index)]
+                self.feats_dev = self.util.filter_filepath(self.df_dev, all_feats)
+                # self.feats_dev = all_feats[all_feats.index.isin(self.df_dev.index)]
                 shps = f"{self.feats_train.shape}/{self.feats_dev.shape}/{self.feats_test.shape}"
                 self.util.debug(f"Train/dev/test features:{shps}")
         else:
@@ -330,16 +333,18 @@ class Datasplitter:
                 f"train feats ({self.feats_train.shape[0]}) != train labels"
                 f" ({self.df_train.shape[0]})"
             )
-            self.df_train = self.df_train[
-                self.df_train.index.isin(self.feats_train.index)
-            ]
+            self.df_train = self.util.filter_filepath(self.feats_train, self.df_train)
+            # self.df_train = self.df_train[
+            #     self.df_train.index.isin(self.feats_train.index)
+            # ]
             self.util.warn(f"new train labels shape: {self.df_train.shape[0]}")
         if self.feats_test.shape[0] < self.df_test.shape[0]:
             self.util.warn(
                 f"test feats ({self.feats_test.shape[0]}) != test labels"
                 f" ({self.df_test.shape[0]})"
             )
-            self.df_test = self.df_test[self.df_test.index.isin(self.feats_test.index)]
+            self.df_test = self.util.filter_filepath(self.feats_test, self.df_test)
+            # self.df_test = self.df_test[self.df_test.index.isin(self.feats_test.index)]
             self.util.warn(f"new test labels shape: {self.df_test.shape[0]}")
         if self.split3:
             if self.feats_dev.shape[0] < self.df_dev.shape[0]:
@@ -347,7 +352,8 @@ class Datasplitter:
                     f"dev feats ({self.feats_dev.shape[0]}) != dev labels"
                     f" ({self.df_dev.shape[0]})"
                 )
-                self.df_dev = self.df_dev[self.df_dev.index.isin(self.feats_dev.index)]
+                self.df_dev = self.util.filter_filepath(self.feats_dev, self.df_dev)
+                # self.df_dev = self.df_dev[self.df_dev.index.isin(self.feats_dev.index)]
                 self.util.warn(f"new dev labels shape: {self.df_dev.shape[0]}")
 
             return self.feats_train, self.feats_test, self.feats_dev
