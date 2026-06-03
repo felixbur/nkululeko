@@ -85,5 +85,5 @@ class Featureset:
                 self.util.debug(
                     f"new feats shape after selecting features for {self.feats_type}: {self.df.shape}"
                 )
-        except KeyError as ke:
+        except KeyError:
             pass
