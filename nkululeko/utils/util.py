@@ -272,9 +272,12 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
             self.config[section][key] = str(value)
 
     def extract_parent_and_name(self, path_str):
-        """Extract (parent_dir_name, filename) from a path string."""
+        """Extract (parent_dir_name in 2 levels, filename) from a path string."""
         p = Path(path_str)
-        return (p.parent.name, p.name)
+        p_len = len(p.parts)
+        if p_len > 3:
+            return (p.parent.parent.name, p.parent.name, p.name)
+        return path_str            
 
     def filter_filepath(self, df_source, df_target):
         df_source_keys = {
