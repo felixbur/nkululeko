@@ -663,12 +663,16 @@ class Plots:
                     )
                 elif kind == "bar":
                     ax = sns.barplot(
-                        data=df_plot, x=label, y=feature, hue="gender"
+                        data=df_plot, x=label, y=feature, hue="gender", errorbar=None
                     )
+                    # get the mean values of the feature per label
+                    mean_values_male = df_plot[df_plot["gender"] == "male"].groupby(label, observed=True)[feature].mean()
+                    mean_values_female = df_plot[df_plot["gender"] == "female"].groupby(label, observed=True)[feature].mean()
                     # scale the y axis to 10 % lower and higher than the max and min of the feature for better visualization
-                    min = df_plot[feature].min()
-                    max = df_plot[feature].max()
-                    ax.set_ylim(min - 0.1 * abs(min), max + 0.05 * abs(max))
+                    mean_values = pd.concat([mean_values_male, mean_values_female])
+                    min_val = mean_values.min()
+                    max_val = mean_values.max()
+                    ax.set_ylim(min_val - 0.1 * abs(min_val), max_val + 0.05 * abs(max_val))
                 elif kind == "strip":
                     ax = sns.stripplot(
                         data=df_plot, x=label, y=feature, hue="gender"
@@ -687,12 +691,14 @@ class Plots:
                     ax = sns.violinplot(data=df_plot, x=label, y=feature)
                 elif kind == "box":
                     ax = sns.boxplot(data=df_plot, x=label, y=feature)
-                    # scale the y axis to 10 % lower and higher than the max and min of the feature for better visualization
-                    min = df_plot[feature].min()
-                    max = df_plot[feature].max()
-                    ax.set_ylim(min - 0.1 * abs(min), max + 0.05 * abs(max))
                 elif kind == "bar":
-                    ax = sns.barplot(data=df_plot, x=label, y=feature)
+                    ax = sns.barplot(data=df_plot, x=label, y=feature, errorbar=None)
+                    # scale the y axis to 10 % lower and higher than the max and min of the feature for better visualization
+                    # get the mean values of the feature per label
+                    mean_values = df_plot.groupby(label, observed=True)[feature].mean()
+                    min_val = mean_values.min()
+                    max = mean_values.max()
+                    ax.set_ylim(min_val - 0.1 * abs(min_val), max + 0.05 * abs(max))
                 elif kind == "strip":
                     ax = sns.stripplot(data=df_plot, x=label, y=feature)
                 elif kind == "swarm":
