@@ -7,6 +7,8 @@ import os.path
 import shutil
 import sys
 
+from pathlib import Path
+
 import numpy as np
 
 import audeer
@@ -268,6 +270,24 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         except KeyError:
             self.config.add_section(section)
             self.config[section][key] = str(value)
+
+    def extract_parent_and_name(self, path_str):
+        """Extract (parent_dir_name in 2 levels, filename) from a path string."""
+        p = Path(path_str)
+        return (p.parent.parent.name, p.parent.name, p.name)
+
+    def filter_filepath(self, df_source, df_target):
+        df_source_keys = {
+           self.extract_parent_and_name(path)
+            for path in df_source.index.get_level_values(0)
+        }
+        df_target = df_target[
+            df_target.index.get_level_values(0).map(
+                lambda p: self.extract_parent_and_name(p) in df_source_keys
+            )
+        ]
+        return df_target
+
 
     def check_df(self, i, df):
         """Check a dataframe."""

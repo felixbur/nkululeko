@@ -25,8 +25,8 @@ def setup_glob_conf(tmp_path):
 
 @pytest.fixture
 def data_df():
-    idx = pd.RangeIndex(5)
-    return pd.DataFrame({"file": [f"f{i}.wav" for i in range(5)]}, index=idx)
+    files = [f"f{i}.wav" for i in range(5)]
+    return pd.DataFrame({"label": range(5)}, index=pd.Index(files, name="file"))
 
 
 @pytest.fixture
@@ -79,7 +79,8 @@ class TestFeaturesetFilter:
     def test_filter_keeps_matching_index(self, featureset, data_df):
         """filter() should keep only rows whose index is in data_df."""
         # Attach a feature df with same index + 2 extra rows
-        extra_idx = pd.RangeIndex(7)
+        extra_files = [f"f{i}.wav" for i in range(7)]
+        extra_idx = pd.Index(extra_files, name="file")
         rng = np.random.default_rng(42)
         featureset.df = pd.DataFrame(
             rng.random((7, 3)), columns=["f1", "f2", "f3"], index=extra_idx

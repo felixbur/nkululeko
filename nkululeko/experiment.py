@@ -235,13 +235,11 @@ class Experiment:
         best_model = self.runmgr.get_best_model()
         plot_name_suggest = self.util.get_exp_name()
         for ds_name, df_test_ds in self.test_ds_df.items():
-            feats_test_ds = self.feats_test[
-                self.feats_test.index.isin(df_test_ds.index)
-            ]
+            feats_test_ds = self.util.filter_filepath(df_test_ds, self.feats_test)
             if feats_test_ds.shape[0] == 0:
                 self.util.warn(f"{ds_name}: no features found for test set, skipping")
                 continue
-            df_test_aligned = df_test_ds[df_test_ds.index.isin(feats_test_ds.index)]
+            df_test_aligned = self.util.filter_filepath(feats_test_ds, df_test_ds)
             if df_test_aligned.shape[0] == 0:
                 self.util.warn(
                     f"{ds_name}: no samples after alignment with features, skipping"
@@ -480,7 +478,7 @@ class Experiment:
         plot_feats = eval(
             self.util.config_val("EXPL", "feature_distributions", "False")
         )
-        sample_selection = self.util.config_val("EXPL", "sample_selection", "all")
+        sample_selection = self.util.config_val("EXP", "sample_selection", "all")
         # get the data labels
         if sample_selection == "all":
             df_labels = pd.concat([self.df_train, self.df_test])
