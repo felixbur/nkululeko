@@ -648,10 +648,11 @@ class Plots:
                 # plot distribution for each gender in parallel violin plots
                 df_plot = pd.DataFrame(
                     {
-                        label: df_labels[label],
-                        feature: df_features[feature],
-                        "gender": df_labels["gender"],
-                    }
+                        label: df_labels[label].values,
+                        feature: df_features[feature].values,
+                        "gender": df_labels["gender"].values,
+                    },
+                    index=df_labels.index,
                 )
                 if kind == "violin":
                     ax = sns.violinplot(
