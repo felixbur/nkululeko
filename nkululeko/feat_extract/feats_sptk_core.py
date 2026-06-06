@@ -15,21 +15,8 @@ import audiofile
 from tqdm import tqdm
 
 import diffsptk
-
-try:
-    import torchaudio.transforms as T_audio
-
-    _TORCHAUDIO_LFCC = True
-except (ImportError, AttributeError):
-    _TORCHAUDIO_LFCC = False
-
-try:
-    import librosa
-    from scipy.fft import dct as _scipy_dct
-
-    _LIBROSA_AVAILABLE = True
-except ImportError:
-    _LIBROSA_AVAILABLE = False
+from nkululeko.feat_extract.feats_cqcc import CqccFeatureExtractor
+from nkululeko.feat_extract.feats_lfcc import LfccFeatureExtractor
 
 # Constants
 FRAME_LENGTH = 400  # Frame length.
@@ -38,9 +25,6 @@ N_FFT = 512  # FFT length.
 M_DIM = 24  # Mel-cepstrum dimensions.
 SR = 16000  # Sampling rate.
 N_CHANNEL = 128
-N_LFCC = 40  # Number of LFCC coefficients.
-N_CQCC = 40  # Number of CQCC coefficients.
-N_CQT_BINS = 84  # CQT bins (7 octaves × 12 bins).
 
 
 class SptkFeatureExtractor:
@@ -103,23 +87,17 @@ class SptkFeatureExtractor:
             device=self.device,
         )
 
-        # Initialize LFCC transform (torchaudio >= 0.11)
-        if _TORCHAUDIO_LFCC:
-            try:
-                self.lfcc_transform = T_audio.LFCC(
-                    sample_rate=self.sample_rate,
-                    n_lfcc=N_LFCC,
-                    speckwargs={
-                        "n_fft": self.fft_length,
-                        "win_length": self.frame_length,
-                        "hop_length": self.frame_period,
-                    },
-                ).to(self.device)
-                self.lfcc_available = True
-            except Exception:
-                self.lfcc_available = False
-        else:
-            self.lfcc_available = False
+        self.lfcc = LfccFeatureExtractor(
+            sample_rate=self.sample_rate,
+            frame_length=self.frame_length,
+            frame_period=self.frame_period,
+            fft_length=self.fft_length,
+            device=self.device,
+        )
+        self.cqcc = CqccFeatureExtractor(
+            sample_rate=self.sample_rate,
+            frame_period=self.frame_period,
+        )
 
         # Initialize pitch extractor with error handling
         self.pitch_fallback = False
@@ -237,41 +215,10 @@ class SptkFeatureExtractor:
                 emb[f"chroma_{i}_std"] = np.std(channel_data)
 
         if "lfcc" in features_requested:
-            if not self.lfcc_available:
-                print(
-                    "WARNING: torchaudio LFCC not available (requires torchaudio>=0.11), "
-                    "skipping lfcc features"
-                )
-            else:
-                # LFCC expects (channel, time); output is (channel, n_lfcc, frames)
-                lfcc_out = self.lfcc_transform(signal_tensor.unsqueeze(0))
-                lfcc_np = lfcc_out.squeeze(0).cpu().numpy()  # (n_lfcc, n_frames)
-                for i in range(lfcc_np.shape[0]):
-                    emb[f"lfcc_{i}_mean"] = np.mean(lfcc_np[i])
-                    emb[f"lfcc_{i}_std"] = np.std(lfcc_np[i])
+            emb.update(self.lfcc.extract(signal_tensor))
 
         if "cqcc" in features_requested:
-            if not _LIBROSA_AVAILABLE:
-                print(
-                    "WARNING: librosa not installed, skipping cqcc features. "
-                    "Install with: pip install librosa"
-                )
-            else:
-                signal_np = signal_tensor.cpu().numpy().astype(np.float32)
-                C = librosa.cqt(
-                    signal_np,
-                    sr=self.sample_rate,
-                    n_bins=N_CQT_BINS,
-                    hop_length=self.frame_period,
-                )
-                log_C = np.log(np.abs(C) + 1e-8)
-                # DCT over frequency axis → cepstral coefficients (n_cqcc, n_frames)
-                cqcc_matrix = _scipy_dct(log_C, axis=0, type=2, norm="ortho")[
-                    :N_CQCC
-                ]
-                for i in range(cqcc_matrix.shape[0]):
-                    emb[f"cqcc_{i}_mean"] = np.mean(cqcc_matrix[i])
-                    emb[f"cqcc_{i}_std"] = np.std(cqcc_matrix[i])
+            emb.update(self.cqcc.extract(signal_tensor))
 
         # Extract pitch-dependent features if available
         if self.pitch_features_available and not self.pitch_fallback:
