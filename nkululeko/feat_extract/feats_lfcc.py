@@ -26,6 +26,7 @@ class LfccFeatureExtractor:
         n_lfcc=N_LFCC,
     ):
         self.available = False
+        self._warned = False
         self.warning = (
             "WARNING: torchaudio LFCC not available (requires torchaudio>=0.11), "
             "skipping lfcc features"
@@ -51,7 +52,9 @@ class LfccFeatureExtractor:
     def extract(self, signal_tensor):
         """Return LFCC mean/std features for a mono signal tensor."""
         if not self.available:
-            print(self.warning)
+            if not getattr(self, "_warned", False):
+                print(self.warning)
+                self._warned = True
             return {}
 
         # LFCC expects (channel, time); output is (channel, n_lfcc, frames).

@@ -30,6 +30,7 @@ class CqccFeatureExtractor:
         self.n_cqcc = n_cqcc
         self.n_cqt_bins = n_cqt_bins
         self.available = _LIBROSA_AVAILABLE
+        self._warned = False
         self.warning = (
             "WARNING: librosa not installed, skipping cqcc features. "
             "Install with: pip install librosa"
@@ -38,7 +39,9 @@ class CqccFeatureExtractor:
     def extract(self, signal_tensor):
         """Return CQCC mean/std features for a mono signal tensor."""
         if not self.available:
-            print(self.warning)
+            if not getattr(self, "_warned", False):
+                print(self.warning)
+                self._warned = True
             return {}
 
         signal_np = signal_tensor.cpu().numpy().astype(np.float32)
