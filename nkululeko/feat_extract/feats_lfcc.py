@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 import nkululeko.glob_conf as glob_conf
+from nkululeko.constants import SAMPLING_RATE
 from nkululeko.feat_extract.feats_audio import read_indexed_audio, series_to_float_df
 from nkululeko.feat_extract.featureset import Featureset
 
@@ -18,8 +19,9 @@ except (ImportError, AttributeError, OSError):
     _TORCHAUDIO_LFCC = False
 
 
+# All values below are overridable via the [FEATS] section of the INI file
+# (e.g. lfcc.n_lfcc, lfcc.frame_length); they only serve as defaults.
 N_LFCC = 40  # Number of LFCC coefficients.
-SR = 16000  # Sampling rate.
 FRAME_LENGTH = 400  # Frame length.
 FRAME_PERIOD = 80  # Frame period.
 N_FFT = 512  # FFT length.
@@ -27,6 +29,10 @@ N_FFT = 512  # FFT length.
 
 class LfccFeatureExtractor:
     """Extract summary statistics from linear frequency cepstral coefficients."""
+
+    # Class-level default so the flag is readable even on instances built
+    # without __init__ (e.g. unit tests using __new__).
+    _warned = False
 
     def __init__(
         self,
@@ -38,7 +44,6 @@ class LfccFeatureExtractor:
         n_lfcc=N_LFCC,
     ):
         self.available = False
-        self._warned = False
         self.warning = (
             "WARNING: torchaudio LFCC not available (requires torchaudio>=0.11), "
             "skipping lfcc features"
@@ -61,12 +66,16 @@ class LfccFeatureExtractor:
         except Exception:
             self.available = False
 
+    def warn_unavailable(self):
+        """Print the dependency warning once when the extractor is unavailable."""
+        if not self._warned:
+            print(self.warning)
+            self._warned = True
+
     def extract(self, signal_tensor):
         """Return LFCC mean/std features for a mono signal tensor."""
         if not self.available:
-            if not self._warned:
-                print(self.warning)
-                self._warned = True
+            self.warn_unavailable()
             return {}
 
         # LFCC expects (channel, time); output is (channel, n_lfcc, frames).
@@ -94,7 +103,9 @@ class LfccSet(Featureset):
             self.util.config_val("FEATS", "lfcc.frame_period", FRAME_PERIOD)
         )
         self.fft_length = int(self.util.config_val("FEATS", "lfcc.fft_length", N_FFT))
-        self.sample_rate = int(self.util.config_val("FEATS", "lfcc.sample_rate", SR))
+        self.sample_rate = int(
+            self.util.config_val("FEATS", "lfcc.sample_rate", SAMPLING_RATE)
+        )
         self.n_lfcc = int(self.util.config_val("FEATS", "lfcc.n_lfcc", N_LFCC))
         self.extractor = LfccFeatureExtractor(
             sample_rate=self.sample_rate,
@@ -132,9 +143,7 @@ class LfccSet(Featureset):
 
     def extract_sample(self, signal, sr):
         if not self.extractor.available:
-            if not self.extractor._warned:
-                print(self.extractor.warning)
-                self.extractor._warned = True
+            self.extractor.warn_unavailable()
             return pd.DataFrame([{}]).to_numpy()
         signal_tensor = torch.tensor(signal, device=self.device).float()
         feats = self.extractor.extract(signal_tensor)
@@ -142,9 +151,7 @@ class LfccSet(Featureset):
 
     def _extract_index(self, file_index):
         if not self.extractor.available:
-            if not self.extractor._warned:
-                print(self.extractor.warning)
-                self.extractor._warned = True
+            self.extractor.warn_unavailable()
             return pd.DataFrame(index=file_index)
         emb_series = pd.Series(index=file_index, dtype=object)
         skipped = 0

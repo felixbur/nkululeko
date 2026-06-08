@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 import nkululeko.glob_conf as glob_conf
+from nkululeko.constants import SAMPLING_RATE
 from nkululeko.feat_extract.feats_audio import read_indexed_audio, series_to_float_df
 from nkululeko.feat_extract.featureset import Featureset
 
@@ -18,14 +19,21 @@ except (ImportError, AttributeError, OSError):
     _LIBROSA_AVAILABLE = False
 
 
+# All values below are overridable via the [FEATS] section of the INI file
+# (e.g. cqcc.n_cqcc, cqcc.n_cqt_bins); they only serve as defaults.
 N_CQCC = 40  # Number of CQCC coefficients.
-N_CQT_BINS = 84  # CQT bins (7 octaves * 12 bins).
-SR = 16000  # Sampling rate.
+OCTAVE = 7  # Number of octaves spanned by the CQT.
+BINS = 12  # CQT bins per octave.
+N_CQT_BINS = int(OCTAVE * BINS)  # Total CQT bins.
 FRAME_PERIOD = 80  # Frame period.
 
 
 class CqccFeatureExtractor:
     """Extract summary statistics from constant-Q cepstral coefficients."""
+
+    # Class-level default so the flag is readable even on instances built
+    # without __init__ (e.g. unit tests using __new__).
+    _warned = False
 
     def __init__(
         self,
@@ -39,18 +47,21 @@ class CqccFeatureExtractor:
         self.n_cqcc = n_cqcc
         self.n_cqt_bins = n_cqt_bins
         self.available = _LIBROSA_AVAILABLE
-        self._warned = False
         self.warning = (
             "WARNING: librosa not installed, skipping cqcc features. "
             "Install with: pip install librosa"
         )
 
+    def warn_unavailable(self):
+        """Print the dependency warning once when the extractor is unavailable."""
+        if not self._warned:
+            print(self.warning)
+            self._warned = True
+
     def extract(self, signal_tensor):
         """Return CQCC mean/std features for a mono signal tensor."""
         if not self.available:
-            if not self._warned:
-                print(self.warning)
-                self._warned = True
+            self.warn_unavailable()
             return {}
 
         if hasattr(signal_tensor, "cpu"):
@@ -64,9 +75,7 @@ class CqccFeatureExtractor:
             hop_length=self.frame_period,
         )
         log_cqt = np.log(np.abs(cqt) + 1e-8)
-        cqcc_matrix = _scipy_dct(log_cqt, axis=0, type=2, norm="ortho")[
-            : self.n_cqcc
-        ]
+        cqcc_matrix = _scipy_dct(log_cqt, axis=0, type=2, norm="ortho")[: self.n_cqcc]
 
         emb = {}
         for i in range(cqcc_matrix.shape[0]):
@@ -83,7 +92,9 @@ class CqccSet(Featureset):
         self.frame_period = int(
             self.util.config_val("FEATS", "cqcc.frame_period", FRAME_PERIOD)
         )
-        self.sample_rate = int(self.util.config_val("FEATS", "cqcc.sample_rate", SR))
+        self.sample_rate = int(
+            self.util.config_val("FEATS", "cqcc.sample_rate", SAMPLING_RATE)
+        )
         self.n_cqcc = int(self.util.config_val("FEATS", "cqcc.n_cqcc", N_CQCC))
         self.n_cqt_bins = int(
             self.util.config_val("FEATS", "cqcc.n_cqt_bins", N_CQT_BINS)
@@ -122,18 +133,14 @@ class CqccSet(Featureset):
 
     def extract_sample(self, signal, sr):
         if not self.extractor.available:
-            if not self.extractor._warned:
-                print(self.extractor.warning)
-                self.extractor._warned = True
+            self.extractor.warn_unavailable()
             return pd.DataFrame([{}]).to_numpy()
         feats = self.extractor.extract(signal)
         return pd.DataFrame([feats]).astype(float).to_numpy()
 
     def _extract_index(self, file_index):
         if not self.extractor.available:
-            if not self.extractor._warned:
-                print(self.extractor.warning)
-                self.extractor._warned = True
+            self.extractor.warn_unavailable()
             return pd.DataFrame(index=file_index)
         emb_series = pd.Series(index=file_index, dtype=object)
         skipped = 0
