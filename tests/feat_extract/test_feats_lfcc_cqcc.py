@@ -1,4 +1,3 @@
-import sys
 from types import SimpleNamespace
 
 import numpy as np
@@ -109,51 +108,32 @@ def test_cqcc_extract_skips_when_unavailable(capsys):
     assert "cqcc unavailable" in capsys.readouterr().out
 
 
-class DummySptkSet:
-    def __init__(self, name, data_df, feats_type):
-        self.name = name
-        self.data_df = data_df
-        self.feats_type = feats_type
-        self.features_requested = []
-        self.df = None
-
-    def extract(self):
-        self.df = {"features": self.features_requested}
-        return self.df
-
-    def filter(self):
-        return None
-
-    def extract_sample(self, signal, sr):
-        return self.features_requested
-
-
-def test_lfcc_set_forces_lfcc_feature(monkeypatch):
-    monkeypatch.setitem(
-        sys.modules,
-        "nkululeko.feat_extract.feats_sptk",
-        SimpleNamespace(SptkSet=DummySptkSet),
+def test_cqcc_extract_accepts_numpy_input(monkeypatch):
+    monkeypatch.setattr(
+        feats_cqcc,
+        "librosa",
+        SimpleNamespace(cqt=lambda *args, **kwargs: np.ones((3, 2))),
+        raising=False,
+    )
+    monkeypatch.setattr(
+        feats_cqcc,
+        "_scipy_dct",
+        lambda *args, **kwargs: np.array([[1.0, 3.0], [2.0, 6.0]]),
+        raising=False,
     )
 
-    feat_set = LfccSet("test", None, "lfcc")
-
-    assert feat_set._sptk.features_requested == ["lfcc"]
-    assert feat_set.extract() == {"features": ["lfcc"]}
-    assert feat_set.extract_sample(np.ones(10), 16000) == ["lfcc"]
-
-
-def test_cqcc_set_forces_cqcc_feature(monkeypatch):
-    monkeypatch.setitem(
-        sys.modules,
-        "nkululeko.feat_extract.feats_sptk",
-        SimpleNamespace(SptkSet=DummySptkSet),
+    extractor = CqccFeatureExtractor(
+        sample_rate=16000,
+        frame_period=80,
+        n_cqcc=2,
+        n_cqt_bins=3,
     )
+    extractor.available = True
 
-    feat_set = CqccSet("test", None, "cqcc")
+    feats = extractor.extract(np.ones(10, dtype=np.float32))
 
-    assert feat_set._sptk.features_requested == ["cqcc"]
-    assert feat_set.extract() == {"features": ["cqcc"]}
-    assert feat_set.extract_sample(np.ones(10), 16000) == ["cqcc"]
+    assert feats["cqcc_0_mean"] == pytest.approx(2.0)
+    assert feats["cqcc_1_std"] == pytest.approx(2.0)
 
 
 def test_feature_extractor_accepts_lfcc_and_cqcc():

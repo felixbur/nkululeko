@@ -1,8 +1,16 @@
 """LFCC feature extraction helpers."""
 
+import os
+
 import numpy as np
+import pandas as pd
+
+import nkululeko.glob_conf as glob_conf
+from nkululeko.feat_extract.feats_audio import read_indexed_audio, series_to_float_df
+from nkululeko.feat_extract.featureset import Featureset
 
 try:
+    import torch
     import torchaudio.transforms as T_audio
 
     _TORCHAUDIO_LFCC = True
@@ -11,6 +19,10 @@ except (ImportError, AttributeError, OSError):
 
 
 N_LFCC = 40  # Number of LFCC coefficients.
+SR = 16000  # Sampling rate.
+FRAME_LENGTH = 400  # Frame length.
+FRAME_PERIOD = 80  # Frame period.
+N_FFT = 512  # FFT length.
 
 
 class LfccFeatureExtractor:
@@ -68,28 +80,80 @@ class LfccFeatureExtractor:
         return emb
 
 
-class LfccSet:
-    """Top-level feature set wrapper for `[FEATS] type = ['lfcc']`."""
+class LfccSet(Featureset):
+    """Top-level feature set for `[FEATS] type = ['lfcc']`."""
 
     def __init__(self, name, data_df, feats_type):
-        from nkululeko.feat_extract.feats_sptk import SptkSet
-
-        self._sptk = SptkSet(name, data_df, feats_type)
-        self._sptk.features_requested = ["lfcc"]
-
-    @property
-    def df(self):
-        return self._sptk.df
-
-    @df.setter
-    def df(self, value):
-        self._sptk.df = value
+        super().__init__(name, data_df, feats_type)
+        cuda = "cuda" if _TORCHAUDIO_LFCC and torch.cuda.is_available() else "cpu"
+        self.device = self.util.config_val("MODEL", "device", cuda)
+        self.frame_length = int(
+            self.util.config_val("FEATS", "lfcc.frame_length", FRAME_LENGTH)
+        )
+        self.frame_period = int(
+            self.util.config_val("FEATS", "lfcc.frame_period", FRAME_PERIOD)
+        )
+        self.fft_length = int(self.util.config_val("FEATS", "lfcc.fft_length", N_FFT))
+        self.sample_rate = int(self.util.config_val("FEATS", "lfcc.sample_rate", SR))
+        self.n_lfcc = int(self.util.config_val("FEATS", "lfcc.n_lfcc", N_LFCC))
+        self.extractor = LfccFeatureExtractor(
+            sample_rate=self.sample_rate,
+            frame_length=self.frame_length,
+            frame_period=self.frame_period,
+            fft_length=self.fft_length,
+            device=self.device,
+            n_lfcc=self.n_lfcc,
+        )
 
     def extract(self):
-        return self._sptk.extract()
-
-    def filter(self):
-        return self._sptk.filter()
+        """Extract LFCC features or load them from disk if present."""
+        store = self.util.get_path("store")
+        store_format = self.util.config_val("FEATS", "store_format", "pkl")
+        storage = f"{store}{self.name}.{store_format}"
+        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
+        no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
+        if extract or no_reuse or not os.path.isfile(storage):
+            self.util.debug("extracting LFCC, this might take a while...")
+            self.df = self._extract_index(self.data_df.index)
+            self.util.write_store(self.df, storage, store_format)
+            try:
+                glob_conf.config["DATA"]["needs_feature_extraction"] = "false"
+            except KeyError:
+                pass
+        else:
+            self.util.debug("reusing extracted LFCC values")
+            self.df = self.util.get_store(storage, store_format)
+            if self.df.isnull().values.any():
+                nanrows = self.df.columns[self.df.isna().any()].tolist()
+                print(nanrows)
+                self.util.error(
+                    f"got nan: {self.df.shape} {self.df.isnull().sum().sum()}"
+                )
 
     def extract_sample(self, signal, sr):
-        return self._sptk.extract_sample(signal, sr)
+        if not self.extractor.available:
+            self.extractor.extract(None)
+            return pd.DataFrame([{}]).to_numpy()
+        signal_tensor = torch.tensor(signal, device=self.device).float()
+        feats = self.extractor.extract(signal_tensor)
+        return pd.DataFrame([feats]).astype(float).to_numpy()
+
+    def _extract_index(self, file_index):
+        if not self.extractor.available:
+            self.extractor.extract(None)
+            return pd.DataFrame(index=file_index)
+        emb_series = pd.Series(index=file_index, dtype=object)
+        skipped = 0
+        for row_index in file_index.to_list():
+            try:
+                signal, _ = read_indexed_audio(row_index, self.sample_rate)
+                signal_tensor = torch.tensor(signal[0], device=self.device).float()
+                emb_series[row_index] = self.extractor.extract(signal_tensor)
+            except Exception as e:
+                print(f"WARNING: featureset: skipping {row_index}: {e}")
+                skipped += 1
+        if skipped:
+            print(
+                f"WARNING: featureset: skipped {skipped} files that failed to load or extract LFCC features"
+            )
+        return series_to_float_df(emb_series)

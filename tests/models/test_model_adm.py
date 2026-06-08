@@ -217,6 +217,27 @@ class TestDeepfakeADMModel:
         out = model(ssl_feats, spec_feats, phase_feats)
         assert out.shape == (4,)
 
+    def test_forward_with_extra_lfcc_cqcc_streams(self, sample_inputs):
+        """Test forward pass with additional LFCC/CQCC ADM streams."""
+        model = DeepfakeADMModel(
+            ssl_feat_dim=768,
+            phase_feat_dim=64,
+            fusion="weighted",
+            branches=["time", "spectral", "phase", "lfcc", "cqcc"],
+            extra_stream_dims={"lfcc": 80, "cqcc": 80},
+        )
+        ssl_feats, spec_feats, phase_feats = sample_inputs
+        extra_feats = {
+            "lfcc": torch.randn(4, 80),
+            "cqcc": torch.randn(4, 80),
+        }
+
+        out = model(ssl_feats, spec_feats, phase_feats, extra_feats)
+
+        assert out.shape == (4,)
+        assert len(model.extra_adms) == 2
+        assert model.weights.shape == (5,)
+
     def test_invalid_fusion_raises_error(self, sample_inputs):
         """Test that invalid fusion method raises ValueError."""
         model = DeepfakeADMModel(
@@ -352,6 +373,7 @@ def adm_model(dummy_data, monkeypatch):
         # Feature indices for splitting (empty means use defaults in _split_features)
         model.fbank_indices = []
         model.stft_indices = []
+        model.extra_stream_indices = {}
 
         # Create BCE loss
         model.criterion = torch.nn.BCEWithLogitsLoss()
@@ -401,6 +423,33 @@ class TestADMModel:
         assert ssl.shape == (4, 768)
         assert spec.shape == (4, 64)
         assert phase.shape == (4, 64)
+
+    def test_adm_stream_indices_with_lfcc_cqcc(self):
+        """LFCC/CQCC should be extra streams, not spectral/phase overloads."""
+        columns = list(range(4)) + [
+            "fbank_0_mean",
+            "stft_0_mean",
+            "lfcc_0_mean",
+            "cqcc_0_mean",
+            "mcep_0_mean",
+        ]
+
+        spectral, phase, extra = ADMModel._get_adm_stream_indices(columns, 4)
+
+        assert spectral == [4, 8]
+        assert phase == [5]
+        assert extra == {"lfcc": [6], "cqcc": [7]}
+
+    def test_active_branches_do_not_duplicate_lfcc_cqcc(self):
+        """LFCC/CQCC-only configs should not also activate spectral/phase fallbacks."""
+        model = ADMModel.__new__(ADMModel)
+        model.fbank_indices = []
+        model.stft_indices = []
+        model.extra_stream_indices = {"lfcc": [4], "cqcc": [5]}
+
+        branches = model._active_branches(["time", "spectral", "phase", "lfcc", "cqcc"])
+
+        assert branches == ["time", "lfcc", "cqcc"]
 
     def test_train_one_epoch(self, adm_model):
         """Test training for one epoch."""

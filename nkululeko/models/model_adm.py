@@ -108,31 +108,25 @@ class ADMModel(Model):
             self.criterion = BCEWithLogitsLoss()
             self.util.debug("using ADM model with BCE loss function")
 
-        # Determine actual feature dimensions from the data
-        # Features are concatenated: wav2vec2 (integer cols) + SPTK (named cols)
+        # Determine actual feature dimensions from the data.
+        # Features are concatenated: SSL embeddings (integer cols) + named
+        # acoustic features. ADM keeps the original spectral/phase streams and
+        # can add cepstral streams such as lfcc_* and cqcc_* independently.
         total_feats = feats_train.shape[1]
         # Auto-detect SSL dim from integer-named columns
         ssl_cols = [c for c in feats_train.columns if isinstance(c, (int, np.integer))]
         self.ssl_feat_dim = len(ssl_cols) if ssl_cols else 768
         self.sptk_feat_dim = total_feats - self.ssl_feat_dim
 
-        # Analyze SPTK column names to split spectral vs phase features
-        sptk_cols = [c for c in feats_train.columns if isinstance(c, str)]
-        self.fbank_indices = []
-        self.stft_indices = []
-        for i, c in enumerate(sptk_cols):
-            col_idx = self.ssl_feat_dim + i
-            if "fbank" in str(c):
-                self.fbank_indices.append(col_idx)
-            elif "stft" in str(c):
-                self.stft_indices.append(col_idx)
-            else:
-                self.fbank_indices.append(col_idx)  # default to spectral
+        self.fbank_indices, self.stft_indices, self.extra_stream_indices = (
+            self._get_adm_stream_indices(feats_train.columns, self.ssl_feat_dim)
+        )
 
         self.util.debug(
             f"ADM feature split: SSL={self.ssl_feat_dim}, "
-            f"spectral(fbank)={len(self.fbank_indices)}, "
-            f"phase(stft)={len(self.stft_indices)}"
+            f"spectral={len(self.fbank_indices)}, "
+            f"phase={len(self.stft_indices)}, "
+            f"extra={ {k: len(v) for k, v in self.extra_stream_indices.items()} }"
         )
 
         # ADM architecture parameters
@@ -140,25 +134,26 @@ class ADMModel(Model):
         phase_dim = len(self.stft_indices) if self.stft_indices else self.sptk_feat_dim
         hidden_dim = int(self.util.config_val("MODEL", "adm.hidden_dim", "256"))
 
-        # Branch selection: time (SSL), spectral (fbank), phase (STFT)
+        # Branch selection: time (SSL), spectral (fbank/melspec), phase (STFT),
+        # plus optional cepstral streams such as lfcc/cqcc.
         branches_str = self.util.config_val(
-            "MODEL", "adm.branches", "time,spectral,phase"
+            "MODEL", "adm.branches", "time,spectral,phase,lfcc,cqcc"
         )
         raw_branches = [b.strip() for b in branches_str.split(",") if b.strip()]
-        supported_branches = {"time", "spectral", "phase"}
+        supported_branches = {"time", "spectral", "phase", "lfcc", "cqcc"}
         unknown_branches = [b for b in raw_branches if b not in supported_branches]
         if unknown_branches:
             raise ValueError(
                 f"Invalid ADM branches in config: {unknown_branches}. "
                 f"Supported branches are: {sorted(supported_branches)}."
             )
-        branches = raw_branches or ["time", "spectral", "phase"]
+        branches = self._active_branches(raw_branches or ["time", "spectral", "phase"])
         # Ensure at least one valid branch is active
         if not branches:
             raise ValueError(
                 "No valid ADM branches configured. "
                 "Please set [MODEL] adm.branches to a non-empty subset of "
-                "{'time','spectral','phase'}."
+                "{'time','spectral','phase','lfcc','cqcc'}."
             )
         self.branches = branches
         self.util.debug(f"ADM active branches: {branches}")
@@ -170,6 +165,11 @@ class ADMModel(Model):
             fusion=fusion,
             branches=branches,
             hidden_dim=hidden_dim,
+            extra_stream_dims={
+                name: len(indices)
+                for name, indices in self.extra_stream_indices.items()
+                if indices
+            },
         ).to(self.device)
 
         # Learning rate and optimizer
@@ -244,12 +244,15 @@ class ADMModel(Model):
                 noise = torch.randn_like(features) * self.feature_noise
                 features = features + noise
 
-            ssl_feats, spec_feats, phase_feats = self._split_features(features)
+            ssl_feats, spec_feats, phase_feats, extra_feats = (
+                self._split_feature_streams(features)
+            )
 
             logits = self.model(
                 ssl_feats.to(self.device),
                 spec_feats.to(self.device),
                 phase_feats.to(self.device),
+                {k: v.to(self.device) for k, v in extra_feats.items()},
             )
 
             loss = self.criterion(logits, labels_float)
@@ -274,9 +277,13 @@ class ADMModel(Model):
     def _split_features(self, features):
         """Split concatenated features into SSL, spectral, and phase streams.
 
-        Features are concatenated as: wav2vec2 (first ssl_feat_dim cols) +
-        SPTK features split by column name (fbank -> spectral, stft -> phase).
+        Backward-compatible three-stream split used by existing tests/callers.
         """
+        ssl_feats, spec_feats, phase_feats, _ = self._split_feature_streams(features)
+        return ssl_feats, spec_feats, phase_feats
+
+    def _split_feature_streams(self, features):
+        """Split features into SSL, spectral, phase, and named extra streams."""
         ssl_feats = features[:, : self.ssl_feat_dim]
         if self.fbank_indices:
             spec_feats = features[:, self.fbank_indices]
@@ -286,7 +293,52 @@ class ADMModel(Model):
             phase_feats = features[:, self.stft_indices]
         else:
             phase_feats = features[:, self.ssl_feat_dim :]
-        return ssl_feats, spec_feats, phase_feats
+        extra_feats = {
+            name: features[:, indices]
+            for name, indices in getattr(self, "extra_stream_indices", {}).items()
+            if indices
+        }
+        return ssl_feats, spec_feats, phase_feats, extra_feats
+
+    @staticmethod
+    def _get_adm_stream_indices(columns, ssl_feat_dim):
+        """Return acoustic feature column indices for ADM streams."""
+        acoustic_cols = [c for c in columns if isinstance(c, str)]
+        spectral_indices = []
+        phase_indices = []
+        extra_indices = {"lfcc": [], "cqcc": []}
+        for i, col in enumerate(acoustic_cols):
+            col_idx = ssl_feat_dim + i
+            col_name = str(col).lower()
+            if col_name.startswith("lfcc"):
+                extra_indices["lfcc"].append(col_idx)
+            elif col_name.startswith("cqcc"):
+                extra_indices["cqcc"].append(col_idx)
+            elif col_name.startswith("stft"):
+                phase_indices.append(col_idx)
+            else:
+                spectral_indices.append(col_idx)
+        return spectral_indices, phase_indices, extra_indices
+
+    def _active_branches(self, branches):
+        """Drop optional extra branches that have no corresponding features."""
+        active = []
+        has_extra_streams = any(
+            self.extra_stream_indices.get(name) for name in ("lfcc", "cqcc")
+        )
+        for branch in branches:
+            if branch in {"lfcc", "cqcc"}:
+                if self.extra_stream_indices.get(branch):
+                    active.append(branch)
+            elif branch == "spectral":
+                if self.fbank_indices or not has_extra_streams:
+                    active.append(branch)
+            elif branch == "phase":
+                if self.stft_indices or not has_extra_streams:
+                    active.append(branch)
+            else:
+                active.append(branch)
+        return active
 
     def evaluate(self, model, loader, device):
         """Evaluate the ADM model."""
@@ -304,11 +356,16 @@ class ADMModel(Model):
                 features = features.float()
 
                 # Split features
-                ssl_feats, spec_feats, phase_feats = self._split_features(features)
+                ssl_feats, spec_feats, phase_feats, extra_feats = (
+                    self._split_feature_streams(features)
+                )
 
                 # Forward pass
                 batch_logits = model(
-                    ssl_feats.to(device), spec_feats.to(device), phase_feats.to(device)
+                    ssl_feats.to(device),
+                    spec_feats.to(device),
+                    phase_feats.to(device),
+                    {k: v.to(device) for k, v in extra_feats.items()},
                 )
 
                 # Clean non-finite logits before storing; move to CPU to match preallocated tensors
@@ -444,6 +501,7 @@ class ADMModel(Model):
             "sptk_feat_dim": self.sptk_feat_dim,
             "fbank_indices": self.fbank_indices,
             "stft_indices": self.stft_indices,
+            "extra_stream_indices": getattr(self, "extra_stream_indices", {}),
         }
         # Keep metadata filename short to avoid ENAMETOOLONG on long experiment names.
         meta_path = self._get_meta_path(self.store_path)
@@ -478,6 +536,7 @@ class ADMModel(Model):
             self.sptk_feat_dim = meta["sptk_feat_dim"]
             self.fbank_indices = meta["fbank_indices"]
             self.stft_indices = meta["stft_indices"]
+            self.extra_stream_indices = meta.get("extra_stream_indices", {})
         else:
             self.util.debug(
                 f"ADM metadata file not found ({meta_path} or {legacy_meta_path}), "
@@ -491,9 +550,11 @@ class ADMModel(Model):
 
         # Branch selection
         branches_str = self.util.config_val(
-            "MODEL", "adm.branches", "time,spectral,phase"
+            "MODEL", "adm.branches", "time,spectral,phase,lfcc,cqcc"
         )
-        branches = [b.strip() for b in branches_str.split(",")]
+        branches = self._active_branches(
+            [b.strip() for b in branches_str.split(",") if b.strip()]
+        )
 
         self.model = DeepfakeADMModel(
             ssl_feat_dim=self.ssl_feat_dim,
@@ -501,6 +562,11 @@ class ADMModel(Model):
             fusion=fusion,
             branches=branches,
             hidden_dim=hidden_dim,
+            extra_stream_dims={
+                name: len(indices)
+                for name, indices in getattr(self, "extra_stream_indices", {}).items()
+                if indices
+            },
         ).to(self.device)
 
         try:
