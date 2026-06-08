@@ -11,6 +11,7 @@ Multi-stream neural model that detects synthesis artifacts using:
 import json
 import os
 import zlib
+
 import numpy as np
 import pandas as pd
 import torch
@@ -122,11 +123,12 @@ class ADMModel(Model):
             self._get_adm_stream_indices(feats_train.columns, self.ssl_feat_dim)
         )
 
+        extra_dims = {k: len(v) for k, v in self.extra_stream_indices.items()}
         self.util.debug(
             f"ADM feature split: SSL={self.ssl_feat_dim}, "
             f"spectral={len(self.fbank_indices)}, "
             f"phase={len(self.stft_indices)}, "
-            f"extra={ {k: len(v) for k, v in self.extra_stream_indices.items()} }"
+            f"extra={extra_dims}"
         )
 
         # ADM architecture parameters

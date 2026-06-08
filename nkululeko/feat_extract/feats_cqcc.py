@@ -48,7 +48,7 @@ class CqccFeatureExtractor:
     def extract(self, signal_tensor):
         """Return CQCC mean/std features for a mono signal tensor."""
         if not self.available:
-            if not getattr(self, "_warned", False):
+            if not self._warned:
                 print(self.warning)
                 self._warned = True
             return {}
@@ -122,14 +122,18 @@ class CqccSet(Featureset):
 
     def extract_sample(self, signal, sr):
         if not self.extractor.available:
-            self.extractor.extract(None)
+            if not self.extractor._warned:
+                print(self.extractor.warning)
+                self.extractor._warned = True
             return pd.DataFrame([{}]).to_numpy()
         feats = self.extractor.extract(signal)
         return pd.DataFrame([feats]).astype(float).to_numpy()
 
     def _extract_index(self, file_index):
         if not self.extractor.available:
-            self.extractor.extract(None)
+            if not self.extractor._warned:
+                print(self.extractor.warning)
+                self.extractor._warned = True
             return pd.DataFrame(index=file_index)
         emb_series = pd.Series(index=file_index, dtype=object)
         skipped = 0

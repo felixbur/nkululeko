@@ -53,7 +53,7 @@ def read_audio(file, sample_rate, offset=None, duration=None):
         result = subprocess.run(cmd, capture_output=True)
         if result.returncode != 0 or len(result.stdout) == 0:
             raise RuntimeError(
-                f"ffmpeg failed to decode {file}: {result.stderr.decode()}"
+                f"ffmpeg failed to decode {file}: {result.stderr.decode(errors='replace')}"
             )
         audio = (
             np.frombuffer(result.stdout, dtype=np.int16).astype(np.float32) / 32768.0
