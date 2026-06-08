@@ -1,3 +1,4 @@
+import sys
 from types import SimpleNamespace
 
 import numpy as np
@@ -5,7 +6,9 @@ import pytest
 
 import nkululeko.feat_extract.feats_cqcc as feats_cqcc
 from nkululeko.feat_extract.feats_cqcc import CqccFeatureExtractor
+from nkululeko.feat_extract.feats_cqcc import CqccSet
 from nkululeko.feat_extract.feats_lfcc import LfccFeatureExtractor
+from nkululeko.feat_extract.feats_lfcc import LfccSet
 
 
 class FakeSignal:
@@ -104,3 +107,59 @@ def test_cqcc_extract_skips_when_unavailable(capsys):
 
     assert feats == {}
     assert "cqcc unavailable" in capsys.readouterr().out
+
+
+class DummySptkSet:
+    def __init__(self, name, data_df, feats_type):
+        self.name = name
+        self.data_df = data_df
+        self.feats_type = feats_type
+        self.features_requested = []
+        self.df = None
+
+    def extract(self):
+        self.df = {"features": self.features_requested}
+        return self.df
+
+    def filter(self):
+        return None
+
+    def extract_sample(self, signal, sr):
+        return self.features_requested
+
+
+def test_lfcc_set_forces_lfcc_feature(monkeypatch):
+    monkeypatch.setitem(
+        sys.modules,
+        "nkululeko.feat_extract.feats_sptk",
+        SimpleNamespace(SptkSet=DummySptkSet),
+    )
+
+    feat_set = LfccSet("test", None, "lfcc")
+
+    assert feat_set._sptk.features_requested == ["lfcc"]
+    assert feat_set.extract() == {"features": ["lfcc"]}
+    assert feat_set.extract_sample(np.ones(10), 16000) == ["lfcc"]
+
+
+def test_cqcc_set_forces_cqcc_feature(monkeypatch):
+    monkeypatch.setitem(
+        sys.modules,
+        "nkululeko.feat_extract.feats_sptk",
+        SimpleNamespace(SptkSet=DummySptkSet),
+    )
+
+    feat_set = CqccSet("test", None, "cqcc")
+
+    assert feat_set._sptk.features_requested == ["cqcc"]
+    assert feat_set.extract() == {"features": ["cqcc"]}
+    assert feat_set.extract_sample(np.ones(10), 16000) == ["cqcc"]
+
+
+def test_feature_extractor_accepts_lfcc_and_cqcc():
+    from nkululeko.feature_extractor import FeatureExtractor
+
+    feature_extractor = FeatureExtractor(None, [], "test", "train")
+
+    assert feature_extractor._get_feat_extractor_class("lfcc") is LfccSet
+    assert feature_extractor._get_feat_extractor_class("cqcc") is CqccSet

@@ -61,3 +61,30 @@ class CqccFeatureExtractor:
             emb[f"cqcc_{i}_mean"] = np.mean(cqcc_matrix[i])
             emb[f"cqcc_{i}_std"] = np.std(cqcc_matrix[i])
         return emb
+
+
+class CqccSet:
+    """Top-level feature set wrapper for `[FEATS] type = ['cqcc']`."""
+
+    def __init__(self, name, data_df, feats_type):
+        from nkululeko.feat_extract.feats_sptk import SptkSet
+
+        self._sptk = SptkSet(name, data_df, feats_type)
+        self._sptk.features_requested = ["cqcc"]
+
+    @property
+    def df(self):
+        return self._sptk.df
+
+    @df.setter
+    def df(self, value):
+        self._sptk.df = value
+
+    def extract(self):
+        return self._sptk.extract()
+
+    def filter(self):
+        return self._sptk.filter()
+
+    def extract_sample(self, signal, sr):
+        return self._sptk.extract_sample(signal, sr)
