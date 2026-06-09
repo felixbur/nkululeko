@@ -1,6 +1,7 @@
 # feats_analyser.py
 import ast
 import os
+import pickle
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -49,6 +50,28 @@ class FeatureAnalyser:
         self.plots = Plots()
 
     def _get_importance(self, model, permutation):
+        """Fit model and return feature importances, with pickle caching.
+
+        Cache is stored under {store}/cache/importance_{ModelClass}[_perm].pkl.
+        A cached result is returned immediately without refitting.
+
+        Args:
+            model: sklearn-compatible estimator with feature_importances_ attribute.
+            permutation: if True use permutation importance, otherwise use model's
+                         built-in feature_importances_.
+
+        Returns:
+            numpy array of per-feature importance scores.
+        """
+        model_name = type(model).__name__
+        perm_suffix = "_perm" if permutation else ""
+        cache_dir = os.path.join(self.util.get_path("store"), "cache")
+        os.makedirs(cache_dir, exist_ok=True)
+        cache_path = os.path.join(cache_dir, f"importance_{model_name}{perm_suffix}.pkl")
+        if os.path.isfile(cache_path):
+            self.util.debug(f"loading cached importance for {model_name}{perm_suffix}")
+            with open(cache_path, "rb") as f:
+                return pickle.load(f)
         model.fit(self.features, self.labels)
         if permutation:
             r = permutation_importance(
@@ -61,6 +84,8 @@ class FeatureAnalyser:
             importance = r["importances_mean"]
         else:
             importance = model.feature_importances_
+        with open(cache_path, "wb") as f:
+            pickle.dump(importance, f)
         return importance
 
     def analyse_shap(self, model):
