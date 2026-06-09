@@ -15,6 +15,8 @@ import audiofile
 from tqdm import tqdm
 
 import diffsptk
+from nkululeko.feat_extract.feats_cqcc import CqccFeatureExtractor
+from nkululeko.feat_extract.feats_lfcc import LfccFeatureExtractor
 
 # Constants
 FRAME_LENGTH = 400  # Frame length.
@@ -83,6 +85,18 @@ class SptkFeatureExtractor:
             n_channel=self.n_channel,
             sample_rate=self.sample_rate,
             device=self.device,
+        )
+
+        self.lfcc = LfccFeatureExtractor(
+            sample_rate=self.sample_rate,
+            frame_length=self.frame_length,
+            frame_period=self.frame_period,
+            fft_length=self.fft_length,
+            device=self.device,
+        )
+        self.cqcc = CqccFeatureExtractor(
+            sample_rate=self.sample_rate,
+            frame_period=self.frame_period,
         )
 
         # Initialize pitch extractor with error handling
@@ -199,6 +213,12 @@ class SptkFeatureExtractor:
                 channel_data = chroma_np[..., i]
                 emb[f"chroma_{i}_mean"] = np.mean(channel_data)
                 emb[f"chroma_{i}_std"] = np.std(channel_data)
+
+        if "lfcc" in features_requested:
+            emb.update(self.lfcc.extract(signal_tensor))
+
+        if "cqcc" in features_requested:
+            emb.update(self.cqcc.extract(signal_tensor))
 
         # Extract pitch-dependent features if available
         if self.pitch_features_available and not self.pitch_fallback:

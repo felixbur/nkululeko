@@ -8,6 +8,10 @@ Multi-stream neural model that detects synthesis artifacts using:
 - PhaseADM: phase-dynamics artifacts from STFT features
 """
 
+import json
+import os
+import zlib
+
 import numpy as np
 import pandas as pd
 import torch
@@ -105,31 +109,26 @@ class ADMModel(Model):
             self.criterion = BCEWithLogitsLoss()
             self.util.debug("using ADM model with BCE loss function")
 
-        # Determine actual feature dimensions from the data
-        # Features are concatenated: wav2vec2 (integer cols) + SPTK (named cols)
+        # Determine actual feature dimensions from the data.
+        # Features are concatenated: SSL embeddings (integer cols) + named
+        # acoustic features. ADM keeps the original spectral/phase streams and
+        # can add cepstral streams such as lfcc_* and cqcc_* independently.
         total_feats = feats_train.shape[1]
         # Auto-detect SSL dim from integer-named columns
         ssl_cols = [c for c in feats_train.columns if isinstance(c, (int, np.integer))]
         self.ssl_feat_dim = len(ssl_cols) if ssl_cols else 768
         self.sptk_feat_dim = total_feats - self.ssl_feat_dim
 
-        # Analyze SPTK column names to split spectral vs phase features
-        sptk_cols = [c for c in feats_train.columns if isinstance(c, str)]
-        self.fbank_indices = []
-        self.stft_indices = []
-        for i, c in enumerate(sptk_cols):
-            col_idx = self.ssl_feat_dim + i
-            if "fbank" in str(c):
-                self.fbank_indices.append(col_idx)
-            elif "stft" in str(c):
-                self.stft_indices.append(col_idx)
-            else:
-                self.fbank_indices.append(col_idx)  # default to spectral
+        self.fbank_indices, self.stft_indices, self.extra_stream_indices = (
+            self._get_adm_stream_indices(feats_train.columns, self.ssl_feat_dim)
+        )
 
+        extra_dims = {k: len(v) for k, v in self.extra_stream_indices.items()}
         self.util.debug(
             f"ADM feature split: SSL={self.ssl_feat_dim}, "
-            f"spectral(fbank)={len(self.fbank_indices)}, "
-            f"phase(stft)={len(self.stft_indices)}"
+            f"spectral={len(self.fbank_indices)}, "
+            f"phase={len(self.stft_indices)}, "
+            f"extra={extra_dims}"
         )
 
         # ADM architecture parameters
@@ -137,25 +136,26 @@ class ADMModel(Model):
         phase_dim = len(self.stft_indices) if self.stft_indices else self.sptk_feat_dim
         hidden_dim = int(self.util.config_val("MODEL", "adm.hidden_dim", "256"))
 
-        # Branch selection: time (SSL), spectral (fbank), phase (STFT)
+        # Branch selection: time (SSL), spectral (fbank/melspec), phase (STFT),
+        # plus optional cepstral streams such as lfcc/cqcc.
         branches_str = self.util.config_val(
-            "MODEL", "adm.branches", "time,spectral,phase"
+            "MODEL", "adm.branches", "time,spectral,phase,lfcc,cqcc"
         )
         raw_branches = [b.strip() for b in branches_str.split(",") if b.strip()]
-        supported_branches = {"time", "spectral", "phase"}
+        supported_branches = {"time", "spectral", "phase", "lfcc", "cqcc"}
         unknown_branches = [b for b in raw_branches if b not in supported_branches]
         if unknown_branches:
             raise ValueError(
                 f"Invalid ADM branches in config: {unknown_branches}. "
                 f"Supported branches are: {sorted(supported_branches)}."
             )
-        branches = raw_branches or ["time", "spectral", "phase"]
+        branches = self._active_branches(raw_branches or ["time", "spectral", "phase"])
         # Ensure at least one valid branch is active
         if not branches:
             raise ValueError(
                 "No valid ADM branches configured. "
                 "Please set [MODEL] adm.branches to a non-empty subset of "
-                "{'time','spectral','phase'}."
+                "{'time','spectral','phase','lfcc','cqcc'}."
             )
         self.branches = branches
         self.util.debug(f"ADM active branches: {branches}")
@@ -167,6 +167,11 @@ class ADMModel(Model):
             fusion=fusion,
             branches=branches,
             hidden_dim=hidden_dim,
+            extra_stream_dims={
+                name: len(indices)
+                for name, indices in self.extra_stream_indices.items()
+                if indices
+            },
         ).to(self.device)
 
         # Learning rate and optimizer
@@ -241,12 +246,15 @@ class ADMModel(Model):
                 noise = torch.randn_like(features) * self.feature_noise
                 features = features + noise
 
-            ssl_feats, spec_feats, phase_feats = self._split_features(features)
+            ssl_feats, spec_feats, phase_feats, extra_feats = (
+                self._split_feature_streams(features)
+            )
 
             logits = self.model(
                 ssl_feats.to(self.device),
                 spec_feats.to(self.device),
                 phase_feats.to(self.device),
+                {k: v.to(self.device) for k, v in extra_feats.items()},
             )
 
             loss = self.criterion(logits, labels_float)
@@ -271,9 +279,13 @@ class ADMModel(Model):
     def _split_features(self, features):
         """Split concatenated features into SSL, spectral, and phase streams.
 
-        Features are concatenated as: wav2vec2 (first ssl_feat_dim cols) +
-        SPTK features split by column name (fbank -> spectral, stft -> phase).
+        Backward-compatible three-stream split used by existing tests/callers.
         """
+        ssl_feats, spec_feats, phase_feats, _ = self._split_feature_streams(features)
+        return ssl_feats, spec_feats, phase_feats
+
+    def _split_feature_streams(self, features):
+        """Split features into SSL, spectral, phase, and named extra streams."""
         ssl_feats = features[:, : self.ssl_feat_dim]
         if self.fbank_indices:
             spec_feats = features[:, self.fbank_indices]
@@ -283,7 +295,52 @@ class ADMModel(Model):
             phase_feats = features[:, self.stft_indices]
         else:
             phase_feats = features[:, self.ssl_feat_dim :]
-        return ssl_feats, spec_feats, phase_feats
+        extra_feats = {
+            name: features[:, indices]
+            for name, indices in getattr(self, "extra_stream_indices", {}).items()
+            if indices
+        }
+        return ssl_feats, spec_feats, phase_feats, extra_feats
+
+    @staticmethod
+    def _get_adm_stream_indices(columns, ssl_feat_dim):
+        """Return acoustic feature column indices for ADM streams."""
+        acoustic_cols = [c for c in columns if isinstance(c, str)]
+        spectral_indices = []
+        phase_indices = []
+        extra_indices = {"lfcc": [], "cqcc": []}
+        for i, col in enumerate(acoustic_cols):
+            col_idx = ssl_feat_dim + i
+            col_name = str(col).lower()
+            if col_name.startswith("lfcc"):
+                extra_indices["lfcc"].append(col_idx)
+            elif col_name.startswith("cqcc"):
+                extra_indices["cqcc"].append(col_idx)
+            elif col_name.startswith("stft"):
+                phase_indices.append(col_idx)
+            else:
+                spectral_indices.append(col_idx)
+        return spectral_indices, phase_indices, extra_indices
+
+    def _active_branches(self, branches):
+        """Drop optional extra branches that have no corresponding features."""
+        active = []
+        has_extra_streams = any(
+            self.extra_stream_indices.get(name) for name in ("lfcc", "cqcc")
+        )
+        for branch in branches:
+            if branch in {"lfcc", "cqcc"}:
+                if self.extra_stream_indices.get(branch):
+                    active.append(branch)
+            elif branch == "spectral":
+                if self.fbank_indices or not has_extra_streams:
+                    active.append(branch)
+            elif branch == "phase":
+                if self.stft_indices or not has_extra_streams:
+                    active.append(branch)
+            else:
+                active.append(branch)
+        return active
 
     def evaluate(self, model, loader, device):
         """Evaluate the ADM model."""
@@ -295,19 +352,22 @@ class ADMModel(Model):
         with torch.no_grad():
             for index, (features, labels) in enumerate(loader):
                 start_index = index * loader.batch_size
-                end_index = (index + 1) * loader.batch_size
-                if end_index > len(loader.dataset):
-                    end_index = len(loader.dataset)
+                end_index = start_index + len(labels)  # use actual batch size (last batch may be smaller)
 
                 # Convert features to float32
                 features = features.float()
 
                 # Split features
-                ssl_feats, spec_feats, phase_feats = self._split_features(features)
+                ssl_feats, spec_feats, phase_feats, extra_feats = (
+                    self._split_feature_streams(features)
+                )
 
                 # Forward pass
                 batch_logits = model(
-                    ssl_feats.to(device), spec_feats.to(device), phase_feats.to(device)
+                    ssl_feats.to(device),
+                    spec_feats.to(device),
+                    phase_feats.to(device),
+                    {k: v.to(device) for k, v in extra_feats.items()},
                 )
 
                 # Clean non-finite logits before storing; move to CPU to match preallocated tensors
@@ -338,8 +398,9 @@ class ADMModel(Model):
         """Convert logits to probability dataframe."""
         # For binary classification with BCEWithLogitsLoss
         proba_d = {}
-        classes = self.df_test[self.target].unique()
-        classes.sort()
+        # Use all known classes from glob_conf to ensure both classes are always
+        # present, even if the test set only contains one class.
+        classes = np.arange(len(glob_conf.labels))
 
         # Apply sigmoid to get probabilities; clean non-finite logits first
         logits_clean = torch.nan_to_num(logits, nan=0.0, posinf=10.0, neginf=-10.0)
@@ -390,13 +451,37 @@ class ADMModel(Model):
         return (predictions.numpy(), self.get_probas(logits))
 
     def get_loader(self, df_x, df_y, shuffle):
-        """Create a data loader for training or testing."""
-        data = []
-        for i in range(len(df_x)):
-            data.append([df_x.values[i], df_y[self.target].iloc[i]])
+        """Create a data loader using TensorDataset for efficient batch loading."""
+        features_tensor = torch.tensor(df_x.values, dtype=torch.float32)
+        label_values = self._encode_labels(df_y[self.target])
+        labels_tensor = torch.tensor(label_values, dtype=torch.float32)
+        dataset = torch.utils.data.TensorDataset(features_tensor, labels_tensor)
         return torch.utils.data.DataLoader(
-            data, shuffle=shuffle, batch_size=self.batch_size
+            dataset, shuffle=shuffle, batch_size=self.batch_size
         )
+
+    def _encode_labels(self, labels):
+        """Encode class labels as floats for binary BCE training/evaluation."""
+        try:
+            return pd.to_numeric(labels, errors="raise").to_numpy(dtype=float)
+        except (TypeError, ValueError):
+            pass
+
+        if glob_conf.label_encoder is not None:
+            try:
+                return glob_conf.label_encoder.transform(labels).astype(float)
+            except ValueError:
+                pass
+
+        label_names = list(glob_conf.labels or [])
+        label_map = {label: index for index, label in enumerate(label_names)}
+        unknown_labels = sorted(set(labels.dropna()) - set(label_map))
+        if unknown_labels:
+            raise ValueError(
+                f"unknown labels for ADM model: {unknown_labels}; "
+                f"known labels are: {label_names}"
+            )
+        return labels.map(label_map).to_numpy(dtype=float)
 
     def set_id(self, run, epoch):
         """Set run and epoch ID with branch configuration in filename."""
@@ -411,8 +496,19 @@ class ADMModel(Model):
         self.store_path = dir + name
 
     def store(self):
-        """Store the model to disk."""
+        """Store the model weights and feature split metadata to disk."""
         torch.save(self.model.state_dict(), self.store_path)
+        meta = {
+            "ssl_feat_dim": self.ssl_feat_dim,
+            "sptk_feat_dim": self.sptk_feat_dim,
+            "fbank_indices": self.fbank_indices,
+            "stft_indices": self.stft_indices,
+            "extra_stream_indices": getattr(self, "extra_stream_indices", {}),
+        }
+        # Keep metadata filename short to avoid ENAMETOOLONG on long experiment names.
+        meta_path = self._get_meta_path(self.store_path)
+        with open(meta_path, "w") as f:
+            json.dump(meta, f)
 
     def load(self, run, epoch):
         """Load a trained model from disk."""
@@ -421,6 +517,34 @@ class ADMModel(Model):
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
 
+        # Restore feature split metadata if available, otherwise fall back to
+        # instance attributes set by __init__. Support both the current short
+        # hashed sidecar name and the legacy "<model>.meta.json" sidecar.
+        meta_path = self._get_meta_path(self.store_path)
+        legacy_meta_path = self.store_path + ".meta.json"
+        meta = None
+        try:
+            with open(meta_path) as f:
+                meta = json.load(f)
+        except FileNotFoundError:
+            try:
+                with open(legacy_meta_path) as f:
+                    meta = json.load(f)
+            except FileNotFoundError:
+                pass
+
+        if meta is not None:
+            self.ssl_feat_dim = meta["ssl_feat_dim"]
+            self.sptk_feat_dim = meta["sptk_feat_dim"]
+            self.fbank_indices = meta["fbank_indices"]
+            self.stft_indices = meta["stft_indices"]
+            self.extra_stream_indices = meta.get("extra_stream_indices", {})
+        else:
+            self.util.debug(
+                f"ADM metadata file not found ({meta_path} or {legacy_meta_path}), "
+                "using feature indices from current feature data"
+            )
+
         # Recreate model architecture with actual dimensions
         fusion = self.util.config_val("MODEL", "adm.fusion", "weighted")
         phase_dim = len(self.stft_indices) if self.stft_indices else self.sptk_feat_dim
@@ -428,9 +552,11 @@ class ADMModel(Model):
 
         # Branch selection
         branches_str = self.util.config_val(
-            "MODEL", "adm.branches", "time,spectral,phase"
+            "MODEL", "adm.branches", "time,spectral,phase,lfcc,cqcc"
         )
-        branches = [b.strip() for b in branches_str.split(",")]
+        branches = self._active_branches(
+            [b.strip() for b in branches_str.split(",") if b.strip()]
+        )
 
         self.model = DeepfakeADMModel(
             ssl_feat_dim=self.ssl_feat_dim,
@@ -438,10 +564,24 @@ class ADMModel(Model):
             fusion=fusion,
             branches=branches,
             hidden_dim=hidden_dim,
+            extra_stream_dims={
+                name: len(indices)
+                for name, indices in getattr(self, "extra_stream_indices", {}).items()
+                if indices
+            },
         ).to(self.device)
 
         try:
-            self.model.load_state_dict(torch.load(self.store_path))
+            self.model.load_state_dict(
+                torch.load(self.store_path, weights_only=True)
+            )
         except FileNotFoundError:
             self.util.error(f"model file not found: {self.store_path}")
         self.model.eval()
+
+    @staticmethod
+    def _get_meta_path(model_path):
+        """Build a short metadata sidecar path for a model file."""
+        model_dir = os.path.dirname(model_path)
+        model_id = zlib.crc32(model_path.encode("utf-8"))
+        return os.path.join(model_dir, f"adm_meta_{model_id:08x}.json")

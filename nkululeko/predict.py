@@ -927,6 +927,14 @@ def _get_feature_extractor(model_name, util):
         from nkululeko.feat_extract.feats_sptk import SptkSet
 
         return SptkSet(model_name, None, model_name)
+    if "lfcc" in model_lower:
+        from nkululeko.feat_extract.feats_lfcc import LfccSet
+
+        return LfccSet(model_name, None, model_name)
+    if "cqcc" in model_lower:
+        from nkululeko.feat_extract.feats_cqcc import CqccSet
+
+        return CqccSet(model_name, None, model_name)
 
     util.error(f"unknown feature extractor: {model_name}")
 

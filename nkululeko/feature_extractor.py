@@ -112,6 +112,8 @@ class FeatureExtractor:
             "mld",
             "import",
             "sptk",
+            "lfcc",
+            "cqcc",
         ):
             return self._get_feat_extractor_by_name(feats_type)
         else:

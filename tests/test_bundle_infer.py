@@ -9,8 +9,6 @@ import configparser
 import json
 import os
 import pickle
-import platform
-import tempfile
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -283,7 +281,7 @@ class TestInferParser:
 class TestPredictFromBundle:
     """Test _predict_from_bundle logic."""
 
-    def test_classification_prediction(self):
+    def test_classification_prediction(self, tmp_path):
         from nkululeko.infer import _predict_from_bundle
         from sklearn.svm import SVC
         from sklearn.preprocessing import LabelEncoder, StandardScaler
@@ -310,7 +308,7 @@ class TestPredictFromBundle:
 
         # Create test features
         idx = pd.MultiIndex.from_tuples(
-            [("/tmp/test.wav", pd.Timedelta(0), pd.Timedelta(seconds=1))],
+            [(str(tmp_path / "test.wav"), pd.Timedelta(0), pd.Timedelta(seconds=1))],
             names=["file", "start", "end"],
         )
         feats = pd.DataFrame([[2.0, 3.0]], index=idx, columns=["f1", "f2"])
@@ -321,7 +319,7 @@ class TestPredictFromBundle:
         assert "predicted" in results.columns
         assert results.iloc[0]["predicted"] in ["anger", "joy"]
 
-    def test_regression_prediction(self):
+    def test_regression_prediction(self, tmp_path):
         from nkululeko.infer import _predict_from_bundle
         from sklearn.svm import SVR
 
@@ -339,7 +337,7 @@ class TestPredictFromBundle:
         }
 
         idx = pd.MultiIndex.from_tuples(
-            [("/tmp/test.wav", pd.Timedelta(0), pd.Timedelta(seconds=1))],
+            [(str(tmp_path / "test.wav"), pd.Timedelta(0), pd.Timedelta(seconds=1))],
             names=["file", "start", "end"],
         )
         feats = pd.DataFrame([[2.0, 3.0]], index=idx, columns=["f1", "f2"])
@@ -406,7 +404,6 @@ class TestBundleParser:
 
     def test_config_required(self):
         from nkululeko.bundle import main
-        import sys
 
         with pytest.raises(SystemExit):
             with patch("sys.argv", ["bundle"]):
@@ -414,8 +411,6 @@ class TestBundleParser:
 
     def test_config_and_output(self):
         """Test parsing --config and --output args."""
-        import argparse
-
         # Simulate the parser behavior
         from nkululeko.bundle import main
 

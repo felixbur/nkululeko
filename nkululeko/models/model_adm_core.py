@@ -185,7 +185,7 @@ class DeepfakeADMModel(nn.Module):
     """
     Multi-stream Artifact Detection Model.
 
-    Fuses scores from time, spectral, and phase ADMs.
+    Fuses scores from time, spectral, phase, and optional named ADMs.
     Supports fusion methods: avg, max, weighted, concat, gated.
 
     Outputs a single artifact score per utterance.
@@ -198,12 +198,14 @@ class DeepfakeADMModel(nn.Module):
         fusion="gated",
         branches=None,
         hidden_dim=256,
+        extra_stream_dims=None,
     ):
         super().__init__()
         if branches is None:
             branches = ["time", "spectral", "phase"]
         self.fusion = fusion
         self.branches = branches
+        self.extra_stream_dims = extra_stream_dims or {}
 
         # Create only requested branches with configurable hidden_dim
         self.time_adm = (
@@ -217,8 +219,15 @@ class DeepfakeADMModel(nn.Module):
             if "phase" in branches
             else None
         )
+        self.extra_adms = nn.ModuleDict(
+            {
+                name: SpectralADM(feat_dim=feat_dim, hidden_dim=hidden_dim)
+                for name, feat_dim in self.extra_stream_dims.items()
+                if name in branches
+            }
+        )
 
-        num_branches = len(branches)
+        num_branches = self._num_active_branches()
         if fusion == "weighted":
             self.weights = nn.Parameter(torch.ones(num_branches))
         elif fusion == "concat":
@@ -226,24 +235,40 @@ class DeepfakeADMModel(nn.Module):
         elif fusion == "gated":
             self.gate_fc = nn.Linear(num_branches, num_branches)
 
-    def forward(self, ssl_feats, spec_feats, phase_feats):
+    def _num_active_branches(self):
+        count = 0
+        count += int(self.time_adm is not None)
+        count += int(self.spec_adm is not None)
+        count += int(self.phase_adm is not None)
+        count += len(self.extra_adms)
+        return count
+
+    def forward(self, ssl_feats, spec_feats, phase_feats, extra_feats=None):
         """
         Args:
             ssl_feats   : (B, D, T)
             spec_feats  : (B, F, T)
             phase_feats : (B, T, Dp)
+            extra_feats : optional dict of named branch tensors
 
         Returns:
             artifact_score : (B,)
         """
         # Compute scores only for active branches
         branch_scores = []
-        if self.time_adm is not None:
-            branch_scores.append(self.time_adm(ssl_feats))
-        if self.spec_adm is not None:
-            branch_scores.append(self.spec_adm(spec_feats))
-        if self.phase_adm is not None:
-            branch_scores.append(self.phase_adm(phase_feats))
+        extra_feats = extra_feats or {}
+        for branch in self.branches:
+            if branch == "time" and self.time_adm is not None:
+                branch_scores.append(self.time_adm(ssl_feats))
+            elif branch == "spectral" and self.spec_adm is not None:
+                branch_scores.append(self.spec_adm(spec_feats))
+            elif branch == "phase" and self.phase_adm is not None:
+                branch_scores.append(self.phase_adm(phase_feats))
+            elif branch in self.extra_adms:
+                branch_scores.append(self.extra_adms[branch](extra_feats[branch]))
+
+        if not branch_scores:
+            raise ValueError("No active ADM branches produced scores.")
 
         scores = torch.cat(branch_scores, dim=1)
 
@@ -266,5 +291,5 @@ class DeepfakeADMModel(nn.Module):
         return out.squeeze(1)
 
     @torch.no_grad()
-    def score(self, ssl_feats, spec_feats, phase_feats):
-        return self.forward(ssl_feats, spec_feats, phase_feats)
+    def score(self, ssl_feats, spec_feats, phase_feats, extra_feats=None):
+        return self.forward(ssl_feats, spec_feats, phase_feats, extra_feats)
