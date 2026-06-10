@@ -7,6 +7,7 @@ Version 1.7.7 (26-06-09)
 * configurable audMLD feature sets
 * handle multiple name-target combinations in the flags module
 * handle also explore module with flags, beneath nkululeko
+* store statistical results as text
 
 
 Version 1.7.6 (26-06-03)
