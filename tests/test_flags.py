@@ -3,7 +3,6 @@ import tempfile
 import os
 import numpy as np
 import pickle
-import pytest
 from unittest.mock import patch, MagicMock
 
 
