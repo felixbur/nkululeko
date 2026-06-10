@@ -237,6 +237,9 @@
         * import_files_append = True  
     * **mld**: [mid-level-descriptors](http://www.essv.de/paper.php?id=447)
       * **mld.model** = *path to the mld sources folder*
+      * **mld.df** = *MLD class to use for feature extraction* (default: `Mld`)
+        * accepted values: `Mld`, `MldSust`, `MldStruct`
+        * example: `mld.df = MldSust`
       * **min_syls** = *minimum number of syllables*
     * **os**: [open smile features](https://audeering.github.io/opensmile-python/)
       * **set** = eGeMAPSv02 *(features set)*
