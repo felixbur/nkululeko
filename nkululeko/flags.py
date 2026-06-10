@@ -161,8 +161,7 @@ def run_flags_experiments(config_file, module="nkululeko"):
                 valid_results.append(result)
 
     # Find and print best parameters (only meaningful for nkululeko module)
-    if module == "nkululeko":
-        if valid_results:
+    if module in ("nkululeko", "nkulu"):
             best_result = max(valid_results, key=lambda x: x["result"])
             print("\n=== BEST CONFIGURATION ===")
             print(f"Best Result: {best_result['result']}")
