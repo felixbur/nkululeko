@@ -103,6 +103,16 @@ class Plots:
         self.plot_distributions(df_speakers, type_s="speakers")
 
     def plot_distributions(self, df: pd.DataFrame, type_s: str = "samples"):
+        """Plot distributions of attributes against the target variable.
+
+        For each attribute in EXPL.value_counts, produces a correlation plot and,
+        when one column is categorical and the other is continuous, also runs
+        Kruskal-Wallis + pairwise t-tests and saves results to the res folder.
+
+        Args:
+            df: DataFrame with class_label and attribute columns.
+            type_s: sample selection label used in plot filenames.
+        """
         if df.empty:
             self.util.warn("plot_distributions: empty DataFrame, nothing to plot")
             return
@@ -138,6 +148,7 @@ class Plots:
             type_s,
         )
 
+        res_dir = self.util.get_path("res_dir")
         for att in attributes:
             if len(att) == 1:
                 att1 = att[0]
@@ -165,6 +176,21 @@ class Plots:
                         )
                     else:
                         ax, caption = self._plot2cont(df, class_label, att1, type_s)
+                res_filename = audeer.path(res_dir, f"value_counts_{self.target}_{att[0]}.txt")
+                if self.util.is_categorical(df[class_label]) and not self.util.is_categorical(df[att1]):
+                    val_dict, mean_featnum = self.util.df_to_categorical_dict(df, class_label, att1)
+                    pairwise_results, overall_results = su.find_most_significant_difference(val_dict, mean_featnum)
+                    if overall_results is not None:
+                        self.util.append_to_result_file(res_filename, f"overall: {overall_results['all_results']}")
+                    if pairwise_results is not None:
+                        self.util.append_to_result_file(res_filename, f"pairwise: {pairwise_results['all_results']}")
+                elif not self.util.is_categorical(df[class_label]) and self.util.is_categorical(df[att1]):
+                    val_dict, mean_featnum = self.util.df_to_categorical_dict(df, att1, class_label)
+                    pairwise_results, overall_results = su.find_most_significant_difference(val_dict, mean_featnum)
+                    if overall_results is not None:
+                        self.util.append_to_result_file(res_filename, f"overall: {overall_results['all_results']}")
+                    if pairwise_results is not None:
+                        self.util.append_to_result_file(res_filename, f"pairwise: {pairwise_results['all_results']}")
                 self.save_plot(
                     ax,
                     caption,
@@ -225,6 +251,21 @@ class Plots:
                             # class_label = cont, att1 = cont, att2 = cont
                             ax, caption = self._plot2cont(df, att1, att2, type_s)
 
+                res_filename = audeer.path(res_dir, f"value_counts_{self.target}_{att[0]}-{att[1]}.txt")
+                if self.util.is_categorical(df[att1]) and not self.util.is_categorical(df[att2]):
+                    val_dict, mean_featnum = self.util.df_to_categorical_dict(df, att1, att2)
+                    pairwise_results, overall_results = su.find_most_significant_difference(val_dict, mean_featnum)
+                    if overall_results is not None:
+                        self.util.append_to_result_file(res_filename, f"overall: {overall_results['all_results']}")
+                    if pairwise_results is not None:
+                        self.util.append_to_result_file(res_filename, f"pairwise: {pairwise_results['all_results']}")
+                elif not self.util.is_categorical(df[att1]) and self.util.is_categorical(df[att2]):
+                    val_dict, mean_featnum = self.util.df_to_categorical_dict(df, att2, att1)
+                    pairwise_results, overall_results = su.find_most_significant_difference(val_dict, mean_featnum)
+                    if overall_results is not None:
+                        self.util.append_to_result_file(res_filename, f"overall: {overall_results['all_results']}")
+                    if pairwise_results is not None:
+                        self.util.append_to_result_file(res_filename, f"pairwise: {pairwise_results['all_results']}")
                 self.save_plot(
                     ax, caption, f"Correlation of {att1} and {att2}", filename, type_s
                 )
