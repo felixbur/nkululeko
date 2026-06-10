@@ -43,7 +43,9 @@ class MLD_set(Featureset):
         mld_class_name = self.util.config_val("FEATS", "mld.df", "Mld")
         mld_classes = {"Mld": audmld.Mld, "MldSust": audmld.MldSust, "MldStruct": audmld.MldStruct}
         if mld_class_name not in mld_classes:
-            self.util.error(f"FEATS.mld_df must be one of {list(mld_classes.keys())}, got '{mld_class_name}'")
+            self.util.error(
+                f"FEATS.mld.df must be one of {list(mld_classes.keys())}, got '{mld_class_name}'"
+            )
         self.util.debug(f"using MLD class: {mld_class_name}")
         cache_root = f"{storage}_{mld_class_name}"
         fex_mld = mld_classes[mld_class_name](num_workers=6, verbose=True)
