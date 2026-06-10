@@ -37,6 +37,8 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         "n_jobs",
         "uar",
         "mse",
+    ]
+    keyvals = [        
         "kind",
     ]
 
@@ -300,7 +302,7 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         try:
             return self.config[section][key]
         except KeyError:
-            if default not in self.stopvals:
+            if default not in self.stopvals and key not in self.keyvals:
                 self.debug(f"value for {key} is not found, using default: {default}")
             return default
 
