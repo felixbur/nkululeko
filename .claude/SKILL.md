@@ -45,5 +45,27 @@ Documentation is under the folder docs/source.
 
 All key-value pairs in the configuration files should be documented in the ini_file.md file, which serves as a reference for users to understand the available options and their effects on the experiments.
 
+## Result Analysis
+
+The results of an experiment are in the results folder. When asked to write an exploration report, compile the statistical results including images in a markdown file, but only if the results are statistically significant. If not, just write a short note about the results and do not include any images.
+
+### Parsing statistical result files
+
+Feature distribution result files are stored as `results/run_0/feat_dist_all_{feature}.txt`. Each file contains lines starting with `overall:` and `pairwise:` that are Python dict literals — parse them with `ast.literal_eval`, do NOT use string grep on the raw text.
+
+Significance levels:
+- **highly significant**: p < 0.001
+- **significant**: p < 0.05
+- **marginally significant**: p < 0.1
+- **not significant**: p >= 0.1
+
+A feature is considered significant if:
+- the `overall` Kruskal-Wallis result is not "not significant", OR
+- at least one pairwise comparison is not "not significant"
+
+The significance field always contains the literal string "not significant" for non-significant results. Checking with `grep -v "not significant"` on a combined string is unreliable because a single string can contain both "not significant" (for some pairs) and "significant" (for others). Always parse with Python and check each entry individually.
+
+
 ## How Claude Should Behave
 - Use utility functions from the utils sub-package when possible.
+- all pytest calls are allowed

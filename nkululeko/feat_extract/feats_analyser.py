@@ -56,7 +56,7 @@ class FeatureAnalyser:
         A cached result is returned immediately without refitting.
 
         Args:
-            model: sklearn-compatible estimator with feature_importances_ attribute.
+            model: sklearn-compatible estimator with feature_importances_ or coef_ attribute.
             permutation: if True use permutation importance, otherwise use model's
                          built-in feature_importances_.
 
@@ -82,8 +82,15 @@ class FeatureAnalyser:
                 random_state=0,
             )
             importance = r["importances_mean"]
-        else:
+        elif hasattr(model, "feature_importances_"):
             importance = model.feature_importances_
+        elif hasattr(model, "coef_"):
+            # linear models (e.g. LogisticRegression): use absolute coefficient magnitude
+            importance = np.abs(model.coef_[0])
+        else:
+            raise AttributeError(
+                f"{type(model).__name__} has neither feature_importances_ nor coef_"
+            )
         with open(cache_path, "wb") as f:
             pickle.dump(importance, f)
         return importance
@@ -214,19 +221,9 @@ class FeatureAnalyser:
                     )
                 elif model_s == "log_reg":
                     model = LogisticRegression()
-                    model.fit(self.features, self.labels)
-                    if permutation:
-                        r = permutation_importance(
-                            model,
-                            self.features,
-                            self.labels,
-                            n_repeats=30,
-                            random_state=0,
-                        )
-                        importance = r["importances_mean"]
-                    else:
-                        importance = model.coef_[0]
-                    result_importances[model_s] = importance
+                    result_importances[model_s] = self._get_importance(
+                        model, permutation
+                    )
                 elif model_s == "svm":
                     from sklearn.svm import SVC
 

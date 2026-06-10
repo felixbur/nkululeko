@@ -3,6 +3,7 @@ import tempfile
 import os
 import numpy as np
 import pickle
+import pytest
 from unittest.mock import patch, MagicMock
 
 
@@ -156,6 +157,16 @@ def test_run_flags_experiments_flags_not_list():
     assert "result" in results[0]
 
 
+def test_unsupported_module_exits():
+    """run_flags_experiments exits with SystemExit for unknown module names."""
+    from nkululeko.flags import run_flags_experiments
+
+    config_file = make_config_file({"models": "['xgb']"})
+    with pytest.raises(SystemExit):
+        run_flags_experiments(config_file, module="unknown")
+    os.remove(config_file)
+
+
 @patch("nkululeko.experiment.Experiment")
 def test_run_flags_experiments_feature_extraction_error(MockExperiment):
     from nkululeko.flags import run_flags_experiments
@@ -304,3 +315,24 @@ def test_get_importance_perm_separate_cache(tmp_path):
     cache_dir = os.path.join(str(tmp_path), "cache")
     assert os.path.isfile(os.path.join(cache_dir, "importance_DecisionTreeClassifier.pkl"))
     assert os.path.isfile(os.path.join(cache_dir, "importance_DecisionTreeClassifier_perm.pkl"))
+
+
+def test_get_importance_log_reg_cached(tmp_path):
+    """LogisticRegression (coef_-based) importance is cached correctly."""
+    from sklearn.linear_model import LogisticRegression
+
+    analyser = _make_analyser(tmp_path)
+    model = LogisticRegression(random_state=0)
+
+    with patch.object(analyser.util, "get_path", return_value=str(tmp_path) + "/"):
+        importance = analyser._get_importance(model, permutation=False)
+        # Tamper with cache to confirm second call reads from disk
+        cache_path = os.path.join(str(tmp_path), "cache", "importance_LogisticRegression.pkl")
+        sentinel = np.array([42.0, 42.0])
+        with open(cache_path, "wb") as f:
+            pickle.dump(sentinel, f)
+        importance2 = analyser._get_importance(model, permutation=False)
+
+    assert importance is not None
+    assert importance.shape == (2,)  # two features
+    np.testing.assert_array_equal(importance2, sentinel)

@@ -419,3 +419,47 @@ class TestConfigValData:
         u = Util("test")
         result = u.config_val_data("emodb", "", "fallback")
         assert result == "/direct/path"
+
+
+# ---------------------------------------------------------------------------
+# append_to_result_file
+# ---------------------------------------------------------------------------
+
+
+class TestAppendToResultFile:
+    def test_creates_file_and_writes_line(self, tmp_path):
+        u = Util("test")
+        path = str(tmp_path / "results.txt")
+        u.append_to_result_file(path, "hello")
+        assert (tmp_path / "results.txt").read_text() == "hello\n"
+
+    def test_appends_multiple_lines(self, tmp_path):
+        u = Util("test")
+        path = str(tmp_path / "results.txt")
+        u.append_to_result_file(path, "line1")
+        u.append_to_result_file(path, "line2")
+        lines = (tmp_path / "results.txt").read_text().splitlines()
+        assert lines == ["line1", "line2"]
+
+    def test_appends_to_existing_content(self, tmp_path):
+        p = tmp_path / "results.txt"
+        p.write_text("existing\n")
+        u = Util("test")
+        u.append_to_result_file(str(p), "new")
+        lines = p.read_text().splitlines()
+        assert lines == ["existing", "new"]
+
+    def test_does_not_duplicate_existing_line(self, tmp_path):
+        p = tmp_path / "results.txt"
+        p.write_text("already here\n")
+        u = Util("test")
+        u.append_to_result_file(str(p), "already here")
+        assert p.read_text() == "already here\n"
+
+    def test_duplicate_check_is_exact_match(self, tmp_path):
+        u = Util("test")
+        path = str(tmp_path / "results.txt")
+        u.append_to_result_file(path, "line")
+        u.append_to_result_file(path, "line extra")
+        lines = (tmp_path / "results.txt").read_text().splitlines()
+        assert lines == ["line", "line extra"]

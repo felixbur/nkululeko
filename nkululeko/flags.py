@@ -40,6 +40,11 @@ def run_flags_experiments(config_file, module="nkululeko"):
     config = configparser.ConfigParser()
     config.read(config_file)
 
+    SUPPORTED_MODULES = ("nkululeko", "nkulu", "explore")
+    if module not in SUPPORTED_MODULES:
+        print(f"ERROR: unsupported module '{module}', must be one of {SUPPORTED_MODULES}")
+        sys.exit(1)
+
     # Check if FLAGS section exists
     if "FLAGS" not in config:
         print("ERROR: No [FLAGS] section found in configuration")
@@ -134,7 +139,8 @@ def run_flags_experiments(config_file, module="nkululeko"):
                     "config_file": None,  # No temp file needed
                 }
             )
-            print(f"Result: {result}")
+            if module != "explore":
+                print(f"Result: {result}")
 
         except Exception as e:
             print(f"ERROR in experiment {i}: {e}")
@@ -155,7 +161,7 @@ def run_flags_experiments(config_file, module="nkululeko"):
         print(f"Experiment {i}: {result['parameters']}")
         if result.get("error"):
             print(f"  ERROR: {result['error']}")
-        else:
+        elif module != "explore":
             print(f"  Result: {result['result']}")
             if result["result"] is not None:
                 valid_results.append(result)
@@ -311,7 +317,7 @@ def doit(cla):
         description="Call the nkululeko framework with multiple parameter combinations."
     )
     parser.add_argument("--config", help="The base configuration")
-    parser.add_argument("--mod", default="nkulu", help="Which nkululeko module to call")
+    parser.add_argument("--mod", default="nkulu", help="Which nkululeko module to call (nkululeko or explore)")
     parser.add_argument("--data", help="The databases", nargs="*", action="append")
     parser.add_argument(
         "--label", nargs="*", help="The labels for the target", action="append"

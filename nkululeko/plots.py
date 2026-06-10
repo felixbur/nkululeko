@@ -636,6 +636,12 @@ class Plots:
         filename = audeer.path(
             fig_dir, f"feat_dist_{title}_{feature_name}_{kind}.{self.format}"
         )
+        # a file to store the statistical test results for this feature
+        res_dir = self.util.get_path("res_dir")
+        res_filename = audeer.path(
+            res_dir, f"feat_dist_{title}_{feature_name}.txt"
+        )
+ 
         ignore_gender = eval(self.util.config_val("EXPL", "ignore_gender", "False"))
         sample_num = df_labels.shape[0]
         if self.util.is_categorical(df_labels[label]):
@@ -713,12 +719,21 @@ class Plots:
                 val_dict, mean_featnum
             )
             # 'approach', 'combo', test statistic, 'p_value', 'significance','all_results'
-            if self.print_stats:
-                if overall_results is not None:
+            if overall_results is not None:
+                self.util.append_to_result_file(
+                    res_filename,
+                    f"overall: {overall_results['all_results']}",
+                )
+                if self.print_stats:
                     self.util.debug(
                         f"overall results for {feature_name} from statistical test: {overall_results['all_results']}"
                     )
-                if pairwise_results is not None:
+            if pairwise_results is not None:
+                self.util.append_to_result_file(
+                    res_filename,
+                    f"pairwise: {pairwise_results['all_results']}",
+                )
+                if self.print_stats:
                     self.util.debug(
                         f"pairwise results from statistical test: {pairwise_results['all_results']}"
                     )
@@ -745,6 +760,9 @@ class Plots:
         else:
             plot_df = pd.concat([df_labels, df_features], axis=1)
             ax, caption = self._plot2cont(plot_df, label, feature, feature)
+        self.util.append_to_result_file(
+            res_filename, title + "\n",
+        )
         fig = ax.figure
         plt.tight_layout()
         self.util.debug(f"plotted feature distribution to {filename}")

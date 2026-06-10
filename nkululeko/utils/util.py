@@ -346,6 +346,23 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
             text_file.write(output)
         self.debug(output)
 
+    def append_to_result_file(self, filename, content):
+        """Append *content* as a new line to *filename*, creating the file if needed.
+
+        The line is only written if it is not already present in the file.
+
+        Args:
+            filename: absolute path to the result text file.
+            content: string to append (a newline is added automatically).
+        """
+        existing = []
+        if os.path.isfile(filename):
+            with open(filename) as f:
+                existing = f.read().splitlines()
+        if content not in existing:
+            with open(filename, "a") as f:
+                f.write(content + "\n")
+
     def check_class_label(self, df):
         target = self.config_val("DATA", "target", None)
         if "class_label" in df.columns and target is not None:
