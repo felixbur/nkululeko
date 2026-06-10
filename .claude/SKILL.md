@@ -17,7 +17,7 @@ Nkululeko orchestrates data loading, feature extraction, and model training, all
 - Follow PEP8 style guide
 
 ## Project Structure
-Nkululeko is organized in to several modules:
+Nkululeko is organized into several modules:
 - nkululeko: main module containing core functionality for data loading, feature extraction, model training, and evaluation.
 - explore: module for data exploration and visualization.
 - predict: module for making predictions with trained models and existing feature extractors.
