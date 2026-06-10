@@ -40,5 +40,10 @@ The results of experiments are stored in a structured way under the root directo
 
 Usually the result files follow a naming convention that includes the experiment name, dataset names, model type, and relevant parameters for easy identification.
 
+## Documentation
+Documentation is under the folder docs/source.
+
+All key-value pairs in the configuration files should be documented in the ini_file.md file, which serves as a reference for users to understand the available options and their effects on the experiments.
+
 ## How Claude Should Behave
 - Use utility functions from the utils sub-package when possible.
