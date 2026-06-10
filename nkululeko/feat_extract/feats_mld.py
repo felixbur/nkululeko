@@ -29,15 +29,6 @@ class MLD_set(Featureset):
         """
         store = self.util.get_path("store")
         storage = f"{store}{self.name}.pkl"
-        no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
-        if no_reuse:
-            os.remove(storage)
-        if not os.path.isfile(storage):
-            self.util.debug(
-                "extracting midleveldescriptor features, this might take a while..."
-            )
-        else:
-            self.util.debug("reusing previously extracted midleveldescriptor features")
         import audmld
 
         mld_class_name = self.util.config_val("FEATS", "mld.df", "Mld")
@@ -48,6 +39,15 @@ class MLD_set(Featureset):
             )
         self.util.debug(f"using MLD class: {mld_class_name}")
         cache_root = f"{storage}_{mld_class_name}"
+        no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
+        if no_reuse and os.path.exists(cache_root):
+            os.remove(cache_root)
+        if not os.path.isfile(cache_root):
+            self.util.debug(
+                "extracting midleveldescriptor features, this might take a while..."
+            )
+        else:
+            self.util.debug("reusing previously extracted midleveldescriptor features")
         fex_mld = mld_classes[mld_class_name](num_workers=6, verbose=True)
         self.df = fex_mld.process_index(index=self.data_df.index, cache_root=cache_root)
         self.util.debug(f"MLD feats shape: {self.df.shape}")
