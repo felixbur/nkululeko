@@ -56,47 +56,6 @@ The results of an experiment are in the results folder. When asked to write an e
 1. **Age** — check for `value_counts_{target}_age.txt`; if significant, include images (`{target}-age_samples.png`, `{target}-age_speakers.png`) and pairwise pairs. Do not omit even if the main task is about acoustic features.
 2. **Gender** — always include the samples plot (`{target}-gender_samples.png`) regardless of significance. No significance text is needed if no stats were computed.
 
-### MldSust feature interpretation (acoustic biomarker guide)
-
-**Summary statistic suffixes** (MldSust uses *robust* statistics)
-
-| Suffix | Definition |
-|--------|-----------|
-| `_median` | median of the feature time series |
-| `_iqr` | interquartile range (p75−p25) |
-| `_q_var` | median RMS from median |
-| `_q_skewness` | ((p90−p50)−(p50−p10)) / (p90−p10) — tail asymmetry |
-| `_q_range5` | p95−p5 — near-total range |
-| `_diff` | mean second half minus mean first half (normalised to [0,1]) |
-| `_slope` | 1st-order linear fit coefficient (time and feature normalised to [0,1]) |
-| `_start` | y[0] − median(y) — deviation at onset |
-| `_peak` | max(y) − median(y) — deviation at maximum |
-| `_end` | y[−1] − median(y) — deviation at offset |
-
-**Feature groups — definition and biomarker interpretation**
-
-| Feature | Definition (from docs) | Acoustic biomarker interpretation |
-|---------|------------------------|-----------------------------------|
-| `vq_cpp_*` | Summary stat of cepstral peak prominence | Strength of the harmonic peak in the cepstrum. Lower CPP = more breathy/aperiodic voice. Single strongest marker of overall dysphonia. Median → average quality; peak → best-quality moment (relevant for strain). |
-| `shape_en/f0_y_*` | Summary stat over the raw energy/F0 time series | Energy: overall loudness level and contour. Slope < 0 = fading voice (breath/fatigue). Median = average vocal effort (key for asthenia). F0: pitch level and shape. |
-| `shape_en/f0_dlt_*` | Summary stat over frame-to-frame deltas of energy/F0 | Perturbation / micro-instability. F0 delta → macro-jitter proxy, captures roughness and strain. Energy delta → shimmer-like amplitude instability. |
-| `shape_en/f0_mae` | Mean absolute deviation between time series and its midline | Deviation from the register midline — how far the contour wanders from its own trend. High values = erratic, unsustained phonation. |
-| `shape_en/f0_d_start` | Segment-initial distance to midline | How far the energy/F0 is from its midline at the very start — captures phonation onset irregularity. |
-| `shape_en/f0_d_end` | Segment-final distance to midline | Distance from midline at the end of the utterance — captures whether energy/pitch deviates at offset (voice runout, breath support failure). |
-| `f0en_rms` | RMS deviation between centred+scaled F0 and energy contour | Measures **decoupling** of pitch and energy trajectories. Healthy voices show coordinated F0 and energy; high values indicate the two are out of sync → roughness marker. |
-| `pe_en_rms_init` | Energy LPC residual RMSD of first 200 ms | LPC residual = unexplained energy after prediction; high RMSD = irregular energy, especially at onset. Captures rough or strained voice attack. |
-| `pe_en_rms_final` | Energy LPC residual RMSD of final 200 ms | Same as above but at offset — irregular energy run-out. |
-| `spec_spread_frm_*` | Summary stat of spectral variation over the full sustained sound (inverse spectral stability) | Higher values = less stable spectrum = more noise/aperiodicity. Key breathiness marker; also rises with overall grade. |
-| `spec_flux_frm_*` | Summary stat of spectral flux over the full sustained sound | Frame-to-frame spectral change. High range (q_range5) = unstable resonance patterns → asthenia, breathiness. |
-| `reg_rng_bl` | F0 register range mean divided by baseline mean | Normalised pitch modulation depth: how large the F0 range is relative to the speaker's own baseline pitch. Asthenic voices show reduced or irregular pitch modulation. |
-
-**Cross-target interpretation patterns (PVQD sustained vowel)**
-- **Grade** (overall severity): dominated by CPP median (aperiodicity), F0-delta median (pitch instability), and energy slope (fading voice).
-- **Roughness**: driven by F0-energy decoupling (`f0en_rms`), F0-delta spread (`shape_f0_dlt_iqr`) — pitch perturbation and irregular periodicity.
-- **Asthenia**: low energy (`shape_en_y_median`), reduced normalised pitch range (`reg_rng_bl`), reduced CPP — all consistent with weak, under-powered phonation.
-- **Breathiness**: CPP drop plus increased spectral spread variability (`spec_spread_frm_iqr`) — air leakage raises spectral noise and destabilises the spectrum.
-- **Strain**: broadest feature set; F0-delta and CPP-peak rather than median reflect hyperfunction (high effort, intermittent quality loss) and effortful pitch modulation.
-
 ### Praat feature interpretation (acoustic biomarker guide)
 
 Source: `nkululeko/feat_extract/feats_praat_core.py` (David R. Feinberg's PraatScripts, adapted).
@@ -180,6 +139,131 @@ Source: `nkululeko/feat_extract/feats_praat_core.py` (David R. Feinberg's PraatS
 | `pause_lognorm_mu` | μ of lognormal fit to pause durations | Location parameter of the pause duration distribution. |
 | `pause_lognorm_sigma` | σ (shape) of lognormal fit | Spread; high sigma = long-tail distribution with occasional very long pauses. |
 | `pause_lognorm_ks_pvalue` | KS goodness-of-fit p-value | How well pause durations follow a lognormal distribution (low p = poor fit). |
+
+### OpenSMILE eGeMAPS feature interpretation (acoustic biomarker guide)
+
+Source: eGeMAPS v02 (Eyben et al. 2015, IEEE TASLP).  
+Paper: https://sail.usc.edu/publications/files/eyben-preprinttaffc-2015.pdf  
+Config: https://github.com/audeering/opensmile-python/blob/main/opensmile/core/config/egemaps/v02/eGeMAPSv02_core.func.conf.inc
+
+**Naming convention**
+
+| Suffix | Meaning |
+|--------|---------|
+| `_sma3` | 3-frame moving average; smoothing can cross zero values (`noZeroSma=0`) — used for energy/spectral LLDs |
+| `_sma3nz` | 3-frame moving average that does NOT cross zero values (`noZeroSma=1`) — smoothing stops at voiced/unvoiced boundaries; used for F0 and voice-quality LLDs |
+| `_amean` | Arithmetic mean over utterance (functional) |
+| `_stddevNorm` | Standard deviation normalised by mean (coefficient of variation) — variability / dynamic range |
+| `_percentile20/50/80` | 20th / 50th / 80th percentile within utterance |
+| `_pctlrange0-2` | p80 − p20 — within-utterance spread |
+| `_meanRisingSlope` | Mean slope of rising segments (positive rate of change) |
+| `_stddevRisingSlope` | Variability of rising slopes |
+| `_meanFallingSlope` | Mean slope of falling segments (negative rate of change) |
+| `_stddevFallingSlope` | Variability of falling slopes |
+| `V` (e.g. `alphaRatioV`) | Voiced-frame variant |
+| `UV` (e.g. `alphaRatioUV`) | Unvoiced-frame variant |
+
+**Fundamental frequency** (`F0semitoneFrom27.5Hz_sma3nz_*` — voiced frames, semitones re 27.5 Hz)
+
+| Feature | Biomarker interpretation |
+|---------|--------------------------|
+| `_amean` | Mean pitch. Elevated in high-arousal emotions (anger, fear); lowered in sadness, depression, Parkinson's. |
+| `_stddevNorm` | Normalized pitch variability. Low = monotone (depression, flat affect); high = emotional expressivity. |
+| `_percentile20/50/80` | Lower / median / upper pitch within utterance — characterise pitch distribution shape. |
+| `_pctlrange0-2` | Within-utterance pitch range. Narrow = monotone; wide = expressive or dysphonically unstable. |
+| `_meanRisingSlope` | Mean steepness of F0 rises. Anger shows abrupt rises; questions and exclamations show high rising slopes. |
+| `_stddevRisingSlope` | Variability of F0 rise speed — irregular intonation dynamics. |
+| `_meanFallingSlope` | Mean steepness of F0 falls. Declarative statements end with steep falls; depression may show reduced falling slopes. |
+| `_stddevFallingSlope` | Variability of F0 fall speed. |
+
+**Loudness** (`loudness_sma3_*` — all frames, PLP-based auditory spectrum with cube-root amplitude compression)
+
+| Feature | Biomarker interpretation |
+|---------|--------------------------|
+| `_amean` | Mean vocal loudness / effort. Elevated in anger and high-arousal states; reduced in depression, asthenia. |
+| `_stddevNorm` | Loudness dynamics. Low = flat, monotone delivery; high = expressive or erratic. |
+| `_percentile20/50/80` | Loudness distribution shape within utterance. |
+| `_pctlrange0-2` | Loudness range. Narrow in depression/apathy; wide in expressive speech. |
+| `_meanRisingSlope` | Rate of loudness increases — emphasis, emotional crescendos. |
+| `_stddevRisingSlope` | Variability of loudness ramp-ups. |
+| `_meanFallingSlope` | Rate of loudness decreases — breath support run-out, phrase endings. |
+| `_stddevFallingSlope` | Variability of loudness decays. |
+
+**Spectral flux** (`spectralFlux_sma3_*` — all frames; `spectralFluxV/UV_sma3nz_*` — voiced/unvoiced)
+
+| Feature | Biomarker interpretation |
+|---------|--------------------------|
+| `spectralFlux_sma3_amean` | Mean frame-to-frame spectral change. Higher = more dynamic articulation; lower = stable/monotone. |
+| `spectralFlux_sma3_stddevNorm` | Variability of spectral flux — intermittent vs. continuous articulation change. |
+| `spectralFluxV_sma3nz_amean/stddevNorm` | Same restricted to voiced frames — reflects voiced consonant and vowel transitions. |
+| `spectralFluxUV_sma3nz_amean` | Flux in unvoiced frames — captures frication noise dynamics. |
+
+**MFCCs** (`mfcc1-4_sma3_*` all frames; `mfcc1-4V_sma3nz_*` voiced frames only)
+
+| Feature | Biomarker interpretation |
+|---------|--------------------------|
+| `mfcc1_*` | Captures overall spectral tilt / log energy shape — correlated with vocal tract length and effort. |
+| `mfcc2_*` | Second cepstral coefficient — primary vowel formant structure, front-back tongue position. |
+| `mfcc3_*` | Third cepstral coefficient — further spectral detail; contributes to vowel and speaker identity. |
+| `mfcc4_*` | Fourth cepstral coefficient — fine spectral shape. |
+| `_amean` | Typical spectral shape across utterance. |
+| `_stddevNorm` | Dynamic variability — how much spectral shape changes, i.e. articulatory range. |
+| `V` variants | Same features measured only on voiced frames — less influenced by background noise and unvoiced consonants. |
+
+**Voice quality — jitter, shimmer, HNR** (voiced frames)
+
+| Feature | Biomarker interpretation |
+|---------|--------------------------|
+| `jitterLocal_sma3nz_amean` | Average absolute local jitter per pitch period within 60 ms frames, normalised by mean period length. Elevated in roughness, laryngeal pathology. Pitch-period-based within frames (differs from Praat's whole-utterance calculation). |
+| `jitterLocal_sma3nz_stddevNorm` | Temporal variability of jitter — intermittent vs. sustained irregularity. |
+| `shimmerLocaldB_sma3nz_amean` | Relative peak-amplitude differences in dB, averaged over 60 ms frames synchronised to pitch periods. Elevated in breathiness, weakness, laryngeal disease. |
+| `shimmerLocaldB_sma3nz_stddevNorm` | Shimmer variability over time. |
+| `HNRdBACF_sma3nz_amean` | HNR from 60 ms ACF: 10·log₁₀(ACF at T₀ / (ACF(0) − ACF at T₀)). Lower = more aperiodic / noisy voice → dysphonia, breathiness. |
+| `HNRdBACF_sma3nz_stddevNorm` | HNR variability — intermittent vs. sustained aperiodicity. |
+
+**Voice source / spectral balance** (voiced frames)
+
+| Feature | Definition | Biomarker interpretation |
+|---------|-----------|--------------------------|
+| `logRelF0-H1-H2_sma3nz_amean` | Log(H1 amplitude / H2 amplitude) | Glottal open quotient proxy. Higher H1-H2 = breathier voice (more open glottis); lower = pressed/modal phonation. |
+| `logRelF0-H1-H2_sma3nz_stddevNorm` | H1-H2 variability | Fluctuating phonation mode. |
+| `logRelF0-H1-A3_sma3nz_amean` | Log(H1 / amplitude at F3) | Overall voice effort proxy. Higher H1-A3 = softer/breathier; lower = louder/more pressed. |
+| `logRelF0-H1-A3_sma3nz_stddevNorm` | H1-A3 variability | |
+| `alphaRatioV_sma3nz_amean` | Energy 50–1000 Hz / energy 1–5 kHz (voiced, from LTAS per frame) | Higher = more low-frequency dominance = softer/breathier voice. Lower = more high-frequency energy = louder, harder phonation. |
+| `alphaRatioV_sma3nz_stddevNorm` | Alpha ratio variability (voiced) | |
+| `alphaRatioUV_sma3nz_amean` | Same ratio (50–1000 Hz / 1–5 kHz) for unvoiced frames | Frication spectral balance; reflects voiceless consonant energy distribution. |
+| `hammarbergIndexV_sma3nz_amean` | Peak in 0-2 kHz / peak in 2-5 kHz (voiced) | Higher = low-freq dominant = modal/chest voice. Lower = more high-frequency prominence (pressed, harsh, or falsetto). |
+| `hammarbergIndexV_sma3nz_stddevNorm` | Hammarberg index variability | |
+| `hammarbergIndexUV_sma3nz_amean` | Hammarberg index (unvoiced frames) | |
+| `slopeV0-500_sma3nz_amean` | Spectral slope 0-500 Hz (voiced) | Steepness of low-frequency spectral roll-off; relates to F0 dominance vs. harmonic density. |
+| `slopeV0-500_sma3nz_stddevNorm` | Variability of 0-500 Hz slope | |
+| `slopeV500-1500_sma3nz_amean` | Spectral slope 500-1500 Hz (voiced) | Mid-frequency spectral shape; influenced by F1-F2 region. |
+| `slopeV500-1500_sma3nz_stddevNorm` | Variability of 500-1500 Hz slope | |
+| `slopeUV0-500_sma3nz_amean` | Spectral slope 0-500 Hz (unvoiced) | Low-freq slope of frication noise. |
+| `slopeUV500-1500_sma3nz_amean` | Spectral slope 500-1500 Hz (unvoiced) | Mid-freq slope of frication. |
+
+**Formants** (voiced frames — `F1/F2/F3frequency/bandwidth/amplitudeLogRelF0_sma3nz_*`)
+
+| Feature | Biomarker interpretation |
+|---------|--------------------------|
+| `F1/2/3frequency_sma3nz_amean` | Mean F1/F2/F3. Vowel articulation, vocal tract length; see Praat formant guide above. |
+| `F1/2/3frequency_sma3nz_stddevNorm` | Formant frequency variability — range of vowel space used; reduced in dysarthria. |
+| `F1/2/3bandwidth_sma3nz_amean` | Mean formant bandwidth. Wider = more damping / less resonance sharpness; elevated in hyper- or hypofunctional voices. |
+| `F1/2/3bandwidth_sma3nz_stddevNorm` | Bandwidth variability. |
+| `F1/2/3amplitudeLogRelF0_sma3nz_amean` | Log amplitude of F1/F2/F3 relative to F0. Formant excitation strength; H1-A1 type measures relate to voice quality. |
+| `F1/2/3amplitudeLogRelF0_sma3nz_stddevNorm` | Amplitude ratio variability. |
+
+**Segment-level and energy features**
+
+| Feature | Definition | Biomarker interpretation |
+|---------|-----------|--------------------------|
+| `loudnessPeaksPerSec` | Loudness peaks per second | Syllabic rate proxy; reduced in slow, dysarthric, or depressed speech. |
+| `VoicedSegmentsPerSec` | Voiced segments per second | Speaking rate; fluency indicator. |
+| `MeanVoicedSegmentLengthSec` | Mean voiced segment duration | Longer = more sustained phonation (slow speech, singing); shorter = more stop-consonant / fragmented speech. |
+| `StddevVoicedSegmentLengthSec` | Std dev of voiced segment duration | Irregular voiced-segment length = variable articulation rhythm. |
+| `MeanUnvoicedSegmentLength` | Mean unvoiced gap duration | Longer gaps = more pausing or more voiceless consonants. |
+| `StddevUnvoicedSegmentLength` | Std dev of unvoiced gaps | Irregular pausing — cognitive load, fluency disorder. |
+| `equivalentSoundLevel_dBp` | Integrated energy over utterance (dBp) | Total vocal output level; overall intensity / loudness. |
 
 ### Parsing statistical result files
 
