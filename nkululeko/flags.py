@@ -10,8 +10,28 @@ from nkululeko.nkululeko import doit as nkulu
 from nkululeko.predict import do_test as test_mod
 
 
-def run_flags_experiments(config_file):
-    """Run multiple experiments based on FLAGS section combinations."""
+def run_flags_experiments(config_file, module="nkululeko"):
+    """Run multiple experiments based on FLAGS section combinations.
+
+    Reads the ``[FLAGS]`` section of *config_file* and runs one experiment per
+    combination of parameter values (Cartesian product).  The special key
+    ``name_target`` accepts a list of ``(EXP.name, DATA.target)`` pairs that are
+    iterated as a unit and combined with the product of all other flags.
+
+    Feature extraction is performed once against the first feature type and
+    shared across all experiments.  For ``name_target`` combinations the label
+    DataFrames are reloaded per experiment (different target column), while audio
+    features are reused.
+
+    Args:
+        config_file: path to the INI configuration file.
+        module: nkululeko module to run — ``'nkululeko'`` (default) or
+                ``'explore'``.
+
+    Returns:
+        List of result dicts, each containing ``parameters``, ``result``,
+        ``last_epoch``, and optionally ``error``.
+    """
     import time
 
     # Start timing the flags experiments
@@ -19,6 +39,11 @@ def run_flags_experiments(config_file):
 
     config = configparser.ConfigParser()
     config.read(config_file)
+
+    SUPPORTED_MODULES = ("nkululeko", "nkulu", "explore")
+    if module not in SUPPORTED_MODULES:
+        print(f"ERROR: unsupported module '{module}', must be one of {SUPPORTED_MODULES}")
+        sys.exit(1)
 
     # Check if FLAGS section exists
     if "FLAGS" not in config:
@@ -37,14 +62,30 @@ def run_flags_experiments(config_file):
 
     print(f"Flag parameters found: {flag_params}")
 
-    # Generate all combinations
+    # Extract paired name/target entries before building the product
+    # name_target = [("foo1", "bar1"), ("foo2", "bar2")]
+    name_target_pairs = flag_params.pop("name_target", None)
+
+    # Generate all combinations of the remaining params
     param_names = list(flag_params.keys())
     param_values = list(flag_params.values())
 
+    base_combinations = [{}]
+    if param_names:
+        base_combinations = []
+        for combo in itertools.product(*param_values):
+            base_combinations.append(dict(zip(param_names, combo)))
+
+    # Cross-product base combinations with name_target pairs (if any)
     combinations = []
-    for combo in itertools.product(*param_values):
-        param_dict = dict(zip(param_names, combo))
-        combinations.append(param_dict)
+    if name_target_pairs:
+        for pair in name_target_pairs:
+            for base_combo in base_combinations:
+                combined = dict(base_combo)
+                combined["name_target"] = tuple(pair)
+                combinations.append(combined)
+    else:
+        combinations = base_combinations
 
     print(f"Running {len(combinations)} experiment combinations...")
 
@@ -88,7 +129,7 @@ def run_flags_experiments(config_file):
         try:
             # Run experiment with current parameters (reusing extracted features)
             result, last_epoch = _run_single_flags_experiment(
-                base_experiment, combo, config
+                base_experiment, combo, config, module
             )
             results.append(
                 {
@@ -98,7 +139,8 @@ def run_flags_experiments(config_file):
                     "config_file": None,  # No temp file needed
                 }
             )
-            print(f"Result: {result}")
+            if module != "explore":
+                print(f"Result: {result}")
 
         except Exception as e:
             print(f"ERROR in experiment {i}: {e}")
@@ -119,30 +161,31 @@ def run_flags_experiments(config_file):
         print(f"Experiment {i}: {result['parameters']}")
         if result.get("error"):
             print(f"  ERROR: {result['error']}")
-        else:
+        elif module != "explore":
             print(f"  Result: {result['result']}")
             if result["result"] is not None:
                 valid_results.append(result)
 
-    # Find and print best parameters
-    if valid_results:
-        best_result = max(valid_results, key=lambda x: x["result"])
-        print("\n=== BEST CONFIGURATION ===")
-        print(f"Best Result: {best_result['result']}")
-        print("Best Parameters:")
-        for param, value in best_result["parameters"].items():
-            print(f"  {param}: {value}")
-        print("\nTo use these parameters, set in your config file:")
-        print("[MODEL]")
-        print(f"type = {best_result['parameters'].get('models', 'N/A')}")
-        print("[FEATS]")
-        print(f"type = ['{best_result['parameters'].get('features', 'N/A')}']")
-        if "balancing" in best_result["parameters"]:
-            print(f"balancing = {best_result['parameters']['balancing']}")
-        if "scale" in best_result["parameters"]:
-            print(f"scale = {best_result['parameters']['scale']}")
-    else:
-        print("\n=== NO VALID RESULTS FOUND ===")
+    # Find and print best parameters (only meaningful for nkululeko module)
+    if module in ("nkululeko", "nkulu"):
+        if valid_results:
+            best_result = max(valid_results, key=lambda x: x["result"])
+            print("\n=== BEST CONFIGURATION ===")
+            print(f"Best Result: {best_result['result']}")
+            print("Best Parameters:")
+            for param, value in best_result["parameters"].items():
+                print(f"  {param}: {value}")
+            print("\nTo use these parameters, set in your config file:")
+            print("[MODEL]")
+            print(f"type = {best_result['parameters'].get('models', 'N/A')}")
+            print("[FEATS]")
+            print(f"type = ['{best_result['parameters'].get('features', 'N/A')}']")
+            if "balancing" in best_result["parameters"]:
+                print(f"balancing = {best_result['parameters']['balancing']}")
+            if "scale" in best_result["parameters"]:
+                print(f"scale = {best_result['parameters']['scale']}")
+        else:
+            print("\n=== NO VALID RESULTS FOUND ===")
 
     # Calculate and print total timing
     end_time = time.time()
@@ -155,8 +198,25 @@ def run_flags_experiments(config_file):
     return results
 
 
-def _run_single_flags_experiment(base_experiment, combo, config):
-    """Run a single experiment with given parameters, reusing already extracted features."""
+def _run_single_flags_experiment(base_experiment, combo, config, module="nkululeko"):
+    """Run a single experiment with given parameters, reusing already extracted features.
+
+    When the combo contains a ``name_target`` pair, label DataFrames are reloaded
+    for the new target while audio features are copied from *base_experiment* to
+    avoid redundant extraction.
+
+    For ``module='explore'`` the function runs feature analysis instead of model
+    training and returns ``(None, None)``.
+
+    Args:
+        base_experiment: pre-built experiment with loaded datasets and extracted features.
+        combo: dict mapping FLAG parameter names to their values for this run.
+        config: base ConfigParser object (copied and patched per experiment).
+        module: nkululeko module to run — ``'nkululeko'`` (default) or ``'explore'``.
+
+    Returns:
+        Tuple of (result, last_epoch). Both are None for the explore module.
+    """
     import nkululeko.experiment as exp
 
     # Create a copy of the config for this experiment
@@ -174,7 +234,13 @@ def _run_single_flags_experiment(base_experiment, combo, config):
 
     # Apply combination parameters to the config
     for param, value in combo.items():
-        if param == "models":
+        if param == "name_target":
+            # value is a (exp_name, data_target) pair
+            experiment_config["EXP"]["name"] = value[0]
+            if "DATA" not in experiment_config:
+                experiment_config.add_section("DATA")
+            experiment_config["DATA"]["target"] = value[1]
+        elif param == "models":
             experiment_config["MODEL"]["type"] = value  # Set model type directly
         elif param == "features":
             experiment_config["FEATS"]["type"] = (
@@ -199,21 +265,42 @@ def _run_single_flags_experiment(base_experiment, combo, config):
             elif param.startswith("exp_"):
                 experiment_config["EXP"][param[4:]] = str(value)
 
-    # Create experiment name with parameters
+    # Create experiment name with parameters; name_target already set the base name
     base_name = experiment_config["EXP"]["name"]
-    param_suffix = "_".join([f"{k}_{v}" for k, v in combo.items()])
-    experiment_config["EXP"]["name"] = f"{base_name}_{param_suffix}"
+    suffix_parts = {k: v for k, v in combo.items() if k != "name_target"}
+    param_suffix = "_".join([f"{k}_{v}" for k, v in suffix_parts.items()])
+    if param_suffix:
+        experiment_config["EXP"]["name"] = f"{base_name}_{param_suffix}"
 
     # Update the experiment config - create a new experiment object with this config
     # to avoid modifying the shared base_experiment
     experiment = exp.Experiment(experiment_config)
     experiment.set_module("flags")
 
-    # Copy the already extracted data and features from base_experiment
-    experiment.df_train = base_experiment.df_train.copy()
-    experiment.df_test = base_experiment.df_test.copy()
-    experiment.feats_train = base_experiment.feats_train.copy()
-    experiment.feats_test = base_experiment.feats_test.copy()
+    if "name_target" in combo:
+        # DATA.target changed: reload label DataFrames for the new target, but
+        # reuse the already extracted audio features to avoid re-extraction.
+        experiment.load_datasets()
+        experiment.fill_train_and_tests()
+        experiment.feats_train = base_experiment.feats_train.copy()
+        experiment.feats_test = base_experiment.feats_test.copy()
+    else:
+        experiment.df_train = base_experiment.df_train.copy()
+        experiment.df_test = base_experiment.df_test.copy()
+        experiment.feats_train = base_experiment.feats_train.copy()
+        experiment.feats_test = base_experiment.feats_test.copy()
+
+    if module == "explore":
+        from nkululeko.utils.util import Util
+
+        util = Util("flags")
+        shap = eval(util.config_val("EXPL", "shap", "False"))
+        if shap:
+            experiment.init_runmanager()
+            experiment.runmgr.do_runs()
+        experiment.analyse_features(True)
+        experiment.store_report()
+        return None, None
 
     # Initialize run manager with the updated config
     experiment.init_runmanager()
@@ -230,7 +317,7 @@ def doit(cla):
         description="Call the nkululeko framework with multiple parameter combinations."
     )
     parser.add_argument("--config", help="The base configuration")
-    parser.add_argument("--mod", default="nkulu", help="Which nkululeko module to call")
+    parser.add_argument("--mod", default="nkulu", help="Which nkululeko module to call (nkululeko or explore)")
     parser.add_argument("--data", help="The databases", nargs="*", action="append")
     parser.add_argument(
         "--label", nargs="*", help="The labels for the target", action="append"
@@ -281,7 +368,7 @@ def doit(cla):
     config.read(config_file)
 
     if args.flags or "FLAGS" in config:
-        return run_flags_experiments(config_file)
+        return run_flags_experiments(config_file, module=nkulu_mod)
 
     # Original single experiment logic
     # Ensure required sections exist

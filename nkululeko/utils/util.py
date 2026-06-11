@@ -37,6 +37,8 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         "n_jobs",
         "uar",
         "mse",
+    ]
+    keyvals = [        
         "kind",
     ]
 
@@ -300,7 +302,7 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         try:
             return self.config[section][key]
         except KeyError:
-            if default not in self.stopvals:
+            if default not in self.stopvals and key not in self.keyvals:
                 self.debug(f"value for {key} is not found, using default: {default}")
             return default
 
@@ -343,6 +345,23 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         with open(file_name, "w") as text_file:
             text_file.write(output)
         self.debug(output)
+
+    def append_to_result_file(self, filename, content):
+        """Append *content* as a new line to *filename*, creating the file if needed.
+
+        The line is only written if it is not already present in the file.
+
+        Args:
+            filename: absolute path to the result text file.
+            content: string to append (a newline is added automatically).
+        """
+        existing = []
+        if os.path.isfile(filename):
+            with open(filename) as f:
+                existing = f.read().splitlines()
+        if content not in existing:
+            with open(filename, "a") as f:
+                f.write(content + "\n")
 
     def check_class_label(self, df):
         target = self.config_val("DATA", "target", None)

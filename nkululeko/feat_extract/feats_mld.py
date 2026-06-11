@@ -21,26 +21,40 @@ class MLD_set(Featureset):
         sys.path.append(mld_path)
 
     def extract(self):
+        """Extract mid-level descriptor features using the audmld package.
+
+        The MLD class used for extraction is controlled by FEATS.mld.df (default: Mld).
+        Accepted values: Mld, MldSust, MldStruct.
+        Cache is keyed per class name so switching classes does not reuse stale features.
+        """
         store = self.util.get_path("store")
         storage = f"{store}{self.name}.pkl"
+        import audmld
+
+        mld_class_name = self.util.config_val("FEATS", "mld.df", "Mld")
+        mld_classes = {"Mld": audmld.Mld, "MldSust": audmld.MldSust, "MldStruct": audmld.MldStruct}
+        if mld_class_name not in mld_classes:
+            self.util.error(
+                f"FEATS.mld.df must be one of {list(mld_classes.keys())}, got '{mld_class_name}'"
+            )
+        self.util.debug(f"using MLD class: {mld_class_name}")
+        cache_root = f"{storage}_{mld_class_name}"
         no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
-        if no_reuse:
-            os.remove(storage)
-        if not os.path.isfile(storage):
+        if no_reuse and os.path.exists(cache_root):
+            os.remove(cache_root)
+        if not os.path.isfile(cache_root):
             self.util.debug(
                 "extracting midleveldescriptor features, this might take a while..."
             )
         else:
             self.util.debug("reusing previously extracted midleveldescriptor features")
-        import audmld
-
-        fex_mld = audmld.Mld(num_workers=6, verbose=True)
-        self.df = fex_mld.process_index(index=self.data_df.index, cache_root=storage)
+        fex_mld = mld_classes[mld_class_name](num_workers=6, verbose=True)
+        self.df = fex_mld.process_index(index=self.data_df.index, cache_root=cache_root)
         self.util.debug(f"MLD feats shape: {self.df.shape}")
         # shouldn't happen
         # replace NANa with column means values
         self.util.debug("MLD extractor: checking for NANs...")
-        for i, col in enumerate(self.df.columns):
+        for col in self.df.columns:
             if self.df[col].isnull().values.any():
                 self.util.debug(
                     f"{col} includes {self.df[col].isnull().sum()} nan,"

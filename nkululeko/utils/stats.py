@@ -8,6 +8,14 @@ from scipy import stats
 
 
 def check_na(a):
+    """Replace NaN values in array with 0, printing a warning if any are found.
+
+    Args:
+        a: numpy array to check.
+
+    Returns:
+        The input array with NaNs replaced by 0.
+    """
     if np.isnan(a).any():
         count = np.count_nonzero(np.isnan(a))
         print(f"WARNING: got {count} Nans (of {len(a)}), setting to 0")
@@ -42,6 +50,14 @@ def cohen_d(d1: np.array, d2: np.array) -> float:
 
 
 def all_combinations(items_list):
+    """Return all unique pairs from items_list as a list of 2-element lists.
+
+    Args:
+        items_list: iterable of items to pair.
+
+    Returns:
+        List of [a, b] pairs for every combination of length 2.
+    """
     result = []
     for i in range(1, len(items_list) + 1):
         for combo in combinations(items_list, i):
@@ -85,6 +101,16 @@ def get_effect_size(
 
 
 def cohens_D_to_string(val: float) -> str:
+    """Convert a Cohen's d value to a human-readable effect-size label.
+
+    Thresholds: < 0.2 → no effect, < 0.5 → small, < 0.8 → middle, else large.
+
+    Args:
+        val: Cohen's d value (non-negative float).
+
+    Returns:
+        String of the form ``"Cohen's d: <label>"``.
+    """
     if val < 0.2:
         rval = "no effect"
     elif val < 0.5:
@@ -179,8 +205,15 @@ def get_mannwhitney_effect(
     return float(u_stat), float(p_value), significance
 
 
-def normaltest(variable1: np.array):
-    # This function tests the null hypothesis that a sample comes from a normal distribution.
+def normaltest(variable1: np.array) -> bool:
+    """Test whether a sample comes from a normal distribution (D'Agostino & Pearson).
+
+    Args:
+        variable1: 1-D array of observations.
+
+    Returns:
+        True if the null hypothesis of normality is not rejected (p >= 0.05).
+    """
     res = stats.normaltest(variable1)
     if res.pvalue >= 0.05:
         return True
@@ -332,9 +365,8 @@ def find_most_significant_difference(
     ...     'group_B': np.array([2.3, 2.7, 3.1, 3.4]),
     ...     'group_C': np.array([3.8, 4.1, 4.5, 4.9])
     ... }
-    >>> approach, pairwise, overall = find_most_significant_difference(
-    ...     distributions, mean_featnum=25)
-    >>> # Returns Mann-Whitney U for pairwise, Kruskal-Wallis for overall
+    >>> pairwise, overall = find_most_significant_difference(distributions, mean_featnum=25)
+    >>> # pairwise uses Mann-Whitney U; overall uses Kruskal-Wallis
     """
     if len(distributions) < 2:
         raise ValueError("Need at least 2 distributions for comparison")

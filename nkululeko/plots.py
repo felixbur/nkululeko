@@ -34,6 +34,14 @@ class Plots:
         self.print_stats = eval(self.util.config_val("EXPL", "print_stats", "False"))
 
     def plot_distributions_speaker(self, df: pd.DataFrame):
+        """Plot sample and speaker distributions broken down by speaker identity.
+
+        Produces a pie chart of samples per speaker and, when gender is present,
+        stacked bar charts of samples and speakers by gender.
+
+        Args:
+            df: DataFrame with speaker, class_label, and optional gender columns.
+        """
         title = ""
         if df.empty:
             self.util.warn(
@@ -103,6 +111,16 @@ class Plots:
         self.plot_distributions(df_speakers, type_s="speakers")
 
     def plot_distributions(self, df: pd.DataFrame, type_s: str = "samples"):
+        """Plot distributions of attributes against the target variable.
+
+        For each attribute in EXPL.value_counts, produces a correlation plot and,
+        when one column is categorical and the other is continuous, also runs
+        Kruskal-Wallis + pairwise t-tests and saves results to the res folder.
+
+        Args:
+            df: DataFrame with class_label and attribute columns.
+            type_s: sample selection label used in plot filenames.
+        """
         if df.empty:
             self.util.warn("plot_distributions: empty DataFrame, nothing to plot")
             return
@@ -138,6 +156,7 @@ class Plots:
             type_s,
         )
 
+        res_dir = self.util.get_path("res_dir")
         for att in attributes:
             if len(att) == 1:
                 att1 = att[0]
@@ -165,6 +184,11 @@ class Plots:
                         )
                     else:
                         ax, caption = self._plot2cont(df, class_label, att1, type_s)
+                res_filename = audeer.path(res_dir, f"value_counts_{self.target}_{att[0]}.txt")
+                if self.util.is_categorical(df[class_label]) and not self.util.is_categorical(df[att1]):
+                    self._save_distribution_stats(df, class_label, att1, res_filename)
+                elif not self.util.is_categorical(df[class_label]) and self.util.is_categorical(df[att1]):
+                    self._save_distribution_stats(df, att1, class_label, res_filename)
                 self.save_plot(
                     ax,
                     caption,
@@ -172,7 +196,6 @@ class Plots:
                     filename,
                     type_s,
                 )
-                # fig.clear()           # avoid error
             elif len(att) == 2:
                 att1 = att[0]
                 att2 = att[1]
@@ -225,6 +248,11 @@ class Plots:
                             # class_label = cont, att1 = cont, att2 = cont
                             ax, caption = self._plot2cont(df, att1, att2, type_s)
 
+                res_filename = audeer.path(res_dir, f"value_counts_{self.target}_{att[0]}-{att[1]}.txt")
+                if self.util.is_categorical(df[att1]) and not self.util.is_categorical(df[att2]):
+                    self._save_distribution_stats(df, att1, att2, res_filename)
+                elif not self.util.is_categorical(df[att1]) and self.util.is_categorical(df[att2]):
+                    self._save_distribution_stats(df, att2, att1, res_filename)
                 self.save_plot(
                     ax, caption, f"Correlation of {att1} and {att2}", filename, type_s
                 )
@@ -235,7 +263,25 @@ class Plots:
                     f" {att} has more than 2 values. Perhaps you forgot to state a list of lists?"
                 )
 
+    def _save_distribution_stats(self, df, cat_col, cont_col, res_filename):
+        """Compute KW + pairwise t-tests and append results to res_filename."""
+        val_dict, mean_featnum = self.util.df_to_categorical_dict(df, cat_col, cont_col)
+        pairwise_results, overall_results = su.find_most_significant_difference(val_dict, mean_featnum)
+        if overall_results is not None:
+            self.util.append_to_result_file(res_filename, f"overall: {overall_results['all_results']}")
+        if pairwise_results is not None:
+            self.util.append_to_result_file(res_filename, f"pairwise: {pairwise_results['all_results']}")
+
     def save_plot(self, ax, caption, header, filename, type_s):
+        """Save a matplotlib axes to the fig_dir and register it in the report.
+
+        Args:
+            ax: matplotlib axes (or seaborn FacetGrid) to save.
+            caption: short description shown as the report item body.
+            header: longer title shown as the report item header.
+            filename: base filename without extension or type suffix.
+            type_s: sample selection label appended to the filename.
+        """
         # one up because of the runs
         fig_dir = audeer.path(self.util.get_path("fig_dir"), "..")
         fig_plots = ax.figure
@@ -260,6 +306,18 @@ class Plots:
         )
 
     def _check_binning(self, att, df):
+        """Optionally discretize a continuous column into categories.
+
+        Reads EXPL.{att}.bin_reals from config; if True, replaces the column
+        with a binned version named ``{att}_binned``.
+
+        Args:
+            att: column name to check.
+            df: DataFrame containing the column.
+
+        Returns:
+            Tuple of (possibly updated column name, possibly updated DataFrame).
+        """
         bin_reals_att = eval(self.util.config_val("EXPL", f"{att}.bin_reals", "False"))
         if bin_reals_att:
             self.util.debug(f"binning continuous variable {att} to categories")
@@ -269,7 +327,18 @@ class Plots:
         return att, df
 
     def _plot2cont_cat(self, df, cont1, cont2, cat, ylab):
-        """Plot relation of two continuous distributions with one categorical."""
+        """Plot two continuous columns coloured by a categorical column.
+
+        Args:
+            df: DataFrame containing all three columns.
+            cont1: name of the x-axis continuous column.
+            cont2: name of the y-axis continuous column.
+            cat: name of the categorical column used as hue.
+            ylab: label used in the plot title.
+
+        Returns:
+            Tuple of (matplotlib axes, caption string).
+        """
         plot_df = df[[cont1, cont2, cat]].copy()
         if cont2 == "class_label":
             plot_df = plot_df.rename(columns={cont2: self.target})
@@ -295,7 +364,17 @@ class Plots:
         return ax, caption
 
     def _plot2cont(self, df, col1, col2, ylab):
-        """Plot relation of two continuous distributions."""
+        """Plot the relationship between two continuous columns via linear regression.
+
+        Args:
+            df: DataFrame containing both columns.
+            col1: name of the x-axis column.
+            col2: name of the y-axis column.
+            ylab: label used in the plot title.
+
+        Returns:
+            Tuple of (seaborn FacetGrid, caption string including Pearson r).
+        """
         plot_df = df[[col1, col2]].copy()
         # rename "class_label" to the original target
         if col2 == "class_label":
@@ -319,7 +398,21 @@ class Plots:
         return ax, caption
 
     def plotcatcont(self, df, cat_col, cont_col, xlab, ylab):
-        """Plot relation of categorical distribution with continuous."""
+        """Plot a continuous column grouped by a categorical column (KDE or histogram).
+
+        Uses EXPL.dist_type (default ``kde``) and PLOT.fill_areas to choose the
+        plot style. Also computes and logs Cohen's d effect size per category.
+
+        Args:
+            df: DataFrame containing both columns.
+            cat_col: name of the categorical grouping column.
+            cont_col: name of the continuous column.
+            xlab: x-axis label.
+            ylab: label used in the plot title (typically the sample selection name).
+
+        Returns:
+            Tuple of (matplotlib axes or seaborn FacetGrid, caption string).
+        """
         # rename "class_label" to the original target
         plot_df = df[[cat_col, cont_col]].copy()
         if cat_col == "class_label":
@@ -360,7 +453,20 @@ class Plots:
         return ax, caption
 
     def _plot2cat(self, df, col1, col2, xlab, ylab):
-        """Plot relation of 2 categorical distributions."""
+        """Plot the relationship between two categorical columns as a stacked bar chart.
+
+        Uses a chi-squared test to report the association p-value in the caption.
+
+        Args:
+            df: DataFrame containing both columns.
+            col1: name of the first categorical column (x-axis grouping).
+            col2: name of the second categorical column (stacked bars / hue).
+            xlab: x-axis label.
+            ylab: label used in the plot title.
+
+        Returns:
+            Tuple of (matplotlib axes, caption string including chi2 p-value).
+        """
         plot_df = df[[col1, col2]].copy()
         # rename "class_label" to the original target
         if col2 == "class_label":
@@ -370,9 +476,9 @@ class Plots:
             plot_df = plot_df.rename(columns={col1: self.target})
             col1 = self.target
         crosstab = pd.crosstab(index=plot_df[col1], columns=plot_df[col2])
-        res_pval = stats.chi2_contingency(crosstab)
-        res_pval = int(res_pval[1] * 1000) / 1000
-        caption = f"{ylab} {plot_df.shape[0]}. P-val chi2: {res_pval}"
+        p_val = float(stats.chi2_contingency(crosstab)[1])
+        sig_str = su.p_value_to_string(p_val)
+        caption = f"{ylab} {plot_df.shape[0]}. Chi2: {sig_str}"
         ax = (
             plot_df.groupby(col1, observed=False)[col2]
             .value_counts()
@@ -381,9 +487,25 @@ class Plots:
         )
         ax.set_ylabel(f"number of {ylab}")
         ax.set_xlabel(xlab)
+        res_dir = self.util.get_path("res_dir")
+        if col1 == self.target:
+            res_filename = audeer.path(res_dir, f"value_counts_{col1}_{col2}.txt")
+        else:
+            res_filename = audeer.path(res_dir, f"value_counts_{self.target}_{col1}-{col2}.txt")
+        self.util.append_to_result_file(
+            res_filename, f"chi2: {{'p_value': {p_val}, 'significance': '{sig_str}'}}"
+        )
         return ax, caption
 
     def plot_durations(self, df, filename, sample_selection, caption=""):
+        """Plot a histogram of audio durations coloured by class label.
+
+        Args:
+            df: DataFrame with a ``duration`` column and optionally ``class_label``.
+            filename: base filename (without extension) for the saved image.
+            sample_selection: label appended to the filename and used in the title.
+            caption: optional report item caption; defaults to an empty string.
+        """
         title = ""
         # one up because of the runs
         fig_dir = os.path.join(self.util.get_path("fig_dir"), "..")
@@ -418,6 +540,12 @@ class Plots:
         )
 
     def plot_speakers(self, df, sample_selection):
+        """Plot a pie chart of samples per speaker.
+
+        Args:
+            df: DataFrame with a ``speaker`` column.
+            sample_selection: label appended to the filename and used in the title.
+        """
         filename = "speakers"
         caption = "speakers"
         # one up because of the runs
@@ -490,6 +618,17 @@ class Plots:
             )
 
     def scatter_plot(self, feats, label_df, label, dimred_type):
+        """Reduce features to 2-D or 3-D and produce a labelled scatter plot.
+
+        Supports EXPL.scatter.dim = 2 or 3 and dimred_type values ``tsne``,
+        ``umap``, and ``pca``.
+
+        Args:
+            feats: DataFrame of feature values (samples × features).
+            label_df: DataFrame containing the label column.
+            label: column name in label_df used as the hue / colour.
+            dimred_type: dimensionality reduction method (``tsne``, ``umap``, ``pca``).
+        """
         dim_num = int(self.util.config_val("EXPL", "scatter.dim", 2))
         # one up because of the runs (for explore module)
         fig_dir = os.path.join(self.util.get_path("fig_dir"), "..")
@@ -627,6 +766,19 @@ class Plots:
         return tsne_data
 
     def plot_feature(self, title, feature, label, df_labels, df_features):
+        """Plot the distribution of a single feature grouped by a label column.
+
+        For categorical labels, produces a violin/box/bar/strip/swarm plot and
+        runs Kruskal-Wallis + pairwise t-tests, saving results to the res folder.
+        For continuous labels, delegates to _plot2cont.
+
+        Args:
+            title: sample selection label used in the filename and plot title.
+            feature: feature column name in df_features to plot.
+            label: grouping column name in df_labels (typically ``class_label``).
+            df_labels: DataFrame containing the label (and optional gender) column.
+            df_features: DataFrame containing the feature columns.
+        """
         # remove fullstops in the name
         feature_name = str(feature).replace(".", "-")
         # which kind of plot?
@@ -636,6 +788,12 @@ class Plots:
         filename = audeer.path(
             fig_dir, f"feat_dist_{title}_{feature_name}_{kind}.{self.format}"
         )
+        # a file to store the statistical test results for this feature
+        res_dir = self.util.get_path("res_dir")
+        res_filename = audeer.path(
+            res_dir, f"feat_dist_{title}_{feature_name}.txt"
+        )
+ 
         ignore_gender = eval(self.util.config_val("EXPL", "ignore_gender", "False"))
         sample_num = df_labels.shape[0]
         if self.util.is_categorical(df_labels[label]):
@@ -713,12 +871,21 @@ class Plots:
                 val_dict, mean_featnum
             )
             # 'approach', 'combo', test statistic, 'p_value', 'significance','all_results'
-            if self.print_stats:
-                if overall_results is not None:
+            if overall_results is not None:
+                self.util.append_to_result_file(
+                    res_filename,
+                    f"overall: {overall_results['all_results']}",
+                )
+                if self.print_stats:
                     self.util.debug(
                         f"overall results for {feature_name} from statistical test: {overall_results['all_results']}"
                     )
-                if pairwise_results is not None:
+            if pairwise_results is not None:
+                self.util.append_to_result_file(
+                    res_filename,
+                    f"pairwise: {pairwise_results['all_results']}",
+                )
+                if self.print_stats:
                     self.util.debug(
                         f"pairwise results from statistical test: {pairwise_results['all_results']}"
                     )
@@ -745,6 +912,9 @@ class Plots:
         else:
             plot_df = pd.concat([df_labels, df_features], axis=1)
             ax, caption = self._plot2cont(plot_df, label, feature, feature)
+        self.util.append_to_result_file(
+            res_filename, title + "\n",
+        )
         fig = ax.figure
         plt.tight_layout()
         self.util.debug(f"plotted feature distribution to {filename}")
@@ -763,6 +933,17 @@ class Plots:
         )
 
     def regplot(self, reglist, labels, features):
+        """Plot a regression (or bubble) scatter plot between two features.
+
+        reglist must have 2 or 3 elements: [feat_x, feat_y] or
+        [feat_x, feat_y, cat_var]. When cat_var is categorical a seaborn pairplot
+        is used; when continuous, a bubble plot coloured by cat_var.
+
+        Args:
+            reglist: list of 2–3 feature/column names from EXPL.regplot config.
+            labels: DataFrame containing class_label and speaker columns.
+            features: DataFrame of feature values used as x and y axes.
+        """
         title = "regplot"
         if len(reglist) > 1 and len(reglist) < 4:
             if len(reglist) == 2:
@@ -862,6 +1043,12 @@ class Plots:
             plt.close(fig)
 
     def plot_tree(self, model, features):
+        """Plot a sklearn decision-tree diagram and save it to the fig_dir.
+
+        Args:
+            model: fitted sklearn DecisionTreeClassifier or DecisionTreeRegressor.
+            features: DataFrame whose column names are used as feature labels.
+        """
         from sklearn import tree
 
         ax = plt.gca()

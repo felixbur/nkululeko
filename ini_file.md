@@ -28,6 +28,8 @@
 
 ### EXP
 
+General experiment settings: paths, naming, run count, and output options.
+
 * **root**: experiment root folder
   * root = ./results/
 * **type**: the kind of experiment
@@ -66,6 +68,8 @@
 
 
 ### DATA
+
+Database loading, label mapping, and train/test split configuration.
 
 * **type**: just a flag now to mark continuous data, so it can be binned to categorical data (using *bins* and *labels*)
   * type = continuous
@@ -189,6 +193,8 @@
   * filter.sample_selection=all
 ### AUGMENT
 
+Data augmentation options to artificially expand the training set.
+
 * **augment**: select the methods to augment: either *traditional* or *random_splice*
   * augment = ['traditional', 'auglib', 'random_splice']
   * choices are:
@@ -205,6 +211,8 @@
   * transformations = ['music', 'room', 'cough']
 
 ### SEGMENT
+
+Audio segmentation settings for splitting recordings into smaller chunks (e.g., by silence or fixed duration).
 
 * **result**: name of the segmented data table as a result. Additionally, a segment file with the gaps will be generated: *segmented_silence.csv*. 
   * result = segmented.csv
@@ -227,6 +235,8 @@
 
 ### FEATS
 
+Feature extraction settings. Multiple feature types can be combined by listing them together; they are concatenated column-wise.
+
 * **type**: a comma-separated list of types of features; they will be column-wise concatenated
   * type = ['os']
   * possible values:
@@ -237,6 +247,9 @@
         * import_files_append = True  
     * **mld**: [mid-level-descriptors](http://www.essv.de/paper.php?id=447)
       * **mld.model** = *path to the mld sources folder*
+      * **mld.df** = *MLD class to use for feature extraction* (default: `Mld`)
+        * accepted values: `Mld`, `MldSust`, `MldStruct`
+        * example: `mld.df = MldSust`
       * **min_syls** = *minimum number of syllables*
     * **os**: [open smile features](https://audeering.github.io/opensmile-python/)
       * **set** = eGeMAPSv02 *(features set)*
@@ -459,6 +472,8 @@ Model and training specifications. In general, default values should work for cl
 
 ### EXPL
 
+Feature exploration and visualisation options, used by the `explore` module.
+
 * **feature_distributions**: plot distributions for features and analyze importance
   * feature_distributions = False
 * **ignore_gender**: ignore gender when plotting feature distribution
@@ -498,6 +513,8 @@ Model and training specifications. In general, default values should work for cl
 
 ### [PREDICT](#predict)
 
+Automatic soft-label prediction using pre-trained models (e.g., age, gender, arousal).
+
 * **targets**: Speaker/speech characteristics to be predicted by some models
   * targets = ['text', 'translation', 'textclassification', 'speaker', 'gender', 'age', 'snr', 'arousal', 'valence', 'dominance', 'pesq', 'mos']
   * textclassifier.candidates = ["sadness", "anger", "neutral"]: for target *textclassification*: the labels for the categories that should be predicted (using [joeddav/xlm-roberta-large-xnli](https://huggingface.co/joeddav/xlm-roberta-large-xnli))
@@ -506,6 +523,8 @@ Model and training specifications. In general, default values should work for cl
   
 
 ### EXPORT
+
+Options for exporting the dataset (audio files and annotations) to a new location or format.
 
 * **target_root**: New root directory for the database, will be created
   * target_root = ./exported_data/
@@ -520,10 +539,14 @@ Model and training specifications. In general, default values should work for cl
 
 ### CROSSDB
 
+Cross-database experiment settings for evaluating generalisation across datasets.
+
 * **train_extra**: add a additional training partition to all experiments in [the cross database series](http://blog.syntheticspeech.de/2024/01/02/nkululeko-compare-several-databases/). This extra data should be described [in a root_folders file](http://blog.syntheticspeech.de/2022/02/21/specifying-database-disk-location-with-nkululeko/)
   * train_extra = ['addtrain_db_1', 'addtrain_db_2']
 
 ### PLOT
+
+Plot styling and output options for result figures.
 
 * **name**: special name as a prefix for all plots (stored in *img_dir*).
   * name = my_special_config_within_the_experiment
@@ -556,12 +579,16 @@ Model and training specifications. In general, default values should work for cl
 
 ### RESAMPLE
 
+Audio resampling settings for converting sample rates across a dataset.
+
 * **replace**: whether samples should be replaced right where they are, or copies done and a new dataframe given
   * replace = False
 * **target**: the name of the new dataframe, if replace==false
   * target = data_resampled.csv
 
 ### REPORT
+
+Controls how experiment results are collected, displayed, and persisted.
 
 * **show**: print the report at the end
   * show = False
@@ -572,6 +599,8 @@ Model and training specifications. In general, default values should work for cl
 * **author**: author for document
 
 ### OPTIM
+
+Hyperparameter optimisation settings for automated model tuning.
 
 * **model**: the model type to optimize (e.g., 'mlp', 'svm', 'xgb')
   * model = mlp
@@ -636,8 +665,25 @@ Model and training specifications. In general, default values should work for cl
 
 ### FLAGS  
 
-Running different values at once. Example:  
-* models = ['xgb', 'svm']
-* features = ['praat', 'os']   
-* balancing = ['none', 'ros', 'smote']  
-* scale = ['none', 'standard', 'robust', 'minmax']
+Running different values at once. All listed parameters are combined via Cartesian product — one experiment is run per combination. Example:  
+* **models** = ['xgb', 'svm']
+* **features** = ['praat', 'os']   
+* **balancing** = ['none', 'ros', 'smote']  
+* **scale** = ['none', 'standard', 'robust', 'minmax']
+* **name_target** = *list of (EXP.name, DATA.target) pairs iterated as a unit*
+  * Each pair sets `EXP.name` and `DATA.target` together for one experiment slot, then that slot is combined via product with any other FLAGS parameters.
+  * Label DataFrames are reloaded per pair; audio features are extracted once and reused across all pairs.
+  * example:
+    ```ini
+    name_target = [("grade", "grade"), ("roughness", "roughness"), ("strain", "strain")]
+    models = ['xgb', 'mlp']
+    ```
+    → runs 3 × 2 = 6 experiments
+
+  The FLAGS mechanism can also drive the `explore` module (feature analysis / visualisation) instead of model training. Pass `--mod explore` on the command line:
+
+  ```bash
+  python -m nkululeko.flags --config exp.ini --mod explore
+  ```
+
+  No result score is reported; output plots are stored per experiment under `{EXP.root}/{EXP.name}/images/`.
