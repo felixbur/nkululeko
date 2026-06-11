@@ -49,6 +49,8 @@ All key-value pairs in the configuration files should be documented in the ini_f
 
 The results of an experiment are in the results folder. When asked to write an exploration report, compile the statistical results including images in a markdown file, but only if the results are statistically significant. If not, just write a short note about the results and do not include any images.
 
+**Always read each distribution image before writing its interpretation.** Do not infer the direction of an effect (e.g. "group A is higher than group B") from the feature name alone — read the actual bar/violin plot to get the correct direction. Getting the direction wrong undermines the whole report.
+
 **Demographic/covariate distributions come first.** Before listing acoustic feature distributions, add the following subsections at the top of each target section:
 
 1. **Age** — check for `value_counts_{target}_age.txt`; if significant, include images (`{target}-age_samples.png`, `{target}-age_speakers.png`) and pairwise pairs. Do not omit even if the main task is about acoustic features.
