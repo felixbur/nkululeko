@@ -53,7 +53,8 @@ class FeatureAnalyser:
         """Fit model and return feature importances, with pickle caching.
 
         Cache is stored under {store}/cache/importance_{ModelClass}[_perm].pkl.
-        A cached result is returned immediately without refitting.
+        On load the cached array length is validated against the current feature count;
+        if it doesn't match the cache is ignored and recomputed (overwriting the old file).
 
         Args:
             model: sklearn-compatible estimator with feature_importances_ or coef_ attribute.
@@ -68,10 +69,17 @@ class FeatureAnalyser:
         cache_dir = os.path.join(self.util.get_path("store"), "cache")
         os.makedirs(cache_dir, exist_ok=True)
         cache_path = os.path.join(cache_dir, f"importance_{model_name}{perm_suffix}.pkl")
+        n_feats = len(self.features.columns)
         if os.path.isfile(cache_path):
-            self.util.debug(f"loading cached importance for {model_name}{perm_suffix}")
             with open(cache_path, "rb") as f:
-                return pickle.load(f)
+                cached = pickle.load(f)
+            if len(cached) == n_feats:
+                self.util.debug(f"loading cached importance for {model_name}{perm_suffix}")
+                return cached
+            self.util.debug(
+                f"cached importance for {model_name} has {len(cached)} features,"
+                f" current feature set has {n_feats} — recomputing"
+            )
         model.fit(self.features, self.labels)
         if permutation:
             r = permutation_importance(
@@ -243,6 +251,7 @@ class FeatureAnalyser:
                     )
                     plot_tree = eval(self.util.config_val("EXPL", "plot_tree", "False"))
                     if plot_tree:
+                        model.fit(self.features, self.labels)
                         plots = Plots()
                         plots.plot_tree(model, self.features)
                 elif model_s == "xgb":

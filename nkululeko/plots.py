@@ -476,9 +476,9 @@ class Plots:
             plot_df = plot_df.rename(columns={col1: self.target})
             col1 = self.target
         crosstab = pd.crosstab(index=plot_df[col1], columns=plot_df[col2])
-        res_pval = stats.chi2_contingency(crosstab)
-        res_pval = int(res_pval[1] * 1000) / 1000
-        caption = f"{ylab} {plot_df.shape[0]}. P-val chi2: {res_pval}"
+        p_val = float(stats.chi2_contingency(crosstab)[1])
+        sig_str = su.p_value_to_string(p_val)
+        caption = f"{ylab} {plot_df.shape[0]}. Chi2: {sig_str}"
         ax = (
             plot_df.groupby(col1, observed=False)[col2]
             .value_counts()
@@ -487,6 +487,14 @@ class Plots:
         )
         ax.set_ylabel(f"number of {ylab}")
         ax.set_xlabel(xlab)
+        res_dir = self.util.get_path("res_dir")
+        if col1 == self.target:
+            res_filename = audeer.path(res_dir, f"value_counts_{col1}_{col2}.txt")
+        else:
+            res_filename = audeer.path(res_dir, f"value_counts_{self.target}_{col1}-{col2}.txt")
+        self.util.append_to_result_file(
+            res_filename, f"chi2: {{'p_value': {p_val}, 'significance': '{sig_str}'}}"
+        )
         return ax, caption
 
     def plot_durations(self, df, filename, sample_selection, caption=""):
