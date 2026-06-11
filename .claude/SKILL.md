@@ -69,3 +69,4 @@ The significance field always contains the literal string "not significant" for 
 ## How Claude Should Behave
 - Use utility functions from the utils sub-package when possible.
 - all pytest calls are allowed
+- When the same sequence of statements would appear more than once (e.g. compute stats, then conditionally write two result lines), extract it into a private helper method first and call that helper at each site. Do not inline the same block twice.
