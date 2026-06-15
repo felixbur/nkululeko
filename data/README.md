@@ -80,7 +80,7 @@ To support open science and reproducible research, we encourage you to submit PR
 |[partialspoofing](partialspoofing/)|deepfake|PartialSpoof database for detecting partially spoofed audio|public|CC-BY-4.0|
 |[polish](polish/)|emotion|Polish|public|unknown|
 |[portuguese](portuguese/)|emotion|Portuguese|public|Custom academic/research use|
-|[pvqd-dysphonia](pvqd-dysphonia/)|dysphonia|English|public|CC BY 4.0|
+|[pvqd-dysphonia](pvqd-dysphonia/)|GRBAS|English|public|CC BY 4.0|
 |[ravdess](ravdess/)|emotion,speaker|English|public|CC BY 4.0|
 |[savee](savee/)|emotion|English, from tfds|restricted|Custom academic/research use|
 |[shemo](shemo/)|emotion|Persian|public|Custom academic/research use|
@@ -97,7 +97,7 @@ To support open science and reproducible research, we encourage you to submit PR
 |[vivae](vivae/)|emotion|Variably Intense Vocalizations of Affect and Emotion Corpus (VIVAE). English vocal bursts|public|unknown|
 
 
-This recipe contains information about 76 datasets.
+This recipe contains information about 77 datasets.
 ## Performance
 
 ![Nkululeko performance](../meta/images/nkululeko_ser_20240719.png)
