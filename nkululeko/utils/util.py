@@ -273,6 +273,13 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
             self.config.add_section(section)
             self.config[section][key] = str(value)
 
+    def exists_config_val(self, section, key):
+        try:
+            _ = self.config[section][key]
+            return True
+        except KeyError:
+            return False
+
     def extract_parent_and_name(self, path_str):
         """Extract (parent_dir_name in 2 levels, filename) from a path string."""
         p = Path(path_str)
