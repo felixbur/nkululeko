@@ -312,7 +312,23 @@ class Reporter:
         if self.cont_to_cat:
             return
         self.cont_to_cat = True
-        bins = ast.literal_eval(glob_conf.config["DATA"]["bins"])
+        # if there are not labels for binning in the config, set default ones and save them to the config to be used later
+        if not self.util.exists_config_val("DATA", "labels"):
+            labels = ["low", "high"]
+            self.util.set_config_val("DATA", "labels", labels)
+            self.util.debug(f"Set default labels for binning: {labels}")
+        # if there are no bins, set them to border points for the labels and save them to the config to be used later
+        try:
+            bins = ast.literal_eval(glob_conf.config["DATA"]["bins"])
+        except (KeyError, ValueError) as e:
+            label_num = len(ast.literal_eval(glob_conf.config["DATA"]["labels"]))
+            vmin, vmax = np.percentile(self.truths, [5, 95])
+            inner_edges = np.linspace(vmin, vmax, label_num + 1)[1:-1]
+            bins = [-np.inf] + inner_edges.tolist() + [np.inf]
+            self.util.debug(
+                f"No valid 'bins' found in config, using {label_num} equidistant bins"
+                f" between p5={vmin:.3f} and p95={vmax:.3f}: {inner_edges.tolist()}"
+            )
         self.truths = np.digitize(self.truths, bins) - 1
         self.preds = np.digitize(self.preds, bins) - 1
 
