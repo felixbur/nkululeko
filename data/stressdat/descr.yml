@@ -1,0 +1,5 @@
+name: stressdat
+target: stress
+description: Slovak, induced stress
+access: public
+license: custom
