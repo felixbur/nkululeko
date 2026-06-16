@@ -128,7 +128,7 @@ df.index.name = "file_path"
 # --------------------------------------------------------------------------- #
 # 5.  Save
 # --------------------------------------------------------------------------- #
-out_path = Path(__file__).parent.parent / "stressdat_files.csv"
+out_path = Path(__file__).parent / "stressdat_files.csv"
 df.to_csv(out_path)
 print(f"Saved {len(df):,} rows → {out_path}")
 print(df.head())
@@ -165,14 +165,14 @@ seg_df["gender"]         = seg_df["file"].map(df["gender"])
 seg_df["stress_level"]   = seg_df["file"].map(df["stress_level"])
 seg_df["duration"]       = seg_df["end"] - seg_df["start"]
 
-seg_path = Path(__file__).parent.parent / "stressdat_segments.csv"
+seg_path = Path(__file__).parent / "stressdat_segments.csv"
 seg_df.to_csv(seg_path, index=False)
 print(f"Saved {len(seg_df):,} segments → {seg_path}")
 
 # --------------------------------------------------------------------------- #
 # 6.  Analysis plots
 # --------------------------------------------------------------------------- #
-RESULTS = Path(__file__).parent.parent / "results"
+RESULTS = Path(__file__).parent / "results"
 RESULTS.mkdir(exist_ok=True)
 
 LEVEL_LABELS = {0: "neutral", 1: "medium", 2: "high"}

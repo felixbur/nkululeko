@@ -37,7 +37,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-ROOT = Path(__file__).parent.parent
+ROOT = Path(__file__).parent
 CSV_PATH  = ROOT / "stressdat_files.csv"
 SEG_PATH  = ROOT / "stressdat_segments.csv"
 DB_PATH   = ROOT / "build"
