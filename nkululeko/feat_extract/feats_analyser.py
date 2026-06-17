@@ -103,6 +103,13 @@ class FeatureAnalyser:
             pickle.dump(importance, f)
         return importance
 
+    def _maybe_plot_tree(self, model):
+        """Plot decision tree if configured."""
+        if self.util.config_val_bool("EXPL", "plot_tree", False):
+            model.fit(self.features, self.labels)
+            plots = Plots()
+            plots.plot_tree(model, self.features)
+
     def analyse_shap(self, model):
         """Shap analysis.
 
@@ -178,7 +185,7 @@ class FeatureAnalyser:
         model_name = "_".join(models)
         max_feat_num = int(self.util.config_val("EXPL", "max_feats", "10"))
         # https://scikit-learn.org/stable/modules/permutation_importance.html
-        permutation = eval(self.util.config_val("EXPL", "permutation", "False"))
+        permutation = self.util.config_val_bool("EXPL", "permutation", False)
         importance = None
         self.util.debug("analysing features...")
         result_importances = {}
@@ -240,20 +247,13 @@ class FeatureAnalyser:
                     result_importances[model_s] = self._get_importance(
                         model, permutation
                     )
-                    plot_tree = eval(self.util.config_val("EXPL", "plot_tree", "False"))
-                    if plot_tree:
-                        plots = Plots()
-                        plots.plot_tree(model, self.features)
+                    self._maybe_plot_tree(model)
                 elif model_s == "tree":
                     model = DecisionTreeClassifier(random_state=42)
                     result_importances[model_s] = self._get_importance(
                         model, permutation
                     )
-                    plot_tree = eval(self.util.config_val("EXPL", "plot_tree", "False"))
-                    if plot_tree:
-                        model.fit(self.features, self.labels)
-                        plots = Plots()
-                        plots.plot_tree(model, self.features)
+                    self._maybe_plot_tree(model)
                 elif model_s == "xgb":
                     from xgboost import XGBClassifier
 

@@ -36,9 +36,8 @@ class Ast(Featureset):
         """Extract the features or load them from disk if present."""
         store = self.util.get_path("store")
         storage = f"{store}{self.name}.pkl"
-        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
-        no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
-        if extract or no_reuse or not os.path.isfile(storage):
+
+        if self._needs_extraction(storage):
             if not self.model_initialized:
                 self.init_model()
             self.util.debug("extracting wavlm embeddings, this might take a while...")

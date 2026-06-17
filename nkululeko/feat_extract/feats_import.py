@@ -19,8 +19,8 @@ class ImportSet(Featureset):
         """Import the features."""
         self.util.debug(f"importing features for {self.name}")
         # import_files_append: set this to True if the multiple tables should be combined row-wise, else they are combined column-wise
-        import_files_append = eval(
-            self.util.config_val("FEATS", "import_files_append", "True")
+        import_files_append = self.util.config_val_bool(
+            "FEATS", "import_files_append", True
         )
         try:
             feat_import_files = self.util.config_val("FEATS", "import_file", False)

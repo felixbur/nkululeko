@@ -20,12 +20,14 @@ class Openxbow(Featureset):
     def extract(self):
         """Extract the features or load them from disk if present."""
         self.featset = self.util.config_val("FEATS", "set", "eGeMAPSv02")
-        self.feature_set = eval(f"opensmile.FeatureSet.{self.featset}")
+        try:
+            self.feature_set = getattr(opensmile.FeatureSet, self.featset)
+        except AttributeError:
+            self.util.error(f"Invalid feature set: {self.featset}")
+            raise ValueError(f"Invalid feature set: {self.featset}")
         store = self.util.get_path("store")
         storage = f"{store}{self.name}_{self.featset}.pkl"
-        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
-        no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
-        if extract or no_reuse or not os.path.isfile(storage):
+        if self._needs_extraction(storage):
             # extract smile features first
             self.util.debug("extracting openSmile features, this might take a while...")
             smile = opensmile.Smile(

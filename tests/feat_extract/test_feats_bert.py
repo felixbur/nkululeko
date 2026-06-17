@@ -129,28 +129,21 @@ def test_extract_creates_and_loads_pickle(tmp_path, bert_instance):
             assert bert_instance.df.shape[1] == 768  # BERT embedding size
 
         # Now test loading from cache
-        def config_val_mock_cache(section, key, default=None):
-            if key == "needs_feature_extraction":
-                return False  # Use cache
-            elif key == "no_reuse":
-                return "False"
-            elif key == "bert.model":
-                return "bert-base-uncased"
-            else:
-                return default
+        # Mock _needs_extraction to return False (cache hit)
+        with patch.object(type(bert_instance), "_needs_extraction", return_value=False):
+            with patch("os.path.isfile", return_value=True):
+                with patch("pandas.read_pickle") as mock_read_pickle:
+                    cached_df = pd.DataFrame(
+                        {"feat_0": [0.1, 0.2], "feat_1": [0.3, 0.4]}
+                    )
+                    mock_read_pickle.return_value = cached_df
 
-        with patch("os.path.isfile", return_value=True):
-            with patch("pandas.read_pickle") as mock_read_pickle:
-                cached_df = pd.DataFrame({"feat_0": [0.1, 0.2], "feat_1": [0.3, 0.4]})
-                mock_read_pickle.return_value = cached_df
+                    bert_instance2 = bert_instance
+                    bert_instance2.extract()
 
-                bert_instance2 = bert_instance
-                bert_instance2.util.config_val.side_effect = config_val_mock_cache
-                bert_instance2.extract()
-
-                # Verify that pd.read_pickle was called
-                mock_read_pickle.assert_called_once()
-                assert isinstance(bert_instance2.df, pd.DataFrame)
+                    # Verify that pd.read_pickle was called
+                    mock_read_pickle.assert_called_once()
+                    assert isinstance(bert_instance2.df, pd.DataFrame)
 
 
 def test_get_embeddings_returns_numpy_array(bert_instance):

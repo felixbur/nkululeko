@@ -32,14 +32,18 @@ class MLD_set(Featureset):
         import audmld
 
         mld_class_name = self.util.config_val("FEATS", "mld.df", "Mld")
-        mld_classes = {"Mld": audmld.Mld, "MldSust": audmld.MldSust, "MldStruct": audmld.MldStruct}
+        mld_classes = {
+            "Mld": audmld.Mld,
+            "MldSust": audmld.MldSust,
+            "MldStruct": audmld.MldStruct,
+        }
         if mld_class_name not in mld_classes:
             self.util.error(
                 f"FEATS.mld.df must be one of {list(mld_classes.keys())}, got '{mld_class_name}'"
             )
         self.util.debug(f"using MLD class: {mld_class_name}")
         cache_root = f"{storage}_{mld_class_name}"
-        no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
+        no_reuse = self.util.config_val_bool("FEATS", "no_reuse", False)
         if no_reuse and os.path.exists(cache_root):
             os.remove(cache_root)
         if not os.path.isfile(cache_root):
