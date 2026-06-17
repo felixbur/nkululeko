@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.7.9 (26-06-17)
+------------------------
+* fix: replace unsafe eval() with getattr(), config_val_bool(), and ast.literal_eval()
+
 Version 1.7.8 (26-06-16)
 ------------------------
 * added automated binning
