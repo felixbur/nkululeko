@@ -77,15 +77,9 @@ def test_extract_reuses_cached_features(sptk_set, mock_util):
     """Test that extract reuses cached features when available."""
     cached_df = pd.DataFrame({"stft_mean": [0.5], "fbank_0_mean": [0.3]})
     mock_util.get_store = Mock(return_value=cached_df)
-    mock_util.config_val = Mock(
-        side_effect=lambda section, key, default: {
-            ("FEATS", "store_format"): "pkl",
-            ("FEATS", "needs_feature_extraction"): False,
-            ("FEATS", "no_reuse"): "False",
-        }.get((section, key), default)
-    )
 
-    with patch("nkululeko.feat_extract.feats_sptk.os.path.isfile", return_value=True):
+    # Mock _needs_extraction to return False (cache hit)
+    with patch.object(type(sptk_set), "_needs_extraction", return_value=False):
         result = sptk_set.extract()
 
         assert result is not None
@@ -248,15 +242,9 @@ def test_extract_error_on_cached_nan_values(sptk_set, mock_util):
     """Test that extract raises error when cached data contains NaN."""
     cached_df = pd.DataFrame({"stft_mean": [0.5, np.nan], "fbank_0_mean": [0.3, 0.4]})
     mock_util.get_store = Mock(return_value=cached_df)
-    mock_util.config_val = Mock(
-        side_effect=lambda section, key, default: {
-            ("FEATS", "store_format"): "pkl",
-            ("FEATS", "needs_feature_extraction"): False,
-            ("FEATS", "no_reuse"): "False",
-        }.get((section, key), default)
-    )
 
-    with patch("nkululeko.feat_extract.feats_sptk.os.path.isfile", return_value=True):
+    # Mock _needs_extraction to return False (cache hit)
+    with patch.object(type(sptk_set), "_needs_extraction", return_value=False):
         sptk_set.extract()
 
         # Verify error was called due to NaN values

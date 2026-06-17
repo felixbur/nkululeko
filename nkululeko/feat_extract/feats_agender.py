@@ -46,11 +46,7 @@ class AgenderSet(Featureset):
         store = self.util.get_path("store")
         store_format = self.util.config_val("FEATS", "store_format", "pkl")
         storage = f"{store}{self.name}.{store_format}"
-        extract = eval(
-            self.util.config_val("FEATS", "needs_feature_extraction", "False")
-        )
-        no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
-        if no_reuse or extract or not os.path.isfile(storage):
+        if self._needs_extraction(storage):
             self.util.debug(
                 "extracting agender model embeddings, this might take a while..."
             )

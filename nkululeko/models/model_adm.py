@@ -352,7 +352,9 @@ class ADMModel(Model):
         with torch.no_grad():
             for index, (features, labels) in enumerate(loader):
                 start_index = index * loader.batch_size
-                end_index = start_index + len(labels)  # use actual batch size (last batch may be smaller)
+                end_index = start_index + len(
+                    labels
+                )  # use actual batch size (last batch may be smaller)
 
                 # Convert features to float32
                 features = features.float()
@@ -572,9 +574,7 @@ class ADMModel(Model):
         ).to(self.device)
 
         try:
-            self.model.load_state_dict(
-                torch.load(self.store_path, weights_only=True)
-            )
+            self.model.load_state_dict(torch.load(self.store_path, weights_only=True))
         except FileNotFoundError:
             self.util.error(f"model file not found: {self.store_path}")
         self.model.eval()

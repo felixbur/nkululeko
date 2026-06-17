@@ -82,6 +82,42 @@ class TestConfigVal:
 
 
 # ---------------------------------------------------------------------------
+# config_val_bool
+# ---------------------------------------------------------------------------
+
+
+class TestConfigValBool:
+    @pytest.mark.parametrize("value", ["True", "TRUE", "1", "yes", "  yes  "])
+    def test_truthy_string_values(self, value):
+        glob_conf.config["FEATS"]["no_reuse"] = value
+        u = Util("test")
+        assert u.config_val_bool("FEATS", "no_reuse", False) is True
+
+    @pytest.mark.parametrize("value", ["False", "  False  "])
+    def test_falsy_string_values(self, value):
+        glob_conf.config["FEATS"]["no_reuse"] = value
+        u = Util("test")
+        assert u.config_val_bool("FEATS", "no_reuse", True) is False
+
+    def test_returns_default_for_missing_key(self):
+        u = Util("test")
+        assert u.config_val_bool("FEATS", "nonexistent", False) is False
+        assert u.config_val_bool("FEATS", "nonexistent", True) is True
+
+    def test_returns_existing_bool_value(self):
+        # ConfigParser stores strings only; verify bool defaults convert correctly
+        u = Util("test", has_config=False)
+        assert u.config_val_bool("FEATS", "no_reuse", True) is True
+        assert u.config_val_bool("FEATS", "no_reuse", False) is False
+
+    def test_rejects_arbitrary_code(self):
+        glob_conf.config["FEATS"]["no_reuse"] = "__import__('os').system('echo hacked')"
+        u = Util("test")
+        # Should safely return False, not execute code
+        assert u.config_val_bool("FEATS", "no_reuse", False) is False
+
+
+# ---------------------------------------------------------------------------
 # set_config_val
 # ---------------------------------------------------------------------------
 
