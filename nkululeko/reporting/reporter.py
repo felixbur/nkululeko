@@ -380,6 +380,17 @@ class Reporter:
         test_result.set_upper_lower(upper, lower)
         result_msg = f"Speaker combination result: {test_result.test_result_str()}"
         self.util.debug(result_msg)
+        if not self.is_classification:
+            spk_result_val, spk_upper, spk_lower = self._get_test_result(
+                truths_speakers, preds_speakers, self.metric
+            )
+            spk_result = Result(spk_result_val, None, None, None, self.METRIC)
+            spk_result.set_upper_lower(spk_upper, spk_lower)
+            self._plot_scatter(
+                truths_speakers, preds_speakers,
+                f"{plot_name}_scatter",
+                result=spk_result,
+            )
         if function == "mean":
             truths_speakers, preds_speakers = self.util._bin_distributions(
                 truths_speakers, preds_speakers
@@ -391,16 +402,17 @@ class Reporter:
             test_result=test_result,
         )
 
-    def _plot_scatter(self, truths, preds, plot_name, epoch=None):
-        # print(truths)
-        # print(preds)
+    def _plot_scatter(self, truths, preds, plot_name, epoch=None, result=None):
         if epoch is None:
             epoch = self.epoch
         fig_dir = self.util.get_path("fig_dir")
         pcc = pearsonr(truths, preds)[0]
-        reg_res = self.result.test_result_str()
+        reg_res = result.test_result_str() if result is not None else self.result.test_result_str()
         fig = plt.figure()
         plt.scatter(truths, preds)
+        m, b = np.polyfit(truths, preds, 1)
+        x_line = np.array([min(truths), max(truths)])
+        plt.plot(x_line, m * x_line + b, color="red", linewidth=1)
         plt.xlabel("truth")
         plt.ylabel("prediction")
 
@@ -444,10 +456,16 @@ class Reporter:
 
         # if labels come from binning, try to get the original labels for the confusion matrix
         if not self.util.exp_is_classification():
-            labels = ast.literal_eval(glob_conf.config["DATA"]["labels"])
-            map = dict(zip(range(len(labels)), labels))
-            truths = [map[t] for t in list(truths)]
-            preds = [map[p] for p in list(preds)]
+            try:
+                labels = ast.literal_eval(glob_conf.config["DATA"]["labels"])
+            except KeyError:
+                # No label names configured — derive bin indices from the data
+                n_bins = max(int(max(list(truths) + list(preds))) + 1, 1)
+                labels = [str(i) for i in range(n_bins)]
+            label_map = dict(zip(range(len(labels)), labels))
+            n = len(labels)
+            truths = [label_map[min(max(int(t), 0), n - 1)] for t in list(truths)]
+            preds = [label_map[min(max(int(p), 0), n - 1)] for p in list(preds)]
 
         if le is not None:
             label_dict = dict(zip(range(len(le.classes_)), le.classes_))

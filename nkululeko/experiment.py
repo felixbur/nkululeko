@@ -733,6 +733,9 @@ class Experiment:
         else:
             truths = best.truths_cont
             preds = best.preds_cont
+        if "speaker" not in self.df_test.columns:
+            self.util.warn("combine_per_speaker: no speaker column in df_test, skipping")
+            return
         speakers = self.df_test.speaker.values
         df = pd.DataFrame(data={"truths": truths, "preds": preds, "speakers": speakers})
         plot_name = f"{self.util.get_exp_name()}_speakercombined_{function}"
