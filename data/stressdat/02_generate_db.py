@@ -24,6 +24,7 @@ Columns (all tables):
   gender         – speaker gender (female / male)
   stress_level   – mean perceptual stress score across annotators (0–100)
   duration       – duration in seconds
+  speaker        – speaker identifier (e.g. s06h)
 
 Fixed speaker-disjunct train/dev/test split.
 """
@@ -87,6 +88,22 @@ db.schemes["duration"] = audformat.Scheme(
     description="Duration in seconds (full file for 'files' table, speech segment for 'segments' table)",
 )
 
+# -- speaker split -----------------------------------------------------------
+# Defined using splitutils to balance stress_level and speaker sex across splits,
+# while keeping speakers disjoint.
+
+TRAIN_SPEAKERS = ['s02a', 's03a', 's04h', 's05h', 's06h', 's07n', 's08h', 's10h',
+                  's12h', 's13h', 's14h', 's16h', 's17h', 's19h', 's21h', 's22h',
+                  's24h', 's25h', 's26h', 's27h']
+DEV_SPEAKERS   = ['s01a', 's11h', 's18h']
+TEST_SPEAKERS  = ['s09h', 's15h', 's20h', 's23h', 's28h', 's29h']
+
+db.schemes["speaker"] = audformat.Scheme(
+    dtype=audformat.define.DataType.STRING,
+    labels=sorted(TRAIN_SPEAKERS + DEV_SPEAKERS + TEST_SPEAKERS),
+    description="Speaker identifier",
+)
+
 # -- filewise table ----------------------------------------------------------
 file_index = audformat.filewise_index(df.index.tolist())
 
@@ -95,6 +112,7 @@ db["files"]["induced_stress"] = audformat.Column(scheme_id="induced_stress")
 db["files"]["gender"]         = audformat.Column(scheme_id="gender")
 db["files"]["stress_level"]   = audformat.Column(scheme_id="stress_level")
 db["files"]["duration"]       = audformat.Column(scheme_id="duration")
+db["files"]["speaker"]        = audformat.Column(scheme_id="speaker")
 
 db["files"].set(
     {
@@ -102,17 +120,10 @@ db["files"].set(
         "gender":         df["gender"].tolist(),
         "stress_level":   df["stress_level"].tolist(),
         "duration":       df["duration"].tolist(),
+        "speaker":        df["speaker"].tolist(),
     }
 )
 
-
-# -- speaker split -----------------------------------------------------------
-
-TRAIN_SPEAKERS = ['s02a', 's03a', 's04h', 's05h', 's06h', 's07n', 's08h', 's10h',
-                  's12h', 's13h', 's14h', 's16h', 's17h', 's19h', 's21h', 's22h',
-                  's24h', 's25h', 's26h', 's27h']
-DEV_SPEAKERS   = ['s01a', 's11h', 's18h']
-TEST_SPEAKERS  = ['s09h', 's15h', 's20h', 's23h', 's28h', 's29h']
 
 speaker_split: dict[str, str] = (
     {s: "train" for s in TRAIN_SPEAKERS}
@@ -147,11 +158,13 @@ for split in ("train", "dev", "test"):
     db[table_id]["gender"]         = audformat.Column(scheme_id="gender")
     db[table_id]["stress_level"]   = audformat.Column(scheme_id="stress_level")
     db[table_id]["duration"]       = audformat.Column(scheme_id="duration")
+    db[table_id]["speaker"]        = audformat.Column(scheme_id="speaker")
     db[table_id].set({
         "induced_stress": subset["induced_stress"].tolist(),
         "gender":         subset["gender"].tolist(),
         "stress_level":   subset["stress_level"].tolist(),
         "duration":       subset["duration"].tolist(),
+        "speaker":        subset["speaker"].tolist(),
     })
 
 REPO = Path(__file__).parent / "repo"

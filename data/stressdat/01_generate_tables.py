@@ -21,6 +21,7 @@ Columns:
   gender         – speaker gender (female / male) from README speaker table
   stress_level   – mean perceptual stress score across annotators
   duration       – audio duration in seconds
+  speaker        – speaker identifier (e.g. s06h)
 
 Also produces stressdat_segments.csv: same columns but with a VAD-based segmented
 index (file, start, end in seconds), where duration is the speech segment length.
@@ -120,6 +121,7 @@ for utt_id, score in mean_scores.items():
         "gender":         GENDER.get(speaker_key),
         "stress_level":   score,
         "duration":       audiofile.duration(REPO / rel_path),
+        "speaker":        full_speaker,
     }
 
 df = pd.DataFrame.from_dict(rows, orient="index")
@@ -164,6 +166,7 @@ seg_df["induced_stress"] = seg_df["file"].map(df["induced_stress"])
 seg_df["gender"]         = seg_df["file"].map(df["gender"])
 seg_df["stress_level"]   = seg_df["file"].map(df["stress_level"])
 seg_df["duration"]       = seg_df["end"] - seg_df["start"]
+seg_df["speaker"]        = seg_df["file"].map(df["speaker"])
 
 seg_path = Path(__file__).parent / "stressdat_segments.csv"
 seg_df.to_csv(seg_path, index=False)
