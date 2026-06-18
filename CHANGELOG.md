@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.7.10 (26-06-18)
+------------------------
+* fix: scatterplots
+
 Version 1.7.9 (26-06-17)
 ------------------------
 * fix: replace unsafe eval() with getattr(), config_val_bool(), and ast.literal_eval()
