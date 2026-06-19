@@ -64,7 +64,7 @@ class TestPlotDistributionsStats:
 
     def test_result_file_created(self, tmp_path):
         """A result file is created for a categorical-label vs continuous-attribute pair."""
-        plots, res_dir = self._make_plots(tmp_path)
+        plots, _ = self._make_plots(tmp_path)
         df = _make_df()
         glob_conf.config["EXPL"]["value_counts"] = "[['age']]"
 

@@ -9,13 +9,17 @@ import sys
 
 from pathlib import Path
 
-import numpy as np
-
 import audeer
+import numpy as np
 
 from nkululeko.utils.dataframe import DataFrameMixin
 from nkululeko.utils.naming import NamingMixin
 from nkululeko.utils.storage import StorageMixin
+
+
+class _MessageOnlyFormatter(logging.Formatter):
+    def format(self, record):
+        return record.getMessage()
 
 
 class Util(NamingMixin, StorageMixin, DataFrameMixin):
@@ -38,7 +42,7 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         "uar",
         "mse",
     ]
-    keyvals = [        
+    keyvals = [
         "kind",
     ]
 
@@ -75,75 +79,86 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         # self.logged_configs = set()
 
     def setup_logging(self):
-        # Setup logging
         logger = logging.getLogger(__name__)
         # Always set DEBUG so messages reach all handlers regardless of whether
         # an ancestor logger (e.g. root logger in notebooks) already has handlers.
         logger.setLevel(logging.DEBUG)
+        formatter = _MessageOnlyFormatter()
+        self._ensure_console_handler(logger, formatter)
 
-        # Create a simple formatter that only shows the message
-        class SimpleFormatter(logging.Formatter):
-            def format(self, record):
-                return record.getMessage()
+        if self.config is not None:
+            self._setup_file_logging(logger, formatter)
 
+        self.logger = logger
+
+    @staticmethod
+    def _ensure_console_handler(logger, formatter):
         # Only add a console handler if this logger has none yet.
         # Use logger.handlers (direct handlers) rather than hasHandlers()
         # so the check is scoped to this logger only, not the full hierarchy.
         if not logger.handlers:
             console_handler = logging.StreamHandler()
-            console_handler.setFormatter(SimpleFormatter())
+            console_handler.setFormatter(formatter)
             logger.addHandler(console_handler)
 
-        # Add or replace file handler when config is available
-        if self.config is not None:
-            try:
-                root = self.config["EXP"]["root"]
-                name = self.config["EXP"]["name"]
-                log_dir = os.path.abspath(os.path.join(root, name, "log"))
-                audeer.mkdir(log_dir)
-                # Include seconds to avoid filename collisions between close-together runs
-                timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-                log_file = os.path.join(log_dir, f"{name}_{timestamp}.log")
+    def _setup_file_logging(self, logger, formatter):
+        try:
+            root = self.config["EXP"]["root"]
+            name = self.config["EXP"]["name"]
+            log_dir, log_file, timestamp = self._build_log_path(root, name)
+            self._remove_stale_file_handlers(logger, log_dir)
 
-                # Collect stale file handlers (different experiment dir) then remove them
-                # to avoid mutating the handlers list during iteration.
-                stale = [
-                    h
-                    for h in logger.handlers
-                    if isinstance(h, logging.FileHandler)
-                    and os.path.dirname(h.baseFilename) != log_dir
-                ]
-                for handler in stale:
-                    handler.close()
-                    logger.removeHandler(handler)
+            if self._has_file_handler(logger):
+                return
 
-                if not any(isinstance(h, logging.FileHandler) for h in logger.handlers):
-                    file_handler = logging.FileHandler(log_file)
-                    file_handler.setFormatter(SimpleFormatter())
-                    logger.addHandler(file_handler)
+            file_handler = logging.FileHandler(log_file)
+            file_handler.setFormatter(formatter)
+            logger.addHandler(file_handler)
+            self._copy_config_snapshot(log_dir, name, timestamp)
+        except KeyError:
+            logger.debug("File logging skipped: EXP configuration (root/name) incomplete")
+        except OSError as e:
+            logger.debug(f"File logging skipped: could not create log file ({e})")
 
-                    # Save a timestamped config snapshot alongside the log file.
-                    # Reads --config from sys.argv so no entry-point changes are needed.
-                    # Preserves the original file's extension (format-independent).
-                    src = None
-                    if "--config" in sys.argv:
-                        idx = sys.argv.index("--config")
-                        if idx + 1 < len(sys.argv):
-                            src = sys.argv[idx + 1]
-                    if src and os.path.isfile(src):
-                        ext = os.path.splitext(src)[1]
-                        config_snapshot = os.path.join(
-                            log_dir, f"{name}_{timestamp}{ext}"
-                        )
-                        shutil.copy2(src, config_snapshot)
-            except KeyError:
-                logger.debug(
-                    "File logging skipped: EXP configuration (root/name) incomplete"
-                )
-            except OSError as e:
-                logger.debug(f"File logging skipped: could not create log file ({e})")
+    @staticmethod
+    def _build_log_path(root, name):
+        log_dir = os.path.abspath(os.path.join(root, name, "log"))
+        audeer.mkdir(log_dir)
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        return log_dir, os.path.join(log_dir, f"{name}_{timestamp}.log"), timestamp
 
-        self.logger = logger
+    @staticmethod
+    def _remove_stale_file_handlers(logger, log_dir):
+        stale = [
+            handler
+            for handler in logger.handlers
+            if isinstance(handler, logging.FileHandler)
+            and os.path.dirname(handler.baseFilename) != log_dir
+        ]
+        for handler in stale:
+            handler.close()
+            logger.removeHandler(handler)
+
+    @staticmethod
+    def _has_file_handler(logger):
+        return any(isinstance(handler, logging.FileHandler) for handler in logger.handlers)
+
+    @staticmethod
+    def _config_snapshot_source():
+        if "--config" not in sys.argv:
+            return None
+        idx = sys.argv.index("--config")
+        if idx + 1 >= len(sys.argv):
+            return None
+        return sys.argv[idx + 1]
+
+    def _copy_config_snapshot(self, log_dir, name, timestamp):
+        src = self._config_snapshot_source()
+        if not src or not os.path.isfile(src):
+            return
+        ext = os.path.splitext(src)[1]
+        config_snapshot = os.path.join(log_dir, f"{name}_{timestamp}{ext}")
+        shutil.copy2(src, config_snapshot)
 
     def get_path(self, entry):
         """This method allows the user to get the directory path for the given argument."""
@@ -264,6 +279,61 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
             self.logger.debug(f"DEBUG: {self.caller}: {message}")
         else:
             print(f"DEBUG: {message}", flush=True)
+
+    def handle_nan(self, df, context="features", strategy=None, allow_drop=True):
+        """Handle NaN values in a DataFrame with configurable strategy.
+
+        Args:
+            df: pandas DataFrame to check and fill NaN values in.
+            context: string describing where the NaN was found (for logging).
+            strategy: optional strategy override. If unset, FEATS.nan_strategy is used.
+            allow_drop: whether the drop strategy may remove rows.
+
+        Returns:
+            DataFrame with NaN values handled according to configured strategy.
+        """
+        if not df.isna().to_numpy().any():
+            return df
+
+        nan_count = df.isna().sum().sum()
+        nan_pct = 100 * nan_count / df.size
+        raw_strategy = (
+            strategy
+            if strategy is not None
+            else self.config_val("FEATS", "nan_strategy", "zero")
+        )
+        strategy = str(raw_strategy).strip().lower()
+        valid_strategies = {"zero", "mean", "median", "drop"}
+        if strategy not in valid_strategies:
+            self.warn(
+                f"{context}: unknown NaN strategy '{raw_strategy}', using strategy 'zero'"
+            )
+            strategy = "zero"
+        elif strategy == "drop" and not allow_drop:
+            self.warn(
+                f"{context}: NaN strategy 'drop' is not allowed because it can "
+                "misalign features and labels, using strategy 'zero'"
+            )
+            strategy = "zero"
+
+        self.warn(
+            f"{context}: replacing {nan_count} NaN values"
+            f" ({nan_pct:.1f}% of data) with strategy '{strategy}'"
+        )
+
+        if strategy == "mean":
+            # Second fillna(0) handles columns where all values are NaN (mean is NaN)
+            numeric_means = df.mean(numeric_only=True)
+            return df.fillna(numeric_means).fillna(0)
+        elif strategy == "median":
+            # Second fillna(0) handles columns where all values are NaN (median is NaN)
+            numeric_medians = df.median(numeric_only=True)
+            return df.fillna(numeric_medians).fillna(0)
+        elif strategy == "drop":
+            return df.dropna()
+        else:
+            # Default: zero
+            return df.fillna(0)
 
     def set_config_val(self, section, key, value):
         try:

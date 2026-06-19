@@ -3,16 +3,13 @@ import ast
 import os
 import pickle
 
+import audeer
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.inspection import permutation_importance
-from sklearn.linear_model import LinearRegression
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.tree import DecisionTreeRegressor
-
-import audeer
+from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.plots import Plots
@@ -33,17 +30,7 @@ class FeatureAnalyser:
         # Create a copy of df_features to avoid modifying the original DataFrame
         df_features = df_features.copy()
         # check for NaN values in the features
-        for col in df_features.columns:
-            if df_features[col].isnull().values.any():
-                self.util.debug(
-                    f"{col} includes {df_features[col].isnull().sum()} nan,"
-                    " inserting mean values"
-                )
-                mean_val = df_features[col].mean()
-                if not np.isnan(mean_val):
-                    df_features[col] = df_features[col].fillna(mean_val)
-                else:
-                    df_features[col] = df_features[col].fillna(0)
+        df_features = self.util.handle_nan(df_features, context="feature analysis")
 
         self.features = df_features
         self.label = label

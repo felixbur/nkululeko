@@ -33,13 +33,7 @@ class PraatSet(Featureset):
             self.util.debug("extracting Praat features, this might take a while...")
             self.df = feats_praat_core.compute_features(self.data_df.index)
             self.df = self.df.set_index(self.data_df.index)
-            for i, col in enumerate(self.df.columns):
-                if self.df[col].isnull().values.any():
-                    self.util.debug(
-                        f"{col} includes {self.df[col].isnull().sum()} nan,"
-                        " inserting mean values"
-                    )
-                    self.df[col] = self.df[col].fillna(self.df[col].mean())
+            self.df = self.util.handle_nan(self.df, context="praat features")
 
             self.util.write_store(self.df, storage, store_format)
             try:
@@ -63,17 +57,7 @@ class PraatSet(Featureset):
         index = audformat.utils.to_segmented_index(df.index, allow_nat=False)
         df = feats_praat_core.compute_features(index)
         df.set_index(index)
-        for i, col in enumerate(df.columns):
-            if df[col].isnull().values.any():
-                self.util.debug(
-                    f"{col} includes {df[col].isnull().sum()} nan,"
-                    " inserting mean values"
-                )
-                mean_val = df[col].mean()
-                if not np.isnan(mean_val):
-                    df[col] = df[col].fillna(mean_val)
-                else:
-                    df[col] = df[col].fillna(0)
+        df = self.util.handle_nan(df, context="praat features")
         df = df.astype(float)
         feats = df.to_numpy()
         return feats

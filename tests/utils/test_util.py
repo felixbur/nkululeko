@@ -2,10 +2,15 @@
 
 import configparser
 import logging
+import os
 
+import numpy as np
+import pandas as pd
 import pytest
 
+import audeer
 import nkululeko.glob_conf as glob_conf
+import nkululeko.utils.util as util_mod
 from nkululeko.utils.util import Util
 
 
@@ -224,8 +229,6 @@ class TestNumericHelpers:
 class TestSetupLogging:
     def _reset_logger(self):
         """Remove all handlers from the shared module logger between tests."""
-        import nkululeko.utils.util as util_mod
-
         logger = logging.getLogger(util_mod.__name__)
         for h in logger.handlers[:]:
             h.close()
@@ -238,8 +241,6 @@ class TestSetupLogging:
         self._reset_logger()
 
     def test_file_handler_created_when_exp_config_present(self, tmp_path):
-        import nkululeko.utils.util as util_mod
-
         glob_conf.config["EXP"]["root"] = str(tmp_path)
         glob_conf.config["EXP"]["name"] = "logtest"
         Util("test")
@@ -251,8 +252,6 @@ class TestSetupLogging:
         assert file_handlers[0].baseFilename.endswith(".log")
 
     def test_no_duplicate_file_handler_on_second_util(self, tmp_path):
-        import nkululeko.utils.util as util_mod
-
         glob_conf.config["EXP"]["root"] = str(tmp_path)
         glob_conf.config["EXP"]["name"] = "logtest"
         Util("test")
@@ -264,8 +263,6 @@ class TestSetupLogging:
         assert len(file_handlers) == 1
 
     def test_file_handler_replaced_when_experiment_changes(self, tmp_path):
-        import nkululeko.utils.util as util_mod
-
         # First experiment
         glob_conf.config["EXP"]["root"] = str(tmp_path)
         glob_conf.config["EXP"]["name"] = "exp_one"
@@ -288,8 +285,6 @@ class TestSetupLogging:
         assert "exp_two" in second_handlers[0].baseFilename
 
     def test_no_file_handler_without_config(self, tmp_path):
-        import nkululeko.utils.util as util_mod
-
         glob_conf.config = None
         Util("test", has_config=False)
         logger = logging.getLogger(util_mod.__name__)
@@ -299,9 +294,6 @@ class TestSetupLogging:
         assert len(file_handlers) == 0
 
     def test_oserror_falls_back_to_console_only(self, tmp_path, monkeypatch):
-        import nkululeko.utils.util as util_mod
-        import audeer
-
         glob_conf.config["EXP"]["root"] = str(tmp_path)
         glob_conf.config["EXP"]["name"] = "logtest"
 
@@ -384,8 +376,6 @@ class TestGetPath:
         glob_conf.config["EXP"]["root"] = str(tmp_path)
         glob_conf.config["EXP"]["name"] = "newexp"
         u = Util("test")
-        import os
-
         path = u.get_path("res_dir")
         assert os.path.isdir(path)
 
@@ -398,8 +388,6 @@ class TestGetPath:
 class TestCheckClassLabel:
     def test_renames_class_label_to_target(self):
         u = Util("test")
-        import pandas as pd
-
         df = pd.DataFrame({"emotion": [1, 2], "class_label": ["A", "B"]})
         result = u.check_class_label(df)
         assert "class_label" not in result.columns
@@ -409,8 +397,6 @@ class TestCheckClassLabel:
 
     def test_no_class_label_column_unchanged(self):
         u = Util("test")
-        import pandas as pd
-
         df = pd.DataFrame({"emotion": [1, 2, 3], "other": [4, 5, 6]})
         result = u.check_class_label(df)
         assert list(result.columns) == ["emotion", "other"]
@@ -419,8 +405,6 @@ class TestCheckClassLabel:
         # Remove the target key so config_val returns None (the default)
         del glob_conf.config["DATA"]["target"]
         u = Util("test")
-        import pandas as pd
-
         df = pd.DataFrame({"emotion": [1], "class_label": ["A"]})
         result = u.check_class_label(df)
         # target is None → condition is False, no rename
@@ -455,6 +439,117 @@ class TestConfigValData:
         u = Util("test")
         result = u.config_val_data("emodb", "", "fallback")
         assert result == "/direct/path"
+
+
+# ---------------------------------------------------------------------------
+# handle_nan()
+# ---------------------------------------------------------------------------
+
+
+class TestHandleNan:
+    @pytest.fixture(autouse=True)
+    def reset_nan_strategy(self):
+        """Remove any nan_strategy override after each test."""
+        yield
+        glob_conf.config.remove_option("FEATS", "nan_strategy")
+
+    def test_no_nan_returns_unchanged(self):
+        u = Util("test")
+        df = pd.DataFrame({"a": [1.0, 2.0], "b": [3.0, 4.0]})
+        result = u.handle_nan(df, context="test")
+        pd.testing.assert_frame_equal(result, df)
+
+    def test_default_strategy_fills_with_zero(self):
+        u = Util("test")
+        df = pd.DataFrame({"a": [1.0, np.nan], "b": [np.nan, 4.0]})
+        result = u.handle_nan(df, context="test")
+        assert not result.isna().any().any()
+        assert result.iloc[1, 0] == pytest.approx(0.0)
+        assert result.iloc[0, 1] == pytest.approx(0.0)
+
+    def test_mean_strategy(self):
+        glob_conf.config["FEATS"]["nan_strategy"] = "mean"
+        u = Util("test")
+        df = pd.DataFrame({"a": [1.0, 3.0, np.nan], "b": [2.0, np.nan, 6.0]})
+        result = u.handle_nan(df, context="test")
+        assert not result.isna().any().any()
+        assert result.iloc[2, 0] == pytest.approx(2.0)  # mean of 1, 3
+        assert result.iloc[1, 1] == pytest.approx(4.0)  # mean of 2, 6
+
+    def test_median_strategy(self):
+        glob_conf.config["FEATS"]["nan_strategy"] = "median"
+        u = Util("test")
+        df = pd.DataFrame({"a": [1.0, 3.0, 5.0, np.nan]})
+        result = u.handle_nan(df, context="test")
+        assert not result.isna().any().any()
+        assert result.iloc[3, 0] == pytest.approx(3.0)  # median of 1, 3, 5
+
+    def test_mean_strategy_handles_non_numeric_columns(self):
+        glob_conf.config["FEATS"]["nan_strategy"] = "mean"
+        u = Util("test")
+        df = pd.DataFrame({"a": [1.0, 3.0, np.nan], "b": ["x", None, "z"]})
+        result = u.handle_nan(df, context="test")
+        assert not result.isna().any().any()
+        assert result.iloc[2, 0] == pytest.approx(2.0)
+        assert result.iloc[1, 1] == pytest.approx(0.0)
+
+    def test_invalid_strategy_falls_back_to_zero_and_logs_actual_strategy(self, caplog):
+        glob_conf.config["FEATS"]["nan_strategy"] = "invalid"
+        u = Util("test")
+        df = pd.DataFrame({"a": [1.0, np.nan]})
+        with caplog.at_level(logging.WARNING):
+            result = u.handle_nan(df, context="test")
+        assert not result.isna().any().any()
+        assert result.iloc[1, 0] == pytest.approx(0.0)
+        assert "unknown NaN strategy 'invalid'" in caplog.text
+        assert "strategy 'zero'" in caplog.text
+
+    def test_drop_strategy_can_be_disallowed_to_preserve_row_alignment(self, caplog):
+        glob_conf.config["FEATS"]["nan_strategy"] = "drop"
+        u = Util("test")
+        df = pd.DataFrame({"a": [1.0, np.nan], "b": [3.0, 4.0]})
+        with caplog.at_level(logging.WARNING):
+            result = u.handle_nan(df, context="Model, train", allow_drop=False)
+        assert len(result) == 2
+        assert not result.isna().any().any()
+        assert result.iloc[1, 0] == pytest.approx(0.0)
+        assert "drop" in caplog.text
+        assert "misalign features and labels" in caplog.text
+
+    def test_drop_strategy(self):
+        glob_conf.config["FEATS"]["nan_strategy"] = "drop"
+        u = Util("test")
+        df = pd.DataFrame({"a": [1.0, np.nan, 3.0], "b": [4.0, 5.0, 6.0]})
+        result = u.handle_nan(df, context="test")
+        assert len(result) == 2
+        assert not result.isna().any().any()
+
+    def test_warns_with_count_and_percentage(self, caplog):
+        u = Util("test")
+        df = pd.DataFrame({"a": [1.0, np.nan], "b": [np.nan, 4.0]})
+        with caplog.at_level(logging.WARNING):
+            u.handle_nan(df, context="Model, train")
+        assert "2 NaN values" in caplog.text
+        assert "50.0%" in caplog.text
+        assert "Model, train" in caplog.text
+
+    def test_mean_strategy_all_nan_column_falls_back_to_zero(self):
+        glob_conf.config["FEATS"]["nan_strategy"] = "mean"
+        u = Util("test")
+        df = pd.DataFrame({"a": [1.0, 3.0], "b": [np.nan, np.nan]})
+        result = u.handle_nan(df, context="test")
+        assert not result.isna().any().any()
+        assert result.iloc[0, 1] == pytest.approx(0.0)
+        assert result.iloc[1, 1] == pytest.approx(0.0)
+
+    def test_median_strategy_all_nan_column_falls_back_to_zero(self):
+        glob_conf.config["FEATS"]["nan_strategy"] = "median"
+        u = Util("test")
+        df = pd.DataFrame({"a": [1.0, 3.0], "b": [np.nan, np.nan]})
+        result = u.handle_nan(df, context="test")
+        assert not result.isna().any().any()
+        assert result.iloc[0, 1] == pytest.approx(0.0)
+        assert result.iloc[1, 1] == pytest.approx(0.0)
 
 
 # ---------------------------------------------------------------------------

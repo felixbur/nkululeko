@@ -200,17 +200,8 @@ class ADMModel(Model):
         )
         self.threshold = float(self.util.config_val("MODEL", "threshold", "0.5"))
 
-        # Handle NaN values
-        if feats_train.isna().to_numpy().any():
-            self.util.debug(
-                f"Model, train: replacing {feats_train.isna().sum().sum()} NANs with 0"
-            )
-            feats_train = feats_train.fillna(0)
-        if feats_test.isna().to_numpy().any():
-            self.util.debug(
-                f"Model, test: replacing {feats_test.isna().sum().sum()} NANs with 0"
-            )
-            feats_test = feats_test.fillna(0)
+        feats_train = self._handle_model_nan(feats_train, "Model, train")
+        feats_test = self._handle_model_nan(feats_test, "Model, test")
 
         # Set up data loaders
         self.trainloader = self.get_loader(feats_train, df_train, True)
@@ -352,40 +343,13 @@ class ADMModel(Model):
         with torch.no_grad():
             for index, (features, labels) in enumerate(loader):
                 start_index = index * loader.batch_size
-                end_index = start_index + len(
-                    labels
-                )  # use actual batch size (last batch may be smaller)
-
-                # Convert features to float32
-                features = features.float()
-
-                # Split features
-                ssl_feats, spec_feats, phase_feats, extra_feats = (
-                    self._split_feature_streams(features)
+                end_index = start_index + len(labels)
+                batch_logits, batch_targets, loss = self._evaluate_batch(
+                    model, features, labels, device
                 )
-
-                # Forward pass
-                batch_logits = model(
-                    ssl_feats.to(device),
-                    spec_feats.to(device),
-                    phase_feats.to(device),
-                    {k: v.to(device) for k, v in extra_feats.items()},
-                )
-
-                # Clean non-finite logits before storing; move to CPU to match preallocated tensors
-                batch_logits = (
-                    torch.nan_to_num(batch_logits, nan=0.0, posinf=10.0, neginf=-10.0)
-                    .detach()
-                    .cpu()
-                )
-
                 logits[start_index:end_index] = batch_logits
-                targets[start_index:end_index] = labels.detach().cpu()
-
-                loss = self.criterion(
-                    batch_logits.to(device), labels.float().to(device)
-                )
-                losses.append(loss.item())
+                targets[start_index:end_index] = batch_targets
+                losses.append(loss)
 
         self.loss_eval = (np.asarray(losses)).mean()
 
@@ -395,6 +359,25 @@ class ADMModel(Model):
         uar = recall_score(targets.numpy(), predictions.numpy(), average="macro")
 
         return uar, targets, predictions, logits
+
+    def _evaluate_batch(self, model, features, labels, device):
+        """Run one evaluation batch and return CPU tensors plus loss."""
+        ssl_feats, spec_feats, phase_feats, extra_feats = self._split_feature_streams(
+            features.float()
+        )
+        batch_logits = model(
+            ssl_feats.to(device),
+            spec_feats.to(device),
+            phase_feats.to(device),
+            {key: value.to(device) for key, value in extra_feats.items()},
+        )
+        loss = self.criterion(batch_logits, labels.float().to(device)).item()
+        batch_logits = (
+            torch.nan_to_num(batch_logits, nan=0.0, posinf=10.0, neginf=-10.0)
+            .detach()
+            .cpu()
+        )
+        return batch_logits, labels.detach().cpu(), loss
 
     def get_probas(self, logits):
         """Convert logits to probability dataframe."""
@@ -469,9 +452,10 @@ class ADMModel(Model):
         except (TypeError, ValueError):
             pass
 
-        if glob_conf.label_encoder is not None:
+        label_encoder = getattr(glob_conf, "label_encoder", None)
+        if label_encoder is not None:
             try:
-                return glob_conf.label_encoder.transform(labels).astype(float)
+                return label_encoder.transform(labels).astype(float)
             except ValueError:
                 pass
 
@@ -489,13 +473,13 @@ class ADMModel(Model):
         """Set run and epoch ID with branch configuration in filename."""
         self.run = run
         self.epoch = epoch
-        dir = self.util.get_path("model_dir")
+        model_dir = self.util.get_path("model_dir")
 
         # Include branch configuration in model filename
         # e.g., "tsp" for time+spectral+phase, "ts" for time+spectral
         branch_suffix = "".join([b[0] for b in self.branches])
         name = f"{self.util.get_exp_name(only_train=True)}_{branch_suffix}_{self.run}_{self.epoch:03d}.model"
-        self.store_path = dir + name
+        self.store_path = model_dir + name
 
     def store(self):
         """Store the model weights and feature split metadata to disk."""
@@ -574,7 +558,9 @@ class ADMModel(Model):
         ).to(self.device)
 
         try:
-            self.model.load_state_dict(torch.load(self.store_path, weights_only=True))
+            self.model.load_state_dict(
+                torch.load(self.store_path, map_location=self.device, weights_only=True)
+            )
         except FileNotFoundError:
             self.util.error(f"model file not found: {self.store_path}")
         self.model.eval()

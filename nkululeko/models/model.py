@@ -3,15 +3,12 @@ import ast
 import pickle
 import random
 
-from joblib import parallel_backend
+import audeer
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import LeaveOneGroupOut
-from sklearn.model_selection import StratifiedKFold
 import sklearn.utils
-
-import audeer
+from joblib import parallel_backend
+from sklearn.model_selection import GridSearchCV, LeaveOneGroupOut, StratifiedKFold
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.reporting.reporter import Reporter
@@ -260,14 +257,7 @@ class Model:
             self._x_fold_cross()
             return
 
-        # check for NANs in the features
-        # set up the data_loaders
-        if self.feats_train.isna().to_numpy().any():
-            self.util.debug(
-                "Model, train: replacing"
-                f" {self.feats_train.isna().sum().sum()} NANs with 0"
-            )
-            self.feats_train = self.feats_train.fillna(0)
+        self.feats_train = self._handle_model_nan(self.feats_train, "Model, train")
         # remove labels from features
         feats = self.feats_train.to_numpy()
         # compute class weights
@@ -344,12 +334,7 @@ class Model:
         return predictions, probas
 
     def predict(self):
-        if self.feats_test.isna().to_numpy().any():
-            self.util.debug(
-                "Model, test: replacing"
-                f" {self.feats_test.isna().sum().sum()} NANs with 0"
-            )
-            self.feats_test = self.feats_test.fillna(0)
+        self.feats_test = self._handle_model_nan(self.feats_test, "Model, test")
         if self.logo or self.xfoldx:
             report = Reporter(
                 self.truths.astype(float), self.preds, self.run, self.epoch
@@ -367,6 +352,15 @@ class Model:
         )
         report.print_probabilities()
         return report
+
+    def _handle_model_nan(self, feats, context):
+        """Handle feature NaNs without changing row alignment with labels."""
+        return self.util.handle_nan(
+            feats,
+            context=context,
+            strategy=self.util.config_val("MODEL", "nan_strategy", "zero"),
+            allow_drop=False,
+        )
 
     def get_type(self):
         return "generic"
