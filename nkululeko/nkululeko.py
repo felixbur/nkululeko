@@ -144,8 +144,8 @@ def main():
         config_file = cwd / "exp.ini"
     try:
         doit(config_file)
-    except NkululukoError as e:
-        print(str(e))
+    except NkululukoError:
+        # Util.error() already logged the message before raising; just exit.
         sys.exit(1)
 
 
