@@ -57,9 +57,11 @@ class DummyExperiment:
         return DummyExperiment(self.config)
 
     def analyse_features(self, needs_feats):
+        # Test double hook intentionally does nothing.
         pass
 
     def store_report(self):
+        # Test double hook intentionally does nothing.
         pass
 
 
@@ -286,12 +288,14 @@ def test_get_importance_caches_result(tmp_path):
     from sklearn.tree import DecisionTreeClassifier
 
     analyser = _make_analyser(tmp_path)
-    model = DecisionTreeClassifier(random_state=0)
+    model = DecisionTreeClassifier(random_state=0, ccp_alpha=0.0)
 
     with patch.object(analyser.util, "get_path", return_value=str(tmp_path) + "/"):
         importance1 = analyser._get_importance(model, permutation=False)
         # Tamper with the cache to confirm second call reads from disk
-        cache_path = os.path.join(str(tmp_path), "cache", "importance_DecisionTreeClassifier.pkl")
+        cache_path = os.path.join(
+            str(tmp_path), "cache", "importance_DecisionTreeClassifier.pkl"
+        )
         sentinel = np.array([99.0, 99.0])
         with open(cache_path, "wb") as f:
             pickle.dump(sentinel, f)
@@ -306,7 +310,7 @@ def test_get_importance_perm_separate_cache(tmp_path):
     from sklearn.tree import DecisionTreeClassifier
 
     analyser = _make_analyser(tmp_path)
-    model = DecisionTreeClassifier(random_state=0)
+    model = DecisionTreeClassifier(random_state=0, ccp_alpha=0.0)
 
     with patch.object(analyser.util, "get_path", return_value=str(tmp_path) + "/"):
         analyser._get_importance(model, permutation=False)

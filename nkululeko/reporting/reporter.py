@@ -320,7 +320,7 @@ class Reporter:
         # if there are no bins, set them to border points for the labels and save them to the config to be used later
         try:
             bins = ast.literal_eval(glob_conf.config["DATA"]["bins"])
-        except (KeyError, ValueError) as e:
+        except (KeyError, ValueError):
             label_num = len(ast.literal_eval(glob_conf.config["DATA"]["labels"]))
             vmin, vmax = np.percentile(self.truths, [5, 95])
             inner_edges = np.linspace(vmin, vmax, label_num + 1)[1:-1]
@@ -464,8 +464,8 @@ class Reporter:
                 labels = [str(i) for i in range(n_bins)]
             label_map = dict(zip(range(len(labels)), labels))
             n = len(labels)
-            truths = [label_map[min(max(int(t), 0), n - 1)] for t in list(truths)]
-            preds = [label_map[min(max(int(p), 0), n - 1)] for p in list(preds)]
+            truths = [label_map[min(max(int(t), 0), n - 1)] for t in truths]
+            preds = [label_map[min(max(int(p), 0), n - 1)] for p in preds]
 
         if le is not None:
             label_dict = dict(zip(range(len(le.classes_)), le.classes_))

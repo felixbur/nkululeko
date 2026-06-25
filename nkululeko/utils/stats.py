@@ -1,5 +1,6 @@
-from itertools import combinations
 import math
+import warnings
+from itertools import combinations
 from typing import Tuple
 
 import numpy as np
@@ -18,7 +19,10 @@ def check_na(a):
     """
     if np.isnan(a).any():
         count = np.count_nonzero(np.isnan(a))
-        print(f"WARNING: got {count} Nans (of {len(a)}), setting to 0")
+        pct = 100 * count / a.size
+        warnings.warn(
+            f"Got {count} NaN values ({pct:.1f}% of {a.size} elements), setting to 0"
+        )
         a[np.isnan(a)] = 0
     return a
 

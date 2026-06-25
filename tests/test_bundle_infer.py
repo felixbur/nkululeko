@@ -185,7 +185,7 @@ class TestLoadBundle:
         # Create minimal bundle
         from sklearn.svm import SVC
 
-        model = SVC(probability=True)
+        model = SVC(C=1.0, kernel="rbf", gamma="scale", probability=True, random_state=0)
         model.fit([[1, 2], [3, 4]], [0, 1])
 
         manifest = {
@@ -289,7 +289,7 @@ class TestPredictFromBundle:
         # Train a tiny model
         X_train = np.array([[1, 2], [3, 4], [5, 6], [7, 8]])
         y_train = np.array([0, 1, 0, 1])
-        clf = SVC(probability=True)
+        clf = SVC(C=1.0, kernel="rbf", gamma="scale", probability=True, random_state=0)
         clf.fit(X_train, y_train)
 
         scaler = StandardScaler()
@@ -325,7 +325,7 @@ class TestPredictFromBundle:
 
         X_train = np.array([[1, 2], [3, 4], [5, 6], [7, 8]])
         y_train = np.array([0.1, 0.5, 0.7, 0.9])
-        clf = SVR()
+        clf = SVR(C=1.0, kernel="rbf", gamma="scale")
         clf.fit(X_train, y_train)
 
         bundle = {

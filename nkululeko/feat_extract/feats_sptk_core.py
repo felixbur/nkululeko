@@ -353,7 +353,7 @@ def compute_features(
         try:
             if isinstance(row_index, tuple) and len(row_index) == 3:
                 file, start, end = row_index
-                signal, sampling_rate = _read_audio(
+                signal, _ = _read_audio(
                     file,
                     offset=start.total_seconds(),
                     duration=(end - start).total_seconds(),
@@ -361,7 +361,7 @@ def compute_features(
             else:
                 # Single file path - read entire file
                 file = row_index if isinstance(row_index, str) else str(row_index)
-                signal, sampling_rate = _read_audio(file)
+                signal, _ = _read_audio(file)
 
             # Convert to tensor
             signal_tensor = torch.tensor(signal[0], device=device).float()

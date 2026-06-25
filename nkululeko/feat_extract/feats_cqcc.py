@@ -131,7 +131,7 @@ class CqccSet(Featureset):
                     f"got nan: {self.df.shape} {self.df.isnull().sum().sum()}"
                 )
 
-    def extract_sample(self, signal, sr):
+    def extract_sample(self, signal, _sr):
         if not self.extractor.available:
             self.extractor.warn_unavailable()
             return pd.DataFrame([{}]).to_numpy()

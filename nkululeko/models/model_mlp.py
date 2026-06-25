@@ -4,8 +4,8 @@ from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import recall_score
 import torch
+from sklearn.metrics import recall_score
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.models.model import Model
@@ -80,16 +80,8 @@ class MLPModel(Model):
         self.batch_size = int(self.util.config_val("MODEL", "batch_size", 8))
         # number of parallel processes
         self.num_workers = self.n_jobs
-        if feats_train.isna().to_numpy().any():
-            self.util.debug(
-                f"Model, train: replacing {feats_train.isna().sum().sum()} NANs with 0"
-            )
-            feats_train = feats_train.fillna(0)
-        if feats_test.isna().to_numpy().any():
-            self.util.debug(
-                f"Model, test: replacing {feats_test.isna().sum().sum()} NANs with 0"
-            )
-            feats_test = feats_test.fillna(0)
+        feats_train = self._handle_model_nan(feats_train, "Model, train")
+        feats_test = self._handle_model_nan(feats_test, "Model, test")
         # set up the data_loaders
         self.trainloader = self.get_loader(feats_train, df_train, True)
         self.testloader = self.get_loader(feats_test, df_test, False)

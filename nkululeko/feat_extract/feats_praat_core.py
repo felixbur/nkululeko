@@ -8,15 +8,16 @@ taken June 23rd 2022.
 #!/usr/bin/env python3
 import math
 import statistics
+import warnings
 
 import audiofile
 import numpy as np
 import pandas as pd
 import parselmouth
 from parselmouth.praat import call
-from scipy.stats.mstats import zscore
-from scipy.stats import lognorm
 from scipy import stats
+from scipy.stats import lognorm
+from scipy.stats.mstats import zscore
 from sklearn.decomposition import PCA
 from tqdm import tqdm
 
@@ -376,7 +377,11 @@ def run_pca(df):
 
     # x = StandardScaler().fit_transform(x)
     if np.any(np.isnan(x[0])):
-        print(f"Warning: {np.count_nonzero(np.isnan(x))} Nans in x, replacing with 0")
+        nan_count = np.count_nonzero(np.isnan(x))
+        nan_pct = 100 * nan_count / x.size
+        warnings.warn(
+            f"PCA input: {nan_count} NaN values ({nan_pct:.1f}% of data), replacing with 0"
+        )
         x[np.isnan(x)] = 0
     # if np.any(np.isfinite(x[0])):
     #     print(f"Warning: {np.count_nonzero(np.isfinite(x))} finite in x")

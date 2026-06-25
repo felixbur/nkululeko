@@ -14,7 +14,6 @@ from nkululeko.models.model_adm_core import (
     DeepfakeADMModel,
 )
 
-
 # ============================================================
 # Tests for ADM Core Components
 # ============================================================
@@ -537,7 +536,7 @@ class TestADMModel:
         assert store_path.exists()
 
         # Load into new state dict
-        loaded_state = torch.load(str(store_path))
+        loaded_state = torch.load(str(store_path), weights_only=True)
         assert "time_adm.fc1.weight" in loaded_state
         assert "spec_adm.fc2.weight" in loaded_state
         assert "phase_adm.fc1.weight" in loaded_state
