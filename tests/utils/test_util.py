@@ -11,6 +11,7 @@ import pytest
 import audeer
 import nkululeko.glob_conf as glob_conf
 import nkululeko.utils.util as util_mod
+from nkululeko.utils.errors import NkululukoError
 from nkululeko.utils.util import Util
 
 
@@ -153,6 +154,42 @@ class TestExpIsClassification:
         glob_conf.config["EXP"]["type"] = "regression"
         u = Util("test")
         assert u.exp_is_classification() is False
+
+
+# ---------------------------------------------------------------------------
+# error()
+# ---------------------------------------------------------------------------
+
+
+class TestError:
+    def test_raises_nkululuko_error_with_logger(self, caplog):
+        u = Util("mycaller")
+        with pytest.raises(NkululukoError, match="something went wrong"):
+            u.error("something went wrong")
+
+    def test_error_message_includes_caller_with_logger(self, caplog):
+        u = Util("mycaller")
+        with pytest.raises(NkululukoError) as exc_info:
+            u.error("bad input")
+        assert "mycaller" in str(exc_info.value)
+        assert "bad input" in str(exc_info.value)
+
+    def test_raises_nkululuko_error_without_logger(self, capsys):
+        u = Util("nocaller")
+        u.logger = None
+        with pytest.raises(NkululukoError, match="no logger path"):
+            u.error("no logger path")
+        captured = capsys.readouterr()
+        assert "no logger path" in captured.out
+        assert "nocaller" in captured.out
+
+    def test_print_path_uses_full_msg(self, capsys):
+        u = Util("caller")
+        u.logger = None
+        with pytest.raises(NkululukoError):
+            u.error("test message")
+        captured = capsys.readouterr()
+        assert "ERROR: caller: test message" in captured.out
 
 
 # ---------------------------------------------------------------------------

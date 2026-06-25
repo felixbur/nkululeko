@@ -13,6 +13,7 @@ import argparse
 import ast
 import configparser
 import os
+import sys
 
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
@@ -22,6 +23,7 @@ import seaborn as sn
 
 from nkululeko.aug_train import doit as aug_train
 from nkululeko.nkululeko import doit as nkulu
+from nkululeko.utils.errors import NkululukoError
 
 
 def main(src_dir):
@@ -38,89 +40,93 @@ def main(src_dir):
     # test if the configuration file exists
     if not os.path.isfile(config_file):
         print(f"ERROR: no such file: {config_file}")
-        exit()
+        sys.exit(1)
 
-    config = configparser.ConfigParser()
-    config.read(config_file)
-    datasets = config["EXP"]["databases"]
-    datasets = ast.literal_eval(datasets)
     try:
-        use_splits = eval(config["EXP"]["use_splits"])
-    except KeyError:
-        use_splits = False
-    dim = len(datasets)
-    results = np.zeros(dim * dim).reshape([dim, dim])
-    last_epochs = np.zeros(dim * dim).reshape([dim, dim])
-    # check if some data should be added to training
-    try:
-        extra_trains = config["CROSSDB"]["train_extra"]
-    except KeyError:
-        extra_trains = False
+        config = configparser.ConfigParser()
+        config.read(config_file)
+        datasets = config["EXP"]["databases"]
+        datasets = ast.literal_eval(datasets)
+        try:
+            use_splits = eval(config["EXP"]["use_splits"])
+        except KeyError:
+            use_splits = False
+        dim = len(datasets)
+        results = np.zeros(dim * dim).reshape([dim, dim])
+        last_epochs = np.zeros(dim * dim).reshape([dim, dim])
+        # check if some data should be added to training
+        try:
+            extra_trains = config["CROSSDB"]["train_extra"]
+        except KeyError:
+            extra_trains = False
 
-    for i in range(dim):
-        for j in range(dim):
-            # initialize config
-            config = None
-            config = configparser.ConfigParser()
-            config.read(config_file)
-            if i == j:
-                dataset = datasets[i]
-                print(f"running {dataset}")
-                if extra_trains:
-                    extra_trains_1 = extra_trains.removeprefix("[").removesuffix("]")
-                    config["DATA"]["databases"] = f"['{dataset}', {extra_trains_1}]"
-                    extra_trains_2 = ast.literal_eval(extra_trains)
-                    for extra_train in extra_trains_2:
-                        config["DATA"][f"{extra_train}.split_strategy"] = "train"
-                else:
-                    config["DATA"]["databases"] = f"['{dataset}']"
-                config["EXP"]["name"] = dataset
-            else:
-                train = datasets[i]
-                test = datasets[j]
-                print(f"running train: {train}, test: {test}")
-                if extra_trains:
-                    extra_trains_1 = extra_trains.removeprefix("[").removesuffix("]")
-                    config["DATA"]["databases"] = (
-                        f"['{train}', '{test}', {extra_trains_1}]"
-                    )
-                    if use_splits:
-                        config["DATA"][f"{test}.as_test"] = "True"
-                        config["DATA"][f"{train}.as_train"] = "True"
+        for i in range(dim):
+            for j in range(dim):
+                # initialize config
+                config = None
+                config = configparser.ConfigParser()
+                config.read(config_file)
+                if i == j:
+                    dataset = datasets[i]
+                    print(f"running {dataset}")
+                    if extra_trains:
+                        extra_trains_1 = extra_trains.removeprefix("[").removesuffix("]")
+                        config["DATA"]["databases"] = f"['{dataset}', {extra_trains_1}]"
+                        extra_trains_2 = ast.literal_eval(extra_trains)
+                        for extra_train in extra_trains_2:
+                            config["DATA"][f"{extra_train}.split_strategy"] = "train"
                     else:
-                        config["DATA"][f"{test}.split_strategy"] = "test"
-                        config["DATA"][f"{train}.split_strategy"] = "train"
-                    extra_trains_2 = ast.literal_eval(extra_trains)
-                    for extra_train in extra_trains_2:
-                        config["DATA"][f"{extra_train}.split_strategy"] = "train"
+                        config["DATA"]["databases"] = f"['{dataset}']"
+                    config["EXP"]["name"] = dataset
                 else:
-                    config["DATA"]["databases"] = f"['{train}', '{test}']"
-                    if use_splits:
-                        config["DATA"][f"{test}.as_test"] = "True"
-                        config["DATA"][f"{train}.as_train"] = "True"
+                    train = datasets[i]
+                    test = datasets[j]
+                    print(f"running train: {train}, test: {test}")
+                    if extra_trains:
+                        extra_trains_1 = extra_trains.removeprefix("[").removesuffix("]")
+                        config["DATA"]["databases"] = (
+                            f"['{train}', '{test}', {extra_trains_1}]"
+                        )
+                        if use_splits:
+                            config["DATA"][f"{test}.as_test"] = "True"
+                            config["DATA"][f"{train}.as_train"] = "True"
+                        else:
+                            config["DATA"][f"{test}.split_strategy"] = "test"
+                            config["DATA"][f"{train}.split_strategy"] = "train"
+                        extra_trains_2 = ast.literal_eval(extra_trains)
+                        for extra_train in extra_trains_2:
+                            config["DATA"][f"{extra_train}.split_strategy"] = "train"
                     else:
-                        config["DATA"][f"{test}.split_strategy"] = "test"
-                        config["DATA"][f"{train}.split_strategy"] = "train"
-                config["EXP"]["name"] = f"{train}_vs_{test}"
+                        config["DATA"]["databases"] = f"['{train}', '{test}']"
+                        if use_splits:
+                            config["DATA"][f"{test}.as_test"] = "True"
+                            config["DATA"][f"{train}.as_train"] = "True"
+                        else:
+                            config["DATA"][f"{test}.split_strategy"] = "test"
+                            config["DATA"][f"{train}.split_strategy"] = "train"
+                    config["EXP"]["name"] = f"{train}_vs_{test}"
 
-            tmp_config = "tmp.ini"
-            with open(tmp_config, "w") as tmp_file:
-                config.write(tmp_file)
-            if config.has_section("AUGMENT"):
-                result, last_epoch = aug_train(tmp_config)
-            else:
-                result, last_epoch = nkulu(tmp_config)
-            results[i, j] = float(result)
-            last_epochs[i, j] = int(last_epoch)
-    print(repr(results))
-    print(repr(last_epochs))
-    root = os.path.join(config["EXP"]["root"], "")
-    try:
-        format = config["PLOT"]["format"]
-        plot_name = f"{root}/heatmap.{format}"
-    except KeyError:
-        plot_name = f"{root}/heatmap.png"
-    plot_heatmap(results, last_epochs, datasets, plot_name, config, datasets)
+                tmp_config = "tmp.ini"
+                with open(tmp_config, "w") as tmp_file:
+                    config.write(tmp_file)
+                if config.has_section("AUGMENT"):
+                    result, last_epoch = aug_train(tmp_config)
+                else:
+                    result, last_epoch = nkulu(tmp_config)
+                results[i, j] = float(result)
+                last_epochs[i, j] = int(last_epoch)
+        print(repr(results))
+        print(repr(last_epochs))
+        root = os.path.join(config["EXP"]["root"], "")
+        try:
+            format = config["PLOT"]["format"]
+            plot_name = f"{root}/heatmap.{format}"
+        except KeyError:
+            plot_name = f"{root}/heatmap.png"
+        plot_heatmap(results, last_epochs, datasets, plot_name, config, datasets)
+    except NkululukoError as e:
+        print(str(e))
+        sys.exit(1)
 
 
 def trunc_to_three(x):

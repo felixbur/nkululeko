@@ -8,6 +8,7 @@ import pytest
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.modelrunner import Modelrunner
+from nkululeko.utils.errors import NkululukoError
 
 
 @pytest.fixture(autouse=True)
@@ -120,7 +121,7 @@ class TestSelectModel:
     def test_unknown_model_raises(self, dummy_dfs):
         glob_conf.config["MODEL"]["type"] = "not_a_model"
         df_train, df_test, feats_train, feats_test = dummy_dfs
-        with pytest.raises(SystemExit):
+        with pytest.raises(NkululukoError):
             Modelrunner(df_train, df_test, feats_train, feats_test, run=0)
 
     def test_regression_model_for_regression_exp(self, dummy_dfs):

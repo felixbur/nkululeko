@@ -6,6 +6,7 @@ import argparse
 import ast
 import configparser
 import os
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -13,6 +14,7 @@ import numpy as np
 import nkululeko.experiment as exp
 import nkululeko.glob_conf as glob_conf
 from nkululeko.constants import VERSION
+from nkululeko.utils.errors import NkululukoError
 from nkululeko.utils.util import Util
 
 
@@ -140,7 +142,11 @@ def main():
         config_file = args.config
     else:
         config_file = cwd / "exp.ini"
-    doit(config_file)
+    try:
+        doit(config_file)
+    except NkululukoError as e:
+        print(str(e))
+        sys.exit(1)
 
 
 if __name__ == "__main__":

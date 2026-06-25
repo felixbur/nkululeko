@@ -13,6 +13,7 @@ import audeer
 import numpy as np
 
 from nkululeko.utils.dataframe import DataFrameMixin
+from nkululeko.utils.errors import NkululukoError
 from nkululeko.utils.naming import NamingMixin
 from nkululeko.utils.storage import StorageMixin
 
@@ -262,11 +263,12 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         return False
 
     def error(self, message):
+        full_msg = f"ERROR: {self.caller}: {message}"
         if self.logger is not None:
-            self.logger.error(f"ERROR: {self.caller}: {message}")
+            self.logger.error(full_msg)
         else:
-            print(f"ERROR: {message}")
-        sys.exit()
+            print(full_msg)
+        raise NkululukoError(full_msg)
 
     def warn(self, message):
         if self.logger is not None:
