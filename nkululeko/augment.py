@@ -5,11 +5,13 @@ import argparse
 import ast
 import configparser
 import os
+import sys
 
 import pandas as pd
 
 from nkululeko.constants import VERSION
 from nkululeko.experiment import Experiment
+from nkululeko.utils.errors import NkululukoError
 from nkululeko.utils.util import Util
 
 
@@ -91,7 +93,11 @@ def main():
     parser.add_argument("--config", default="exp.ini", help="The base configuration")
     args = parser.parse_args()
     config_file = args.config if args.config is not None else "exp.ini"
-    doit(config_file)
+    try:
+        doit(config_file)
+    except NkululukoError as e:
+        print(str(e))
+        sys.exit(1)
 
 
 if __name__ == "__main__":

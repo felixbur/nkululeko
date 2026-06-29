@@ -5,6 +5,7 @@ import tempfile
 import unittest
 
 import nkululeko.glob_conf as glob_conf
+from nkululeko.utils.errors import NkululukoError
 from nkululeko.utils.util import Util
 
 
@@ -180,7 +181,7 @@ class TestStorageMixin(unittest.TestCase):
         with tempfile.NamedTemporaryFile(suffix=".txt", delete=False) as f:
             path = f.name
         try:
-            with self.assertRaises(SystemExit):
+            with self.assertRaises(NkululukoError):
                 u.write_store(df, path, "unknown")
         finally:
             if os.path.exists(path):
@@ -191,7 +192,7 @@ class TestStorageMixin(unittest.TestCase):
         with tempfile.NamedTemporaryFile(suffix=".txt", delete=False) as f:
             path = f.name
         try:
-            with self.assertRaises(SystemExit):
+            with self.assertRaises(NkululukoError):
                 u.get_store(path, "unknown")
         finally:
             if os.path.exists(path):
@@ -229,16 +230,16 @@ class TestStorageMixin(unittest.TestCase):
         u = make_util()
         path = self._write_tmp("1.0 invalid 3.0\n")
         try:
-            # The function calls sys.exit() on error, so it raises SystemExit
-            with self.assertRaises(SystemExit):
+            # The function raises NkululukoError on error
+            with self.assertRaises(NkululukoError):
                 u.read_first_line_floats(path)
         finally:
             os.unlink(path)
 
     def test_read_first_line_floats_file_not_found(self):
         u = make_util()
-        # Should handle FileNotFoundError by calling sys.exit()
-        with self.assertRaises(SystemExit):
+        # Should handle FileNotFoundError by raising NkululukoError
+        with self.assertRaises(NkululukoError):
             u.read_first_line_floats("/nonexistent/file.txt")
 
     def test_read_first_line_floats_io_error(self):
@@ -247,7 +248,7 @@ class TestStorageMixin(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             path = os.path.join(tmpdir, "file.txt")
             os.mkdir(path)  # Make it a directory
-            with self.assertRaises(SystemExit):
+            with self.assertRaises(NkululukoError):
                 u.read_first_line_floats(path)
 
 

@@ -9,6 +9,7 @@ from pathlib import Path
 from nkululeko.constants import VERSION
 import nkululeko.glob_conf as glob_conf
 from nkululeko.optimizationrunner import OptimizationRunner
+from nkululeko.utils.errors import NkululukoError
 
 
 def doit(config_file):
@@ -52,7 +53,11 @@ def main():
     )
     args = parser.parse_args()
 
-    doit(args.config)
+    try:
+        doit(args.config)
+    except NkululukoError as e:
+        print(str(e))
+        sys.exit(1)
 
 
 if __name__ == "__main__":

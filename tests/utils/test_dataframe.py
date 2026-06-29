@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 
 import nkululeko.glob_conf as glob_conf
+from nkululeko.utils.errors import NkululukoError
 from nkululeko.utils.util import Util
 
 
@@ -229,25 +230,25 @@ type = os
     def test_df_to_cont_dict_missing_column1(self):
         u = make_util()
         df = pd.DataFrame({"y": [3.0, 4.0]})
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(NkululukoError):
             u.df_to_cont_dict(df, "x", "y")
 
     def test_df_to_cont_dict_missing_column2(self):
         u = make_util()
         df = pd.DataFrame({"x": [1.0, 2.0]})
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(NkululukoError):
             u.df_to_cont_dict(df, "x", "y")
 
     def test_df_to_categorical_dict_missing_categorical_column(self):
         u = make_util()
         df = pd.DataFrame({"score": [0.8, 0.6]})
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(NkululukoError):
             u.df_to_categorical_dict(df, "emotion", "score")
 
     def test_df_to_categorical_dict_missing_value_column(self):
         u = make_util()
         df = pd.DataFrame({"emotion": ["happy", "sad"]})
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(NkululukoError):
             u.df_to_categorical_dict(df, "emotion", "score")
 
     def test_is_dict_with_string_values_exception(self):

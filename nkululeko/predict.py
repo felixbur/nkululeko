@@ -47,6 +47,7 @@ from tqdm import tqdm
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.constants import VERSION, SAMPLING_RATE
+from nkululeko.utils.errors import NkululukoError
 from nkululeko.utils.files import find_files
 from nkululeko.utils.util import Util
 
@@ -167,53 +168,55 @@ def _build_parser():
 def main():
     args = _build_parser().parse_args()
 
-    # accept --file "a.mp3 b.wav" as a single space-separated argument
-    if args.file and len(args.file) == 1 and " " in args.file[0].strip():
-        args.file = args.file[0].split()
+    try:
+        # accept --file "a.mp3 b.wav" as a single space-separated argument
+        if args.file and len(args.file) == 1 and " " in args.file[0].strip():
+            args.file = args.file[0].split()
 
-    module_name = "predict"
-    config = _load_config(args)
-    if args.language:
-        _apply_language_override(config, args.language)
-    glob_conf.init_config(config)
-    glob_conf.set_module(module_name)
-    util = Util(module_name, has_config=True)
-    util.debug(f"nkululeko {VERSION}: {module_name}")
-    if args.language:
-        util.debug(
-            f"language override: EXP.language=PREDICT.target_language={args.language}"
-        )
+        module_name = "predict"
+        config = _load_config(args)
+        if args.language:
+            _apply_language_override(config, args.language)
+        glob_conf.init_config(config)
+        glob_conf.set_module(module_name)
+        util = Util(module_name, has_config=True)
+        util.debug(f"nkululeko {VERSION}: {module_name}")
+        if args.language:
+            util.debug(
+                f"language override: EXP.language=PREDICT.target_language={args.language}"
+            )
 
-    if args.ptype == "model" and not args.config:
-        util.error("--type model requires --config CONFIG.ini")
+        if args.ptype == "model" and not args.config:
+            util.error("--type model requires --config CONFIG.ini")
 
-    if args.ptype == "feats" and not args.model:
-        feats_type = util.config_val("FEATS", "type", None)
-        if feats_type is None:
-            util.error("--type feats requires --model or FEATS.type in --config")
-        args.model = _first_extractor(feats_type)
+        if args.ptype == "feats" and not args.model:
+            feats_type = util.config_val("FEATS", "type", None)
+            if feats_type is None:
+                util.error("--type feats requires --model or FEATS.type in --config")
+            args.model = _first_extractor(feats_type)
 
-    if args.mic:
-        _run_mic(args, util)
-    elif args.file:
-        _run_files(args.file, args, util)
-    elif args.folder:
-        _run_folder(args.folder, args, util)
-    elif args.list_path:
-        _run_list(args.list_path, args, util)
-    elif args.config:
-        # No explicit input — use the dataframe defined by the experiment
-        # config. EXP.sample_selection (default "all") picks train / test /
-        # all from the loaded dataset(s).
-        _run_from_config(args, util)
-    else:
-        util.error(
-            "no input given: provide one of --file, --folder, --list, --mic, "
-            "or --config (loads the dataframe defined by the experiment's "
-            "[DATA] section, selection via EXP.sample_selection)"
-        )
-
-    util.debug("DONE")
+        if args.mic:
+            _run_mic(args, util)
+        elif args.file:
+            _run_files(args.file, args, util)
+        elif args.folder:
+            _run_folder(args.folder, args, util)
+        elif args.list_path:
+            _run_list(args.list_path, args, util)
+        elif args.config:
+            # No explicit input — use the dataframe defined by the experiment
+            # config. EXP.sample_selection (default "all") picks train / test /
+            # all from the loaded dataset(s).
+            _run_from_config(args, util)
+        else:
+            util.error(
+                "no input given: provide one of --file, --folder, --list, --mic, "
+                "or --config (loads the dataframe defined by the experiment's "
+                "[DATA] section, selection via EXP.sample_selection)"
+            )
+    except NkululukoError as e:
+        print(str(e))
+        sys.exit(1)
 
 
 # ---------------------------------------------------------------------------

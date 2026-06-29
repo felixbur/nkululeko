@@ -18,6 +18,7 @@ Raises:
 """
 
 import configparser
+import sys
 import time
 from argparse import ArgumentParser
 from typing import List
@@ -28,6 +29,7 @@ from sklearn.metrics import balanced_accuracy_score, classification_report
 
 from nkululeko.constants import VERSION
 from nkululeko.experiment import Experiment
+from nkululeko.utils.errors import NkululukoError
 from nkululeko.utils.util import Util
 
 # import torch
@@ -351,18 +353,22 @@ def main():
 
     args = parser.parse_args()
 
-    start = time.time()
+    try:
+        start = time.time()
 
-    ensemble_preds = ensemble_predictions(
-        args.config, args.method, args.threshold, args.weights, args.no_labels
-    )
+        ensemble_preds = ensemble_predictions(
+            args.config, args.method, args.threshold, args.weights, args.no_labels
+        )
 
-    # save to csv
-    ensemble_preds.to_csv(args.outfile, index=False)
-    Util("ensemble").debug(f"Ensemble predictions saved to: {args.outfile}")
-    Util("ensemble").debug(f"Ensemble done, used {time.time() - start:.2f} seconds")
+        # save to csv
+        ensemble_preds.to_csv(args.outfile, index=False)
+        Util("ensemble").debug(f"Ensemble predictions saved to: {args.outfile}")
+        Util("ensemble").debug(f"Ensemble done, used {time.time() - start:.2f} seconds")
 
-    Util("ensemble").debug("DONE")
+        Util("ensemble").debug("DONE")
+    except NkululukoError as e:
+        print(str(e))
+        sys.exit(1)
 
 
 if __name__ == "__main__":

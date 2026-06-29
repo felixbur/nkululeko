@@ -28,8 +28,11 @@ import argparse
 import configparser
 from pathlib import Path
 
+import sys
+
 from nkululeko.constants import VERSION
 from nkululeko.experiment import Experiment
+from nkululeko.utils.errors import NkululukoError
 from nkululeko.utils.util import Util
 
 
@@ -41,74 +44,78 @@ def main():
     args = parser.parse_args()
     config_file = args.config if args.config is not None else "exp.ini"
 
-    if not Path(config_file).is_file():
-        print(f"ERROR: no such file: {config_file}")
-        exit()
-
-    config = configparser.ConfigParser()
-    config.read(config_file)
-    expr = Experiment(config)
-    module = "explore"
-    expr.set_module(module)
-    util = Util(module)
-    util.debug(
-        f"running {expr.name} from config {config_file}, nkululeko version {VERSION}"
-    )
-
-    if util.config_val("EXP", "no_warnings", False):
-        import warnings
-
-        warnings.filterwarnings("ignore")
-    needs_feats = False
-    experiment_loaded = False
     try:
-        # load the experiment
-        expr.load(f"{util.get_save_name()}")
-        expr.util.set_config(config)
-        needs_feats = True
-        experiment_loaded = True
-    except FileNotFoundError:
-        # first time: load the data
-        expr.load_datasets()
+        if not Path(config_file).is_file():
+            print(f"ERROR: no such file: {config_file}")
+            sys.exit(1)
 
-        # split into train and test
-        expr.fill_train_and_tests()
+        config = configparser.ConfigParser()
+        config.read(config_file)
+        expr = Experiment(config)
+        module = "explore"
+        expr.set_module(module)
+        util = Util(module)
         util.debug(
-            f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}"
+            f"running {expr.name} from config {config_file}, nkululeko version {VERSION}"
         )
 
-    # Check exploration settings regardless of whether experiment was loaded or not
-    plot_feats = eval(util.config_val("EXPL", "feature_distributions", "False"))
-    tsne_plot = eval(util.config_val("EXPL", "tsne", "False"))
-    umap_plot = eval(util.config_val("EXPL", "umap", "False"))
-    pca_plot = eval(util.config_val("EXPL", "pca", "False"))
-    scatter = eval(util.config_val("EXPL", "scatter", "False"))
-    shap = eval(util.config_val("EXPL", "shap", "False"))
-    model_type = util.config_val("EXPL", "model", False)
-    plot_tree = eval(util.config_val("EXPL", "plot_tree", "False"))
+        if util.config_val("EXP", "no_warnings", False):
+            import warnings
 
-    if (
-        plot_feats
-        or tsne_plot
-        or umap_plot
-        or pca_plot
-        or scatter
-        or model_type
-        or plot_tree
-        or shap
-    ):
-        # these investigations need features to explore
-        if not experiment_loaded or not needs_feats:
-            expr.extract_feats()
-        needs_feats = True
-        # explore
-        if shap:
-            # SHAP analysis requires a trained model
-            expr.init_runmanager()
-            expr.runmgr.do_runs()
-    expr.analyse_features(needs_feats)
-    expr.store_report()
-    print("DONE")
+            warnings.filterwarnings("ignore")
+        needs_feats = False
+        experiment_loaded = False
+        try:
+            # load the experiment
+            expr.load(f"{util.get_save_name()}")
+            expr.util.set_config(config)
+            needs_feats = True
+            experiment_loaded = True
+        except FileNotFoundError:
+            # first time: load the data
+            expr.load_datasets()
+
+            # split into train and test
+            expr.fill_train_and_tests()
+            util.debug(
+                f"train shape : {expr.df_train.shape}, test shape:{expr.df_test.shape}"
+            )
+
+        # Check exploration settings regardless of whether experiment was loaded or not
+        plot_feats = eval(util.config_val("EXPL", "feature_distributions", "False"))
+        tsne_plot = eval(util.config_val("EXPL", "tsne", "False"))
+        umap_plot = eval(util.config_val("EXPL", "umap", "False"))
+        pca_plot = eval(util.config_val("EXPL", "pca", "False"))
+        scatter = eval(util.config_val("EXPL", "scatter", "False"))
+        shap = eval(util.config_val("EXPL", "shap", "False"))
+        model_type = util.config_val("EXPL", "model", False)
+        plot_tree = eval(util.config_val("EXPL", "plot_tree", "False"))
+
+        if (
+            plot_feats
+            or tsne_plot
+            or umap_plot
+            or pca_plot
+            or scatter
+            or model_type
+            or plot_tree
+            or shap
+        ):
+            # these investigations need features to explore
+            if not experiment_loaded or not needs_feats:
+                expr.extract_feats()
+            needs_feats = True
+            # explore
+            if shap:
+                # SHAP analysis requires a trained model
+                expr.init_runmanager()
+                expr.runmgr.do_runs()
+        expr.analyse_features(needs_feats)
+        expr.store_report()
+        print("DONE")
+    except NkululukoError as e:
+        print(str(e))
+        sys.exit(1)
 
 
 if __name__ == "__main__":
