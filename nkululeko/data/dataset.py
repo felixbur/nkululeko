@@ -622,8 +622,16 @@ class Dataset:
 
     def split_speakers(self):
         """One way to split train and eval sets: Specify percentage of evaluation speakers"""
-        test_percent = int(self.util.config_val_data(self.name, "test_size", 20))
         df = self.df
+        if "speaker" not in df.columns:
+            self.util.warn(
+                f"split_strategy is speaker_split but {self.name} has no speaker"
+                " column — using all samples as test split"
+            )
+            self.df_test = df
+            self.df_train = pd.DataFrame()
+            return
+        test_percent = int(self.util.config_val_data(self.name, "test_size", 20))
         s_num = df.speaker.nunique()
         test_num = int(s_num * (test_percent / 100))
         test_spkrs = sample(list(df.speaker.unique()), test_num)
@@ -739,6 +747,8 @@ class Dataset:
             return df
         """Rename the labels and remove the ones that are not needed."""
         target = glob_conf.config["DATA"]["target"]
+        if target not in df.columns:
+            return df
         # see if a special mapping should be used
         mappings = self.util.config_val_data(self.name, "mapping", False)
         if mappings:
