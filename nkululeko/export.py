@@ -42,7 +42,7 @@ def _process_split(df, split, segments_as_files, target_root, orig_root):
                 duration=(end - start).total_seconds(),
                 always_2d=True,
             )
-            file_name = os.path.splitext(file)[0] + "_" + start.total_seconds() + ".wav"
+            file_name = os.path.splitext(file)[0] + "_" + str(start.total_seconds()) + ".wav"
             new_file_name = _export_file(
                 file, file_dir, file_name, target_root, orig_root
             )

@@ -62,11 +62,15 @@ def doit(config_file):
 
         best_model = expr.runmgr.get_best_model()
 
-        # Integer-encode the target column in-place so model.predict() can
-        # compare predictions against numeric ground-truth values.
-        expr.df_test[expr.target] = expr.label_encoder.transform(
-            expr.df_test[expr.target]
-        )
+        # Integer-encode the target column only if the test set has labels.
+        has_labels = expr.target in expr.df_test.columns
+        if has_labels:
+            expr.df_test[expr.target] = expr.label_encoder.transform(
+                expr.df_test[expr.target]
+            )
+        else:
+            # Unlabeled test set: add a dummy column so model.predict() can run.
+            expr.df_test[expr.target] = 0
         best_model.reset_test(expr.df_test, expr.feats_test)
         report = best_model.predict()
         report.set_id(best_model.run, best_model.epoch)
@@ -77,8 +81,9 @@ def doit(config_file):
             util.get_exp_name()
             + f"_{test_dbs_str}_{best_model.run}_{best_model.epoch:03d}_cnf"
         )
-        report.print_results(best_model.epoch, file_name=plot_name)
-        report.plot_confmatrix(plot_name, best_model.epoch)
+        if has_labels:
+            report.print_results(best_model.epoch, file_name=plot_name)
+            report.plot_confmatrix(plot_name, best_model.epoch)
 
         # Save result CSV: all original test columns plus decoded predictions.
         res_dir = util.get_path("res_dir")
@@ -87,16 +92,19 @@ def doit(config_file):
             plot_name.replace("_cnf", "_predictions") + ".csv",
         )
         result_df = expr.df_test.copy()
-        result_df[expr.target] = expr.label_encoder.inverse_transform(
-            result_df[expr.target].astype(int)
-        )
+        if has_labels:
+            result_df[expr.target] = expr.label_encoder.inverse_transform(
+                result_df[expr.target].astype(int)
+            )
+        else:
+            result_df = result_df.drop(columns=[expr.target])
         result_df["predicted"] = expr.label_encoder.inverse_transform(
             report.preds.astype(int)
         )
         result_df.to_csv(csv_path)
         util.debug(f"predictions CSV saved to: {csv_path}")
 
-        result = report.result.test
+        result = report.result.test if has_labels else 0.0
         print("DONE")
         return result, best_model.epoch
 

@@ -87,7 +87,7 @@ class Dataset_CSV(Dataset):
             self.got_target = True
         else:
             self.got_target = False
-        self.is_labeled = self.got_target
+        self.is_labeled = self.got_target and (self.target in self.df.columns)
         self.start_fresh = eval(self.util.config_val("DATA", "no_reuse", "False"))
         is_index = False
         try:
