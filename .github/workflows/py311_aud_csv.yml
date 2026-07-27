@@ -1,6 +1,13 @@
 name: Run Nkululeko with Python 3.11 on RAVDESS+PRAAT+XGB 
 
-on: [push, pull_request]
+on: 
+  push:
+    branches:
+      - main
+      - master
+      - develop
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
   test:

@@ -141,6 +141,28 @@ class Dataset:
             glob_conf.report.add_item(ReportItem("Data", "Load report", r_string))
             glob_conf.report.initial = False
 
+    def _autodetect_experiment_type(self, df):
+        """Auto-detect the experiment type from the label column.
+
+        When the labels look numeric and no experiment type is configured
+        explicitly, set ``[EXP] type`` to ``regression``. When a non-regression
+        type is configured explicitly, respect it and emit a warning naming the
+        label column that triggered the detection, instead of silently
+        overwriting the user's configuration.
+        """
+        if not self.util.is_numeric(df[self.col_label]):
+            return
+        user_type = self.util.config_val("EXP", "type", None)
+        if user_type is None:
+            glob_conf.config["EXP"]["type"] = "regression"
+        elif user_type != "regression":
+            self.util.warn(
+                f"{self.name}: Configured [EXP] type={user_type} but label "
+                f"column '{self.col_label}' looks like regression. Respecting "
+                f"configured type. Verify your data or type configuration if "
+                f"this is unintended."
+            )
+
     def load(self):
         """Load the dataframe with files, speakers and task labels"""
         self.root = self._load_db()
@@ -163,8 +185,7 @@ class Dataset:
                     f"set 'DATA.target' or '{self.name}.label' in your configuration."
                 )
                 df = self.db.get(self.col_label, columns)
-                if self.util.is_numeric(df[self.col_label]):
-                    glob_conf.config["EXP"]["type"] = "regression"
+                self._autodetect_experiment_type(df)
             else:
                 df = pd.DataFrame(index=self.db.files)
         elif len(tables) > 0:
