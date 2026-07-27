@@ -94,7 +94,6 @@ augment_ini_files=(
     augment_auglib.ini
     exp_emodb_augment_os_xgb.ini
     exp_emodb_random_splice_os_xgb.ini
-    exp_emodb_rs_os_xgb.ini
     emodb_aug_train.ini
 )
 
