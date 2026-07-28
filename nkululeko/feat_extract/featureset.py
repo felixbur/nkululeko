@@ -6,6 +6,11 @@ import pandas as pd
 import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.util import Util
 
+# Exceptions expected from per-file feature extraction (bad/corrupt audio,
+# unsupported sample rate, missing files, etc). Anything outside this set
+# (e.g. KeyboardInterrupt, SystemExit) is allowed to propagate.
+EXTRACTION_ERRORS = (IOError, OSError, RuntimeError, ValueError, AssertionError)
+
 
 class Featureset:
     name = ""  # designation
@@ -45,6 +50,29 @@ class Featureset:
     def extract(self):
         pass
 
+    def _get_fail_threshold(self, default=0.5):
+        """Read FEATS.fail_threshold from config, validated and clamped to [0.0, 1.0].
+
+        Falls back to `default` (with a warning) if the config value is not a
+        valid number, so a malformed config entry can't crash extraction
+        before it starts.
+        """
+        raw = self.util.config_val("FEATS", "fail_threshold", str(default))
+        try:
+            threshold = float(raw)
+        except (TypeError, ValueError):
+            self.util.warn(
+                f"invalid FEATS.fail_threshold {raw!r}, using default {default}"
+            )
+            return default
+        if not 0.0 <= threshold <= 1.0:
+            self.util.warn(
+                f"FEATS.fail_threshold {threshold} out of range [0.0, 1.0],"
+                f" clamping"
+            )
+            threshold = min(max(threshold, 0.0), 1.0)
+        return threshold
+
     def _extract_embeddings_with_error_handling(self, extract_fn):
         """Process each file with extract_fn, skip failures, return filtered DataFrame.
 
@@ -56,6 +84,9 @@ class Featureset:
         """
         emb_series = pd.Series(index=self.data_df.index, dtype=object)
         iterable = self.data_df.index.to_list()
+        total = len(iterable)
+        failed = 0
+        fail_threshold = self._get_fail_threshold()
         try:
             # Use tqdm for a progress bar if available, but don't require it.
             from tqdm import tqdm  # type: ignore[import-not-found]
@@ -69,13 +100,23 @@ class Featureset:
             try:
                 emb = extract_fn(file, start, end)
                 emb_series.iloc[idx] = emb
-            except Exception as e:
+            except EXTRACTION_ERRORS as e:
                 self.util.warn(f"skipping {file}: {e}")
+                failed += 1
+
+        if failed > 0:
+            self.util.warn(
+                f"Feature extraction: {failed}/{total} files failed"
+                f" ({100 * failed / total:.1f}%)"
+            )
+            if total > 0 and failed / total > fail_threshold:
+                self.util.error(
+                    f"Extraction failure rate {failed / total:.0%} exceeds"
+                    f" threshold {fail_threshold:.0%}"
+                )
+
         valid = emb_series.notna()
         if not valid.all():
-            self.util.warn(
-                f"skipped {(~valid).sum()} files that failed to load or extract embeddings"
-            )
             emb_series = emb_series[valid]
         return pd.DataFrame(emb_series.values.tolist(), index=emb_series.index)
 
