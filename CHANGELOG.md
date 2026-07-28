@@ -1,6 +1,11 @@
 Changelog
 =========
 
+
+Version 1.7.14 (26-07-28)
+-------------------------
+* Configurable abort threshold via FEATS.fail_threshold (default 0.5)
+
 Version 1.7.13 (26-07-27)
 -------------------------
 * Bugfix: Fix auto-detection silently overwriting user-configured experiment type
