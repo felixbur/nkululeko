@@ -308,6 +308,28 @@ class TestExtractEmbeddingsWithErrorHandling:
         ]
         assert len(summary_calls) == 1
 
+    def test_keyboard_interrupt_not_swallowed(self, multiindex_featureset):
+        """KeyboardInterrupt must propagate through the extraction loop."""
+
+        def extract_fn_interrupt(file, start, end):
+            raise KeyboardInterrupt()
+
+        with pytest.raises(KeyboardInterrupt):
+            multiindex_featureset._extract_embeddings_with_error_handling(
+                extract_fn_interrupt
+            )
+
+    def test_type_error_not_swallowed(self, multiindex_featureset):
+        """TypeError (programming error) must propagate, not be silently swallowed."""
+
+        def extract_fn_type_error(file, start, end):
+            raise TypeError("unexpected argument")
+
+        with pytest.raises(TypeError):
+            multiindex_featureset._extract_embeddings_with_error_handling(
+                extract_fn_type_error
+            )
+
     def test_embedding_values_correct(self, multiindex_featureset, multiindex_data_df):
         """Embeddings returned by extract_fn appear as rows in the result DataFrame."""
         rng = np.random.default_rng(0)

@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 
 import nkululeko.glob_conf as glob_conf
-from nkululeko.modelrunner import Modelrunner
+from nkululeko.modelrunner import Modelrunner, validate_model_task_support
 from nkululeko.utils.errors import NkululukoError
 
 
@@ -133,6 +133,69 @@ class TestSelectModel:
         df_train, df_test, feats_train, feats_test = dummy_dfs
         mr = Modelrunner(df_train, df_test, feats_train, feats_test, run=0)
         assert isinstance(mr.model, SVR_model)
+
+    def test_classifier_model_with_regression_exp_raises(self, dummy_dfs):
+        glob_conf.config["EXP"]["type"] = "regression"
+        glob_conf.config["MODEL"]["type"] = "svm"
+        glob_conf.config["MODEL"]["measure"] = "mse"
+        df_train, df_test, feats_train, feats_test = dummy_dfs
+        with pytest.raises(NkululukoError):
+            Modelrunner(df_train, df_test, feats_train, feats_test, run=0)
+
+    def test_regressor_model_with_classification_exp_raises(self, dummy_dfs):
+        glob_conf.config["EXP"]["type"] = "classification"
+        glob_conf.config["MODEL"]["type"] = "svr"
+        df_train, df_test, feats_train, feats_test = dummy_dfs
+        with pytest.raises(NkululukoError):
+            Modelrunner(df_train, df_test, feats_train, feats_test, run=0)
+
+
+class _CapabilityStub:
+    """Minimal stand-in exposing is_classifier/is_regressor capability flags.
+
+    Used to exercise ``validate_model_task_support`` without instantiating
+    heavy real models.
+    """
+
+    def __init__(self, is_classifier=None, is_regressor=None):
+        self.is_classifier = is_classifier
+        self.is_regressor = is_regressor
+
+
+class TestValidateModelTaskSupport:
+    """Unit tests for validate_model_task_support capability-flag handling."""
+
+    def test_explicit_regressor_allows_svm_regression(self):
+        """A model declaring is_regressor=True may run a regression task even
+        when its model_type ('svm') is normally a classifier type."""
+        model = _CapabilityStub(is_classifier=False, is_regressor=True)
+        validate_model_task_support(model_type="svm", task="regression", model=model)
+
+    def test_explicit_classifier_allows_svr_classification(self):
+        """A model declaring is_classifier=True may run a classification task
+        even when its model_type ('svr') is normally a regressor type."""
+        model = _CapabilityStub(is_classifier=True, is_regressor=False)
+        validate_model_task_support(
+            model_type="svr", task="classification", model=model
+        )
+
+    def test_classifier_false_raises_for_classification(self):
+        """A model with is_classifier=False must not be used for
+        classification, even if its model_type ('svm') is a classifier type."""
+        model = _CapabilityStub(is_classifier=False, is_regressor=True)
+        with pytest.raises(NkululukoError):
+            validate_model_task_support(
+                model_type="svm", task="classification", model=model
+            )
+
+    def test_regressor_false_raises_for_regression(self):
+        """A model with is_regressor=False must not be used for regression,
+        even if its model_type ('svr') is a regressor type."""
+        model = _CapabilityStub(is_classifier=True, is_regressor=False)
+        with pytest.raises(NkululukoError):
+            validate_model_task_support(
+                model_type="svr", task="regression", model=model
+            )
 
 
 class TestCheckFeatureBalancing:

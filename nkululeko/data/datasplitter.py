@@ -2,14 +2,15 @@
 import ast
 import os
 import os.path
+import pickle
+import secrets
 
 import pandas as pd
-import secrets
 from sklearn.preprocessing import LabelEncoder
-import pickle
-from nkululeko.filter_data import DataFilter
+
 import nkululeko.glob_conf as glob_conf
 from nkululeko.file_checker import FileChecker
+from nkululeko.filter_data import DataFilter
 from nkululeko.utils.util import Util
 
 
@@ -41,6 +42,25 @@ class Datasplitter:
             )
         return df
 
+    def _encode_labels_safe(self, df, split_name):
+        """Encode labels in df using the fitted label encoder.
+
+        Emits a helpful error if df contains labels unseen during training.
+        """
+        try:
+            df[self.target] = self.label_encoder.transform(df[self.target])
+        except ValueError:
+            # Drop NaNs: missing labels aren't real classes and would break
+            # sorted() below when mixed with string class labels.
+            split_labels = set(df[self.target].dropna().unique())
+            train_labels = set(self.label_encoder.classes_)
+            unseen = sorted(split_labels - train_labels)
+            self.util.error(
+                f"{split_name} set contains labels not seen in training: {unseen}. "
+                f"Training labels are: {sorted(train_labels)}. "
+                "Consider using a combined split strategy or filtering unseen labels."
+            )
+
     def _add_random_target(self, df):
         labels = glob_conf.labels
         a = [None] * len(df)
@@ -51,16 +71,10 @@ class Datasplitter:
 
     def fill_train_and_tests(self):
         """Set up train and development sets. The method should be specified in the config."""
-        self.df_train, self.df_test, self.df_dev = (
-            pd.DataFrame(),
-            pd.DataFrame(),
-            pd.DataFrame(),
-        )
-        if self.split3:
-            self.df_dev = pd.DataFrame()
-        else:
-            self.df_dev = None
-        for d in self.datasets.values():
+        self.df_dev = None
+        train_dfs, test_dfs, dev_dfs = [], [], []
+        all_datasets = list(self.datasets.values())
+        for d in all_datasets:
             if self.split3:
                 d.split_3()
             else:
@@ -71,19 +85,37 @@ class Datasplitter:
             if d.df_train.shape[0] == 0:
                 self.util.debug(f"warn: {d.name} train empty")
             else:
-                self.df_train = pd.concat([self.df_train, d.df_train])
-                self.util.copy_flags(d, self.df_train)
+                train_dfs.append(d.df_train)
             if d.df_test.shape[0] == 0:
                 self.util.debug(f"warn: {d.name} test empty")
             else:
-                self.df_test = pd.concat([self.df_test, d.df_test])
-                self.util.copy_flags(d, self.df_test)
+                test_dfs.append(d.df_test)
             if self.split3:
                 if d.df_dev.shape[0] == 0:
                     self.util.debug(f"warn: {d.name} dev empty")
                 else:
-                    self.df_dev = pd.concat([self.df_dev, d.df_dev])
-                    self.util.copy_flags(d, self.df_dev)
+                    dev_dfs.append(d.df_dev)
+
+        self.df_train = pd.concat(train_dfs) if train_dfs else pd.DataFrame()
+        self.df_test = pd.concat(test_dfs) if test_dfs else pd.DataFrame()
+        if self.split3:
+            self.df_dev = pd.concat(dev_dfs) if dev_dfs else pd.DataFrame()
+
+        # Aggregate boolean flags across all datasets (any-wins semantics):
+        # a combined DataFrame is labeled / has speaker / gender / age if ANY
+        # contributing dataset has that attribute set.
+        # NOTE: self.{flag} must be updated here so that the subsequent
+        # copy_flags(self, ...) calls propagate the correctly aggregated values
+        # onto each split DataFrame.
+        if all_datasets:
+            active_splits = [self.df_train, self.df_test]
+            if self.split3:
+                active_splits.append(self.df_dev)
+            for flag in ("is_labeled", "got_gender", "got_age", "got_speaker"):
+                aggregated = any(getattr(d, flag, False) for d in all_datasets)
+                setattr(self, flag, aggregated)
+                for split_df in active_splits:
+                    setattr(split_df, flag, aggregated)
 
         # Return early for unlabeled/unsupervised runs, but still return the split dataframes
         if self.target is None or self.target == "none":
@@ -164,37 +196,11 @@ class Datasplitter:
                 if self.df_test.is_labeled:
                     self.util.debug(f"Categories test: {test_cats}")
                 if not self.df_train.empty:
-                    try:
-                        self.df_test[self.target] = self.label_encoder.transform(
-                            self.df_test[self.target]
-                        )
-                    except ValueError:
-                        test_labels = set(self.df_test[self.target].unique())
-                        train_labels = set(self.label_encoder.classes_)
-                        unseen = test_labels - train_labels
-                        self.util.error(
-                            f"Test set contains labels not seen in training: "
-                            f"{unseen}. Training labels are: {train_labels}. "
-                            f"Consider using a combined split strategy or "
-                            f"filtering unseen labels."
-                        )
+                    self._encode_labels_safe(self.df_test, "Test")
             if self.split3 and not self.df_dev.empty:
                 self.util.debug(f"Categories dev: {dev_cats}")
                 if not self.df_train.empty:
-                    try:
-                        self.df_dev[self.target] = self.label_encoder.transform(
-                            self.df_dev[self.target]
-                        )
-                    except ValueError:
-                        dev_labels = set(self.df_dev[self.target].unique())
-                        train_labels = set(self.label_encoder.classes_)
-                        unseen = dev_labels - train_labels
-                        self.util.error(
-                            f"Dev set contains labels not seen in training: "
-                            f"{unseen}. Training labels are: {train_labels}. "
-                            f"Consider using a combined split strategy or "
-                            f"filtering unseen labels."
-                        )
+                    self._encode_labels_safe(self.df_dev, "Dev")
         if self.got_speaker:
             speakers_train = (
                 0
