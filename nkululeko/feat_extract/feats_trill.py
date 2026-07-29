@@ -8,7 +8,6 @@ import tensorflow as tf
 import tensorflow_hub as hub
 from tqdm import tqdm
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
 
 # Import TF 2.X and make sure we're running eager.
@@ -60,7 +59,7 @@ class TRILLset(Featureset):
             self.df = pd.DataFrame(emb_series.values.tolist(), index=self.data_df.index)
             self.df.to_pickle(storage)
             try:
-                glob_conf.config["DATA"]["needs_feature_extraction"] = "false"
+                self.context.config["DATA"]["needs_feature_extraction"] = "false"
             except KeyError:
                 pass
         else:

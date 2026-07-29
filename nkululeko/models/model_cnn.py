@@ -17,7 +17,6 @@ from PIL import Image
 from sklearn.metrics import recall_score
 from torch.utils.data import Dataset
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.models.model import Model
 from nkululeko.optimizers import get_optimizer
 from nkululeko.reporting.reporter import Reporter
@@ -28,7 +27,7 @@ class CNNModel(Model):
 
     is_classifier = True
 
-    def __init__(self, df_train, df_test, feats_train, feats_test):
+    def __init__(self, df_train, df_test, feats_train, feats_test, context=None):
         """Constructor, taking all dataframes.
 
         Args:
@@ -37,11 +36,11 @@ class CNNModel(Model):
             feats_train (pd.DataFrame): The train features.
             feats_test (pd.DataFrame): The test features.
         """
-        super().__init__(df_train, df_test, feats_train, feats_test)
+        super().__init__(df_train, df_test, feats_train, feats_test, context=context)
         super().set_model_type("ann")
         self.name = "cnn"
-        self.target = glob_conf.target
-        labels = glob_conf.labels
+        self.target = self.context.target
+        labels = self.context.labels
         self.class_num = len(labels)
         # set up loss criterion
         self._setup_criterion()
@@ -49,7 +48,7 @@ class CNNModel(Model):
         # cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", "cpu")
         try:
-            layers_string = glob_conf.config["MODEL"]["layers"]
+            layers_string = self.context.config["MODEL"]["layers"]
         except KeyError as ke:
             self.util.error(f"Please provide MODEL layers: {ke}")
         self.util.debug(f"using layers {layers_string}")
@@ -188,7 +187,14 @@ class CNNModel(Model):
         )
         uar, _, _, _ = self.evaluate(self.model, self.trainloader, self.device)
         probas = self.get_probas(logits)
-        report = Reporter(truths, predictions, self.run, self.epoch, probas=probas)
+        report = Reporter(
+            truths,
+            predictions,
+            self.run,
+            self.epoch,
+            probas=probas,
+            context=self.context,
+        )
         try:
             report.result.loss = self.loss
         except AttributeError:  # if the model was loaded from disk the loss is unknown
@@ -224,7 +230,7 @@ class CNNModel(Model):
         name = f"{self.util.get_exp_name(only_train=True)}_{self.run}_{self.epoch:03d}.model"
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
-        layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])
+        layers = ast.literal_eval(self.context.config["MODEL"]["layers"])
         self.store_path = dir + name
         drop = self.util.config_val("MODEL", "drop", False)
         if drop:
@@ -241,7 +247,7 @@ class CNNModel(Model):
             raise FileNotFoundError(f"Model file not found: {path}")
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
-        layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])
+        layers = ast.literal_eval(self.context.config["MODEL"]["layers"])
         self.store_path = path
         drop = self.util.config_val("MODEL", "drop", False)
         if drop:

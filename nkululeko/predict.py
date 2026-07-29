@@ -45,8 +45,8 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.constants import VERSION, SAMPLING_RATE
+from nkululeko.experiment_context import ExperimentContext, set_context
 from nkululeko.utils.errors import NkululukoError
 from nkululeko.utils.files import find_files
 from nkululeko.utils.util import Util
@@ -177,9 +177,9 @@ def main():
         config = _load_config(args)
         if args.language:
             _apply_language_override(config, args.language)
-        glob_conf.init_config(config)
-        glob_conf.set_module(module_name)
-        util = Util(module_name, has_config=True)
+        context = ExperimentContext(config=config, module=module_name)
+        set_context(context)
+        util = Util(module_name, has_config=True, context=context)
         util.debug(f"nkululeko {VERSION}: {module_name}")
         if args.language:
             util.debug(
@@ -241,7 +241,7 @@ def do_test(config_file, outfile):
 
     expr = Experiment(config)
     expr.set_module("test")
-    util = Util("test", has_config=True)
+    util = Util("test", has_config=True, context=expr.context)
     util.debug(f"running {expr.name} from config {config_file}, nkululeko {VERSION}")
 
     expr.load(f"{util.get_save_name()}")
@@ -534,7 +534,7 @@ def _run_from_config(args, util):
     """
     from nkululeko.experiment import Experiment
 
-    expr = Experiment(glob_conf.config)
+    expr = Experiment(util.context.config)
     expr.set_module("predict")
     util.debug(f"loading dataframe from config {args.config!r}")
     expr.load_datasets()
@@ -591,8 +591,8 @@ def _predict_with_autopredict(seg_df, target, util):
     """Use an nkululeko.autopredict.* predictor for one of the known targets."""
     util.debug(f"autopredict target: {target}")
     # ensure DATA.databases is parseable by the predictors
-    if "databases" not in glob_conf.config["DATA"]:
-        glob_conf.config["DATA"]["databases"] = "['adhoc']"
+    if "databases" not in util.context.config["DATA"]:
+        util.context.config["DATA"]["databases"] = "['adhoc']"
 
     df_in = seg_df.copy()
     pred_df = _dispatch_autopredict(target, df_in)
@@ -731,7 +731,7 @@ def _predict_with_model(seg_df, args, util):
     """Load the experiment from --config and run its best model on each file."""
     from nkululeko.experiment import Experiment
 
-    config = glob_conf.config
+    config = util.context.config
     expr = Experiment(config)
     expr.set_module("predict")
     expr.load(f"{util.get_save_name()}")

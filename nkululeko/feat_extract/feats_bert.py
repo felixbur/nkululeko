@@ -6,7 +6,6 @@ import transformers
 import torch
 
 from nkululeko.feat_extract.featureset import Featureset
-import nkululeko.glob_conf as glob_conf
 
 
 class Bert(Featureset):
@@ -73,7 +72,7 @@ class Bert(Featureset):
             # print(f"df shape: {self.df.shape}")
             self.df.to_pickle(storage)
             try:
-                glob_conf.config["DATA"]["needs_feature_extraction"] = "false"
+                self.context.config["DATA"]["needs_feature_extraction"] = "false"
             except KeyError:
                 pass
         else:

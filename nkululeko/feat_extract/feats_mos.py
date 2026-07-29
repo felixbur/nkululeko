@@ -21,7 +21,6 @@ from torchaudio.pipelines import SQUIM_SUBJECTIVE
 from torchaudio.utils import _download_asset
 from tqdm import tqdm
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
 
 
@@ -70,7 +69,7 @@ class MosSet(Featureset):
             self.df.columns = ["mos"]
             self.util.write_store(self.df, storage, store_format)
             try:
-                glob_conf.config["DATA"]["needs_feature_extraction"] = "false"
+                self.context.config["DATA"]["needs_feature_extraction"] = "false"
             except KeyError:
                 pass
         else:

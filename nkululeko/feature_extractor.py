@@ -6,10 +6,11 @@ Extract acoustic features using several feature extractors
 
 import pandas as pd
 
+from nkululeko.experiment_context import ContextAware, use_context
 from nkululeko.utils.util import Util
 
 
-class FeatureExtractor:
+class FeatureExtractor(ContextAware):
     """Extract acoustic features from audio samples.
 
     Extract acoustic features using several feature extractors (appends the features column-wise).
@@ -28,11 +29,14 @@ class FeatureExtractor:
     df = None
     data_df = None  # dataframe to get audio paths
 
-    def __init__(self, data_df, feats_types, data_name, feats_designation):
+    def __init__(
+        self, data_df, feats_types, data_name, feats_designation, context=None
+    ):
         self.data_df = data_df
         self.data_name = data_name
         self.feats_types = feats_types
-        self.util = Util("feature_extractor")
+        self.util = Util("feature_extractor", context=context)
+        self.context = self.util.context
         self.feats_designation = feats_designation
 
     def extract(self):
@@ -54,9 +58,10 @@ class FeatureExtractor:
         feat_extractor_class = self._get_feat_extractor_class(feats_type)
         if feat_extractor_class is None:
             self.util.error(f"unknown feats_type: {feats_type}")
-        return feat_extractor_class(
-            f"{store_name}_{self.feats_designation}", self.data_df, feats_type
-        )
+        with use_context(self.context):
+            return feat_extractor_class(
+                f"{store_name}_{self.feats_designation}", self.data_df, feats_type
+            )
 
     def _get_feat_extractor_class(self, feats_type):
         if feats_type == "os":

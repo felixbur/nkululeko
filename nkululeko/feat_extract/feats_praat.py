@@ -4,7 +4,6 @@ import os
 import numpy as np
 import pandas as pd
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract import feats_praat_core
 from nkululeko.feat_extract.featureset import Featureset
 
@@ -37,7 +36,7 @@ class PraatSet(Featureset):
 
             self.util.write_store(self.df, storage, store_format)
             try:
-                glob_conf.config["DATA"]["needs_feature_extraction"] = "false"
+                self.context.config["DATA"]["needs_feature_extraction"] = "false"
             except KeyError:
                 pass
         else:

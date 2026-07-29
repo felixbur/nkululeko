@@ -16,7 +16,6 @@ from transformers import Wav2Vec2FeatureExtractor
 from transformers import Wav2Vec2Model
 
 from nkululeko.feat_extract.featureset import Featureset
-import nkululeko.glob_conf as glob_conf
 
 
 class Wav2vec2(Featureset):
@@ -85,7 +84,7 @@ class Wav2vec2(Featureset):
             self.df = self._extract_embeddings_with_error_handling(_load_file)
             self.df.to_pickle(storage)
             try:
-                glob_conf.config["DATA"]["needs_feature_extraction"] = "false"
+                self.context.config["DATA"]["needs_feature_extraction"] = "false"
             except KeyError:
                 pass
         else:

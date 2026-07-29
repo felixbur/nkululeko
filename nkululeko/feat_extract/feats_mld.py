@@ -3,7 +3,6 @@ import os
 import sys
 from typing import Optional
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
 
 
@@ -68,7 +67,7 @@ class MLD_set(Featureset):
 
         try:
             # use only samples that have a minimum number of syllables
-            min_syls = int(glob_conf.config["FEATS"]["min_syls"])
+            min_syls = int(self.context.config["FEATS"]["min_syls"])
             self.df = self.df[self.df["hld_nSyl"] >= min_syls]
         except KeyError:
             pass

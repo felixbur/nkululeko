@@ -3,17 +3,17 @@ import ast
 
 import pandas as pd
 
-import nkululeko.glob_conf as glob_conf
+from nkululeko.experiment_context import ContextAware
 from nkululeko.utils.util import Util
 
 
-class Featureset:
+class Featureset(ContextAware):
     name = ""  # designation
     df = None  # pandas dataframe to store the features
     # (and indexed with the data from the sets)
     data_df = None  # dataframe to get audio paths
 
-    def __init__(self, name, data_df, feats_type):
+    def __init__(self, name, data_df, feats_type, context=None):
         """Constructor.
 
         Args:
@@ -23,7 +23,8 @@ class Featureset:
         """
         self.name = name
         self.data_df = data_df
-        self.util = Util("featureset")
+        self.util = Util("featureset", context=context)
+        self.context = self.util.context
         self.feats_type = feats_type
         self.n_jobs = int(self.util.config_val("MODEL", "n_jobs", "8"))
 
@@ -84,7 +85,9 @@ class Featureset:
         self.df = self.util.filter_filepath(self.data_df, self.df)
         try:
             # use only some features
-            selected_features = ast.literal_eval(glob_conf.config["FEATS"]["features"])
+            selected_features = ast.literal_eval(
+                self.context.config["FEATS"]["features"]
+            )
             self.util.debug(f"selecting features: {selected_features}")
             sel_feats_df = pd.DataFrame()
             hit = False

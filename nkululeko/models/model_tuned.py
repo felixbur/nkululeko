@@ -20,16 +20,15 @@ from transformers.models.wav2vec2.modeling_wav2vec2 import (
     Wav2Vec2PreTrainedModel,
 )
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.models.model import Model as BaseModel
 from nkululeko.reporting.reporter import Reporter
 from nkululeko.utils.pickle_integrity import verify_checksum
 
 
 class TunedModel(BaseModel):
-    def __init__(self, df_train, df_test, feats_train, feats_test):
+    def __init__(self, df_train, df_test, feats_train, feats_test, context=None):
         """Constructor taking the configuration and all dataframes."""
-        super().__init__(df_train, df_test, feats_train, feats_test)
+        super().__init__(df_train, df_test, feats_train, feats_test, context=context)
         super().set_model_type("finetuned")
         self.df_test, self.df_train, self.feats_test, self.feats_train = (
             df_test,
@@ -38,8 +37,8 @@ class TunedModel(BaseModel):
             feats_train,
         )
         self.name = "finetuned_wav2vec2"
-        self.target = glob_conf.config["DATA"]["target"]
-        self.labels = glob_conf.labels
+        self.target = self.context.config["DATA"]["target"]
+        self.labels = self.context.labels
         self.class_num = len(self.labels)
         device = self.util.config_val("MODEL", "device", False)
         if not device:
@@ -98,7 +97,7 @@ class TunedModel(BaseModel):
         """Initialize HuggingFace transformer model for finetuning."""
         # create dataset
         dataset = {}
-        target_name = glob_conf.target
+        target_name = self.context.target
         data_sources = {
             "train": pd.DataFrame(self.df_train[target_name]),
             "dev": pd.DataFrame(self.df_test[target_name]),
@@ -123,7 +122,7 @@ class TunedModel(BaseModel):
         # load pre-trained model
         if self.is_classifier:
             self.util.debug("Task is classification.")
-            le = glob_conf.label_encoder
+            le = self.context.label_encoder
             if le is None:
                 self.util.error(
                     "Label encoder is not available. Make sure to set up data loading properly."
@@ -219,7 +218,7 @@ class TunedModel(BaseModel):
         )
 
         if self.is_classifier:
-            le = glob_conf.label_encoder
+            le = self.context.label_encoder
             if le is None:
                 self.util.error("Label encoder not available for classification")
                 return
@@ -252,7 +251,7 @@ class TunedModel(BaseModel):
     def _create_emotion2vec_dataset(self):
         """Create dataset for emotion2vec training."""
         dataset = {}
-        target_name = glob_conf.target
+        target_name = self.context.target
         data_sources = {
             "train": pd.DataFrame(self.df_train[target_name]),
             "dev": pd.DataFrame(self.df_test[target_name]),
@@ -601,6 +600,7 @@ class TunedModel(BaseModel):
             self.run,
             self.epoch_num,
             probas=probas,
+            context=self.context,
         )
         self._plot_epoch_progression(report)
         return report

@@ -12,7 +12,6 @@ import torch
 import torchaudio
 from speechbrain.inference import EncoderClassifier
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
 
 # from transformers import HubertModel, Wav2Vec2FeatureExtractor
@@ -71,7 +70,7 @@ class Spkrec(Featureset):
             self.util.debug(f"df shape: {self.df.shape}")
             self.df.to_pickle(storage)
             try:
-                glob_conf.config["DATA"]["needs_feature_extraction"] = "false"
+                self.context.config["DATA"]["needs_feature_extraction"] = "false"
             except KeyError:
                 pass
         else:

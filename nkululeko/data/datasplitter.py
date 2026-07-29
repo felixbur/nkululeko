@@ -8,18 +8,19 @@ import secrets
 from sklearn.preprocessing import LabelEncoder
 import pickle
 from nkululeko.filter_data import DataFilter
-import nkululeko.glob_conf as glob_conf
+from nkululeko.experiment_context import ContextAware
 from nkululeko.file_checker import FileChecker
 from nkululeko.utils.util import Util
 
 
-class Datasplitter:
-    def __init__(self, datasets):
-        self.util = Util("datasplitter")
+class Datasplitter(ContextAware):
+    def __init__(self, datasets, context=None):
+        self.util = Util("datasplitter", context=context)
+        self.context = self.util.context
         self.datasets = datasets
-        self.split3 = glob_conf.split3
-        self.target = glob_conf.target
-        self.got_speaker = glob_conf.got_speaker
+        self.split3 = self.context.split3
+        self.target = self.context.target
+        self.got_speaker = self.context.got_speaker
 
     def get_sample_selection(self) -> pd.DataFrame:
         """Get the dataframe based on the sample selection configuration.
@@ -42,7 +43,7 @@ class Datasplitter:
         return df
 
     def _add_random_target(self, df):
-        labels = glob_conf.labels
+        labels = self.context.labels
         a = [None] * len(df)
         for i in range(0, len(df)):
             a[i] = secrets.choice(labels)
@@ -108,18 +109,18 @@ class Datasplitter:
             "EXP", "filter.sample_selection", "all"
         )
         if filter_sample_selection == "all":
-            datafilter = DataFilter(self.df_train)
+            datafilter = DataFilter(self.df_train, context=self.context)
             self.df_train = datafilter.all_filters()
-            datafilter = DataFilter(self.df_test)
+            datafilter = DataFilter(self.df_test, context=self.context)
             self.df_test = datafilter.all_filters()
             if self.split3:
-                datafilter = DataFilter(self.df_dev)
+                datafilter = DataFilter(self.df_dev, context=self.context)
                 self.df_dev = datafilter.all_filters()
         elif filter_sample_selection == "train":
-            datafilter = DataFilter(self.df_train)
+            datafilter = DataFilter(self.df_train, context=self.context)
             self.df_train = datafilter.all_filters()
         elif filter_sample_selection == "test":
-            datafilter = DataFilter(self.df_test)
+            datafilter = DataFilter(self.df_test, context=self.context)
             self.df_test = datafilter.all_filters()
         else:
             msg = (
@@ -154,7 +155,7 @@ class Datasplitter:
                     dev_cats = self.df_dev[self.target].value_counts().to_string()
             # encode the labels as numbers
             self.label_encoder = LabelEncoder()
-            glob_conf.set_label_encoder(self.label_encoder)
+            self.context.label_encoder = self.label_encoder
             if not self.df_train.empty:
                 self.util.debug(f"Categories train: {train_cats}")
                 self.df_train[self.target] = self.label_encoder.fit_transform(

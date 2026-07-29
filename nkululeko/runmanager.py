@@ -4,13 +4,13 @@ This module contains the Runmanager class which is responsible for managing the
 runs of the experiment.
 """
 
-import nkululeko.glob_conf as glob_conf
+from nkululeko.experiment_context import ContextAware, use_context
 from nkululeko.modelrunner import Modelrunner
 from nkululeko.reporting.reporter import Reporter
 from nkululeko.utils.util import Util
 
 
-class Runmanager:
+class Runmanager(ContextAware):
     """Class to manage the runs of the experiment (e.g. when results differ caused by random initialization)."""
 
     model = None  # The underlying model
@@ -23,7 +23,14 @@ class Runmanager:
     reports = []
 
     def __init__(
-        self, df_train, df_test, feats_train, feats_test, dev_x=None, dev_y=None
+        self,
+        df_train,
+        df_test,
+        feats_train,
+        feats_test,
+        dev_x=None,
+        dev_y=None,
+        context=None,
     ):
         """Constructor setting up the dataframes.
 
@@ -41,8 +48,9 @@ class Runmanager:
             feats_test,
         )
         self.df_dev, self.feats_dev = dev_x, dev_y
-        self.util = Util("runmanager")
-        self.target = glob_conf.config["DATA"]["target"]
+        self.util = Util("runmanager", context=context)
+        self.context = self.util.context
+        self.target = self.context.config["DATA"]["target"]
         self.split3 = eval(self.util.config_val("EXP", "traindevtest", "False"))
 
     def do_runs(self):
@@ -52,29 +60,33 @@ class Runmanager:
         # for all runs
         for run in range(int(self.util.config_val("EXP", "runs", 1))):
             self.util.debug(
-                f"run {run} using model {glob_conf.config['MODEL']['type']}"
+                f"run {run} using model {self.context.config['MODEL']['type']}"
             )
             # set the run index as global variable for reporting
             self.util.set_config_val("EXP", "run", run)
             if self.df_dev is not None:
-                self.modelrunner = Modelrunner(
-                    self.df_train,
-                    self.df_dev,
-                    self.feats_train,
-                    self.feats_dev,
-                    run,
-                    split_name="dev",
-                )
+                with use_context(self.context):
+                    self.modelrunner = Modelrunner(
+                        self.df_train,
+                        self.df_dev,
+                        self.feats_train,
+                        self.feats_dev,
+                        run,
+                        split_name="dev",
+                        context=self.context,
+                    )
                 self.reports, last_epoch = self.modelrunner.do_epochs()
             else:
-                self.modelrunner = Modelrunner(
-                    self.df_train,
-                    self.df_test,
-                    self.feats_train,
-                    self.feats_test,
-                    run,
-                    split_name="test",
-                )
+                with use_context(self.context):
+                    self.modelrunner = Modelrunner(
+                        self.df_train,
+                        self.df_test,
+                        self.feats_train,
+                        self.feats_test,
+                        run,
+                        split_name="test",
+                        context=self.context,
+                    )
                 self.reports, last_epoch = self.modelrunner.do_epochs()
 
             last_report = self.reports[-1]
@@ -100,7 +112,7 @@ class Runmanager:
                 "PLOT", "epoch_progression", 0
             )
             try:
-                epoch_num = int(glob_conf.config["EXP"]["epochs"])
+                epoch_num = int(self.context.config["EXP"]["epochs"])
             except KeyError:
                 # possibly this value has not been set
                 epoch_num = 1
@@ -171,8 +183,7 @@ class Runmanager:
             epoch: for which epoch
 
         """
-        report = Reporter([], [])
-        report.set_id(run, epoch)
+        report = Reporter([], [], run, epoch, context=self.context)
         self.util.debug(f"Re-testing result with run {run} and epoch {epoch}")
         plot_name_suggest = self.util.get_exp_name()
         plot_name = (
@@ -205,7 +216,7 @@ class Runmanager:
         run = report.run
         epoch = report.epoch
         self.util.set_config_val("EXP", "run", run)
-        model_type = glob_conf.config["MODEL"]["type"]
+        model_type = self.context.config["MODEL"]["type"]
         model = self.modelrunner._select_model(model_type)
         model.load(run, epoch)
         return model
@@ -215,7 +226,7 @@ class Runmanager:
         return self.load_model(best_report)
 
     def get_best_result(self, reports):
-        best_r = Reporter([], [], None, 0, 0)
+        best_r = Reporter([], [], None, 0, 0, context=self.context)
         if self.util.high_is_good():
             best_r = self.search_best_result(reports, "ascending")
         else:
@@ -223,7 +234,7 @@ class Runmanager:
         return best_r
 
     def search_best_result(self, reports, order):
-        best_r = Reporter([], [], None, 0, 0)
+        best_r = Reporter([], [], None, 0, 0, context=self.context)
         if order == "ascending":
             best_result = 0
             for r in reports:

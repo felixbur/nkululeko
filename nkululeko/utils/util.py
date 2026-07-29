@@ -16,6 +16,7 @@ from nkululeko.utils.dataframe import DataFrameMixin
 from nkululeko.utils.errors import NkululukoError
 from nkululeko.utils.naming import NamingMixin
 from nkululeko.utils.storage import StorageMixin
+from nkululeko.experiment_context import get_context
 
 
 class _MessageOnlyFormatter(logging.Formatter):
@@ -47,8 +48,14 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         "kind",
     ]
 
-    def __init__(self, caller=None, has_config=True):
+    def __init__(self, caller=None, has_config=True, context=None):
+        """Create a utility helper bound to an experiment context.
+
+        ``context`` is optional only for backwards compatibility with callers
+        outside the experiment orchestration layer.
+        """
         self.logger = None
+        self.context = context if context is not None else get_context()
         if caller is not None:
             self.caller = caller
         else:
@@ -56,9 +63,7 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         self.config = None
         if has_config:
             try:
-                import nkululeko.glob_conf as glob_conf
-
-                self.config = glob_conf.config
+                self.config = self.context.config
                 self.got_data_roots = self.config_val("DATA", "root_folders", False)
                 if self.got_data_roots:
                     # if there is a global data rootfolder file, read from
@@ -67,10 +72,6 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
                         self.error(f"no such file: {self.got_data_roots}")
                     self.data_roots = configparser.ConfigParser()
                     self.data_roots.read(self.got_data_roots)
-            except ModuleNotFoundError as e:
-                self.error(e)
-                self.config = None
-                self.got_data_roots = False
             except AttributeError as e:
                 self.error(e)
                 self.config = None
@@ -209,9 +210,7 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         If the value is present in the experiment configuration it will be used, else
         we look in a global file specified by the root_folders value.
         """
-        import nkululeko.glob_conf as glob_conf
-
-        configuration = glob_conf.config
+        configuration = self.config
         try:
             if len(key) > 0:
                 return configuration["DATA"][dataset + "." + key].strip("'\"")
@@ -236,6 +235,7 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
 
     def set_config(self, config):
         self.config = config
+        self.context.config = config
         # self.logged_configs.clear()
 
     def get_name(self):

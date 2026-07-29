@@ -5,7 +5,6 @@ Currently based on audEERING's agender model.
 
 import ast
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.feature_extractor import FeatureExtractor
 from nkululeko.utils.util import Util
 
@@ -23,9 +22,13 @@ class GenderPredictor:
 
     def predict(self, split_selection):
         self.util.debug(f"predicting gender for {split_selection} samples")
-        feats_name = "_".join(ast.literal_eval(glob_conf.config["DATA"]["databases"]))
+        feats_name = "_".join(ast.literal_eval(self.util.config["DATA"]["databases"]))
         self.feature_extractor = FeatureExtractor(
-            self.df, ["agender_agender"], feats_name, split_selection
+            self.df,
+            ["agender_agender"],
+            feats_name,
+            split_selection,
+            context=self.util.context,
         )
         agender_df = self.feature_extractor.extract()
         pred_gender = agender_df.drop("age", axis=1).idxmax(axis=1)

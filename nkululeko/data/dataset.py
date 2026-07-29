@@ -9,14 +9,14 @@ import pandas as pd
 import audformat
 
 from nkululeko.filter_data import DataFilter
-import nkululeko.glob_conf as glob_conf
+from nkululeko.experiment_context import ContextAware
 from nkululeko.plots import Plots
 from nkululeko.reporting.report_item import ReportItem
 from nkululeko.utils.util import Util
 from nkululeko.constants import COL_AGE, COL_SEX, COL_SPEAKER
 
 
-class Dataset:
+class Dataset(ContextAware):
     """Class to represent datasets"""
 
     name = ""  # An identifier for the dataset
@@ -26,12 +26,13 @@ class Dataset:
     df_train = None  # The training split
     df_test = None  # The evaluation split
 
-    def __init__(self, name):
+    def __init__(self, name, context=None):
         """Constructor setting up name and configuration"""
         self.name = name
-        self.util = Util("dataset")
+        self.util = Util("dataset", context=context)
+        self.context = self.util.context
         self.target = self.util.config_val("DATA", "target", None)
-        self.plot = Plots()
+        self.plot = Plots(context=self.context)
         self.limit = int(self.util.config_val_data(self.name, "limit", 0))
         self.target_tables_append = eval(
             self.util.config_val_data(self.name, "target_tables_append", "False")
@@ -49,7 +50,7 @@ class Dataset:
             False,
             False,
         )
-        self.split3 = glob_conf.split3
+        self.split3 = self.context.split3
         self.feats = None
 
     def _get_tables(self):
@@ -137,9 +138,9 @@ class Dataset:
             f" {self.got_speaker} ({speaker_num}), got sexes: {self.got_gender}"
         )
         self.util.debug(r_string)
-        if glob_conf.report.initial:
-            glob_conf.report.add_item(ReportItem("Data", "Load report", r_string))
-            glob_conf.report.initial = False
+        if self.context.report.initial:
+            self.context.report.add_item(ReportItem("Data", "Load report", r_string))
+            self.context.report.initial = False
 
     def _autodetect_experiment_type(self, df):
         """Auto-detect the experiment type from the label column.
@@ -154,7 +155,7 @@ class Dataset:
             return
         user_type = self.util.config_val("EXP", "type", None)
         if user_type is None:
-            glob_conf.config["EXP"]["type"] = "regression"
+            self.context.config["EXP"]["type"] = "regression"
         elif user_type != "regression":
             self.util.warn(
                 f"{self.name}: Configured [EXP] type={user_type} but label "
@@ -177,7 +178,7 @@ class Dataset:
             if columns:
                 self.col_label = columns[0]
                 self.target = self.col_label
-                glob_conf.config["DATA"]["target"] = self.target
+                self.context.config["DATA"]["target"] = self.target
                 # Warn about automatic target selection which might pick wrong column
                 self.util.warn(
                     f"{self.name}: No target specified, automatically selected '{self.col_label}' "
@@ -254,7 +255,7 @@ class Dataset:
                 f" filtered {pre - post})"
             )
 
-        datafilter = DataFilter(self.df)
+        datafilter = DataFilter(self.df, context=self.context)
         self.df = datafilter.all_filters(data_name=self.name)
 
         if self.got_speaker and self.util.config_val_data(
@@ -592,7 +593,7 @@ class Dataset:
             from nkululeko.feature_extractor import FeatureExtractor
 
             self.feature_extractor = FeatureExtractor(
-                self.df, feats_types, self.name, "all"
+                self.df, feats_types, self.name, "all", context=self.context
             )
             self.feats = self.feature_extractor.extract()
         return self.feats, self.feature_extractor
@@ -710,7 +711,7 @@ class Dataset:
     def prepare_labels(self):
         # strategy = self.util.config_val("DATA", "strategy", "train_test")
         only_tests = eval(self.util.config_val("DATA", "tests", "False"))
-        module = glob_conf.module
+        module = self.context.module
         if only_tests and module == "test":
             self.df_test = self.map_labels(self.df_test)
             self.df_test = self._add_labels(self.df_test)
@@ -767,7 +768,7 @@ class Dataset:
         ):
             return df
         """Rename the labels and remove the ones that are not needed."""
-        target = glob_conf.config["DATA"]["target"]
+        target = self.context.config["DATA"]["target"]
         if target not in df.columns:
             return df
         # see if a special mapping should be used
@@ -814,7 +815,7 @@ class Dataset:
             self.util.debug(f"{self.name}: binning continuous variable to categories")
             cat_vals = self.util.continuous_to_categorical(df[self.target])
             df[self.target] = cat_vals.values
-            labels = ast.literal_eval(glob_conf.config["DATA"]["labels"])
+            labels = ast.literal_eval(self.context.config["DATA"]["labels"])
             df["class_label"] = df[self.target]
             for i, label in enumerate(labels):
                 df["class_label"] = df["class_label"].replace(i, str(label))

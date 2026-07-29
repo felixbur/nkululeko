@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 
 from nkululeko.constants import VERSION
-import nkululeko.glob_conf as glob_conf
+from nkululeko.experiment_context import ExperimentContext, set_context
 from nkululeko.optimizationrunner import OptimizationRunner
 from nkululeko.utils.errors import NkululukoError
 
@@ -21,9 +21,10 @@ def doit(config_file):
 
     config = configparser.ConfigParser()
     config.read(config_path)
-    glob_conf.init_config(config)
+    context = ExperimentContext(config=config)
+    set_context(context)
 
-    optimizer = OptimizationRunner(config)
+    optimizer = OptimizationRunner(config, context=context)
 
     start_time = time.time()
 
