@@ -3,6 +3,7 @@
 import configparser
 import logging
 import os
+import threading
 
 import numpy as np
 import pandas as pd
@@ -344,6 +345,53 @@ class TestSetupLogging:
             h for h in logger.handlers if isinstance(h, logging.FileHandler)
         ]
         assert len(file_handlers) == 0
+
+    def test_no_duplicate_handlers_under_concurrent_access(self, tmp_path):
+        """Concurrent Util creation should not produce duplicate handlers.
+
+        setup_method/teardown_method reset the shared logger before and after
+        this test, so it starts from a known-empty handler list regardless of
+        what other tests in this run have done.
+        """
+        glob_conf.config["EXP"]["root"] = str(tmp_path)
+        glob_conf.config["EXP"]["name"] = "concurrent_test"
+
+        logger = logging.getLogger(util_mod.__name__)
+        barrier = threading.Barrier(10)
+        errors = []
+
+        def create_util():
+            try:
+                # Synchronize threads to maximize the chance of exercising the race
+                barrier.wait()
+                Util("test")
+            except Exception as exc:  # pragma: no cover - defensive
+                errors.append(exc)
+
+        threads = [threading.Thread(target=create_util) for _ in range(10)]
+
+        for thread in threads:
+            thread.start()
+
+        for thread in threads:
+            thread.join()
+
+        # Ensure no thread failed
+        assert not errors
+
+        console_handlers = [
+            h
+            for h in logger.handlers
+            if isinstance(h, logging.StreamHandler)
+            and not isinstance(h, logging.FileHandler)
+        ]
+        file_handlers = [
+            h for h in logger.handlers if isinstance(h, logging.FileHandler)
+        ]
+
+        # The race being tested affects both console and file handlers.
+        assert len(console_handlers) == 1
+        assert len(file_handlers) == 1
 
 
 # ---------------------------------------------------------------------------

@@ -6,6 +6,7 @@ import logging
 import os.path
 import shutil
 import sys
+import threading
 
 from pathlib import Path
 
@@ -16,6 +17,8 @@ from nkululeko.utils.dataframe import DataFrameMixin
 from nkululeko.utils.errors import NkululukoError
 from nkululeko.utils.naming import NamingMixin
 from nkululeko.utils.storage import StorageMixin
+
+_log_lock = threading.Lock()
 
 
 class _MessageOnlyFormatter(logging.Formatter):
@@ -97,24 +100,31 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         # Only add a console handler if this logger has none yet.
         # Use logger.handlers (direct handlers) rather than hasHandlers()
         # so the check is scoped to this logger only, not the full hierarchy.
-        if not logger.handlers:
-            console_handler = logging.StreamHandler()
-            console_handler.setFormatter(formatter)
-            logger.addHandler(console_handler)
+        # _log_lock makes the check-then-act atomic so concurrent
+        # threads/instances can't both pass the check and add a handler each.
+        with _log_lock:
+            if not logger.handlers:
+                console_handler = logging.StreamHandler()
+                console_handler.setFormatter(formatter)
+                logger.addHandler(console_handler)
 
     def _setup_file_logging(self, logger, formatter):
         try:
             root = self.config["EXP"]["root"]
             name = self.config["EXP"]["name"]
             log_dir, log_file, timestamp = self._build_log_path(root, name)
-            self._remove_stale_file_handlers(logger, log_dir)
 
-            if self._has_file_handler(logger):
-                return
+            # Only the handler check-then-act is locked; the filesystem work
+            # above (mkdir) and the config snapshot copy below stay outside
+            # the critical section so unrelated threads aren't blocked on I/O.
+            with _log_lock:
+                self._remove_stale_file_handlers(logger, log_dir)
+                if self._has_file_handler(logger):
+                    return
+                file_handler = logging.FileHandler(log_file)
+                file_handler.setFormatter(formatter)
+                logger.addHandler(file_handler)
 
-            file_handler = logging.FileHandler(log_file)
-            file_handler.setFormatter(formatter)
-            logger.addHandler(file_handler)
             self._copy_config_snapshot(log_dir, name, timestamp)
         except KeyError:
             logger.debug("File logging skipped: EXP configuration (root/name) incomplete")
@@ -125,6 +135,7 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
     def _build_log_path(root, name):
         log_dir = os.path.abspath(os.path.join(root, name, "log"))
         audeer.mkdir(log_dir)
+        # Include seconds to avoid filename collisions between close-together runs
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         return log_dir, os.path.join(log_dir, f"{name}_{timestamp}.log"), timestamp
 
