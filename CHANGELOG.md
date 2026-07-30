@@ -1,6 +1,9 @@
 Changelog
 =========
 
+Version 1.7.15 (26-07-30)
+-------------------------
+* Fix multiple bugs: bare except, O(n²) concat, LabelEncoder error messages, dead code, exp type overwrite
 
 Version 1.7.14 (26-07-28)
 -------------------------

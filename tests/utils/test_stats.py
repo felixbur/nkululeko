@@ -31,13 +31,15 @@ class TestCheckNa:
 
     def test_nans_replaced_with_zero(self):
         a = np.array([1.0, float("nan"), 3.0])
-        result = check_na(a)
+        with pytest.warns(UserWarning, match="NaN"):
+            result = check_na(a)
         assert result[1] == pytest.approx(0.0)
         assert not np.isnan(result).any()
 
     def test_multiple_nans_all_replaced(self):
         a = np.array([float("nan"), float("nan"), 5.0])
-        result = check_na(a)
+        with pytest.warns(UserWarning, match="NaN"):
+            result = check_na(a)
         assert result[0] == pytest.approx(0.0)
         assert result[1] == pytest.approx(0.0)
 
@@ -75,7 +77,8 @@ class TestCohenD:
         d1 = np.array([float("nan"), 1.0, 2.0])
         d2 = np.array([3.0, 4.0, 5.0])
         # Should not raise; nan values are replaced with 0
-        result = cohen_d(d1, d2)
+        with pytest.warns(UserWarning, match="NaN"):
+            result = cohen_d(d1, d2)
         assert isinstance(result, float)
 
 
@@ -232,7 +235,8 @@ class TestGetTTestEffect:
     def test_nan_values_handled(self):
         v1 = np.array([float("nan"), 1.0, 2.0, 3.0, 4.0])
         v2 = np.array([5.0, 6.0, 7.0, 8.0, 9.0])
-        t, _, _ = get_t_test_effect(v1, v2)
+        with pytest.warns(UserWarning, match="NaN"):
+            t, _, _ = get_t_test_effect(v1, v2)
         assert not np.isnan(t)
 
 
