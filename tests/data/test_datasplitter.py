@@ -2,6 +2,7 @@
 
 import configparser
 from datetime import timedelta
+from unittest.mock import MagicMock
 
 import pandas as pd
 import pytest
@@ -17,6 +18,23 @@ def _make_segmented_index(files):
         [timedelta(seconds=1)] * len(files),
     ]
     return pd.MultiIndex.from_arrays(arrays, names=["file", "start", "end"])
+
+
+def _tag_df(df):
+    """Set standard boolean flags to False on a split DataFrame."""
+    df.is_labeled = False
+    df.got_gender = False
+    df.got_speaker = False
+    return df
+
+
+def _make_fake_util(tmp_path):
+    """Return a minimal no-op utility stub for Datasplitter tests."""
+    util = MagicMock()
+    util.get_path.return_value = str(tmp_path) + "/"
+    util.config_val.side_effect = lambda sec, key, default: default
+    util.exp_is_classification.return_value = False
+    return util
 
 
 @pytest.fixture(autouse=True)
@@ -186,20 +204,208 @@ class TestBuildTestDsDf:
         assert len(ds.test_ds_df["db_b"]) == 1
 
 
+class TestLabelEncoderUnseenLabels:
+    """Verify fill_train_and_tests surfaces helpful errors for unseen labels."""
+
+    class _FakeDataset:
+        """Minimal dataset stub with pre-built splits."""
+
+        is_labeled = True
+        got_gender = False
+        got_age = False
+        got_speaker = False
+        name = "fake_db"
+
+        def __init__(self, train_labels, test_labels, dev_labels=None):
+            idx_tr = _make_segmented_index(
+                [f"/data/tr_{i}.wav" for i in range(len(train_labels))]
+            )
+            idx_te = _make_segmented_index(
+                [f"/data/te_{i}.wav" for i in range(len(test_labels))]
+            )
+            self.df_train = _tag_df(
+                pd.DataFrame({"emotion": train_labels}, index=idx_tr)
+            )
+            self.df_test = _tag_df(pd.DataFrame({"emotion": test_labels}, index=idx_te))
+            self.df_train.is_labeled = True
+            self.df_test.is_labeled = True
+            if dev_labels is not None:
+                idx_dev = _make_segmented_index(
+                    [f"/data/dev_{i}.wav" for i in range(len(dev_labels))]
+                )
+                self.df_dev = _tag_df(
+                    pd.DataFrame({"emotion": dev_labels}, index=idx_dev)
+                )
+                self.df_dev.is_labeled = True
+
+        def split(self):
+            pass
+
+        def split_3(self):
+            pass
+
+        def prepare_labels(self):
+            pass
+
+    def _make_ds(self, datasets, split3=False):
+        """Build a Datasplitter with real Util whose error() is captured."""
+        from nkululeko.utils.util import Util
+
+        ds = Datasplitter.__new__(Datasplitter)
+        ds.util = Util("datasplitter")
+        errors = []
+        ds.util.error = lambda m: errors.append(m)
+        ds.target = "emotion"
+        ds.split3 = split3
+        ds.got_speaker = False
+        ds.datasets = datasets
+        return ds, errors
+
+    def test_unseen_test_labels_calls_util_error(self):
+        """fill_train_and_tests should report labels in test split not seen in training."""
+        fake_ds = self._FakeDataset(
+            train_labels=["happy", "sad"],
+            test_labels=["angry"],
+        )
+        ds, errors = self._make_ds({"db": fake_ds})
+
+        ds.fill_train_and_tests()
+
+        assert len(errors) == 1
+        assert "angry" in errors[0]
+        assert "not seen in training" in errors[0]
+
+    def test_unseen_dev_labels_calls_util_error(self):
+        """fill_train_and_tests should report unseen dev-split labels when split3=True."""
+        fake_ds = self._FakeDataset(
+            train_labels=["happy", "sad"],
+            test_labels=["happy"],  # no unseen in test
+            dev_labels=["angry"],  # unseen in dev
+        )
+        ds, errors = self._make_ds({"db": fake_ds}, split3=True)
+
+        ds.fill_train_and_tests()
+
+        assert len(errors) == 1
+        assert "angry" in errors[0]
+        assert "not seen in training" in errors[0]
+
+    def test_unseen_test_labels_with_nan_does_not_crash(self):
+        """A partially-labeled test split (containing NaN) must not raise TypeError."""
+        fake_ds = self._FakeDataset(
+            train_labels=["happy", "sad"],
+            test_labels=["angry", float("nan")],
+        )
+        ds, errors = self._make_ds({"db": fake_ds})
+
+        ds.fill_train_and_tests()
+
+        assert len(errors) == 1
+        assert "angry" in errors[0]
+        assert "nan" not in errors[0]
+
+
+class TestFillTrainAndTestsConcatenation:
+    def test_multiple_datasets_concatenated_correctly(self, tmp_path, monkeypatch):
+        """fill_train_and_tests should concat all datasets without O(n²) intermediate copies."""
+
+        class FakeDataset:
+            def __init__(self, name, train_files, test_files):
+                self.name = name
+                idx_tr = _make_segmented_index(train_files)
+                idx_te = _make_segmented_index(test_files)
+                self.df_train = _tag_df(pd.DataFrame(index=idx_tr))
+                self.df_test = _tag_df(pd.DataFrame(index=idx_te))
+
+            def split(self):
+                pass  # already split in __init__
+
+            def prepare_labels(self):
+                pass
+
+        monkeypatch.setitem(glob_conf.config["DATA"], "target", "none")
+        monkeypatch.setattr(glob_conf, "target", None)
+
+        ds_a = FakeDataset("a", ["/a/tr_1.wav", "/a/tr_2.wav"], ["/a/te_1.wav"])
+        ds_b = FakeDataset("b", ["/b/tr_1.wav"], ["/b/te_1.wav", "/b/te_2.wav"])
+
+        ds = Datasplitter.__new__(Datasplitter)
+        ds.util = _make_fake_util(tmp_path)
+        ds.target = None
+        ds.split3 = False
+        ds.got_speaker = False
+        ds.datasets = {"a": ds_a, "b": ds_b}
+
+        df_train, df_test = ds.fill_train_and_tests()
+        assert len(df_train) == 3  # 2 from a + 1 from b
+        assert len(df_test) == 3  # 1 from a + 2 from b
+
+    def test_flag_aggregation_any_wins_on_self_and_splits(self, tmp_path, monkeypatch):
+        """Flags should be any-wins aggregated onto self and every split DataFrame."""
+
+        class FakeDataset:
+            def __init__(self, name, train_files, test_files, **flags):
+                self.name = name
+                idx_tr = _make_segmented_index(train_files)
+                idx_te = _make_segmented_index(test_files)
+                self.df_train = _tag_df(pd.DataFrame(index=idx_tr))
+                self.df_test = _tag_df(pd.DataFrame(index=idx_te))
+                for flag, value in flags.items():
+                    setattr(self, flag, value)
+
+            def split(self):
+                pass  # already split in __init__
+
+            def prepare_labels(self):
+                pass
+
+        monkeypatch.setitem(glob_conf.config["DATA"], "target", "none")
+        monkeypatch.setattr(glob_conf, "target", None)
+
+        # ds_a has every flag False, ds_b has every flag True: any-wins means
+        # the aggregated result must be True on self and every split.
+        ds_a = FakeDataset(
+            "a",
+            ["/a/tr_1.wav"],
+            ["/a/te_1.wav"],
+            is_labeled=False,
+            got_gender=False,
+            got_age=False,
+            got_speaker=False,
+        )
+        ds_b = FakeDataset(
+            "b",
+            ["/b/tr_1.wav"],
+            ["/b/te_1.wav"],
+            is_labeled=True,
+            got_gender=True,
+            got_age=True,
+            got_speaker=True,
+        )
+
+        ds = Datasplitter.__new__(Datasplitter)
+        ds.util = _make_fake_util(tmp_path)
+        ds.target = None
+        ds.split3 = False
+        ds.got_speaker = False
+        ds.datasets = {"a": ds_a, "b": ds_b}
+
+        df_train, df_test = ds.fill_train_and_tests()
+
+        for flag in ("is_labeled", "got_gender", "got_age", "got_speaker"):
+            assert getattr(ds, flag) is True
+            assert getattr(df_train, flag) is True
+            assert getattr(df_test, flag) is True
+
+
 class TestFillTrainAndTestsEarlyReturn:
-    def test_unsupervised_returns_splits_without_labels(self, tmp_path):
+    def test_unsupervised_returns_splits_without_labels(self, tmp_path, monkeypatch):
         """fill_train_and_tests returns (df_train, df_test) even when target is None."""
 
         class FakeDataset:
             def split(self):
-                self.df_train = pd.DataFrame(index=range(2))
-                self.df_test = pd.DataFrame(index=range(1))
-                self.df_train.is_labeled = False
-                self.df_test.is_labeled = False
-                self.df_train.got_gender = False
-                self.df_test.got_gender = False
-                self.df_train.got_speaker = False
-                self.df_test.got_speaker = False
+                self.df_train = _tag_df(pd.DataFrame(index=range(2)))
+                self.df_test = _tag_df(pd.DataFrame(index=range(1)))
 
             def prepare_labels(self):
                 pass  # no-op: unsupervised run has no labels to encode
@@ -208,23 +414,12 @@ class TestFillTrainAndTestsEarlyReturn:
             df_test = pd.DataFrame()
             name = "fake"
 
-        glob_conf.config["DATA"]["target"] = "none"
-        glob_conf.target = None
+        monkeypatch.setitem(glob_conf.config["DATA"], "target", "none")
+        monkeypatch.setattr(glob_conf, "target", None)
 
         fake_ds = FakeDataset()
         ds = Datasplitter.__new__(Datasplitter)
-        ds.util = type(
-            "U",
-            (),
-            {
-                "get_path": lambda self, k: str(tmp_path) + "/",
-                "config_val": lambda self, sec, key, default: default,
-                "debug": lambda self, m: None,
-                "warn": lambda self, m: None,
-                "copy_flags": lambda self, src, tgt: None,
-                "exp_is_classification": lambda self: False,
-            },
-        )()
+        ds.util = _make_fake_util(tmp_path)
         ds.target = None
         ds.split3 = False
         ds.got_speaker = False

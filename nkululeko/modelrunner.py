@@ -3,8 +3,72 @@
 import ast
 
 from nkululeko import glob_conf
-from nkululeko.utils.util import Util
 from nkululeko.balance import DataBalancer
+from nkululeko.utils.util import Util
+
+# Fallback type-based heuristics used when a model instance is not yet available
+# or when the model does not declare explicit is_classifier / is_regressor flags.
+# Model types that only support classification
+CLASSIFIER_TYPES = frozenset(
+    {"svm", "xgb", "bayes", "gmm", "knn", "tree", "cnn", "mlp", "adm"}
+)
+# Model types that only support regression
+REGRESSOR_TYPES = frozenset({"svr", "xgr", "knn_reg", "lin_reg", "tree_reg", "mlp_reg"})
+
+
+def validate_model_task_support(model_type: str, task: str, model=None) -> None:
+    """Ensure model_type is compatible with the requested task.
+
+    When a model instance is provided its own capability flags
+    (``is_classifier`` / ``is_regressor``) take precedence over the
+    type-based allow-lists.  This lets future model implementations declare
+    their own capabilities without touching these sets.
+
+    :param model_type: model type string (e.g. ``'svm'``, ``'svr'``)
+    :param task: ``'classification'`` or ``'regression'``
+    :param model: optional instantiated model; checked for
+        ``is_classifier`` / ``is_regressor`` attributes when provided
+    """
+    util = Util("modelrunner")
+    is_classifier = getattr(model, "is_classifier", None) if model is not None else None
+    is_regressor = getattr(model, "is_regressor", None) if model is not None else None
+
+    if task == "classification":
+        _check_task_capability(
+            util, model_type, task, is_classifier, "regressor", REGRESSOR_TYPES
+        )
+    elif task == "regression":
+        _check_task_capability(
+            util, model_type, task, is_regressor, "classifier", CLASSIFIER_TYPES
+        )
+
+
+def _check_task_capability(
+    util, model_type, task, capability, opposite_label, forbidden_types
+) -> None:
+    """Validate a single task direction using capability flag or type fallback.
+
+    :param util: Util instance used to report errors.
+    :param model_type: model type string (e.g. ``'svm'``, ``'svr'``).
+    :param task: ``'classification'`` or ``'regression'``.
+    :param capability: the model's capability flag for this task
+        (``is_classifier`` or ``is_regressor``); ``None`` when not declared.
+    :param opposite_label: label of the opposite task (``'regressor'`` or
+        ``'classifier'``) used in the fallback error message.
+    :param forbidden_types: frozenset of model types that only support the
+        opposite task.
+    """
+    # Explicit negative capability flag is a hard error.
+    if capability is False:
+        util.error(f"Model '{model_type}' does not support {task}.")
+    # Explicit positive flag short-circuits the type-based fallback.
+    if capability is True:
+        return
+    # Fall back to type-set heuristics for models without capability flags.
+    if model_type in forbidden_types:
+        util.error(
+            f"Model '{model_type}' is a {opposite_label} but experiment type is {task}"
+        )
 
 
 class Modelrunner:
@@ -187,6 +251,10 @@ class Modelrunner:
         self._check_balancing()
         self._check_feature_balancing()
 
+        # Validate model/experiment type compatibility before instantiation
+        task = "classification" if self.util.exp_is_classification() else "regression"
+        validate_model_task_support(model_type, task)
+
         if model_type == "svm":
             from nkululeko.models.model_svm import SVM_model
 
@@ -285,11 +353,10 @@ class Modelrunner:
             )
         else:
             self.util.error(f"unknown model type: '{model_type}'")
-        if self.util.exp_is_classification() and not self.model.is_classifier:
-            self.util.error(
-                "Experiment type set to classification but model type is not a"
-                " classifier"
-            )
+        # Re-validate using the instantiated model's own capability flags so
+        # that models declaring is_classifier/is_regressor are honored even
+        # when their model_type is absent from the legacy type allow-lists.
+        validate_model_task_support(model_type, task, model=self.model)
         return self.model
 
     def _check_feature_balancing(self):

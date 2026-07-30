@@ -4,16 +4,16 @@ import os
 import os.path
 from random import sample
 
+import audformat
 import numpy as np
 import pandas as pd
-import audformat
 
-from nkululeko.filter_data import DataFilter
 import nkululeko.glob_conf as glob_conf
+from nkululeko.constants import COL_AGE, COL_SEX, COL_SPEAKER
+from nkululeko.filter_data import DataFilter
 from nkululeko.plots import Plots
 from nkululeko.reporting.report_item import ReportItem
 from nkululeko.utils.util import Util
-from nkululeko.constants import COL_AGE, COL_SEX, COL_SPEAKER
 
 
 class Dataset:
@@ -33,15 +33,6 @@ class Dataset:
         self.target = self.util.config_val("DATA", "target", None)
         self.plot = Plots()
         self.limit = int(self.util.config_val_data(self.name, "limit", 0))
-        self.target_tables_append = eval(
-            self.util.config_val_data(self.name, "target_tables_append", "False")
-        )
-        if self.target_tables_append:
-            self.util.warn(
-                f"{self.name}: 'target_tables_append' is no longer supported "
-                "and has no effect. Tables are now merged automatically via "
-                "audformat db.get(). Please remove it from your config."
-            )
         self.start_fresh = eval(self.util.config_val("DATA", "no_reuse", "False"))
         self.is_labeled, self.got_speaker, self.got_gender, self.got_age = (
             False,
@@ -90,7 +81,6 @@ class Dataset:
                     if col_dict[key] == target:
                         return key
         return target
-            
 
     def _check_cols(self, df):
         rename_cols = self.util.config_val_data(self.name, "colnames", False)
@@ -502,8 +492,8 @@ class Dataset:
 
         from splitutils import (
             binning,
-            optimize_traintest_split,
             optimize_traindevtest_split,
+            optimize_traintest_split,
         )
 
         seed = 42
