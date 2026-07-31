@@ -26,7 +26,7 @@ import tempfile
 import audformat
 import pandas as pd
 
-from nkululeko.experiment_context import ExperimentContext, set_context
+from nkululeko.experiment_context import ExperimentContext, use_context
 from nkululeko.constants import AUDIO_EXTS, VERSION
 from nkululeko.utils.files import safe_path
 from nkululeko.utils.util import Util
@@ -156,7 +156,12 @@ def _load_bundle(bundle_dir):
 
 
 def _setup_context(bundle):
-    """Create the context used for bundle inference."""
+    """Build the experiment context used for bundle inference.
+
+    Does not make the context active — callers should run inference inside
+    `with use_context(context):` so the active context is scoped to the
+    inference call rather than leaking into unrelated process-wide state.
+    """
     config = bundle["config"]
     # Ensure required sections exist
     for section in ("EXP", "DATA", "FEATS", "MODEL"):
@@ -178,7 +183,6 @@ def _setup_context(bundle):
     labels = bundle["manifest"].get("labels", None)
     if labels is not None:
         context.labels = labels
-    set_context(context)
     return context
 
 
@@ -399,24 +403,29 @@ def infer_from_bundle(
     """
     bundle = _load_bundle(bundle_dir)
     context = _setup_context(bundle)
-    util = Util("infer", has_config=True, context=context)
-    util.debug(f"nkululeko {VERSION}: infer from bundle {bundle_dir}")
+    with use_context(context):
+        util = Util("infer", has_config=True, context=context)
+        util.debug(f"nkululeko {VERSION}: infer from bundle {bundle_dir}")
 
-    manifest = bundle["manifest"]
-    util.debug(
-        f"  task={manifest.get('task')}, target={manifest.get('target')}, "
-        f"model={manifest.get('model_type')}"
-    )
+        manifest = bundle["manifest"]
+        util.debug(
+            f"  task={manifest.get('task')}, target={manifest.get('target')}, "
+            f"model={manifest.get('model_type')}"
+        )
 
-    if files:
-        return _run_files(files, bundle, util, outfile)
-    elif folder:
-        return _run_folder(folder, bundle, util, outfile or "./bundle_predictions.csv")
-    elif list_path:
-        return _run_list(list_path, bundle, util, outfile or "./bundle_predictions.csv")
-    else:
-        print("ERROR: provide one of --file, --folder, or --list", file=sys.stderr)
-        sys.exit(1)
+        if files:
+            return _run_files(files, bundle, util, outfile)
+        elif folder:
+            return _run_folder(
+                folder, bundle, util, outfile or "./bundle_predictions.csv"
+            )
+        elif list_path:
+            return _run_list(
+                list_path, bundle, util, outfile or "./bundle_predictions.csv"
+            )
+        else:
+            print("ERROR: provide one of --file, --folder, or --list", file=sys.stderr)
+            sys.exit(1)
 
 
 def _build_parser():
