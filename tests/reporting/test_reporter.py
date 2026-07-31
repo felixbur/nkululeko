@@ -103,3 +103,31 @@ class TestReporterEmpty:
         r = Reporter([], [], run=0, epoch=0)
         result = r.get_result()
         assert result.test == 0
+
+
+class TestReporterClassificationReportMismatch:
+    """classification_report raises ValueError when target_names doesn't
+    match the classes actually present in truths/preds (e.g. a class never
+    predicted). print_results must degrade gracefully instead of crashing.
+    """
+
+    def test_print_results_falls_back_without_crashing(self, tmp_path):
+        glob_conf.config["EXP"]["root"] = str(tmp_path)
+        truths = np.array([0, 1] * 5)
+        preds = np.array([0, 1] * 5)
+        r = Reporter(truths, preds, run=0, epoch=0)
+        # print_results() prefers label_encoder.classes_ over context.labels
+        # when a label_encoder is present; clear it so this test deterministically
+        # exercises the context.labels path regardless of what other tests left
+        # on the shared context.
+        r.context.label_encoder = None
+        # Claim more labels than actually appear in truths/preds so
+        # classification_report raises ValueError.
+        r.context.labels = ["a", "b", "c", "d", "e"]
+
+        r.print_results(epoch=0, file_name="mismatch_test")
+
+        res_dir = r.util.get_path("res_dir")
+        with open(res_dir + "mismatch_test.txt") as f:
+            content = f.read()
+        assert "UAR" in content

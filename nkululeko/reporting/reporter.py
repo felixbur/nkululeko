@@ -595,9 +595,11 @@ class Reporter(ContextAware):
             except ValueError as e:
                 self.util.debug(
                     "Reporter: caught a ValueError when trying to get"
-                    " classification_report: " + e
+                    f" classification_report: {e}"
                 )
-                rpt = self.result.to_string()
+                with open(file_name, "w") as text_file:
+                    text_file.write(self.result.to_string())
+                return
             with open(file_name, "w") as text_file:
                 c_ress = list(range(len(labels)))
                 for i, label in enumerate(labels):
@@ -649,7 +651,7 @@ class Reporter(ContextAware):
         try:
             imageio.mimsave(fig_dir + out_name, images, fps=int(fps))
         except RuntimeError as e:
-            self.util.error("error writing anim gif: " + e)
+            self.util.error(f"error writing anim gif: {e}")
 
     def get_result(self):
         return self.result
