@@ -10,7 +10,6 @@ import opensmile
 import pandas as pd
 import numpy as np
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
 
 
@@ -136,7 +135,7 @@ class Opensmileset(Featureset):
 
                 # Update configuration to avoid re-extraction
                 try:
-                    glob_conf.config["DATA"]["needs_feature_extraction"] = "False"
+                    self.context.config["DATA"]["needs_feature_extraction"] = "False"
                 except KeyError:
                     pass
 
@@ -205,7 +204,7 @@ class Opensmileset(Featureset):
                 import ast
 
                 feature_list = ast.literal_eval(
-                    glob_conf.config["FEATS"]["os.features"]
+                    self.context.config["FEATS"]["os.features"]
                 )
             except (KeyError, ValueError, SyntaxError):
                 self.util.debug("No feature list specified, using all features")

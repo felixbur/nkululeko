@@ -33,7 +33,7 @@ import pandas as pd
 
 from nkululeko.constants import VERSION
 from nkululeko.experiment import Experiment
-import nkululeko.glob_conf as glob_conf
+from nkululeko.experiment_context import ExperimentContext, set_context
 from nkululeko.reporting.report_item import ReportItem
 from nkululeko.utils.errors import NkululukoError
 from nkululeko.utils.util import Util
@@ -133,9 +133,10 @@ def _run_file_mode(args):
     # read max_length / min_length via util.config_val without a full INI.
     config = configparser.ConfigParser()
     _apply_cli_overrides(args, config)
-    glob_conf.init_config(config)
+    context = ExperimentContext(config=config)
+    set_context(context)
 
-    util = Util("segment", has_config=True)
+    util = Util("segment", has_config=True, context=context)
     util.debug(f"segmenting file: {args.file}")
 
     files = pd.Series([args.file])
@@ -214,7 +215,7 @@ def main():
         expr = Experiment(config)
         module = "segment"
         expr.set_module(module)
-        util = Util(module)
+        util = Util(module, context=expr.context)
         util.debug(f"running {expr.name}, nkululeko version {VERSION}")
 
         if util.config_val("EXP", "no_warnings", False):
@@ -289,7 +290,7 @@ def main():
                 df["duration"] = df.index.to_series().map(lambda x: calc_dur(x))
             df_seg["duration"] = df_seg.index.to_series().map(lambda x: calc_dur(x))
             df_silence["duration"] = df_silence.index.to_series().map(lambda x: calc_dur(x))
-            plots = Plots()
+            plots = Plots(context=expr.context)
             plots.plot_durations(
                 df, "original_durations", sample_selection, caption="Original durations"
             )
@@ -334,7 +335,7 @@ def main():
             f" {num_before})"
         )
 
-        glob_conf.report.add_item(
+        expr.context.report.add_item(
             ReportItem(
                 "Data",
                 "Segmentation",

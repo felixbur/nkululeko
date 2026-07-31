@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import torch
 from unittest.mock import MagicMock, patch
+from nkululeko.experiment_context import ExperimentContext
 from nkululeko.feat_extract.feats_bert import Bert
 
 
@@ -112,38 +113,38 @@ def test_extract_creates_and_loads_pickle(tmp_path, bert_instance):
 
     bert_instance.util.config_val.side_effect = config_val_mock
 
-    # Mock glob_conf to avoid the 'NoneType' error
-    with patch("nkululeko.feat_extract.feats_bert.glob_conf") as mock_glob_conf:
-        mock_glob_conf.config = {"DATA": {}}
+    # Give the instance a real context so extract()'s
+    # `self.context.config["DATA"][...]` assignment works.
+    bert_instance.context = ExperimentContext(config={"DATA": {}})
 
-        with patch("os.path.isfile", return_value=False):
-            storage = tmp_path / "testbert.pkl"
-            # Remove file if exists
-            if storage.exists():
-                storage.unlink()
-            bert_instance.extract()
-            # Check that the pickle file was created
-            assert storage.exists()
-            assert isinstance(bert_instance.df, pd.DataFrame)
-            assert bert_instance.df.shape[0] == 2  # 2 rows in dummy_data_df
-            assert bert_instance.df.shape[1] == 768  # BERT embedding size
+    with patch("os.path.isfile", return_value=False):
+        storage = tmp_path / "testbert.pkl"
+        # Remove file if exists
+        if storage.exists():
+            storage.unlink()
+        bert_instance.extract()
+        # Check that the pickle file was created
+        assert storage.exists()
+        assert isinstance(bert_instance.df, pd.DataFrame)
+        assert bert_instance.df.shape[0] == 2  # 2 rows in dummy_data_df
+        assert bert_instance.df.shape[1] == 768  # BERT embedding size
 
-        # Now test loading from cache
-        # Mock _needs_extraction to return False (cache hit)
-        with patch.object(type(bert_instance), "_needs_extraction", return_value=False):
-            with patch("os.path.isfile", return_value=True):
-                with patch("pandas.read_pickle") as mock_read_pickle:
-                    cached_df = pd.DataFrame(
-                        {"feat_0": [0.1, 0.2], "feat_1": [0.3, 0.4]}
-                    )
-                    mock_read_pickle.return_value = cached_df
+    # Now test loading from cache
+    # Mock _needs_extraction to return False (cache hit)
+    with patch.object(type(bert_instance), "_needs_extraction", return_value=False):
+        with patch("os.path.isfile", return_value=True):
+            with patch("pandas.read_pickle") as mock_read_pickle:
+                cached_df = pd.DataFrame(
+                    {"feat_0": [0.1, 0.2], "feat_1": [0.3, 0.4]}
+                )
+                mock_read_pickle.return_value = cached_df
 
-                    bert_instance2 = bert_instance
-                    bert_instance2.extract()
+                bert_instance2 = bert_instance
+                bert_instance2.extract()
 
-                    # Verify that pd.read_pickle was called
-                    mock_read_pickle.assert_called_once()
-                    assert isinstance(bert_instance2.df, pd.DataFrame)
+                # Verify that pd.read_pickle was called
+                mock_read_pickle.assert_called_once()
+                assert isinstance(bert_instance2.df, pd.DataFrame)
 
 
 def test_get_embeddings_returns_numpy_array(bert_instance):

@@ -27,6 +27,7 @@ class Scaler:
         scaler_type,
         dev_x=None,
         dev_y=None,
+        context=None,
     ):
         """Constructor.
 
@@ -38,7 +39,7 @@ class Scaler:
                 train_feats (pd.DataFrame): The train features dataframe
                 test_feats (pd.DataFrame): The test features dataframe (can be None)
         """
-        self.util = Util("scaler")
+        self.util = Util("scaler", context=context)
         if scaler_type == "standard":
             self.scaler = StandardScaler()
         elif scaler_type == "robust":

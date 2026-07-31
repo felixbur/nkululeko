@@ -8,7 +8,6 @@ import pandas as pd
 import audformat.utils
 
 from nkululeko.data.dataset import Dataset
-import nkululeko.glob_conf as glob_conf
 from nkululeko.reporting.report_item import ReportItem
 
 
@@ -115,7 +114,7 @@ class Dataset_CSV(Dataset):
                 f" {self.got_gender}, got age: {self.got_age}"
             )
         self.util.debug(r_string)
-        glob_conf.report.add_item(ReportItem("Data", "Loaded report", r_string))
+        self.context.report.add_item(ReportItem("Data", "Loaded report", r_string))
 
     def prepare(self):
         super().prepare()

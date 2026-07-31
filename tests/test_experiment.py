@@ -1,5 +1,7 @@
 import pytest
 import configparser
+import copy
+import pickle
 import random
 import tempfile
 import pandas as pd
@@ -43,6 +45,44 @@ class TestExperimentSetGlobals:
         glob_conf.init_config(mock_config)
         glob_conf.set_module("test")
         assert glob_conf.module == "test"
+
+    def test_experiments_keep_contexts_separate(self, mock_config, tmp_path):
+        """Method calls reactivate the owning experiment context."""
+        from nkululeko.experiment import Experiment
+
+        first_config = mock_config
+        first_config["EXP"]["name"] = "first"
+        first_config["EXP"]["root"] = str(tmp_path)
+        second_config = copy.deepcopy(first_config)
+        second_config["EXP"]["name"] = "second"
+
+        first = Experiment(first_config)
+        second = Experiment(second_config)
+        first.set_module("first-module")
+        second.set_module("second-module")
+
+        assert first.context.config["EXP"]["name"] == "first"
+        assert second.context.config["EXP"]["name"] == "second"
+        assert first.context.module == "first-module"
+        assert second.context.module == "second-module"
+
+    def test_load_preserves_receiving_context(self, mock_config, tmp_path):
+        """Loading saved state must retain the configuration used to load it."""
+        from nkululeko.experiment import Experiment
+        from nkululeko.utils.pickle_integrity import save_checksum
+
+        experiment = Experiment(mock_config)
+        context = experiment.context
+        saved_context = glob_conf.ExperimentContext(config={"stale": True})
+        save_path = tmp_path / "experiment.pkl"
+        with open(save_path, "wb") as file:
+            pickle.dump({"context": saved_context, "labels": ["happy"]}, file)
+        save_checksum(str(save_path))
+
+        experiment.load(str(save_path))
+
+        assert experiment.context is context
+        assert experiment.context.config is mock_config
 
 
 class TestExperimentImportCsv:

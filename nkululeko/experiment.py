@@ -9,11 +9,15 @@ import audeer
 import audformat
 import pandas as pd
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.data.dataset import Dataset
 from nkululeko.data.dataset_csv import Dataset_CSV
 from nkululeko.data.datasplitter import Datasplitter
 from nkululeko.demo_predictor import Demo_predictor
+from nkululeko.experiment_context import (
+    ExperimentContext,
+    bind_experiment_context,
+    set_context,
+)
 from nkululeko.feat_extract.feats_analyser import FeatureAnalyser
 from nkululeko.feature_extractor import FeatureExtractor
 from nkululeko.plots import Plots
@@ -25,6 +29,7 @@ from nkululeko.utils.pickle_integrity import save_checksum, verify_checksum
 from nkululeko.utils.util import Util
 
 
+@bind_experiment_context
 class Experiment:
     """Main class specifying an experiment."""
 
@@ -34,15 +39,20 @@ class Experiment:
         Args:
             - config_obj : a config parser object that sets the experiment parameters and being set as a global object.
         """
-        self.set_globals(config_obj)
-        self.name = glob_conf.config["EXP"]["name"]
-        self.root = os.path.join(glob_conf.config["EXP"]["root"], "")
+        self.context = ExperimentContext(config=config_obj)
+        set_context(self.context)
+        self._initialize()
+
+    def _initialize(self):
+        """Initialize this experiment while its context is active."""
+        self.name = self.context.config["EXP"]["name"]
+        self.root = os.path.join(self.context.config["EXP"]["root"], "")
         self.data_dir = os.path.join(self.root, self.name)
         audeer.mkdir(self.data_dir)  # create the experiment directory
-        self.util = Util("experiment")
-        glob_conf.set_util(self.util)
+        self.util = Util("experiment", context=self.context)
+        self.context.util = self.util
         self.split3 = eval(self.util.config_val("EXP", "traindevtest", "False"))
-        glob_conf.set_split3(self.split3)
+        self.context.split3 = self.split3
         fresh_report = eval(self.util.config_val("REPORT", "fresh", "False"))
         if not fresh_report:
             try:
@@ -55,7 +65,7 @@ class Experiment:
         else:
             self.util.debug("starting a fresh report")
             self.report = Report()
-        glob_conf.set_report(self.report)
+        self.context.report = self.report
         self.loso = self.util.config_val("MODEL", "loso", False)
         self.logo = self.util.config_val("MODEL", "logo", False)
         self.xfoldx = self.util.config_val("MODEL", "k_fold_cross", False)
@@ -68,7 +78,7 @@ class Experiment:
         self.feats_dev = None
 
     def set_module(self, module):
-        glob_conf.set_module(module)
+        self.context.module = module
 
     def store_report(self):
         report_path = os.path.join(self.data_dir, "report.pkl")
@@ -85,20 +95,20 @@ class Experiment:
     #     return self.util.get_exp_name()
 
     def set_globals(self, config_obj):
-        """Install a config object in the global space."""
-        glob_conf.init_config(config_obj)
+        """Replace this experiment's configuration."""
+        self.context.config = config_obj
 
     def load_datasets(self):
         """Load all databases specified in the configuration and map the labels."""
-        ds = ast.literal_eval(glob_conf.config["DATA"]["databases"])
+        ds = ast.literal_eval(self.context.config["DATA"]["databases"])
         self.datasets = {}
         self.got_speaker, self.got_gender, self.got_age = False, False, False
         for d in ds:
             ds_type = self.util.config_val_data(d, "type", "audformat")
             if ds_type == "audformat":
-                data = Dataset(d)
+                data = Dataset(d, context=self.context)
             elif ds_type == "csv":
-                data = Dataset_CSV(d)
+                data = Dataset_CSV(d, context=self.context)
             else:
                 self.util.error(f"unknown data type: {ds_type}")
             data.load()
@@ -111,8 +121,8 @@ class Experiment:
                 self.got_speaker = True
             self.datasets.update({d: data})
         self.target = self.util.config_val("DATA", "target", None)
-        glob_conf.set_got_speaker(self.got_speaker)
-        glob_conf.set_target(self.target)
+        self.context.got_speaker = self.got_speaker
+        self.context.target = self.target
         # print target via debug
         self.util.debug(f"target: {self.target}")
         # print keys/column
@@ -130,9 +140,9 @@ class Experiment:
             self.labels = auto_labels
         # print autolabel no matter it is specified or not
         self.util.debug(f"Labels (from database): {auto_labels}")
-        glob_conf.set_labels(self.labels)
+        self.context.labels = self.labels
         self.util.debug(f"loaded databases {dbs}")
-        self.datasplitter = Datasplitter(self.datasets)
+        self.datasplitter = Datasplitter(self.datasets, context=self.context)
 
     def _import_csv(self, storage):
         # df = pd.read_csv(storage, header=0, index_col=[0,1,2])
@@ -160,7 +170,7 @@ class Experiment:
                 keep original string labels (the caller is then responsible for
                 encoding before passing the dataframe to a model).
         """
-        test_dbs = ast.literal_eval(glob_conf.config["DATA"]["tests"])
+        test_dbs = ast.literal_eval(self.context.config["DATA"]["tests"])
         self.df_test = pd.DataFrame()
         start_fresh = eval(self.util.config_val("DATA", "no_reuse", "False"))
         store = self.util.get_path("store")
@@ -173,9 +183,9 @@ class Experiment:
             for d in test_dbs:
                 ds_type = self.util.config_val_data(d, "type", "audformat")
                 if ds_type == "audformat":
-                    data = Dataset(d)
+                    data = Dataset(d, context=self.context)
                 elif ds_type == "csv":
-                    data = Dataset_CSV(d)
+                    data = Dataset_CSV(d, context=self.context)
                 else:
                     self.util.error(f"unknown data type: {ds_type}")
                 data.load()
@@ -219,14 +229,14 @@ class Experiment:
         else:
             self.df_train, self.df_test = self.datasplitter.fill_train_and_tests()
         self.test_ds_df = getattr(self.datasplitter, "test_ds_df", {})
-        self.label_encoder = glob_conf.label_encoder
+        self.label_encoder = self.context.label_encoder
 
     def extract_test_feats(self):
         self.feats_test = pd.DataFrame()
-        feats_name = "_".join(ast.literal_eval(glob_conf.config["DATA"]["tests"]))
+        feats_name = "_".join(ast.literal_eval(self.context.config["DATA"]["tests"]))
         feats_types = self.util.config_val_list("FEATS", "type", ["os"])
         self.feature_extractor = FeatureExtractor(
-            self.df_test, feats_types, feats_name, "test"
+            self.df_test, feats_types, feats_name, "test", context=self.context
         )
         self.feats_test = self.feature_extractor.extract()
         self.util.debug(f"Test features shape:{self.feats_test.shape}")
@@ -302,7 +312,7 @@ class Experiment:
 
         Per target class and biological sex.
         """
-        plot = Plots()
+        plot = Plots(context=self.context)
         plot.plot_distributions(df_labels)
         if self.got_speaker:
             plot.plot_distributions_speaker(df_labels)
@@ -541,7 +551,9 @@ class Experiment:
                 f"unknown sample selection specifier {sample_selection}, should"
                 " be [all | train | test]"
             )
-        feat_analyser = FeatureAnalyser(sample_selection, df_labels, df_feats)
+        feat_analyser = FeatureAnalyser(
+            sample_selection, df_labels, df_feats, context=self.context
+        )
         # check if SHAP features should be analysed
         shap = eval(self.util.config_val("EXPL", "shap", "False"))
         if shap:
@@ -578,7 +590,7 @@ class Experiment:
         if list_of_dimreds:
             dimreds = list_of_dimreds
             scat_targets = ast.literal_eval(scatter_target)
-            plots = Plots()
+            plots = Plots(context=self.context)
             for scat_target in scat_targets:
                 # Check if this is the target column that was label-encoded
                 is_encoded_target = (
@@ -615,7 +627,7 @@ class Experiment:
             target_column = self.util.config_val("DATA", "target", "emotion")
             # Decode labels if they were encoded
             target_column = self._decode_labels(df_labels, target_column)
-            plots = Plots()
+            plots = Plots(context=self.context)
             self.util.debug("generating t-SNE plot...")
             plots.scatter_plot(df_feats, df_labels, target_column, "tsne")
 
@@ -625,7 +637,7 @@ class Experiment:
             target_column = self.util.config_val("DATA", "target", "emotion")
             # Decode labels if they were encoded
             target_column = self._decode_labels(df_labels, target_column)
-            plots = Plots()
+            plots = Plots(context=self.context)
             self.util.debug("generating UMAP plot...")
             plots.scatter_plot(df_feats, df_labels, target_column, "umap")
 
@@ -635,7 +647,7 @@ class Experiment:
             target_column = self.util.config_val("DATA", "target", "emotion")
             # Decode labels if they were encoded
             target_column = self._decode_labels(df_labels, target_column)
-            plots = Plots()
+            plots = Plots(context=self.context)
             self.util.debug("generating PCA plot...")
             plots.scatter_plot(df_feats, df_labels, target_column, "pca")
 
@@ -656,6 +668,7 @@ class Experiment:
                 scale_feats,
                 dev_x=self.df_dev,
                 dev_y=self.feats_dev,
+                context=self.context,
             )
             if self.split3:
                 self.feats_train, self.feats_dev, self.feats_test = (
@@ -681,10 +694,15 @@ class Experiment:
                 self.feats_test,
                 dev_x=self.df_dev,
                 dev_y=self.feats_dev,
+                context=self.context,
             )
         else:
             self.runmgr = Runmanager(
-                self.df_train, self.df_test, self.feats_train, self.feats_test
+                self.df_train,
+                self.df_test,
+                self.feats_train,
+                self.feats_test,
+                context=self.context,
             )
 
     def run(self):
@@ -774,7 +792,13 @@ class Experiment:
         except AttributeError:
             pass
         demo = Demo_predictor(
-            model, file, is_list, self.datasplitter.feature_extractor, lab_enc, outfile
+            model,
+            file,
+            is_list,
+            self.datasplitter.feature_extractor,
+            lab_enc,
+            outfile,
+            context=self.context,
         )
         demo.run_demo()
 
@@ -782,12 +806,17 @@ class Experiment:
         model = self.runmgr.get_best_model()
         model.set_testdata(self.df_test, self.feats_test)
         test_predictor = TestPredictor(
-            model, self.df_test, self.label_encoder, result_name
+            model,
+            self.df_test,
+            self.label_encoder,
+            result_name,
+            context=self.context,
         )
         result = test_predictor.predict_and_store()
         return result
 
     def load(self, filename):
+        context = self.context
         try:
             verify_checksum(filename)
             f = open(filename, "rb")
@@ -795,8 +824,10 @@ class Experiment:
             f.close()
         except EOFError as eof:
             self.util.error(f"can't open file {filename}: {eof}")
+        tmp_dict.pop("context", None)
         self.__dict__.update(tmp_dict)
-        glob_conf.set_labels(self.labels)
+        self.context = context
+        self.context.labels = self.labels
 
     def save(self, filename):
         if self.runmgr.modelrunner.model.is_ann():
@@ -806,7 +837,9 @@ class Experiment:
             )
         try:
             f = open(filename, "wb")
-            pickle.dump(self.__dict__, f)
+            state = self.__dict__.copy()
+            state.pop("context", None)
+            pickle.dump(state, f)
             f.close()
             save_checksum(filename)
         except (TypeError, AttributeError) as error:
@@ -827,7 +860,9 @@ class Experiment:
                 if hasattr(inner, "model_loaded"):
                     inner.model_loaded = False
             f = open(filename, "wb")
-            pickle.dump(self.__dict__, f)
+            state = self.__dict__.copy()
+            state.pop("context", None)
+            pickle.dump(state, f)
             f.close()
             save_checksum(filename)
             self.util.warn(

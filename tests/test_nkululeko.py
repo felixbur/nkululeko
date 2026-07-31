@@ -9,6 +9,8 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
+from nkululeko.experiment_context import ExperimentContext
+
 
 class DummyReport:
     class Result:
@@ -30,7 +32,7 @@ class DummyRunmanager:
 
 class DummyExperiment:
     def __init__(self, config):
-        self.config = config
+        self.context = ExperimentContext(config=config)
         self.name = config.get("EXP", "name", fallback="test")
         self.runmgr = DummyRunmanager()
         self.reports = [DummyReport()]
@@ -193,6 +195,7 @@ class TestNkululekoFastPath:
                     self.name = "test_exp"
                     # Initialise glob_conf so Util.config_val/get_save_name work.
                     nk_glob_conf.init_config(cfg)
+                    self.context = nk_glob_conf.get_context()
                     self.label_encoder = le
                     self.target = "emotion"
                     self.labels = ["happy", "sad"]

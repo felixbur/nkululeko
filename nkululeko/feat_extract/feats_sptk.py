@@ -13,7 +13,6 @@ import numpy as np
 import pandas as pd
 import torch
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
 from nkululeko.feat_extract import feats_sptk_core
 
@@ -87,7 +86,7 @@ class SptkSet(Featureset):
 
             self.util.write_store(self.df, storage, store_format)
             try:
-                glob_conf.config["DATA"]["needs_feature_extraction"] = "false"
+                self.context.config["DATA"]["needs_feature_extraction"] = "false"
             except KeyError:
                 pass
         else:

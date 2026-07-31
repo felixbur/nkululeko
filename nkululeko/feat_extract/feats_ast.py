@@ -7,7 +7,6 @@ import torch
 import torchaudio
 from transformers import ASTModel, AutoProcessor
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
 
 
@@ -59,7 +58,7 @@ class Ast(Featureset):
             self.df = self._extract_embeddings_with_error_handling(_load_file)
             self.df.to_pickle(storage)
             try:
-                glob_conf.config["DATA"]["needs_feature_extraction"] = "false"
+                self.context.config["DATA"]["needs_feature_extraction"] = "false"
             except KeyError:
                 pass
         else:

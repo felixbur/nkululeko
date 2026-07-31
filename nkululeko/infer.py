@@ -26,7 +26,7 @@ import tempfile
 import audformat
 import pandas as pd
 
-import nkululeko.glob_conf as glob_conf
+from nkululeko.experiment_context import ExperimentContext, set_context
 from nkululeko.constants import AUDIO_EXTS, VERSION
 from nkululeko.utils.files import safe_path
 from nkululeko.utils.util import Util
@@ -155,8 +155,8 @@ def _load_bundle(bundle_dir):
     }
 
 
-def _setup_glob_conf(bundle):
-    """Set up glob_conf with the bundle's inference config."""
+def _setup_context(bundle):
+    """Create the context used for bundle inference."""
     config = bundle["config"]
     # Ensure required sections exist
     for section in ("EXP", "DATA", "FEATS", "MODEL"):
@@ -173,15 +173,13 @@ def _setup_glob_conf(bundle):
     if "databases" not in config["DATA"]:
         config["DATA"]["databases"] = "['adhoc']"
 
-    glob_conf.init_config(config)
-    glob_conf.set_module("infer")
-
-    if bundle["label_encoder"] is not None:
-        glob_conf.set_label_encoder(bundle["label_encoder"])
-
+    context = ExperimentContext(config=config, module="infer")
+    context.label_encoder = bundle["label_encoder"]
     labels = bundle["manifest"].get("labels", None)
     if labels is not None:
-        glob_conf.set_labels(labels)
+        context.labels = labels
+    set_context(context)
+    return context
 
 
 def _extract_features(files, bundle, util):
@@ -206,10 +204,12 @@ def _extract_features(files, bundle, util):
     feats_type = util.config_val_list("FEATS", "type", ["os"])
 
     # Disable feature caching for inference
-    glob_conf.config["FEATS"]["no_reuse"] = "True"
-    glob_conf.config["FEATS"]["needs_feature_extraction"] = "True"
+    util.context.config["FEATS"]["no_reuse"] = "True"
+    util.context.config["FEATS"]["needs_feature_extraction"] = "True"
 
-    feature_extractor = FeatureExtractor(df, feats_type, "infer", "test")
+    feature_extractor = FeatureExtractor(
+        df, feats_type, "infer", "test", context=util.context
+    )
     feats = feature_extractor.extract()
 
     return feats
@@ -398,8 +398,8 @@ def infer_from_bundle(
         pd.DataFrame with prediction results.
     """
     bundle = _load_bundle(bundle_dir)
-    _setup_glob_conf(bundle)
-    util = Util("infer", has_config=True)
+    context = _setup_context(bundle)
+    util = Util("infer", has_config=True, context=context)
     util.debug(f"nkululeko {VERSION}: infer from bundle {bundle_dir}")
 
     manifest = bundle["manifest"]

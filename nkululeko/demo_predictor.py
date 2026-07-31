@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.util import Util
 import warnings
 
@@ -15,15 +14,25 @@ warnings.simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
 
 
 class Demo_predictor:
-    def __init__(self, model, file, is_list, feature_extractor, label_encoder, outfile):
+    def __init__(
+        self,
+        model,
+        file,
+        is_list,
+        feature_extractor,
+        label_encoder,
+        outfile,
+        context=None,
+    ):
         """Constructor setting up name and configuration."""
         self.model = model
         self.feature_extractor = feature_extractor
         self.label_encoder = label_encoder
         self.is_list = is_list
         self.sr = 16000
-        self.target = glob_conf.config["DATA"]["target"]
-        self.util = Util("demo_predictor")
+        self.util = Util("demo_predictor", context=context)
+        self.context = self.util.context
+        self.target = self.context.config["DATA"]["target"]
         self.file = file
         self.outfile = outfile
 
@@ -76,7 +85,7 @@ class Demo_predictor:
                             else:
                                 file_list.append(line)
                 for file_name in file_list:
-                    test_folder = glob_conf.config["DATA"]["test_folder"]
+                    test_folder = self.context.config["DATA"]["test_folder"]
                     file_path = os.path.join(test_folder, file_name.strip())
                     sig, sr = audiofile.read(file_path)
                     print(f"predicting file {file_path}")

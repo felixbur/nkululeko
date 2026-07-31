@@ -19,7 +19,6 @@ import torch
 import torchaudio
 from torchaudio.pipelines import SQUIM_OBJECTIVE
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
 
 
@@ -72,7 +71,7 @@ class SquimSet(Featureset):
                 self.df.columns = ["pesq", "sdr", "stoi"]
             self.util.write_store(self.df, storage, store_format)
             try:
-                glob_conf.config["DATA"]["needs_feature_extraction"] = "false"
+                self.context.config["DATA"]["needs_feature_extraction"] = "false"
             except KeyError:
                 pass
         else:

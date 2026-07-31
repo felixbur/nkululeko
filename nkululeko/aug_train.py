@@ -10,7 +10,6 @@ import numpy as np
 from nkululeko.augment import doit as augment
 from nkululeko.constants import VERSION
 import nkululeko.experiment as exp
-import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.util import Util
 
 
@@ -28,7 +27,7 @@ def doit(config_file):
     expr = exp.Experiment(config)
     module = "aug_train"
     expr.set_module(module)
-    util = Util(module)
+    util = Util(module, context=expr.context)
     util.debug(
         f"running {expr.name} from config {config_file}, nkululeko version {VERSION}"
     )
@@ -45,23 +44,24 @@ def doit(config_file):
     augmentings = "_".join(augmentings)
     result_file = f"augmented_{augmentings}.csv"
 
-    glob_conf.config["DATA"]["no_reuse"] = "True"
-    glob_conf.config["FEATS"]["no_reuse"] = "True"
-    glob_conf.config["AUGMENT"]["sample_selection"] = "train"
-    glob_conf.config["AUGMENT"]["result"] = f"./{result_file}"
+    config = expr.context.config
+    config["DATA"]["no_reuse"] = "True"
+    config["FEATS"]["no_reuse"] = "True"
+    config["AUGMENT"]["sample_selection"] = "train"
+    config["AUGMENT"]["result"] = f"./{result_file}"
     tmp_config = "tmp.ini"
     with open(tmp_config, "w") as config_file:
-        glob_conf.config.write(config_file)
+        config.write(config_file)
     augment(tmp_config)
     databases = ast.literal_eval(config["DATA"]["databases"])
     aug_name = f"aug_{augmentings}"
     databases.append(aug_name)
-    glob_conf.config["DATA"]["databases"] = str(databases)
-    glob_conf.config["DATA"][aug_name] = f"{util.get_exp_dir()}/{result_file}"
-    glob_conf.config["DATA"][f"{aug_name}.type"] = "csv"
-    glob_conf.config["DATA"][f"{aug_name}.rename_speakers"] = "True"
-    glob_conf.config["DATA"][f"{aug_name}.split_strategy"] = "train"
-    util.set_config(glob_conf.config)
+    config["DATA"]["databases"] = str(databases)
+    config["DATA"][aug_name] = f"{util.get_exp_dir()}/{result_file}"
+    config["DATA"][f"{aug_name}.type"] = "csv"
+    config["DATA"][f"{aug_name}.rename_speakers"] = "True"
+    config["DATA"][f"{aug_name}.split_strategy"] = "train"
+    util.set_config(config)
     # load the data
     expr.load_datasets()
 

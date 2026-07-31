@@ -12,7 +12,7 @@ from sklearn.manifold import TSNE
 import audeer
 from audmetric import concordance_cc as ccc
 
-import nkululeko.glob_conf as glob_conf
+from nkululeko.experiment_context import ContextAware
 from nkululeko.reporting.defines import Header
 from nkululeko.reporting.report_item import ReportItem
 import nkululeko.utils.stats as su
@@ -22,10 +22,11 @@ from nkululeko.utils.util import Util
 PLOT_BASENAME_MAX_LEN = 240
 
 
-class Plots:
-    def __init__(self):
+class Plots(ContextAware):
+    def __init__(self, context=None):
         """Initializing the util system."""
-        self.util = Util("plots")
+        self.util = Util("plots", context=context)
+        self.context = self.util.context
         self.format = self.util.config_val("PLOT", "format", "png")
         self.target = self.util.config_val("DATA", "target", "emotion")
         self.with_ccc = eval(self.util.config_val("PLOT", "ccc", "False"))
@@ -296,7 +297,7 @@ class Plots:
         plt.savefig(img_path)
         plt.close(fig_plots)
         self.util.debug(f"Saved plot to {img_path}")
-        glob_conf.report.add_item(
+        self.context.report.add_item(
             ReportItem(
                 Header.HEADER_EXPLORE,
                 header,
@@ -530,7 +531,7 @@ class Plots:
         plt.savefig(img_path)
         plt.close(fig)
         self.util.debug(f"plotted durations to {img_path}")
-        glob_conf.report.add_item(
+        self.context.report.add_item(
             ReportItem(
                 Header.HEADER_EXPLORE,
                 caption,
@@ -561,7 +562,7 @@ class Plots:
         plt.savefig(img_path)
         plt.close(fig)
         self.util.debug(f"plotted speakers to {img_path}")
-        glob_conf.report.add_item(
+        self.context.report.add_item(
             ReportItem(
                 Header.HEADER_EXPLORE,
                 caption,
@@ -608,7 +609,7 @@ class Plots:
             plt.savefig(img_path)
             fig.clear()
             plt.close(fig)
-            glob_conf.report.add_item(
+            self.context.report.add_item(
                 ReportItem(
                     Header.HEADER_EXPLORE,
                     f"Overview on {df.shape[0]} samples",
@@ -745,7 +746,7 @@ class Plots:
         self.util.debug(f"plotted {dimred_type} scatter plot to {filename}")
         fig.clear()
         plt.close(fig)
-        glob_conf.report.add_item(
+        self.context.report.add_item(
             ReportItem(
                 Header.HEADER_EXPLORE,
                 "Scatter plot",
@@ -923,7 +924,7 @@ class Plots:
         plt.close(fig)
         caption = f"Feature plot for feature {feature}"
         content = caption
-        glob_conf.report.add_item(
+        self.context.report.add_item(
             ReportItem(
                 Header.HEADER_EXPLORE,
                 caption,
@@ -1065,7 +1066,7 @@ class Plots:
         fig.savefig(filename)
         fig.clear()
         plt.close(fig)
-        glob_conf.report.add_item(
+        self.context.report.add_item(
             ReportItem(
                 Header.HEADER_EXPLORE,
                 "Tree plot",

@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import nkululeko.glob_conf as glob_conf
+from nkululeko.experiment_context import ExperimentContext, use_context
 from nkululeko.feat_extract.feats_opensmile import Opensmileset
 
 
@@ -61,8 +61,8 @@ def mock_config():
         "MODEL": {"n_jobs": "1"},
     }
 
-    # Mock the glob_conf.config
-    with patch.object(glob_conf, "config", mock_config):
+    # Mock the active experiment context's config
+    with use_context(ExperimentContext(config=mock_config)):
         yield mock_config
 
 

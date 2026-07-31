@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 from unittest.mock import MagicMock, patch
+from nkululeko.experiment_context import ExperimentContext, use_context
 from nkululeko.optim import OptimizationRunner
 
 
@@ -107,7 +108,7 @@ def test_run_sklearn_optimization_grid(runner, param_specs):
         patch("nkululeko.experiment.Experiment", return_value=mock_expr),
         patch("sklearn.model_selection.GridSearchCV", return_value=mock_search),
         patch("nkululeko.modelrunner.Modelrunner") as mock_Modelrunner,
-        patch("nkululeko.glob_conf.config", runner.config),
+        use_context(ExperimentContext(config=runner.config)),
     ):
         mock_runner_inst = MagicMock()
         mock_runner_inst.model.clf = MagicMock()
@@ -140,7 +141,7 @@ def test_run_sklearn_optimization_random(runner, param_specs):
         patch("nkululeko.experiment.Experiment", return_value=mock_expr),
         patch("sklearn.model_selection.RandomizedSearchCV", return_value=mock_search),
         patch("nkululeko.modelrunner.Modelrunner") as mock_Modelrunner,
-        patch("nkululeko.glob_conf.config", runner.config),
+        use_context(ExperimentContext(config=runner.config)),
     ):
         mock_runner_inst = MagicMock()
         mock_runner_inst.model.clf = MagicMock()
@@ -199,7 +200,7 @@ def test_run_sklearn_optimization_grid_strategy(runner, param_specs):
             "sklearn.model_selection.GridSearchCV", return_value=mock_search
         ) as mock_GridSearchCV,
         patch("nkululeko.modelrunner.Modelrunner") as mock_Modelrunner,
-        patch("nkululeko.glob_conf.config", runner.config),
+        use_context(ExperimentContext(config=runner.config)),
     ):
         mock_runner_inst = MagicMock()
         mock_runner_inst.model.clf = MagicMock()

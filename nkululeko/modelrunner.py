@@ -2,8 +2,8 @@
 
 import ast
 
-from nkululeko import glob_conf
 from nkululeko.balance import DataBalancer
+from nkululeko.experiment_context import ContextAware, use_context
 from nkululeko.utils.util import Util
 
 # Fallback type-based heuristics used when a model instance is not yet available
@@ -71,11 +71,18 @@ def _check_task_capability(
         )
 
 
-class Modelrunner:
+class Modelrunner(ContextAware):
     """Class to model one run."""
 
     def __init__(
-        self, df_train, df_test, feats_train, feats_test, run, split_name="test"
+        self,
+        df_train,
+        df_test,
+        feats_train,
+        feats_test,
+        run,
+        split_name="test",
+        context=None,
     ):
         """Constructor setting up the dataframes.
 
@@ -93,13 +100,15 @@ class Modelrunner:
             feats_train,
             feats_test,
         )
-        self.util = Util("modelrunner")
+        self.util = Util("modelrunner", context=context)
+        self.context = self.util.context
         self.run = run
         self.split_name = split_name.upper()  # Store as uppercase for display
-        self.target = glob_conf.config["DATA"]["target"]
+        self.target = self.context.config["DATA"]["target"]
         # intialize a new model
-        model_type = glob_conf.config["MODEL"]["type"]
-        self._select_model(model_type)
+        model_type = self.context.config["MODEL"]["type"]
+        with use_context(self.context):
+            self._select_model(model_type)
         # Initialize best_performance based on metric direction
         if self.util.high_is_good():
             self.best_performance = 0
@@ -116,7 +125,7 @@ class Modelrunner:
         if not self.model.is_ann() and epoch_num > 1:
             self.util.warn(f"setting epoch num to 1 (was {epoch_num}) if model not ANN")
             epoch_num = 1
-            glob_conf.config["EXP"]["epochs"] = "1"
+            self.context.config["EXP"]["epochs"] = "1"
         patience = self.util.config_val("MODEL", "patience", False)
         patience_counter = -1
         if self.util.high_is_good():
@@ -371,7 +380,9 @@ class Modelrunner:
             )
 
             # Initialize the data balancer with configurable random state
-            balancer = DataBalancer(random_state=random_state)
+            balancer = DataBalancer(
+                random_state=random_state, context=self.context
+            )
 
             # Apply balancing
             self.df_train, self.feats_train = balancer.balance_features(

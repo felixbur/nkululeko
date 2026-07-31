@@ -6,7 +6,6 @@ import transformers
 import torch
 
 from nkululeko.feat_extract.featureset import Featureset
-import nkululeko.glob_conf as glob_conf
 
 
 class TextClassifier(Featureset):
@@ -77,7 +76,7 @@ class TextClassifier(Featureset):
             self.df.columns = col_names
             self.util.write_store(self.df, storage, store_format)
             try:
-                glob_conf.config["FEATS"]["needs_feature_extraction"] = "false"
+                self.context.config["FEATS"]["needs_feature_extraction"] = "false"
             except KeyError:
                 pass
         else:

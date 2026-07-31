@@ -5,7 +5,6 @@ import os
 import numpy as np
 import pandas as pd
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.constants import SAMPLING_RATE
 from nkululeko.feat_extract.feats_audio import read_indexed_audio, series_to_float_df
 from nkululeko.feat_extract.featureset import Featureset
@@ -128,7 +127,7 @@ class LfccSet(Featureset):
             self.df = self._extract_index(self.data_df.index)
             self.util.write_store(self.df, storage, store_format)
             try:
-                glob_conf.config["DATA"]["needs_feature_extraction"] = "false"
+                self.context.config["DATA"]["needs_feature_extraction"] = "false"
             except KeyError:
                 pass
         else:

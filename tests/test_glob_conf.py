@@ -1,4 +1,15 @@
+from concurrent.futures import ThreadPoolExecutor
+
 import nkululeko.glob_conf as glob_conf
+
+
+@glob_conf.bind_experiment_context
+class _ContextBoundExperiment:
+    def __init__(self, name):
+        self.context = glob_conf.ExperimentContext(config={"name": name})
+
+    def set_module(self, module):
+        glob_conf.set_module(module)
 
 
 class TestGlobConf:
@@ -125,3 +136,57 @@ class TestGlobConf:
         assert glob_conf.report is None
         assert glob_conf.labels is None
         assert glob_conf.target is None
+
+    def test_contexts_are_isolated_across_threads(self):
+        """Each experiment context keeps its state during concurrent work."""
+        first = glob_conf.ExperimentContext(config={"name": "first"})
+        second = glob_conf.ExperimentContext(config={"name": "second"})
+
+        def read_context(context, module):
+            with glob_conf.use_context(context):
+                glob_conf.set_module(module)
+                return glob_conf.config["name"], glob_conf.module
+
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            results = list(
+                executor.map(
+                    lambda args: read_context(*args),
+                    ((first, "first-module"), (second, "second-module")),
+                )
+            )
+
+        assert results == [("first", "first-module"), ("second", "second-module")]
+        assert first.module == "first-module"
+        assert second.module == "second-module"
+
+    def test_bound_methods_activate_their_experiment_context(self):
+        """Context binding prevents sequential experiments leaking state."""
+        first = _ContextBoundExperiment("first")
+        second = _ContextBoundExperiment("second")
+
+        first.set_module("first-module")
+        second.set_module("second-module")
+
+        assert first.context.module == "first-module"
+        assert second.context.module == "second-module"
+
+    def test_set_context_selects_an_experiment_context(self):
+        """The compatibility facade supports existing orchestration code."""
+        context = glob_conf.ExperimentContext(config={"name": "selected"})
+        previous_context = glob_conf.get_context()
+
+        try:
+            glob_conf.set_context(context)
+
+            assert glob_conf.config == {"name": "selected"}
+        finally:
+            glob_conf.set_context(previous_context)
+
+    def test_wildcard_import_includes_legacy_state_attributes(self):
+        """The migration facade preserves the legacy wildcard import surface."""
+        namespace = {}
+
+        exec("from nkululeko.glob_conf import *", namespace)
+
+        assert "config" in namespace
+        assert "labels" in namespace

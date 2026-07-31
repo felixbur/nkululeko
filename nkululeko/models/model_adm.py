@@ -17,7 +17,6 @@ import pandas as pd
 import torch
 from sklearn.metrics import recall_score
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.models.model import Model
 from nkululeko.models.model_adm_core import DeepfakeADMModel
 from nkululeko.optimizers import (
@@ -34,7 +33,7 @@ class ADMModel(Model):
 
     is_classifier = True
 
-    def __init__(self, df_train, df_test, feats_train, feats_test):
+    def __init__(self, df_train, df_test, feats_train, feats_test, context=None):
         """Constructor, taking all dataframes.
 
         Args:
@@ -43,10 +42,10 @@ class ADMModel(Model):
             feats_train (pd.DataFrame): The train features.
             feats_test (pd.DataFrame): The test features.
         """
-        super().__init__(df_train, df_test, feats_train, feats_test)
+        super().__init__(df_train, df_test, feats_train, feats_test, context=context)
         super().set_model_type("ann")
         self.name = "adm"
-        self.target = glob_conf.config["DATA"]["target"]
+        self.target = self.context.config["DATA"]["target"]
 
         # Manual seed
         manual_seed = eval(self.util.config_val("MODEL", "random_seed", "False"))
@@ -55,7 +54,7 @@ class ADMModel(Model):
             torch.manual_seed(int(manual_seed))
 
         # Get labels and class number
-        labels = glob_conf.labels
+        labels = self.context.labels
         self.class_num = len(labels)
 
         # Device setup (needed before loss initialization)
@@ -385,7 +384,7 @@ class ADMModel(Model):
         proba_d = {}
         # Use all known classes from glob_conf to ensure both classes are always
         # present, even if the test set only contains one class.
-        classes = np.arange(len(glob_conf.labels))
+        classes = np.arange(len(self.context.labels))
 
         # Apply sigmoid to get probabilities; clean non-finite logits first
         logits_clean = torch.nan_to_num(logits, nan=0.0, posinf=10.0, neginf=-10.0)
@@ -418,7 +417,14 @@ class ADMModel(Model):
         )
         uar, _, _, _ = self.evaluate(self.model, self.trainloader, self.device)
         probas = self.get_probas(logits)
-        report = Reporter(truths, predictions, self.run, self.epoch, probas=probas)
+        report = Reporter(
+            truths,
+            predictions,
+            self.run,
+            self.epoch,
+            probas=probas,
+            context=self.context,
+        )
 
         if hasattr(self, "loss"):
             report.result.loss = self.loss
@@ -452,14 +458,14 @@ class ADMModel(Model):
         except (TypeError, ValueError):
             pass
 
-        label_encoder = getattr(glob_conf, "label_encoder", None)
+        label_encoder = self.context.label_encoder
         if label_encoder is not None:
             try:
                 return label_encoder.transform(labels).astype(float)
             except ValueError:
                 pass
 
-        label_names = list(glob_conf.labels or [])
+        label_names = list(self.context.labels or [])
         label_map = {label: index for index, label in enumerate(label_names)}
         unknown_labels = sorted(set(labels.dropna()) - set(label_map))
         if unknown_labels:

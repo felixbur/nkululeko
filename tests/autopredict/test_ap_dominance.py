@@ -4,11 +4,11 @@ import pandas as pd
 import pytest
 
 from nkululeko.autopredict.ap_dominance import DominancePredictor
+from nkululeko.experiment_context import ExperimentContext, use_context
 
 
 class TestDominancePredictor:
-    @patch("nkululeko.autopredict.ap_dominance.glob_conf")
-    def test_init(self, mock_glob_conf):
+    def test_init(self):
         df = pd.DataFrame({"dummy": [1, 2, 3]})
         predictor = DominancePredictor(df)
 
@@ -16,9 +16,8 @@ class TestDominancePredictor:
         assert predictor.util is not None
 
     @patch("nkululeko.autopredict.ap_dominance.FeatureExtractor")
-    @patch("nkululeko.autopredict.ap_dominance.glob_conf")
-    def test_predict(self, mock_glob_conf, mock_feature_extractor):
-        mock_glob_conf.config = {"DATA": {"databases": "['test_db']"}}
+    def test_predict(self, mock_feature_extractor):
+        context = ExperimentContext(config={"DATA": {"databases": "['test_db']"}})
 
         # Create mock dataframe with dominance values
         mock_dominance_df = pd.DataFrame({"dominance": [0.25, 0.45, 0.70]})
@@ -27,9 +26,10 @@ class TestDominancePredictor:
         mock_feature_extractor.return_value = mock_extractor
 
         df = pd.DataFrame({"dummy": [1, 2, 3]})
-        predictor = DominancePredictor(df)
+        with use_context(context):
+            predictor = DominancePredictor(df)
 
-        result = predictor.predict("train")
+            result = predictor.predict("train")
 
         assert "dominance_pred" in result.columns
         assert len(result) == 3

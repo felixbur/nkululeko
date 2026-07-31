@@ -6,7 +6,6 @@ import numpy as np
 import torch
 from audmetric import concordance_cc, mean_absolute_error, mean_squared_error
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.losses.loss_ccc import ConcordanceCorCoeff
 from nkululeko.models.model import Model
 from nkululeko.optimizers import get_optimizer
@@ -18,13 +17,13 @@ class MLP_Reg_model(Model):
 
     is_classifier = False
 
-    def __init__(self, df_train, df_test, feats_train, feats_test):
+    def __init__(self, df_train, df_test, feats_train, feats_test, context=None):
         """Constructor taking the configuration and all dataframes"""
-        super().__init__(df_train, df_test, feats_train, feats_test)
+        super().__init__(df_train, df_test, feats_train, feats_test, context=context)
         self.name = "mlp_reg"
         super().set_model_type("ann")
-        self.target = glob_conf.config["DATA"]["target"]
-        labels = glob_conf.labels
+        self.target = self.context.config["DATA"]["target"]
+        labels = self.context.labels
         self.class_num = len(labels)
         # set up loss criterion
         criterion = self.util.config_val("MODEL", "loss", "mse")
@@ -47,7 +46,7 @@ class MLP_Reg_model(Model):
         # set up the model
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
-        layers_string = glob_conf.config["MODEL"]["layers"]
+        layers_string = self.context.config["MODEL"]["layers"]
         self.util.debug(f"using layers {layers_string}")
         try:
             layers = ast.literal_eval(layers_string)
@@ -112,7 +111,11 @@ class MLP_Reg_model(Model):
         )
         result, _, _ = self.evaluate_model(self.model, self.trainloader, self.device)
         report = Reporter(
-            truths.numpy(), predictions.numpy(), None, self.run, self.epoch
+            truths.numpy(),
+            predictions.numpy(),
+            self.run,
+            self.epoch,
+            context=self.context,
         )
         try:
             report.result.loss = self.loss
@@ -246,7 +249,7 @@ class MLP_Reg_model(Model):
         name = f"{self.util.get_exp_name(only_train=True)}_{run}_{epoch:03d}.model"
         self.store_path = dir + name
         self.device = self.util.config_val("MODEL", "device", "cpu")
-        layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])
+        layers = ast.literal_eval(self.context.config["MODEL"]["layers"])
         drop = self.util.config_val("MODEL", "drop", False)
         if drop:
             self.util.debug(f"training with dropout: {drop}")
@@ -264,7 +267,7 @@ class MLP_Reg_model(Model):
         if not Path(path).exists():
             raise FileNotFoundError(f"Model file not found: {path}")
         self.device = self.util.config_val("MODEL", "device", "cpu")
-        layers = ast.literal_eval(glob_conf.config["MODEL"]["layers"])
+        layers = ast.literal_eval(self.context.config["MODEL"]["layers"])
         self.store_path = path
         drop = self.util.config_val("MODEL", "drop", False)
         if drop:

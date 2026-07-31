@@ -3,13 +3,12 @@ import ast
 import audformat
 import pandas as pd
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.util import Util
 
 
 class DataFilter:
-    def __init__(self, df):
-        self.util = Util("datafilter")
+    def __init__(self, df, context=None):
+        self.util = Util("datafilter", context=context)
         self.df = df.copy()
         self.util.copy_flags(df, self.df)
 
@@ -196,11 +195,11 @@ def limit_speakers(df, max=20):
     return df_ret
 
 
-def filter_min_dur(df, min_dur):
+def filter_min_dur(df, min_dur, util=None):
     """remove all samples less than min_dur duration"""
     df_ret = df.copy()
     if not isinstance(df.index, pd.MultiIndex):
-        glob_conf.util.debug(
+        (util or Util("filter_min_dur")).debug(
             "converting file index to multi index, this might take a while..."
         )
         df_ret.index = audformat.utils.to_segmented_index(df.index, allow_nat=False)
@@ -216,11 +215,11 @@ def filter_min_dur(df, min_dur):
     return df_ret
 
 
-def filter_max_dur(df, max_dur):
+def filter_max_dur(df, max_dur, util=None):
     """remove all samples less than min_dur duration"""
     df_ret = df.copy()
     if not isinstance(df.index, pd.MultiIndex):
-        glob_conf.util.debug(
+        (util or Util("filter_max_dur")).debug(
             "converting file index to multi index, this might take a while..."
         )
         df_ret.index = audformat.utils.to_segmented_index(df.index, allow_nat=False)

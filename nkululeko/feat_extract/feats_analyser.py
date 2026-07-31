@@ -11,7 +11,7 @@ from sklearn.inspection import permutation_importance
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
-import nkululeko.glob_conf as glob_conf
+from nkululeko.experiment_context import ContextAware
 from nkululeko.plots import Plots
 from nkululeko.reporting.defines import Header
 from nkululeko.reporting.report_item import ReportItem
@@ -19,9 +19,10 @@ from nkululeko.utils.stats import normalize
 from nkululeko.utils.util import Util
 
 
-class FeatureAnalyser:
-    def __init__(self, label, df_labels, df_features):
-        self.util = Util("feats_analyser")
+class FeatureAnalyser(ContextAware):
+    def __init__(self, label, df_labels, df_features, context=None):
+        self.util = Util("feats_analyser", context=context)
+        self.context = self.util.context
         self.target = self.util.config_val("DATA", "target", "emotion")
         self.labels = df_labels[self.target]
         # self.labels = df_labels["class_label"]
@@ -34,7 +35,7 @@ class FeatureAnalyser:
 
         self.features = df_features
         self.label = label
-        self.plots = Plots()
+        self.plots = Plots(context=self.context)
 
     def _get_importance(self, model, permutation):
         """Fit model and return feature importances, with pickle caching.
@@ -94,7 +95,7 @@ class FeatureAnalyser:
         """Plot decision tree if configured."""
         if self.util.config_val_bool("EXPL", "plot_tree", False):
             model.fit(self.features, self.labels)
-            plots = Plots()
+            plots = Plots(context=self.context)
             plots.plot_tree(model, self.features)
 
     def analyse_shap(self, model):
@@ -121,7 +122,7 @@ class FeatureAnalyser:
             explainer = shap.Explainer(
                 model_func,
                 self.features,
-                output_names=glob_conf.labels,
+                output_names=self.context.labels,
                 feature_names=self.features.columns.tolist(),
                 algorithm="permutation",
                 npermutations=5,
@@ -347,7 +348,7 @@ class FeatureAnalyser:
         caption = "Feature importance"
         if permutation:
             caption += " based on permutation of features."
-        glob_conf.report.add_item(
+        self.context.report.add_item(
             ReportItem(
                 Header.HEADER_EXPLORE,
                 caption,
