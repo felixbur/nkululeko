@@ -1,9 +1,14 @@
 Changelog
 =========
 
+Version 1.7.16 (26-08-04)
+-------------------------
+* Thread ExperimentContext through orchestration objects (use_context / ContextAware) instead of global glob_conf state, so nkululeko can be used as a library
+
 Version 1.7.15 (26-07-30)
 -------------------------
 * Fix multiple bugs: bare except, O(n²) concat, LabelEncoder error messages, dead code, exp type overwrite
+* fixed test run warnings
 
 Version 1.7.14 (26-07-28)
 -------------------------
