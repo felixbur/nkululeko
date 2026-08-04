@@ -269,18 +269,22 @@ def test_explore_module_with_name_target():
 def _make_analyser(tmp_path):
     """Build a FeatureAnalyser with minimal fakes."""
     import pandas as pd
+    from nkululeko.experiment_context import ExperimentContext
     from nkululeko.feat_extract.feats_analyser import FeatureAnalyser
 
     features = pd.DataFrame({"f1": [1.0, 2.0, 3.0], "f2": [4.0, 5.0, 6.0]})
     labels = pd.DataFrame({"emotion": ["a", "b", "a"]})
 
+    context = ExperimentContext(
+        config={"DATA": {"target": "emotion"}, "EXP": {"root": str(tmp_path), "name": "t"}}
+    )
+
     with (
-        patch("nkululeko.glob_conf.config", {"DATA": {"target": "emotion"}, "EXP": {"root": str(tmp_path), "name": "t"}}),
         patch("nkululeko.utils.util.Util.get_path", return_value=str(tmp_path) + "/"),
         patch("nkululeko.utils.util.Util.config_val", side_effect=lambda s, k, d=None: "emotion" if k == "target" else d),
         patch("nkululeko.plots.Plots.__init__", return_value=None),
     ):
-        return FeatureAnalyser("train", labels, features)
+        return FeatureAnalyser("train", labels, features, context=context)
 
 
 def test_get_importance_caches_result(tmp_path):

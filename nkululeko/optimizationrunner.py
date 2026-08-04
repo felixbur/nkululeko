@@ -14,9 +14,10 @@ from nkululeko.utils.util import Util
 class OptimizationRunner:
     """Hyperparameter optimization runner for nkululeko experiments."""
 
-    def __init__(self, config):
+    def __init__(self, config, context=None):
         self.config = config
-        self.util = Util("optim")
+        self.util = Util("optim", context=context)
+        self.context = self.util.context
         self.results = []
         self.model_type = None  # Will be set when parsing OPTIM params
         # New: Optimization strategy configuration

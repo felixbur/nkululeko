@@ -7,21 +7,22 @@ including over-sampling, under-sampling, and combination methods.
 """
 
 import pandas as pd
+from nkululeko.experiment_context import ContextAware
 from nkululeko.utils.util import Util
-import nkululeko.glob_conf as glob_conf
 
 
-class DataBalancer:
+class DataBalancer(ContextAware):
     """Class to handle data and feature balancing operations."""
 
-    def __init__(self, random_state=42):
+    def __init__(self, random_state=42, context=None):
         """
         Initialize the DataBalancer.
 
         Args:
             random_state (int): Random state for reproducible results
         """
-        self.util = Util("data_balancer")
+        self.util = Util("data_balancer", context=context)
+        self.context = self.util.context
         self.random_state = random_state
 
         # Supported balancing algorithms
@@ -205,9 +206,9 @@ class DataBalancer:
     def _log_class_distribution(self, y_res, method):
         """Log class distribution with label names if possible."""
         # Check if label encoder is available for pretty printing
-        if hasattr(glob_conf, "label_encoder") and glob_conf.label_encoder is not None:
+        if self.context.label_encoder is not None:
             try:
-                le = glob_conf.label_encoder
+                le = self.context.label_encoder
                 res = pd.Series(y_res).value_counts()
                 resd = {}
                 for i, label_idx in enumerate(res.index.values):

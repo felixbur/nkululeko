@@ -12,7 +12,6 @@ from pathlib import Path
 import numpy as np
 
 import nkululeko.experiment as exp
-import nkululeko.glob_conf as glob_conf
 from nkululeko.constants import VERSION
 from nkululeko.utils.errors import NkululukoError
 from nkululeko.utils.util import Util
@@ -32,7 +31,7 @@ def doit(config_file):
     expr = exp.Experiment(config)
     module = "nkululeko"
     expr.set_module(module)
-    util = Util(module)
+    util = Util(module, context=expr.context)
     util.debug(
         f"running {expr.name} from config {config_file}, nkululeko version {VERSION}"
     )
@@ -52,9 +51,8 @@ def doit(config_file):
             " — loading best model, skipping training"
         )
         expr.load(save_name)
-        # Restore the label encoder in the global namespace so the Reporter
-        # can map integer class indices back to string label names.
-        glob_conf.set_label_encoder(expr.label_encoder)
+        # Restore the label encoder for reports generated from the saved model.
+        expr.context.label_encoder = expr.label_encoder
 
         # Load test data with original string labels (no encoding).
         expr.fill_tests(encode=False)

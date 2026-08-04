@@ -7,7 +7,6 @@ import audonnx
 import numpy as np
 import torch
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.feat_extract.featureset import Featureset
 
 
@@ -61,7 +60,7 @@ class AuddimSet(Featureset):
             self.df = logits.process_index(self.data_df.index)
             self.util.write_store(self.df, storage, store_format)
             try:
-                glob_conf.config["DATA"]["needs_feature_extraction"] = "False"
+                self.context.config["DATA"]["needs_feature_extraction"] = "False"
             except KeyError:
                 pass
         else:

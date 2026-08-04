@@ -57,20 +57,19 @@ def test_extract_creates_new_features_when_no_cache(sptk_set, mock_util):
     # Mock compute_features to return a DataFrame
     mock_df = pd.DataFrame({"stft_mean": [0.5], "fbank_0_mean": [0.3]})
     with patch("nkululeko.feat_extract.feats_sptk.os.path.isfile", return_value=False):
-        with patch("nkululeko.feat_extract.feats_sptk.glob_conf") as mock_glob_conf:
-            mock_glob_conf.config = {"DATA": {}}
-            with patch(
-                "nkululeko.feat_extract.feats_sptk_core.compute_features",
-                return_value=mock_df,
-            ):
-                result = sptk_set.extract()
+        sptk_set.context.config = {"DATA": {}}
+        with patch(
+            "nkululeko.feat_extract.feats_sptk_core.compute_features",
+            return_value=mock_df,
+        ):
+            result = sptk_set.extract()
 
-                assert result is not None
-                assert isinstance(result, pd.DataFrame)
-                mock_util.debug.assert_any_call(
-                    "extracting SPTK, this might take a while..."
-                )
-                mock_util.write_store.assert_called_once()
+            assert result is not None
+            assert isinstance(result, pd.DataFrame)
+            mock_util.debug.assert_any_call(
+                "extracting SPTK, this might take a while..."
+            )
+            mock_util.write_store.assert_called_once()
 
 
 def test_extract_reuses_cached_features(sptk_set, mock_util):
@@ -106,21 +105,20 @@ def test_extract_handles_segmented_index(sptk_set, mock_util):
 
     mock_df = pd.DataFrame({"stft_mean": [0.5]})
     with patch("nkululeko.feat_extract.feats_sptk.os.path.isfile", return_value=False):
-        with patch("nkululeko.feat_extract.feats_sptk.glob_conf") as mock_glob_conf:
-            mock_glob_conf.config = {"DATA": {}}
-            with patch(
-                "nkululeko.feat_extract.feats_sptk_core.compute_features",
-                return_value=mock_df,
-            ) as mock_compute:
-                result = sptk_set.extract()
+        sptk_set.context.config = {"DATA": {}}
+        with patch(
+            "nkululeko.feat_extract.feats_sptk_core.compute_features",
+            return_value=mock_df,
+        ) as mock_compute:
+            result = sptk_set.extract()
 
-                assert result is not None
-                assert isinstance(result, pd.DataFrame)
+            assert result is not None
+            assert isinstance(result, pd.DataFrame)
 
-                # Verify compute_features was called with segmented index
-                mock_compute.assert_called_once()
-                call_kwargs = mock_compute.call_args[1]
-                assert "file_index" in call_kwargs
+            # Verify compute_features was called with segmented index
+            mock_compute.assert_called_once()
+            call_kwargs = mock_compute.call_args[1]
+            assert "file_index" in call_kwargs
 
 
 def test_extract_pads_short_signals(sptk_set, mock_util):
@@ -137,17 +135,16 @@ def test_extract_pads_short_signals(sptk_set, mock_util):
 
     mock_df = pd.DataFrame({"stft_mean": [0.5]})
     with patch("nkululeko.feat_extract.feats_sptk.os.path.isfile", return_value=False):
-        with patch("nkululeko.feat_extract.feats_sptk.glob_conf") as mock_glob_conf:
-            mock_glob_conf.config = {"DATA": {}}
-            with patch(
-                "nkululeko.feat_extract.feats_sptk_core.compute_features",
-                return_value=mock_df,
-            ):
-                result = sptk_set.extract()
+        sptk_set.context.config = {"DATA": {}}
+        with patch(
+            "nkululeko.feat_extract.feats_sptk_core.compute_features",
+            return_value=mock_df,
+        ):
+            result = sptk_set.extract()
 
-                # Verify extraction completed successfully
-                assert result is not None
-                assert isinstance(result, pd.DataFrame)
+            # Verify extraction completed successfully
+            assert result is not None
+            assert isinstance(result, pd.DataFrame)
 
 
 def test_extract_computes_stft_statistics(sptk_set, mock_util):
@@ -166,18 +163,17 @@ def test_extract_computes_stft_statistics(sptk_set, mock_util):
         {"stft_mean": [1.5], "stft_std": [0.5], "stft_min": [1.0], "stft_max": [2.0]}
     )
     with patch("nkululeko.feat_extract.feats_sptk.os.path.isfile", return_value=False):
-        with patch("nkululeko.feat_extract.feats_sptk.glob_conf") as mock_glob_conf:
-            mock_glob_conf.config = {"DATA": {}}
-            with patch(
-                "nkululeko.feat_extract.feats_sptk_core.compute_features",
-                return_value=mock_df,
-            ):
-                result = sptk_set.extract()
+        sptk_set.context.config = {"DATA": {}}
+        with patch(
+            "nkululeko.feat_extract.feats_sptk_core.compute_features",
+            return_value=mock_df,
+        ):
+            result = sptk_set.extract()
 
-                assert "stft_mean" in result.columns
-                assert "stft_std" in result.columns
-                assert "stft_min" in result.columns
-                assert "stft_max" in result.columns
+            assert "stft_mean" in result.columns
+            assert "stft_std" in result.columns
+            assert "stft_min" in result.columns
+            assert "stft_max" in result.columns
 
 
 def test_extract_computes_fbank_features(sptk_set, mock_util):
@@ -194,17 +190,16 @@ def test_extract_computes_fbank_features(sptk_set, mock_util):
 
     mock_df = pd.DataFrame({"fbank_0_mean": [0.5], "fbank_1_mean": [0.3]})
     with patch("nkululeko.feat_extract.feats_sptk.os.path.isfile", return_value=False):
-        with patch("nkululeko.feat_extract.feats_sptk.glob_conf") as mock_glob_conf:
-            mock_glob_conf.config = {"DATA": {}}
-            with patch(
-                "nkululeko.feat_extract.feats_sptk_core.compute_features",
-                return_value=mock_df,
-            ):
-                result = sptk_set.extract()
+        sptk_set.context.config = {"DATA": {}}
+        with patch(
+            "nkululeko.feat_extract.feats_sptk_core.compute_features",
+            return_value=mock_df,
+        ):
+            result = sptk_set.extract()
 
-                # Check that FBANK features were computed
-                fbank_cols = [col for col in result.columns if col.startswith("fbank_")]
-                assert len(fbank_cols) > 0
+            # Check that FBANK features were computed
+            fbank_cols = [col for col in result.columns if col.startswith("fbank_")]
+            assert len(fbank_cols) > 0
 
 
 def test_extract_fills_nan_values(sptk_set, mock_util):
@@ -226,16 +221,15 @@ def test_extract_fills_nan_values(sptk_set, mock_util):
     )
 
     with patch("nkululeko.feat_extract.feats_sptk.os.path.isfile", return_value=False):
-        with patch("nkululeko.feat_extract.feats_sptk.glob_conf") as mock_glob_conf:
-            mock_glob_conf.config = {"DATA": {}}
-            with patch(
-                "nkululeko.feat_extract.feats_sptk_core.compute_features",
-                return_value=mock_df,
-            ):
-                result = sptk_set.extract()
+        sptk_set.context.config = {"DATA": {}}
+        with patch(
+            "nkululeko.feat_extract.feats_sptk_core.compute_features",
+            return_value=mock_df,
+        ):
+            result = sptk_set.extract()
 
-                # Verify no NaN values in result
-                assert not result.isnull().values.any()
+            # Verify no NaN values in result
+            assert not result.isnull().values.any()
 
 
 def test_extract_error_on_cached_nan_values(sptk_set, mock_util):
@@ -265,14 +259,13 @@ def test_extract_converts_to_float(sptk_set, mock_util):
 
     mock_df = pd.DataFrame({"stft_mean": [0.5]})
     with patch("nkululeko.feat_extract.feats_sptk.os.path.isfile", return_value=False):
-        with patch("nkululeko.feat_extract.feats_sptk.glob_conf") as mock_glob_conf:
-            mock_glob_conf.config = {"DATA": {}}
-            with patch(
-                "nkululeko.feat_extract.feats_sptk_core.compute_features",
-                return_value=mock_df,
-            ):
-                result = sptk_set.extract()
+        sptk_set.context.config = {"DATA": {}}
+        with patch(
+            "nkululeko.feat_extract.feats_sptk_core.compute_features",
+            return_value=mock_df,
+        ):
+            result = sptk_set.extract()
 
-                # Verify all columns are float
-                for col in result.columns:
-                    assert result[col].dtype == np.float64
+            # Verify all columns are float
+            for col in result.columns:
+                assert result[col].dtype == np.float64

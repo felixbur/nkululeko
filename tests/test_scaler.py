@@ -5,7 +5,7 @@ from nkululeko.scaler import Scaler
 
 
 class DummyUtil:
-    def __init__(self, name):
+    def __init__(self, name, context=None):
         pass
 
     def error(self, msg):

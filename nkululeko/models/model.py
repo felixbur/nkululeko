@@ -10,16 +10,16 @@ import sklearn.utils
 from joblib import parallel_backend
 from sklearn.model_selection import GridSearchCV, LeaveOneGroupOut, StratifiedKFold
 
-import nkululeko.glob_conf as glob_conf
+from nkululeko.experiment_context import ContextAware
 from nkululeko.reporting.reporter import Reporter
 from nkululeko.utils.pickle_integrity import save_checksum, verify_checksum
 from nkululeko.utils.util import Util
 
 
-class Model:
+class Model(ContextAware):
     """Generic model class for linear (non-neural) algorithms."""
 
-    def __init__(self, df_train, df_test, feats_train, feats_test):
+    def __init__(self, df_train, df_test, feats_train, feats_test, context=None):
         """Constructor taking the configuration and all dataframes."""
         self.name = "undefined"
         self.df_train, self.df_test, self.feats_train, self.feats_test = (
@@ -29,7 +29,8 @@ class Model:
             feats_test,
         )
         self.model_type = "classic"
-        self.util = Util("model")
+        self.util = Util("model", context=context)
+        self.context = self.util.context
         self.target = self.util.config_val("DATA", "target", "emotion")
         self.run = 0
         self.epoch = 0
@@ -149,7 +150,13 @@ class Model:
             truth_x = feats.iloc[test_index].to_numpy()
             truth_y = targets[test_index]
             predict_y = self.clf.predict(truth_x)
-            report = Reporter(truth_y.astype(float), predict_y, self.run, self.epoch)
+            report = Reporter(
+                truth_y.astype(float),
+                predict_y,
+                self.run,
+                self.epoch,
+                context=self.context,
+            )
             self.util.debug(
                 f"result for fold {g_index}: {report.get_result().get_test_result()} "
             )
@@ -216,7 +223,13 @@ class Model:
             truth_x = feats.iloc[test_index].to_numpy()
             truth_y = targets.iloc[test_index]
             predict_y = self.clf.predict(truth_x)
-            report = Reporter(truth_y.astype(float), predict_y, self.run, self.epoch)
+            report = Reporter(
+                truth_y.astype(float),
+                predict_y,
+                self.run,
+                self.epoch,
+                context=self.context,
+            )
             result = report.get_result().get_test_result()
             self.util.debug(f"result for speaker group {g_index}: {result} ")
             results.append(float(report.get_result().test))
@@ -274,11 +287,11 @@ class Model:
                 tuning_params = ast.literal_eval(tuning_params)
                 tuned_params = {}
                 try:
-                    scoring = glob_conf.config["MODEL"]["scoring"]
+                    scoring = self.context.config["MODEL"]["scoring"]
                 except KeyError:
                     self.util.error("got tuning params but no scoring")
                 for param in tuning_params:
-                    values = ast.literal_eval(glob_conf.config["MODEL"][param])
+                    values = ast.literal_eval(self.context.config["MODEL"][param])
                     tuned_params[param] = values
                 self.util.debug(f"tuning on {tuned_params}")
                 self.clf = GridSearchCV(
@@ -338,7 +351,11 @@ class Model:
         self.feats_test = self._handle_model_nan(self.feats_test, "Model, test")
         if self.logo or self.xfoldx:
             report = Reporter(
-                self.truths.astype(float), self.preds, self.run, self.epoch
+                self.truths.astype(float),
+                self.preds,
+                self.run,
+                self.epoch,
+                context=self.context,
             )
             return report
         """Predict the whole eval feature set"""
@@ -350,6 +367,7 @@ class Model:
             self.run,
             self.epoch,
             probas=probas,
+            context=self.context,
         )
         report.print_probabilities()
         return report

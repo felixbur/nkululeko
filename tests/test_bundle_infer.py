@@ -350,11 +350,10 @@ class TestPredictFromBundle:
 
 
 class TestSetupGlobConf:
-    """Test _setup_glob_conf initializes global config properly."""
+    """Test _setup_context builds a correctly configured experiment context."""
 
     def test_basic_setup(self):
-        from nkululeko.infer import _setup_glob_conf
-        import nkululeko.glob_conf as glob_conf
+        from nkululeko.infer import _setup_context
 
         config = configparser.ConfigParser()
         config["DATA"] = {"target": "emotion"}
@@ -367,10 +366,13 @@ class TestSetupGlobConf:
             "manifest": {"labels": ["anger", "joy"]},
         }
 
-        _setup_glob_conf(bundle)
+        # _setup_context only builds the context now — it no longer mutates
+        # process-wide state, so there's nothing to save/restore.
+        context = _setup_context(bundle)
 
-        assert glob_conf.config is not None
-        assert glob_conf.config["DATA"]["target"] == "emotion"
+        assert context.config is not None
+        assert context.config["DATA"]["target"] == "emotion"
+        assert context.labels == ["anger", "joy"]
 
 
 class TestFindAudioFiles:

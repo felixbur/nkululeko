@@ -26,7 +26,7 @@ import tempfile
 import audformat
 import pandas as pd
 
-import nkululeko.glob_conf as glob_conf
+from nkululeko.experiment_context import ExperimentContext, use_context
 from nkululeko.constants import AUDIO_EXTS, VERSION
 from nkululeko.utils.files import safe_path
 from nkululeko.utils.util import Util
@@ -155,8 +155,13 @@ def _load_bundle(bundle_dir):
     }
 
 
-def _setup_glob_conf(bundle):
-    """Set up glob_conf with the bundle's inference config."""
+def _setup_context(bundle):
+    """Build the experiment context used for bundle inference.
+
+    Does not make the context active — callers should run inference inside
+    `with use_context(context):` so the active context is scoped to the
+    inference call rather than leaking into unrelated process-wide state.
+    """
     config = bundle["config"]
     # Ensure required sections exist
     for section in ("EXP", "DATA", "FEATS", "MODEL"):
@@ -173,15 +178,12 @@ def _setup_glob_conf(bundle):
     if "databases" not in config["DATA"]:
         config["DATA"]["databases"] = "['adhoc']"
 
-    glob_conf.init_config(config)
-    glob_conf.set_module("infer")
-
-    if bundle["label_encoder"] is not None:
-        glob_conf.set_label_encoder(bundle["label_encoder"])
-
+    context = ExperimentContext(config=config, module="infer")
+    context.label_encoder = bundle["label_encoder"]
     labels = bundle["manifest"].get("labels", None)
     if labels is not None:
-        glob_conf.set_labels(labels)
+        context.labels = labels
+    return context
 
 
 def _extract_features(files, bundle, util):
@@ -206,10 +208,12 @@ def _extract_features(files, bundle, util):
     feats_type = util.config_val_list("FEATS", "type", ["os"])
 
     # Disable feature caching for inference
-    glob_conf.config["FEATS"]["no_reuse"] = "True"
-    glob_conf.config["FEATS"]["needs_feature_extraction"] = "True"
+    util.context.config["FEATS"]["no_reuse"] = "True"
+    util.context.config["FEATS"]["needs_feature_extraction"] = "True"
 
-    feature_extractor = FeatureExtractor(df, feats_type, "infer", "test")
+    feature_extractor = FeatureExtractor(
+        df, feats_type, "infer", "test", context=util.context
+    )
     feats = feature_extractor.extract()
 
     return feats
@@ -398,25 +402,30 @@ def infer_from_bundle(
         pd.DataFrame with prediction results.
     """
     bundle = _load_bundle(bundle_dir)
-    _setup_glob_conf(bundle)
-    util = Util("infer", has_config=True)
-    util.debug(f"nkululeko {VERSION}: infer from bundle {bundle_dir}")
+    context = _setup_context(bundle)
+    with use_context(context):
+        util = Util("infer", has_config=True, context=context)
+        util.debug(f"nkululeko {VERSION}: infer from bundle {bundle_dir}")
 
-    manifest = bundle["manifest"]
-    util.debug(
-        f"  task={manifest.get('task')}, target={manifest.get('target')}, "
-        f"model={manifest.get('model_type')}"
-    )
+        manifest = bundle["manifest"]
+        util.debug(
+            f"  task={manifest.get('task')}, target={manifest.get('target')}, "
+            f"model={manifest.get('model_type')}"
+        )
 
-    if files:
-        return _run_files(files, bundle, util, outfile)
-    elif folder:
-        return _run_folder(folder, bundle, util, outfile or "./bundle_predictions.csv")
-    elif list_path:
-        return _run_list(list_path, bundle, util, outfile or "./bundle_predictions.csv")
-    else:
-        print("ERROR: provide one of --file, --folder, or --list", file=sys.stderr)
-        sys.exit(1)
+        if files:
+            return _run_files(files, bundle, util, outfile)
+        elif folder:
+            return _run_folder(
+                folder, bundle, util, outfile or "./bundle_predictions.csv"
+            )
+        elif list_path:
+            return _run_list(
+                list_path, bundle, util, outfile or "./bundle_predictions.csv"
+            )
+        else:
+            print("ERROR: provide one of --file, --folder, or --list", file=sys.stderr)
+            sys.exit(1)
 
 
 def _build_parser():

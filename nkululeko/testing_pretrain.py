@@ -14,7 +14,6 @@ import torch
 import transformers
 
 import nkululeko.experiment as exp
-import nkululeko.glob_conf as glob_conf
 import nkululeko.models.model_tuned as mt
 from nkululeko.constants import VERSION
 from nkululeko.utils.util import Util
@@ -34,7 +33,7 @@ def doit(config_file):
     expr = exp.Experiment(config)
     module = "testing_pretrain"
     expr.set_module(module)
-    util = Util(module)
+    util = Util(module, context=expr.context)
     util.debug(
         f"running {expr.name} from config {config_file}, nkululeko version"
         f" {VERSION}"
@@ -75,7 +74,7 @@ def doit(config_file):
     # create dataset
 
     dataset = {}
-    target_name = glob_conf.target
+    target_name = expr.context.target
     data_sources = {
         "train": pd.DataFrame(expr.df_train[target_name]),
         "dev": pd.DataFrame(expr.df_test[target_name]),
@@ -105,7 +104,7 @@ def doit(config_file):
     dataset = datasets.DatasetDict(dataset)
 
     # load pre-trained model
-    le = glob_conf.label_encoder
+    le = expr.context.label_encoder
     mapping = dict(zip(le.classes_, range(len(le.classes_))))
     target_mapping = {k: int(v) for k, v in mapping.items()}
     target_mapping_reverse = {value: key for key, value in target_mapping.items()}

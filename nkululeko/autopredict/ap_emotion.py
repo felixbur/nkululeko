@@ -5,7 +5,6 @@ Uses emotion2vec models for emotion prediction.
 
 import ast
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.feature_extractor import FeatureExtractor
 from nkululeko.utils.util import Util
 
@@ -22,10 +21,14 @@ class EmotionPredictor:
 
     def predict(self, split_selection):
         self.util.debug(f"predicting emotion for {split_selection} samples")
-        feats_name = "_".join(ast.literal_eval(glob_conf.config["DATA"]["databases"]))
+        feats_name = "_".join(ast.literal_eval(self.util.config["DATA"]["databases"]))
 
         self.feature_extractor = FeatureExtractor(
-            self.df, ["emotion2vec-large"], feats_name, split_selection
+            self.df,
+            ["emotion2vec-large"],
+            feats_name,
+            split_selection,
+            context=self.util.context,
         )
         emotion_df = self.feature_extractor.extract()
 

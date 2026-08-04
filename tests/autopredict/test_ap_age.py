@@ -3,11 +3,11 @@ from unittest.mock import Mock, patch
 import pandas as pd
 
 from nkululeko.autopredict.ap_age import AgePredictor
+from nkululeko.experiment_context import ExperimentContext, use_context
 
 
 class TestAgePredictor:
-    @patch("nkululeko.autopredict.ap_age.glob_conf")
-    def test_init(self, mock_glob_conf):
+    def test_init(self):
         df = pd.DataFrame({"dummy": [1, 2, 3]})
         predictor = AgePredictor(df)
 
@@ -15,9 +15,8 @@ class TestAgePredictor:
         assert predictor.util is not None
 
     @patch("nkululeko.autopredict.ap_age.FeatureExtractor")
-    @patch("nkululeko.autopredict.ap_age.glob_conf")
-    def test_predict(self, mock_glob_conf, mock_feature_extractor):
-        mock_glob_conf.config = {"DATA": {"databases": "['test_db']"}}
+    def test_predict(self, mock_feature_extractor):
+        context = ExperimentContext(config={"DATA": {"databases": "['test_db']"}})
 
         # Create mock dataframe with age values
         mock_age_df = pd.DataFrame({"age": [0.25, 0.45, 0.70]})
@@ -26,9 +25,9 @@ class TestAgePredictor:
         mock_feature_extractor.return_value = mock_extractor
 
         df = pd.DataFrame({"dummy": [1, 2, 3]})
-        predictor = AgePredictor(df)
-
-        result = predictor.predict("train")
+        with use_context(context):
+            predictor = AgePredictor(df)
+            result = predictor.predict("train")
 
         assert "age_pred" in result.columns
         assert len(result) == 3

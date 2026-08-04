@@ -30,7 +30,6 @@ import sys
 
 import audeer
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.constants import VERSION
 from nkululeko.experiment import Experiment
 from nkululeko.utils.files import safe_path
@@ -201,7 +200,7 @@ def export_bundle(config_file, output_dir=None):
     # Create experiment and load saved state
     expr = Experiment(config)
     expr.set_module("bundle")
-    util = Util("bundle", has_config=True)
+    util = Util("bundle", has_config=True, context=expr.context)
     util.debug(f"nkululeko {VERSION}: bundle export from {config_file}")
 
     # Load the saved experiment
@@ -213,7 +212,7 @@ def export_bundle(config_file, output_dir=None):
         )
 
     expr.load(save_name)
-    glob_conf.set_label_encoder(expr.label_encoder)
+    expr.context.label_encoder = expr.label_encoder
 
     # Gather metadata
     target = util.config_val("DATA", "target", "emotion")

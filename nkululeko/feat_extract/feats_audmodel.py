@@ -15,7 +15,6 @@ import audmodel
 import audonnx
 
 from nkululeko.feat_extract.featureset import Featureset
-import nkululeko.glob_conf as glob_conf
 
 
 class AudmodelSet(Featureset):
@@ -147,7 +146,7 @@ class AudmodelSet(Featureset):
             self.df = df
             self.util.write_store(self.df, storage, store_format)
             try:
-                glob_conf.config["DATA"]["needs_feature_extraction"] = "False"
+                self.context.config["DATA"]["needs_feature_extraction"] = "False"
             except KeyError:
                 pass
         else:

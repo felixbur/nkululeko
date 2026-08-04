@@ -5,7 +5,6 @@ Currently based on audEERING's emotional dimension model.
 
 import ast
 
-import nkululeko.glob_conf as glob_conf
 from nkululeko.feature_extractor import FeatureExtractor
 from nkululeko.utils.util import Util
 
@@ -22,9 +21,9 @@ class DominancePredictor:
 
     def predict(self, split_selection):
         self.util.debug(f"predicting dominance for {split_selection} samples")
-        feats_name = "_".join(ast.literal_eval(glob_conf.config["DATA"]["databases"]))
+        feats_name = "_".join(ast.literal_eval(self.util.config["DATA"]["databases"]))
         self.feature_extractor = FeatureExtractor(
-            self.df, ["auddim"], feats_name, split_selection
+            self.df, ["auddim"], feats_name, split_selection, context=self.util.context
         )
         pred_df = self.feature_extractor.extract()
         pred_vals = pred_df.dominance * 1000

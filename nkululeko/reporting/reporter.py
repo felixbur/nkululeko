@@ -23,7 +23,7 @@ from audmetric import mean_absolute_error
 from audmetric import mean_squared_error
 from audmetric import unweighted_average_recall
 
-import nkululeko.glob_conf as glob_conf
+from nkululeko.experiment_context import ContextAware
 from nkululeko.plots import Plots
 
 
@@ -74,7 +74,7 @@ def equal_error_rate(y_true, y_score):
     return float(eer)
 
 
-class Reporter:
+class Reporter(ContextAware):
     def _set_metric(self):
         if self.util.exp_is_classification():
             # Check if user wants EER metric instead of default UAR
@@ -100,7 +100,7 @@ class Reporter:
                 self.METRIC = "CCC"
                 self.result.metric = self.METRIC
 
-    def __init__(self, truths, preds, run, epoch, probas=None):
+    def __init__(self, truths, preds, run, epoch, probas=None, context=None):
         """Initialization with ground truth und predictions vector.
 
         Args:
@@ -110,7 +110,8 @@ class Reporter:
             epoch (int): number of epoch
             probas (pd.Dataframe, optional): probabilities per class. Defaults to None.
         """
-        self.util = Util("reporter")
+        self.util = Util("reporter", context=context)
+        self.context = self.util.context
         self.probas = probas
         self.format = self.util.config_val("PLOT", "format", "png")
         self.truths = np.asarray(truths)
@@ -226,7 +227,7 @@ class Reporter:
             probas["predicted"] = self.preds
             probas["truth"] = self.truths
             try:
-                le = glob_conf.label_encoder
+                le = self.context.label_encoder
                 if le is not None:
                     mapping = dict(zip(le.classes_, range(len(le.classes_))))
                     mapping_reverse = {value: key for key, value in mapping.items()}
@@ -240,7 +241,7 @@ class Reporter:
             # compute entropy per sample
             uncertainty = uncertainty.apply(entropy)
             # scale it to 0-1
-            max_ent = math.log(len(glob_conf.labels))
+            max_ent = math.log(len(self.context.labels))
             uncertainty = (uncertainty - uncertainty.min()) / (
                 max_ent - uncertainty.min()
             )
@@ -265,7 +266,7 @@ class Reporter:
             self.plot_proba_conf()
             probas.to_csv(file_name)
             self.util.debug(f"Saved probabilities to {file_name}")
-            plots = Plots()
+            plots = Plots(context=self.context)
             ax, caption = plots.plotcatcont(
                 probas, "correct", "uncertainty", "uncertainty", "correct"
             )
@@ -319,9 +320,11 @@ class Reporter:
             self.util.debug(f"Set default labels for binning: {labels}")
         # if there are no bins, set them to border points for the labels and save them to the config to be used later
         try:
-            bins = ast.literal_eval(glob_conf.config["DATA"]["bins"])
+            bins = ast.literal_eval(self.context.config["DATA"]["bins"])
         except (KeyError, ValueError):
-            label_num = len(ast.literal_eval(glob_conf.config["DATA"]["labels"]))
+            label_num = len(
+                ast.literal_eval(self.context.config["DATA"]["labels"])
+            )
             vmin, vmax = np.percentile(self.truths, [5, 95])
             inner_edges = np.linspace(vmin, vmax, label_num + 1)[1:-1]
             bins = [-np.inf] + inner_edges.tolist() + [np.inf]
@@ -428,7 +431,7 @@ class Reporter:
         plt.close(fig)
         plt.close()
         plt.clf()
-        glob_conf.report.add_item(
+        self.context.report.add_item(
             ReportItem(
                 Header.HEADER_RESULTS,
                 self.util.get_model_description(),
@@ -452,12 +455,12 @@ class Reporter:
             alpha=5,
         )
         acc = accuracy(truths, preds)
-        le = glob_conf.label_encoder
+        le = self.context.label_encoder
 
         # if labels come from binning, try to get the original labels for the confusion matrix
         if not self.util.exp_is_classification():
             try:
-                labels = ast.literal_eval(glob_conf.config["DATA"]["labels"])
+                labels = ast.literal_eval(self.context.config["DATA"]["labels"])
             except KeyError:
                 # No label names configured — derive bin indices from the data
                 n_bins = max(int(max(list(truths) + list(preds))) + 1, 1)
@@ -508,7 +511,7 @@ class Reporter:
         plt.close(fig)
         plt.close()
         plt.clf()
-        glob_conf.report.add_item(
+        self.context.report.add_item(
             ReportItem(
                 Header.HEADER_RESULTS,
                 self.util.get_model_description(),
@@ -568,10 +571,10 @@ class Reporter:
             self.util.debug(f"####->{file_name}<-####")
             file_name = _safe_path(res_dir, f"{file_name}{self.filenameadd}", "txt")
         if self.util.exp_is_classification():
-            if glob_conf.label_encoder is not None:
-                labels = glob_conf.label_encoder.classes_
+            if self.context.label_encoder is not None:
+                labels = self.context.label_encoder.classes_
             else:
-                labels = glob_conf.labels
+                labels = self.context.labels
             try:
                 rpt = classification_report(
                     self.truths,
@@ -592,9 +595,11 @@ class Reporter:
             except ValueError as e:
                 self.util.debug(
                     "Reporter: caught a ValueError when trying to get"
-                    " classification_report: " + e
+                    f" classification_report: {e}"
                 )
-                rpt = self.result.to_string()
+                with open(file_name, "w") as text_file:
+                    text_file.write(self.result.to_string())
+                return
             with open(file_name, "w") as text_file:
                 c_ress = list(range(len(labels)))
                 for i, label in enumerate(labels):
@@ -616,7 +621,7 @@ class Reporter:
                     if uar_val is not None:
                         rpt_str += f", UAR: {float(uar_val):.4f}"
                 text_file.write(rpt_str)
-                glob_conf.report.add_item(
+                self.context.report.add_item(
                     ReportItem(
                         Header.HEADER_RESULTS,
                         f"Classification result {self.util.get_model_description()}",
@@ -646,7 +651,7 @@ class Reporter:
         try:
             imageio.mimsave(fig_dir + out_name, images, fps=int(fps))
         except RuntimeError as e:
-            self.util.error("error writing anim gif: " + e)
+            self.util.error(f"error writing anim gif: {e}")
 
     def get_result(self):
         return self.result

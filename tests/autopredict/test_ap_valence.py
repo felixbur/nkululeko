@@ -4,11 +4,11 @@ import pandas as pd
 import pytest
 
 from nkululeko.autopredict.ap_valence import ValencePredictor
+from nkululeko.experiment_context import ExperimentContext, use_context
 
 
 class TestValencePredictor:
-    @patch("nkululeko.autopredict.ap_valence.glob_conf")
-    def test_init(self, mock_glob_conf):
+    def test_init(self):
         df = pd.DataFrame({"dummy": [1, 2, 3]})
         predictor = ValencePredictor(df)
 
@@ -16,9 +16,8 @@ class TestValencePredictor:
         assert predictor.util is not None
 
     @patch("nkululeko.autopredict.ap_valence.FeatureExtractor")
-    @patch("nkululeko.autopredict.ap_valence.glob_conf")
-    def test_predict(self, mock_glob_conf, mock_feature_extractor):
-        mock_glob_conf.config = {"DATA": {"databases": "['test_db']"}}
+    def test_predict(self, mock_feature_extractor):
+        context = ExperimentContext(config={"DATA": {"databases": "['test_db']"}})
 
         # Create mock dataframe with valence values
         mock_valence_df = pd.DataFrame({"valence": [0.25, 0.45, 0.70]})
@@ -27,9 +26,10 @@ class TestValencePredictor:
         mock_feature_extractor.return_value = mock_extractor
 
         df = pd.DataFrame({"dummy": [1, 2, 3]})
-        predictor = ValencePredictor(df)
+        with use_context(context):
+            predictor = ValencePredictor(df)
 
-        result = predictor.predict("train")
+            result = predictor.predict("train")
 
         assert "valence_pred" in result.columns
         assert len(result) == 3
