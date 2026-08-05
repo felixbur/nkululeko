@@ -89,6 +89,7 @@ setup(
             "nkululeko.resample=nkululeko.resample:main",
             "nkululeko.segment=nkululeko.segment:main",
             "nkululeko.ensemble=nkululeko.ensemble:main",
+            "nkululeko.avqi=nkululeko.avqi:main",
         ],
     },
 )
