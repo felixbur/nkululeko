@@ -218,6 +218,14 @@ hnr = extractNumber (voiceReport$, "Mean harmonics-to-noise ratio: ")
 avqi = (4.152-(0.177*cpps)-(0.006*hnr)-(0.037*shim)+(0.941*shdb)+(0.01*slope)+(0.093*tilt))*2.8902
 '''
 
+# Cutoff separating normal from dysphonic voices, as reported for the AVQI
+# v3.01 by Barsties & Maryn (2015, https://pubmed.ncbi.nlm.nih.gov/26951063/)
+# (sensitivity ~0.92, specificity ~0.90 in the original validation).
+# Individual studies report cutoffs roughly in the 2.4-3.2 range depending on
+# language/population, so treat this as a rough guide rather than a
+# diagnostic threshold.
+AVQI_CUTOFF = 2.735
+
 # The AVQI protocol analyzes only the last 3s of the sustained vowel, so
 # recordings shorter than that would silently be used in full instead.
 MIN_SV_DURATION_S = 3.0
@@ -352,6 +360,28 @@ def run_interactive(args, util):
     return compute_avqi(sv_path, cs_path)
 
 
+def interpret_avqi(score):
+    """Give a rough, non-diagnostic interpretation of an AVQI score.
+
+    Higher AVQI means worse (more dysphonic) voice quality. Banding is
+    centered on the normal/dysphonic cutoff reported for AVQI v3.01 by
+    Barsties & Maryn (2015); reported cutoffs vary by language/population
+    (roughly 2.4-3.2), so this is only a rough guide.
+
+    Args:
+        score: the AVQI value.
+
+    Returns:
+        A short human-readable interpretation string.
+    """
+    if score < AVQI_CUTOFF:
+        return "within normal limits (good voice quality)"
+    elif score < AVQI_CUTOFF + 1.0:
+        return "suggestive of mild dysphonia / reduced voice quality"
+    else:
+        return "suggestive of moderate-to-severe dysphonia"
+
+
 def _print_report(results):
     print(f"Smoothed cepstral peak prominence (CPPS): {results['cpps']:.2f}")
     print(f"Harmonics-to-noise ratio (HNR):            {results['hnr']:.2f} dB")
@@ -360,6 +390,11 @@ def _print_report(results):
     print(f"Slope of LTAS:                              {results['ltas_slope']:.2f} dB")
     print(f"Tilt of trendline through LTAS:             {results['ltas_tilt']:.2f} dB")
     print(f"AVQI:                                       {results['avqi']:.2f}")
+    print(
+        f"  -> {interpret_avqi(results['avqi'])} "
+        f"(rough guide, normal/dysphonic cutoff ~{AVQI_CUTOFF}; not diagnostic. "
+        "See Barsties & Maryn, 2015: https://pubmed.ncbi.nlm.nih.gov/26951063/)"
+    )
 
 
 def main():

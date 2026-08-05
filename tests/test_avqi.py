@@ -86,6 +86,23 @@ class TestComputeAvqi:
 
 
 # ---------------------------------------------------------------------------
+# interpret_avqi
+# ---------------------------------------------------------------------------
+
+
+class TestInterpretAvqi:
+    def test_below_cutoff_is_normal(self):
+        assert "normal" in avqi_mod.interpret_avqi(avqi_mod.AVQI_CUTOFF - 0.1)
+
+    def test_just_above_cutoff_is_mild(self):
+        assert "mild" in avqi_mod.interpret_avqi(avqi_mod.AVQI_CUTOFF + 0.1)
+
+    def test_well_above_cutoff_is_moderate_to_severe(self):
+        result = avqi_mod.interpret_avqi(avqi_mod.AVQI_CUTOFF + 1.1)
+        assert "moderate-to-severe" in result
+
+
+# ---------------------------------------------------------------------------
 # _record_clip
 # ---------------------------------------------------------------------------
 
