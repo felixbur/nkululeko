@@ -193,6 +193,35 @@ class TestRunInteractive:
         record_mock.assert_not_called()
         compute_mock.assert_called_once_with(str(sv), str(cs))
 
+    def test_no_outdir_created_when_both_files_given(self, tmp_path, monkeypatch):
+        """When --sv/--cs are both existing files, no temp/output dir should
+        be created since nothing will be recorded."""
+        sv = tmp_path / "sv.wav"
+        cs = tmp_path / "cs.wav"
+        sv.touch()
+        cs.touch()
+        unused_outdir = tmp_path / "should_not_be_created"
+
+        monkeypatch.setattr(avqi_mod, "_record_clip", MagicMock())
+        monkeypatch.setattr(avqi_mod, "compute_avqi", MagicMock(return_value={}))
+        mkdtemp_mock = MagicMock(side_effect=AssertionError("should not be called"))
+        monkeypatch.setattr(avqi_mod.tempfile, "mkdtemp", mkdtemp_mock)
+
+        args = argparse.Namespace(
+            sv=str(sv),
+            cs=str(cs),
+            sv_duration=avqi_mod.DEFAULT_SV_DURATION_S,
+            cs_duration=avqi_mod.DEFAULT_CS_DURATION_S,
+            outdir=str(unused_outdir),
+            no_playback=False,
+        )
+        util = MagicMock()
+
+        avqi_mod.run_interactive(args, util)
+
+        mkdtemp_mock.assert_not_called()
+        assert not unused_outdir.exists()
+
     def test_records_missing_clips_and_writes_wav(self, tmp_path, monkeypatch):
         record_mock = MagicMock(return_value=np.zeros(1600, dtype="float32"))
         monkeypatch.setattr(avqi_mod, "_record_clip", record_mock)
@@ -226,11 +255,62 @@ class TestRunInteractive:
 
 
 class TestMain:
-    def test_rejects_short_sv_duration(self, monkeypatch):
+    def test_rejects_short_sv_duration(self, tmp_path, monkeypatch):
+        cs = tmp_path / "cs.wav"
+        cs.touch()
         monkeypatch.setattr(
-            sys, "argv", ["avqi.py", "--sv_duration", "2.0", "--cs", "x.wav"]
+            sys, "argv", ["avqi.py", "--sv_duration", "2.0", "--cs", str(cs)]
         )
-        with pytest.raises(NkululukoError):
+        with pytest.raises(NkululukoError, match="sv_duration"):
+            avqi_mod.main()
+
+    def test_accepts_sv_duration_of_exactly_minimum(self, tmp_path, monkeypatch):
+        """Boundary: exactly MIN_SV_DURATION_S must be accepted, not rejected."""
+        cs = tmp_path / "cs.wav"
+        cs.touch()
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            [
+                "avqi.py",
+                "--sv_duration",
+                str(avqi_mod.MIN_SV_DURATION_S),
+                "--cs",
+                str(cs),
+            ],
+        )
+        fake_results = {
+            "avqi": 1.0,
+            "cpps": 1,
+            "hnr": 1,
+            "shimmer_local": 1,
+            "shimmer_local_db": 1,
+            "ltas_slope": 1,
+            "ltas_tilt": 1,
+        }
+        monkeypatch.setattr(avqi_mod, "compute_avqi", MagicMock(return_value=fake_results))
+        monkeypatch.setattr(avqi_mod, "_record_clip", MagicMock(return_value=np.zeros(10)))
+        result = avqi_mod.main()
+        assert result == fake_results
+
+    def test_rejects_missing_sv_file(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            ["avqi.py", "--sv", str(tmp_path / "missing_sv.wav"), "--cs", "x.wav"],
+        )
+        with pytest.raises(NkululukoError, match="--sv file not found"):
+            avqi_mod.main()
+
+    def test_rejects_missing_cs_file(self, tmp_path, monkeypatch):
+        sv = tmp_path / "sv.wav"
+        sv.touch()
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            ["avqi.py", "--sv", str(sv), "--cs", str(tmp_path / "missing_cs.wav")],
+        )
+        with pytest.raises(NkululukoError, match="--cs file not found"):
             avqi_mod.main()
 
     def test_full_run_with_existing_files(self, tmp_path, monkeypatch):
