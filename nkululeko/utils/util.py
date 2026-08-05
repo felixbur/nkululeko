@@ -492,12 +492,11 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         Intended to let a fresh experiment run re-log "using default" debug
         messages that a previous run in the same process already logged.
 
-        Currently non-functional: no ``logged_configs`` class attribute is
-        ever initialized (the corresponding ``self.logged_configs = set()``
-        in ``__init__`` is commented out), so calling this raises
-        ``AttributeError``. Nothing in the codebase calls it today.
+        No-op if ``logged_configs`` was never initialized (the corresponding
+        ``self.logged_configs = set()`` in ``__init__`` is commented out).
         """
-        cls.logged_configs.clear()
+        if hasattr(cls, "logged_configs"):
+            cls.logged_configs.clear()
 
     def config_val_bool(self, section, key, default=False):
         """Get a boolean configuration value safely without using eval().
