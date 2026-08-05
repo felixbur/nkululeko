@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.7.17 (26-08-05)
+-------------------------
+* fixed bugs and added docstring documentation
+
 Version 1.7.16 (26-08-04)
 -------------------------
 * Thread ExperimentContext through orchestration objects (use_context / ContextAware) instead of global glob_conf state, so nkululeko can be used as a library
