@@ -231,10 +231,19 @@ SV_INSTRUCTIONS = (
     "  Take a deep breath and sustain the vowel /a:/ at a comfortable pitch\n"
     "  and loudness for the full duration.\n"
 )
+RAINBOW_PASSAGE_EXCERPT = (
+    "When the sunlight strikes raindrops in the air, they act as a prism\n"
+    "  and form a rainbow. The rainbow is a division of white light into\n"
+    "  many beautiful colors. These take the shape of a long round arch,\n"
+    "  with its path high above, and its two ends apparently beyond the\n"
+    "  horizon."
+)
 CS_INSTRUCTIONS = (
     "\nContinuous speech recording:\n"
-    "  Read a phonetically balanced passage (or speak freely) at a\n"
-    "  comfortable pitch and loudness for the full duration.\n"
+    "  Read a phonetically balanced passage at a comfortable pitch and\n"
+    "  loudness for the full duration, e.g. the opening of the Rainbow\n"
+    "  Passage (Fairbanks, 1960):\n\n"
+    f"  \"{RAINBOW_PASSAGE_EXCERPT}\"\n"
 )
 
 
