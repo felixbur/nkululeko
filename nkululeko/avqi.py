@@ -439,9 +439,14 @@ def main():
 
     util = Util("avqi", has_config=False)
 
-    if args.sv is None and args.sv_duration <= MIN_SV_DURATION_S:
+    if args.sv is not None and not os.path.isfile(args.sv):
+        util.error(f"--sv file not found: {args.sv}")
+    if args.cs is not None and not os.path.isfile(args.cs):
+        util.error(f"--cs file not found: {args.cs}")
+
+    if args.sv is None and args.sv_duration < MIN_SV_DURATION_S:
         util.error(
-            f"--sv_duration must be greater than {MIN_SV_DURATION_S}s (the AVQI "
+            f"--sv_duration must be at least {MIN_SV_DURATION_S}s (the AVQI "
             "protocol analyzes only the last 3s of the sustained vowel)"
         )
 
