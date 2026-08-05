@@ -42,6 +42,19 @@ class Datasplitter(ContextAware):
             )
         return df
 
+    def _ensure_class_label(self, df):
+        """Guarantee df has a class_label backup of the original target values.
+
+        Several upstream code paths (e.g. continuous-classification binning in
+        dataset.py) already set class_label to a more informative value before
+        this point; we only fill it in when missing so we never clobber that.
+        Must run before any label_encoder.transform()/fit_transform() call so
+        the pre-encoding labels are always recoverable downstream.
+        """
+        if df is not None and not df.empty and self.target in df.columns:
+            if "class_label" not in df.columns:
+                df["class_label"] = df[self.target]
+
     def _encode_labels_safe(self, df, split_name):
         """Encode labels in df using the fitted label encoder.
 
@@ -160,6 +173,14 @@ class Datasplitter(ContextAware):
             )
             self.util.error(msg)
 
+        # Always back up the pre-encoding labels before anything below reads
+        # or transforms self.target, so class_label is reliably present
+        # regardless of which upstream code path produced these splits.
+        self._ensure_class_label(self.df_train)
+        self._ensure_class_label(self.df_test)
+        if self.split3:
+            self._ensure_class_label(self.df_dev)
+
         # encode the labels
         if self.util.exp_is_classification():
             datatype = self.util.config_val("DATA", "type", "dummy")
@@ -177,9 +198,16 @@ class Datasplitter(ContextAware):
                         test_cats = self.df_test[self.target].value_counts().to_string()
                     else:
                         # if there is no target, copy a dummy label
+                        # .astype() returns a new DataFrame, which drops the
+                        # ad-hoc is_labeled attribute set on the original -
+                        # preserve it explicitly to avoid an AttributeError
+                        # the next time self.df_test.is_labeled is read.
+                        is_labeled = self.df_test.is_labeled
                         self.df_test = self._add_random_target(self.df_test).astype(
                             "str"
                         )
+                        self.df_test.is_labeled = is_labeled
+                        self._ensure_class_label(self.df_test)
                 if not self.df_train.empty:
                     train_cats = self.df_train[self.target].value_counts().to_string()
                 if self.split3 and not self.df_dev.empty:
