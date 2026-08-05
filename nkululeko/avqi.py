@@ -336,8 +336,11 @@ def run_interactive(args, util):
     """
     import audiofile
 
-    outdir = args.outdir or tempfile.mkdtemp(prefix="nkululeko_avqi_")
-    os.makedirs(outdir, exist_ok=True)
+    needs_recording = args.sv is None or args.cs is None
+    outdir = None
+    if needs_recording:
+        outdir = args.outdir or tempfile.mkdtemp(prefix="nkululeko_avqi_")
+        os.makedirs(outdir, exist_ok=True)
 
     sv_path = args.sv
     if sv_path is None:
