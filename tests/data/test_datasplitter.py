@@ -366,6 +366,10 @@ class TestClassLabelBackup:
         # `if not self.df_test.empty:` guard) while still lacking "emotion".
         fake_ds.df_test = _tag_df(pd.DataFrame({"speaker": ["spk1"]}, index=idx))
         ds, errors = _make_ds({"db": fake_ds})
+        # _add_random_target() draws from glob_conf.labels via secrets.choice();
+        # constrain it to exactly the training labels so the draw can never
+        # produce an "unseen label" error and make this test flaky.
+        glob_conf.labels = ["happy", "sad"]
 
         df_train, df_test = ds.fill_train_and_tests()
 

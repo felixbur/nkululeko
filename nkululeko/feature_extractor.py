@@ -40,6 +40,12 @@ class FeatureExtractor(ContextAware):
         self.feats_designation = feats_designation
 
     def extract(self):
+        """Extract and column-wise concatenate features for every configured feats_type.
+
+        Returns:
+            pandas.DataFrame: features for all samples in ``data_df``, indexed the
+            same way, with one block of columns per feats_type in ``feats_types``.
+        """
         self.feats = pd.DataFrame()
         for feats_type in self.feats_types:
             store_name = f"{self.data_name}_{feats_type}"
@@ -50,6 +56,24 @@ class FeatureExtractor(ContextAware):
         return self.feats
 
     def extract_sample(self, signal, sr):
+        """Extract features for a single in-memory audio sample.
+
+        Delegates to the underlying feature extractor selected by ``extract()``
+        (``self.feat_extractor``), so ``extract()`` must be called at least once
+        before this method is used. If ``feats_types`` has more than one
+        entry, ``self.feat_extractor`` is whichever extractor ran last in
+        ``extract()``'s loop, so only that one feats_type's features are
+        returned here - unlike ``extract()`` itself, which concatenates all
+        of them.
+
+        Args:
+            signal (numpy.ndarray): Audio signal as a numpy array.
+            sr (int): Sample rate of the audio signal.
+
+        Returns:
+            numpy.ndarray: Extracted features for the sample, from the last
+            feats_type processed by ``extract()``.
+        """
         return self.feat_extractor.extract_sample(signal, sr)
 
     def _get_feat_extractor(self, store_name, feats_type):
