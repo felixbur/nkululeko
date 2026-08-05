@@ -204,7 +204,11 @@ class Experiment:
             self.df_test.got_gender = self.got_gender
             self.df_test.got_speaker = self.got_speaker
             if encode:
-                self.df_test["class_label"] = self.df_test[self.target]
+                # Only back up if not already set: continuous-classification
+                # binning (dataset.py) may have already produced a more
+                # informative string class_label that must not be clobbered.
+                if "class_label" not in self.df_test.columns:
+                    self.df_test["class_label"] = self.df_test[self.target]
                 try:
                     self.df_test[self.target] = self.label_encoder.transform(
                         self.df_test[self.target]

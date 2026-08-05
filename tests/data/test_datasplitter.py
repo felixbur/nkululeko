@@ -204,70 +204,68 @@ class TestBuildTestDsDf:
         assert len(ds.test_ds_df["db_b"]) == 1
 
 
+class _FakeDataset:
+    """Minimal dataset stub with pre-built splits."""
+
+    is_labeled = True
+    got_gender = False
+    got_age = False
+    got_speaker = False
+    name = "fake_db"
+
+    def __init__(self, train_labels, test_labels, dev_labels=None):
+        idx_tr = _make_segmented_index(
+            [f"/data/tr_{i}.wav" for i in range(len(train_labels))]
+        )
+        idx_te = _make_segmented_index(
+            [f"/data/te_{i}.wav" for i in range(len(test_labels))]
+        )
+        self.df_train = _tag_df(pd.DataFrame({"emotion": train_labels}, index=idx_tr))
+        self.df_test = _tag_df(pd.DataFrame({"emotion": test_labels}, index=idx_te))
+        self.df_train.is_labeled = True
+        self.df_test.is_labeled = True
+        if dev_labels is not None:
+            idx_dev = _make_segmented_index(
+                [f"/data/dev_{i}.wav" for i in range(len(dev_labels))]
+            )
+            self.df_dev = _tag_df(pd.DataFrame({"emotion": dev_labels}, index=idx_dev))
+            self.df_dev.is_labeled = True
+
+    def split(self):
+        pass
+
+    def split_3(self):
+        pass
+
+    def prepare_labels(self):
+        pass
+
+
+def _make_ds(datasets, split3=False):
+    """Build a Datasplitter with real Util whose error() is captured."""
+    from nkululeko.utils.util import Util
+
+    ds = Datasplitter.__new__(Datasplitter)
+    ds.util = Util("datasplitter")
+    errors = []
+    ds.util.error = lambda m: errors.append(m)
+    ds.target = "emotion"
+    ds.split3 = split3
+    ds.got_speaker = False
+    ds.datasets = datasets
+    return ds, errors
+
+
 class TestLabelEncoderUnseenLabels:
     """Verify fill_train_and_tests surfaces helpful errors for unseen labels."""
 
-    class _FakeDataset:
-        """Minimal dataset stub with pre-built splits."""
-
-        is_labeled = True
-        got_gender = False
-        got_age = False
-        got_speaker = False
-        name = "fake_db"
-
-        def __init__(self, train_labels, test_labels, dev_labels=None):
-            idx_tr = _make_segmented_index(
-                [f"/data/tr_{i}.wav" for i in range(len(train_labels))]
-            )
-            idx_te = _make_segmented_index(
-                [f"/data/te_{i}.wav" for i in range(len(test_labels))]
-            )
-            self.df_train = _tag_df(
-                pd.DataFrame({"emotion": train_labels}, index=idx_tr)
-            )
-            self.df_test = _tag_df(pd.DataFrame({"emotion": test_labels}, index=idx_te))
-            self.df_train.is_labeled = True
-            self.df_test.is_labeled = True
-            if dev_labels is not None:
-                idx_dev = _make_segmented_index(
-                    [f"/data/dev_{i}.wav" for i in range(len(dev_labels))]
-                )
-                self.df_dev = _tag_df(
-                    pd.DataFrame({"emotion": dev_labels}, index=idx_dev)
-                )
-                self.df_dev.is_labeled = True
-
-        def split(self):
-            pass
-
-        def split_3(self):
-            pass
-
-        def prepare_labels(self):
-            pass
-
-    def _make_ds(self, datasets, split3=False):
-        """Build a Datasplitter with real Util whose error() is captured."""
-        from nkululeko.utils.util import Util
-
-        ds = Datasplitter.__new__(Datasplitter)
-        ds.util = Util("datasplitter")
-        errors = []
-        ds.util.error = lambda m: errors.append(m)
-        ds.target = "emotion"
-        ds.split3 = split3
-        ds.got_speaker = False
-        ds.datasets = datasets
-        return ds, errors
-
     def test_unseen_test_labels_calls_util_error(self):
         """fill_train_and_tests should report labels in test split not seen in training."""
-        fake_ds = self._FakeDataset(
+        fake_ds = _FakeDataset(
             train_labels=["happy", "sad"],
             test_labels=["angry"],
         )
-        ds, errors = self._make_ds({"db": fake_ds})
+        ds, errors = _make_ds({"db": fake_ds})
 
         ds.fill_train_and_tests()
 
@@ -277,12 +275,12 @@ class TestLabelEncoderUnseenLabels:
 
     def test_unseen_dev_labels_calls_util_error(self):
         """fill_train_and_tests should report unseen dev-split labels when split3=True."""
-        fake_ds = self._FakeDataset(
+        fake_ds = _FakeDataset(
             train_labels=["happy", "sad"],
             test_labels=["happy"],  # no unseen in test
             dev_labels=["angry"],  # unseen in dev
         )
-        ds, errors = self._make_ds({"db": fake_ds}, split3=True)
+        ds, errors = _make_ds({"db": fake_ds}, split3=True)
 
         ds.fill_train_and_tests()
 
@@ -292,17 +290,91 @@ class TestLabelEncoderUnseenLabels:
 
     def test_unseen_test_labels_with_nan_does_not_crash(self):
         """A partially-labeled test split (containing NaN) must not raise TypeError."""
-        fake_ds = self._FakeDataset(
+        fake_ds = _FakeDataset(
             train_labels=["happy", "sad"],
             test_labels=["angry", float("nan")],
         )
-        ds, errors = self._make_ds({"db": fake_ds})
+        ds, errors = _make_ds({"db": fake_ds})
 
         ds.fill_train_and_tests()
 
         assert len(errors) == 1
         assert "angry" in errors[0]
         assert "nan" not in errors[0]
+
+
+class TestClassLabelBackup:
+    """Regression tests for issue #46: class_label must be consistently created."""
+
+    def test_class_label_backed_up_even_when_prepare_labels_skips_it(self):
+        """Some code paths (e.g. a dataset whose prepare_labels() doesn't create
+        class_label, as this fake dataset's no-op does) must still end up
+        with class_label present after fill_train_and_tests(), so the
+        original string labels remain recoverable after LabelEncoder
+        transforms self.target in place.
+        """
+        fake_ds = _FakeDataset(
+            train_labels=["happy", "sad", "happy"],
+            test_labels=["happy", "sad"],
+        )
+        ds, errors = _make_ds({"db": fake_ds})
+
+        df_train, df_test = ds.fill_train_and_tests()
+
+        assert errors == []
+        assert "class_label" in df_train.columns
+        assert "class_label" in df_test.columns
+        assert list(df_train["class_label"]) == ["happy", "sad", "happy"]
+        assert list(df_test["class_label"]) == ["happy", "sad"]
+        # target column itself should now be integer-encoded, not the string
+        assert df_train["emotion"].dtype.kind in "iu"
+
+    def test_class_label_backed_up_for_dev_split(self):
+        """The dev split must also get class_label."""
+        fake_ds = _FakeDataset(
+            train_labels=["happy", "sad"],
+            test_labels=["happy"],
+            dev_labels=["sad", "happy"],
+        )
+        ds, errors = _make_ds({"db": fake_ds}, split3=True)
+
+        df_train, df_test, df_dev = ds.fill_train_and_tests()
+
+        assert errors == []
+        assert "class_label" in df_dev.columns
+        assert list(df_dev["class_label"]) == ["sad", "happy"]
+
+    def test_unlabeled_test_split_gets_dummy_class_label_without_crashing(self):
+        """An unlabeled test split (is_labeled=False) is filled with a random
+        placeholder target via _add_random_target(); the reassignment goes
+        through .astype("str"), which returns a new DataFrame and therefore
+        drops the ad-hoc is_labeled attribute unless explicitly preserved.
+        This must not raise AttributeError, and the resulting placeholder
+        target should still be backed up into class_label.
+        """
+        fake_ds = _FakeDataset(
+            train_labels=["happy", "sad"],
+            test_labels=["happy"],
+        )
+        # A genuinely unlabeled test split: no "emotion" column, and the
+        # is_labeled flag (read off the dataset object during aggregation,
+        # not off df_test) must be False so the dummy-target branch is taken.
+        fake_ds.is_labeled = False
+        idx = _make_segmented_index(["/data/te_unlabeled_0.wav"])
+        # Needs a non-target column so the DataFrame isn't considered
+        # pandas-empty (which would skip the branch entirely via the
+        # `if not self.df_test.empty:` guard) while still lacking "emotion".
+        fake_ds.df_test = _tag_df(pd.DataFrame({"speaker": ["spk1"]}, index=idx))
+        ds, errors = _make_ds({"db": fake_ds})
+        # _add_random_target() draws from glob_conf.labels via secrets.choice();
+        # constrain it to exactly the training labels so the draw can never
+        # produce an "unseen label" error and make this test flaky.
+        glob_conf.labels = ["happy", "sad"]
+
+        df_train, df_test = ds.fill_train_and_tests()
+
+        assert errors == []
+        assert "class_label" in df_test.columns
 
 
 class TestFillTrainAndTestsConcatenation:

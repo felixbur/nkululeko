@@ -115,6 +115,26 @@ Please check that your issue complies with the following rules before submitting
 	print("nkululeko", nkululeko.__version__)
 	```
 
+Internal data conventions
+--------------------------
+
+-	`class_label`: whenever a dataset is labeled, the `class_label` column holds a
+	backup of the target column's values *before* any integer/label encoding
+	(and, for binned continuous targets, the human-readable bin name; for an
+	unlabeled test split filled with a placeholder target, the placeholder
+	value). For any split (`df_train`/`df_test`/`df_dev`) that is non-empty
+	and has the target column, it is guaranteed to be present by the time
+	`Datasplitter.fill_train_and_tests()` returns (see
+	`Datasplitter._ensure_class_label` in `nkululeko/data/datasplitter.py`),
+	which is the single place responsible for creating it if no earlier step
+	(e.g. `Dataset.load()`, `Dataset.map_labels()`) already did. Code reading
+	`class_label` outside that guarantee (e.g. before `fill_train_and_tests()`
+	has run) must still guard with `"class_label" in df.columns`. If you add a
+	new code path that produces or mutates one of these split DataFrames
+	before encoding, make sure `class_label` is preserved or backfilled -
+	never overwrite it unconditionally, since an earlier step may have already
+	populated it with a more informative value (e.g. binned class names).
+
 Note
 ----
 

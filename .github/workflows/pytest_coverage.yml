@@ -29,6 +29,7 @@ jobs:
         run: |
           uv venv
           source .venv/bin/activate
+          uv pip install torch torchaudio torchvision --index-url https://download.pytorch.org/whl/cpu
           uv pip install -e .
           uv pip install -r requirements-test.txt pytest-cov
 

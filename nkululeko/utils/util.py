@@ -84,6 +84,13 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         # self.logged_configs = set()
 
     def setup_logging(self):
+        """Configure and attach this Util instance's logger.
+
+        Ensures a console handler is present, and additionally attaches a
+        file handler under the experiment's ``EXP.root``/``EXP.name`` log
+        directory if a config is set. Safe to call multiple times: existing
+        handlers are reused rather than duplicated.
+        """
         logger = logging.getLogger(__name__)
         # Always set DEBUG so messages reach all handlers regardless of whether
         # an ancestor logger (e.g. root logger in notebooks) already has handlers.
@@ -245,6 +252,12 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
             return default
 
     def set_config(self, config):
+        """Replace the active experiment configuration.
+
+        Args:
+            config: A ``configparser.ConfigParser`` (or compatible mapping) to
+                use for subsequent ``config_val*`` lookups.
+        """
         self.config = config
         self.context.config = config
         # self.logged_configs.clear()
@@ -262,18 +275,40 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         return dir_name
 
     def get_res_dir(self):
+        """Get the experiment's results directory, creating it if necessary.
+
+        Returns:
+            str: Path to ``<exp_dir>/results/``, ending with a slash.
+        """
         home_dir = self.get_exp_dir()
         dir_name = f"{home_dir}/results/"
         audeer.mkdir(dir_name)
         return dir_name
 
     def exp_is_classification(self):
+        """Check whether the current experiment is a classification task.
+
+        Reads ``EXP.type`` from the config, defaulting to ``"classification"``.
+
+        Returns:
+            bool: True if ``EXP.type`` is ``"classification"``, False otherwise
+            (e.g. ``"regression"``).
+        """
         type = self.config_val("EXP", "type", "classification")
         if type == "classification":
             return True
         return False
 
     def error(self, message):
+        """Log *message* at ERROR level and raise NkululukoError.
+
+        Args:
+            message: The error message to log and raise.
+
+        Raises:
+            NkululukoError: Always raised, with ``message`` prefixed by the
+                caller name (``self.caller``).
+        """
         full_msg = f"ERROR: {self.caller}: {message}"
         if self.logger is not None:
             self.logger.error(full_msg)
@@ -282,12 +317,22 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         raise NkululukoError(full_msg)
 
     def warn(self, message):
+        """Log *message* at WARNING level, prefixed by the caller name.
+
+        Args:
+            message: The warning message to log.
+        """
         if self.logger is not None:
             self.logger.warning(f"WARNING: {self.caller}: {message}")
         else:
             print(f"WARNING: {message}", flush=True)
 
     def debug(self, message):
+        """Log *message* at DEBUG level, prefixed by the caller name.
+
+        Args:
+            message: The debug message to log.
+        """
         if self.logger is not None:
             self.logger.debug(f"DEBUG: {self.caller}: {message}")
         else:
@@ -349,6 +394,13 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
             return df.fillna(0)
 
     def set_config_val(self, section, key, value):
+        """Set a value in the experiment configuration, creating the section if needed.
+
+        Args:
+            section: INI section name (e.g. ``"MODEL"``, ``"FEATS"``).
+            key: Key within the section.
+            value: Value to store; converted to ``str`` before writing.
+        """
         try:
             # does the section already exists?
             self.config[section][key] = str(value)
@@ -357,6 +409,15 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
             self.config[section][key] = str(value)
 
     def exists_config_val(self, section, key):
+        """Check whether a key is present in the experiment configuration.
+
+        Args:
+            section: INI section name (e.g. ``"MODEL"``, ``"FEATS"``).
+            key: Key within the section.
+
+        Returns:
+            bool: True if the section and key both exist, False otherwise.
+        """
         try:
             _ = self.config[section][key]
             return True
@@ -369,6 +430,20 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         return (p.parent.parent.name, p.parent.name, p.name)
 
     def filter_filepath(self, df_source, df_target):
+        """Restrict df_target to rows whose file path also occurs in df_source.
+
+        Matching is done on ``(grandparent dir name, parent dir name, file name)``
+        of each row's first index level, via :meth:`extract_parent_and_name`,
+        rather than on the full path.
+
+        Args:
+            df_source: DataFrame whose first index level provides the file
+                paths to keep.
+            df_target: DataFrame to filter.
+
+        Returns:
+            DataFrame: the subset of df_target whose paths match df_source.
+        """
         df_source_keys = {
            self.extract_parent_and_name(path)
             for path in df_source.index.get_level_values(0)
@@ -387,6 +462,20 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         print(df.head(1))
 
     def config_val(self, section, key, default):
+        """Get a value from the experiment config with a fallback default.
+
+        The most-used lookup method in the codebase; other ``config_val_*``
+        helpers build on it to add type coercion or list/dataset semantics.
+
+        Args:
+            section: INI section name (e.g. ``"MODEL"``, ``"FEATS"``).
+            key: Key within the section.
+            default: Value to return if the section/key is not present, or if
+                no config has been loaded at all.
+
+        Returns:
+            The config value as a string, or ``default`` if not set.
+        """
         if self.config is None:
             return default
         try:
@@ -398,7 +487,16 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
 
     @classmethod
     def reset_logged_configs(cls):
-        cls.logged_configs.clear()
+        """Clear the set of already-logged default-value warnings.
+
+        Intended to let a fresh experiment run re-log "using default" debug
+        messages that a previous run in the same process already logged.
+
+        No-op if ``logged_configs`` was never initialized (the corresponding
+        ``self.logged_configs = set()`` in ``__init__`` is commented out).
+        """
+        if hasattr(cls, "logged_configs"):
+            cls.logged_configs.clear()
 
     def config_val_bool(self, section, key, default=False):
         """Get a boolean configuration value safely without using eval().
@@ -415,6 +513,19 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         return str(val).strip().lower() in ("true", "1", "yes")
 
     def config_val_list(self, section, key, default):
+        """Get a config value parsed as a Python literal (e.g. a list or tuple).
+
+        The stored string is evaluated with ``ast.literal_eval``, so it must
+        be a valid Python literal (e.g. ``"['os', 'praat']"``).
+
+        Args:
+            section: INI section name (e.g. ``"MODEL"``, ``"FEATS"``).
+            key: Key within the section.
+            default: Value to return if the key is not present.
+
+        Returns:
+            The parsed Python object, or ``default`` if not set.
+        """
         try:
             return ast.literal_eval(self.config[section][key])
         except KeyError:
@@ -423,6 +534,16 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
             return default
 
     def print_best_results(self, best_reports):
+        """Summarize and write the best result of each run to a text file.
+
+        Computes the mean, std, and best (max or min, depending on
+        :meth:`high_is_good`) test score across ``best_reports``, writes the
+        summary to ``<res_dir>/<exp_name>_runs.txt``, and logs it via debug.
+
+        Args:
+            best_reports: Iterable of report objects, each exposing
+                ``report.result.test`` as the test-set score for that run.
+        """
         res_dir = self.get_res_dir()
         all = ""
         vals = np.empty(0)
@@ -468,6 +589,20 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
                 f.write(content + "\n")
 
     def check_class_label(self, df):
+        """Restore the original target column name from a class_label backup.
+
+        If df has a ``class_label`` column (the pre-encoding backup of the
+        target values, see CONTRIBUTING.md) and a target is configured, the
+        current (possibly integer-encoded) target column is dropped and
+        ``class_label`` is renamed back to the target name.
+
+        Args:
+            df: DataFrame to check, potentially containing a class_label column.
+
+        Returns:
+            DataFrame: df unchanged, or with class_label renamed to the target
+            column name.
+        """
         target = self.config_val("DATA", "target", None)
         if "class_label" in df.columns and target is not None:
             df = df.drop(columns=[target])
