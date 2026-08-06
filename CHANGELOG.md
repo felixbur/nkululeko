@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.8.0 (26-08-06)
+------------------------
+* added avqi
+
 Version 1.7.17 (26-08-05)
 -------------------------
 * fixed bugs and added docstring documentation
