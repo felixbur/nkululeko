@@ -168,6 +168,7 @@ All of them take *--config <my_config.ini>* as an argument.
 * **nkululeko.resample**: check on all [sampling rates and change](http://blog.syntheticspeech.de/2023/08/31/how-to-fix-different-sampling-rates-in-a-dataset-with-nkululeko/) to 16kHz
 * **nkululeko.optim**: do [meta parameter optimization](https://nkululeko.readthedocs.io/latest/optim.html) (e.g. grid search for SVM C and gamma)
 * **nkululeko.flags**: a convenient module to conduct multiple experiments with different configuration parameters on the command line.
+* **nkululeko.avqi**: compute the Acoustic Voice Quality Index (AVQI v3.01, Barsties & Maryn 2015) and its six sub-measures from a sustained vowel and a continuous speech recording, recording both interactively via the microphone if not supplied as files.
 
 ## <a name="helloworld">Hello World example</a>
 * NEW: [Here's a Google colab that runs this example out-of-the-box](https://colab.research.google.com/drive/1Up7t5Nn7VwDPCCEpTg2U7cpZ_PdoEgj-?usp=sharing), and here is the same [with Kaggle](https://www.kaggle.com/felixburk/nkululeko-hello-world-example)
