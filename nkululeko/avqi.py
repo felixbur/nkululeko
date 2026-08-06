@@ -21,6 +21,7 @@ import tempfile
 import pandas as pd
 
 from nkululeko.constants import VERSION
+from nkululeko.utils.files import safe_path
 from nkululeko.utils.util import Util
 
 # Part 0-2 of the original AVQI v3.01 Praat script (Maryn, Corthals,
@@ -332,10 +333,12 @@ def _record_clip(seconds, sr, prompt, util, no_playback=False):
 def _validate_output_path(path, arg_name, util, is_dir):
     """Validate a user-supplied --outdir/--outfile path before it is used.
 
-    Rejects embedded null bytes (which would truncate the path at the OS
-    level) and requires that the resolved path's parent directory already
-    exists, so a faulty or crafted argument cannot make this code create or
-    write through an arbitrary, unintended directory chain. Also rejects a
+    Resolution and traversal-safety go through ``safe_path``, the sanitizer
+    already registered with SonarCloud (``sonar.python.security.sanitizers``)
+    for this same taint rule elsewhere in the project (see
+    ``nkululeko.utils.files.safe_path``, used by ``bundle.py``/``infer.py``).
+    On top of that, this also rejects embedded null bytes, requires the
+    resolved path's parent directory to already exist, and rejects a
     pre-existing filesystem entry of the wrong kind (e.g. --outdir pointing
     at a regular file, or --outfile pointing at a directory), which would
     otherwise crash later with a raw OSError; overwriting an existing file
@@ -353,7 +356,10 @@ def _validate_output_path(path, arg_name, util, is_dir):
     """
     if "\x00" in path:
         util.error(f"{arg_name} contains an invalid null byte: {path!r}")
-    resolved = os.path.realpath(path)
+    try:
+        resolved = safe_path(path)
+    except ValueError as e:
+        util.error(f"{arg_name}: {e}")
     parent = os.path.dirname(resolved)
     if not os.path.isdir(parent):
         util.error(
