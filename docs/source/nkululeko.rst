@@ -36,6 +36,14 @@ nkululeko.augment module
    :undoc-members:
    :show-inheritance:
 
+nkululeko.avqi module
+---------------------
+
+.. automodule:: nkululeko.avqi
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 nkululeko.cacheddataset module
 ------------------------------
 

@@ -82,6 +82,7 @@ There is also `a deepwiki available <https://deepwiki.com/felixbur/nkululeko>`__
    multidb.md
    ensemble.md
    flags.md
+   avqi.md
 
 
 .. toctree::
