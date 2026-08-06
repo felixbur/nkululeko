@@ -329,6 +329,34 @@ def _record_clip(seconds, sr, prompt, util, no_playback=False):
         print("Re-recording...")
 
 
+def _validate_output_path(path, arg_name, util):
+    """Validate a user-supplied --outdir/--outfile path before it is used.
+
+    Rejects embedded null bytes (which would truncate the path at the OS
+    level) and requires that the resolved path's parent directory already
+    exists, so a faulty or crafted argument cannot make this code create or
+    write through an arbitrary, unintended directory chain.
+
+    Args:
+        path: the raw path supplied via the CLI.
+        arg_name: the CLI flag it was passed via (for error messages).
+        util: Util instance used to raise on failure.
+
+    Returns:
+        The resolved (canonical, absolute) path.
+    """
+    if "\x00" in path:
+        util.error(f"{arg_name} contains an invalid null byte: {path!r}")
+    resolved = os.path.realpath(path)
+    parent = os.path.dirname(resolved)
+    if not os.path.isdir(parent):
+        util.error(
+            f"{arg_name} parent directory does not exist: {parent} "
+            f"(resolved from {path!r})"
+        )
+    return resolved
+
+
 def run_interactive(args, util):
     """Obtain the SV and CS recordings (recording interactively as needed).
 
@@ -345,6 +373,8 @@ def run_interactive(args, util):
     outdir = None
     if needs_recording:
         outdir = args.outdir or tempfile.mkdtemp(prefix="nkululeko_avqi_")
+        if args.outdir:
+            outdir = _validate_output_path(outdir, "--outdir", util)
         os.makedirs(outdir, exist_ok=True)
 
     sv_path = args.sv
@@ -477,6 +507,8 @@ def main():
         _check_input_file(args.sv, "--sv", util)
     if args.cs is not None:
         _check_input_file(args.cs, "--cs", util)
+    if args.outfile is not None:
+        args.outfile = _validate_output_path(args.outfile, "--outfile", util)
 
     if args.sv is None and args.sv_duration < MIN_SV_DURATION_S:
         util.error(
