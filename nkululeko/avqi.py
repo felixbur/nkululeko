@@ -329,18 +329,24 @@ def _record_clip(seconds, sr, prompt, util, no_playback=False):
         print("Re-recording...")
 
 
-def _validate_output_path(path, arg_name, util):
+def _validate_output_path(path, arg_name, util, is_dir):
     """Validate a user-supplied --outdir/--outfile path before it is used.
 
     Rejects embedded null bytes (which would truncate the path at the OS
     level) and requires that the resolved path's parent directory already
     exists, so a faulty or crafted argument cannot make this code create or
-    write through an arbitrary, unintended directory chain.
+    write through an arbitrary, unintended directory chain. Also rejects a
+    pre-existing filesystem entry of the wrong kind (e.g. --outdir pointing
+    at a regular file, or --outfile pointing at a directory), which would
+    otherwise crash later with a raw OSError; overwriting an existing file
+    at --outfile is fine and left to pandas.
 
     Args:
         path: the raw path supplied via the CLI.
         arg_name: the CLI flag it was passed via (for error messages).
         util: Util instance used to raise on failure.
+        is_dir: True if this path is meant to be a directory (--outdir),
+            False if it is meant to be a file (--outfile).
 
     Returns:
         The resolved (canonical, absolute) path.
@@ -354,6 +360,9 @@ def _validate_output_path(path, arg_name, util):
             f"{arg_name} parent directory does not exist: {parent} "
             f"(resolved from {path!r})"
         )
+    if os.path.exists(resolved) and os.path.isdir(resolved) != is_dir:
+        kind = "a directory" if is_dir else "a file"
+        util.error(f"{arg_name} already exists and is not {kind}: {resolved}")
     return resolved
 
 
@@ -374,7 +383,7 @@ def run_interactive(args, util):
     if needs_recording:
         outdir = args.outdir or tempfile.mkdtemp(prefix="nkululeko_avqi_")
         if args.outdir:
-            outdir = _validate_output_path(outdir, "--outdir", util)
+            outdir = _validate_output_path(outdir, "--outdir", util, is_dir=True)
         os.makedirs(outdir, exist_ok=True)
 
     sv_path = args.sv
@@ -508,7 +517,7 @@ def main():
     if args.cs is not None:
         _check_input_file(args.cs, "--cs", util)
     if args.outfile is not None:
-        args.outfile = _validate_output_path(args.outfile, "--outfile", util)
+        args.outfile = _validate_output_path(args.outfile, "--outfile", util, is_dir=False)
 
     if args.sv is None and args.sv_duration < MIN_SV_DURATION_S:
         util.error(
