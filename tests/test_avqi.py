@@ -15,9 +15,16 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
+import soundfile as sf
 
 from nkululeko import avqi as avqi_mod
 from nkululeko.utils.errors import NkululukoError
+
+
+def _write_wav(path, sr=44100, samples=100):
+    """Write a tiny valid WAV file for tests that need a real file on disk
+    (--sv/--cs validation opens the file to read its sampling rate)."""
+    sf.write(str(path), np.zeros(samples, dtype="float32"), sr)
 
 
 # ---------------------------------------------------------------------------
@@ -257,7 +264,7 @@ class TestRunInteractive:
 class TestMain:
     def test_rejects_short_sv_duration(self, tmp_path, monkeypatch):
         cs = tmp_path / "cs.wav"
-        cs.touch()
+        _write_wav(cs)
         monkeypatch.setattr(
             sys, "argv", ["avqi.py", "--sv_duration", "2.0", "--cs", str(cs)]
         )
@@ -267,7 +274,7 @@ class TestMain:
     def test_accepts_sv_duration_of_exactly_minimum(self, tmp_path, monkeypatch):
         """Boundary: exactly MIN_SV_DURATION_S must be accepted, not rejected."""
         cs = tmp_path / "cs.wav"
-        cs.touch()
+        _write_wav(cs)
         monkeypatch.setattr(
             sys,
             "argv",
@@ -304,7 +311,7 @@ class TestMain:
 
     def test_rejects_missing_cs_file(self, tmp_path, monkeypatch):
         sv = tmp_path / "sv.wav"
-        sv.touch()
+        _write_wav(sv)
         monkeypatch.setattr(
             sys,
             "argv",
@@ -313,11 +320,35 @@ class TestMain:
         with pytest.raises(NkululukoError, match="--cs file not found"):
             avqi_mod.main()
 
+    def test_rejects_low_sample_rate_sv_file(self, tmp_path, monkeypatch):
+        """A --sv file below the AVQI protocol's required sampling rate must
+        be rejected rather than silently producing an invalid AVQI."""
+        sv = tmp_path / "sv.wav"
+        cs = tmp_path / "cs.wav"
+        _write_wav(sv, sr=16000)
+        _write_wav(cs, sr=44100)
+        monkeypatch.setattr(
+            sys, "argv", ["avqi.py", "--sv", str(sv), "--cs", str(cs)]
+        )
+        with pytest.raises(NkululukoError, match="sampling rate"):
+            avqi_mod.main()
+
+    def test_rejects_low_sample_rate_cs_file(self, tmp_path, monkeypatch):
+        sv = tmp_path / "sv.wav"
+        cs = tmp_path / "cs.wav"
+        _write_wav(sv, sr=44100)
+        _write_wav(cs, sr=16000)
+        monkeypatch.setattr(
+            sys, "argv", ["avqi.py", "--sv", str(sv), "--cs", str(cs)]
+        )
+        with pytest.raises(NkululukoError, match="sampling rate"):
+            avqi_mod.main()
+
     def test_full_run_with_existing_files(self, tmp_path, monkeypatch):
         sv = tmp_path / "sv.wav"
         cs = tmp_path / "cs.wav"
-        sv.touch()
-        cs.touch()
+        _write_wav(sv)
+        _write_wav(cs)
         outfile = tmp_path / "result.csv"
 
         monkeypatch.setattr(

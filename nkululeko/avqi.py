@@ -20,7 +20,7 @@ import tempfile
 
 import pandas as pd
 
-from nkululeko.constants import SAMPLING_RATE, VERSION
+from nkululeko.constants import VERSION
 from nkululeko.utils.util import Util
 
 # Part 0-2 of the original AVQI v3.01 Praat script (Maryn, Corthals,
@@ -232,7 +232,12 @@ MIN_SV_DURATION_S = 3.0
 DEFAULT_SV_DURATION_S = 4.0
 # A phonetically balanced passage read aloud typically takes 15-25s.
 DEFAULT_CS_DURATION_S = 20.0
-SAMPLE_RATE = SAMPLING_RATE
+# The AVQI protocol (Barsties & Maryn, 2015) requires at least 44.1 kHz:
+# the LTAS slope/tilt measures analyze the spectrum up to 10 kHz, which
+# needs a Nyquist frequency >= 10 kHz. nkululeko's general-purpose default
+# of 16 kHz (nkululeko.constants.SAMPLING_RATE) is too low for this and is
+# deliberately not used here.
+SAMPLE_RATE = 44100
 
 SV_INSTRUCTIONS = (
     "\nSustained vowel recording:\n"
@@ -398,6 +403,32 @@ def _print_report(results):
         f"(rough guide, normal/dysphonic cutoff ~{AVQI_CUTOFF}; not diagnostic. "
         "See Barsties & Maryn, 2015: https://pubmed.ncbi.nlm.nih.gov/26951063/)"
     )
+    print("\nTHIS IS NOT A MEDICAL DEVICE, RESULTS ARE RESEARCH ONLY")
+
+
+def _check_input_file(path, arg_name, util):
+    """Validate a user-supplied --sv/--cs recording before use.
+
+    Checks that the file exists and that its sampling rate meets the AVQI
+    protocol's minimum (see SAMPLE_RATE); a lower rate would silently yield
+    an incorrect, non-protocol-compliant LTAS slope/tilt instead of an error.
+
+    Args:
+        path: path to the recording.
+        arg_name: the CLI flag it was passed via (for error messages).
+        util: Util instance used to raise on failure.
+    """
+    import audiofile
+
+    if not os.path.isfile(path):
+        util.error(f"{arg_name} file not found: {path}")
+    sr = audiofile.sampling_rate(path)
+    if sr < SAMPLE_RATE:
+        util.error(
+            f"{arg_name} file {path} has a sampling rate of {sr} Hz, below "
+            f"the {SAMPLE_RATE} Hz required by the AVQI protocol "
+            "(Barsties & Maryn, 2015); results would not be valid."
+        )
 
 
 def main():
@@ -442,10 +473,10 @@ def main():
 
     util = Util("avqi", has_config=False)
 
-    if args.sv is not None and not os.path.isfile(args.sv):
-        util.error(f"--sv file not found: {args.sv}")
-    if args.cs is not None and not os.path.isfile(args.cs):
-        util.error(f"--cs file not found: {args.cs}")
+    if args.sv is not None:
+        _check_input_file(args.sv, "--sv", util)
+    if args.cs is not None:
+        _check_input_file(args.cs, "--cs", util)
 
     if args.sv is None and args.sv_duration < MIN_SV_DURATION_S:
         util.error(
