@@ -330,46 +330,43 @@ def _record_clip(seconds, sr, prompt, util, no_playback=False):
         print("Re-recording...")
 
 
-def _validate_output_path(path, arg_name, util, is_dir):
-    """Validate a user-supplied --outdir/--outfile path before it is used.
-
-    Resolution and traversal-safety go through ``safe_path``, the sanitizer
-    already registered with SonarCloud (``sonar.python.security.sanitizers``)
-    for this same taint rule elsewhere in the project (see
-    ``nkululeko.utils.files.safe_path``, used by ``bundle.py``/``infer.py``).
-    On top of that, this also rejects embedded null bytes, requires the
-    resolved path's parent directory to already exist, and rejects a
-    pre-existing filesystem entry of the wrong kind (e.g. --outdir pointing
-    at a regular file, or --outfile pointing at a directory), which would
-    otherwise crash later with a raw OSError; overwriting an existing file
-    at --outfile is fine and left to pandas.
+def _reject_null_byte(path, arg_name, util):
+    """Reject an embedded null byte, which would truncate the path at the OS level.
 
     Args:
         path: the raw path supplied via the CLI.
         arg_name: the CLI flag it was passed via (for error messages).
         util: Util instance used to raise on failure.
-        is_dir: True if this path is meant to be a directory (--outdir),
-            False if it is meant to be a file (--outfile).
-
-    Returns:
-        The resolved (canonical, absolute) path.
     """
     if "\x00" in path:
         util.error(f"{arg_name} contains an invalid null byte: {path!r}")
-    try:
-        resolved = safe_path(path)
-    except ValueError as e:
-        util.error(f"{arg_name}: {e}")
+
+
+def _check_resolved_output_path(resolved, arg_name, util, is_dir):
+    """Validate an already-resolved --outdir/--outfile path.
+
+    Requires the resolved path's parent directory to already exist, so a
+    faulty argument cannot make this code create or write through an
+    arbitrary, unintended directory chain. Also rejects a pre-existing
+    filesystem entry of the wrong kind (e.g. --outdir pointing at a regular
+    file, or --outfile pointing at a directory), which would otherwise crash
+    later with a raw OSError; overwriting an existing file at --outfile is
+    fine and left to pandas.
+
+    Args:
+        resolved: the already-resolved (canonical, absolute) path, i.e. the
+            direct return value of ``safe_path``.
+        arg_name: the CLI flag it was passed via (for error messages).
+        util: Util instance used to raise on failure.
+        is_dir: True if this path is meant to be a directory (--outdir),
+            False if it is meant to be a file (--outfile).
+    """
     parent = os.path.dirname(resolved)
     if not os.path.isdir(parent):
-        util.error(
-            f"{arg_name} parent directory does not exist: {parent} "
-            f"(resolved from {path!r})"
-        )
+        util.error(f"{arg_name} parent directory does not exist: {parent}")
     if os.path.exists(resolved) and os.path.isdir(resolved) != is_dir:
         kind = "a directory" if is_dir else "a file"
         util.error(f"{arg_name} already exists and is not {kind}: {resolved}")
-    return resolved
 
 
 def run_interactive(args, util):
@@ -387,9 +384,12 @@ def run_interactive(args, util):
     needs_recording = args.sv is None or args.cs is None
     outdir = None
     if needs_recording:
-        outdir = args.outdir or tempfile.mkdtemp(prefix="nkululeko_avqi_")
         if args.outdir:
-            outdir = _validate_output_path(outdir, "--outdir", util, is_dir=True)
+            _reject_null_byte(args.outdir, "--outdir", util)
+            outdir = safe_path(args.outdir)
+            _check_resolved_output_path(outdir, "--outdir", util, is_dir=True)
+        else:
+            outdir = tempfile.mkdtemp(prefix="nkululeko_avqi_")
         os.makedirs(outdir, exist_ok=True)
 
     sv_path = args.sv
@@ -523,7 +523,9 @@ def main():
     if args.cs is not None:
         _check_input_file(args.cs, "--cs", util)
     if args.outfile is not None:
-        args.outfile = _validate_output_path(args.outfile, "--outfile", util, is_dir=False)
+        _reject_null_byte(args.outfile, "--outfile", util)
+        args.outfile = safe_path(args.outfile)
+        _check_resolved_output_path(args.outfile, "--outfile", util, is_dir=False)
 
     if args.sv is None and args.sv_duration < MIN_SV_DURATION_S:
         util.error(
