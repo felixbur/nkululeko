@@ -6,7 +6,9 @@ import types
 import pytest
 
 import nkululeko.glob_conf as glob_conf
+from nkululeko.experiment_context import ExperimentContext, get_context, use_context
 from nkululeko.runmanager import Runmanager
+from nkululeko.utils.util import Util
 
 
 @pytest.fixture(autouse=True)
@@ -104,6 +106,81 @@ class TestGetBestResult:
         reports = [_make_report(10.0), _make_report(0.5), _make_report(3.0)]
         best = runmanager.get_best_result(reports)
         assert best.result.test == pytest.approx(0.5)
+
+
+class TestLoadModelContextPropagation:
+    """Regression for the predict/reload path: when a pickled Runmanager
+    (built during training, holding `context_train`) is reactivated under a
+    fresh "live" ambient context (as `predict.py` sets up via a new
+    `Experiment(config)`), `load_model()` must make its own context ambient
+    for the whole call. Otherwise `EXP.run` gets updated on `context_train`
+    but any object constructed deeper (e.g. a model's `Util()` with no
+    explicit context) resolves `get_context()` to the stale, never-updated
+    live context and looks for the model files under `run_0/` even when a
+    later run (e.g. run 1) actually won.
+    """
+
+    def _make_context(self, run="0"):
+        config = configparser.ConfigParser()
+        config["EXP"] = {"run": run}
+        config["MODEL"] = {"type": "xgb"}
+        return ExperimentContext(config=config)
+
+    def test_load_model_makes_own_context_ambient_for_nested_construction(self):
+        context_train = self._make_context(run="0")
+        context_live = self._make_context(run="0")
+
+        runmgr = Runmanager.__new__(Runmanager)
+        runmgr.context = context_train
+        runmgr.util = Util("runmanager", context=context_train)
+
+        observed_run = {}
+
+        class _FakeModelrunner:
+            def _select_model(self, model_type):
+                # Stands in for e.g. MLP_Reg_model's constructor calling
+                # `Util("mlp_reg")` with no explicit context, which falls
+                # back to `get_context()`.
+                observed_run["run"] = get_context().config["EXP"]["run"]
+                return types.SimpleNamespace(load=lambda run, epoch: None)
+
+        runmgr.modelrunner = _FakeModelrunner()
+        report = types.SimpleNamespace(run=1, epoch=4)
+
+        # Mimic predict.py: a freshly built Experiment made `context_live`
+        # ambient, unrelated to the reloaded, training-time `context_train`.
+        # Scoped with `use_context` (the codebase's own idiom) so the ambient
+        # context is restored via its token even if load_model raises.
+        with use_context(context_live):
+            runmgr.load_model(report)
+
+        # load_model's set_config_val("EXP", "run", 1) must be visible to
+        # the nested _select_model call via the ambient context.
+        assert observed_run["run"] == "1"
+        # And it must not have leaked into the unrelated live context.
+        assert context_live.config["EXP"]["run"] == "0"
+
+    def test_load_model_restores_prior_ambient_context_afterwards(self):
+        context_train = self._make_context(run="0")
+        context_live = self._make_context(run="0")
+
+        runmgr = Runmanager.__new__(Runmanager)
+        runmgr.context = context_train
+        runmgr.util = Util("runmanager", context=context_train)
+        runmgr.modelrunner = types.SimpleNamespace(
+            _select_model=lambda model_type: types.SimpleNamespace(
+                load=lambda run, epoch: None
+            )
+        )
+
+        with use_context(context_live):
+            runmgr.load_model(types.SimpleNamespace(run=1, epoch=4))
+            # Ambient context after the call must be back to whatever it was
+            # before -- load_model must not leave context_train installed
+            # globally. Asserted inside the `with` so this checks the
+            # use_context scope load_model was invoked in, not some later,
+            # unrelated ambient state.
+            assert get_context() is context_live
 
 
 class TestRunmanagerInit:

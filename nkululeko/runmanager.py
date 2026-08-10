@@ -4,12 +4,17 @@ This module contains the Runmanager class which is responsible for managing the
 runs of the experiment.
 """
 
-from nkululeko.experiment_context import ContextAware, use_context
+from nkululeko.experiment_context import (
+    ContextAware,
+    bind_experiment_context,
+    use_context,
+)
 from nkululeko.modelrunner import Modelrunner
 from nkululeko.reporting.reporter import Reporter
 from nkululeko.utils.util import Util
 
 
+@bind_experiment_context
 class Runmanager(ContextAware):
     """Class to manage the runs of the experiment (e.g. when results differ caused by random initialization)."""
 
