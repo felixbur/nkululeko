@@ -2,6 +2,9 @@
 
 * To be specified in a .ini file, [config parser syntax](https://zetcode.com/python/configparser/)
 * Kind of all (well, most) values have defaults
+* For a machine-generated cross-check of every default value actually used in the
+  code (including candidate inconsistencies across call sites), see
+  [config_defaults_reference.md](config_defaults_reference.md).
 
 ## Contents
 

@@ -135,6 +135,15 @@ Internal data conventions
 	never overwrite it unconditionally, since an earlier step may have already
 	populated it with a more informative value (e.g. binned class names).
 
+-	Config defaults: every `config_val()`/`config_val_bool()`/`config_val_list()`/
+	`config_val_data()` call site's `(section, key, default)` is scanned by
+	`scripts/gen_defaults_table.py` into
+	[`docs/source/config_defaults_reference.md`](docs/source/config_defaults_reference.md),
+	which also flags keys whose default disagrees across call sites. CI runs
+	`python scripts/gen_defaults_table.py --check` and fails if that file is
+	stale, so after adding/changing a default, run
+	`python scripts/gen_defaults_table.py --write` and commit the result.
+
 Note
 ----
 

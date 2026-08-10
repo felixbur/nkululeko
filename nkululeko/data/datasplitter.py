@@ -50,6 +50,9 @@ class Datasplitter(ContextAware):
         this point; we only fill it in when missing so we never clobber that.
         Must run before any label_encoder.transform()/fit_transform() call so
         the pre-encoding labels are always recoverable downstream.
+
+        Mutates df in place (adding the column, when missing) and returns
+        None; do not use in an expression chain.
         """
         if df is not None and not df.empty and self.target in df.columns:
             if "class_label" not in df.columns:
@@ -193,7 +196,13 @@ class Datasplitter(ContextAware):
                     dev_cats = self.df_dev["class_label"].unique()
             else:
                 if not self.df_test.empty:
-                    if self.df_test.is_labeled:
+                    # is_labeled is an ad-hoc attribute (not a real pandas
+                    # column), set by earlier flag-aggregation/copy_flags
+                    # calls in this method; guard both reads with getattr
+                    # so a future code path that skips that setup fails
+                    # safe (treated as unlabeled) instead of raising
+                    # AttributeError.
+                    if getattr(self.df_test, "is_labeled", False):
                         # get printable string of categories and their counts
                         test_cats = self.df_test[self.target].value_counts().to_string()
                     else:
@@ -202,7 +211,7 @@ class Datasplitter(ContextAware):
                         # ad-hoc is_labeled attribute set on the original -
                         # preserve it explicitly to avoid an AttributeError
                         # the next time self.df_test.is_labeled is read.
-                        is_labeled = self.df_test.is_labeled
+                        is_labeled = getattr(self.df_test, "is_labeled", False)
                         self.df_test = self._add_random_target(self.df_test).astype(
                             "str"
                         )
