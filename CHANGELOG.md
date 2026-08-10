@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.8.3 (26-08-16)
+------------------------
+* fux bug: best model reload
+
 Version 1.8.2 (26-08-16)
 ------------------------
 * fix bug: pytorch save 
