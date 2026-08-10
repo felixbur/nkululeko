@@ -9,9 +9,14 @@ reloads a full HuggingFace/torch/speechbrain model from scratch on every
 single row instead of once -- a severe, silent performance regression with
 no error, just "loading ... model" logged (and the download/load repeated)
 for every prediction.
+
+`feats_snr.py`'s `SnrSet` had a variant of the same copy-paste: it called
+`self.init_model()` even though `SnrSet` (plain SNR estimation, no ML model)
+never defines `init_model` or a `model_initialized` flag at all -- so every
+call to `extract_sample()` raised `AttributeError`, not just a slow reload.
 """
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -19,6 +24,8 @@ from nkululeko.feat_extract.feats_ast import Ast
 from nkululeko.feat_extract.feats_bert import Bert
 from nkululeko.feat_extract.feats_hubert import Hubert
 from nkululeko.feat_extract.feats_mos import MosSet
+from nkululeko.feat_extract.feats_snr import SnrSet
+from nkululeko.feat_extract.feats_squim import SquimSet
 from nkululeko.feat_extract.feats_textclassifier import TextClassifier
 from nkululeko.feat_extract.feats_wav2vec2 import Wav2vec2
 from nkululeko.feat_extract.feats_wavlm import Wavlm
@@ -34,6 +41,7 @@ CASES = [
     (Bert, "model_initialized", ("text",), "get_embeddings"),
     (TextClassifier, "model_initialized", ("text",), "get_results"),
     (MosSet, "model_initialized", ("signal", "sr"), "get_embeddings"),
+    (SquimSet, "model_initialized", ("signal", "sr"), "get_embeddings"),
 ]
 
 
@@ -77,3 +85,15 @@ def test_extract_sample_only_initializes_model_once(
         f"{cls.__name__}.extract_sample() re-initialized the model on a "
         "repeat call instead of reusing the already-loaded one"
     )
+
+
+def test_snrset_extract_sample_does_not_call_init_model():
+    """SnrSet has no model at all -- extract_sample must not reference
+    init_model()/model_initialized, which don't exist on this class."""
+    instance = SnrSet.__new__(SnrSet)
+    instance.get_snr = MagicMock(return_value=12.5)
+
+    result = instance.extract_sample("signal", 16000)
+
+    assert result == 12.5
+    instance.get_snr.assert_called_once_with("signal", 16000)

@@ -73,6 +73,5 @@ class SnrSet(Featureset):
         return estimated_snr
 
     def extract_sample(self, signal, sr):
-        self.init_model()
         feats = self.get_snr(signal, sr)
         return feats
