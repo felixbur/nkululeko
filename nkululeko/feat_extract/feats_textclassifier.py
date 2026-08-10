@@ -112,6 +112,7 @@ class TextClassifier(Featureset):
         return result
 
     def extract_sample(self, text):
-        self.init_model()
+        if not self.model_initialized:
+            self.init_model()
         feats = self.get_results(text, "no file")
         return feats

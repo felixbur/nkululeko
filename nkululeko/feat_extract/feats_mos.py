@@ -95,6 +95,7 @@ class MosSet(Featureset):
         return float(mos[0].numpy())
 
     def extract_sample(self, signal, sr):
-        self.init_model()
+        if not self.model_initialized:
+            self.init_model()
         feats = self.get_embeddings(signal, sr, "no file")
         return feats
