@@ -880,8 +880,10 @@ class Experiment:
                 pickle.dump(state, f)
             os.replace(tmp_filename, filename)
         except BaseException:
-            if os.path.exists(tmp_filename):
+            try:
                 os.remove(tmp_filename)
+            except OSError:
+                pass
             raise
         save_checksum(filename)
 
