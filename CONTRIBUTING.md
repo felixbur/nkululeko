@@ -144,6 +144,30 @@ Internal data conventions
 	stale, so after adding/changing a default, run
 	`python scripts/gen_defaults_table.py --write` and commit the result.
 
+Path handling / SonarCloud conventions
+---------------------------------------
+
+-	Any CLI argument or other externally-supplied value that becomes a
+	filesystem path (e.g. an `--outdir`/`--outfile`-style `argparse` option)
+	must be resolved through `safe_path()` in `nkululeko/utils/files.py`
+	**called directly, immediately before the value is used** at the
+	filesystem call (`os.makedirs`, `open`, `to_csv`, etc.) — not wrapped
+	inside another function, even a small validation helper that just
+	forwards to `safe_path()` and returns its result. SonarCloud's Python
+	taint analyzer (`pythonsecurity:S8707` and related path-injection rules)
+	only credits `safe_path()` as clearing the taint when it sits with no
+	custom function boundary between it and the sink; when a wrapper
+	function stands in between, the analyzer keeps flagging the sink as
+	unvalidated even though the path genuinely is validated. This was
+	confirmed empirically while fixing `nkululeko/avqi.py`: routing
+	`--outdir`/`--outfile` through a `_validate_output_path()` helper that
+	called `safe_path()` internally left the SonarCloud finding open across
+	two rescans; inlining `safe_path()` directly at each sink (matching the
+	existing pattern in `bundle.py`/`infer.py`) closed it. Any additional
+	checks (parent-must-exist, existing-entry-kind, etc.) should be done via
+	side-effecting calls that take the *already-resolved* path and don't
+	produce a new value used to reassign the sink variable.
+
 Note
 ----
 
