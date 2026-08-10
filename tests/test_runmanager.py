@@ -6,7 +6,7 @@ import types
 import pytest
 
 import nkululeko.glob_conf as glob_conf
-from nkululeko.experiment_context import ExperimentContext, get_context, set_context
+from nkululeko.experiment_context import ExperimentContext, get_context, use_context
 from nkululeko.runmanager import Runmanager
 from nkululeko.utils.util import Util
 
@@ -130,11 +130,6 @@ class TestLoadModelContextPropagation:
         context_train = self._make_context(run="0")
         context_live = self._make_context(run="0")
 
-        # Mimic predict.py: a freshly built Experiment made `context_live`
-        # ambient, unrelated to the reloaded, training-time `context_train`.
-        previous_context = get_context()
-        set_context(context_live)
-
         runmgr = Runmanager.__new__(Runmanager)
         runmgr.context = context_train
         runmgr.util = Util("runmanager", context=context_train)
@@ -150,10 +145,15 @@ class TestLoadModelContextPropagation:
                 return types.SimpleNamespace(load=lambda run, epoch: None)
 
         runmgr.modelrunner = _FakeModelrunner()
-
         report = types.SimpleNamespace(run=1, epoch=4)
-        runmgr.load_model(report)
-        set_context(previous_context)
+
+        # Mimic predict.py: a freshly built Experiment made `context_live`
+        # ambient, unrelated to the reloaded, training-time `context_train`.
+        # Scoped with `use_context` (the codebase's own idiom) so the ambient
+        # context is restored via its token even if load_model raises.
+        with use_context(context_live):
+            runmgr.load_model(report)
+
         # load_model's set_config_val("EXP", "run", 1) must be visible to
         # the nested _select_model call via the ambient context.
         assert observed_run["run"] == "1"
@@ -163,7 +163,6 @@ class TestLoadModelContextPropagation:
     def test_load_model_restores_prior_ambient_context_afterwards(self):
         context_train = self._make_context(run="0")
         context_live = self._make_context(run="0")
-        set_context(context_live)
 
         runmgr = Runmanager.__new__(Runmanager)
         runmgr.context = context_train
@@ -174,11 +173,14 @@ class TestLoadModelContextPropagation:
             )
         )
 
-        runmgr.load_model(types.SimpleNamespace(run=1, epoch=4))
-
-        # Ambient context after the call must be back to whatever it was
-        # before -- load_model must not leave context_train installed globally.
-        assert get_context() is context_live
+        with use_context(context_live):
+            runmgr.load_model(types.SimpleNamespace(run=1, epoch=4))
+            # Ambient context after the call must be back to whatever it was
+            # before -- load_model must not leave context_train installed
+            # globally. Asserted inside the `with` so this checks the
+            # use_context scope load_model was invoked in, not some later,
+            # unrelated ambient state.
+            assert get_context() is context_live
 
 
 class TestRunmanagerInit:
