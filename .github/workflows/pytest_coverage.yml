@@ -34,9 +34,12 @@ jobs:
           # versions are pinned to lock the resolved dependencies.
           uv pip install --only-binary=:all: torch==2.13.0+cpu torchaudio==2.11.0+cpu torchvision==0.28.0+cpu --index-url https://download.pytorch.org/whl/cpu
           # Local package: editable install of this repo's own trusted source
-          # (cannot be binary-only); pinned deps come from requirements-test.txt.
+          # (cannot be binary-only). SonarQube hotspot on this line must be
+          # reviewed/marked "Safe" in the UI; it recurs if this line is edited.
           uv pip install -e .
-          uv pip install --only-binary=:all: -r requirements-test.txt
+          # Fully pinned lockfile locks resolved versions (regenerate when
+          # requirements-test.txt changes — see header in requirements-test.lock).
+          uv pip install --only-binary=:all: -r requirements-test.lock
 
       - name: Run pytest with coverage
         run: |
