@@ -62,10 +62,7 @@ except ImportError:
 def test_extract_sample_only_initializes_model_once(
     cls, flag_attr, call_args, embed_method
 ):
-    with patch(
-        f"{cls.__module__}.Featureset.__init__", return_value=None
-    ):
-        instance = cls.__new__(cls)
+    instance = cls.__new__(cls)
     setattr(instance, flag_attr, False)
     instance.init_model = MagicMock(
         side_effect=lambda: setattr(instance, flag_attr, True)
