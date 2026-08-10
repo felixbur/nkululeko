@@ -861,8 +861,7 @@ class Experiment:
             try:
                 self._save_atomic(filename)
                 self.util.warn(
-                    "Save experiment: Can't pickle the feature extraction model so saving without it."
-                    + f"{type(error).__name__} {error}"
+                    f"Save experiment: Can't pickle the feature extraction model so saving without it. ({type(error).__name__}: {error})"
                 )
             except (TypeError, AttributeError, RuntimeError) as error2:
                 self.util.warn(
