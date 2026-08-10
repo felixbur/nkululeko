@@ -132,6 +132,7 @@ class TestLoadModelContextPropagation:
 
         # Mimic predict.py: a freshly built Experiment made `context_live`
         # ambient, unrelated to the reloaded, training-time `context_train`.
+        previous_context = get_context()
         set_context(context_live)
 
         runmgr = Runmanager.__new__(Runmanager)
@@ -152,7 +153,7 @@ class TestLoadModelContextPropagation:
 
         report = types.SimpleNamespace(run=1, epoch=4)
         runmgr.load_model(report)
-
+        set_context(previous_context)
         # load_model's set_config_val("EXP", "run", 1) must be visible to
         # the nested _select_model call via the ambient context.
         assert observed_run["run"] == "1"
