@@ -3,7 +3,11 @@
 import ast
 
 from nkululeko.balance import DataBalancer
-from nkululeko.experiment_context import ContextAware, use_context
+from nkululeko.experiment_context import (
+    ContextAware,
+    bind_experiment_context,
+    use_context,
+)
 from nkululeko.utils.util import Util
 
 # Fallback type-based heuristics used when a model instance is not yet available
@@ -71,6 +75,7 @@ def _check_task_capability(
         )
 
 
+@bind_experiment_context
 class Modelrunner(ContextAware):
     """Class to model one run."""
 
