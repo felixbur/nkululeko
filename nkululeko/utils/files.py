@@ -279,6 +279,17 @@ def safe_path(path, base=None):
     This is registered as a SonarQube security sanitizer
     (``sonar.python.security.sanitizers``) so that taint analysis recognises
     user-controlled paths flowing through it as no longer tainted.
+
+    IMPORTANT: call this directly, immediately before the resolved path is
+    used at the filesystem sink (``os.makedirs``, ``open``, ``to_csv``,
+    etc.), not through an intermediate wrapper/helper function. SonarCloud's
+    taint analyzer only credits this call as clearing the taint when there is
+    no custom function boundary between it and the sink; a wrapper that
+    calls ``safe_path()`` internally and returns its result is *not*
+    recognised, and the sink will keep being flagged even though the path is
+    genuinely validated. See the "Path handling / SonarCloud conventions"
+    section in ``CONTRIBUTING.md`` for the empirical case that established
+    this (``nkululeko/avqi.py``).
     """
     resolved = Path(path).expanduser().resolve()
     if base is None:

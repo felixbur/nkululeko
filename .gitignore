@@ -107,6 +107,12 @@ others/
 *.ckpt
 *.json
 .*
+# Exception: .* above also matches .github (and everything under it) as a
+# path segment, which silently hid new files under .github/workflows/ from
+# git status/add even though several workflow files there are tracked
+# (grandfathered in before this rule existed). Re-include the whole tree.
+!.github/
+!.github/**
 
 # dataset
 data/*/** 

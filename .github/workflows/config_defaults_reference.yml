@@ -1,0 +1,41 @@
+name: Config Defaults Reference Check
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+    paths:
+      - 'nkululeko/**.py'
+      - 'scripts/gen_defaults_table.py'
+      - 'docs/source/config_defaults_reference.md'
+  pull_request:
+    paths:
+      - 'nkululeko/**.py'
+      - 'scripts/gen_defaults_table.py'
+      - 'docs/source/config_defaults_reference.md'
+
+jobs:
+  check-defaults-reference:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Check docs/source/config_defaults_reference.md is up to date
+        run: python scripts/gen_defaults_table.py --check
+
+      - name: Show diff (if stale)
+        if: failure()
+        run: |
+          python scripts/gen_defaults_table.py --write
+          echo "=== docs/source/config_defaults_reference.md diff ==="
+          git --no-pager diff docs/source/config_defaults_reference.md
+          echo ""
+          echo "ERROR: docs/source/config_defaults_reference.md is out of date."
+          echo "Run 'python scripts/gen_defaults_table.py --write' locally and commit the result."

@@ -344,7 +344,29 @@ class TestClassLabelBackup:
         assert "class_label" in df_dev.columns
         assert list(df_dev["class_label"]) == ["sad", "happy"]
 
-    def test_unlabeled_test_split_gets_dummy_class_label_without_crashing(self):
+    def test_does_not_overwrite_preexisting_class_label(self):
+        """_ensure_class_label must never clobber a class_label an earlier
+        pipeline step already populated (e.g. binned string class names for
+        continuous-classification targets), even though the raw target
+        column here still holds different (unbinned) values.
+        """
+        fake_ds = _FakeDataset(
+            train_labels=["happy", "sad"],
+            test_labels=["happy", "sad"],
+        )
+        fake_ds.df_train["class_label"] = ["TRAIN_A", "TRAIN_B"]
+        fake_ds.df_test["class_label"] = ["TEST_A", "TEST_B"]
+        ds, errors = _make_ds({"db": fake_ds})
+
+        df_train, df_test = ds.fill_train_and_tests()
+
+        assert errors == []
+        assert list(df_train["class_label"]) == ["TRAIN_A", "TRAIN_B"]
+        assert list(df_test["class_label"]) == ["TEST_A", "TEST_B"]
+
+    def test_unlabeled_test_split_gets_dummy_class_label_without_crashing(
+        self, monkeypatch
+    ):
         """An unlabeled test split (is_labeled=False) is filled with a random
         placeholder target via _add_random_target(); the reassignment goes
         through .astype("str"), which returns a new DataFrame and therefore
@@ -369,12 +391,19 @@ class TestClassLabelBackup:
         # _add_random_target() draws from glob_conf.labels via secrets.choice();
         # constrain it to exactly the training labels so the draw can never
         # produce an "unseen label" error and make this test flaky.
-        glob_conf.labels = ["happy", "sad"]
+        monkeypatch.setattr(glob_conf, "labels", ["happy", "sad"])
 
         df_train, df_test = ds.fill_train_and_tests()
 
         assert errors == []
         assert "class_label" in df_test.columns
+        # The backup must actually mirror the dummy target _add_random_target()
+        # generated, not just exist. By this point df_test["emotion"] has
+        # already been label-encoded to an int by _encode_labels_safe(), so
+        # compare class_label against the *decoded* target rather than the
+        # raw (encoded) column.
+        decoded_target = ds.label_encoder.inverse_transform(df_test["emotion"])
+        assert list(df_test["class_label"]) == list(decoded_target)
 
 
 class TestFillTrainAndTestsConcatenation:
