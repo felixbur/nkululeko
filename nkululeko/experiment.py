@@ -865,8 +865,7 @@ class Experiment:
                 )
             except (TypeError, AttributeError, RuntimeError) as error2:
                 self.util.warn(
-                    "Save experiment: Can't pickle local object, NOT saving: "
-                    + f"{type(error2).__name__} {error2}"
+                    f"Save experiment: Failed to save experiment after stripping feature extraction model, NOT saving: ({type(error2).__name__}: {error2})"
                 )
 
     def _save_atomic(self, filename):
