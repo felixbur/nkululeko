@@ -113,6 +113,7 @@ class Bert(Featureset):
         return y.detach().cpu().numpy()
 
     def extract_sample(self, text):
-        self.init_model()
+        if not self.model_initialized:
+            self.init_model()
         feats = self.get_embeddings(text, "no file")
         return feats

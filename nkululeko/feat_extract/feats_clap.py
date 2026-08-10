@@ -24,6 +24,7 @@ class ClapSet(Featureset):
         self.model = laion_clap.CLAP_Module(enable_fusion=False)
         self.model.load_ckpt()  # download the default pretrained checkpoint.
         print("loaded clap model")
+        self.model_initialized = True
 
     def extract(self):
         """Extract the features or load them from disk if present."""
@@ -70,6 +71,7 @@ class ClapSet(Featureset):
         return audio_embed[0]
 
     def extract_sample(self, signal, sr):
-        self.init_model()
+        if not self.model_initialized:
+            self.init_model()
         feats = self.get_embeddings(signal, sr)
         return feats
