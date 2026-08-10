@@ -319,6 +319,14 @@ class _Unpicklable:
         raise TypeError("cannot pickle me")
 
 
+class _RuntimeUnpicklable:
+    """Stands in for wav2vec2's weight-normalized conv layer, which raises
+    RuntimeError (not TypeError/AttributeError) when pickled."""
+
+    def __reduce__(self):
+        raise RuntimeError("Cowardly refusing to serialize non-leaf tensor")
+
+
 class _FakeInnerExtractor:
     """Picklable `feat_extractor` placeholder that owns an un-picklable model."""
 
@@ -412,6 +420,80 @@ class TestExperimentSave:
 
         assert ext.feat_extractor.model is None
         assert out.is_file()
+
+    def test_save_runtime_error_goes_through_strip_retry(self, mock_config, tmp_path):
+        """A RuntimeError (e.g. wav2vec2's weight-normalized conv layer) must
+        take the same strip-and-retry path as TypeError/AttributeError,
+        instead of being swallowed immediately as "NOT saving"."""
+        from nkululeko.experiment import Experiment
+
+        glob_conf.init_config(mock_config)
+
+        bad = _RuntimeUnpicklable()
+        ext = _FakeFeatureExtractor(bad)
+
+        exp = Experiment.__new__(Experiment)
+        exp.runmgr = _FakeRunmgr()
+        exp.util = _CollectingUtil()
+        exp.feature_extractor = ext
+
+        out = tmp_path / "exp.pkl"
+        exp.save(str(out))
+
+        # The retry succeeded: model was stripped and the file was written.
+        assert ext.feat_extractor.model is None
+        assert out.is_file()
+        assert any(
+            "Can't pickle the feature extraction model" in w for w in exp.util.warnings
+        )
+        assert not any("NOT saving" in w for w in exp.util.warnings)
+
+    def test_save_does_not_corrupt_existing_file_on_total_failure(
+        self, mock_config, tmp_path
+    ):
+        """If saving still fails after stripping feature extractors (an
+        un-picklable object elsewhere on the experiment), save() must warn
+        and return without raising, and MUST NOT truncate/corrupt whatever
+        good file already exists at `filename`."""
+        from nkululeko.experiment import Experiment
+
+        glob_conf.init_config(mock_config)
+
+        out = tmp_path / "exp.pkl"
+        original_bytes = b"previously saved good pickle contents"
+        out.write_bytes(original_bytes)
+
+        exp = Experiment.__new__(Experiment)
+        exp.runmgr = _FakeRunmgr()
+        exp.util = _CollectingUtil()
+        # Un-picklable object not reachable via _collect_feature_extractors,
+        # so stripping the feature extractors can't fix it: the retry fails too.
+        exp.stubborn = _Unpicklable()
+
+        exp.save(str(out))  # must not raise
+
+        assert any("NOT saving" in w for w in exp.util.warnings)
+        # The old file must be untouched -- no partial/truncated write.
+        assert out.read_bytes() == original_bytes
+        # No leftover temp file.
+        assert not (tmp_path / "exp.pkl.tmp").exists()
+
+    def test_save_leaves_no_tmp_file_on_success(self, mock_config, tmp_path):
+        """The atomic-write temp file must be cleaned up (renamed away) after
+        a successful save."""
+        from nkululeko.experiment import Experiment
+
+        glob_conf.init_config(mock_config)
+
+        exp = Experiment.__new__(Experiment)
+        exp.runmgr = _FakeRunmgr()
+        exp.util = _CollectingUtil()
+
+        out = tmp_path / "exp.pkl"
+        exp.save(str(out))
+
+        assert out.is_file()
+        assert not (tmp_path / "exp.pkl.tmp").exists()
 
 
 class TestExperimentCollectFeatureExtractors:

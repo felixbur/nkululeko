@@ -840,13 +840,8 @@ class Experiment:
                 "Save experiment: Can't pickle the trained model so saving without it. (it should be stored anyway)"
             )
         try:
-            f = open(filename, "wb")
-            state = self.__dict__.copy()
-            state.pop("context", None)
-            pickle.dump(state, f)
-            f.close()
-            save_checksum(filename)
-        except (TypeError, AttributeError) as error:
+            self._save_atomic(filename)
+        except (TypeError, AttributeError, RuntimeError) as error:
             # Strip the un-picklable inner model(s) from every FeatureExtractor
             # stored on the experiment. There are typically two: one set in
             # fill_train_and_tests() and one inside Datasplitter.extract_feats().
@@ -863,21 +858,34 @@ class Experiment:
                     inner.model_interface = None
                 if hasattr(inner, "model_loaded"):
                     inner.model_loaded = False
-            f = open(filename, "wb")
-            state = self.__dict__.copy()
-            state.pop("context", None)
-            pickle.dump(state, f)
-            f.close()
-            save_checksum(filename)
-            self.util.warn(
-                "Save experiment: Can't pickle the feature extraction model so saving without it."
-                + f"{type(error).__name__} {error}"
-            )
-        except RuntimeError as error:
-            self.util.warn(
-                "Save experiment: Can't pickle local object, NOT saving: "
-                + f"{type(error).__name__} {error}"
-            )
+            try:
+                self._save_atomic(filename)
+                self.util.warn(
+                    f"Save experiment: Can't pickle the feature extraction model so saving without it. ({type(error).__name__}: {error})"
+                )
+            except (TypeError, AttributeError, RuntimeError) as error2:
+                self.util.warn(
+                    f"Save experiment: Failed to save experiment after stripping feature extraction model, NOT saving: ({type(error2).__name__}: {error2})"
+                )
+
+    def _save_atomic(self, filename):
+        """Pickle the experiment state to `filename` without ever truncating
+        an existing good file: dump to a temp file first, then swap it in.
+        """
+        state = self.__dict__.copy()
+        state.pop("context", None)
+        tmp_filename = f"{filename}.tmp"
+        try:
+            with open(tmp_filename, "wb") as f:
+                pickle.dump(state, f)
+            os.replace(tmp_filename, filename)
+        except BaseException:
+            try:
+                os.remove(tmp_filename)
+            except OSError:
+                pass
+            raise
+        save_checksum(filename)
 
     def _collect_feature_extractors(self):
         """Return every FeatureExtractor reachable from `self`.

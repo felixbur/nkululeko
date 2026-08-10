@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.8.2 (26-08-16)
+------------------------
+* fix bug: pytorch save 
+
 Version 1.8.1 (26-08-16)
 ------------------------
 * Added default value docs and fix security issues
