@@ -30,16 +30,18 @@ jobs:
         run: |
           uv venv
           source .venv/bin/activate
-          # --only-binary=:all: forbids building from sdists (no setup.py execution);
-          # versions are pinned to lock the resolved dependencies.
-          uv pip install --only-binary=:all: torch==2.13.0+cpu torchaudio==2.11.0+cpu torchvision==0.28.0+cpu --index-url https://download.pytorch.org/whl/cpu
-          # Local package: editable install of this repo's own trusted source
-          # (cannot be binary-only). SonarQube hotspot on this line must be
-          # reviewed/marked "Safe" in the UI; it recurs if this line is edited.
+          # Editable install of this repo's own trusted source (local package;
+          # binary-only is N/A). The SonarQube hotspot on this line must be
+          # reviewed and marked "Safe" in the UI; it recurs if this line is edited.
           uv pip install -e .
-          # Fully pinned lockfile locks resolved versions (regenerate when
-          # requirements-test.txt changes — see header in requirements-test.lock).
-          uv pip install --only-binary=:all: -r requirements-test.lock
+          # Self-contained, fully hashed lockfile (includes CPU-only torch).
+          #   --require-hashes : forbids resolving/downloading any unpinned or
+          #                      unhashed version (dependency-substitution guard).
+          #   --only-binary=:all: : blocks setup-script execution (wheels only).
+          # The --extra-index-url/--index-strategy let the pinned +cpu torch wheels
+          # resolve from the PyTorch CPU index. Regenerate this lockfile whenever
+          # requirements-test.txt changes (see header in requirements-test.lock).
+          uv pip install --require-hashes --only-binary=:all: --extra-index-url https://download.pytorch.org/whl/cpu --index-strategy unsafe-best-match -r requirements-test.lock
 
       - name: Run pytest with coverage
         run: |
