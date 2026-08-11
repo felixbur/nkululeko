@@ -1010,6 +1010,121 @@ class TestGetFeatureExtractor:
 
 
 # ---------------------------------------------------------------------------
+# _load_resumable_rows / _atomic_to_csv
+# ---------------------------------------------------------------------------
+
+
+class TestLoadResumableRows:
+    """Regression: --restart must not just skip resuming -- it must remove
+    the stale --outfile too. Otherwise the incremental per-row writer (which
+    only ever appends, and only writes a header when the file doesn't yet
+    exist) would append freshly recomputed rows after the old ones instead
+    of starting clean, and if that --restart run were itself interrupted, a
+    later plain resume would see every row as "already done" (old + new both
+    present) and skip recomputing the stale ones."""
+
+    def test_restart_removes_existing_outfile(self, tmp_path):
+        from nkululeko.predict import _build_segmented_df, _load_resumable_rows
+
+        wav = tmp_path / "a.wav"
+        _write_silent_wav(wav)
+        seg_df = _build_segmented_df([str(wav)])
+
+        out_path = tmp_path / "out.csv"
+        done_df = seg_df.copy()
+        done_df["predicted"] = 1.0
+        done_df.to_csv(out_path)
+        assert out_path.exists()
+
+        util = MagicMock()
+        done, remaining = _load_resumable_rows(str(out_path), seg_df, True, util)
+
+        assert done is None
+        assert len(remaining) == 1
+        assert not out_path.exists()
+
+    def test_restart_with_no_existing_outfile_is_a_noop(self, tmp_path):
+        from nkululeko.predict import _build_segmented_df, _load_resumable_rows
+
+        wav = tmp_path / "a.wav"
+        _write_silent_wav(wav)
+        seg_df = _build_segmented_df([str(wav)])
+        out_path = tmp_path / "does_not_exist.csv"
+
+        util = MagicMock()
+        done, remaining = _load_resumable_rows(str(out_path), seg_df, True, util)
+
+        assert done is None
+        assert len(remaining) == 1
+
+    def test_restart_removal_failure_warns(self, tmp_path, monkeypatch):
+        """If the stale file can't be removed, warn -- don't fail silently
+        into the append-after-old-rows corruption this is meant to prevent."""
+        from nkululeko.predict import _build_segmented_df, _load_resumable_rows
+
+        wav = tmp_path / "a.wav"
+        _write_silent_wav(wav)
+        seg_df = _build_segmented_df([str(wav)])
+
+        out_path = tmp_path / "out.csv"
+        seg_df.to_csv(out_path)
+
+        monkeypatch.setattr(os, "remove", MagicMock(side_effect=OSError("locked")))
+
+        util = MagicMock()
+        _load_resumable_rows(str(out_path), seg_df, True, util)
+
+        assert util.warn.called
+
+
+class TestAtomicToCsv:
+    def test_writes_via_temp_then_replaces(self, tmp_path):
+        from nkululeko.predict import _atomic_to_csv
+
+        path = tmp_path / "out.csv"
+        _atomic_to_csv(pd.DataFrame({"a": [1, 2]}), str(path))
+
+        assert path.exists()
+        assert not (tmp_path / "out.csv.tmp").exists()
+        assert pd.read_csv(path)["a"].tolist() == [1, 2]
+
+    def test_does_not_corrupt_existing_file_on_write_failure(self, tmp_path):
+        from nkululeko.predict import _atomic_to_csv
+
+        path = tmp_path / "out.csv"
+        path.write_text("original content\n")
+
+        broken_df = MagicMock()
+        broken_df.to_csv.side_effect = OSError("disk full")
+
+        with pytest.raises(OSError):
+            _atomic_to_csv(broken_df, str(path))
+
+        assert path.read_text() == "original content\n"
+
+    def test_cleans_up_temp_file_on_write_failure(self, tmp_path, monkeypatch):
+        """A failed df.to_csv() must not leave a stray out.csv.tmp behind."""
+        from nkululeko.predict import _atomic_to_csv
+
+        path = tmp_path / "out.csv"
+
+        def fake_to_csv(tmp_path_arg):
+            # Simulate a real writer that got partway through before failing.
+            with open(tmp_path_arg, "w") as fh:
+                fh.write("partial")
+            raise OSError("disk full")
+
+        broken_df = MagicMock()
+        broken_df.to_csv.side_effect = fake_to_csv
+
+        with pytest.raises(OSError):
+            _atomic_to_csv(broken_df, str(path))
+
+        assert not (tmp_path / "out.csv.tmp").exists()
+        assert not path.exists()
+
+
+# ---------------------------------------------------------------------------
 # _predict_with_model
 # ---------------------------------------------------------------------------
 

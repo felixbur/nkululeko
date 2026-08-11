@@ -429,9 +429,7 @@ def _run_folder(folder, args, util):
         restart=getattr(args, "restart", False),
     )
     out_df = seg_df.join(preds, how="left")
-    tmp_out = f"{args.outfile}.tmp"
-    out_df.to_csv(tmp_out)
-    os.replace(tmp_out, args.outfile)
+    _atomic_to_csv(out_df, args.outfile)
     util.debug(f"wrote {args.outfile}")
 
 
@@ -504,7 +502,7 @@ def _run_list(csv_path, args, util):
     for col in preds.columns:
         out_df[col] = preds[col]
 
-    out_df.to_csv(out_path)
+    _atomic_to_csv(out_df, out_path)
     util.debug(f"wrote {out_path}")
 
 
@@ -608,7 +606,7 @@ def _run_from_config(args, util):
     for col in preds.columns:
         out_df[col] = preds[col]
 
-    out_df.to_csv(out_path)
+    _atomic_to_csv(out_df, out_path)
     util.debug(f"wrote {out_path}")
 
 
@@ -739,8 +737,11 @@ def _load_resumable_rows(out_path, seg_df, restart, util):
         if out_path and os.path.isfile(out_path):
             try:
                 os.remove(out_path)
-            except OSError:
-                pass
+            except OSError as e:
+                util.warn(
+                    f"--restart: could not remove stale {out_path}: {e}; "
+                    "freshly computed rows may get appended after old ones"
+                )
         return None, seg_df
     if not out_path or not os.path.isfile(out_path):
         return None, seg_df
@@ -780,6 +781,21 @@ def _append_row_to_csv(out_path, idx, row, seg_df, header_needed):
         one_row_df[col] = val
     one_row_df.to_csv(out_path, mode="a", header=header_needed)
     return False
+
+
+def _atomic_to_csv(df, path):
+    """Write df to path atomically: build the full file at a temp path
+    first, then os.replace() it into place. A crash mid-write (out of disk,
+    killed process) can then never leave a truncated/corrupt file at path --
+    either the old file is untouched, or the new one is fully there."""
+    tmp_path = f"{path}.tmp"
+    try:
+        df.to_csv(tmp_path)
+        os.replace(tmp_path, path)
+    except BaseException:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+        raise
 
 
 def _predict_with_features(
