@@ -127,7 +127,6 @@ def test_get_probas(mlp_model):
     assert set(probas.columns) == set([0, 1])
 
 
-@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_predict_sample(mlp_model):
     mlp_model.train()
     feats = np.random.rand(3)
@@ -136,7 +135,6 @@ def test_predict_sample(mlp_model):
     assert set(res.keys()) == set([0, 1])
 
 
-@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_predict_shap(mlp_model):
     mlp_model.train()
     feats = pd.DataFrame(np.random.rand(2, 3))
