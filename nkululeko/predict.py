@@ -776,7 +776,8 @@ def _predict_with_model(seg_df, args, util):
             result_dict = model.predict_sample(features)
         except Exception as e:
             util.warn(f"prediction failed for {file}: {e}")
-            failures.append(str(e))
+            if not failures:
+                failures.append(str(e))
             continue
 
         row = {}
