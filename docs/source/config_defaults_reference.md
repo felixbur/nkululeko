@@ -11,14 +11,14 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 * `'DATA'.'type'`: `False` (nkululeko/data/dataset.py:795), `'dummy'` (nkululeko/data/datasplitter.py:189)
 * `'EXP'.'epochs'`: `1` (nkululeko/modelrunner.py:129), `1` (nkululeko/models/model_tuned.py:65), `'50'` (nkululeko/optimizers/scheduler_factory.py:84)
 * `'EXP'.'language'`: `'en'` (nkululeko/autopredict/ap_text.py:31), `False` (nkululeko/bundle.py:101)
-* `'EXP'.'sample_selection'`: `'all'` (nkululeko/data/datasplitter.py:31), `'train'` (nkululeko/experiment.py:489), `'all'` (nkululeko/experiment.py:510), `'all'` (nkululeko/feat_extract/feats_analyser.py:388), `'all'` (nkululeko/plots.py:636), `'all'` (nkululeko/predict.py:543), `'all'` (nkululeko/resample.py:127), `'all'` (nkululeko/segment.py:242)
+* `'EXP'.'sample_selection'`: `'all'` (nkululeko/data/datasplitter.py:31), `'train'` (nkululeko/experiment.py:489), `'all'` (nkululeko/experiment.py:510), `'all'` (nkululeko/feat_extract/feats_analyser.py:388), `'all'` (nkululeko/plots.py:636), `'all'` (nkululeko/predict.py:577), `'all'` (nkululeko/resample.py:127), `'all'` (nkululeko/segment.py:242)
 * `'EXP'.'type'`: `None` (nkululeko/data/dataset.py:146), `'classification'` (nkululeko/utils/util.py:297)
 * `'EXPL'.'dist_type'`: `'hist'` (nkululeko/plots.py:149), `'kde'` (nkululeko/plots.py:425)
 * `'EXPL'.'model'`: `False` (nkululeko/explore.py:91), `"['log_reg']"` (nkululeko/feat_extract/feats_analyser.py:172)
 * `'EXPL'.'plot_tree'`: `'False'` (nkululeko/explore.py:92), `False` (nkululeko/feat_extract/feats_analyser.py:96)
 * `'FEATS'.'audmodel.id'`: `False` (nkululeko/feat_extract/feats_audmodel.py:34), `'audmodel'` (nkululeko/feat_extract/feats_audmodel.py:167)
 * `'FEATS'.'no_reuse'`: `'False'` (nkululeko/feat_extract/feats_cqcc.py:114), `'False'` (nkululeko/feat_extract/feats_emotion2vec.py:78), `'False'` (nkululeko/feat_extract/feats_lfcc.py:124), `False` (nkululeko/feat_extract/feats_mld.py:45), `'False'` (nkululeko/feat_extract/feats_textclassifier.py:57), `False` (nkululeko/feat_extract/featureset.py:48)
-* `'FEATS'.'type'`: `['os']` (nkululeko/bundle.py:220), `'os'` (nkululeko/data/datasplitter.py:344), `['os']` (nkululeko/experiment.py:240), `['os']` (nkululeko/infer.py:208), `None` (nkululeko/predict.py:193), `None` (nkululeko/predict.py:750)
+* `'FEATS'.'type'`: `['os']` (nkululeko/bundle.py:220), `'os'` (nkululeko/data/datasplitter.py:344), `['os']` (nkululeko/experiment.py:240), `['os']` (nkululeko/infer.py:208), `None` (nkululeko/predict.py:215), `None` (nkululeko/predict.py:911)
 * `'MODEL'.'C_val'`: `'1.0'` (nkululeko/feat_extract/feats_analyser.py:233), `'1'` (nkululeko/models/model_svm.py:16), `'0.001'` (nkululeko/models/model_svr.py:16)
 * `'MODEL'.'adm.branches'`: `'time,spectral,phase,lfcc,cqcc'` (nkululeko/models/model_adm.py:140), `'time,spectral,phase,lfcc,cqcc'` (nkululeko/models/model_adm.py:546), `'time,spectral,phase'` (nkululeko/utils/naming.py:100)
 * `'MODEL'.'batch_size'`: `32` (nkululeko/models/model_adm.py:190), `8` (nkululeko/models/model_cnn.py:71), `8` (nkululeko/models/model_mlp.py:79), `8` (nkululeko/models/model_mlp_regression.py:71), `'8'` (nkululeko/models/model_tuned.py:58)
@@ -142,7 +142,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'FEATS' | 'no_reuse' | `'False'` / `False` | nkululeko/feat_extract/feats_cqcc.py:114, nkululeko/feat_extract/feats_emotion2vec.py:78, nkululeko/feat_extract/feats_lfcc.py:124, +3 more |
 | 'FEATS' | 'os.set' | `'eGeMAPSv02'` | nkululeko/bundle.py:63, nkululeko/bundle.py:114 |
 | 'FEATS' | 'print_feats' | `'False'` | nkululeko/feat_extract/feats_opensmile.py:90, nkululeko/feat_extract/feats_praat.py:22, nkululeko/feat_extract/feats_sptk.py:81 |
-| 'FEATS' | 'scale' | `False` | nkululeko/bundle.py:221, nkululeko/experiment.py:662, nkululeko/predict.py:757, +1 more |
+| 'FEATS' | 'scale' | `False` | nkululeko/bundle.py:221, nkululeko/experiment.py:662, nkululeko/predict.py:918, +1 more |
 | 'FEATS' | 'set' | `'eGeMAPSv02'` | nkululeko/feat_extract/feats_opensmile.py:53, nkululeko/feat_extract/feats_oxbow.py:22 |
 | 'FEATS' | 'size' | `500` | nkululeko/feat_extract/feats_oxbow.py:60 |
 | 'FEATS' | 'sptk.features' | `"['stft', 'fbank']"` | nkululeko/feat_extract/feats_sptk.py:53 |

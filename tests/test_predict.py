@@ -32,6 +32,49 @@ def _write_silent_wav(path, samples=1600, sr=16000):
     sf.write(str(path), np.zeros(samples, dtype="float32"), sr)
 
 
+def _setup_predict_with_model_env(monkeypatch, tmp_path, wavs, predict_return=None):
+    """Common scaffolding for `_predict_with_model` resume tests: a fake
+    Experiment/model/feature-extractor and a config good enough to reach the
+    per-row loop. Returns (seg_df, util, fake_model)."""
+    import configparser
+
+    import nkululeko.glob_conf as glob_conf
+    import nkululeko.experiment as expmod
+    from nkululeko import predict as predict_mod
+
+    cfg = configparser.ConfigParser()
+    cfg["EXP"] = {"root": str(tmp_path), "name": "x"}
+    cfg["DATA"] = {"databases": "['adhoc']", "target": "emotion"}
+    cfg["FEATS"] = {"type": "['praat']"}
+    cfg["MODEL"] = {}
+    monkeypatch.setattr(glob_conf, "config", cfg)
+
+    fake_model = MagicMock()
+    fake_model.predict_sample.return_value = (
+        predict_return if predict_return is not None else {0: 0.7, 1: 0.3}
+    )
+    fake_expr = MagicMock()
+    fake_expr.runmgr.get_best_model.return_value = fake_model
+    fake_expr.label_encoder = None
+    monkeypatch.setattr(expmod, "Experiment", lambda *a, **kw: fake_expr)
+
+    fresh_extractor = MagicMock()
+    fresh_extractor.extract_sample.return_value = np.array([1.0, 2.0])
+    monkeypatch.setattr(
+        predict_mod, "_get_feature_extractor", MagicMock(return_value=fresh_extractor)
+    )
+
+    seg_df = predict_mod._build_segmented_df([str(w) for w in wavs])
+
+    util = MagicMock()
+    util.get_save_name.return_value = str(tmp_path / "whatever")
+    util.exp_is_classification.return_value = True
+    util.config_val.side_effect = lambda section, key, default: (
+        cfg[section][key] if section in cfg and key in cfg[section] else default
+    )
+    return seg_df, util, fake_model
+
+
 # ---------------------------------------------------------------------------
 # Pure helpers
 # ---------------------------------------------------------------------------
@@ -218,6 +261,18 @@ class TestBuildParser:
 
         args = _build_parser().parse_args(["--no_playback"])
         assert args.no_playback is True
+
+    def test_restart_flag_defaults_false(self):
+        from nkululeko.predict import _build_parser
+
+        args = _build_parser().parse_args([])
+        assert args.restart is False
+
+    def test_restart_flag_settable(self):
+        from nkululeko.predict import _build_parser
+
+        args = _build_parser().parse_args(["--restart"])
+        assert args.restart is True
 
     def test_language_flag_defaults_to_none(self):
         from nkululeko.predict import _build_parser
@@ -428,7 +483,7 @@ class TestMainLanguageOverride:
         # Capture glob_conf.config at the moment _predict_df is called.
         captured = {}
 
-        def fake_predict_df(seg_df, args, util):
+        def fake_predict_df(seg_df, args, util, **kwargs):
             captured["language"] = glob_conf.config["EXP"]["language"]
             captured["target_language"] = glob_conf.config["PREDICT"]["target_language"]
             return pd.DataFrame({"text": ["hi"]}, index=seg_df.index)
@@ -466,7 +521,7 @@ class TestRunFiles:
         _write_silent_wav(f1)
         _write_silent_wav(f2)
 
-        def fake_predict_df(seg_df, args, util):
+        def fake_predict_df(seg_df, args, util, **kwargs):
             return pd.DataFrame(
                 {"emotion_pred": ["happy", "sad"]},
                 index=seg_df.index,
@@ -490,7 +545,7 @@ class TestRunFiles:
         audio = tmp_path / "x.wav"
         _write_silent_wav(audio)
 
-        def fake_predict_df(seg_df, args, util):
+        def fake_predict_df(seg_df, args, util, **kwargs):
             return pd.DataFrame(
                 {"angry": [0.8], "happy": [0.1], "predicted": ["angry"]},
                 index=seg_df.index,
@@ -512,7 +567,7 @@ class TestRunFiles:
         _write_silent_wav(f1)
         missing = tmp_path / "ghost.wav"
 
-        def fake_predict_df(seg_df, args, util):
+        def fake_predict_df(seg_df, args, util, **kwargs):
             return pd.DataFrame({"col": ["x"]}, index=seg_df.index)
 
         from nkululeko.predict import _run_files
@@ -557,7 +612,7 @@ class TestRunList:
 
         outfile = tmp_path / "out.csv"
 
-        def fake_predict_df(seg_df, args, util):
+        def fake_predict_df(seg_df, args, util, **kwargs):
             return pd.DataFrame(
                 {"snr_pred": [1.5, 2.5]},
                 index=seg_df.index,
@@ -576,6 +631,31 @@ class TestRunList:
         assert "note" in result.columns
         assert "snr_pred" in result.columns
         assert sorted(result["speaker"].tolist()) == ["s1", "s2"]
+
+    def test_passes_out_path_and_restart_to_predict_df(self, tmp_path):
+        """_run_list must thread outfile/restart through to _predict_df so
+        the model/feats backends can resume from a previous run."""
+        f1 = tmp_path / "a.wav"
+        _write_silent_wav(f1)
+        csv = tmp_path / "in.csv"
+        pd.DataFrame({"file": [str(f1)]}).to_csv(csv, index=False)
+
+        outfile = tmp_path / "out.csv"
+        captured = {}
+
+        def fake_predict_df(seg_df, args, util, **kwargs):
+            captured.update(kwargs)
+            return pd.DataFrame({"predicted": [1]}, index=seg_df.index)
+
+        from nkululeko.predict import _run_list
+
+        args = argparse.Namespace(outfile=str(outfile), restart=True)
+        util = MagicMock()
+        with patch("nkululeko.predict._predict_df", side_effect=fake_predict_df):
+            _run_list(str(csv), args, util)
+
+        assert captured["out_path"] == str(outfile)
+        assert captured["restart"] is True
 
     def test_missing_csv_errors(self):
         from nkululeko.predict import _run_list
@@ -601,7 +681,7 @@ class TestRunList:
 
         outfile = tmp_path / "out.csv"
 
-        def fake_predict_df(seg_df, args, util):
+        def fake_predict_df(seg_df, args, util, **kwargs):
             return pd.DataFrame(
                 {"snr_pred": [1.0, 2.0]},
                 index=seg_df.index,
@@ -648,7 +728,7 @@ class TestRunFolder:
 
         out = tmp_path / "out.csv"
 
-        def fake_predict_df(seg_df, args, util):
+        def fake_predict_df(seg_df, args, util, **kwargs):
             return pd.DataFrame(
                 {"x_pred": list(range(len(seg_df)))},
                 index=seg_df.index,
@@ -930,6 +1010,121 @@ class TestGetFeatureExtractor:
 
 
 # ---------------------------------------------------------------------------
+# _load_resumable_rows / _atomic_to_csv
+# ---------------------------------------------------------------------------
+
+
+class TestLoadResumableRows:
+    """Regression: --restart must not just skip resuming -- it must remove
+    the stale --outfile too. Otherwise the incremental per-row writer (which
+    only ever appends, and only writes a header when the file doesn't yet
+    exist) would append freshly recomputed rows after the old ones instead
+    of starting clean, and if that --restart run were itself interrupted, a
+    later plain resume would see every row as "already done" (old + new both
+    present) and skip recomputing the stale ones."""
+
+    def test_restart_removes_existing_outfile(self, tmp_path):
+        from nkululeko.predict import _build_segmented_df, _load_resumable_rows
+
+        wav = tmp_path / "a.wav"
+        _write_silent_wav(wav)
+        seg_df = _build_segmented_df([str(wav)])
+
+        out_path = tmp_path / "out.csv"
+        done_df = seg_df.copy()
+        done_df["predicted"] = 1.0
+        done_df.to_csv(out_path)
+        assert out_path.exists()
+
+        util = MagicMock()
+        done, remaining = _load_resumable_rows(str(out_path), seg_df, True, util)
+
+        assert done is None
+        assert len(remaining) == 1
+        assert not out_path.exists()
+
+    def test_restart_with_no_existing_outfile_is_a_noop(self, tmp_path):
+        from nkululeko.predict import _build_segmented_df, _load_resumable_rows
+
+        wav = tmp_path / "a.wav"
+        _write_silent_wav(wav)
+        seg_df = _build_segmented_df([str(wav)])
+        out_path = tmp_path / "does_not_exist.csv"
+
+        util = MagicMock()
+        done, remaining = _load_resumable_rows(str(out_path), seg_df, True, util)
+
+        assert done is None
+        assert len(remaining) == 1
+
+    def test_restart_removal_failure_warns(self, tmp_path, monkeypatch):
+        """If the stale file can't be removed, warn -- don't fail silently
+        into the append-after-old-rows corruption this is meant to prevent."""
+        from nkululeko.predict import _build_segmented_df, _load_resumable_rows
+
+        wav = tmp_path / "a.wav"
+        _write_silent_wav(wav)
+        seg_df = _build_segmented_df([str(wav)])
+
+        out_path = tmp_path / "out.csv"
+        seg_df.to_csv(out_path)
+
+        monkeypatch.setattr(os, "remove", MagicMock(side_effect=OSError("locked")))
+
+        util = MagicMock()
+        _load_resumable_rows(str(out_path), seg_df, True, util)
+
+        assert util.warn.called
+
+
+class TestAtomicToCsv:
+    def test_writes_via_temp_then_replaces(self, tmp_path):
+        from nkululeko.predict import _atomic_to_csv
+
+        path = tmp_path / "out.csv"
+        _atomic_to_csv(pd.DataFrame({"a": [1, 2]}), str(path))
+
+        assert path.exists()
+        assert not (tmp_path / "out.csv.tmp").exists()
+        assert pd.read_csv(path)["a"].tolist() == [1, 2]
+
+    def test_does_not_corrupt_existing_file_on_write_failure(self, tmp_path):
+        from nkululeko.predict import _atomic_to_csv
+
+        path = tmp_path / "out.csv"
+        path.write_text("original content\n")
+
+        broken_df = MagicMock()
+        broken_df.to_csv.side_effect = OSError("disk full")
+
+        with pytest.raises(OSError):
+            _atomic_to_csv(broken_df, str(path))
+
+        assert path.read_text() == "original content\n"
+
+    def test_cleans_up_temp_file_on_write_failure(self, tmp_path, monkeypatch):
+        """A failed df.to_csv() must not leave a stray out.csv.tmp behind."""
+        from nkululeko.predict import _atomic_to_csv
+
+        path = tmp_path / "out.csv"
+
+        def fake_to_csv(tmp_path_arg):
+            # Simulate a real writer that got partway through before failing.
+            with open(tmp_path_arg, "w") as fh:
+                fh.write("partial")
+            raise OSError("disk full")
+
+        broken_df = MagicMock()
+        broken_df.to_csv.side_effect = fake_to_csv
+
+        with pytest.raises(OSError):
+            _atomic_to_csv(broken_df, str(path))
+
+        assert not (tmp_path / "out.csv.tmp").exists()
+        assert not path.exists()
+
+
+# ---------------------------------------------------------------------------
 # _predict_with_model
 # ---------------------------------------------------------------------------
 
@@ -1090,6 +1285,90 @@ class TestPredictWithModel:
 
         assert util.error.called
 
+    def test_resume_skips_rows_already_in_outfile(self, monkeypatch, tmp_path):
+        """Rows already present in --outfile from an earlier, interrupted
+        run must be skipped -- only the remaining rows get (re)computed."""
+        from nkululeko import predict as predict_mod
+
+        wav1, wav2 = tmp_path / "one.wav", tmp_path / "two.wav"
+        _write_silent_wav(wav1)
+        _write_silent_wav(wav2)
+        seg_df, util, fake_model = _setup_predict_with_model_env(
+            monkeypatch, tmp_path, [wav1, wav2], predict_return=0.42
+        )
+        util.exp_is_classification.return_value = False
+
+        # Pre-populate out_path with the same column shape a real run would
+        # have produced (regression -> a single "predicted" column), as if a
+        # previous, interrupted run already finished wav1.
+        out_path = tmp_path / "out.csv"
+        done_df = predict_mod._build_segmented_df([str(wav1)])
+        done_df["predicted"] = 0.99
+        done_df.to_csv(out_path)
+
+        preds = predict_mod._predict_with_model(
+            seg_df, argparse.Namespace(), util, out_path=str(out_path)
+        )
+
+        fake_model.predict_sample.assert_called_once()
+        assert len(preds) == 2
+
+    def test_resume_appends_new_rows_to_outfile(self, monkeypatch, tmp_path):
+        """The newly-computed row must be appended to --outfile immediately,
+        alongside whatever a previous run already wrote there."""
+        from nkululeko import predict as predict_mod
+
+        wav1, wav2 = tmp_path / "one.wav", tmp_path / "two.wav"
+        _write_silent_wav(wav1)
+        _write_silent_wav(wav2)
+        seg_df, util, fake_model = _setup_predict_with_model_env(
+            monkeypatch, tmp_path, [wav1, wav2], predict_return=0.42
+        )
+        util.exp_is_classification.return_value = False
+
+        # Pre-populate out_path with the same column shape a real run would
+        # have produced (regression -> a single "predicted" column), as if a
+        # previous, interrupted run already finished wav1.
+        out_path = tmp_path / "out.csv"
+        done_df = predict_mod._build_segmented_df([str(wav1)])
+        done_df["predicted"] = 0.99
+        done_df.to_csv(out_path)
+
+        predict_mod._predict_with_model(
+            seg_df, argparse.Namespace(), util, out_path=str(out_path)
+        )
+
+        on_disk = audformat.utils.read_csv(str(out_path))
+        assert len(on_disk) == 2
+        wav2_row = on_disk.loc[on_disk.index.get_level_values("file") == str(wav2)]
+        assert len(wav2_row) == 1
+
+    def test_restart_flag_ignores_existing_outfile(self, monkeypatch, tmp_path):
+        """--restart must recompute every row, not just the missing ones."""
+        from nkululeko import predict as predict_mod
+
+        wav1, wav2 = tmp_path / "one.wav", tmp_path / "two.wav"
+        _write_silent_wav(wav1)
+        _write_silent_wav(wav2)
+        seg_df, util, fake_model = _setup_predict_with_model_env(
+            monkeypatch, tmp_path, [wav1, wav2], predict_return=0.42
+        )
+        util.exp_is_classification.return_value = False
+
+        # Pre-populate out_path with the same column shape a real run would
+        # have produced (regression -> a single "predicted" column), as if a
+        # previous, interrupted run already finished wav1.
+        out_path = tmp_path / "out.csv"
+        done_df = predict_mod._build_segmented_df([str(wav1)])
+        done_df["predicted"] = 0.99
+        done_df.to_csv(out_path)
+
+        predict_mod._predict_with_model(
+            seg_df, argparse.Namespace(), util, out_path=str(out_path), restart=True
+        )
+
+        assert fake_model.predict_sample.call_count == 2
+
 
 class TestPredictWithFeatures:
     def test_all_rows_failing_calls_error(self, monkeypatch, tmp_path):
@@ -1118,6 +1397,73 @@ class TestPredictWithFeatures:
             predict_mod._predict_with_features(seg_df, "praat", util)
 
         assert util.error.called
+
+    def _setup(self, monkeypatch, tmp_path, wav1, wav2):
+        from nkululeko import predict as predict_mod
+
+        _write_silent_wav(wav1)
+        _write_silent_wav(wav2)
+
+        extractor = MagicMock()
+        extractor.extract_sample.return_value = np.array([1.0, 2.0])
+        monkeypatch.setattr(
+            predict_mod, "_get_feature_extractor", MagicMock(return_value=extractor)
+        )
+
+        seg_df = predict_mod._build_segmented_df([str(wav1), str(wav2)])
+
+        # Pre-populate out_path as if a previous, interrupted run already
+        # finished wav1, using the same feat_0/feat_1 shape a real run would.
+        out_path = tmp_path / "out.csv"
+        done_df = predict_mod._build_segmented_df([str(wav1)])
+        done_df["feat_0"] = 9.0
+        done_df["feat_1"] = 8.0
+        done_df.to_csv(out_path)
+
+        return seg_df, extractor, out_path
+
+    def test_resume_skips_rows_already_in_outfile(self, monkeypatch, tmp_path):
+        from nkululeko import predict as predict_mod
+
+        wav1, wav2 = tmp_path / "one.wav", tmp_path / "two.wav"
+        seg_df, extractor, out_path = self._setup(monkeypatch, tmp_path, wav1, wav2)
+
+        util = MagicMock()
+        preds = predict_mod._predict_with_features(
+            seg_df, "praat", util, out_path=str(out_path)
+        )
+
+        extractor.extract_sample.assert_called_once()
+        assert len(preds) == 2
+
+    def test_resume_appends_new_rows_to_outfile(self, monkeypatch, tmp_path):
+        from nkululeko import predict as predict_mod
+
+        wav1, wav2 = tmp_path / "one.wav", tmp_path / "two.wav"
+        seg_df, extractor, out_path = self._setup(monkeypatch, tmp_path, wav1, wav2)
+
+        util = MagicMock()
+        predict_mod._predict_with_features(
+            seg_df, "praat", util, out_path=str(out_path)
+        )
+
+        on_disk = audformat.utils.read_csv(str(out_path))
+        assert len(on_disk) == 2
+        wav2_row = on_disk.loc[on_disk.index.get_level_values("file") == str(wav2)]
+        assert len(wav2_row) == 1
+
+    def test_restart_flag_ignores_existing_outfile(self, monkeypatch, tmp_path):
+        from nkululeko import predict as predict_mod
+
+        wav1, wav2 = tmp_path / "one.wav", tmp_path / "two.wav"
+        seg_df, extractor, out_path = self._setup(monkeypatch, tmp_path, wav1, wav2)
+
+        util = MagicMock()
+        predict_mod._predict_with_features(
+            seg_df, "praat", util, out_path=str(out_path), restart=True
+        )
+
+        assert extractor.extract_sample.call_count == 2
 
 
 # ---------------------------------------------------------------------------
@@ -1202,7 +1548,7 @@ class TestRunFromConfig:
         # Capture the seg_df passed to _predict_df so we can assert on size.
         seen = {}
 
-        def fake_predict_df(seg_df, args, util):
+        def fake_predict_df(seg_df, args, util, **kwargs):
             seen["n_rows"] = len(seg_df)
             return pd.DataFrame({"snr_pred": [1.0] * len(seg_df)}, index=seg_df.index)
 
@@ -1347,7 +1693,7 @@ class TestMainEndToEnd:
         audio = tmp_path / "sample.wav"
         _write_silent_wav(audio)
 
-        def fake_predict_df(seg_df, args, util):
+        def fake_predict_df(seg_df, args, util, **kwargs):
             return pd.DataFrame(
                 {"snr_pred": [42.0]},
                 index=seg_df.index,
