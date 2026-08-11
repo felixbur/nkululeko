@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.8.6 (26-08-11)
+------------------------
+* added resume for predict
+
 Version 1.8.5 (26-08-11)
 ------------------------
 * fixed bug: mlp_reg tensor to cpu

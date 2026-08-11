@@ -14,6 +14,14 @@ Input (mutually exclusive):
     --mic                    record from the microphone in a loop and print
                              predictions to stdout.
 
+For --folder/--list/--config (with --type model or --type feats), rows are
+written to --outfile incrementally, right after each is predicted -- not
+just once at the end. If a run is interrupted (crash, kill, Ctrl-C),
+re-running the same command resumes from --outfile: rows already present in
+it are skipped and only the remaining rows are (re)computed. Pass --restart
+to ignore an existing --outfile and recompute everything. (Autopredict
+targets and --file/--mic are unaffected -- they don't support resume.)
+
 Prediction source:
     --type feats (default)   use a feature extractor or autopredict target
                              named via --model. Autopredict targets are
@@ -139,7 +147,21 @@ def _build_parser():
     parser.add_argument(
         "--outfile",
         default=DEFAULT_OUTFILE,
-        help=(f"Output CSV path for --list/--folder (default: {DEFAULT_OUTFILE})."),
+        help=(
+            f"Output CSV path for --list/--folder/--config (default: "
+            f"{DEFAULT_OUTFILE}). Written incrementally, row by row; if it "
+            "already has rows from an earlier, interrupted run they are "
+            "skipped and only the remaining rows are (re)computed. Use "
+            "--restart to ignore it and start over."
+        ),
+    )
+    parser.add_argument(
+        "--restart",
+        action="store_true",
+        help=(
+            "Ignore any existing --outfile content and recompute every row "
+            "from scratch, instead of resuming from it."
+        ),
     )
     parser.add_argument(
         "--model",
@@ -399,7 +421,13 @@ def _run_folder(folder, args, util):
     util.debug(f"found {len(files)} audio files in {folder}")
 
     seg_df = _build_segmented_df(files)
-    preds = _predict_df(seg_df, args, util)
+    preds = _predict_df(
+        seg_df,
+        args,
+        util,
+        out_path=args.outfile,
+        restart=getattr(args, "restart", False),
+    )
     out_df = seg_df.join(preds, how="left")
     out_df.to_csv(args.outfile)
     util.debug(f"wrote {args.outfile}")
@@ -461,13 +489,19 @@ def _run_list(csv_path, args, util):
         seg_df = in_df.drop(columns=[path_col]).copy()
         seg_df.index = seg_index
 
-    preds = _predict_df(seg_df, args, util)
+    out_path = args.outfile or DEFAULT_OUTFILE
+    preds = _predict_df(
+        seg_df,
+        args,
+        util,
+        out_path=out_path,
+        restart=getattr(args, "restart", False),
+    )
     # Add prediction columns to seg_df, preserving original columns + index.
     out_df = seg_df.copy()
     for col in preds.columns:
         out_df[col] = preds[col]
 
-    out_path = args.outfile or DEFAULT_OUTFILE
     out_df.to_csv(out_path)
     util.debug(f"wrote {out_path}")
 
@@ -559,13 +593,19 @@ def _run_from_config(args, util):
     if len(seg_df) == 0:
         util.error("selected dataframe is empty; nothing to predict")
 
-    preds = _predict_df(seg_df, args, util)
+    out_path = args.outfile or DEFAULT_OUTFILE
+    preds = _predict_df(
+        seg_df,
+        args,
+        util,
+        out_path=out_path,
+        restart=getattr(args, "restart", False),
+    )
 
     out_df = seg_df.copy()
     for col in preds.columns:
         out_df[col] = preds[col]
 
-    out_path = args.outfile or DEFAULT_OUTFILE
     out_df.to_csv(out_path)
     util.debug(f"wrote {out_path}")
 
@@ -575,16 +615,27 @@ def _run_from_config(args, util):
 # ---------------------------------------------------------------------------
 
 
-def _predict_df(seg_df, args, util):
-    """Dispatch prediction over a segmented-index df. Returns prediction columns."""
+def _predict_df(seg_df, args, util, out_path=None, restart=False):
+    """Dispatch prediction over a segmented-index df. Returns prediction columns.
+
+    out_path/restart enable incremental writes + resume (see
+    _load_resumable_rows/_append_row_to_csv); only the --type model and
+    --type feats backends support them -- autopredict targets delegate the
+    whole batch to third-party predictor classes with no per-row loop to
+    checkpoint against.
+    """
     if args.ptype == "model":
-        return _predict_with_model(seg_df, args, util)
+        return _predict_with_model(
+            seg_df, args, util, out_path=out_path, restart=restart
+        )
 
     model_name = args.model or ""
     if model_name.lower() in AUTOPREDICT_TARGETS:
         return _predict_with_autopredict(seg_df, model_name.lower(), util)
 
-    return _predict_with_features(seg_df, model_name, util)
+    return _predict_with_features(
+        seg_df, model_name, util, out_path=out_path, restart=restart
+    )
 
 
 def _predict_with_autopredict(seg_df, target, util):
@@ -670,18 +721,91 @@ entry."""
         file = idx
         offset = 0
         duration = None
-    return file, offset, duration                                             
+    return file, offset, duration
 
-def _predict_with_features(seg_df, model_name, util):
+
+def _load_resumable_rows(out_path, seg_df, restart, util):
+    """Check for already-completed rows in a previous, interrupted run.
+
+    Returns (done_df, remaining_seg_df):
+      - done_df: the subset of an existing out_path CSV whose index overlaps
+        seg_df, or None if there's nothing to resume (out_path missing/
+        unreadable, no overlap, or restart=True).
+      - remaining_seg_df: seg_df with any already-done rows dropped.
+    """
+    if restart or not out_path or not os.path.isfile(out_path):
+        return None, seg_df
+    try:
+        existing = audformat.utils.read_csv(out_path)
+    except Exception:
+        return None, seg_df
+    if isinstance(existing, pd.Index):
+        # No data columns at all -- nothing usable to resume from.
+        return None, seg_df
+    if isinstance(existing, pd.Series):
+        # audformat.utils.read_csv returns a bare Series for single-column
+        # data (e.g. a lone "predicted" column) rather than a DataFrame.
+        existing = existing.to_frame()
+
+    done_idx = existing.index.intersection(seg_df.index)
+    if len(done_idx) == 0:
+        return None, seg_df
+
+    util.debug(
+        f"resuming: {len(done_idx)} of {len(seg_df)} rows already in "
+        f"{out_path}, skipping them"
+    )
+    remaining = seg_df.drop(index=done_idx)
+    return existing.loc[done_idx], remaining
+
+
+def _append_row_to_csv(out_path, idx, row, seg_df, header_needed):
+    """Append one prediction row to out_path right after it's computed.
+
+    Combines seg_df.loc[idx]'s original columns with the new `row` values,
+    preserving seg_df's own index shape (segmented or filewise). Returns
+    False so callers can flip header_needed off after the first write.
+    """
+    one_row_df = seg_df.loc[[idx]].copy()
+    for col, val in row.items():
+        one_row_df[col] = val
+    one_row_df.to_csv(out_path, mode="a", header=header_needed)
+    return False
+
+
+def _predict_with_features(
+    seg_df, model_name, util, out_path=None, restart=False
+):
     """Extract features for each segment and return them as a DataFrame."""
     if not model_name:
         util.error("--type feats requires --model FEATURE_EXTRACTOR")
     util.debug(f"feature extraction: {model_name}")
     extractor = _get_feature_extractor(model_name, util)
 
+    done_df, remaining_seg_df = (
+        _load_resumable_rows(out_path, seg_df, restart, util)
+        if out_path
+        else (None, seg_df)
+    )
+
     rows = []
     index_keep = []
-    for i, idx in enumerate(tqdm(seg_df.index.to_list(), desc="extracting features", unit="file")):
+    feat_cols = None
+    if done_df is not None:
+        feat_cols = [c for c in done_df.columns if c not in seg_df.columns]
+        for idx in done_df.index:
+            rows.append(done_df.loc[idx, feat_cols].to_numpy())
+            index_keep.append(idx)
+
+    header_needed = not out_path or not os.path.isfile(out_path)
+
+    for i, idx in enumerate(
+        tqdm(
+            remaining_seg_df.index.to_list(),
+            desc="extracting features",
+            unit="file",
+        )
+    ):
         file, offset, duration = _unpack_index(idx)
         if not os.path.isfile(file):
             util.warn(f"file not found, skipping: {file}")
@@ -693,11 +817,19 @@ def _predict_with_features(seg_df, model_name, util):
             )
             feats = extractor.extract_sample(signal, sr)
             feats = _flatten_features(feats)
-            rows.append(feats)
-            index_keep.append(idx)
         except Exception as e:
             util.warn(f"failed extracting features for {file}: {e}")
             continue
+
+        if feat_cols is None:
+            feat_cols = [f"feat_{j}" for j in range(len(feats))]
+        rows.append(feats)
+        index_keep.append(idx)
+
+        if out_path:
+            header_needed = _append_row_to_csv(
+                out_path, idx, dict(zip(feat_cols, feats)), seg_df, header_needed
+            )
 
     if not rows:
         util.error(
@@ -706,7 +838,11 @@ def _predict_with_features(seg_df, model_name, util):
         )
 
     feats_arr = np.array(rows)
-    cols = [f"feat_{j}" for j in range(feats_arr.shape[1])]
+    cols = (
+        feat_cols
+        if feat_cols is not None
+        else [f"feat_{j}" for j in range(feats_arr.shape[1])]
+    )
     out = pd.DataFrame(
         feats_arr,
         index=pd.MultiIndex.from_tuples(index_keep, names=seg_df.index.names),
@@ -730,7 +866,7 @@ def _flatten_features(features):
     return np.array(features).flatten()
 
 
-def _predict_with_model(seg_df, args, util):
+def _predict_with_model(seg_df, args, util, out_path=None, restart=False):
     """Load the experiment from --config and run its best model on each file."""
     from nkululeko.experiment import Experiment
 
@@ -756,10 +892,26 @@ def _predict_with_model(seg_df, args, util):
     is_classification = util.exp_is_classification()
     scale_feats = util.config_val("FEATS", "scale", False)
 
+    done_df, remaining_seg_df = (
+        _load_resumable_rows(out_path, seg_df, restart, util)
+        if out_path
+        else (None, seg_df)
+    )
+
     pred_rows = []
     index_keep = []
     failures = []
-    for idx in tqdm(seg_df.index.to_list(), desc="predicting", unit="file"):
+    if done_df is not None:
+        new_cols = [c for c in done_df.columns if c not in seg_df.columns]
+        for idx, row in zip(done_df.index, done_df[new_cols].to_dict("records")):
+            pred_rows.append(row)
+            index_keep.append(idx)
+
+    header_needed = not out_path or not os.path.isfile(out_path)
+
+    for idx in tqdm(
+        remaining_seg_df.index.to_list(), desc="predicting", unit="file"
+    ):
         file, offset, duration = _unpack_index(idx)
         if not os.path.isfile(file):
             util.warn(f"file not found, skipping: {file}")
@@ -801,6 +953,11 @@ def _predict_with_model(seg_df, args, util):
 
         pred_rows.append(row)
         index_keep.append(idx)
+
+        if out_path:
+            header_needed = _append_row_to_csv(
+                out_path, idx, row, seg_df, header_needed
+            )
 
     if not pred_rows:
         sample = failures[0] if failures else "no files found"
