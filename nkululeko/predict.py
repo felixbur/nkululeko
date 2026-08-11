@@ -733,7 +733,14 @@ def _load_resumable_rows(out_path, seg_df, restart, util):
         unreadable, no overlap, or restart=True).
       - remaining_seg_df: seg_df with any already-done rows dropped.
     """
-    if restart or not out_path or not os.path.isfile(out_path):
+    if restart:
+        if out_path and os.path.isfile(out_path):
+            try:
+                os.remove(out_path)
+            except OSError:
+                pass
+        return None, seg_df
+    if not out_path or not os.path.isfile(out_path):
         return None, seg_df
     try:
         existing = audformat.utils.read_csv(out_path)
