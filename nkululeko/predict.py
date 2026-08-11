@@ -429,7 +429,9 @@ def _run_folder(folder, args, util):
         restart=getattr(args, "restart", False),
     )
     out_df = seg_df.join(preds, how="left")
-    out_df.to_csv(args.outfile)
+    tmp_out = f"{args.outfile}.tmp"
+    out_df.to_csv(tmp_out)
+    os.replace(tmp_out, args.outfile)
     util.debug(f"wrote {args.outfile}")
 
 
