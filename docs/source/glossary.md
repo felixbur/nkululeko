@@ -64,6 +64,4 @@ This glossary provides definitions for key terms and components used in Nkululek
 
 23. **TestPredictor**: Handles prediction and result storage for test datasets (nkululeko/test_predictor.py)
 
-24. **Demo_predictor**: Handles real-time or file-based demonstration of trained models (nkululeko/demo_predictor.py)
-
-25. **FeatureAnalyser**: Analyzes feature importance using SHAP and other methods (nkululeko/feat_extract/feats_analyser.py)
+24. **FeatureAnalyser**: Analyzes feature importance using SHAP and other methods (nkululeko/feat_extract/feats_analyser.py)

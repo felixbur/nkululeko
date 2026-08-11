@@ -244,7 +244,7 @@ class MLPModel(Model):
         """Predict one sample."""
         with torch.no_grad():
             features = torch.from_numpy(features)
-            features = np.reshape(features, (-1, 1)).T
+            features = features.reshape(-1, 1).T
             logits = self.model(features.to(self.device))
             # logits = self.model(features)
         # if tensor conver to cpu

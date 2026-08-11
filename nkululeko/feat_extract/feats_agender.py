@@ -73,5 +73,7 @@ class AgenderSet(Featureset):
             self.df = self.util.get_store(storage, store_format)
 
     def extract_sample(self, signal, sr):
+        if not self.model_loaded:
+            self._load_model()
         result = self.model(signal, sr)
         return np.asarray(result["hidden_states"].flatten())
