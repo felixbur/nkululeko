@@ -214,7 +214,7 @@ class CNNModel(Model):
         """Predict one sample."""
         with torch.no_grad():
             logits = self.model(torch.from_numpy(features).to(self.device))
-        a = logits.numpy()
+        a = logits.cpu().numpy()
         res = {}
         for i in range(len(a[0])):
             res[i] = a[0][i]

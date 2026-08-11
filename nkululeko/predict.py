@@ -700,7 +700,10 @@ def _predict_with_features(seg_df, model_name, util):
             continue
 
     if not rows:
-        return pd.DataFrame(index=seg_df.index)
+        util.error(
+            f"feature extraction failed for all {len(seg_df)} rows; "
+            "see warnings above for the underlying error(s)"
+        )
 
     feats_arr = np.array(rows)
     cols = [f"feat_{j}" for j in range(feats_arr.shape[1])]
@@ -755,6 +758,7 @@ def _predict_with_model(seg_df, args, util):
 
     pred_rows = []
     index_keep = []
+    failures = []
     for idx in tqdm(seg_df.index.to_list(), desc="predicting", unit="file"):
         file, offset, duration = _unpack_index(idx)
         if not os.path.isfile(file):
@@ -772,6 +776,7 @@ def _predict_with_model(seg_df, args, util):
             result_dict = model.predict_sample(features)
         except Exception as e:
             util.warn(f"prediction failed for {file}: {e}")
+            failures.append(str(e))
             continue
 
         row = {}
@@ -797,7 +802,10 @@ def _predict_with_model(seg_df, args, util):
         index_keep.append(idx)
 
     if not pred_rows:
-        return pd.DataFrame(index=seg_df.index)
+        sample = failures[0] if failures else "no files found"
+        util.error(
+            f"prediction failed for all {len(seg_df)} rows; e.g. {sample}"
+        )
 
     out = pd.DataFrame(
         pred_rows,

@@ -77,5 +77,7 @@ class Agender_agenderSet(Featureset):
             self.df = self.util.get_store(storage, store_format)
 
     def extract_sample(self, signal, sr):
+        if not self.model_loaded:
+            self._load_model()
         result = self.model(signal, sr)
         return np.concatenate([result["logits_age"][0], result["logits_gender"][0]])

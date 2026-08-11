@@ -12,7 +12,6 @@ import pandas as pd
 from nkululeko.data.dataset import Dataset
 from nkululeko.data.dataset_csv import Dataset_CSV
 from nkululeko.data.datasplitter import Datasplitter
-from nkululeko.demo_predictor import Demo_predictor
 from nkululeko.experiment_context import (
     ExperimentContext,
     bind_experiment_context,
@@ -787,24 +786,6 @@ class Experiment:
 
     def print_best_model(self):
         self.runmgr.print_best_result_runs()
-
-    def demo(self, file, is_list, outfile):
-        model = self.runmgr.get_best_model()
-        lab_enc = None
-        try:
-            lab_enc = self.label_encoder
-        except AttributeError:
-            pass
-        demo = Demo_predictor(
-            model,
-            file,
-            is_list,
-            self.datasplitter.feature_extractor,
-            lab_enc,
-            outfile,
-            context=self.context,
-        )
-        demo.run_demo()
 
     def predict_test_and_save(self, result_name):
         model = self.runmgr.get_best_model()

@@ -291,5 +291,5 @@ class MLP_Reg_model(Model):
             features = torch.from_numpy(features)
             features = np.reshape(features, (-1, 1)).T
             logits = self.model(features.to(self.device)).reshape(-1)
-        a = logits.numpy()
+        a = logits.cpu().numpy()
         return a[0]

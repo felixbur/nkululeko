@@ -60,14 +60,6 @@ nkululeko.constants module
    :undoc-members:
    :show-inheritance:
 
-nkululeko.demo\_predictor module
---------------------------------
-
-.. automodule:: nkululeko.demo_predictor
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 nkululeko.experiment module
 ---------------------------
 

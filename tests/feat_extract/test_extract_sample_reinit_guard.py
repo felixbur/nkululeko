@@ -14,12 +14,23 @@ for every prediction.
 `self.init_model()` even though `SnrSet` (plain SNR estimation, no ML model)
 never defines `init_model` or a `model_initialized` flag at all -- so every
 call to `extract_sample()` raised `AttributeError`, not just a slow reload.
+
+`feats_agender.py`'s `AgenderSet` and `feats_agender_agender.py`'s
+`Agender_agenderSet` had the opposite variant: `extract_sample()` called
+`self.model(signal, sr)` directly with NO load guard at all (not even an
+unconditional `init_model()` call) -- so if `self.model` was ever `None`
+(unloaded), calling `extract_sample()` crashed with `TypeError: 'NoneType'
+object is not callable` instead of lazily loading like every sibling
+extractor does.
 """
 
 from unittest.mock import MagicMock
 
+import numpy as np
 import pytest
 
+from nkululeko.feat_extract.feats_agender import AgenderSet
+from nkululeko.feat_extract.feats_agender_agender import Agender_agenderSet
 from nkululeko.feat_extract.feats_ast import Ast
 from nkululeko.feat_extract.feats_bert import Bert
 from nkululeko.feat_extract.feats_hubert import Hubert
@@ -97,3 +108,42 @@ def test_snrset_extract_sample_does_not_call_init_model():
 
     assert result == 12.5
     instance.get_snr.assert_called_once_with("signal", 16000)
+
+
+def test_agenderset_extract_sample_lazy_loads_model():
+    instance = AgenderSet.__new__(AgenderSet)
+    instance.model_loaded = False
+
+    def fake_load():
+        instance.model_loaded = True
+        instance.model = MagicMock(
+            return_value={"hidden_states": np.array([[1.0, 2.0]])}
+        )
+
+    instance._load_model = MagicMock(side_effect=fake_load)
+
+    instance.extract_sample("signal", 16000)
+    instance.extract_sample("signal", 16000)
+
+    instance._load_model.assert_called_once()
+
+
+def test_agender_agenderset_extract_sample_lazy_loads_model():
+    instance = Agender_agenderSet.__new__(Agender_agenderSet)
+    instance.model_loaded = False
+
+    def fake_load():
+        instance.model_loaded = True
+        instance.model = MagicMock(
+            return_value={
+                "logits_age": np.array([[0.5]]),
+                "logits_gender": np.array([[0.1, 0.9]]),
+            }
+        )
+
+    instance._load_model = MagicMock(side_effect=fake_load)
+
+    instance.extract_sample("signal", 16000)
+    instance.extract_sample("signal", 16000)
+
+    instance._load_model.assert_called_once()

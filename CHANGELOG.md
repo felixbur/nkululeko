@@ -1,19 +1,24 @@
 Changelog
 =========
 
-Version 1.8.4 (26-08-16)
+Version 1.8.5 (26-08-11)
+------------------------
+* fixed bug: mlp_reg tensor to cpu
+* removed demo_predictor (obsolete for predict module)
+
+Version 1.8.4 (26-08-10)
 ------------------------
 * fix bug: unguarded init_model
 
-Version 1.8.3 (26-08-16)
+Version 1.8.3 (26-08-10)
 ------------------------
 * fix bug: best model reload
 
-Version 1.8.2 (26-08-16)
+Version 1.8.2 (26-08-10)
 ------------------------
 * fix bug: pytorch save 
 
-Version 1.8.1 (26-08-16)
+Version 1.8.1 (26-08-10)
 ------------------------
 * Added default value docs and fix security issues
 

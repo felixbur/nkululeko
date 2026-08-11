@@ -1037,6 +1037,88 @@ class TestPredictWithModel:
         # The fresh extractor produced features and we got back a prediction row.
         assert len(preds) == 1
 
+    def test_all_rows_failing_calls_error(self, monkeypatch, tmp_path):
+        """Regression: if every row raises during prediction (e.g. the
+        CUDA-tensor-to-numpy bug hitting every single row of a corpus),
+        _predict_with_model must report an error and exit -- not silently
+        return a DataFrame with no prediction columns, which _run_list would
+        then write out looking like a successful, if empty, run."""
+        import configparser
+
+        import nkululeko.glob_conf as glob_conf
+        from nkululeko import predict as predict_mod
+
+        wav = tmp_path / "x.wav"
+        _write_silent_wav(wav)
+
+        cfg = configparser.ConfigParser()
+        cfg["EXP"] = {"root": str(tmp_path), "name": "x"}
+        cfg["DATA"] = {"databases": "['adhoc']", "target": "emotion"}
+        cfg["FEATS"] = {"type": "['praat']"}
+        cfg["MODEL"] = {}
+        monkeypatch.setattr(glob_conf, "config", cfg)
+
+        fake_model = MagicMock()
+        fake_model.predict_sample.side_effect = RuntimeError(
+            "can't convert cuda:0 device type tensor to numpy"
+        )
+        fake_expr = MagicMock()
+        fake_expr.runmgr.get_best_model.return_value = fake_model
+        fake_expr.label_encoder = None
+        import nkululeko.experiment as expmod
+
+        monkeypatch.setattr(expmod, "Experiment", lambda *a, **kw: fake_expr)
+
+        fresh_extractor = MagicMock()
+        fresh_extractor.extract_sample.return_value = np.array([1.0, 2.0])
+        monkeypatch.setattr(
+            predict_mod, "_get_feature_extractor", MagicMock(return_value=fresh_extractor)
+        )
+
+        seg_df = predict_mod._build_segmented_df([str(wav)])
+
+        util = MagicMock()
+        util.get_save_name.return_value = str(tmp_path / "whatever")
+        util.exp_is_classification.return_value = True
+        util.config_val.side_effect = lambda section, key, default: (
+            cfg[section][key] if section in cfg and key in cfg[section] else default
+        )
+        util.error.side_effect = SystemExit
+
+        with pytest.raises(SystemExit):
+            predict_mod._predict_with_model(seg_df, argparse.Namespace(), util)
+
+        assert util.error.called
+
+
+class TestPredictWithFeatures:
+    def test_all_rows_failing_calls_error(self, monkeypatch, tmp_path):
+        """Same regression as TestPredictWithModel, but for the --type feats
+        path: if feature extraction fails for every row, report an error and
+        exit rather than silently writing an empty-of-features CSV."""
+        from nkululeko import predict as predict_mod
+
+        wav = tmp_path / "x.wav"
+        _write_silent_wav(wav)
+
+        broken_extractor = MagicMock()
+        broken_extractor.extract_sample.side_effect = RuntimeError("boom")
+        monkeypatch.setattr(
+            predict_mod,
+            "_get_feature_extractor",
+            MagicMock(return_value=broken_extractor),
+        )
+
+        seg_df = predict_mod._build_segmented_df([str(wav)])
+
+        util = MagicMock()
+        util.error.side_effect = SystemExit
+
+        with pytest.raises(SystemExit):
+            predict_mod._predict_with_features(seg_df, "praat", util)
+
+        assert util.error.called
+
 
 # ---------------------------------------------------------------------------
 # do_test backwards-compat shim
