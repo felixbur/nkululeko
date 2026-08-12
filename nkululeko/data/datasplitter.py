@@ -108,9 +108,9 @@ class Datasplitter(ContextAware):
         """
         self.df_dev = None
         all_datasets = list(self.datasets.values())
-        store = self.util.get_path("store")
-        no_reuse = eval(self.util.config_val("DATA", "no_reuse", "False"))
-        cache_paths = self._split_cache_paths(store)
+store = self.util.get_path("store")
+no_reuse = self.util.config_val_bool("DATA", "no_reuse", False)
+cache_paths = self._split_cache_paths(store)
         used_cache = not no_reuse and all(
             os.path.isfile(p) for p in cache_paths.values()
         )
