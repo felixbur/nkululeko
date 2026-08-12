@@ -7,7 +7,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 **⚠ 26 key(s) have inconsistent defaults across call sites:**
 
 * `'DATA'.'no_reuse'`: `'False'` (nkululeko/augment.py:43), `'False'` (nkululeko/experiment.py:161), `False` (nkululeko/utils/dataframe.py:250)
-* `'DATA'.'target'`: `'emotion'` (nkululeko/augment.py:81), `'emotion'` (nkululeko/augmenting/resampler.py:76), `'emotion'` (nkululeko/bundle.py:56), `'emotion'` (nkululeko/bundle.py:218), `None` (nkululeko/data/dataset.py:35), `None` (nkululeko/data/dataset_csv.py:84), `None` (nkululeko/experiment.py:123), `'emotion'` (nkululeko/experiment.py:617), `'emotion'` (nkululeko/experiment.py:627), `'emotion'` (nkululeko/experiment.py:637), `'emotion'` (nkululeko/export.py:108), `'emotion'` (nkululeko/feat_extract/feats_analyser.py:26), `'emotion'` (nkululeko/models/model.py:34), `'emotion'` (nkululeko/plots.py:31), `'class_label'` (nkululeko/plots.py:893), `'emotion'` (nkululeko/testing_predictor.py:71), `None` (nkululeko/utils/util.py:606)
+* `'DATA'.'target'`: `'emotion'` (nkululeko/augment.py:81), `'emotion'` (nkululeko/augmenting/resampler.py:76), `'emotion'` (nkululeko/bundle.py:56), `'emotion'` (nkululeko/bundle.py:218), `None` (nkululeko/data/dataset.py:35), `None` (nkululeko/data/dataset_csv.py:84), `None` (nkululeko/experiment.py:123), `'emotion'` (nkululeko/experiment.py:617), `'emotion'` (nkululeko/experiment.py:627), `'emotion'` (nkululeko/experiment.py:637), `'emotion'` (nkululeko/export.py:108), `'emotion'` (nkululeko/feat_extract/feats_analyser.py:26), `'emotion'` (nkululeko/models/model.py:34), `'emotion'` (nkululeko/plots.py:31), `'class_label'` (nkululeko/plots.py:893), `'emotion'` (nkululeko/testing_predictor.py:71), `None` (nkululeko/utils/util.py:613)
 * `'DATA'.'tests'`: `'False'` (nkululeko/data/dataset.py:725), `False` (nkululeko/nkululeko.py:46), `False` (nkululeko/testing_predictor.py:59)
 * `'DATA'.'type'`: `False` (nkululeko/data/dataset.py:817), `'dummy'` (nkululeko/data/datasplitter.py:236)
 * `'EXP'.'epochs'`: `1` (nkululeko/modelrunner.py:129), `1` (nkululeko/models/model_tuned.py:65), `'50'` (nkululeko/optimizers/scheduler_factory.py:84)
@@ -28,7 +28,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 * `'MODEL'.'drop'`: `False` (nkululeko/models/model_cnn.py:57), `False` (nkululeko/models/model_cnn.py:235), `False` (nkululeko/models/model_cnn.py:252), `'False'` (nkululeko/models/model_mlp.py:53), `'False'` (nkululeko/models/model_mlp.py:274), `'False'` (nkululeko/models/model_mlp.py:307), `False` (nkululeko/models/model_mlp_regression.py:55), `False` (nkululeko/models/model_mlp_regression.py:253), `False` (nkululeko/models/model_mlp_regression.py:272), `False` (nkululeko/models/model_tuned.py:67)
 * `'MODEL'.'learning_rate'`: `'0.0001'` (nkululeko/models/model_tuned.py:61), `0.3` (nkululeko/models/model_xgb.py:32), `str(default_lr)` (nkululeko/optimizers/optimizer_factory.py:32)
 * `'MODEL'.'loss'`: `'cross'` (nkululeko/models/model.py:93), `'bce'` (nkululeko/models/model_adm.py:65), `'mse'` (nkululeko/models/model_mlp_regression.py:29), `'cross'` (nkululeko/models/model_tuned.py:434), `'1-ccc'` (nkululeko/models/model_tuned.py:453)
-* `'MODEL'.'measure'`: `'mse'` (nkululeko/models/model_mlp_regression.py:232), `'ccc'` (nkululeko/models/model_tuned.py:56), `'uar'` (nkululeko/reporting/reporter.py:81), `'mse'` (nkululeko/reporting/reporter.py:92), `'mse'` (nkululeko/reporting/reporter.py:636), `'uar'` (nkululeko/reporting/run_plotter.py:79), `'uar'` (nkululeko/runmanager.py:166), `'uar'` (nkululeko/utils/util.py:615), `'mse'` (nkululeko/utils/util.py:622)
+* `'MODEL'.'measure'`: `'mse'` (nkululeko/models/model_mlp_regression.py:232), `'ccc'` (nkululeko/models/model_tuned.py:56), `'uar'` (nkululeko/reporting/reporter.py:81), `'mse'` (nkululeko/reporting/reporter.py:92), `'mse'` (nkululeko/reporting/reporter.py:636), `'uar'` (nkululeko/reporting/run_plotter.py:79), `'uar'` (nkululeko/runmanager.py:166), `'uar'` (nkululeko/utils/util.py:622), `'mse'` (nkululeko/utils/util.py:629)
 * `'MODEL'.'scheduler.gamma'`: `'0.5'` (nkululeko/optimizers/scheduler_factory.py:46), `'0.95'` (nkululeko/optimizers/scheduler_factory.py:54)
 * `'MODEL'.'type'`: `'svm'` (nkululeko/bundle.py:224), `''` (nkululeko/utils/naming.py:118)
 * `'REPORT'.'latex'`: `False` (nkululeko/experiment.py:90), `'nkululeko_latex'` (nkululeko/reporting/latex_writer.py:39)
@@ -247,7 +247,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'SEGMENT' | 'output_audio' | `'False'` | nkululeko/segment.py:322 |
 | 'SEGMENT' | 'result' | `'segmented'` | nkululeko/segment.py:239 |
 | 'SEGMENT' | 'sampling_rate' | `None` | nkululeko/segment.py:69 |
-| <section> | <key> | `str(default)` | nkululeko/utils/util.py:512 |
+| <section> | <key> | `str(default)` | nkululeko/utils/util.py:519 |
 | <section> | <name> | `False` | nkululeko/utils/naming.py:37, nkululeko/utils/naming.py:38 |
 | DATA.<d> | 'type' | `'audformat'` | nkululeko/experiment.py:107, nkululeko/experiment.py:170 |
 | DATA.<data_name> | 'check_size' | `False` | nkululeko/file_checker.py:39 |

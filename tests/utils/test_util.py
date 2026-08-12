@@ -679,3 +679,123 @@ class TestAppendToResultFile:
         u.append_to_result_file(path, "line extra")
         lines = (tmp_path / "results.txt").read_text().splitlines()
         assert lines == ["line", "line extra"]
+
+
+# ---------------------------------------------------------------------------
+# filter_filepath
+# ---------------------------------------------------------------------------
+
+
+class TestFilterFilepath:
+    """Regression: a file with multiple segments/utterances must not be
+    over-matched. filter_filepath used to match only on (grandparent dir,
+    parent dir, file name), ignoring start/end entirely -- so aligning a
+    small split (e.g. a cached train/test selection) against a larger,
+    unfiltered feature set pulled in *every* segment of any file the split
+    happened to touch, not just the specific segments actually selected.
+    """
+
+    def test_disambiguates_multiple_segments_of_same_file(self):
+        u = Util("test")
+        idx_target = pd.MultiIndex.from_tuples(
+            [
+                ("/data/a.wav", pd.Timedelta(0), pd.Timedelta(seconds=1)),
+                ("/data/a.wav", pd.Timedelta(seconds=1), pd.Timedelta(seconds=2)),
+                ("/data/a.wav", pd.Timedelta(seconds=2), pd.Timedelta(seconds=3)),
+                ("/data/b.wav", pd.Timedelta(0), pd.Timedelta(seconds=1)),
+            ],
+            names=["file", "start", "end"],
+        )
+        df_target = pd.DataFrame({"x": [1, 2, 3, 4]}, index=idx_target)
+
+        # df_source selected only ONE of a.wav's three segments.
+        idx_source = pd.MultiIndex.from_tuples(
+            [("/data/a.wav", pd.Timedelta(seconds=1), pd.Timedelta(seconds=2))],
+            names=["file", "start", "end"],
+        )
+        df_source = pd.DataFrame({"y": [1]}, index=idx_source)
+
+        u = Util("test")
+        result = u.filter_filepath(df_source, df_target)
+
+        assert len(result) == 1
+        assert result["x"].iloc[0] == 2
+
+    def test_matches_when_file_and_segment_align(self):
+        u = Util("test")
+        idx = pd.MultiIndex.from_tuples(
+            [("/data/a.wav", pd.Timedelta(0), pd.Timedelta(seconds=1))],
+            names=["file", "start", "end"],
+        )
+        df_source = pd.DataFrame({"y": [1]}, index=idx)
+        df_target = pd.DataFrame({"x": [10]}, index=idx)
+
+        result = u.filter_filepath(df_source, df_target)
+
+        assert len(result) == 1
+
+    def test_robust_to_different_absolute_path_prefix(self):
+        """The file-path component still matches on (grandparent, parent,
+        filename), so the same logical file under a different absolute
+        path prefix continues to match -- this is the reason
+        filter_filepath doesn't just compare full paths."""
+        u = Util("test")
+        idx_source = pd.MultiIndex.from_tuples(
+            [
+                (
+                    "/home/alice/data/sess1/a.wav",
+                    pd.Timedelta(0),
+                    pd.Timedelta(seconds=1),
+                )
+            ],
+            names=["file", "start", "end"],
+        )
+        idx_target = pd.MultiIndex.from_tuples(
+            [
+                (
+                    "/mnt/shared/data/sess1/a.wav",
+                    pd.Timedelta(0),
+                    pd.Timedelta(seconds=1),
+                )
+            ],
+            names=["file", "start", "end"],
+        )
+        df_source = pd.DataFrame({"y": [1]}, index=idx_source)
+        df_target = pd.DataFrame({"x": [10]}, index=idx_target)
+
+        result = u.filter_filepath(df_source, df_target)
+
+        assert len(result) == 1
+
+    def test_plain_filewise_index_still_works(self):
+        """Non-segmented (single-level) indices are unaffected."""
+        u = Util("test")
+        df_source = pd.DataFrame(
+            {"y": [1]}, index=pd.Index(["/data/a.wav"], name="file")
+        )
+        df_target = pd.DataFrame(
+            {"x": [10, 20]},
+            index=pd.Index(["/data/a.wav", "/data/b.wav"], name="file"),
+        )
+
+        result = u.filter_filepath(df_source, df_target)
+
+        assert len(result) == 1
+        assert result["x"].iloc[0] == 10
+
+    def test_no_match_returns_empty(self):
+        u = Util("test")
+        idx_source = pd.MultiIndex.from_tuples(
+            [("/data/a.wav", pd.Timedelta(0), pd.Timedelta(seconds=1))],
+            names=["file", "start", "end"],
+        )
+        idx_target = pd.MultiIndex.from_tuples(
+            [("/data/c.wav", pd.Timedelta(0), pd.Timedelta(seconds=1))],
+            names=["file", "start", "end"],
+        )
+        df_source = pd.DataFrame({"y": [1]}, index=idx_source)
+        df_target = pd.DataFrame({"x": [10]}, index=idx_target)
+
+        result = u.filter_filepath(df_source, df_target)
+
+        assert len(result) == 0
