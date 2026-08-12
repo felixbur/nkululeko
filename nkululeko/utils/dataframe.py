@@ -207,10 +207,12 @@ def read_cached_df(storage, target):
     survive a CSV round-trip on their own, so callers that read
     `df.is_labeled` right after loading need it set here.
     """
-    try:
-        df = audformat.utils.read_csv(storage)
-    except ValueError:
-        return pd.DataFrame()
+try:
+    df = audformat.utils.read_csv(storage)
+except ValueError:
+    df = pd.DataFrame()
+    df.is_labeled = False
+    return df
     if isinstance(df, pd.Series):
         df = df.to_frame()
     elif isinstance(df, pd.Index):
