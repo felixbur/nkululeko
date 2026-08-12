@@ -1,13 +1,17 @@
 # test_dataframe.py - unit tests for nkululeko/utils/dataframe.py
 import configparser
 import math
+import os
+import tempfile
 import unittest
 from datetime import timedelta
+from unittest.mock import MagicMock
 
 import numpy as np
 import pandas as pd
 
 import nkululeko.glob_conf as glob_conf
+from nkululeko.utils.dataframe import should_reuse_split, split_cache_paths
 from nkululeko.utils.errors import NkululukoError
 from nkululeko.utils.util import Util
 
@@ -367,6 +371,90 @@ class TestSegmentSilence(unittest.TestCase):
         result = self.segment_silence(df, with_borders=False, remove_speaker_id=True)
         self.assertEqual(len(result), 1)
         self.assertEqual(result["speaker"].iloc[0], "silence")
+
+
+class TestSplitCachePaths(unittest.TestCase):
+    def test_split3_false_has_train_and_test_only(self):
+        paths = split_cache_paths("/some/store/", False)
+        self.assertEqual(set(paths.keys()), {"train", "test"})
+
+    def test_split3_true_adds_dev(self):
+        paths = split_cache_paths("/some/store/", True)
+        self.assertEqual(set(paths.keys()), {"train", "test", "dev"})
+
+    def test_paths_are_under_store(self):
+        paths = split_cache_paths("/some/store/", False)
+        self.assertEqual(paths["train"], os.path.join("/some/store/", "traindf.csv"))
+        self.assertEqual(paths["test"], os.path.join("/some/store/", "testdf.csv"))
+
+
+class TestShouldReuseSplit(unittest.TestCase):
+    """Direct unit tests for should_reuse_split -- previously only ever
+    exercised indirectly (through Datasplitter.fill_train_and_tests) or
+    monkeypatched out entirely (in test_dataset_prepare.py), so the real
+    predicate itself had no direct coverage."""
+
+    def _make_util(self, store, no_reuse=False):
+        util = MagicMock()
+        util.config_val_bool.return_value = no_reuse
+        util.get_path.return_value = store
+        return util
+
+    def test_true_when_no_reuse_false_and_all_files_exist(self):
+        with tempfile.TemporaryDirectory() as store:
+            store = store + os.sep
+            for fname in ("traindf.csv", "testdf.csv"):
+                open(os.path.join(store, fname), "w").close()
+            util = self._make_util(store, no_reuse=False)
+
+            self.assertTrue(should_reuse_split(util, split3=False))
+
+    def test_false_when_no_reuse_true_even_if_files_exist(self):
+        with tempfile.TemporaryDirectory() as store:
+            store = store + os.sep
+            for fname in ("traindf.csv", "testdf.csv"):
+                open(os.path.join(store, fname), "w").close()
+            util = self._make_util(store, no_reuse=True)
+
+            self.assertFalse(should_reuse_split(util, split3=False))
+            # no_reuse must short-circuit before even resolving the store
+            # path -- file presence shouldn't matter once it's True.
+            util.get_path.assert_not_called()
+
+    def test_false_when_a_required_file_is_missing(self):
+        with tempfile.TemporaryDirectory() as store:
+            store = store + os.sep
+            open(os.path.join(store, "traindf.csv"), "w").close()
+            # testdf.csv intentionally missing.
+            util = self._make_util(store, no_reuse=False)
+
+            self.assertFalse(should_reuse_split(util, split3=False))
+
+    def test_split3_requires_devdf_too(self):
+        with tempfile.TemporaryDirectory() as store:
+            store = store + os.sep
+            for fname in ("traindf.csv", "testdf.csv"):
+                open(os.path.join(store, fname), "w").close()
+            util = self._make_util(store, no_reuse=False)
+
+            self.assertFalse(should_reuse_split(util, split3=True))
+
+            open(os.path.join(store, "devdf.csv"), "w").close()
+            self.assertTrue(should_reuse_split(util, split3=True))
+
+    def test_split3_false_does_not_require_devdf(self):
+        with tempfile.TemporaryDirectory() as store:
+            store = store + os.sep
+            for fname in ("traindf.csv", "testdf.csv"):
+                open(os.path.join(store, fname), "w").close()
+            util = self._make_util(store, no_reuse=False)
+
+            self.assertTrue(should_reuse_split(util, split3=False))
+
+    def test_missing_store_directory_returns_false(self):
+        util = self._make_util("/no/such/store/dir/", no_reuse=False)
+
+        self.assertFalse(should_reuse_split(util, split3=False))
 
 
 if __name__ == "__main__":

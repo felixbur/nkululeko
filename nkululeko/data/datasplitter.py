@@ -10,6 +10,11 @@ from sklearn.preprocessing import LabelEncoder
 from nkululeko.experiment_context import ContextAware
 from nkululeko.file_checker import FileChecker
 from nkululeko.filter_data import DataFilter
+from nkululeko.utils.dataframe import (
+    read_cached_df,
+    should_reuse_split,
+    split_cache_paths,
+)
 from nkululeko.utils.util import Util
 
 
@@ -86,36 +91,62 @@ class Datasplitter(ContextAware):
         return df
 
     def fill_train_and_tests(self):
-        """Set up train and development sets. The method should be specified in the config."""
-        self.df_dev = None
-        train_dfs, test_dfs, dev_dfs = [], [], []
-        all_datasets = list(self.datasets.values())
-        for d in all_datasets:
-            if self.split3:
-                d.split_3()
-            else:
-                d.split()
-            # Prepare labels only for supervised experiments
-            if self.target is not None and self.target != "none":
-                d.prepare_labels()
-            if d.df_train.shape[0] == 0:
-                self.util.debug(f"warn: {d.name} train empty")
-            else:
-                train_dfs.append(d.df_train)
-            if d.df_test.shape[0] == 0:
-                self.util.debug(f"warn: {d.name} test empty")
-            else:
-                test_dfs.append(d.df_test)
-            if self.split3:
-                if d.df_dev.shape[0] == 0:
-                    self.util.debug(f"warn: {d.name} dev empty")
-                else:
-                    dev_dfs.append(d.df_dev)
+        """Set up train and development sets. The method should be specified in the config.
 
-        self.df_train = pd.concat(train_dfs) if train_dfs else pd.DataFrame()
-        self.df_test = pd.concat(test_dfs) if test_dfs else pd.DataFrame()
-        if self.split3:
-            self.df_dev = pd.concat(dev_dfs) if dev_dfs else pd.DataFrame()
+        The final selection (after per-dataset splitting, file checks, and
+        DATA/EXP filters have all run once) is cached to
+        ``{store}traindf.csv``/``testdf.csv``/``devdf.csv``. A later run of
+        the same experiment reuses that exact selection -- regardless of any
+        filters in place at the time -- instead of recomputing it, unless
+        ``DATA.no_reuse`` is set to ``True``. Dataset.prepare() must also
+        skip its own random sample-limiting filters on the same condition
+        (see should_reuse_split) or the raw per-dataset data can drift out
+        of sync with what this cache actually reflects.
+        """
+        self.df_dev = None
+        all_datasets = list(self.datasets.values())
+        store = self.util.get_path("store")
+        used_cache = should_reuse_split(self.util, self.split3)
+        cache_paths = split_cache_paths(store, self.split3)
+
+        if used_cache:
+            self.util.debug(
+                f"reusing previously stored train/test"
+                f"{'/dev' if self.split3 else ''} split from {store} "
+                "(set DATA.no_reuse=True to force a fresh split)"
+            )
+            self.df_train = read_cached_df(cache_paths["train"], self.target)
+            self.df_test = read_cached_df(cache_paths["test"], self.target)
+            if self.split3:
+                self.df_dev = read_cached_df(cache_paths["dev"], self.target)
+        else:
+            train_dfs, test_dfs, dev_dfs = [], [], []
+            for d in all_datasets:
+                if self.split3:
+                    d.split_3()
+                else:
+                    d.split()
+                # Prepare labels only for supervised experiments
+                if self.target is not None and self.target != "none":
+                    d.prepare_labels()
+                if d.df_train.shape[0] == 0:
+                    self.util.debug(f"warn: {d.name} train empty")
+                else:
+                    train_dfs.append(d.df_train)
+                if d.df_test.shape[0] == 0:
+                    self.util.debug(f"warn: {d.name} test empty")
+                else:
+                    test_dfs.append(d.df_test)
+                if self.split3:
+                    if d.df_dev.shape[0] == 0:
+                        self.util.debug(f"warn: {d.name} dev empty")
+                    else:
+                        dev_dfs.append(d.df_dev)
+
+            self.df_train = pd.concat(train_dfs) if train_dfs else pd.DataFrame()
+            self.df_test = pd.concat(test_dfs) if test_dfs else pd.DataFrame()
+            if self.split3:
+                self.df_dev = pd.concat(dev_dfs) if dev_dfs else pd.DataFrame()
 
         # Aggregate boolean flags across all datasets (any-wins semantics):
         # a combined DataFrame is labeled / has speaker / gender / age if ANY
@@ -142,39 +173,55 @@ class Datasplitter(ContextAware):
         self.util.copy_flags(self, self.df_train)
         if self.split3:
             self.util.copy_flags(self, self.df_dev)
-        # Try data checks
-        datachecker = FileChecker(self.df_train)
-        self.df_train = datachecker.all_checks()
-        datachecker.set_data(self.df_test)
-        self.df_test = datachecker.all_checks()
-        if self.split3:
-            datachecker.set_data(self.df_dev)
-            self.df_dev = datachecker.all_checks()
 
-        # Check for filters
-        filter_sample_selection = self.util.config_val(
-            "EXP", "filter.sample_selection", "all"
-        )
-        if filter_sample_selection == "all":
-            datafilter = DataFilter(self.df_train, context=self.context)
-            self.df_train = datafilter.all_filters()
-            datafilter = DataFilter(self.df_test, context=self.context)
-            self.df_test = datafilter.all_filters()
+        # Skip file checks and filters entirely on a cache hit: the whole
+        # point of reusing a prior split is that it stays exactly as it was
+        # regardless of the current filter config. Both FileChecker (via
+        # DATA.check_size) and DataFilter (via DATA.limit_samples/
+        # limit_speakers) can randomly subsample, so both must be skipped,
+        # not just DataFilter.
+        if not used_cache:
+            # Try data checks
+            datachecker = FileChecker(self.df_train)
+            self.df_train = datachecker.all_checks()
+            datachecker.set_data(self.df_test)
+            self.df_test = datachecker.all_checks()
             if self.split3:
-                datafilter = DataFilter(self.df_dev, context=self.context)
-                self.df_dev = datafilter.all_filters()
-        elif filter_sample_selection == "train":
-            datafilter = DataFilter(self.df_train, context=self.context)
-            self.df_train = datafilter.all_filters()
-        elif filter_sample_selection == "test":
-            datafilter = DataFilter(self.df_test, context=self.context)
-            self.df_test = datafilter.all_filters()
-        else:
-            msg = (
-                "unkown filter sample selection specifier"
-                f" {filter_sample_selection}, should be [all | train | test]"
+                datachecker.set_data(self.df_dev)
+                self.df_dev = datachecker.all_checks()
+
+            # Check for filters
+            filter_sample_selection = self.util.config_val(
+                "EXP", "filter.sample_selection", "all"
             )
-            self.util.error(msg)
+            if filter_sample_selection == "all":
+                datafilter = DataFilter(self.df_train, context=self.context)
+                self.df_train = datafilter.all_filters()
+                datafilter = DataFilter(self.df_test, context=self.context)
+                self.df_test = datafilter.all_filters()
+                if self.split3:
+                    datafilter = DataFilter(self.df_dev, context=self.context)
+                    self.df_dev = datafilter.all_filters()
+            elif filter_sample_selection == "train":
+                datafilter = DataFilter(self.df_train, context=self.context)
+                self.df_train = datafilter.all_filters()
+            elif filter_sample_selection == "test":
+                datafilter = DataFilter(self.df_test, context=self.context)
+                self.df_test = datafilter.all_filters()
+            else:
+                msg = (
+                    "unknown filter sample selection specifier"
+                    f" {filter_sample_selection}, should be [all | train | test]"
+                )
+                self.util.error(msg)
+
+            # Cache the exact final selection (post-filecheck, post-filter,
+            # pre-label-encoding) so a later run can reuse it verbatim via
+            # DATA.no_reuse (default) -- see fill_train_and_tests docstring.
+            self.df_train.to_csv(cache_paths["train"])
+            self.df_test.to_csv(cache_paths["test"])
+            if self.split3:
+                self.df_dev.to_csv(cache_paths["dev"])
 
         # Always back up the pre-encoding labels before anything below reads
         # or transforms self.target, so class_label is reliably present
@@ -301,6 +348,13 @@ class Datasplitter(ContextAware):
 
         # Build per-dataset test mapping for multi-test-set evaluation
         self._build_test_ds_df()
+        if not used_cache:
+            # Persist each dataset's slice too, so a later cache-hit run's
+            # _build_test_ds_df() can reconstruct this same per-dataset
+            # breakdown without needing the (skipped) per-dataset split()
+            # results.
+            for name, ds_test in self.test_ds_df.items():
+                ds_test.to_csv(f"{store}{name}_testdf.csv")
 
         if self.split3:
             return self.df_train, self.df_test, self.df_dev
@@ -312,8 +366,10 @@ class Datasplitter(ContextAware):
 
         This enables per-dataset evaluation when multiple datasets contribute test
         samples. The mapping is built from the in-memory dataset splits
-        (``dataset.df_test``) and falls back to legacy ``{name}_testdf.pkl``
-        caches if needed.
+        (``dataset.df_test``), falling back to a ``{name}_testdf.csv`` cache
+        (written by fill_train_and_tests() on a fresh run, read back here on
+        a later split-reuse cache-hit run where per-dataset split() was
+        skipped) and then to legacy ``{name}_testdf.pkl`` caches if needed.
         """
         self.test_ds_df = {}
         if self.df_test.empty:
@@ -325,6 +381,16 @@ class Datasplitter(ContextAware):
                 ds_test = self.df_test[self.df_test.index.isin(ds_test_source.index)]
                 if ds_test.shape[0] > 0:
                     self.test_ds_df[name] = ds_test
+                continue
+            storage_test_csv = f"{store_path}{name}_testdf.csv"
+            if os.path.isfile(storage_test_csv):
+                ds_test_cached = read_cached_df(storage_test_csv, self.target)
+                if ds_test_cached.shape[0] > 0:
+                    ds_test = self.df_test[
+                        self.df_test.index.isin(ds_test_cached.index)
+                    ]
+                    if ds_test.shape[0] > 0:
+                        self.test_ds_df[name] = ds_test
                 continue
             storage_test = f"{store_path}{name}_testdf.pkl"
             if os.path.isfile(storage_test):

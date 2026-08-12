@@ -1,5 +1,6 @@
 # dataframe.py - mixin for DataFrame, label, and numeric helpers
 import ast
+import os
 
 import audformat
 import numpy as np
@@ -193,6 +194,65 @@ class DataFrameMixin:
         if old_min == old_max:
             return np.full_like(values, (new_min + new_max) / 2)
         return (values - old_min) / (old_max - old_min) * (new_max - new_min) + new_min
+
+
+def read_cached_df(storage, target):
+    """Read a DataFrame previously written via `.to_csv()`, e.g. a cached
+    train/test/dev split, handling the `audformat.utils.read_csv` edge
+    cases: an empty split raises `ValueError` (-> empty DataFrame), and
+    single-column/no-column data comes back as a bare Series/Index rather
+    than a DataFrame.
+
+    Sets `is_labeled` (True if `target` is a column) on the returned
+    DataFrame as an ad-hoc attribute -- ad-hoc attributes like this never
+    survive a CSV round-trip on their own, so callers that read
+    `df.is_labeled` right after loading need it set here.
+    """
+    try:
+        df = audformat.utils.read_csv(storage)
+    except ValueError:
+        return pd.DataFrame()
+    if isinstance(df, pd.Series):
+        df = df.to_frame()
+    elif isinstance(df, pd.Index):
+        df = pd.DataFrame(index=df)
+    df.is_labeled = target in df
+    return df
+
+
+def split_cache_paths(store, split3):
+    """Paths for the whole-pipeline train/test/dev split cache written by
+    Datasplitter.fill_train_and_tests(): the exact final, post-filter
+    selection, cached so it can be reused verbatim on a later run
+    regardless of the filter config then in place."""
+    paths = {
+        "train": os.path.join(store, "traindf.csv"),
+        "test": os.path.join(store, "testdf.csv"),
+    }
+    if split3:
+        paths["dev"] = os.path.join(store, "devdf.csv")
+    return paths
+
+
+def should_reuse_split(util, split3):
+    """True if a previously cached train/dev/test split (see
+    split_cache_paths) will be reused instead of computing a fresh one --
+    i.e. DATA.no_reuse is not set and the cache files all already exist.
+
+    Anything that touches the raw per-dataset data before the split is
+    combined and cached (e.g. a random sample-limiting filter applied at
+    dataset-load time) must check this and skip itself on a cache hit, or
+    the raw data can silently drift out of sync with what the cached split
+    was actually computed from -- picture a fresh, differently-random
+    sample landing in `self.df` on this run while the cached split still
+    reflects a past run's different random sample.
+    """
+    if util.config_val_bool("DATA", "no_reuse", False):
+        return False
+    store = util.get_path("store")
+    return all(
+        os.path.isfile(p) for p in split_cache_paths(store, split3).values()
+    )
 
 
 def segment_silence(

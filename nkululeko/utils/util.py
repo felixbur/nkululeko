@@ -430,30 +430,37 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         return (p.parent.parent.name, p.parent.name, p.name)
 
     def filter_filepath(self, df_source, df_target):
-        """Restrict df_target to rows whose file path also occurs in df_source.
+        """Restrict df_target to rows whose file path -- and, for a
+        segmented (file, start, end) index, the exact start/end too --
+        also occurs in df_source.
 
-        Matching is done on ``(grandparent dir name, parent dir name, file name)``
-        of each row's first index level, via :meth:`extract_parent_and_name`,
-        rather than on the full path.
+        The file-path component is matched on ``(grandparent dir name,
+        parent dir name, file name)`` via :meth:`extract_parent_and_name`,
+        rather than the full path, so this is robust to different
+        absolute-path prefixes for what's otherwise the same file. Any
+        additional index levels (segment start/end) are matched exactly,
+        so a file with multiple segments/utterances isn't over-matched:
+        df_target keeps only the rows for the *specific* segments present
+        in df_source, not every segment of any file df_source happens to
+        touch.
 
         Args:
-            df_source: DataFrame whose first index level provides the file
-                paths to keep.
+            df_source: DataFrame whose index provides the (file[, start,
+                end]) keys to keep.
             df_target: DataFrame to filter.
 
         Returns:
-            DataFrame: the subset of df_target whose paths match df_source.
+            DataFrame: the subset of df_target whose index matches df_source.
         """
-        df_source_keys = {
-           self.extract_parent_and_name(path)
-            for path in df_source.index.get_level_values(0)
-        }
-        df_target = df_target[
-            df_target.index.get_level_values(0).map(
-                lambda p: self.extract_parent_and_name(p) in df_source_keys
-            )
-        ]
-        return df_target
+
+        def _key(index_entry):
+            if isinstance(index_entry, tuple):
+                path, *rest = index_entry
+                return (self.extract_parent_and_name(path), *rest)
+            return (self.extract_parent_and_name(index_entry),)
+
+        df_source_keys = {_key(idx) for idx in df_source.index}
+        return df_target[[_key(idx) in df_source_keys for idx in df_target.index]]
 
 
     def check_df(self, i, df):

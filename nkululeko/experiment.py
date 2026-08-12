@@ -24,6 +24,7 @@ from nkululeko.reporting.report import Report
 from nkululeko.runmanager import Runmanager
 from nkululeko.scaler import Scaler
 from nkululeko.testing_predictor import TestPredictor
+from nkululeko.utils.dataframe import read_cached_df
 from nkululeko.utils.pickle_integrity import save_checksum, verify_checksum
 from nkululeko.utils.util import Util
 
@@ -144,21 +145,7 @@ class Experiment:
         self.datasplitter = Datasplitter(self.datasets, context=self.context)
 
     def _import_csv(self, storage):
-        # df = pd.read_csv(storage, header=0, index_col=[0,1,2])
-        # df.index.set_levels(pd.to_timedelta(df.index.levels[1]), level=1)
-        # df.index.set_levels(pd.to_timedelta(df.index.levels[2]), level=2)
-        try:
-            df = audformat.utils.read_csv(storage)
-        except ValueError:
-            # split might be empty
-            return pd.DataFrame()
-        if isinstance(df, pd.Series):
-            df = df.to_frame()
-        elif isinstance(df, pd.Index):
-            df = pd.DataFrame(index=df)
-        df.is_labeled = True if self.target in df else False
-        # print(df.head())
-        return df
+        return read_cached_df(storage, self.target)
 
     def fill_tests(self, encode=True):
         """Only fill a new test set.

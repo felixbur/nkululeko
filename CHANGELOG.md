@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.8.7 (26-08-12)
+------------------------
+* (re) added re-use of selected samples 
+
 Version 1.8.6 (26-08-11)
 ------------------------
 * added resume for predict
