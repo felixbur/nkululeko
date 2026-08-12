@@ -656,3 +656,172 @@ class TestUnseenLabelsError:
         assert len(errors) == 1
         assert "novelcat" in errors[0]
         assert "not seen in training" in errors[0]
+
+
+class TestSplitReuse:
+    """Regression: a second run of the same experiment must reuse exactly
+    the same train/dev/test split as a prior run, regardless of any
+    split()/filter differences the second run's config might introduce --
+    restoring the "reuse of test and train file sets" feature from v0.18.3
+    (see CHANGELOG.md), which the Datasplitter refactor dropped."""
+
+    def test_second_run_reuses_first_runs_split_without_calling_split_again(self):
+        fake_ds_1 = _FakeDataset(
+            train_labels=["happy", "sad"],
+            test_labels=["happy"],
+        )
+        ds1, errors1 = _make_ds({"db": fake_ds_1})
+        df_train_1, df_test_1 = ds1.fill_train_and_tests()
+        assert errors1 == []
+
+        # A second "run" whose split() would produce entirely different
+        # data if it were called -- and raises if it is, proving reuse.
+        fake_ds_2 = _FakeDataset(
+            train_labels=["angry", "angry", "angry"],
+            test_labels=["angry"],
+        )
+        fake_ds_2.split = MagicMock(
+            side_effect=AssertionError("split() must not run on a cache hit")
+        )
+        fake_ds_2.prepare_labels = MagicMock(
+            side_effect=AssertionError("prepare_labels() must not run on a cache hit")
+        )
+        ds2, errors2 = _make_ds({"db": fake_ds_2})
+
+        df_train_2, df_test_2 = ds2.fill_train_and_tests()
+
+        assert errors2 == []
+        fake_ds_2.split.assert_not_called()
+        fake_ds_2.prepare_labels.assert_not_called()
+        assert list(df_train_2["class_label"]) == list(df_train_1["class_label"])
+        assert list(df_test_2["class_label"]) == list(df_test_1["class_label"])
+
+    def test_no_reuse_forces_a_fresh_split(self):
+        fake_ds_1 = _FakeDataset(
+            train_labels=["happy", "sad"],
+            test_labels=["happy"],
+        )
+        ds1, errors1 = _make_ds({"db": fake_ds_1})
+        ds1.fill_train_and_tests()
+
+        glob_conf.config["DATA"]["no_reuse"] = "True"
+
+        fake_ds_2 = _FakeDataset(
+            train_labels=["angry", "angry", "angry"],
+            test_labels=["angry"],
+        )
+        split_calls = []
+        fake_ds_2.split = lambda: split_calls.append(True)
+        ds2, errors2 = _make_ds({"db": fake_ds_2})
+
+        df_train_2, df_test_2 = ds2.fill_train_and_tests()
+
+        assert errors2 == []
+        assert split_calls == [True]
+        assert list(df_train_2["class_label"]) == ["angry", "angry", "angry"]
+
+    def test_cache_hit_ignores_current_filter_config(self):
+        """DATA.limit_samples would normally shrink df_train on a fresh
+        split; on a cache-hit run it must have no effect at all."""
+        fake_ds_1 = _FakeDataset(
+            train_labels=["happy", "sad", "happy", "sad"],
+            test_labels=["happy", "sad"],
+        )
+        ds1, errors1 = _make_ds({"db": fake_ds_1})
+        df_train_1, _ = ds1.fill_train_and_tests()
+        assert len(df_train_1) == 4
+
+        glob_conf.config["DATA"]["limit_samples"] = "1"
+
+        fake_ds_2 = _FakeDataset(
+            train_labels=["happy", "sad", "happy", "sad"],
+            test_labels=["happy", "sad"],
+        )
+        ds2, errors2 = _make_ds({"db": fake_ds_2})
+        df_train_2, _ = ds2.fill_train_and_tests()
+
+        assert errors2 == []
+        assert len(df_train_2) == 4
+
+    def test_flags_present_on_cache_loaded_splits(self):
+        """is_labeled/got_gender/etc. are ad-hoc attributes that don't
+        survive a CSV round-trip on their own -- must be reapplied."""
+        fake_ds_1 = _FakeDataset(
+            train_labels=["happy", "sad"],
+            test_labels=["happy"],
+        )
+        fake_ds_1.got_gender = True
+        ds1, errors1 = _make_ds({"db": fake_ds_1})
+        ds1.fill_train_and_tests()
+
+        fake_ds_2 = _FakeDataset(
+            train_labels=["happy", "sad"],
+            test_labels=["happy"],
+        )
+        fake_ds_2.got_gender = True
+        ds2, errors2 = _make_ds({"db": fake_ds_2})
+        df_train_2, df_test_2 = ds2.fill_train_and_tests()
+
+        assert errors2 == []
+        for df in (df_train_2, df_test_2):
+            assert hasattr(df, "is_labeled") and df.is_labeled is True
+            assert hasattr(df, "got_gender") and df.got_gender is True
+
+    def test_test_ds_df_reconstructed_on_cache_hit_for_multi_dataset(self):
+        """Multi-dataset per-test-set breakdown (test_ds_df, used by
+        Experiment.evaluate_per_test_set) must still work on a cache-hit
+        run, even though per-dataset split() -- which normally populates
+        dataset.df_test in memory for _build_test_ds_df to key off of --
+        never runs."""
+        fake_a1 = _FakeDataset(train_labels=["happy", "sad"], test_labels=["happy"])
+        fake_a1.name = "db_a"
+        fake_b1 = _FakeDataset(train_labels=["happy", "sad"], test_labels=["sad"])
+        fake_b1.name = "db_b"
+        ds1, errors1 = _make_ds({"db_a": fake_a1, "db_b": fake_b1})
+        ds1.fill_train_and_tests()
+        assert errors1 == []
+        assert set(ds1.test_ds_df.keys()) == {"db_a", "db_b"}
+
+        fake_a2 = _FakeDataset(train_labels=["angry"], test_labels=["angry"])
+        fake_a2.name = "db_a"
+        fake_a2.split = MagicMock(
+            side_effect=AssertionError("split() must not run on a cache hit")
+        )
+        fake_b2 = _FakeDataset(train_labels=["angry"], test_labels=["angry"])
+        fake_b2.name = "db_b"
+        fake_b2.split = MagicMock(
+            side_effect=AssertionError("split() must not run on a cache hit")
+        )
+        ds2, errors2 = _make_ds({"db_a": fake_a2, "db_b": fake_b2})
+
+        ds2.fill_train_and_tests()
+
+        assert errors2 == []
+        assert set(ds2.test_ds_df.keys()) == {"db_a", "db_b"}
+        assert len(ds2.test_ds_df["db_a"]) == len(ds1.test_ds_df["db_a"])
+        assert len(ds2.test_ds_df["db_b"]) == len(ds1.test_ds_df["db_b"])
+
+    def test_split3_dev_cache_reused(self):
+        fake_ds_1 = _FakeDataset(
+            train_labels=["happy", "sad"],
+            test_labels=["happy"],
+            dev_labels=["sad", "happy"],
+        )
+        ds1, errors1 = _make_ds({"db": fake_ds_1}, split3=True)
+        df_train_1, df_test_1, df_dev_1 = ds1.fill_train_and_tests()
+        assert errors1 == []
+
+        fake_ds_2 = _FakeDataset(
+            train_labels=["angry", "angry"],
+            test_labels=["angry"],
+            dev_labels=["angry", "angry", "angry"],
+        )
+        fake_ds_2.split_3 = MagicMock(
+            side_effect=AssertionError("split_3() must not run on a cache hit")
+        )
+        ds2, errors2 = _make_ds({"db": fake_ds_2}, split3=True)
+
+        df_train_2, df_test_2, df_dev_2 = ds2.fill_train_and_tests()
+
+        assert errors2 == []
+        assert list(df_dev_2["class_label"]) == list(df_dev_1["class_label"])

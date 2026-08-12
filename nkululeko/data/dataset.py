@@ -34,7 +34,6 @@ class Dataset(ContextAware):
         self.target = self.util.config_val("DATA", "target", None)
         self.plot = Plots(context=self.context)
         self.limit = int(self.util.config_val_data(self.name, "limit", 0))
-        self.start_fresh = eval(self.util.config_val("DATA", "no_reuse", "False"))
         self.is_labeled, self.got_speaker, self.got_gender, self.got_age = (
             False,
             False,
@@ -397,7 +396,14 @@ class Dataset(ContextAware):
         self.util.debug(
             f"splitting database {self.name} into train/dev/test with strategy {split_strategy}"
         )
-        # 'database' (default), 'speaker_split', 'specified', 'reuse'
+        # 'database' (default), 'speaker_split', 'specified', 'balanced',
+        # 'speakers_stated', 'random', or a list of test speakers.
+        #
+        # Note: reusing a prior train/dev/test split across runs is not a
+        # split_strategy value -- it's controlled by DATA.no_reuse at the
+        # Datasplitter level (see Datasplitter.fill_train_and_tests()),
+        # which caches the combined, post-filter split and, when reused,
+        # skips split_3() below entirely.
         if split_strategy == "database":
             #  use the splits from the database
             testdf = self.db.tables[self.target + ".test"].df

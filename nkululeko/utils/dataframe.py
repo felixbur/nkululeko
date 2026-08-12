@@ -195,6 +195,30 @@ class DataFrameMixin:
         return (values - old_min) / (old_max - old_min) * (new_max - new_min) + new_min
 
 
+def read_cached_df(storage, target):
+    """Read a DataFrame previously written via `.to_csv()`, e.g. a cached
+    train/test/dev split, handling the `audformat.utils.read_csv` edge
+    cases: an empty split raises `ValueError` (-> empty DataFrame), and
+    single-column/no-column data comes back as a bare Series/Index rather
+    than a DataFrame.
+
+    Sets `is_labeled` (True if `target` is a column) on the returned
+    DataFrame as an ad-hoc attribute -- ad-hoc attributes like this never
+    survive a CSV round-trip on their own, so callers that read
+    `df.is_labeled` right after loading need it set here.
+    """
+    try:
+        df = audformat.utils.read_csv(storage)
+    except ValueError:
+        return pd.DataFrame()
+    if isinstance(df, pd.Series):
+        df = df.to_frame()
+    elif isinstance(df, pd.Index):
+        df = pd.DataFrame(index=df)
+    df.is_labeled = target in df
+    return df
+
+
 def segment_silence(
     df: pd.DataFrame, with_borders: bool = True, remove_speaker_id: bool = False
 ) -> pd.DataFrame:

@@ -87,7 +87,6 @@ class Dataset_CSV(Dataset):
         else:
             self.got_target = False
         self.is_labeled = self.got_target and (self.target in self.df.columns)
-        self.start_fresh = eval(self.util.config_val("DATA", "no_reuse", "False"))
         is_index = False
         try:
             if self.is_labeled and "class_label" not in self.df.columns:
