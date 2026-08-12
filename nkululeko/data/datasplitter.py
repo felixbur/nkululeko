@@ -218,11 +218,11 @@ cache_paths = self._split_cache_paths(store)
                 datafilter = DataFilter(self.df_test, context=self.context)
                 self.df_test = datafilter.all_filters()
             else:
-                msg = (
-                    "unkown filter sample selection specifier"
-                    f" {filter_sample_selection}, should be [all | train | test]"
-                )
-                self.util.error(msg)
+msg = (
+    "unknown filter sample selection specifier"
+    f" {filter_sample_selection}, should be [all | train | test]"
+)
+self.util.error(msg)
 
             # Cache the exact final selection (post-filecheck, post-filter,
             # pre-label-encoding) so a later run can reuse it verbatim via
