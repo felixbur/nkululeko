@@ -562,6 +562,9 @@ class TestUnseenLabelsError:
             def config_val(self, sec, key, default):
                 return default
 
+            def config_val_bool(self, sec, key, default=False):
+                return default
+
             def debug(self, m):
                 pass
 

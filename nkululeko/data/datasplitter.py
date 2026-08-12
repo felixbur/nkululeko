@@ -10,7 +10,11 @@ from sklearn.preprocessing import LabelEncoder
 from nkululeko.experiment_context import ContextAware
 from nkululeko.file_checker import FileChecker
 from nkululeko.filter_data import DataFilter
-from nkululeko.utils.dataframe import read_cached_df
+from nkululeko.utils.dataframe import (
+    read_cached_df,
+    should_reuse_split,
+    split_cache_paths,
+)
 from nkululeko.utils.util import Util
 
 
@@ -86,19 +90,6 @@ class Datasplitter(ContextAware):
         df[self.target] = a
         return df
 
-    def _split_cache_paths(self, store):
-        """Paths for the whole-pipeline train/test/dev split cache (see
-        fill_train_and_tests) -- the exact final, post-filter selection, so
-        it can be reused verbatim on a later run regardless of the filter
-        config then in place."""
-paths = {
-    "train": os.path.join(store, "traindf.csv"),
-    "test": os.path.join(store, "testdf.csv"),
-}
-if self.split3:
-    paths["dev"] = os.path.join(store, "devdf.csv")
-return paths
-
     def fill_train_and_tests(self):
         """Set up train and development sets. The method should be specified in the config.
 
@@ -107,16 +98,16 @@ return paths
         ``{store}traindf.csv``/``testdf.csv``/``devdf.csv``. A later run of
         the same experiment reuses that exact selection -- regardless of any
         filters in place at the time -- instead of recomputing it, unless
-        ``DATA.no_reuse`` is set to ``True``.
+        ``DATA.no_reuse`` is set to ``True``. Dataset.prepare() must also
+        skip its own random sample-limiting filters on the same condition
+        (see should_reuse_split) or the raw per-dataset data can drift out
+        of sync with what this cache actually reflects.
         """
         self.df_dev = None
         all_datasets = list(self.datasets.values())
-store = self.util.get_path("store")
-no_reuse = self.util.config_val_bool("DATA", "no_reuse", False)
-cache_paths = self._split_cache_paths(store)
-        used_cache = not no_reuse and all(
-            os.path.isfile(p) for p in cache_paths.values()
-        )
+        store = self.util.get_path("store")
+        used_cache = should_reuse_split(self.util, self.split3)
+        cache_paths = split_cache_paths(store, self.split3)
 
         if used_cache:
             self.util.debug(
@@ -218,11 +209,11 @@ cache_paths = self._split_cache_paths(store)
                 datafilter = DataFilter(self.df_test, context=self.context)
                 self.df_test = datafilter.all_filters()
             else:
-msg = (
-    "unknown filter sample selection specifier"
-    f" {filter_sample_selection}, should be [all | train | test]"
-)
-self.util.error(msg)
+                msg = (
+                    "unknown filter sample selection specifier"
+                    f" {filter_sample_selection}, should be [all | train | test]"
+                )
+                self.util.error(msg)
 
             # Cache the exact final selection (post-filecheck, post-filter,
             # pre-label-encoding) so a later run can reuse it verbatim via

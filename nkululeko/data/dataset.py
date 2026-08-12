@@ -13,6 +13,7 @@ from nkululeko.experiment_context import ContextAware
 from nkululeko.filter_data import DataFilter
 from nkululeko.plots import Plots
 from nkululeko.reporting.report_item import ReportItem
+from nkululeko.utils.dataframe import should_reuse_split
 from nkululeko.utils.util import Util
 
 
@@ -233,19 +234,34 @@ class Dataset(ContextAware):
             self.df["duration"] = (end - start).total_seconds()
         elif self.df.duration.dtype == "timedelta64[ns]":
             self.df["duration"] = self.df["duration"].map(lambda x: x.total_seconds())
-        # Perform some filtering if desired
-        required = self.util.config_val_data(self.name, "required", False)
-        if required:
-            pre = self.df.shape[0]
-            self.df = self.df[self.df[required].notna()]
-            post = self.df.shape[0]
-            self.util.debug(
-                f"{self.name}: kept {post} samples with {required} (from {pre},"
-                f" filtered {pre - post})"
-            )
 
-        datafilter = DataFilter(self.df, context=self.context)
-        self.df = datafilter.all_filters(data_name=self.name)
+        if should_reuse_split(self.util, self.context.split3):
+            # A cached train/dev/test split is about to be reused verbatim
+            # (see Datasplitter.fill_train_and_tests). Filtering self.df
+            # here -- especially limit_samples/limit_speakers, which pick a
+            # fresh *random* subsample every call -- would leave self.df
+            # reflecting a different sample than the one the cached split
+            # was actually computed from, silently breaking the
+            # feats/labels alignment done later in extract_feats(). Skip it
+            # entirely so self.df stays a superset of whatever was cached.
+            self.util.debug(
+                f"{self.name}: reusing a cached split -- skipping "
+                "per-dataset filters so self.df stays consistent with it"
+            )
+        else:
+            # Perform some filtering if desired
+            required = self.util.config_val_data(self.name, "required", False)
+            if required:
+                pre = self.df.shape[0]
+                self.df = self.df[self.df[required].notna()]
+                post = self.df.shape[0]
+                self.util.debug(
+                    f"{self.name}: kept {post} samples with {required} (from {pre},"
+                    f" filtered {pre - post})"
+                )
+
+            datafilter = DataFilter(self.df, context=self.context)
+            self.df = datafilter.all_filters(data_name=self.name)
 
         if self.got_speaker and self.util.config_val_data(
             self.name, "rename_speakers", False
