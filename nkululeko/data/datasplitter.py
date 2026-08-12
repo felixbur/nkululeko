@@ -91,10 +91,13 @@ class Datasplitter(ContextAware):
         fill_train_and_tests) -- the exact final, post-filter selection, so
         it can be reused verbatim on a later run regardless of the filter
         config then in place."""
-        paths = {"train": f"{store}traindf.csv", "test": f"{store}testdf.csv"}
-        if self.split3:
-            paths["dev"] = f"{store}devdf.csv"
-        return paths
+paths = {
+    "train": os.path.join(store, "traindf.csv"),
+    "test": os.path.join(store, "testdf.csv"),
+}
+if self.split3:
+    paths["dev"] = os.path.join(store, "devdf.csv")
+return paths
 
     def fill_train_and_tests(self):
         """Set up train and development sets. The method should be specified in the config.
