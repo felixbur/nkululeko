@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.8.8 (26-08-12)
+------------------------
+* fixed bug in multidb that reported metric was always UAR
+
 Version 1.8.7 (26-08-12)
 ------------------------
 * (re) added re-use of selected samples 

@@ -133,6 +133,27 @@ def trunc_to_three(x):
     return int(x * 1000) / 1000.0
 
 
+def _metric_label(config):
+    """Return the display name for the metric in `results`.
+
+    Mirrors Util.high_is_good()'s defaulting: MODEL.measure defaults to
+    "uar" for classification experiments and "mse" for regression ones, so
+    the heatmap/results.txt label the actual configured metric instead of
+    always saying "UAR" (which is meaningless for a regression run).
+    """
+    if config.has_section("EXP"):
+        exp_type = config["EXP"].get("type", "classification")
+    else:
+        exp_type = "classification"
+    default_measure = "uar" if exp_type == "classification" else "mse"
+    measure = (
+        config["MODEL"].get("measure", default_measure)
+        if config.has_section("MODEL")
+        else default_measure
+    )
+    return measure.upper()
+
+
 def plot_heatmap(results, last_epochs, labels, name, config, datasets):
     df_cm = pd.DataFrame(
         results, index=[i for i in labels], columns=[i for i in labels]
@@ -150,11 +171,12 @@ def plot_heatmap(results, last_epochs, labels, name, config, datasets):
     rowsums = vfunc(rowsums)
     colsums_epochs = last_epochs.mean(axis=0)
     colsums_epochs = vfunc(colsums_epochs)
+    metric = _metric_label(config)
     res_dir = config["EXP"]["root"]
     file_name = f"{res_dir}/results.txt"
     with open(file_name, "w") as text_file:
         text_file.write(
-            f"Mean UAR: {mean} (self: {mean_diag}, cross: {mean_non_diag})\n"
+            f"Mean {metric}: {mean} (self: {mean_diag}, cross: {mean_non_diag})\n"
         )
         data_s = ", ".join(datasets)
         text_file.write(f"{data_s}\n")
@@ -172,7 +194,7 @@ def plot_heatmap(results, last_epochs, labels, name, config, datasets):
 
     plt.figure(figsize=(10, 7))
     ax = sn.heatmap(df_cm, annot=True, cmap=cm.Blues)
-    caption = f"Rows: train, Cols: test. Mean UAR: {mean} (self: {mean_diag}, cross: {mean_non_diag})."
+    caption = f"Rows: train, Cols: test. Mean {metric}: {mean} (self: {mean_diag}, cross: {mean_non_diag})."
     ax.set_title(caption)
     plt.savefig(name)
     plt.close()
