@@ -174,11 +174,11 @@ Database loading, label mapping, and train/test split configuration.
   * labels = ['anger', 'boredom', 'disgust', 'fear', 'happiness', 'neutral', 'sadness']
 * **bins**: array of integers to be used for binning continuous data
   * bins  = [-100, 40, 50, 60, 70, 100]
-* **no_reuse**: don't re-use any tables, but start fresh. This also controls
-  whether the train/dev/test split is reused across runs: once computed
-  (after any filters have been applied), the split is cached and reused
-  verbatim on later runs of the same experiment -- regardless of any
-  filters in place at the time -- unless no_reuse is set to True.
+* **no_reuse**: if False (default), reuse cached tables, and -- once a
+  train/dev/test split has been computed (after any filters have been
+  applied) -- reuse that exact split verbatim on later runs of the same
+  experiment, regardless of any filters in place at the time. Set to True
+  to always start completely fresh instead.
   * no_reuse = False
 * **min_dur_test**: specify a minimum duration for test samples (in seconds)
   * min_dur_test = 3.5
