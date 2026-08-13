@@ -162,7 +162,7 @@ def _run_file_mode(args):
 
 def main():
     parser = argparse.ArgumentParser(description="Call the nkululeko framework.")
-    parser.add_argument("--config", default=None, help="The base configuration")
+    parser.add_argument("--config", default="exp.ini", help="The base configuration")
     parser.add_argument(
         "--file",
         default=None,
@@ -202,7 +202,7 @@ def main():
             _run_file_mode(args)
             return
 
-        config_file = args.config if args.config is not None else "exp.ini"
+        config_file = args.config
 
         if not os.path.isfile(config_file):
             print(f"ERROR: no such file: {config_file}")

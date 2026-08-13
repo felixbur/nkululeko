@@ -1,4 +1,4 @@
-VERSION = "1.8.8"
+VERSION = "1.8.9"
 SAMPLING_RATE = 16000
 COL_SEX = "gender"
 COL_AGE = "age"
