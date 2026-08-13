@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 1.8.10 (26-08-13)
+-------------------------
+* added pcc as a metric and a loss for regression
+* fixed bug in pcc computation
+
 Version 1.8.9 (26-08-13)
 ------------------------
 * fixed serious bug: mlp didn't match features and labels

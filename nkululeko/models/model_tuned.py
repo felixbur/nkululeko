@@ -20,6 +20,7 @@ from transformers.models.wav2vec2.modeling_wav2vec2 import (
     Wav2Vec2PreTrainedModel,
 )
 
+from nkululeko.losses.loss_pcc import PearsonCorCoeff
 from nkululeko.models.model import Model as BaseModel
 from nkululeko.reporting.reporter import Reporter
 from nkululeko.utils.pickle_integrity import verify_checksum
@@ -453,6 +454,8 @@ class TunedModel(BaseModel):
             criterion = self.util.config_val("MODEL", "loss", "1-ccc")
             if criterion == "1-ccc":
                 criterion = ConcordanceCorCoeff()
+            elif criterion == "1-pcc":
+                criterion = PearsonCorCoeff()
             elif criterion == "mse":
                 criterion = torch.nn.MSELoss()
             elif criterion == "mae":
@@ -495,6 +498,8 @@ class TunedModel(BaseModel):
         if metrics_for_best_model == "UAR":
             greater_is_better = True
         elif metrics_for_best_model == "CCC":
+            greater_is_better = True
+        elif metrics_for_best_model == "PCC":
             greater_is_better = True
         elif metrics_for_best_model == "MSE":
             greater_is_better = False

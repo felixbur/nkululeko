@@ -226,6 +226,12 @@ class TestHighIsGood:
         u = Util("test")
         assert u.high_is_good() is True
 
+    def test_regression_pcc_is_high_good(self):
+        glob_conf.config["EXP"]["type"] = "regression"
+        glob_conf.config["MODEL"]["measure"] = "pcc"
+        u = Util("test")
+        assert u.high_is_good() is True
+
 
 # ---------------------------------------------------------------------------
 # Numeric helpers

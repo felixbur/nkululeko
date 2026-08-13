@@ -427,6 +427,7 @@ Model and training specifications. In general, default values should work for cl
     * **f1**: F1 loss  
     * **focal**: Focal loss (for imbalanced classification)
     * **1-ccc**: concordance correlation coefficient
+    * **1-pcc**: Pearson correlation coefficient
     * **mse**: Mean squared error (for regression)
     * **mae**: Mean absolute error (for regression)
     * **weighted_bce**: Weighted BinaryCrossEntropyLoss (for imbalanced binary classification)
@@ -444,6 +445,7 @@ Model and training specifications. In general, default values should work for cl
     * **mse**: Mean Squared Error (default for regression)
     * **mae**: Mean Absolute Error (for regression)
     * **ccc**: Concordance Correlation Coefficient (for regression)
+    * **pcc**: Pearson Correlation Coefficient (for regression)
   * Note: When EER is specified, both EER and UAR will be reported
 * **activation**: The activation function for MLPs. One of ["relu", "sigmoid", "tanh", "leaky_relu"]
   * activation = relu
