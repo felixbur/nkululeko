@@ -799,3 +799,48 @@ class TestFilterFilepath:
         result = u.filter_filepath(df_source, df_target)
 
         assert len(result) == 0
+
+    def test_result_is_reordered_to_match_df_source(self):
+        """Regression: callers consume the aligned dataframes *positionally*
+        (row i of features paired with row i of labels, e.g.
+        MLPModel.get_loader's `df_x.values[i]` next to
+        `df_y[...].iloc[i]`). filter_filepath used to just boolean-mask
+        df_target, preserving df_target's own row order -- so whenever
+        df_target's order didn't already happen to match df_source's (e.g.
+        features come out in extraction order, labels come out in
+        split/concat or cached-CSV order), every row got silently paired
+        with the wrong label. The result must always come back in
+        df_source's row order, not df_target's."""
+        u = Util("test")
+        # df_source (e.g. labels) in one order...
+        idx_source = pd.MultiIndex.from_tuples(
+            [
+                ("/data/b.wav", pd.Timedelta(0), pd.Timedelta(seconds=1)),
+                ("/data/a.wav", pd.Timedelta(0), pd.Timedelta(seconds=1)),
+                ("/data/c.wav", pd.Timedelta(0), pd.Timedelta(seconds=1)),
+            ],
+            names=["file", "start", "end"],
+        )
+        # ...df_target (e.g. extracted features) in a *different* order,
+        # with values that identify which file they came from.
+        idx_target = pd.MultiIndex.from_tuples(
+            [
+                ("/data/a.wav", pd.Timedelta(0), pd.Timedelta(seconds=1)),
+                ("/data/b.wav", pd.Timedelta(0), pd.Timedelta(seconds=1)),
+                ("/data/c.wav", pd.Timedelta(0), pd.Timedelta(seconds=1)),
+            ],
+            names=["file", "start", "end"],
+        )
+        df_source = pd.DataFrame({"y": [1, 2, 3]}, index=idx_source)
+        # x[i] tags row i with the file it actually belongs to (idx_target
+        # is in a/b/c order), independent of df_source's b/a/c order.
+        df_target = pd.DataFrame({"x": ["a", "b", "c"]}, index=idx_target)
+
+        result = u.filter_filepath(df_source, df_target)
+
+        # Row i of the result must correspond to row i of df_source: the
+        # tag must match df_source's file at that same position.
+        result_files = [t[0] for t in result.index]
+        source_files = [t[0] for t in df_source.index]
+        assert result_files == source_files
+        assert list(result["x"]) == ["b", "a", "c"]

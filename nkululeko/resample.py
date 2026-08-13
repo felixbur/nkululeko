@@ -43,7 +43,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Call the nkululeko RESAMPLE framework."
     )
-    parser.add_argument("--config", default=None, help="The base configuration")
+    parser.add_argument("--config", default="exp.ini", help="The base configuration")
     parser.add_argument("--file", default=None, help="The input audio file to resample")
     parser.add_argument(
         "--folder",
@@ -55,10 +55,6 @@ def main():
     )
 
     args = parser.parse_args()
-
-    if args.file is None and args.folder is None and args.config is None:
-        print("ERROR: Either --file, --folder, or --config argument must be provided.")
-        sys.exit(1)
 
     try:
         if args.file is not None:

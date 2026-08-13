@@ -279,3 +279,45 @@ class TestNkululekMain:
         config_file = make_config_file()
         assert Path(config_file).is_file()
         os.remove(config_file)
+
+
+class TestNkululekoConfigResolution:
+    """Regression for https://github.com/felixbur/nkululeko/issues/409:
+    a bare positional config path (the historical `main(sys.argv[1])`
+    usage, e.g. `python -m nkululeko.nkululeko exp.ini`) must keep working
+    alongside the newer `--config exp.ini` flag, not just the flag alone.
+    """
+
+    def _resolved_config_file(self, argv):
+        """Call main() with sys.argv=argv, capturing the config_file doit()
+        was invoked with, without actually running an experiment."""
+        captured = {}
+
+        def fake_doit(config_file):
+            captured["config_file"] = config_file
+            return (0.0, 0)
+
+        with patch("sys.argv", ["nkululeko"] + argv):
+            with patch("nkululeko.nkululeko.doit", side_effect=fake_doit):
+                from nkululeko.nkululeko import main
+
+                main()
+        return captured["config_file"]
+
+    def test_positional_config_path(self):
+        result = self._resolved_config_file(["experiments/androids/exp.ini"])
+        assert result == "experiments/androids/exp.ini"
+
+    def test_flag_config_path_still_works(self):
+        result = self._resolved_config_file(["--config", "experiments/androids/exp.ini"])
+        assert result == "experiments/androids/exp.ini"
+
+    def test_no_config_given_defaults_to_exp_ini(self):
+        result = self._resolved_config_file([])
+        assert result == "exp.ini"
+
+    def test_positional_takes_precedence_over_flag(self):
+        result = self._resolved_config_file(
+            ["positional.ini", "--config", "flag.ini"]
+        )
+        assert result == "positional.ini"

@@ -18,10 +18,15 @@ Usage:
 python -m nkululeko.nkululeko --config config_file.ini
 ```
 
+The config path can also be given positionally instead of via `--config`;
+if neither is given, it defaults to `exp.ini` in the current directory.
+
 Example:  
 
 ```bash
 python -m nkululeko.nkululeko --config examples/exp_emodb_os_svm.ini
+# equivalent
+python -m nkululeko.nkululeko examples/exp_emodb_os_svm.ini
 ```
 
 ## Key Concepts

@@ -6,7 +6,13 @@ The main usage of Nkululeko is as follows:
 python -m nkululeko.[MODULE] --config [CONFIG_FILE.ini]
 # Example to run the experiment
 python -m nkululeko.nkululeko --config INI_FILE.ini
+# nkululeko.nkululeko and nkululeko.ensemble also accept the config
+# path(s) as a plain positional argument instead of --config
+python -m nkululeko.nkululeko INI_FILE.ini
 ```
+
+If no config is given at all, `nkululeko.nkululeko` defaults to `exp.ini`
+in the current directory.
 
 where [INI\_FILE.ini](ini_file.md) is a configuration file. The only file
 needed by the user is the INI file (after preparing the dataset).

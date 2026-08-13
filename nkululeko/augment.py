@@ -92,7 +92,7 @@ def main():
     parser = argparse.ArgumentParser(description="Call the nkululeko framework.")
     parser.add_argument("--config", default="exp.ini", help="The base configuration")
     args = parser.parse_args()
-    config_file = args.config if args.config is not None else "exp.ini"
+    config_file = args.config
     try:
         doit(config_file)
     except NkululukoError as e:

@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 1.8.9 (26-08-13)
+------------------------
+* fixed serious bug: mlp didn't match features and labels
+* removed necessity for --config 
+
 Version 1.8.8 (26-08-12)
 ------------------------
 * fixed bug in multidb that reported metric was always UAR

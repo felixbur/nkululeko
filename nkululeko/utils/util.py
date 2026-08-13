@@ -7,6 +7,7 @@ import os.path
 import shutil
 import sys
 import threading
+from collections import deque
 
 from pathlib import Path
 
@@ -49,6 +50,7 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
     ]
     keyvals = [
         "kind",
+        "nan_strategy",
     ]
 
     def __init__(self, caller=None, has_config=True, context=None):
@@ -432,7 +434,21 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
     def filter_filepath(self, df_source, df_target):
         """Restrict df_target to rows whose file path -- and, for a
         segmented (file, start, end) index, the exact start/end too --
-        also occurs in df_source.
+        also occurs in df_source, returned IN df_source'S ROW ORDER.
+
+        Callers use this to align two dataframes describing the same
+        samples (e.g. extracted features against their labels) that are
+        then consumed *positionally* -- row i of one paired with row i of
+        the other (see e.g. MLPModel.get_loader, which does
+        ``df_x.values[i]`` next to ``df_y[...].iloc[i]``). df_target's own
+        row order generally has nothing to do with df_source's (e.g.
+        features come out in extraction order, a split's labels come out
+        in whatever order the split/concat produced, or a cached split
+        reloaded from CSV) -- returning df_target filtered but still in
+        *its own* order would silently pair each row with the wrong
+        label/feature the moment the two orders diverge. Reordering to
+        match df_source removes that whole class of bug rather than
+        relying on the two orders happening to already coincide.
 
         The file-path component is matched on ``(grandparent dir name,
         parent dir name, file name)`` via :meth:`extract_parent_and_name`,
@@ -440,17 +456,19 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         absolute-path prefixes for what's otherwise the same file. Any
         additional index levels (segment start/end) are matched exactly,
         so a file with multiple segments/utterances isn't over-matched:
-        df_target keeps only the rows for the *specific* segments present
-        in df_source, not every segment of any file df_source happens to
-        touch.
+        only the *specific* segments present in df_source are kept, not
+        every segment of any file df_source happens to touch.
 
         Args:
-            df_source: DataFrame whose index provides the (file[, start,
-                end]) keys to keep.
-            df_target: DataFrame to filter.
+            df_source: DataFrame whose index (and order) provides the
+                (file[, start, end]) keys to keep, and the row order of
+                the result.
+            df_target: DataFrame to filter and reorder.
 
         Returns:
-            DataFrame: the subset of df_target whose index matches df_source.
+            DataFrame: the subset of df_target matching df_source, one row
+            per matched df_source row, in df_source's row order. A
+            df_source row with no match in df_target is skipped.
         """
 
         def _key(index_entry):
@@ -459,8 +477,17 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
                 return (self.extract_parent_and_name(path), *rest)
             return (self.extract_parent_and_name(index_entry),)
 
-        df_source_keys = {_key(idx) for idx in df_source.index}
-        return df_target[[_key(idx) in df_source_keys for idx in df_target.index]]
+        target_positions_by_key = {}
+        for pos, idx in enumerate(df_target.index):
+            target_positions_by_key.setdefault(_key(idx), deque()).append(pos)
+
+        positions = []
+        for idx in df_source.index:
+            matches = target_positions_by_key.get(_key(idx))
+            if matches:
+                positions.append(matches.popleft())
+
+        return df_target.iloc[positions]
 
 
     def check_df(self, i, df):

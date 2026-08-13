@@ -83,14 +83,11 @@ def doit(config_file):
     return result, int(np.asarray(last_epochs).min())
 
 
-def main(src_dir):
+def main():
     """Entrypoint for the nkululeko framework.
 
     This function parses command line arguments to determine the configuration file to use,
     and then calls the `doit` function with the specified configuration file.
-
-    Args:
-        src_dir (str): The directory containing the source code.
 
     Returns:
         None
@@ -98,13 +95,8 @@ def main(src_dir):
     parser = argparse.ArgumentParser(description="Call the nkululeko framework.")
     parser.add_argument("--config", default="exp.ini", help="The base configuration")
     args = parser.parse_args()
-    if args.config is not None:
-        config_file = args.config
-    else:
-        config_file = f"{src_dir}/exp.ini"
-    doit(config_file)
+    doit(args.config)
 
 
 if __name__ == "__main__":
-    cwd = os.path.dirname(os.path.abspath(__file__))
-    main(cwd)  # use this if you want to state the config file path on command line
+    main()  # use this if you want to state the config file path on command line
