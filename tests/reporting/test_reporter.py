@@ -119,6 +119,19 @@ class TestReporterRegression:
         assert hasattr(r, "truths_cont")
         assert hasattr(r, "preds_cont")
 
+    def test_truths_cont_is_a_copy_not_an_alias(self):
+        """truths_cont/preds_cont must survive in-place mutation of
+        self.truths/self.preds, not just reassignment (continuous_to_categorical
+        happens to reassign today, which is why an alias worked, but that's
+        incidental -- anything that mutates in place, or mutates the
+        caller's original arrays, must not affect the stored copies)."""
+        glob_conf.config["EXP"]["type"] = "regression"
+        r = Reporter(TRUTHS_REG.copy(), PREDS_REG.copy(), run=0, epoch=0)
+        r.truths[:] = 0
+        r.preds[:] = 0
+        assert np.array_equal(r.truths_cont, TRUTHS_REG)
+        assert np.array_equal(r.preds_cont, PREDS_REG)
+
 
 class TestPrintResultsAfterPlotConfmatrix:
     """Regression: runmanager.print_report() always calls

@@ -165,6 +165,18 @@ class TestPearsonCorCoeff:
         # Results should be similar regardless of precision
         assert torch.isclose(loss_f32.double(), loss_f64, atol=1e-5)
 
+    def test_integer_ground_truth(self, pcc_loss):
+        """model_tuned.py's HF Trainer path may pass integer-dtype labels;
+        torch.mean() errors on integer tensors, so ground_truth must be cast
+        to float internally rather than requiring the caller to do it."""
+        predictions = torch.tensor([1.0, 2.0, 3.0, 4.0, 5.0])
+        ground_truth = torch.tensor([1, 2, 3, 4, 5], dtype=torch.int64)
+
+        loss = pcc_loss(predictions, ground_truth)
+
+        assert isinstance(loss, torch.Tensor)
+        assert torch.isclose(loss, torch.tensor(0.0), atol=1e-6)
+
     def test_device_compatibility(self, pcc_loss):
         """Test on CPU device."""
         predictions = torch.tensor([1.0, 2.0, 3.0, 4.0, 5.0], device="cpu")

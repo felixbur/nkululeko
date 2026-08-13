@@ -20,6 +20,7 @@ from transformers.models.wav2vec2.modeling_wav2vec2 import (
     Wav2Vec2PreTrainedModel,
 )
 
+from nkululeko.losses.loss_pcc import PearsonCorCoeff
 from nkululeko.models.model import Model as BaseModel
 from nkululeko.reporting.reporter import Reporter
 from nkululeko.utils.pickle_integrity import verify_checksum
@@ -1013,22 +1014,3 @@ class ConcordanceCorCoeff(torch.nn.Module):
         ccc = numerator / denominator
 
         return 1 - ccc
-
-
-class PearsonCorCoeff(torch.nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.mean = torch.mean
-        self.sum = torch.sum
-        self.sqrt = torch.sqrt
-
-    def forward(self, prediction, ground_truth):
-        ground_truth = ground_truth.float()
-        mean_gt = self.mean(ground_truth, 0)
-        mean_pred = self.mean(prediction, 0)
-        v_pred = prediction - mean_pred
-        v_gt = ground_truth - mean_gt
-        cor = self.sum(v_pred * v_gt) / (
-            self.sqrt(self.sum(v_pred**2)) * self.sqrt(self.sum(v_gt**2))
-        )
-        return 1 - cor

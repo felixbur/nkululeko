@@ -120,12 +120,15 @@ class Reporter(ContextAware):
         self.format = self.util.config_val("PLOT", "format", "png")
         self.truths = np.asarray(truths)
         self.preds = np.asarray(preds)
-        # Untouched copy: plot_confmatrix() binarizes self.truths/self.preds
-        # in place for the confusion-matrix view, so anything that needs the
-        # real continuous values afterwards (print_results, per-speaker
-        # plots) must read these instead.
-        self.truths_cont = self.truths
-        self.preds_cont = self.preds
+        # Explicit copies, not aliases: plot_confmatrix() replaces
+        # self.truths/self.preds with binarized labels for the
+        # confusion-matrix view, so anything that needs the real continuous
+        # values afterwards (print_results, per-speaker plots) must read
+        # these instead. Copying guards against any future in-place
+        # mutation of self.truths/self.preds (or of the caller's arrays,
+        # since np.asarray above may not have copied them).
+        self.truths_cont = self.truths.copy()
+        self.preds_cont = self.preds.copy()
         self.result = Result(0, 0, 0, 0, "unknown")
         self.run = run
         self.epoch = epoch

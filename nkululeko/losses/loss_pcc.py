@@ -11,6 +11,7 @@ class PearsonCorCoeff(torch.nn.Module):
         self.sqrt = torch.sqrt
 
     def forward(self, prediction, ground_truth):
+        ground_truth = ground_truth.float()
         mean_gt = self.mean(ground_truth, 0)
         mean_pred = self.mean(prediction, 0)
         v_pred = prediction - mean_pred
