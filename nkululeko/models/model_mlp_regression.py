@@ -4,9 +4,15 @@ from collections import OrderedDict
 
 import numpy as np
 import torch
-from audmetric import concordance_cc, mean_absolute_error, mean_squared_error
+from audmetric import (
+    concordance_cc,
+    mean_absolute_error,
+    mean_squared_error,
+    pearson_cc,
+)
 
 from nkululeko.losses.loss_ccc import ConcordanceCorCoeff
+from nkululeko.losses.loss_pcc import PearsonCorCoeff
 from nkululeko.models.model import Model
 from nkululeko.optimizers import get_optimizer
 from nkululeko.reporting.reporter import Reporter
@@ -33,6 +39,8 @@ class MLP_Reg_model(Model):
             self.criterion = torch.nn.L1Loss()
         elif criterion == "1-ccc":
             self.criterion = ConcordanceCorCoeff()
+        elif criterion == "1-pcc":
+            self.criterion = PearsonCorCoeff()
         else:
             self.util.error(f"unknown loss function: {criterion}")
         self.util.debug(f"training model with {criterion} loss function")
@@ -236,6 +244,8 @@ class MLP_Reg_model(Model):
             result = mean_absolute_error(targets.numpy(), predictions.numpy())
         elif measure == "ccc":
             result = concordance_cc(targets.numpy(), predictions.numpy())
+        elif measure == "pcc":
+            result = pearson_cc(targets.numpy(), predictions.numpy())
         else:
             self.util.error(f"unknown measure: {measure}")
         return result, targets, predictions

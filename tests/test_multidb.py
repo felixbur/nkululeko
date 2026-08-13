@@ -42,6 +42,10 @@ class TestMetricLabel:
         config = _make_config(exp_type="regression", measure="ccc")
         assert _metric_label(config) == "CCC"
 
+    def test_regression_custom_measure_pcc(self):
+        config = _make_config(exp_type="regression", measure="pcc")
+        assert _metric_label(config) == "PCC"
+
     def test_classification_custom_measure_eer(self):
         config = _make_config(exp_type="classification", measure="eer")
         assert _metric_label(config) == "EER"

@@ -655,9 +655,10 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
         else:
             measure = self.config_val("MODEL", "measure", "mse")
             measure_low = ["mse", "mae"]
+            measure_high = ["ccc", "pcc"]
             if measure in measure_low:
                 return False
-            elif measure == "ccc":
+            elif measure in measure_high:
                 return True
             else:
                 self.error(f"unknown measure: {measure}")

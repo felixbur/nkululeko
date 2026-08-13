@@ -92,10 +92,62 @@ class TestReporterRegression:
         r = Reporter(TRUTHS_REG, PREDS_REG, run=0, epoch=0)
         assert r.metric == "ccc"
 
+    def test_pcc_metric_selected(self):
+        glob_conf.config["EXP"]["type"] = "regression"
+        glob_conf.config["MODEL"]["measure"] = "pcc"
+        r = Reporter(TRUTHS_REG, PREDS_REG, run=0, epoch=0)
+        assert r.metric == "pcc"
+        assert r.METRIC == "PCC"
+
+    def test_pcc_near_one_for_near_perfect_correlation(self):
+        glob_conf.config["EXP"]["type"] = "regression"
+        glob_conf.config["MODEL"]["measure"] = "pcc"
+        r = Reporter(TRUTHS_REG, PREDS_REG, run=0, epoch=0)
+        assert r.get_result().test == pytest.approx(1.0, abs=1e-2)
+
     def test_truths_cont_stored(self):
         glob_conf.config["EXP"]["type"] = "regression"
         r = Reporter(TRUTHS_REG, PREDS_REG, run=0, epoch=0)
         assert hasattr(r, "truths_cont")
+
+    def test_truths_cont_stored_even_when_empty(self):
+        """truths_cont/preds_cont must exist regardless of data length --
+        callers like Experiment.plot_confmat_per_speaker() read them
+        unconditionally for any non-classification report."""
+        glob_conf.config["EXP"]["type"] = "regression"
+        r = Reporter(np.array([]), np.array([]), run=0, epoch=0)
+        assert hasattr(r, "truths_cont")
+        assert hasattr(r, "preds_cont")
+
+
+class TestPrintResultsAfterPlotConfmatrix:
+    """Regression: runmanager.print_report() always calls
+    plot_confmatrix() before print_results(). plot_confmatrix() binarizes
+    self.truths/self.preds in place (for the confusion-matrix view), so
+    print_results() must read the untouched truths_cont/preds_cont copies --
+    otherwise the r_2/pcc it writes to the result file are computed on
+    binarized 0/1 labels instead of the real continuous predictions."""
+
+    def test_pcc_unaffected_by_prior_plot_confmatrix_call(self, tmp_path):
+        from scipy.stats import pearsonr
+
+        from nkululeko.reporting.report import Report
+
+        glob_conf.config["EXP"]["type"] = "regression"
+        r = Reporter(TRUTHS_REG, PREDS_REG, run=0, epoch=0)
+        r.context.report = Report()
+        expected_pcc = pearsonr(TRUTHS_REG, PREDS_REG)[0]
+
+        # Call order matches runmanager.py's print_report(): plot_confmatrix
+        # first (mutates self.truths/self.preds), then print_results.
+        r.plot_confmatrix("order_bug_test", epoch=0)
+        r.print_results(epoch=0, file_name="order_bug_test")
+
+        res_dir = r.util.get_path("res_dir")
+        with open(res_dir + "order_bug_test.txt") as f:
+            content = f.read()
+        written_pcc = float(content.split("pcc ")[1])
+        assert written_pcc == pytest.approx(expected_pcc, abs=1e-3)
 
 
 class TestReporterEmpty:

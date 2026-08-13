@@ -453,6 +453,8 @@ class TunedModel(BaseModel):
             criterion = self.util.config_val("MODEL", "loss", "1-ccc")
             if criterion == "1-ccc":
                 criterion = ConcordanceCorCoeff()
+            elif criterion == "1-pcc":
+                criterion = PearsonCorCoeff()
             elif criterion == "mse":
                 criterion = torch.nn.MSELoss()
             elif criterion == "mae":
@@ -495,6 +497,8 @@ class TunedModel(BaseModel):
         if metrics_for_best_model == "UAR":
             greater_is_better = True
         elif metrics_for_best_model == "CCC":
+            greater_is_better = True
+        elif metrics_for_best_model == "PCC":
             greater_is_better = True
         elif metrics_for_best_model == "MSE":
             greater_is_better = False
@@ -1009,3 +1013,22 @@ class ConcordanceCorCoeff(torch.nn.Module):
         ccc = numerator / denominator
 
         return 1 - ccc
+
+
+class PearsonCorCoeff(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.mean = torch.mean
+        self.sum = torch.sum
+        self.sqrt = torch.sqrt
+
+    def forward(self, prediction, ground_truth):
+        ground_truth = ground_truth.float()
+        mean_gt = self.mean(ground_truth, 0)
+        mean_pred = self.mean(prediction, 0)
+        v_pred = prediction - mean_pred
+        v_gt = ground_truth - mean_gt
+        cor = self.sum(v_pred * v_gt) / (
+            self.sqrt(self.sum(v_pred**2)) * self.sqrt(self.sum(v_gt**2))
+        )
+        return 1 - cor

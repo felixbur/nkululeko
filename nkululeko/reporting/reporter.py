@@ -21,6 +21,7 @@ from audmetric import accuracy
 from audmetric import concordance_cc
 from audmetric import mean_absolute_error
 from audmetric import mean_squared_error
+from audmetric import pearson_cc
 from audmetric import unweighted_average_recall
 
 from nkululeko.experiment_context import ContextAware
@@ -99,6 +100,9 @@ class Reporter(ContextAware):
             elif self.metric == "ccc":
                 self.METRIC = "CCC"
                 self.result.metric = self.METRIC
+            elif self.metric == "pcc":
+                self.METRIC = "PCC"
+                self.result.metric = self.METRIC
 
     def __init__(self, truths, preds, run, epoch, probas=None, context=None):
         """Initialization with ground truth und predictions vector.
@@ -116,6 +120,12 @@ class Reporter(ContextAware):
         self.format = self.util.config_val("PLOT", "format", "png")
         self.truths = np.asarray(truths)
         self.preds = np.asarray(preds)
+        # Untouched copy: plot_confmatrix() binarizes self.truths/self.preds
+        # in place for the confusion-matrix view, so anything that needs the
+        # real continuous values afterwards (print_results, per-speaker
+        # plots) must read these instead.
+        self.truths_cont = self.truths
+        self.preds_cont = self.preds
         self.result = Result(0, 0, 0, 0, "unknown")
         self.run = run
         self.epoch = epoch
@@ -139,9 +149,6 @@ class Reporter(ContextAware):
                     self.uar_result = uar  # Store UAR for additional reporting
             else:
                 # regression experiment
-                # keep the original values for further use, they will be binned later
-                self.truths_cont = self.truths
-                self.preds_cont = self.preds
                 test_result, upper, lower = self._get_test_result(
                     self.truths, self.preds, self.metric
                 )
@@ -201,6 +208,19 @@ class Reporter(ContextAware):
             test_result, (upper, lower) = evaluate_with_conf_int(
                 preds,
                 concordance_cc,
+                truths,
+                num_bootstraps=1000,
+                alpha=5,
+            )
+            if math.isnan(test_result):
+                self.util.debug(f"Truth: {self.truths}")
+                self.util.debug(f"Predict.: {self.preds}")
+                self.util.debug("Result is NAN: setting to -1")
+                test_result = -1
+        elif metric == "pcc":
+            test_result, (upper, lower) = evaluate_with_conf_int(
+                preds,
+                pearson_cc,
                 truths,
                 num_bootstraps=1000,
                 alpha=5,
@@ -631,8 +651,8 @@ class Reporter(ContextAware):
 
         else:  # regression
             result = self.result.test
-            r2 = r2_score(self.truths, self.preds)
-            pcc = pearsonr(self.truths, self.preds)[0]
+            r2 = r2_score(self.truths_cont, self.preds_cont)
+            pcc = pearsonr(self.truths_cont, self.preds_cont)[0]
             measure = self.util.config_val("MODEL", "measure", "mse")
             with open(file_name, "w") as text_file:
                 text_file.write(
