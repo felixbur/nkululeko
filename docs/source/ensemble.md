@@ -5,7 +5,9 @@
 Example of usage:  
 
 ```bash
-python3 -m nkululeko.nkululeko --config examples/exp_emodb_os_knn.ini exp_emodb_os_svm.ini
+python3 -m nkululeko.ensemble --config examples/exp_emodb_os_knn.ini exp_emodb_os_svm.ini
+# the config paths can also be given positionally instead of --config
+python3 -m nkululeko.ensemble examples/exp_emodb_os_knn.ini exp_emodb_os_svm.ini
 ```
 
 List of ensemble arguments:   
