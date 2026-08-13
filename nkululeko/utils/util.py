@@ -7,6 +7,7 @@ import os.path
 import shutil
 import sys
 import threading
+from collections import deque
 
 from pathlib import Path
 
@@ -478,13 +479,13 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
 
         target_positions_by_key = {}
         for pos, idx in enumerate(df_target.index):
-            target_positions_by_key.setdefault(_key(idx), []).append(pos)
+            target_positions_by_key.setdefault(_key(idx), deque()).append(pos)
 
         positions = []
         for idx in df_source.index:
             matches = target_positions_by_key.get(_key(idx))
             if matches:
-                positions.append(matches.pop(0))
+                positions.append(matches.popleft())
 
         return df_target.iloc[positions]
 
