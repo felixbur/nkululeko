@@ -141,9 +141,16 @@ def doit(config_file):
 def main():
     parser = argparse.ArgumentParser(description="Call the nkululeko framework.")
     parser.add_argument("--version", action="version", version=f"Nkululeko {VERSION}")
+    parser.add_argument(
+        "config_positional",
+        nargs="?",
+        default=None,
+        metavar="CONFIG",
+        help="ini configuration file (positional alternative to --config).",
+    )
     parser.add_argument("--config", default="exp.ini", help="The base configuration")
     args = parser.parse_args()
-    config_file = args.config
+    config_file = args.config_positional or args.config
     try:
         doit(config_file)
     except NkululukoError:

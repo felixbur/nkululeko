@@ -254,3 +254,44 @@ class TestEnsemblePredictions:
 
         with pytest.raises(ValueError):
             ensemble_predictions([], "invalid_method", 1.0, None, True)
+
+
+class TestEnsembleConfigResolution:
+    """Regression: ensemble.py once accepted config paths positionally
+    (`python nkululeko/ensemble.py exp1.ini exp2.ini`) before commit
+    d46efca switched it to --config-only. Positional must keep working
+    alongside --config, not replace it."""
+
+    def _resolved_configs(self, argv, monkeypatch):
+        from unittest.mock import patch
+
+        captured = {}
+
+        def fake_ensemble_predictions(configs, method, threshold, weights, no_labels):
+            captured["configs"] = configs
+            return pd.DataFrame()
+
+        monkeypatch.setattr(
+            "nkululeko.ensemble.ensemble_predictions", fake_ensemble_predictions
+        )
+        with patch("sys.argv", ["ensemble"] + argv):
+            from nkululeko.ensemble import main
+
+            main()
+        return captured["configs"]
+
+    def test_positional_configs(self, monkeypatch):
+        result = self._resolved_configs(["exp1.ini", "exp2.ini"], monkeypatch)
+        assert result == ["exp1.ini", "exp2.ini"]
+
+    def test_flag_configs_still_work(self, monkeypatch):
+        result = self._resolved_configs(
+            ["--config", "exp1.ini", "exp2.ini"], monkeypatch
+        )
+        assert result == ["exp1.ini", "exp2.ini"]
+
+    def test_positional_takes_precedence_over_flag(self, monkeypatch):
+        result = self._resolved_configs(
+            ["positional.ini", "--config", "flag1.ini", "flag2.ini"], monkeypatch
+        )
+        assert result == ["positional.ini"]

@@ -303,6 +303,12 @@ def ensemble_predictions(
 def main():
     parser = ArgumentParser()
     parser.add_argument(
+        "configs_positional",
+        nargs="*",
+        metavar="CONFIG",
+        help="Paths to the configuration files (positional alternative to --config).",
+    )
+    parser.add_argument(
         "--config",
         nargs="+",
         help="Paths to the configuration files of the experiments to ensemble. \
@@ -352,12 +358,13 @@ def main():
     )
 
     args = parser.parse_args()
+    configs = args.configs_positional or args.config
 
     try:
         start = time.time()
 
         ensemble_preds = ensemble_predictions(
-            args.config, args.method, args.threshold, args.weights, args.no_labels
+            configs, args.method, args.threshold, args.weights, args.no_labels
         )
 
         # save to csv
