@@ -302,7 +302,7 @@ class FeatureAnalyser(ContextAware):
                     from sklearn.svm import SVR
 
                     c = float(self.util.config_val("MODEL", "C_val", "1.0"))
-                    model = SVR(kernel="linear", C=c, gamma="scale")
+                    model = SVR(kernel="linear", C=c)
                     result_importances[model_s] = self._get_importance(
                         model, permutation
                     )
