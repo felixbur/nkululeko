@@ -59,6 +59,15 @@ class TestGetOptimizer:
         assert isinstance(optimizer, torch.optim.Adam)
         assert lr == pytest.approx(0.0005)
 
+    def test_default_optimizer_is_adamw(self, simple_model):
+        """AdamW is the default when neither MODEL.optimizer nor
+        default_optimizer is specified -- preferred over Adam for
+        transformer-style architectures (decoupled weight decay)."""
+        util = MockUtil({})
+        optimizer, _ = get_optimizer(simple_model.parameters(), util)
+
+        assert isinstance(optimizer, torch.optim.AdamW)
+
     def test_adamw_optimizer(self, simple_model):
         """Test creating AdamW optimizer."""
         util = MockUtil({"MODEL.optimizer": "adamw", "MODEL.weight_decay": "0.01"})

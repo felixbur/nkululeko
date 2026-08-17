@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 1.8.11 (26-08-17)
+-------------------------
+* added svr model for feature importance
+* changed default optimizer for MLP to adamw
+
 Version 1.8.10 (26-08-13)
 -------------------------
 * added pcc as a metric and a loss for regression

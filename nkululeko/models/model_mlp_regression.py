@@ -72,7 +72,7 @@ class MLP_Reg_model(Model):
             self.model.parameters(),
             self.util,
             default_lr=0.0001,
-            default_optimizer="adam",
+            default_optimizer="adamw",
         )
 
         # batch size

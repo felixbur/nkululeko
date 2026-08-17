@@ -390,10 +390,12 @@ Model and training specifications. In general, default values should work for cl
 * **learning_rate**: learning rate for neural networks
   * learning_rate = 0.0001
 * **optimizer**: optimizer type for neural networks (case insensitive)
-  * optimizer = adam
+  * optimizer = adamw
   * possible values:
-    * **adam**: Adam optimizer (default)
-    * **adamw**: AdamW optimizer with weight decay
+    * **adamw**: AdamW optimizer with weight decay (default; decouples weight
+      decay from the adaptive gradient update, generally preferred over Adam
+      for transformer-style architectures such as wav2vec2)
+    * **adam**: Adam optimizer
     * **sgd**: SGD optimizer with momentum
   * related parameters:
     * **weight_decay**: weight decay for AdamW optimizer (default: 0.01)
