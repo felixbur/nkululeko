@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.8.12 (26-08-17)
+-------------------------
+* fix bug that scatter plots for regression were called violin
+
 Version 1.8.11 (26-08-17)
 -------------------------
 * added svr model for feature importance
