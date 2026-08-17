@@ -298,6 +298,14 @@ class FeatureAnalyser(ContextAware):
                     result_importances[model_s] = self._get_importance(
                         model, permutation
                     )
+                elif model_s == "svr":
+                    from sklearn.svm import SVR
+
+                    c = float(self.util.config_val("MODEL", "C_val", "1.0"))
+                    model = SVR(kernel="linear", C=c)
+                    result_importances[model_s] = self._get_importance(
+                        model, permutation
+                    )
                 else:
                     self.util.error(f"invalid analysis method: {model_s}")
         df_imp = pd.DataFrame(

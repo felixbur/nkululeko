@@ -4,14 +4,14 @@
 import torch
 
 
-def get_optimizer(model_parameters, util, default_lr=0.0001, default_optimizer="adam"):
+def get_optimizer(model_parameters, util, default_lr=0.0001, default_optimizer="adamw"):
     """Create an optimizer from configuration.
 
     Reads optimizer type and hyperparameters from the MODEL section of config.
 
     Supported optimizers:
-    - adam: Adam optimizer (default)
-    - adamw: AdamW optimizer with weight decay
+    - adamw: AdamW optimizer with weight decay (default)
+    - adam: Adam optimizer
     - sgd: SGD optimizer with momentum
 
     Args:
@@ -25,7 +25,7 @@ def get_optimizer(model_parameters, util, default_lr=0.0001, default_optimizer="
 
     Config parameters:
         MODEL.learning_rate: Learning rate (default: 0.0001)
-        MODEL.optimizer: Optimizer type - adam, adamw, or sgd (default: adam)
+        MODEL.optimizer: Optimizer type - adam, adamw, or sgd (default: adamw)
         MODEL.weight_decay: Weight decay for AdamW (default: 0.01)
         MODEL.momentum: Momentum for SGD (default: 0.9)
     """
