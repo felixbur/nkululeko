@@ -11,6 +11,9 @@ ANN_MODEL_TYPES = frozenset({"cnn", "mlp", "mlp_reg", "adm", "finetune"})
 # MODEL.type values backed by a kernel SVM — only these read
 # MODEL.C_val / MODEL.kernel.
 SVM_MODEL_TYPES = frozenset({"svm", "svr"})
+# MODEL.type values with a configurable layer stack — only these read
+# MODEL.layers (adm and finetune have a fixed architecture instead).
+LAYERED_MODEL_TYPES = frozenset({"cnn", "mlp", "mlp_reg"})
 
 # Maps a MODEL.<key> naming option to the MODEL.type values it's actually
 # read by, so result filenames only mention parameters the chosen model
@@ -142,7 +145,7 @@ class NamingMixin:
     def get_model_description(self):
         mt = self.config_val("MODEL", "type", "")
         ft = self._get_feat_type_string()
-        layers = self._get_layer_string()
+        layers = self._get_layer_string() if mt in LAYERED_MODEL_TYPES else ""
         return_string = f"{mt}_{ft}{layers}"
 
         options = [

@@ -494,6 +494,48 @@ type = os
         self.assertNotIn("C_val", desc)
         self.assertNotIn("kernel", desc)
 
+    def test_model_description_includes_layers_for_mlp(self):
+        c = configparser.ConfigParser()
+        c.read_string("""
+[EXP]
+name = test
+root = /tmp
+[DATA]
+databases = ["emodb"]
+target = emotion
+[MODEL]
+type = mlp
+layers = [64, 128]
+[FEATS]
+type = os
+""")
+        glob_conf.config = c
+        u = Util("test")
+        desc = u.get_model_description()
+        self.assertIn("64", desc)
+        self.assertIn("128", desc)
+
+    def test_model_description_excludes_layers_for_xgb(self):
+        c = configparser.ConfigParser()
+        c.read_string("""
+[EXP]
+name = test
+root = /tmp
+[DATA]
+databases = ["emodb"]
+target = emotion
+[MODEL]
+type = xgb
+layers = [64, 128]
+[FEATS]
+type = os
+""")
+        glob_conf.config = c
+        u = Util("test")
+        desc = u.get_model_description()
+        self.assertNotIn("64", desc)
+        self.assertNotIn("128", desc)
+
     def test_model_description_excludes_drop_activation_loss_for_svm(self):
         c = configparser.ConfigParser()
         c.read_string("""
