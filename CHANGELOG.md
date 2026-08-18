@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.8.14 (26-08-17)
+-------------------------
+* simplified result names
+
 Version 1.8.13 (26-08-17)
 -------------------------
 * aliased nkululeko with train
