@@ -83,6 +83,7 @@ setup(
         "console_scripts": [
             "nkululeko.explore=nkululeko.explore:main",
             "nkululeko.nkululeko=nkululeko.nkululeko:main",
+            "nkululeko.train=nkululeko.train:main",
             "nkululeko.augment=nkululeko.augment:main",
             "nkululeko.export=nkululeko.export:main",
             "nkululeko.predict=nkululeko.predict:main",
