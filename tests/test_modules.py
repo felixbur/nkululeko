@@ -22,9 +22,10 @@ class TestModules(unittest.TestCase):
         """Test that all nkululeko modules can be imported.
 
         The nkululeko package exposes these top-level entry-point modules:
-        ``nkululeko`` (``nkululeko.nkululeko``), ``ensemble``, ``multidb``,
-        ``explore``, ``augment``, ``aug_train``, ``predict``, ``segment``,
-        ``resample``, ``optim`` and ``flags``.  The core modules must import
+        ``nkululeko`` (``nkululeko.nkululeko``, aliased as ``nkululeko.train``),
+        ``ensemble``, ``multidb``, ``explore``, ``augment``, ``aug_train``,
+        ``predict``, ``segment``, ``resample``, ``optim`` and ``flags``.
+        The core modules must import
         with the package's base dependencies; the optional ones are skipped
         gracefully when their optional extras (e.g. torch, torchaudio,
         pyannote, silero) are not installed.
@@ -38,6 +39,7 @@ class TestModules(unittest.TestCase):
         import nkululeko.nkululeko  # noqa: F401
         import nkululeko.optim  # noqa: F401
         import nkululeko.predict  # noqa: F401
+        import nkululeko.train  # noqa: F401
 
         # Optional entry-point modules (may require optional extras).
         try:

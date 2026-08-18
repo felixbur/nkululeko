@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.8.13 (26-08-17)
+-------------------------
+* aliased nkululeko with train
+
 Version 1.8.12 (26-08-17)
 -------------------------
 * fix bug that scatter plots for regression were called violin
