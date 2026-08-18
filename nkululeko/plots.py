@@ -782,8 +782,12 @@ class Plots(ContextAware):
         """
         # remove fullstops in the name
         feature_name = str(feature).replace(".", "-")
-        # which kind of plot?
-        kind = self.util.config_val("PLOT", "kind", "violin")
+        # which kind of plot? PLOT.kind only applies to categorical labels;
+        # continuous labels always get a scatter/regression plot (_plot2cont)
+        if self.util.is_categorical(df_labels[label]):
+            kind = self.util.config_val("PLOT", "kind", "violin")
+        else:
+            kind = "scatter"
         # one up because of the runs
         fig_dir = audeer.path(self.util.get_path("fig_dir"), "..")
         filename = audeer.path(

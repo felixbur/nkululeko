@@ -7,7 +7,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 **⚠ 26 key(s) have inconsistent defaults across call sites:**
 
 * `'DATA'.'no_reuse'`: `'False'` (nkululeko/augment.py:43), `'False'` (nkululeko/experiment.py:161), `False` (nkululeko/utils/dataframe.py:250)
-* `'DATA'.'target'`: `'emotion'` (nkululeko/augment.py:81), `'emotion'` (nkululeko/augmenting/resampler.py:76), `'emotion'` (nkululeko/bundle.py:56), `'emotion'` (nkululeko/bundle.py:218), `None` (nkululeko/data/dataset.py:35), `None` (nkululeko/data/dataset_csv.py:84), `None` (nkululeko/experiment.py:123), `'emotion'` (nkululeko/experiment.py:617), `'emotion'` (nkululeko/experiment.py:627), `'emotion'` (nkululeko/experiment.py:637), `'emotion'` (nkululeko/export.py:108), `'emotion'` (nkululeko/feat_extract/feats_analyser.py:26), `'emotion'` (nkululeko/models/model.py:34), `'emotion'` (nkululeko/plots.py:31), `'class_label'` (nkululeko/plots.py:893), `'emotion'` (nkululeko/testing_predictor.py:71), `None` (nkululeko/utils/util.py:640)
+* `'DATA'.'target'`: `'emotion'` (nkululeko/augment.py:81), `'emotion'` (nkululeko/augmenting/resampler.py:76), `'emotion'` (nkululeko/bundle.py:56), `'emotion'` (nkululeko/bundle.py:218), `None` (nkululeko/data/dataset.py:35), `None` (nkululeko/data/dataset_csv.py:84), `None` (nkululeko/experiment.py:123), `'emotion'` (nkululeko/experiment.py:617), `'emotion'` (nkululeko/experiment.py:627), `'emotion'` (nkululeko/experiment.py:637), `'emotion'` (nkululeko/export.py:108), `'emotion'` (nkululeko/feat_extract/feats_analyser.py:26), `'emotion'` (nkululeko/models/model.py:34), `'emotion'` (nkululeko/plots.py:31), `'class_label'` (nkululeko/plots.py:897), `'emotion'` (nkululeko/testing_predictor.py:71), `None` (nkululeko/utils/util.py:640)
 * `'DATA'.'tests'`: `'False'` (nkululeko/data/dataset.py:725), `False` (nkululeko/nkululeko.py:46), `False` (nkululeko/testing_predictor.py:59)
 * `'DATA'.'type'`: `False` (nkululeko/data/dataset.py:817), `'dummy'` (nkululeko/data/datasplitter.py:236)
 * `'EXP'.'epochs'`: `1` (nkululeko/modelrunner.py:129), `1` (nkululeko/models/model_tuned.py:66), `'50'` (nkululeko/optimizers/scheduler_factory.py:84)
@@ -80,7 +80,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'EXP' | 'type' | `'classification'` / `None` | nkululeko/data/dataset.py:146, nkululeko/utils/util.py:299 |
 | 'EXPL' | 'dist_type' | `'hist'` / `'kde'` | nkululeko/plots.py:149, nkululeko/plots.py:425 |
 | 'EXPL' | 'feature_distributions' | `'False'` | nkululeko/experiment.py:495, nkululeko/explore.py:85 |
-| 'EXPL' | 'ignore_gender' | `'False'` | nkululeko/plots.py:798 |
+| 'EXPL' | 'ignore_gender' | `'False'` | nkululeko/plots.py:802 |
 | 'EXPL' | 'max_feats' | `'10'` | nkululeko/feat_extract/feats_analyser.py:174 |
 | 'EXPL' | 'model' | `"['log_reg']"` / `False` | nkululeko/explore.py:91, nkululeko/feat_extract/feats_analyser.py:172 |
 | 'EXPL' | 'pca' | `'False'` | nkululeko/experiment.py:635, nkululeko/explore.py:88 |
@@ -222,7 +222,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'PLOT' | 'fill_areas' | `'False'` | nkululeko/plots.py:426 |
 | 'PLOT' | 'format' | `'png'` | nkululeko/feat_extract/feats_analyser.py:141, nkululeko/feat_extract/feats_analyser.py:347, nkululeko/plots.py:30, +2 more |
 | 'PLOT' | 'fps' | `'1'` | nkululeko/reporting/reporter.py:673 |
-| 'PLOT' | 'kind' | `'violin'` | nkululeko/plots.py:786 |
+| 'PLOT' | 'kind' | `'violin'` | nkululeko/plots.py:788 |
 | 'PLOT' | 'name' | `plot_name_suggest` | nkululeko/experiment.py:273, nkululeko/reporting/reporter.py:686, nkululeko/runmanager.py:100, +7 more |
 | 'PLOT' | 'runs_compare' | `False` | nkululeko/experiment.py:728 |
 | 'PLOT' | 'titles' | `'True'` | nkululeko/plots.py:34, nkululeko/reporting/run_plotter.py:21 |
