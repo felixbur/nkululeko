@@ -2,6 +2,44 @@
 import ast
 import os
 
+# MODEL.type values backed by an artificial neural network (see
+# Model.is_ann() and the model_type "ann"/"finetuned" tags set by these
+# models' __init__). All five read MODEL.loss (mlp/cnn via the shared
+# Model._setup_criterion(), mlp_reg/adm/finetune each directly); the other
+# ANN-only options below are read by narrower subsets of this group.
+ANN_MODEL_TYPES = frozenset({"cnn", "mlp", "mlp_reg", "adm", "finetune"})
+# MODEL.type values backed by a kernel SVM — only these read
+# MODEL.C_val / MODEL.kernel.
+SVM_MODEL_TYPES = frozenset({"svm", "svr"})
+# MODEL.type values with a configurable layer stack — only these read
+# MODEL.layers (adm and finetune have a fixed architecture instead).
+LAYERED_MODEL_TYPES = frozenset({"cnn", "mlp", "mlp_reg"})
+# ANN types that build their optimizer via optimizer_factory.get_optimizer()
+# and thus read MODEL.optimizer. TunedModel (finetune) configures its own
+# optimizer elsewhere and never reads it.
+OPTIMIZER_MODEL_TYPES = frozenset({"cnn", "mlp", "mlp_reg", "adm"})
+# ANN types that read MODEL.drop for dropout. model_adm.py has no dropout
+# config of its own.
+DROPOUT_MODEL_TYPES = frozenset({"cnn", "mlp", "mlp_reg", "finetune"})
+# ANN types with a configurable hidden-layer activation function. cnn, adm
+# and finetune don't expose MODEL.activation.
+ACTIVATION_MODEL_TYPES = frozenset({"mlp", "mlp_reg"})
+
+# Maps a MODEL.<key> naming option to the MODEL.type values it's actually
+# read by, so result filenames only mention parameters the chosen model
+# type uses. Keys absent from this map (e.g. MODEL.class_weight,
+# MODEL.logo, MODEL.k_fold_cross, all FEATS.* options) apply regardless of
+# model type and are always included when set.
+MODEL_OPTION_TYPES = {
+    "C_val": SVM_MODEL_TYPES,
+    "kernel": SVM_MODEL_TYPES,
+    "drop": DROPOUT_MODEL_TYPES,
+    "activation": ACTIVATION_MODEL_TYPES,
+    "loss": ANN_MODEL_TYPES,
+    "optimizer": OPTIMIZER_MODEL_TYPES,
+    "learning_rate": ANN_MODEL_TYPES | {"xgb"},
+}
+
 
 class NamingMixin:
     """Mixin providing experiment and model naming methods for Util."""
@@ -117,7 +155,7 @@ class NamingMixin:
     def get_model_description(self):
         mt = self.config_val("MODEL", "type", "")
         ft = self._get_feat_type_string()
-        layers = self._get_layer_string()
+        layers = self._get_layer_string() if mt in LAYERED_MODEL_TYPES else ""
         return_string = f"{mt}_{ft}{layers}"
 
         options = [
@@ -129,14 +167,18 @@ class NamingMixin:
             ["MODEL", "loss"],
             ["MODEL", "logo"],
             ["MODEL", "learning_rate"],
+            ["MODEL", "optimizer"],
             ["MODEL", "k_fold_cross"],
             ["FEATS", "balancing"],
             ["FEATS", "scale"],
             ["FEATS", "set"],
             ["FEATS", "wav2vec2.layer"],
         ]
-        for option in options:
-            return_string += self._get_value_descript(option[0], option[1]).replace(
+        for section, name in options:
+            applicable_types = MODEL_OPTION_TYPES.get(name)
+            if applicable_types is not None and mt not in applicable_types:
+                continue
+            return_string += self._get_value_descript(section, name).replace(
                 ".", "-"
             )
             return_string = return_string.replace("__", "_").strip("_")
