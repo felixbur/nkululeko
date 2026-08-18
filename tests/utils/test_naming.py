@@ -374,6 +374,150 @@ type = os
         u = Util("test")
         self.assertEqual(u._get_adm_branch_suffix(), "")
 
+    def test_model_description_includes_optimizer_for_ann(self):
+        c = configparser.ConfigParser()
+        c.read_string("""
+[EXP]
+name = test
+root = /tmp
+[DATA]
+databases = ["emodb"]
+target = emotion
+[MODEL]
+type = mlp
+optimizer = adamw
+[FEATS]
+type = os
+""")
+        glob_conf.config = c
+        u = Util("test")
+        self.assertIn("optimizer-adamw", u.get_model_description())
+
+    def test_model_description_excludes_optimizer_for_non_ann(self):
+        c = configparser.ConfigParser()
+        c.read_string("""
+[EXP]
+name = test
+root = /tmp
+[DATA]
+databases = ["emodb"]
+target = emotion
+[MODEL]
+type = svm
+optimizer = adamw
+[FEATS]
+type = os
+""")
+        glob_conf.config = c
+        u = Util("test")
+        self.assertNotIn("optimizer", u.get_model_description())
+
+    def test_model_description_includes_learning_rate_for_xgb(self):
+        c = configparser.ConfigParser()
+        c.read_string("""
+[EXP]
+name = test
+root = /tmp
+[DATA]
+databases = ["emodb"]
+target = emotion
+[MODEL]
+type = xgb
+learning_rate = 0.3
+[FEATS]
+type = os
+""")
+        glob_conf.config = c
+        u = Util("test")
+        self.assertIn("learning_rate-0", u.get_model_description())
+
+    def test_model_description_excludes_learning_rate_for_svm(self):
+        c = configparser.ConfigParser()
+        c.read_string("""
+[EXP]
+name = test
+root = /tmp
+[DATA]
+databases = ["emodb"]
+target = emotion
+[MODEL]
+type = svm
+learning_rate = 0.3
+[FEATS]
+type = os
+""")
+        glob_conf.config = c
+        u = Util("test")
+        self.assertNotIn("learning_rate", u.get_model_description())
+
+    def test_model_description_includes_c_val_kernel_for_svm(self):
+        c = configparser.ConfigParser()
+        c.read_string("""
+[EXP]
+name = test
+root = /tmp
+[DATA]
+databases = ["emodb"]
+target = emotion
+[MODEL]
+type = svm
+C_val = 1.0
+kernel = linear
+[FEATS]
+type = os
+""")
+        glob_conf.config = c
+        u = Util("test")
+        desc = u.get_model_description()
+        self.assertIn("C_val-1", desc)
+        self.assertIn("kernel-linear", desc)
+
+    def test_model_description_excludes_c_val_kernel_for_xgb(self):
+        c = configparser.ConfigParser()
+        c.read_string("""
+[EXP]
+name = test
+root = /tmp
+[DATA]
+databases = ["emodb"]
+target = emotion
+[MODEL]
+type = xgb
+C_val = 1.0
+kernel = linear
+[FEATS]
+type = os
+""")
+        glob_conf.config = c
+        u = Util("test")
+        desc = u.get_model_description()
+        self.assertNotIn("C_val", desc)
+        self.assertNotIn("kernel", desc)
+
+    def test_model_description_excludes_drop_activation_loss_for_svm(self):
+        c = configparser.ConfigParser()
+        c.read_string("""
+[EXP]
+name = test
+root = /tmp
+[DATA]
+databases = ["emodb"]
+target = emotion
+[MODEL]
+type = svm
+drop = 0.5
+activation = relu
+loss = cross
+[FEATS]
+type = os
+""")
+        glob_conf.config = c
+        u = Util("test")
+        desc = u.get_model_description()
+        self.assertNotIn("drop", desc)
+        self.assertNotIn("activation", desc)
+        self.assertNotIn("loss", desc)
+
     def test_aug_suffix_invalid_syntax(self):
         c = configparser.ConfigParser()
         c.read_string("""

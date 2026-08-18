@@ -2,6 +2,31 @@
 import ast
 import os
 
+# MODEL.type values backed by an artificial neural network (see
+# Model.is_ann() and the model_type "ann"/"finetuned" tags set by these
+# models' __init__). These are the only ones reading MODEL.optimizer,
+# MODEL.drop, MODEL.activation and MODEL.loss (learning_rate is shared
+# with xgb below, which reads it too but as a boosting hyperparameter).
+ANN_MODEL_TYPES = frozenset({"cnn", "mlp", "mlp_reg", "adm", "finetune"})
+# MODEL.type values backed by a kernel SVM — only these read
+# MODEL.C_val / MODEL.kernel.
+SVM_MODEL_TYPES = frozenset({"svm", "svr"})
+
+# Maps a MODEL.<key> naming option to the MODEL.type values it's actually
+# read by, so result filenames only mention parameters the chosen model
+# type uses. Keys absent from this map (e.g. MODEL.class_weight,
+# MODEL.logo, MODEL.k_fold_cross, all FEATS.* options) apply regardless of
+# model type and are always included when set.
+MODEL_OPTION_TYPES = {
+    "C_val": SVM_MODEL_TYPES,
+    "kernel": SVM_MODEL_TYPES,
+    "drop": ANN_MODEL_TYPES,
+    "activation": ANN_MODEL_TYPES,
+    "loss": ANN_MODEL_TYPES,
+    "optimizer": ANN_MODEL_TYPES,
+    "learning_rate": ANN_MODEL_TYPES | {"xgb"},
+}
+
 
 class NamingMixin:
     """Mixin providing experiment and model naming methods for Util."""
@@ -129,14 +154,18 @@ class NamingMixin:
             ["MODEL", "loss"],
             ["MODEL", "logo"],
             ["MODEL", "learning_rate"],
+            ["MODEL", "optimizer"],
             ["MODEL", "k_fold_cross"],
             ["FEATS", "balancing"],
             ["FEATS", "scale"],
             ["FEATS", "set"],
             ["FEATS", "wav2vec2.layer"],
         ]
-        for option in options:
-            return_string += self._get_value_descript(option[0], option[1]).replace(
+        for section, name in options:
+            applicable_types = MODEL_OPTION_TYPES.get(name)
+            if applicable_types is not None and mt not in applicable_types:
+                continue
+            return_string += self._get_value_descript(section, name).replace(
                 ".", "-"
             )
             return_string = return_string.replace("__", "_").strip("_")
