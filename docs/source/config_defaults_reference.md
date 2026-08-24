@@ -41,7 +41,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'AUGMENT' | 'crop_dur' | `1.0` | nkululeko/augmenting/augmenter_auglib.py:126 |
 | 'AUGMENT' | 'p_reverse' | `'0.3'` | nkululeko/augmenting/randomsplicer.py:44 |
 | 'AUGMENT' | 'result' | `'augmented.csv'` | nkululeko/augment.py:41 |
-| 'AUGMENT' | 'silero_model' | `'small_fast'` | nkululeko/augmenting/augmenter_silero.py:29 |
+| 'AUGMENT' | 'silero_model' | `'small_slow'` | nkululeko/augmenting/augmenter_silero.py:29 |
 | 'AUGMENT' | 'top_db' | `'12'` | nkululeko/augmenting/randomsplicer.py:45 |
 | 'AUGMENT' | 'transformations' | `'["room", "music", "noise", "babble", "crop", "cough"]'` | nkululeko/augmenting/augmenter_auglib.py:52 |
 | 'DATA' | 'balance' | `False` | nkululeko/data/dataset.py:539 |

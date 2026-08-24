@@ -136,6 +136,28 @@ class TestAugmenterSilero:
         assert df_ret.index.get_level_values(2)[0] == df.index.get_level_values(2)[0]
         assert list(df_ret["label"]) == list(df["label"])
 
+    def test_default_model_variant_is_small_slow(self, tmp_path):
+        """small_slow is Silero's own default and, per its docs, the
+        best-quality of the three denoise variants -- keep it as nkululeko's
+        default too when AUGMENT.silero_model isn't configured."""
+        wav_dir = tmp_path / "audio"
+        wav_dir.mkdir()
+        wav_path = wav_dir / "f0.wav"
+        _make_wav(wav_path, sr=16000)
+
+        def denoise(model, input_path, output_path, device="cpu"):
+            signal, sr = audiofile.read(input_path)
+            audiofile.write(output_path, signal=signal, sampling_rate=sr)
+            return signal, sr
+
+        with patch(
+            "torch.hub.load", side_effect=_fake_torch_hub_load_factory(denoise)
+        ) as mock_load:
+            AugmenterSilero(_make_df([str(wav_path)]))
+
+        _, kwargs = mock_load.call_args
+        assert kwargs["name"] == "small_slow"
+
     def test_model_loaded_with_configured_variant(self, tmp_path):
         glob_conf.config["AUGMENT"] = {"silero_model": "large_fast"}
         wav_dir = tmp_path / "audio"

@@ -218,8 +218,9 @@ Data augmentation options to artificially expand the training set.
 * **transformations**: select the augmentation methods for the auglib package. Defaults to ["room", "music", "noise", "babble", "crop", "cough"]
   * transformations = ['music', 'room', 'cough']
 * **silero_model**: which Silero denoise model variant to use (only relevant for *silero-denoise*)
-  * silero_model = small_fast
-  * choices are: *small_fast*, *small_slow*, *large_fast* (larger/slower models trade speed for quality)
+  * silero_model = small_slow
+  * choices are, in order of best to worst output quality (per Silero's own
+    docs): *small_slow* (default), *large_fast*, *small_fast*
 
 ### SEGMENT
 

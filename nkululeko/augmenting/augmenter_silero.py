@@ -26,7 +26,7 @@ class AugmenterSilero:
     def __init__(self, df):
         self.df = df
         self.util = Util("augmenter_silero")
-        model_name = self.util.config_val("AUGMENT", "silero_model", "small_fast")
+        model_name = self.util.config_val("AUGMENT", "silero_model", "small_slow")
         device = self.util.config_val("MODEL", "device", "cpu")
         self.device = (
             "cuda" if device == "cuda" and torch.cuda.is_available() else "cpu"
