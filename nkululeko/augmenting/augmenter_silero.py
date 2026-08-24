@@ -46,7 +46,9 @@ class AugmenterSilero:
         """
         denoise the selected files and return a dataframe with new files index.
         """
-        files = self.df.index.get_level_values(0).values
+        # dedupe: a segmented index can list the same file for multiple
+        # (start, end) rows, and denoising is a per-file operation
+        files = pd.unique(self.df.index.get_level_values(0).values)
         store = self.util.get_path("store")
         filepath = f"{store}silero/"
         audeer.mkdir(filepath)

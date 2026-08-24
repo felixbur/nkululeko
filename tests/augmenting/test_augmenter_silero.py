@@ -45,6 +45,15 @@ def _make_df(files):
     return pd.DataFrame({"label": range(len(files))}, index=idx)
 
 
+def _make_segmented_df(files, starts, ends):
+    """Like _make_df, but with explicit (possibly repeated) start/end pairs,
+    as produced by a segmented dataset with multiple rows per file."""
+    idx = pd.MultiIndex.from_arrays(
+        [files, starts, ends], names=["file", "start", "end"]
+    )
+    return pd.DataFrame({"label": range(len(files))}, index=idx)
+
+
 def _fake_torch_hub_load_factory(denoise_fn):
     """Build a stand-in for torch.hub.load that returns (model, samples, utils)."""
 
@@ -144,6 +153,42 @@ class TestAugmenterSilero:
         _, kwargs = mock_load.call_args
         assert kwargs["model"] == "silero_denoise"
         assert kwargs["name"] == "large_fast"
+
+    def test_same_file_denoised_once_across_multiple_segments(self, tmp_path):
+        """A segmented dataset can list the same file for several
+        (start, end) rows; denoising is a per-file operation, so the model
+        must run on it once, not once per segment."""
+        wav_dir = tmp_path / "audio"
+        wav_dir.mkdir()
+        wav_path = wav_dir / "f0.wav"
+        _make_wav(wav_path, sr=16000)
+        df = _make_segmented_df(
+            [str(wav_path)] * 3,
+            [pd.Timedelta(0), pd.Timedelta(seconds=1), pd.Timedelta(seconds=2)],
+            [
+                pd.Timedelta(seconds=1),
+                pd.Timedelta(seconds=2),
+                pd.Timedelta(seconds=3),
+            ],
+        )
+
+        call_count = {"n": 0}
+
+        def denoise(model, input_path, output_path, device="cpu"):
+            call_count["n"] += 1
+            signal, sr = audiofile.read(input_path)
+            audiofile.write(output_path, signal=signal, sampling_rate=sr)
+            return signal, sr
+
+        with patch(
+            "torch.hub.load", side_effect=_fake_torch_hub_load_factory(denoise)
+        ):
+            augmenter = AugmenterSilero(df)
+            df_ret = augmenter.augment("all")
+
+        assert call_count["n"] == 1
+        assert len(df_ret) == 3
+        assert len(set(df_ret.index.get_level_values(0))) == 1
 
     def test_multiple_files_each_get_own_output(self, tmp_path):
         wav_dir = tmp_path / "audio"
