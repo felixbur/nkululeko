@@ -67,6 +67,10 @@ def doit(config_file):
                 df1 = expr.augment(method="auglib")
                 results.append(df1)
                 got_one = True
+            if "silero-denoise" in augmentings:
+                df3 = expr.augment(method="silero-denoise")
+                results.append(df3)
+                got_one = True
             if "random_splice" in augmentings:
                 df2 = expr.random_splice()
                 results.append(df2)

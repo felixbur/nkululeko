@@ -362,6 +362,10 @@ class Experiment:
             from nkululeko.augmenting.augmenter_auglib import AugmenterAuglib
 
             augmenter = AugmenterAuglib(df)
+        elif method == "silero-denoise":
+            from nkululeko.augmenting.augmenter_silero import AugmenterSilero
+
+            augmenter = AugmenterSilero(df)
         else:
             self.util.error(f"unknown augmentation method: {method}")
 

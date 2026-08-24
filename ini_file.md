@@ -207,6 +207,7 @@ Data augmentation options to artificially expand the training set.
   * choices are:
     * *traditional*: uses the [audiomentations package](https://github.com/iver56/audiomentations)
     * *auglib*: uses [audEERING's auglib package](https://audeering.github.io/auglib/)
+    * *silero-denoise*: denoises/enhances speech with [Silero's denoise model](https://github.com/snakers4/silero-models) (requires internet access on first use to download the model via `torch.hub`)
     * *random_splice*: randomly re-orders short splices (obfuscates the words)
 * **p_reverse**: for random_splice: probability of some samples to be in reverse order (default: 0.3)
 * **top_db**: for random_splice: top db level for silence to be recognized (default: 12)
@@ -216,6 +217,9 @@ Data augmentation options to artificially expand the training set.
   * augmentations = Compose([AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.05),Shift(p=0.5),BandPassFilter(min_center_freq=100.0, max_center_freq=6000),])
 * **transformations**: select the augmentation methods for the auglib package. Defaults to ["room", "music", "noise", "babble", "crop", "cough"]
   * transformations = ['music', 'room', 'cough']
+* **silero_model**: which Silero denoise model variant to use (only relevant for *silero-denoise*)
+  * silero_model = small_fast
+  * choices are: *small_fast*, *small_slow*, *large_fast* (larger/slower models trade speed for quality)
 
 ### SEGMENT
 
