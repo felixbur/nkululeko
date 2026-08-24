@@ -13,6 +13,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
+pytest.importorskip("torch")
+pytest.importorskip("torchaudio")
+
 import nkululeko.glob_conf as glob_conf
 from nkululeko.augmenting.augmenter_silero import AugmenterSilero
 
