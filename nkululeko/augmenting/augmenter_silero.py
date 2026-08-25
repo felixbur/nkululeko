@@ -18,6 +18,7 @@ import torchaudio
 from tqdm import tqdm
 
 from nkululeko.utils.dataframe import remap_augmented_index, should_reuse_file
+from nkululeko.utils.files import mirror_relpath
 from nkululeko.utils.util import Util
 
 # Pinned so results are reproducible run-to-run instead of tracking
@@ -66,8 +67,7 @@ class AugmenterSilero:
             # directory name) so two datasets that happen to share a
             # subfolder name (e.g. both using "wav/") and a filename don't
             # collide and silently overwrite each other's denoised file.
-            rel = os.path.abspath(f).lstrip(os.sep)
-            new_full_name = os.path.join(filepath, rel)
+            new_full_name = os.path.join(filepath, mirror_relpath(f))
             audeer.mkdir(os.path.dirname(new_full_name))
             if should_reuse_file(self.util, "DATA", new_full_name):
                 # denoising (especially the small_slow model) is slow, so

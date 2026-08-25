@@ -26,6 +26,7 @@ __all__ = [
     "find_files_by_name",
     "concat_files",
     "safe_path",
+    "mirror_relpath",
 ]
 
 
@@ -267,6 +268,32 @@ def __get_files_by_pattern(
                     myfiles.add(file_path)
 
     return myfiles
+
+
+def mirror_relpath(path):
+    """Turn an absolute path into a relative path segment safe to
+    ``os.path.join()`` under an arbitrary cache/output root, on any platform.
+
+    Used by augmenters that mirror each source file's directory structure
+    under their own cache dir (e.g. ``{store}/silero/{mirrored path}``) so
+    that two datasets sharing a subfolder name and filename don't collide.
+
+    ``os.path.abspath(path).lstrip(os.sep)`` is not enough for this: on
+    Windows, ``os.path.abspath()`` returns a path with a drive letter (e.g.
+    ``C:\\Users\\...``), and ``lstrip(os.sep)`` only strips leading path
+    separators -- it leaves the drive letter in place. ``os.path.join(root,
+    that_result)`` then treats the drive-letter path as absolute in its own
+    right (ntpath's join semantics), silently discarding ``root`` entirely
+    and writing outside the intended cache directory. Splitting the drive
+    off explicitly and folding it into the relative path (rather than
+    discarding it) keeps paths from different drives distinct too.
+    """
+    drive, tail = os.path.splitdrive(os.path.abspath(path))
+    tail = tail.lstrip(os.sep)
+    if not drive:
+        return tail
+    drive = drive.replace(":", "").replace(os.sep, "_")
+    return os.path.join(drive, tail)
 
 
 def safe_path(path, base=None):

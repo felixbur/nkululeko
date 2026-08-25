@@ -1,11 +1,13 @@
 """Tests for nkululeko/utils/files.py — find_files and find_files_by_name."""
 
+import ntpath
 import os
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
-from nkululeko.utils.files import find_files, find_files_by_name
+from nkululeko.utils.files import find_files, find_files_by_name, mirror_relpath
 
 
 @pytest.fixture
@@ -146,3 +148,51 @@ class TestFindFilesByName:
             (tmp_path / name).write_bytes(b"")
         result = find_files_by_name(tmp_path, "match")
         assert result == sorted(result)
+
+
+class TestMirrorRelpath:
+    """mirror_relpath() lets augmenters mirror a source file's directory
+    structure under their own cache dir without colliding across datasets.
+    Real behavior is exercised on this (POSIX) host; Windows drive-letter
+    handling is exercised by swapping in ntpath's semantics, since that
+    can't otherwise be triggered on a POSIX CI runner."""
+
+    def test_posix_absolute_path_becomes_relative(self, tmp_path):
+        f = tmp_path / "audio" / "f0.wav"
+        rel = mirror_relpath(str(f))
+        assert not os.path.isabs(rel)
+        # joining back under an arbitrary root must land inside that root
+        root = "/some/cache/root"
+        joined = os.path.join(root, rel)
+        assert joined.startswith(root + os.sep)
+
+    def test_posix_two_dirs_same_basename_stay_distinct(self, tmp_path):
+        path_a = str(tmp_path / "dataset_a" / "wav" / "f0.wav")
+        path_b = str(tmp_path / "dataset_b" / "wav" / "f0.wav")
+        assert mirror_relpath(path_a) != mirror_relpath(path_b)
+
+    def _windows_mirror_relpath(self, path):
+        """Call mirror_relpath with Windows path semantics substituted in,
+        regardless of the host OS running the test."""
+        with patch("nkululeko.utils.files.os.path", ntpath), patch(
+            "nkululeko.utils.files.os.sep", ntpath.sep
+        ):
+            return mirror_relpath(path)
+
+    def test_windows_drive_letter_is_stripped_not_left_absolute(self):
+        rel = self._windows_mirror_relpath(r"C:\Users\foo\audio\f0.wav")
+        assert not ntpath.isabs(rel)
+        assert ":" not in rel
+
+    def test_windows_join_stays_rooted_under_cache_dir(self):
+        """The original bug: os.path.join(root, rel) must not silently
+        discard root because rel still looks like a drive-absolute path."""
+        rel = self._windows_mirror_relpath(r"C:\Users\foo\audio\f0.wav")
+        root = r"C:\cache\silero"
+        joined = ntpath.join(root, rel)
+        assert joined.startswith(root + ntpath.sep)
+
+    def test_windows_different_drives_stay_distinct(self):
+        rel_c = self._windows_mirror_relpath(r"C:\audio\f0.wav")
+        rel_d = self._windows_mirror_relpath(r"D:\audio\f0.wav")
+        assert rel_c != rel_d

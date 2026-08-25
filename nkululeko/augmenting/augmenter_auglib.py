@@ -12,9 +12,11 @@ import audiofile
 import auglib
 import audb
 import ast
+import pandas as pd
 from tqdm import tqdm
 from nkululeko.utils.util import Util
 from nkululeko.utils.dataframe import remap_augmented_index
+from nkululeko.utils.files import mirror_relpath
 from nkululeko.constants import SAMPLING_RATE
 
 
@@ -147,20 +149,26 @@ class AugmenterAuglib:
         """
         augment the training files and return a dataframe with new files index.
         """
-        files = self.df.index.get_level_values(0).values
+        # dedupe: a segmented index can list the same file for multiple
+        # (start, end) rows, and augmentation is a per-file operation --
+        # without this, each segment would trigger its own (randomized)
+        # augmentation run, wasting work and leaving whichever run for that
+        # file happened last mapped to every one of its segments.
+        files = pd.unique(self.df.index.get_level_values(0).values)
         store = self.util.get_path("store")
         filepath = f"{store}auglib/"
         audeer.mkdir(filepath)
         self.util.debug(f"augmenting {sample_selection} samples to {filepath}")
         index_map = {}
-        for i, f in enumerate(tqdm(files)):
+        for f in tqdm(files):
             signal, sr = audiofile.read(f)
-            filename = os.path.basename(f)
-            parent = os.path.dirname(f).split("/")[-1]
+            # Keyed by the full source path (not just the immediate parent
+            # directory name) so two datasets that happen to share a
+            # subfolder name and a filename don't collide and silently
+            # overwrite each other's augmented file.
+            new_full_name = os.path.join(filepath, mirror_relpath(f))
+            audeer.mkdir(os.path.dirname(new_full_name))
             sig_aug = self.augmenter(signal, sr)
-            newpath = f"{filepath}/{parent}/"
-            audeer.mkdir(newpath)
-            new_full_name = newpath + filename
             audiofile.write(new_full_name, signal=sig_aug, sampling_rate=sr)
             index_map[f] = new_full_name
 
