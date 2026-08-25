@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 1.9.0 (26-08-25)
+-------------------------
+* add silero noise remover as augmentation
+* add auglib augmentation methods
+* re-use a caching code
+
 Version 1.8.14 (26-08-17)
 -------------------------
 * simplified result names

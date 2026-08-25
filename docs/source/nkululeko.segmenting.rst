@@ -9,21 +9,29 @@ nkululeko.segmenting.seg\_inaspeechsegmenter module
 
 .. automodule:: nkululeko.segmenting.seg_inaspeechsegmenter
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
+
+nkululeko.segmenting.seg\_pyannote module
+-----------------------------------------
+
+.. automodule:: nkululeko.segmenting.seg_pyannote
+   :members:
+   :show-inheritance:
+   :undoc-members:
 
 nkululeko.segmenting.seg\_silero module
 ---------------------------------------
 
 .. automodule:: nkululeko.segmenting.seg_silero
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: nkululeko.segmenting
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

@@ -9,12 +9,12 @@ import os
 
 import audeer
 import audiofile
-import pandas as pd
 import auglib
 import audb
 import ast
 from tqdm import tqdm
 from nkululeko.utils.util import Util
+from nkululeko.utils.dataframe import remap_augmented_index
 from nkululeko.constants import SAMPLING_RATE
 
 
@@ -26,29 +26,6 @@ class AugmenterAuglib:
     def __init__(self, df):
         self.df = df
         self.util = Util("augmenter_auglib")
-        self.util.debug("loading databases for augmentation ...")
-        db_air = audb.load(
-            "air",
-            version="1.4.2",
-            tables="rir",
-            channels=[0],
-            sampling_rate=16000,
-            verbose=False,
-        )
-        db_musan = audb.load(
-            "musan",
-            tables="music",
-            media="music/fma/music-fma-0097.wav",
-            version="1.0.0",
-            verbose=False,
-        )
-        db_babble = audb.load(
-            "musan",
-            tables="speech",
-            media=".*speech-librivox-000\\d",
-            version="1.0.0",
-            verbose=False,
-        )
         transforms = self.util.config_val(
             "AUGMENT",
             "transformations",
@@ -58,6 +35,9 @@ class AugmenterAuglib:
         transforms = ast.literal_eval(transforms)
         transformations = []
         bypass_prob = float(self.util.config_val("AUGMENT", "bypass_prob", 0.3))
+        # Each external asset is only downloaded if its transform is
+        # actually selected -- e.g. requesting just ["noise", "babble",
+        # "room"] must not also pull the "music" table nobody asked for.
         if "cough" in transforms:
             cough_files = audb.load_media(
                 "cough-speech-sneeze",
@@ -86,6 +66,14 @@ class AugmenterAuglib:
                 )
             )
         if "room" in transforms:
+            db_air = audb.load(
+                "air",
+                version="1.4.2",
+                tables="rir",
+                channels=[0],
+                sampling_rate=16000,
+                verbose=False,
+            )
             transformations.append(
                 auglib.transform.FFTConvolve(
                     auglib.observe.List(db_air.files, draw=True),
@@ -95,9 +83,16 @@ class AugmenterAuglib:
                 )
             )
         if "music" in transforms:
+            db_musan_music = audb.load(
+                "musan",
+                tables="music",
+                media="music/fma/music-fma-0097.wav",
+                version="1.0.0",
+                verbose=False,
+            )
             transformations.append(
                 auglib.transform.Mix(
-                    auglib.observe.List(db_musan.files, draw=True),
+                    auglib.observe.List(db_musan_music.files, draw=True),
                     gain_aux_db=auglib.observe.IntUni(-15, -10),
                     read_pos_aux=auglib.observe.FloatUni(0, 1),
                     unit="relative",
@@ -107,9 +102,16 @@ class AugmenterAuglib:
                 )
             )
         if "babble" in transforms:
+            db_musan_speech = audb.load(
+                "musan",
+                tables="speech",
+                media=".*speech-librivox-000\\d",
+                version="1.0.0",
+                verbose=False,
+            )
             transformations.append(
                 auglib.transform.BabbleNoise(
-                    list(db_babble.files),
+                    list(db_musan_speech.files),
                     num_speakers=auglib.observe.IntUni(3, 7),
                     snr_db=auglib.observe.IntUni(13, 20),
                     bypass_prob=bypass_prob,
@@ -161,16 +163,5 @@ class AugmenterAuglib:
             new_full_name = newpath + filename
             audiofile.write(new_full_name, signal=sig_aug, sampling_rate=sr)
             index_map[f] = new_full_name
-        df_ret = self.df.copy()
 
-        file_index = df_ret.index.to_series().map(lambda x: index_map[x[0]]).values
-        # workaround because i just couldn't get this easier...
-        arrays = [
-            file_index,
-            list(df_ret.index.get_level_values(1)),
-            list(df_ret.index.get_level_values(2)),
-        ]
-        new_index = pd.MultiIndex.from_arrays(arrays, names=("file", "start", "end"))
-        df_ret = df_ret.set_index(new_index)
-
-        return df_ret
+        return remap_augmented_index(self.df, index_map)

@@ -4,6 +4,7 @@ import ast
 import pandas as pd
 
 from nkululeko.experiment_context import ContextAware
+from nkululeko.utils.dataframe import should_reuse_file
 from nkululeko.utils.util import Util
 
 # Exceptions expected from per-file feature extraction (bad/corrupt audio,
@@ -42,11 +43,9 @@ class Featureset(ContextAware):
         Returns:
             bool: True if extraction is needed.
         """
-        import os
-
-        extract = self.util.config_val_bool("FEATS", "needs_feature_extraction", False)
-        no_reuse = self.util.config_val_bool("FEATS", "no_reuse", False)
-        return no_reuse or extract or not os.path.isfile(storage)
+        return not should_reuse_file(
+            self.util, "FEATS", storage, force_key="needs_feature_extraction"
+        )
 
     def extract(self):
         pass

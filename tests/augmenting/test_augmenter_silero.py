@@ -17,7 +17,7 @@ pytest.importorskip("torch")
 pytest.importorskip("torchaudio")
 
 import nkululeko.glob_conf as glob_conf
-from nkululeko.augmenting.augmenter_silero import AugmenterSilero
+from nkululeko.augmenting.augmenter_silero import SILERO_MODELS_REF, AugmenterSilero
 
 
 @pytest.fixture(autouse=True)
@@ -214,6 +214,130 @@ class TestAugmenterSilero:
         assert call_count["n"] == 1
         assert len(df_ret) == 3
         assert len(set(df_ret.index.get_level_values(0))) == 1
+
+    def test_skips_denoising_when_output_already_exists(self, tmp_path):
+        """A second augment() run (e.g. after an interrupted run, or a
+        re-run with an added dataset) must not redo the expensive
+        denoising work for files it already produced."""
+        wav_dir = tmp_path / "audio"
+        wav_dir.mkdir()
+        wav_path = wav_dir / "f0.wav"
+        _make_wav(wav_path, sr=16000)
+        df = _make_df([str(wav_path)])
+
+        def denoise(model, input_path, output_path, device="cpu"):
+            signal, sr = audiofile.read(input_path)
+            audiofile.write(output_path, signal=signal, sampling_rate=sr)
+            return signal, sr
+
+        with patch(
+            "torch.hub.load", side_effect=_fake_torch_hub_load_factory(denoise)
+        ):
+            first_df = AugmenterSilero(df).augment("all")
+
+        def denoise_should_not_be_called(model, input_path, output_path, device="cpu"):
+            raise AssertionError("denoise() called again for an already-cached file")
+
+        with patch(
+            "torch.hub.load",
+            side_effect=_fake_torch_hub_load_factory(denoise_should_not_be_called),
+        ):
+            second_df = AugmenterSilero(df).augment("all")
+
+        assert list(second_df.index.get_level_values(0)) == list(
+            first_df.index.get_level_values(0)
+        )
+
+    def test_no_reuse_forces_redenoising(self, tmp_path):
+        """DATA.no_reuse = True must bypass the per-file cache, matching
+        this codebase's existing no_reuse convention elsewhere."""
+        wav_dir = tmp_path / "audio"
+        wav_dir.mkdir()
+        wav_path = wav_dir / "f0.wav"
+        _make_wav(wav_path, sr=16000)
+        df = _make_df([str(wav_path)])
+
+        def denoise(model, input_path, output_path, device="cpu"):
+            signal, sr = audiofile.read(input_path)
+            audiofile.write(output_path, signal=signal, sampling_rate=sr)
+            return signal, sr
+
+        with patch(
+            "torch.hub.load", side_effect=_fake_torch_hub_load_factory(denoise)
+        ):
+            AugmenterSilero(df).augment("all")
+
+        glob_conf.config["DATA"]["no_reuse"] = "True"
+        call_count = {"n": 0}
+
+        def denoise_counting(model, input_path, output_path, device="cpu"):
+            call_count["n"] += 1
+            signal, sr = audiofile.read(input_path)
+            audiofile.write(output_path, signal=signal, sampling_rate=sr)
+            return signal, sr
+
+        with patch(
+            "torch.hub.load",
+            side_effect=_fake_torch_hub_load_factory(denoise_counting),
+        ):
+            AugmenterSilero(df).augment("all")
+
+        assert call_count["n"] == 1
+
+    def test_model_repo_is_pinned_to_a_version(self, tmp_path):
+        """torch.hub.load must be pinned to a specific ref, not tracking
+        the repo's default branch, or results stop being reproducible
+        run-to-run as upstream changes."""
+        wav_dir = tmp_path / "audio"
+        wav_dir.mkdir()
+        wav_path = wav_dir / "f0.wav"
+        _make_wav(wav_path, sr=16000)
+
+        def denoise(model, input_path, output_path, device="cpu"):
+            signal, sr = audiofile.read(input_path)
+            audiofile.write(output_path, signal=signal, sampling_rate=sr)
+            return signal, sr
+
+        with patch(
+            "torch.hub.load", side_effect=_fake_torch_hub_load_factory(denoise)
+        ) as mock_load:
+            AugmenterSilero(_make_df([str(wav_path)]))
+
+        _, kwargs = mock_load.call_args
+        assert kwargs["repo_or_dir"] == f"snakers4/silero-models:{SILERO_MODELS_REF}"
+
+    def test_same_subfolder_and_filename_in_different_datasets_dont_collide(
+        self, tmp_path
+    ):
+        """Two datasets that happen to share a subfolder name (e.g. both
+        using 'wav/') and filename must not overwrite each other's denoised
+        output -- the output path must be keyed by the full source path,
+        not just the immediate parent directory name."""
+        dataset_a = tmp_path / "dataset_a" / "wav"
+        dataset_b = tmp_path / "dataset_b" / "wav"
+        dataset_a.mkdir(parents=True)
+        dataset_b.mkdir(parents=True)
+        path_a = dataset_a / "f0.wav"
+        path_b = dataset_b / "f0.wav"
+        _make_wav(path_a, sr=16000, freq=200.0)
+        _make_wav(path_b, sr=16000, freq=800.0)
+
+        def denoise(model, input_path, output_path, device="cpu"):
+            signal, sr = audiofile.read(input_path)
+            audiofile.write(output_path, signal=signal, sampling_rate=sr)
+            return signal, sr
+
+        with patch(
+            "torch.hub.load", side_effect=_fake_torch_hub_load_factory(denoise)
+        ):
+            augmenter = AugmenterSilero(_make_df([str(path_a), str(path_b)]))
+            df_ret = augmenter.augment("all")
+
+        new_files = list(df_ret.index.get_level_values(0))
+        assert len(set(new_files)) == 2
+        signal_a, _ = audiofile.read(new_files[0])
+        signal_b, _ = audiofile.read(new_files[1])
+        assert not np.allclose(signal_a, signal_b)
 
     def test_multiple_files_each_get_own_output(self, tmp_path):
         wav_dir = tmp_path / "audio"

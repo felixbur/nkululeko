@@ -3,10 +3,10 @@ import os
 
 import audeer
 import audiofile
-import pandas as pd
 from audiomentations import *  # noqa: F403
 from tqdm import tqdm
 
+from nkululeko.utils.dataframe import remap_augmented_index
 from nkululeko.utils.util import Util
 
 
@@ -59,16 +59,5 @@ class AugmenterAudiomentations:
             new_full_name = newpath + filename
             audiofile.write(new_full_name, signal=sig_aug, sampling_rate=sr)
             index_map[f] = new_full_name
-        df_ret = self.df.copy()
 
-        file_index = df_ret.index.to_series().map(lambda x: index_map[x[0]]).values
-        # workaround because i just couldn't get this easier...
-        arrays = [
-            file_index,
-            list(df_ret.index.get_level_values(1)),
-            list(df_ret.index.get_level_values(2)),
-        ]
-        new_index = pd.MultiIndex.from_arrays(arrays, names=("file", "start", "end"))
-        df_ret = df_ret.set_index(new_index)
-
-        return df_ret
+        return remap_augmented_index(self.df, index_map)

@@ -75,6 +75,34 @@ class TestFeaturesetExtract:
         assert result is None
 
 
+class TestNeedsExtraction:
+    """Direct coverage for _needs_extraction, which delegates to the shared
+    should_reuse_file util -- previously only ever exercised indirectly
+    (through a subclass's extract()), and several subclasses duplicated its
+    logic ad-hoc instead of calling it at all."""
+
+    def test_missing_storage_needs_extraction(self, featureset, tmp_path):
+        storage = str(tmp_path / "missing.pkl")
+        assert featureset._needs_extraction(storage) is True
+
+    def test_existing_storage_does_not_need_extraction(self, featureset, tmp_path):
+        storage = tmp_path / "cached.pkl"
+        storage.write_text("")
+        assert featureset._needs_extraction(str(storage)) is False
+
+    def test_no_reuse_forces_extraction_even_if_cached(self, featureset, tmp_path):
+        storage = tmp_path / "cached.pkl"
+        storage.write_text("")
+        glob_conf.config["FEATS"]["no_reuse"] = "True"
+        assert featureset._needs_extraction(str(storage)) is True
+
+    def test_needs_feature_extraction_flag_forces_extraction(self, featureset, tmp_path):
+        storage = tmp_path / "cached.pkl"
+        storage.write_text("")
+        glob_conf.config["FEATS"]["needs_feature_extraction"] = "True"
+        assert featureset._needs_extraction(str(storage)) is True
+
+
 class TestFeaturesetFilter:
     def test_filter_keeps_matching_index(self, featureset, data_df):
         """filter() should keep only rows whose index is in data_df."""

@@ -17,7 +17,13 @@ import torch
 import torchaudio
 from tqdm import tqdm
 
+from nkululeko.utils.dataframe import remap_augmented_index, should_reuse_file
 from nkululeko.utils.util import Util
+
+# Pinned so results are reproducible run-to-run instead of tracking
+# whatever torch.hub.load would otherwise resolve as the repo's default
+# branch. Bump deliberately when a newer Silero release is desired.
+SILERO_MODELS_REF = "v5.6"
 
 
 class AugmenterSilero:
@@ -35,7 +41,7 @@ class AugmenterSilero:
             f"loading silero denoise model '{model_name}' on {self.device}"
         )
         self.model, _, utils = torch.hub.load(
-            repo_or_dir="snakers4/silero-models",
+            repo_or_dir=f"snakers4/silero-models:{SILERO_MODELS_REF}",
             model="silero_denoise",
             name=model_name,
             device=self.device,
@@ -54,12 +60,21 @@ class AugmenterSilero:
         audeer.mkdir(filepath)
         self.util.debug(f"denoising {sample_selection} samples to {filepath}")
         index_map = {}
+        reused = 0
         for f in tqdm(files):
-            filename = os.path.basename(f)
-            parent = os.path.dirname(f).split("/")[-1]
-            newpath = f"{filepath}/{parent}/"
-            audeer.mkdir(newpath)
-            new_full_name = newpath + filename
+            # Keyed by the full source path (not just the immediate parent
+            # directory name) so two datasets that happen to share a
+            # subfolder name (e.g. both using "wav/") and a filename don't
+            # collide and silently overwrite each other's denoised file.
+            rel = os.path.abspath(f).lstrip(os.sep)
+            new_full_name = os.path.join(filepath, rel)
+            audeer.mkdir(os.path.dirname(new_full_name))
+            if should_reuse_file(self.util, "DATA", new_full_name):
+                # denoising (especially the small_slow model) is slow, so
+                # skip files already denoised by a previous run
+                reused += 1
+                index_map[f] = new_full_name
+                continue
             org_sr = audiofile.sampling_rate(f)
             _, out_sr = self.denoise(self.model, f, new_full_name, device=self.device)
             if out_sr != org_sr:
@@ -71,16 +86,9 @@ class AugmenterSilero:
                 signal = resampler(signal_t).squeeze(0).numpy()
                 audiofile.write(new_full_name, signal=signal, sampling_rate=org_sr)
             index_map[f] = new_full_name
-        df_ret = self.df.copy()
+        if reused:
+            self.util.debug(
+                f"reused {reused}/{len(files)} previously denoised files"
+            )
 
-        file_index = df_ret.index.to_series().map(lambda x: index_map[x[0]]).values
-        # workaround because i just couldn't get this easier...
-        arrays = [
-            file_index,
-            list(df_ret.index.get_level_values(1)),
-            list(df_ret.index.get_level_values(2)),
-        ]
-        new_index = pd.MultiIndex.from_arrays(arrays, names=("file", "start", "end"))
-        df_ret = df_ret.set_index(new_index)
-
-        return df_ret
+        return remap_augmented_index(self.df, index_map)

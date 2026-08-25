@@ -1,4 +1,3 @@
-import os
 import ast
 import pandas as pd
 from tqdm import tqdm
@@ -53,12 +52,10 @@ class TextClassifier(Featureset):
         store = self.util.get_path("store")
         store_format = self.util.config_val("FEATS", "store_format", "pkl")
         storage = f"{store}{self.name}.{store_format}"
-        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
-        no_reuse = ast.literal_eval(self.util.config_val("FEATS", "no_reuse", "False"))
         text_column = "text"
         if text_column not in self.data_df.columns:
             self.util.error(f"no {text_column} column found in data")
-        if extract or no_reuse or not os.path.isfile(storage):
+        if self._needs_extraction(storage):
             if not self.model_initialized:
                 self.init_model()
             self.util.debug(
