@@ -9,12 +9,14 @@ import os
 
 import audeer
 import audiofile
-import pandas as pd
 import auglib
 import audb
 import ast
+import pandas as pd
 from tqdm import tqdm
 from nkululeko.utils.util import Util
+from nkululeko.utils.dataframe import remap_augmented_index
+from nkululeko.utils.files import mirror_relpath
 from nkululeko.constants import SAMPLING_RATE
 
 
@@ -26,29 +28,6 @@ class AugmenterAuglib:
     def __init__(self, df):
         self.df = df
         self.util = Util("augmenter_auglib")
-        self.util.debug("loading databases for augmentation ...")
-        db_air = audb.load(
-            "air",
-            version="1.4.2",
-            tables="rir",
-            channels=[0],
-            sampling_rate=16000,
-            verbose=False,
-        )
-        db_musan = audb.load(
-            "musan",
-            tables="music",
-            media="music/fma/music-fma-0097.wav",
-            version="1.0.0",
-            verbose=False,
-        )
-        db_babble = audb.load(
-            "musan",
-            tables="speech",
-            media=".*speech-librivox-000\\d",
-            version="1.0.0",
-            verbose=False,
-        )
         transforms = self.util.config_val(
             "AUGMENT",
             "transformations",
@@ -58,6 +37,9 @@ class AugmenterAuglib:
         transforms = ast.literal_eval(transforms)
         transformations = []
         bypass_prob = float(self.util.config_val("AUGMENT", "bypass_prob", 0.3))
+        # Each external asset is only downloaded if its transform is
+        # actually selected -- e.g. requesting just ["noise", "babble",
+        # "room"] must not also pull the "music" table nobody asked for.
         if "cough" in transforms:
             cough_files = audb.load_media(
                 "cough-speech-sneeze",
@@ -86,6 +68,14 @@ class AugmenterAuglib:
                 )
             )
         if "room" in transforms:
+            db_air = audb.load(
+                "air",
+                version="1.4.2",
+                tables="rir",
+                channels=[0],
+                sampling_rate=16000,
+                verbose=False,
+            )
             transformations.append(
                 auglib.transform.FFTConvolve(
                     auglib.observe.List(db_air.files, draw=True),
@@ -95,9 +85,16 @@ class AugmenterAuglib:
                 )
             )
         if "music" in transforms:
+            db_musan_music = audb.load(
+                "musan",
+                tables="music",
+                media="music/fma/music-fma-0097.wav",
+                version="1.0.0",
+                verbose=False,
+            )
             transformations.append(
                 auglib.transform.Mix(
-                    auglib.observe.List(db_musan.files, draw=True),
+                    auglib.observe.List(db_musan_music.files, draw=True),
                     gain_aux_db=auglib.observe.IntUni(-15, -10),
                     read_pos_aux=auglib.observe.FloatUni(0, 1),
                     unit="relative",
@@ -107,9 +104,16 @@ class AugmenterAuglib:
                 )
             )
         if "babble" in transforms:
+            db_musan_speech = audb.load(
+                "musan",
+                tables="speech",
+                media=".*speech-librivox-000\\d",
+                version="1.0.0",
+                verbose=False,
+            )
             transformations.append(
                 auglib.transform.BabbleNoise(
-                    list(db_babble.files),
+                    list(db_musan_speech.files),
                     num_speakers=auglib.observe.IntUni(3, 7),
                     snr_db=auglib.observe.IntUni(13, 20),
                     bypass_prob=bypass_prob,
@@ -145,32 +149,27 @@ class AugmenterAuglib:
         """
         augment the training files and return a dataframe with new files index.
         """
-        files = self.df.index.get_level_values(0).values
+        # dedupe: a segmented index can list the same file for multiple
+        # (start, end) rows, and augmentation is a per-file operation --
+        # without this, each segment would trigger its own (randomized)
+        # augmentation run, wasting work and leaving whichever run for that
+        # file happened last mapped to every one of its segments.
+        files = pd.unique(self.df.index.get_level_values(0).values)
         store = self.util.get_path("store")
         filepath = f"{store}auglib/"
         audeer.mkdir(filepath)
         self.util.debug(f"augmenting {sample_selection} samples to {filepath}")
         index_map = {}
-        for i, f in enumerate(tqdm(files)):
+        for f in tqdm(files):
             signal, sr = audiofile.read(f)
-            filename = os.path.basename(f)
-            parent = os.path.dirname(f).split("/")[-1]
+            # Keyed by the full source path (not just the immediate parent
+            # directory name) so two datasets that happen to share a
+            # subfolder name and a filename don't collide and silently
+            # overwrite each other's augmented file.
+            new_full_name = os.path.join(filepath, mirror_relpath(f))
+            audeer.mkdir(os.path.dirname(new_full_name))
             sig_aug = self.augmenter(signal, sr)
-            newpath = f"{filepath}/{parent}/"
-            audeer.mkdir(newpath)
-            new_full_name = newpath + filename
             audiofile.write(new_full_name, signal=sig_aug, sampling_rate=sr)
             index_map[f] = new_full_name
-        df_ret = self.df.copy()
 
-        file_index = df_ret.index.to_series().map(lambda x: index_map[x[0]]).values
-        # workaround because i just couldn't get this easier...
-        arrays = [
-            file_index,
-            list(df_ret.index.get_level_values(1)),
-            list(df_ret.index.get_level_values(2)),
-        ]
-        new_index = pd.MultiIndex.from_arrays(arrays, names=("file", "start", "end"))
-        df_ret = df_ret.set_index(new_index)
-
-        return df_ret
+        return remap_augmented_index(self.df, index_map)

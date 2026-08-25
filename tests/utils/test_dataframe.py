@@ -11,7 +11,12 @@ import numpy as np
 import pandas as pd
 
 import nkululeko.glob_conf as glob_conf
-from nkululeko.utils.dataframe import should_reuse_split, split_cache_paths
+from nkululeko.utils.dataframe import (
+    remap_augmented_index,
+    should_reuse_file,
+    should_reuse_split,
+    split_cache_paths,
+)
 from nkululeko.utils.errors import NkululukoError
 from nkululeko.utils.util import Util
 
@@ -455,6 +460,148 @@ class TestShouldReuseSplit(unittest.TestCase):
         util = self._make_util("/no/such/store/dir/", no_reuse=False)
 
         self.assertFalse(should_reuse_split(util, split3=False))
+
+
+class TestShouldReuseFile(unittest.TestCase):
+    """Direct unit tests for should_reuse_file -- the general single-file
+    counterpart to should_reuse_split, shared by Featureset._needs_extraction
+    (feature caches) and AugmenterSilero (denoised-audio cache), replacing
+    several independent, differently-buggy copies of the same no_reuse +
+    os.path.isfile check."""
+
+    def _make_util(self, bool_values):
+        """bool_values: {(section, key): return_value} for config_val_bool."""
+        util = MagicMock()
+        util.config_val_bool.side_effect = (
+            lambda section, key, default=False: bool_values.get(
+                (section, key), default
+            )
+        )
+        return util
+
+    def test_false_when_storage_missing(self):
+        util = self._make_util({})
+        self.assertFalse(
+            should_reuse_file(util, "FEATS", "/no/such/file.pkl")
+        )
+
+    def test_true_when_storage_exists_and_no_reuse_false(self):
+        with tempfile.NamedTemporaryFile() as f:
+            util = self._make_util({("FEATS", "no_reuse"): False})
+            self.assertTrue(should_reuse_file(util, "FEATS", f.name))
+
+    def test_false_when_no_reuse_true_even_if_storage_exists(self):
+        with tempfile.NamedTemporaryFile() as f:
+            util = self._make_util({("FEATS", "no_reuse"): True})
+            self.assertFalse(should_reuse_file(util, "FEATS", f.name))
+
+    def test_force_key_set_forces_recompute(self):
+        with tempfile.NamedTemporaryFile() as f:
+            util = self._make_util(
+                {
+                    ("FEATS", "no_reuse"): False,
+                    ("FEATS", "needs_feature_extraction"): True,
+                }
+            )
+            self.assertFalse(
+                should_reuse_file(
+                    util, "FEATS", f.name, force_key="needs_feature_extraction"
+                )
+            )
+
+    def test_force_key_not_set_reuses_normally(self):
+        with tempfile.NamedTemporaryFile() as f:
+            util = self._make_util(
+                {
+                    ("FEATS", "no_reuse"): False,
+                    ("FEATS", "needs_feature_extraction"): False,
+                }
+            )
+            self.assertTrue(
+                should_reuse_file(
+                    util, "FEATS", f.name, force_key="needs_feature_extraction"
+                )
+            )
+
+    def test_force_key_none_ignores_that_check_entirely(self):
+        """Callers with no force flag (e.g. AugmenterSilero, DATA section)
+        must not be affected by an unrelated force_key being absent."""
+        with tempfile.NamedTemporaryFile() as f:
+            util = self._make_util({("DATA", "no_reuse"): False})
+            self.assertTrue(should_reuse_file(util, "DATA", f.name))
+
+
+class TestRemapAugmentedIndex(unittest.TestCase):
+    """Direct unit tests for the file-index remap shared by the augmenters
+    (AugmenterAudiomentations, AugmenterAuglib, AugmenterSilero) -- extracted
+    from three copies of the same ~10-line block so a future fix only needs
+    to be applied once."""
+
+    def _make_df(self, files, labels=None):
+        starts = [pd.Timedelta(0)] * len(files)
+        ends = [pd.Timedelta(seconds=1)] * len(files)
+        idx = pd.MultiIndex.from_arrays(
+            [files, starts, ends], names=["file", "start", "end"]
+        )
+        labels = labels if labels is not None else list(range(len(files)))
+        return pd.DataFrame({"label": labels}, index=idx)
+
+    def test_file_level_remapped(self):
+        df = self._make_df(["a.wav", "b.wav"])
+        index_map = {"a.wav": "new_a.wav", "b.wav": "new_b.wav"}
+
+        df_ret = remap_augmented_index(df, index_map)
+
+        self.assertEqual(
+            list(df_ret.index.get_level_values(0)), ["new_a.wav", "new_b.wav"]
+        )
+
+    def test_start_end_levels_preserved(self):
+        df = self._make_df(["a.wav"])
+        df.index = pd.MultiIndex.from_arrays(
+            [["a.wav"], [pd.Timedelta(seconds=3)], [pd.Timedelta(seconds=5)]],
+            names=["file", "start", "end"],
+        )
+        index_map = {"a.wav": "new_a.wav"}
+
+        df_ret = remap_augmented_index(df, index_map)
+
+        self.assertEqual(df_ret.index.get_level_values(1)[0], pd.Timedelta(seconds=3))
+        self.assertEqual(df_ret.index.get_level_values(2)[0], pd.Timedelta(seconds=5))
+
+    def test_other_columns_preserved(self):
+        df = self._make_df(["a.wav"], labels=["happy"])
+        index_map = {"a.wav": "new_a.wav"}
+
+        df_ret = remap_augmented_index(df, index_map)
+
+        self.assertEqual(list(df_ret["label"]), ["happy"])
+
+    def test_repeated_file_across_segments_all_remapped(self):
+        """A segmented dataframe can list the same file for multiple rows;
+        every row must be remapped, not just the first."""
+        idx = pd.MultiIndex.from_arrays(
+            [
+                ["a.wav", "a.wav"],
+                [pd.Timedelta(0), pd.Timedelta(seconds=1)],
+                [pd.Timedelta(seconds=1), pd.Timedelta(seconds=2)],
+            ],
+            names=["file", "start", "end"],
+        )
+        df = pd.DataFrame({"label": [0, 1]}, index=idx)
+        index_map = {"a.wav": "new_a.wav"}
+
+        df_ret = remap_augmented_index(df, index_map)
+
+        self.assertEqual(list(df_ret.index.get_level_values(0)), ["new_a.wav"] * 2)
+
+    def test_original_df_not_mutated(self):
+        df = self._make_df(["a.wav"])
+        index_map = {"a.wav": "new_a.wav"}
+
+        remap_augmented_index(df, index_map)
+
+        self.assertEqual(df.index.get_level_values(0)[0], "a.wav")
 
 
 if __name__ == "__main__":

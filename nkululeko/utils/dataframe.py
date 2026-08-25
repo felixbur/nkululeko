@@ -255,6 +255,51 @@ def should_reuse_split(util, split3):
     )
 
 
+def should_reuse_file(util, section, storage, force_key=None):
+    """True if a previously computed artifact at `storage` should be reused
+    as-is instead of recomputed.
+
+    General single-file counterpart to should_reuse_split (same `no_reuse`
+    convention, same polarity), for the many places across the codebase that
+    cache one file's worth of work (extracted features, a denoised audio
+    file, ...) keyed by `<section>.no_reuse`.
+
+    Reuse happens only if all of the following hold:
+    - `storage` already exists on disk.
+    - `<section>.no_reuse` is not set.
+    - `force_key` is not given, or `<section>.<force_key>` is not set either
+      (e.g. FEATS.needs_feature_extraction, an explicit one-off override).
+    """
+    if not os.path.isfile(storage):
+        return False
+    if util.config_val_bool(section, "no_reuse", False):
+        return False
+    if force_key and util.config_val_bool(section, force_key, False):
+        return False
+    return True
+
+
+def remap_augmented_index(df, index_map):
+    """Return a copy of `df` with its 'file' index level (level 0) remapped
+    through `index_map`, keeping the 'start'/'end' levels unchanged.
+
+    Used by augmenters that read each original file (index level 0) and
+    write a transformed copy to a new path recorded in `index_map`, keyed
+    by the original path -- e.g. AugmenterAudiomentations, AugmenterAuglib,
+    AugmenterSilero.
+    """
+    df_ret = df.copy()
+    file_index = df_ret.index.to_series().map(lambda x: index_map[x[0]]).values
+    # workaround because i just couldn't get this easier...
+    arrays = [
+        file_index,
+        list(df_ret.index.get_level_values(1)),
+        list(df_ret.index.get_level_values(2)),
+    ]
+    new_index = pd.MultiIndex.from_arrays(arrays, names=("file", "start", "end"))
+    return df_ret.set_index(new_index)
+
+
 def segment_silence(
     df: pd.DataFrame, with_borders: bool = True, remove_speaker_id: bool = False
 ) -> pd.DataFrame:

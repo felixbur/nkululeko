@@ -1,7 +1,5 @@
 """CQCC feature extraction helpers."""
 
-import os
-
 import numpy as np
 import pandas as pd
 
@@ -110,9 +108,7 @@ class CqccSet(Featureset):
         store = self.util.get_path("store")
         store_format = self.util.config_val("FEATS", "store_format", "pkl")
         storage = f"{store}{self.name}.{store_format}"
-        extract = self.util.config_val("FEATS", "needs_feature_extraction", False)
-        no_reuse = eval(self.util.config_val("FEATS", "no_reuse", "False"))
-        if extract or no_reuse or not os.path.isfile(storage):
+        if self._needs_extraction(storage):
             self.util.debug("extracting CQCC, this might take a while...")
             self.df = self._extract_index(self.data_df.index)
             self.util.write_store(self.df, storage, store_format)

@@ -178,7 +178,10 @@ Database loading, label mapping, and train/test split configuration.
   train/dev/test split has been computed (after any filters have been
   applied) -- reuse that exact split verbatim on later runs of the same
   experiment, regardless of any filters in place at the time. Set to True
-  to always start completely fresh instead.
+  to always start completely fresh instead. Also controls whether the
+  *silero-denoise* augmentation method (see [AUGMENT](#augment)) reuses
+  files it already denoised in a previous run, instead of redoing that
+  (slow) work.
   * no_reuse = False
 * **min_dur_test**: specify a minimum duration for test samples (in seconds)
   * min_dur_test = 3.5
@@ -207,6 +210,7 @@ Data augmentation options to artificially expand the training set.
   * choices are:
     * *traditional*: uses the [audiomentations package](https://github.com/iver56/audiomentations)
     * *auglib*: uses [audEERING's auglib package](https://audeering.github.io/auglib/)
+    * *silero-denoise*: denoises/enhances speech with [Silero's denoise model](https://github.com/snakers4/silero-models) (requires internet access on first use to download the model via `torch.hub`)
     * *random_splice*: randomly re-orders short splices (obfuscates the words)
 * **p_reverse**: for random_splice: probability of some samples to be in reverse order (default: 0.3)
 * **top_db**: for random_splice: top db level for silence to be recognized (default: 12)
@@ -214,8 +218,23 @@ Data augmentation options to artificially expand the training set.
   * result = augmented.csv
 * **augmentations**: select the augmentation methods for the audiomentation module. Default provided.
   * augmentations = Compose([AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.05),Shift(p=0.5),BandPassFilter(min_center_freq=100.0, max_center_freq=6000),])
-* **transformations**: select the augmentation methods for the auglib package. Defaults to ["room", "music", "noise", "babble", "crop", "cough"]
+* **transformations**: select the augmentation methods for the auglib package. Defaults to ["room", "music", "noise", "babble", "crop", "cough"]. Each transform's external assets (a room-impulse-response set, music/speech clips, cough samples) are only downloaded the first time that specific transform is selected -- e.g. `transformations = ['noise', 'babble', 'room']` never touches the music assets.
   * transformations = ['music', 'room', 'cough']
+  * possible values:
+    * **noise**: pink noise
+    * **babble**: babble noise (mixes in multiple overlapping background speakers)
+    * **room**: convolves with a room impulse response (reverberation)
+    * **music**: mixes in background music
+    * **cough**: appends a cough/sneeze sound
+    * **crop**: trims to a fixed duration (see `crop_dur`)
+* **bypass_prob**: probability that a given transform is skipped for any one sample, applied independently per transform (default: 0.3)
+  * bypass_prob = 0.3
+* **crop_dur**: duration in seconds to crop to when `crop` is selected (default: 1.0)
+  * crop_dur = 1.0
+* **silero_model**: which Silero denoise model variant to use (only relevant for *silero-denoise*)
+  * silero_model = small_slow
+  * choices are, in order of best to worst output quality (per Silero's own
+    docs): *small_slow* (default), *large_fast*, *small_fast*
 
 ### SEGMENT
 
