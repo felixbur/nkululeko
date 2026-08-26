@@ -120,6 +120,33 @@ class TestClassWeight:
         assert cfg.class_weight is False
 
 
+class TestBalancing:
+    def test_balancing_default_false(self, tmp_path):
+        util = make_util(tmp_path)
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.balancing is False
+
+    def test_balancing_algorithm_name_passes_through(self, tmp_path):
+        util = make_util(tmp_path, {"balancing": "smote"})
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.balancing == "smote"
+
+    def test_balancing_false_string_becomes_false(self, tmp_path):
+        util = make_util(tmp_path, {"balancing": "False"})
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.balancing is False
+
+    def test_balancing_none_string_becomes_false(self, tmp_path):
+        util = make_util(tmp_path, {"balancing": "none"})
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.balancing is False
+
+    def test_balancing_empty_string_becomes_false(self, tmp_path):
+        util = make_util(tmp_path, {"balancing": ""})
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.balancing is False
+
+
 class TestPushToHub:
     def test_push_to_hub_default_false(self, tmp_path):
         util = make_util(tmp_path)

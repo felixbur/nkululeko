@@ -10,6 +10,20 @@ import dataclasses
 import typing
 
 
+def _parse_balancing(raw):
+    """Normalize a [FINETUNE] balancing value.
+
+    config_val() returns the raw ini string when the key is set, so an
+    explicit `balancing = False`/`none`/empty string must be treated as
+    disabled rather than as a (truthy) non-empty string. config_val_bool()
+    doesn't fit here since a real value is an algorithm name (ros/smote/
+    adasyn), not a bool.
+    """
+    if isinstance(raw, str) and raw.strip().lower() in ("false", "none", ""):
+        return False
+    return raw
+
+
 @dataclasses.dataclass
 class FinetuneConfig:
     """Resolved [FINETUNE] settings, one field per config key."""
@@ -53,7 +67,7 @@ class FinetuneConfig:
         drop = float(raw_drop) if raw_drop else 0.1
 
         push_to_hub = util.config_val_bool("FINETUNE", "push_to_hub", False)
-        balancing = util.config_val("FINETUNE", "balancing", False)
+        balancing = _parse_balancing(util.config_val("FINETUNE", "balancing", False))
         pretrained_model = util.config_val(
             "FINETUNE", "pretrained_model", "facebook/wav2vec2-large-robust-ft-swbd-300h"
         )

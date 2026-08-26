@@ -19,7 +19,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 * `'EXPL'.'plot_tree'`: `'False'` (nkululeko/explore.py:92), `False` (nkululeko/feat_extract/feats_analyser.py:96)
 * `'FEATS'.'audmodel.id'`: `False` (nkululeko/feat_extract/feats_audmodel.py:34), `'audmodel'` (nkululeko/feat_extract/feats_audmodel.py:167)
 * `'FEATS'.'type'`: `['os']` (nkululeko/bundle.py:220), `'os'` (nkululeko/data/datasplitter.py:410), `['os']` (nkululeko/experiment.py:227), `['os']` (nkululeko/infer.py:208), `None` (nkululeko/predict.py:215), `None` (nkululeko/predict.py:911)
-* `'FINETUNE'.'loss'`: `'cross'` (nkululeko/models/finetune_config.py:78), `'1-ccc'` (nkululeko/models/finetune_config.py:81)
+* `'FINETUNE'.'loss'`: `'cross'` (nkululeko/models/finetune_config.py:92), `'1-ccc'` (nkululeko/models/finetune_config.py:95)
 * `'MODEL'.'C_val'`: `'1.0'` (nkululeko/feat_extract/feats_analyser.py:233), `'1.0'` (nkululeko/feat_extract/feats_analyser.py:304), `'1'` (nkululeko/models/model_svm.py:16), `'0.001'` (nkululeko/models/model_svr.py:16)
 * `'MODEL'.'adm.branches'`: `'time,spectral,phase,lfcc,cqcc'` (nkululeko/models/model_adm.py:140), `'time,spectral,phase,lfcc,cqcc'` (nkululeko/models/model_adm.py:546), `'time,spectral,phase'` (nkululeko/utils/naming.py:138)
 * `'MODEL'.'batch_size'`: `32` (nkululeko/models/model_adm.py:190), `8` (nkululeko/models/model_cnn.py:71), `8` (nkululeko/models/model_mlp.py:79), `8` (nkululeko/models/model_mlp_regression.py:79)
@@ -161,19 +161,19 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'FEATS' | 'with_os' | `False` | nkululeko/feat_extract/feats_oxbow.py:79 |
 | 'FEATS' | 'xbow.model' | `'openXBOW'` | nkululeko/feat_extract/feats_oxbow.py:54 |
 | 'FEATS' | <f'{ft}.model'> | `''` | nkululeko/bundle.py:66, nkululeko/bundle.py:117 |
-| 'FINETUNE' | 'balancing' | `False` | nkululeko/models/finetune_config.py:56 |
-| 'FINETUNE' | 'batch_size' | `'8'` | nkululeko/models/finetune_config.py:48 |
-| 'FINETUNE' | 'class_weight' | `False` | nkululeko/models/finetune_config.py:60 |
-| 'FINETUNE' | 'device' | `False` | nkululeko/models/finetune_config.py:40 |
-| 'FINETUNE' | 'drop' | `False` | nkululeko/models/finetune_config.py:52 |
-| 'FINETUNE' | 'freeze_layers' | `0` | nkululeko/models/finetune_config.py:66 |
-| 'FINETUNE' | 'learning_rate' | `'0.0001'` | nkululeko/models/finetune_config.py:49 |
-| 'FINETUNE' | 'loss' | `'1-ccc'` / `'cross'` | nkululeko/models/finetune_config.py:78, nkululeko/models/finetune_config.py:81 |
-| 'FINETUNE' | 'max_duration' | `'8.0'` | nkululeko/models/finetune_config.py:50 |
-| 'FINETUNE' | 'measure' | `'ccc'` | nkululeko/models/finetune_config.py:82 |
-| 'FINETUNE' | 'num_layers' | `False` | nkululeko/models/finetune_config.py:72 |
-| 'FINETUNE' | 'pretrained_model' | `'facebook/wav2vec2-large-robust-ft-swbd-300h'` | nkululeko/models/finetune_config.py:57 |
-| 'FINETUNE' | 'push_to_hub' | `False` | nkululeko/models/finetune_config.py:55 |
+| 'FINETUNE' | 'balancing' | `False` | nkululeko/models/finetune_config.py:70 |
+| 'FINETUNE' | 'batch_size' | `'8'` | nkululeko/models/finetune_config.py:62 |
+| 'FINETUNE' | 'class_weight' | `False` | nkululeko/models/finetune_config.py:74 |
+| 'FINETUNE' | 'device' | `False` | nkululeko/models/finetune_config.py:54 |
+| 'FINETUNE' | 'drop' | `False` | nkululeko/models/finetune_config.py:66 |
+| 'FINETUNE' | 'freeze_layers' | `0` | nkululeko/models/finetune_config.py:80 |
+| 'FINETUNE' | 'learning_rate' | `'0.0001'` | nkululeko/models/finetune_config.py:63 |
+| 'FINETUNE' | 'loss' | `'1-ccc'` / `'cross'` | nkululeko/models/finetune_config.py:92, nkululeko/models/finetune_config.py:95 |
+| 'FINETUNE' | 'max_duration' | `'8.0'` | nkululeko/models/finetune_config.py:64 |
+| 'FINETUNE' | 'measure' | `'ccc'` | nkululeko/models/finetune_config.py:96 |
+| 'FINETUNE' | 'num_layers' | `False` | nkululeko/models/finetune_config.py:86 |
+| 'FINETUNE' | 'pretrained_model' | `'facebook/wav2vec2-large-robust-ft-swbd-300h'` | nkululeko/models/finetune_config.py:71 |
+| 'FINETUNE' | 'push_to_hub' | `False` | nkululeko/models/finetune_config.py:69 |
 | 'MODEL' | 'C_val' | `'0.001'` / `'1'` / `'1.0'` | nkululeko/feat_extract/feats_analyser.py:233, nkululeko/feat_extract/feats_analyser.py:304, nkululeko/models/model_svm.py:16, +1 more |
 | 'MODEL' | 'GMM_components' | `'4'` | nkululeko/feat_extract/feats_analyser.py:197, nkululeko/models/model_gmm.py:17 |
 | 'MODEL' | 'GMM_covariance_type' | `'full'` | nkululeko/feat_extract/feats_analyser.py:199, nkululeko/models/model_gmm.py:18 |
