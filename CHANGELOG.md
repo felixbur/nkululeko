@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.10.0 (26-08-26)
+-------------------------
+* re-design finetuning
+
 Version 1.9.0 (26-08-25)
 -------------------------
 * add silero noise remover as augmentation

@@ -5,6 +5,7 @@ import dataclasses
 import json
 import os
 import pickle
+import re
 import typing
 
 import audeer
@@ -15,12 +16,14 @@ import numpy as np
 import pandas as pd
 import torch
 import transformers
+from transformers import HubertModel, WavLMModel
 from transformers.models.wav2vec2.modeling_wav2vec2 import (
     Wav2Vec2Model,
     Wav2Vec2PreTrainedModel,
 )
 
 from nkululeko.losses.loss_pcc import PearsonCorCoeff
+from nkululeko.models.finetune_config import FinetuneConfig
 from nkululeko.models.model import Model as BaseModel
 from nkululeko.reporting.reporter import Reporter
 from nkululeko.utils.pickle_integrity import verify_checksum
@@ -41,43 +44,55 @@ class TunedModel(BaseModel):
         self.target = self.context.config["DATA"]["target"]
         self.labels = self.context.labels
         self.class_num = len(self.labels)
-        device = self.util.config_val("MODEL", "device", False)
-        if not device:
-            self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        else:
-            self.device = device
-        if self.device != "cpu":
-            os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-            os.environ["CUDA_VISIBLE_DEVICES"] = self.device
-        self.util.debug(f"running on device {self.device}")
         self.is_classifier = self.util.exp_is_classification()
-        if self.is_classifier:
-            self.measure = "uar"
-        else:
-            self.measure = self.util.config_val("MODEL", "measure", "ccc")
+        self.cfg = FinetuneConfig.from_util(self.util, self.is_classifier)
+
+        self.device, cuda_visible_devices = self._resolve_device(self.cfg.device)
+        if cuda_visible_devices is not None:
+            os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+            os.environ["CUDA_VISIBLE_DEVICES"] = cuda_visible_devices
+        self.util.debug(f"running on device {self.device}")
+
+        self.measure = self.cfg.measure
         self.util.debug(f"evaluation metrics: {self.measure}")
-        self.batch_size = int(self.util.config_val("MODEL", "batch_size", "8"))
+        self.batch_size = self.cfg.batch_size
         self.util.debug(f"batch size: {self.batch_size}")
-        self.learning_rate = float(
-            self.util.config_val("MODEL", "learning_rate", "0.0001")
-        )
-        self.max_duration = float(self.util.config_val("MODEL", "max_duration", "8.0"))
+        self.learning_rate = self.cfg.learning_rate
+        self.max_duration = self.cfg.max_duration
         self.df_train, self.df_test = df_train, df_test
         self.epoch_num = int(self.util.config_val("EXP", "epochs", 1))
         self.util.debug(f"num of epochs: {self.epoch_num}")
-        drop = self.util.config_val("MODEL", "drop", False)
-        self.drop = 0.1
-        if drop:
-            self.drop = float(drop)
+        self.drop = self.cfg.drop
         self.util.debug(f"init: training with dropout: {self.drop}")
-        self.push = eval(self.util.config_val("MODEL", "push_to_hub", "False"))
-        self.balancing = self.util.config_val("MODEL", "balancing", False)
+        self.push = self.cfg.push_to_hub
+        self.balancing = self.cfg.balancing
         self._init_model()
 
+    def _resolve_device(self, device):
+        """Resolve a [FINETUNE] device value into (torch_device, cuda_visible_devices).
+
+        CUDA_VISIBLE_DEVICES only ever accepts physical GPU indices (e.g.
+        "0" or "0,1"), never a torch device string like "cuda" or "cuda:0" -
+        setting it to those hides every GPU instead of selecting one. This
+        extracts the index (if any) for CUDA_VISIBLE_DEVICES separately from
+        the torch-facing device string used everywhere else in this class,
+        which after masking to a single GPU is always plain "cpu" or "cuda".
+        """
+        if device == "cpu":
+            return "cpu", None
+        match = re.fullmatch(r"cuda:(\d+)", device)
+        if match:
+            return "cuda", match.group(1)
+        if re.fullmatch(r"\d+(,\d+)*", device):
+            return "cuda", device
+        if device == "cuda":
+            return "cuda", None
+        self.util.warn(f"unrecognized device '{device}'; falling back to 'cuda'")
+        return "cuda", None
+
     def _init_model(self):
-        model_path = "facebook/wav2vec2-large-robust-ft-swbd-300h"
-        pretrained_model = self.util.config_val("MODEL", "pretrained_model", model_path)
-        self.num_layers = None
+        pretrained_model = self.cfg.pretrained_model
+        self.num_layers = self.cfg.num_layers
         self.sampling_rate = 16000
         self.max_duration_sec = self.max_duration
         self.accumulation_steps = 4
@@ -150,12 +165,20 @@ class TunedModel(BaseModel):
                 num_labels=1,
                 finetuning_task=target_name,
             )
+        original_num_layers = self.config.num_hidden_layers
+        self._validate_layer_config(original_num_layers)
         if self.num_layers is not None:
             self.config.num_hidden_layers = self.num_layers
+            self.util.debug(f"truncating model to {self.num_layers} encoder layers")
         self.config.final_dropout = self.drop
         setattr(self.config, "sampling_rate", self.sampling_rate)
         setattr(self.config, "data", self.util.get_data_name())
         setattr(self.config, "is_classifier", self.is_classifier)
+        # "eager" attention is universally supported; SDPA (the newer
+        # default) isn't implemented for every architecture in every
+        # transformers version (e.g. WavLM lacks it as of transformers 5) -
+        # avoid depending on per-architecture/per-version SDPA support.
+        self.config._attn_implementation = "eager"
 
         vocab_dict = {}
         with open("vocab.json", "w") as vocab_file:
@@ -167,13 +190,7 @@ class TunedModel(BaseModel):
         if self.push:
             tokenizer.push_to_hub(self.util.get_name())
 
-        feature_extractor = transformers.Wav2Vec2FeatureExtractor(
-            feature_size=1,
-            sampling_rate=16000,
-            padding_value=0.0,
-            do_normalize=True,
-            return_attention_mask=True,
-        )
+        feature_extractor = self._build_feature_extractor(pretrained_model)
         self.processor = transformers.Wav2Vec2Processor(
             feature_extractor=feature_extractor,
             tokenizer=tokenizer,
@@ -185,8 +202,92 @@ class TunedModel(BaseModel):
             config=self.config,
         )
         self.model.freeze_feature_extractor()  # type: ignore
+        self._freeze_encoder_layers(self.model, self.cfg.freeze_layers)
         self.model.train()  # type: ignore
         self.model_initialized = True
+
+    def _build_feature_extractor(self, pretrained_model):
+        """Build the Wav2Vec2FeatureExtractor matching `pretrained_model`.
+
+        Loads the checkpoint's own preprocessor config (e.g. `do_normalize`,
+        which genuinely differs between checkpoints - some wav2vec2/HuBERT
+        models expect it True, some WavLM models expect it False) instead
+        of hardcoding wav2vec2-robust's settings for every backbone. Falls
+        back to those hardcoded settings only if the checkpoint has none
+        (e.g. a local/custom model with no preprocessor_config.json).
+
+        return_attention_mask is always forced True regardless of source:
+        pooling() (below) falls back to naively meaning over ALL frames,
+        including padding, when no attention mask is present - correct only
+        for batch_size==1, so nkululeko's own design requires this.
+        """
+        try:
+            feature_extractor = transformers.Wav2Vec2FeatureExtractor.from_pretrained(
+                pretrained_model
+            )
+        except Exception as e:
+            self.util.warn(
+                f"could not load feature extractor config for {pretrained_model} "
+                f"({e}); falling back to default wav2vec2-style settings"
+            )
+            feature_extractor = transformers.Wav2Vec2FeatureExtractor(
+                feature_size=1,
+                sampling_rate=16000,
+                padding_value=0.0,
+                do_normalize=True,
+            )
+        feature_extractor.return_attention_mask = True
+        return feature_extractor
+
+    def _validate_layer_config(self, original_num_layers):
+        """Validate num_layers/freeze_layers against the pretrained model's depth.
+
+        Enforces 0 <= freeze_layers < effective_num_layers <= original_num_layers,
+        so num_layers never exceeds what the pretrained checkpoint provides, and
+        freeze_layers never freezes the entire (possibly truncated) backbone,
+        leaving at least one encoder layer trainable.
+        """
+        if self.num_layers is not None and not (0 < self.num_layers <= original_num_layers):
+            self.util.error(
+                f"num_layers={self.num_layers} must be between 1 and the "
+                f"pretrained model's {original_num_layers} encoder layers"
+            )
+        effective_num_layers = (
+            self.num_layers if self.num_layers is not None else original_num_layers
+        )
+        if not (0 <= self.cfg.freeze_layers < effective_num_layers):
+            self.util.error(
+                f"freeze_layers={self.cfg.freeze_layers} must be less than the "
+                f"resulting model's {effective_num_layers} encoder layers "
+                "(at least one layer must stay trainable)"
+            )
+
+    def _freeze_encoder_layers(self, model, freeze_layers):
+        """Freeze the first `freeze_layers` transformer encoder layers.
+
+        Leaves the remaining encoder layers and the head trainable. A
+        `freeze_layers` of 0 (the default) freezes nothing here, matching
+        full finetuning; freeze_feature_extractor() above always freezes
+        the CNN feature extractor regardless of this setting.
+        """
+        if freeze_layers < 0:
+            self.util.warn(
+                f"freeze_layers={freeze_layers} is negative; freezing nothing "
+                "(Python slicing would otherwise freeze from the end of the list)"
+            )
+            return
+        if not freeze_layers:
+            return
+        layers = model.wav2vec2.encoder.layers
+        if freeze_layers > len(layers):
+            self.util.warn(
+                f"freeze_layers={freeze_layers} exceeds the model's "
+                f"{len(layers)} encoder layers; freezing all of them"
+            )
+        for layer in layers[:freeze_layers]:
+            for param in layer.parameters():
+                param.requires_grad = False
+        self.util.debug(f"froze the first {min(freeze_layers, len(layers))} encoder layers")
 
     def _init_emotion2vec_model(self, pretrained_model):
         """Initialize emotion2vec model for finetuning."""
@@ -198,6 +299,17 @@ class TunedModel(BaseModel):
                 "Please install with: pip install funasr"
             )
             return
+
+        if self.cfg.freeze_layers:
+            self.util.warn(
+                "freeze_layers is not supported for emotion2vec models "
+                "(the funasr backbone isn't exposed as freezable layers); ignoring it"
+            )
+        if self.num_layers is not None:
+            self.util.warn(
+                "num_layers is not supported for emotion2vec models "
+                "(the funasr backbone isn't built from a HF encoder config); ignoring it"
+            )
 
         model_mapping = {
             "emotion2vec": "emotion2vec/emotion2vec_base",
@@ -432,10 +544,10 @@ class TunedModel(BaseModel):
         targets = pd.DataFrame(self.dataset["train"]["targets"])
 
         if self.is_classifier:
-            criterion = self.util.config_val("MODEL", "loss", "cross")
+            criterion = self.cfg.loss
             if criterion == "cross":
                 label_smoothing = self._get_label_smoothing()
-                if self.util.config_val("MODEL", "class_weight", False):
+                if self.cfg.class_weight:
                     counts = targets[0].value_counts().sort_index()
                     train_weights = 1 / counts
                     train_weights /= train_weights.sum()
@@ -451,7 +563,7 @@ class TunedModel(BaseModel):
             else:
                 self.util.error(f"criterion {criterion} not supported for classifier")
         else:
-            criterion = self.util.config_val("MODEL", "loss", "1-ccc")
+            criterion = self.cfg.loss
             if criterion == "1-ccc":
                 criterion = ConcordanceCorCoeff()
             elif criterion == "1-pcc":
@@ -462,9 +574,6 @@ class TunedModel(BaseModel):
                 criterion = torch.nn.L1Loss()
             else:
                 self.util.error(f"criterion {criterion} not supported for regressor")
-
-        # set push_to_hub value, default false
-        # push = eval(self.util.config_val("MODEL", "push_to_hub", "False"))
 
         class Trainer(transformers.Trainer):
             def compute_loss(
@@ -763,6 +872,13 @@ class ModelHead(torch.nn.Module):
         return x
 
 
+BACKBONE_MODEL_CLASSES = {
+    "wav2vec2": Wav2Vec2Model,
+    "wavlm": WavLMModel,
+    "hubert": HubertModel,
+}
+
+
 class Model(Wav2Vec2PreTrainedModel):
     def __init__(self, config):
         if not hasattr(config, "add_adapter"):
@@ -770,10 +886,16 @@ class Model(Wav2Vec2PreTrainedModel):
 
         super().__init__(config)
 
-        self.wav2vec2 = Wav2Vec2Model(config)
+        backbone_cls = BACKBONE_MODEL_CLASSES.get(
+            getattr(config, "model_type", None), Wav2Vec2Model
+        )
+        self.wav2vec2 = backbone_cls(config)
         self.head = ModelHead(config)
         self.is_classifier = config.is_classifier
-        self.init_weights()
+        # post_init() (not the lower-level init_weights() it calls) is the
+        # documented hook for subclasses - required as of transformers 5.x,
+        # which moved bookkeeping (e.g. tied-weight-key collection) into it.
+        self.post_init()
 
     def freeze_feature_extractor(self):
         self.wav2vec2.feature_extractor._freeze_parameters()

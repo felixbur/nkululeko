@@ -395,11 +395,13 @@ Model and training specifications. In general, default values should work for cl
     * **nb**: Naive Bayes  
     * **mlp**: [Multi-layer perceptron](http://blog.syntheticspeech.de/2021/08/30/nkululeko-multi-layer-perceptron/) (neural network)  
     * **cnn**: [Convolutional neural network](http://blog.syntheticspeech.de/2022/01/17/how-to-use-convolutional-neural-networks-with-nkululeko/)  
-    * **finetune**: [Fine-tuning](http://blog.syntheticspeech.de/2022/10/07/nkululeko-how-to-fine-tune-a-wav2vec2-model/) for pre-trained models:
+    * **finetune**: [Fine-tuning](http://blog.syntheticspeech.de/2022/10/07/nkululeko-how-to-fine-tune-a-wav2vec2-model/) for pre-trained models. Settings go in a dedicated `[FINETUNE]` section (see [finetune.md](https://github.com/felixbur/nkululeko/blob/main/docs/source/finetune.md) for the full reference):
       - pretrained_model: HF for base model
       - push_to_hub: True
-      - max_duration: 8 (in seconds, resit are disgarded)  
+      - max_duration: 8 (in seconds, rest are discarded)  
       - balancing: smote (as in FEATS, only for finetune needs to be defined here)  
+      - freeze_layers: 0 (number of pretrained encoder layers to keep frozen; 0 finetunes the whole backbone)  
+      - num_layers: (empty) (truncate the model to this many encoder layers, smaller than the original; empty uses the full pretrained depth)  
 * **class_weight**: add class_weight to the linear classifier (XGB, SVM) fit methods for imbalanced data (True or False)
   * class_weight = False
 * **logo**: leave-one-speaker group out. Will disregard train/dev splits and split the speakers in *logo* groups and then do a LOGO evaluation. If you want LOSO (leave one speaker out), simply set the number to the number of speakers.
