@@ -174,6 +174,11 @@ class TunedModel(BaseModel):
         setattr(self.config, "sampling_rate", self.sampling_rate)
         setattr(self.config, "data", self.util.get_data_name())
         setattr(self.config, "is_classifier", self.is_classifier)
+        # "eager" attention is universally supported; SDPA (the newer
+        # default) isn't implemented for every architecture in every
+        # transformers version (e.g. WavLM lacks it as of transformers 5) -
+        # avoid depending on per-architecture/per-version SDPA support.
+        self.config._attn_implementation = "eager"
 
         vocab_dict = {}
         with open("vocab.json", "w") as vocab_file:
@@ -887,7 +892,10 @@ class Model(Wav2Vec2PreTrainedModel):
         self.wav2vec2 = backbone_cls(config)
         self.head = ModelHead(config)
         self.is_classifier = config.is_classifier
-        self.init_weights()
+        # post_init() (not the lower-level init_weights() it calls) is the
+        # documented hook for subclasses - required as of transformers 5.x,
+        # which moved bookkeeping (e.g. tied-weight-key collection) into it.
+        self.post_init()
 
     def freeze_feature_extractor(self):
         self.wav2vec2.feature_extractor._freeze_parameters()

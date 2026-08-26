@@ -23,6 +23,10 @@ def make_config(config_cls, **overrides):
         conv_dim=(16, 16),
         conv_stride=(2, 2),
         conv_kernel=(3, 3),
+        # Mirrors what _init_huggingface_model sets on the real config:
+        # "eager" is universally supported, unlike the SDPA default (which
+        # e.g. WavLM doesn't implement as of transformers 5).
+        attn_implementation="eager",
     )
     config.final_dropout = 0.1
     config.is_classifier = True
