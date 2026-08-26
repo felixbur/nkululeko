@@ -18,8 +18,15 @@ import pandas as pd
 import torch
 import torchaudio
 from torchaudio.pipelines import SQUIM_SUBJECTIVE
-from torchaudio.utils import download_asset
 from tqdm import tqdm
+
+try:
+    # Public in some torchaudio releases (e.g. 2.1.2).
+    from torchaudio.utils import download_asset
+except ImportError:
+    # Only the private alias in others (e.g. 2.11.0) - this isn't a simple
+    # older-vs-newer split, so try both rather than pinning to one name.
+    from torchaudio.utils import _download_asset as download_asset
 
 from nkululeko.feat_extract.featureset import Featureset
 

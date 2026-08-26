@@ -67,6 +67,14 @@ class TestFreezeEncoderLayers:
         assert all_require_grad(model.wav2vec2.encoder.layers, False)
         assert len(util.warnings) == 1
 
+    def test_negative_freezes_nothing_and_warns(self):
+        util = DummyUtil()
+        fake_self = types.SimpleNamespace(util=util)
+        model = make_dummy_model(4)
+        TunedModel._freeze_encoder_layers(fake_self, model, -1)
+        assert all_require_grad(model.wav2vec2.encoder.layers, True)
+        assert len(util.warnings) == 1
+
 
 def make_fake_self(num_layers, freeze_layers):
     util = DummyUtil()

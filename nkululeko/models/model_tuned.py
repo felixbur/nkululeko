@@ -237,6 +237,12 @@ class TunedModel(BaseModel):
         full finetuning; freeze_feature_extractor() above always freezes
         the CNN feature extractor regardless of this setting.
         """
+        if freeze_layers < 0:
+            self.util.warn(
+                f"freeze_layers={freeze_layers} is negative; freezing nothing "
+                "(Python slicing would otherwise freeze from the end of the list)"
+            )
+            return
         if not freeze_layers:
             return
         layers = model.wav2vec2.encoder.layers
