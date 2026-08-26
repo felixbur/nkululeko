@@ -65,6 +65,16 @@ class TestDrop:
         cfg = FinetuneConfig.from_util(util, is_classifier=True)
         assert cfg.drop == 0.3
 
+    def test_drop_empty_string_uses_default(self, tmp_path):
+        util = make_util(tmp_path, {"drop": ""})
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.drop == 0.1
+
+    def test_drop_whitespace_only_uses_default(self, tmp_path):
+        util = make_util(tmp_path, {"drop": "   "})
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.drop == 0.1
+
 
 class TestDevice:
     def test_device_autodetect(self, tmp_path):
@@ -90,6 +100,16 @@ class TestFreezeLayers:
         cfg = FinetuneConfig.from_util(util, is_classifier=True)
         assert cfg.freeze_layers == 6
 
+    def test_freeze_layers_empty_string_uses_default(self, tmp_path):
+        util = make_util(tmp_path, {"freeze_layers": ""})
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.freeze_layers == 0
+
+    def test_freeze_layers_whitespace_only_uses_default(self, tmp_path):
+        util = make_util(tmp_path, {"freeze_layers": "   "})
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.freeze_layers == 0
+
 
 class TestNumLayers:
     def test_num_layers_default_none(self, tmp_path):
@@ -101,6 +121,16 @@ class TestNumLayers:
         util = make_util(tmp_path, {"num_layers": "6"})
         cfg = FinetuneConfig.from_util(util, is_classifier=True)
         assert cfg.num_layers == 6
+
+    def test_num_layers_empty_string_stays_none(self, tmp_path):
+        util = make_util(tmp_path, {"num_layers": ""})
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.num_layers is None
+
+    def test_num_layers_whitespace_only_stays_none(self, tmp_path):
+        util = make_util(tmp_path, {"num_layers": "   "})
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.num_layers is None
 
 
 class TestClassWeight:

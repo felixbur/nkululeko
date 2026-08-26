@@ -106,7 +106,7 @@ max_duration = 10.5
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `pretrained_model` | wav2vec2-large-robust | HuggingFace model name |
+| `pretrained_model` | `facebook/wav2vec2-large-robust-ft-swbd-300h` | HuggingFace model name |
 | `learning_rate` | 0.0001 | Learning rate |
 | `batch_size` | 8 | Batch size (reduce if OOM) |
 | `device` | autodetect | Device: GPU index (e.g. `0`, or `0,1`), `cuda:0` (the index is extracted), or `cpu` |

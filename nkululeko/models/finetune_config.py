@@ -10,6 +10,17 @@ import dataclasses
 import typing
 
 
+def _is_unset(raw):
+    """True if a [FINETUNE] value is the missing-key sentinel, or a blank string.
+
+    config_val() returns the raw ini string whenever the key is present,
+    even for `key =` (empty) or `key =   ` (whitespace-only) - those are
+    non-empty strings in Python and would otherwise reach int()/float() and
+    raise ValueError instead of falling back to the intended default.
+    """
+    return not raw or (isinstance(raw, str) and not raw.strip())
+
+
 def _parse_balancing(raw):
     """Normalize a [FINETUNE] balancing value.
 
@@ -64,7 +75,7 @@ class FinetuneConfig:
         max_duration = float(util.config_val("FINETUNE", "max_duration", "8.0"))
 
         raw_drop = util.config_val("FINETUNE", "drop", False)
-        drop = float(raw_drop) if raw_drop else 0.1
+        drop = 0.1 if _is_unset(raw_drop) else float(raw_drop)
 
         push_to_hub = util.config_val_bool("FINETUNE", "push_to_hub", False)
         balancing = _parse_balancing(util.config_val("FINETUNE", "balancing", False))
@@ -77,14 +88,15 @@ class FinetuneConfig:
         # the input side) to keep frozen during finetuning. Default 0 keeps
         # today's behavior: the whole backbone trains (only the CNN feature
         # extractor is always frozen, unconditionally, elsewhere).
-        freeze_layers = int(util.config_val("FINETUNE", "freeze_layers", 0))
+        raw_freeze_layers = util.config_val("FINETUNE", "freeze_layers", 0)
+        freeze_layers = 0 if _is_unset(raw_freeze_layers) else int(raw_freeze_layers)
 
         # num_layers: total number of transformer encoder layers to build
         # the model with, truncating the pretrained architecture (e.g. use
         # only the first 6 of a 24-layer model). Default None keeps today's
         # behavior: use the pretrained model's full depth.
         raw_num_layers = util.config_val("FINETUNE", "num_layers", False)
-        num_layers = int(raw_num_layers) if raw_num_layers else None
+        num_layers = None if _is_unset(raw_num_layers) else int(raw_num_layers)
 
         # loss & measure: default depends on task type. measure is NOT
         # configurable for classification (unchanged from prior behavior).
