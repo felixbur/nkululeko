@@ -26,6 +26,7 @@ class FinetuneConfig:
     measure: str
     pretrained_model: str
     freeze_layers: int
+    num_layers: typing.Optional[int]
 
     @classmethod
     def from_util(cls, util, is_classifier: bool) -> "FinetuneConfig":
@@ -56,13 +57,20 @@ class FinetuneConfig:
         pretrained_model = util.config_val(
             "FINETUNE", "pretrained_model", "facebook/wav2vec2-large-robust-ft-swbd-300h"
         )
-        class_weight = util.config_val("FINETUNE", "class_weight", False)
+        class_weight = util.config_val_bool("FINETUNE", "class_weight", False)
 
         # freeze_layers: number of pretrained encoder layers (counted from
         # the input side) to keep frozen during finetuning. Default 0 keeps
         # today's behavior: the whole backbone trains (only the CNN feature
         # extractor is always frozen, unconditionally, elsewhere).
         freeze_layers = int(util.config_val("FINETUNE", "freeze_layers", 0))
+
+        # num_layers: total number of transformer encoder layers to build
+        # the model with, truncating the pretrained architecture (e.g. use
+        # only the first 6 of a 24-layer model). Default None keeps today's
+        # behavior: use the pretrained model's full depth.
+        raw_num_layers = util.config_val("FINETUNE", "num_layers", False)
+        num_layers = int(raw_num_layers) if raw_num_layers else None
 
         # loss & measure: default depends on task type. measure is NOT
         # configurable for classification (unchanged from prior behavior).
@@ -82,8 +90,9 @@ class FinetuneConfig:
             push_to_hub=bool(push_to_hub),
             balancing=balancing,
             loss=loss,
-            class_weight=bool(class_weight),
+            class_weight=class_weight,
             measure=measure,
             pretrained_model=pretrained_model,
             freeze_layers=freeze_layers,
+            num_layers=num_layers,
         )

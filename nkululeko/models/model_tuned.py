@@ -5,6 +5,7 @@ import dataclasses
 import json
 import os
 import pickle
+import re
 import typing
 
 import audeer
@@ -45,10 +46,10 @@ class TunedModel(BaseModel):
         self.is_classifier = self.util.exp_is_classification()
         self.cfg = FinetuneConfig.from_util(self.util, self.is_classifier)
 
-        self.device = self.cfg.device
-        if self.device != "cpu":
+        self.device, cuda_visible_devices = self._resolve_device(self.cfg.device)
+        if cuda_visible_devices is not None:
             os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-            os.environ["CUDA_VISIBLE_DEVICES"] = self.device
+            os.environ["CUDA_VISIBLE_DEVICES"] = cuda_visible_devices
         self.util.debug(f"running on device {self.device}")
 
         self.measure = self.cfg.measure
@@ -66,9 +67,31 @@ class TunedModel(BaseModel):
         self.balancing = self.cfg.balancing
         self._init_model()
 
+    def _resolve_device(self, device):
+        """Resolve a [FINETUNE] device value into (torch_device, cuda_visible_devices).
+
+        CUDA_VISIBLE_DEVICES only ever accepts physical GPU indices (e.g.
+        "0" or "0,1"), never a torch device string like "cuda" or "cuda:0" -
+        setting it to those hides every GPU instead of selecting one. This
+        extracts the index (if any) for CUDA_VISIBLE_DEVICES separately from
+        the torch-facing device string used everywhere else in this class,
+        which after masking to a single GPU is always plain "cpu" or "cuda".
+        """
+        if device == "cpu":
+            return "cpu", None
+        match = re.fullmatch(r"cuda:(\d+)", device)
+        if match:
+            return "cuda", match.group(1)
+        if re.fullmatch(r"\d+(,\d+)*", device):
+            return "cuda", device
+        if device == "cuda":
+            return "cuda", None
+        self.util.warn(f"unrecognized device '{device}'; falling back to 'cuda'")
+        return "cuda", None
+
     def _init_model(self):
         pretrained_model = self.cfg.pretrained_model
-        self.num_layers = None
+        self.num_layers = self.cfg.num_layers
         self.sampling_rate = 16000
         self.max_duration_sec = self.max_duration
         self.accumulation_steps = 4
@@ -141,8 +164,11 @@ class TunedModel(BaseModel):
                 num_labels=1,
                 finetuning_task=target_name,
             )
+        original_num_layers = self.config.num_hidden_layers
+        self._validate_layer_config(original_num_layers)
         if self.num_layers is not None:
             self.config.num_hidden_layers = self.num_layers
+            self.util.debug(f"truncating model to {self.num_layers} encoder layers")
         self.config.final_dropout = self.drop
         setattr(self.config, "sampling_rate", self.sampling_rate)
         setattr(self.config, "data", self.util.get_data_name())
@@ -180,6 +206,29 @@ class TunedModel(BaseModel):
         self.model.train()  # type: ignore
         self.model_initialized = True
 
+    def _validate_layer_config(self, original_num_layers):
+        """Validate num_layers/freeze_layers against the pretrained model's depth.
+
+        Enforces 0 <= freeze_layers < effective_num_layers <= original_num_layers,
+        so num_layers never exceeds what the pretrained checkpoint provides, and
+        freeze_layers never freezes the entire (possibly truncated) backbone,
+        leaving at least one encoder layer trainable.
+        """
+        if self.num_layers is not None and not (0 < self.num_layers <= original_num_layers):
+            self.util.error(
+                f"num_layers={self.num_layers} must be between 1 and the "
+                f"pretrained model's {original_num_layers} encoder layers"
+            )
+        effective_num_layers = (
+            self.num_layers if self.num_layers is not None else original_num_layers
+        )
+        if not (0 <= self.cfg.freeze_layers < effective_num_layers):
+            self.util.error(
+                f"freeze_layers={self.cfg.freeze_layers} must be less than the "
+                f"resulting model's {effective_num_layers} encoder layers "
+                "(at least one layer must stay trainable)"
+            )
+
     def _freeze_encoder_layers(self, model, freeze_layers):
         """Freeze the first `freeze_layers` transformer encoder layers.
 
@@ -216,6 +265,11 @@ class TunedModel(BaseModel):
             self.util.warn(
                 "freeze_layers is not supported for emotion2vec models "
                 "(the funasr backbone isn't exposed as freezable layers); ignoring it"
+            )
+        if self.num_layers is not None:
+            self.util.warn(
+                "num_layers is not supported for emotion2vec models "
+                "(the funasr backbone isn't built from a HF encoder config); ignoring it"
             )
 
         model_mapping = {

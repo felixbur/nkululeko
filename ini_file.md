@@ -401,6 +401,7 @@ Model and training specifications. In general, default values should work for cl
       - max_duration: 8 (in seconds, rest are discarded)  
       - balancing: smote (as in FEATS, only for finetune needs to be defined here)  
       - freeze_layers: 0 (number of pretrained encoder layers to keep frozen; 0 finetunes the whole backbone)  
+      - num_layers: (empty) (truncate the model to this many encoder layers, smaller than the original; empty uses the full pretrained depth)  
 * **class_weight**: add class_weight to the linear classifier (XGB, SVM) fit methods for imbalanced data (True or False)
   * class_weight = False
 * **logo**: leave-one-speaker group out. Will disregard train/dev splits and split the speakers in *logo* groups and then do a LOGO evaluation. If you want LOSO (leave one speaker out), simply set the number to the number of speakers.

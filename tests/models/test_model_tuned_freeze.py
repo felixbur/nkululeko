@@ -7,9 +7,11 @@ wav2vec2 encoder layer structure, rather than instantiating TunedModel
 
 import types
 
+import pytest
 import torch
 
 from nkululeko.models.model_tuned import TunedModel
+from nkululeko.utils.errors import NkululukoError
 
 
 class DummyUtil:
@@ -21,6 +23,9 @@ class DummyUtil:
 
     def debug(self, message):
         pass
+
+    def error(self, message):
+        raise NkululukoError(message)
 
 
 def make_dummy_model(num_layers):
@@ -61,3 +66,52 @@ class TestFreezeEncoderLayers:
         TunedModel._freeze_encoder_layers(fake_self, model, 10)
         assert all_require_grad(model.wav2vec2.encoder.layers, False)
         assert len(util.warnings) == 1
+
+
+def make_fake_self(num_layers, freeze_layers):
+    util = DummyUtil()
+    cfg = types.SimpleNamespace(freeze_layers=freeze_layers)
+    return types.SimpleNamespace(util=util, num_layers=num_layers, cfg=cfg)
+
+
+class TestValidateLayerConfig:
+    def test_defaults_pass(self):
+        fake_self = make_fake_self(num_layers=None, freeze_layers=0)
+        TunedModel._validate_layer_config(fake_self, original_num_layers=24)
+
+    def test_num_layers_within_range_passes(self):
+        fake_self = make_fake_self(num_layers=6, freeze_layers=2)
+        TunedModel._validate_layer_config(fake_self, original_num_layers=24)
+
+    def test_num_layers_equal_to_original_passes(self):
+        fake_self = make_fake_self(num_layers=24, freeze_layers=0)
+        TunedModel._validate_layer_config(fake_self, original_num_layers=24)
+
+    def test_num_layers_exceeding_original_errors(self):
+        fake_self = make_fake_self(num_layers=30, freeze_layers=0)
+        with pytest.raises(NkululukoError):
+            TunedModel._validate_layer_config(fake_self, original_num_layers=24)
+
+    def test_num_layers_zero_errors(self):
+        fake_self = make_fake_self(num_layers=0, freeze_layers=0)
+        with pytest.raises(NkululukoError):
+            TunedModel._validate_layer_config(fake_self, original_num_layers=24)
+
+    def test_freeze_layers_equal_to_num_layers_errors(self):
+        fake_self = make_fake_self(num_layers=6, freeze_layers=6)
+        with pytest.raises(NkululukoError):
+            TunedModel._validate_layer_config(fake_self, original_num_layers=24)
+
+    def test_freeze_layers_exceeding_num_layers_errors(self):
+        fake_self = make_fake_self(num_layers=6, freeze_layers=10)
+        with pytest.raises(NkululukoError):
+            TunedModel._validate_layer_config(fake_self, original_num_layers=24)
+
+    def test_freeze_layers_exceeding_original_when_num_layers_unset_errors(self):
+        fake_self = make_fake_self(num_layers=None, freeze_layers=24)
+        with pytest.raises(NkululukoError):
+            TunedModel._validate_layer_config(fake_self, original_num_layers=24)
+
+    def test_freeze_layers_one_less_than_num_layers_passes(self):
+        fake_self = make_fake_self(num_layers=6, freeze_layers=5)
+        TunedModel._validate_layer_config(fake_self, original_num_layers=24)

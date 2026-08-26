@@ -91,6 +91,35 @@ class TestFreezeLayers:
         assert cfg.freeze_layers == 6
 
 
+class TestNumLayers:
+    def test_num_layers_default_none(self, tmp_path):
+        util = make_util(tmp_path)
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.num_layers is None
+
+    def test_num_layers_explicit_value(self, tmp_path):
+        util = make_util(tmp_path, {"num_layers": "6"})
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.num_layers == 6
+
+
+class TestClassWeight:
+    def test_class_weight_default_false(self, tmp_path):
+        util = make_util(tmp_path)
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.class_weight is False
+
+    def test_class_weight_true(self, tmp_path):
+        util = make_util(tmp_path, {"class_weight": "True"})
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.class_weight is True
+
+    def test_class_weight_false_string_stays_false(self, tmp_path):
+        util = make_util(tmp_path, {"class_weight": "False"})
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.class_weight is False
+
+
 class TestPushToHub:
     def test_push_to_hub_default_false(self, tmp_path):
         util = make_util(tmp_path)

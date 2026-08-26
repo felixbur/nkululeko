@@ -107,9 +107,10 @@ max_duration = 10.5
 | `pretrained_model` | wav2vec2-large-robust | HuggingFace model name |
 | `learning_rate` | 0.0001 | Learning rate |
 | `batch_size` | 8 | Batch size (reduce if OOM) |
-| `device` | autodetect | Device: GPU index (e.g. `0`), or `cpu` |
+| `device` | autodetect | Device: GPU index (e.g. `0`, or `0,1`), `cuda:0` (the index is extracted), or `cpu` |
 | `max_duration` | 8 | Max audio duration in seconds |
 | `freeze_layers` | 0 | Number of pretrained encoder layers (from the input side) to keep frozen; `0` finetunes the whole backbone |
+| `num_layers` | (empty) | Total number of encoder layers to build the model with, truncating the pretrained architecture; empty/unset uses the pretrained model's full depth |
 | `drop` | 0.1 | Dropout applied in the classification/regression head |
 | `push_to_hub` | False | Upload the finetuned model to HuggingFace Hub |
 | `balancing` | none | Training-set balancing: `ros`, `smote`, or `adasyn` |
@@ -128,6 +129,20 @@ freeze_layers = 6
 ```
 
 Only supported for the standard HuggingFace wav2vec2/WavLM/HuBERT backends; it's ignored (with a warning) for `emotion2vec*` pretrained models.
+
+### Reducing Model Depth
+
+`freeze_layers` keeps every layer but stops training some of them; `num_layers` instead builds a *smaller* model by truncating the pretrained architecture to the first N encoder layers, dropping the rest entirely (fewer parameters, faster inference, smaller checkpoint):
+
+```ini
+[FINETUNE]
+pretrained_model = microsoft/wavlm-large
+num_layers = 6
+```
+
+Leave it unset to use the pretrained model's full depth (the default).
+
+Nkululeko validates that `0 <= freeze_layers < num_layers <= <the pretrained model's layer count>` (using the pretrained depth wherever `num_layers` is left unset) and fails fast with a clear error if not - this catches configs that would either exceed the pretrained checkpoint's depth or freeze the entire resulting backbone, leaving nothing to train.
 
 ## Loss Functions
 
