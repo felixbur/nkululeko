@@ -21,6 +21,7 @@ from transformers.models.wav2vec2.modeling_wav2vec2 import (
 )
 
 from nkululeko.losses.loss_pcc import PearsonCorCoeff
+from nkululeko.models.finetune_config import FinetuneConfig
 from nkululeko.models.model import Model as BaseModel
 from nkululeko.reporting.reporter import Reporter
 from nkululeko.utils.pickle_integrity import verify_checksum
@@ -41,42 +42,32 @@ class TunedModel(BaseModel):
         self.target = self.context.config["DATA"]["target"]
         self.labels = self.context.labels
         self.class_num = len(self.labels)
-        device = self.util.config_val("MODEL", "device", False)
-        if not device:
-            self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        else:
-            self.device = device
+        self.is_classifier = self.util.exp_is_classification()
+        self.cfg = FinetuneConfig.from_util(self.util, self.is_classifier)
+
+        self.device = self.cfg.device
         if self.device != "cpu":
             os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
             os.environ["CUDA_VISIBLE_DEVICES"] = self.device
         self.util.debug(f"running on device {self.device}")
-        self.is_classifier = self.util.exp_is_classification()
-        if self.is_classifier:
-            self.measure = "uar"
-        else:
-            self.measure = self.util.config_val("MODEL", "measure", "ccc")
+
+        self.measure = self.cfg.measure
         self.util.debug(f"evaluation metrics: {self.measure}")
-        self.batch_size = int(self.util.config_val("MODEL", "batch_size", "8"))
+        self.batch_size = self.cfg.batch_size
         self.util.debug(f"batch size: {self.batch_size}")
-        self.learning_rate = float(
-            self.util.config_val("MODEL", "learning_rate", "0.0001")
-        )
-        self.max_duration = float(self.util.config_val("MODEL", "max_duration", "8.0"))
+        self.learning_rate = self.cfg.learning_rate
+        self.max_duration = self.cfg.max_duration
         self.df_train, self.df_test = df_train, df_test
         self.epoch_num = int(self.util.config_val("EXP", "epochs", 1))
         self.util.debug(f"num of epochs: {self.epoch_num}")
-        drop = self.util.config_val("MODEL", "drop", False)
-        self.drop = 0.1
-        if drop:
-            self.drop = float(drop)
+        self.drop = self.cfg.drop
         self.util.debug(f"init: training with dropout: {self.drop}")
-        self.push = eval(self.util.config_val("MODEL", "push_to_hub", "False"))
-        self.balancing = self.util.config_val("MODEL", "balancing", False)
+        self.push = self.cfg.push_to_hub
+        self.balancing = self.cfg.balancing
         self._init_model()
 
     def _init_model(self):
-        model_path = "facebook/wav2vec2-large-robust-ft-swbd-300h"
-        pretrained_model = self.util.config_val("MODEL", "pretrained_model", model_path)
+        pretrained_model = self.cfg.pretrained_model
         self.num_layers = None
         self.sampling_rate = 16000
         self.max_duration_sec = self.max_duration
@@ -185,8 +176,30 @@ class TunedModel(BaseModel):
             config=self.config,
         )
         self.model.freeze_feature_extractor()  # type: ignore
+        self._freeze_encoder_layers(self.model, self.cfg.freeze_layers)
         self.model.train()  # type: ignore
         self.model_initialized = True
+
+    def _freeze_encoder_layers(self, model, freeze_layers):
+        """Freeze the first `freeze_layers` transformer encoder layers.
+
+        Leaves the remaining encoder layers and the head trainable. A
+        `freeze_layers` of 0 (the default) freezes nothing here, matching
+        full finetuning; freeze_feature_extractor() above always freezes
+        the CNN feature extractor regardless of this setting.
+        """
+        if not freeze_layers:
+            return
+        layers = model.wav2vec2.encoder.layers
+        if freeze_layers > len(layers):
+            self.util.warn(
+                f"freeze_layers={freeze_layers} exceeds the model's "
+                f"{len(layers)} encoder layers; freezing all of them"
+            )
+        for layer in layers[:freeze_layers]:
+            for param in layer.parameters():
+                param.requires_grad = False
+        self.util.debug(f"froze the first {min(freeze_layers, len(layers))} encoder layers")
 
     def _init_emotion2vec_model(self, pretrained_model):
         """Initialize emotion2vec model for finetuning."""
@@ -198,6 +211,12 @@ class TunedModel(BaseModel):
                 "Please install with: pip install funasr"
             )
             return
+
+        if self.cfg.freeze_layers:
+            self.util.warn(
+                "freeze_layers is not supported for emotion2vec models "
+                "(the funasr backbone isn't exposed as freezable layers); ignoring it"
+            )
 
         model_mapping = {
             "emotion2vec": "emotion2vec/emotion2vec_base",
@@ -432,10 +451,10 @@ class TunedModel(BaseModel):
         targets = pd.DataFrame(self.dataset["train"]["targets"])
 
         if self.is_classifier:
-            criterion = self.util.config_val("MODEL", "loss", "cross")
+            criterion = self.cfg.loss
             if criterion == "cross":
                 label_smoothing = self._get_label_smoothing()
-                if self.util.config_val("MODEL", "class_weight", False):
+                if self.cfg.class_weight:
                     counts = targets[0].value_counts().sort_index()
                     train_weights = 1 / counts
                     train_weights /= train_weights.sum()
@@ -451,7 +470,7 @@ class TunedModel(BaseModel):
             else:
                 self.util.error(f"criterion {criterion} not supported for classifier")
         else:
-            criterion = self.util.config_val("MODEL", "loss", "1-ccc")
+            criterion = self.cfg.loss
             if criterion == "1-ccc":
                 criterion = ConcordanceCorCoeff()
             elif criterion == "1-pcc":
@@ -462,9 +481,6 @@ class TunedModel(BaseModel):
                 criterion = torch.nn.L1Loss()
             else:
                 self.util.error(f"criterion {criterion} not supported for regressor")
-
-        # set push_to_hub value, default false
-        # push = eval(self.util.config_val("MODEL", "push_to_hub", "False"))
 
         class Trainer(transformers.Trainer):
             def compute_loss(
