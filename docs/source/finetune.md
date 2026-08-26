@@ -84,6 +84,8 @@ pretrained_model = microsoft/wavlm-base
 | `facebook/hubert-base-ls960` | HuBERT base model |
 | `facebook/wav2vec2-base-960h` | Smaller, faster |
 
+Nkululeko automatically builds the correct backbone architecture (wav2vec2, WavLM, or HuBERT) and loads each checkpoint's own preprocessing settings (e.g. input normalization) based on `pretrained_model` - no extra configuration needed regardless of which family you pick.
+
 ## Training Parameters
 
 Configure deep learning hyperparameters in the `[FINETUNE]` section:

@@ -10,7 +10,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 * `'DATA'.'target'`: `'emotion'` (nkululeko/augment.py:85), `'emotion'` (nkululeko/augmenting/resampler.py:76), `'emotion'` (nkululeko/bundle.py:56), `'emotion'` (nkululeko/bundle.py:218), `None` (nkululeko/data/dataset.py:35), `None` (nkululeko/data/dataset_csv.py:84), `None` (nkululeko/experiment.py:123), `'emotion'` (nkululeko/experiment.py:621), `'emotion'` (nkululeko/experiment.py:631), `'emotion'` (nkululeko/experiment.py:641), `'emotion'` (nkululeko/export.py:108), `'emotion'` (nkululeko/feat_extract/feats_analyser.py:26), `'emotion'` (nkululeko/models/model.py:34), `'emotion'` (nkululeko/plots.py:31), `'class_label'` (nkululeko/plots.py:897), `'emotion'` (nkululeko/testing_predictor.py:71), `None` (nkululeko/utils/util.py:640)
 * `'DATA'.'tests'`: `'False'` (nkululeko/data/dataset.py:725), `False` (nkululeko/nkululeko.py:46), `False` (nkululeko/testing_predictor.py:59)
 * `'DATA'.'type'`: `False` (nkululeko/data/dataset.py:817), `'dummy'` (nkululeko/data/datasplitter.py:236)
-* `'EXP'.'epochs'`: `1` (nkululeko/modelrunner.py:129), `1` (nkululeko/models/model_tuned.py:62), `'50'` (nkululeko/optimizers/scheduler_factory.py:84)
+* `'EXP'.'epochs'`: `1` (nkululeko/modelrunner.py:129), `1` (nkululeko/models/model_tuned.py:63), `'50'` (nkululeko/optimizers/scheduler_factory.py:84)
 * `'EXP'.'language'`: `'en'` (nkululeko/autopredict/ap_text.py:31), `False` (nkululeko/bundle.py:101)
 * `'EXP'.'sample_selection'`: `'all'` (nkululeko/data/datasplitter.py:36), `'train'` (nkululeko/experiment.py:480), `'all'` (nkululeko/experiment.py:501), `'all'` (nkululeko/feat_extract/feats_analyser.py:396), `'all'` (nkululeko/plots.py:636), `'all'` (nkululeko/predict.py:577), `'all'` (nkululeko/resample.py:123), `'all'` (nkululeko/segment.py:242)
 * `'EXP'.'type'`: `None` (nkululeko/data/dataset.py:146), `'classification'` (nkululeko/utils/util.py:299)
@@ -67,7 +67,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'DATA' | 'type' | `'dummy'` / `False` | nkululeko/data/dataset.py:817, nkululeko/data/datasplitter.py:236 |
 | 'DATA' | <f'{stratif_var}_bins'> | `False` | nkululeko/data/dataset.py:551 |
 | 'EXP' | 'balancing' | `False` | nkululeko/modelrunner.py:256 |
-| 'EXP' | 'epochs' | `'50'` / `1` | nkululeko/modelrunner.py:129, nkululeko/models/model_tuned.py:62, nkululeko/optimizers/scheduler_factory.py:84 |
+| 'EXP' | 'epochs' | `'50'` / `1` | nkululeko/modelrunner.py:129, nkululeko/models/model_tuned.py:63, nkululeko/optimizers/scheduler_factory.py:84 |
 | 'EXP' | 'export_onnx' | `'False'` | nkululeko/nkululeko.py:131 |
 | 'EXP' | 'filter.sample_selection' | `'all'` | nkululeko/data/datasplitter.py:194 |
 | 'EXP' | 'language' | `'en'` / `False` | nkululeko/autopredict/ap_text.py:31, nkululeko/bundle.py:101 |

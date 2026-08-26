@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 import torch
 import transformers
+from transformers import HubertModel, WavLMModel
 from transformers.models.wav2vec2.modeling_wav2vec2 import (
     Wav2Vec2Model,
     Wav2Vec2PreTrainedModel,
@@ -184,13 +185,7 @@ class TunedModel(BaseModel):
         if self.push:
             tokenizer.push_to_hub(self.util.get_name())
 
-        feature_extractor = transformers.Wav2Vec2FeatureExtractor(
-            feature_size=1,
-            sampling_rate=16000,
-            padding_value=0.0,
-            do_normalize=True,
-            return_attention_mask=True,
-        )
+        feature_extractor = self._build_feature_extractor(pretrained_model)
         self.processor = transformers.Wav2Vec2Processor(
             feature_extractor=feature_extractor,
             tokenizer=tokenizer,
@@ -205,6 +200,39 @@ class TunedModel(BaseModel):
         self._freeze_encoder_layers(self.model, self.cfg.freeze_layers)
         self.model.train()  # type: ignore
         self.model_initialized = True
+
+    def _build_feature_extractor(self, pretrained_model):
+        """Build the Wav2Vec2FeatureExtractor matching `pretrained_model`.
+
+        Loads the checkpoint's own preprocessor config (e.g. `do_normalize`,
+        which genuinely differs between checkpoints - some wav2vec2/HuBERT
+        models expect it True, some WavLM models expect it False) instead
+        of hardcoding wav2vec2-robust's settings for every backbone. Falls
+        back to those hardcoded settings only if the checkpoint has none
+        (e.g. a local/custom model with no preprocessor_config.json).
+
+        return_attention_mask is always forced True regardless of source:
+        pooling() (below) falls back to naively meaning over ALL frames,
+        including padding, when no attention mask is present - correct only
+        for batch_size==1, so nkululeko's own design requires this.
+        """
+        try:
+            feature_extractor = transformers.Wav2Vec2FeatureExtractor.from_pretrained(
+                pretrained_model
+            )
+        except Exception as e:
+            self.util.warn(
+                f"could not load feature extractor config for {pretrained_model} "
+                f"({e}); falling back to default wav2vec2-style settings"
+            )
+            feature_extractor = transformers.Wav2Vec2FeatureExtractor(
+                feature_size=1,
+                sampling_rate=16000,
+                padding_value=0.0,
+                do_normalize=True,
+            )
+        feature_extractor.return_attention_mask = True
+        return feature_extractor
 
     def _validate_layer_config(self, original_num_layers):
         """Validate num_layers/freeze_layers against the pretrained model's depth.
@@ -839,6 +867,13 @@ class ModelHead(torch.nn.Module):
         return x
 
 
+BACKBONE_MODEL_CLASSES = {
+    "wav2vec2": Wav2Vec2Model,
+    "wavlm": WavLMModel,
+    "hubert": HubertModel,
+}
+
+
 class Model(Wav2Vec2PreTrainedModel):
     def __init__(self, config):
         if not hasattr(config, "add_adapter"):
@@ -846,7 +881,10 @@ class Model(Wav2Vec2PreTrainedModel):
 
         super().__init__(config)
 
-        self.wav2vec2 = Wav2Vec2Model(config)
+        backbone_cls = BACKBONE_MODEL_CLASSES.get(
+            getattr(config, "model_type", None), Wav2Vec2Model
+        )
+        self.wav2vec2 = backbone_cls(config)
         self.head = ModelHead(config)
         self.is_classifier = config.is_classifier
         self.init_weights()
