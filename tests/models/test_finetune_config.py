@@ -193,6 +193,25 @@ class TestWarmupRatio:
         assert cfg.warmup_ratio == 0.1
 
 
+class TestLayerPooling:
+    def test_layer_pooling_default_last(self, tmp_path):
+        util = make_util(tmp_path)
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.layer_pooling == "last"
+
+    def test_layer_pooling_explicit_weighted(self, tmp_path):
+        util = make_util(tmp_path, {"layer_pooling": "weighted"})
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.layer_pooling == "weighted"
+
+    def test_layer_pooling_unknown_value_raises(self, tmp_path):
+        from nkululeko.utils.util import NkululukoError
+
+        util = make_util(tmp_path, {"layer_pooling": "first"})
+        with pytest.raises(NkululukoError):
+            FinetuneConfig.from_util(util, is_classifier=True)
+
+
 class TestClassWeight:
     def test_class_weight_default_false(self, tmp_path):
         util = make_util(tmp_path)

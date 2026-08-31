@@ -57,6 +57,7 @@ class FinetuneConfig:
     head_activation: str
     pooling: str
     warmup_ratio: float
+    layer_pooling: str
 
     @classmethod
     def from_util(cls, util, is_classifier: bool) -> "FinetuneConfig":
@@ -137,6 +138,20 @@ class FinetuneConfig:
         # backbone simultaneously from step 1.
         warmup_ratio = float(util.config_val("FINETUNE", "warmup_ratio", "0.0"))
 
+        # layer_pooling: which encoder layer(s) feed the (time-)pooling step
+        # above. "last" preserves today's behavior (only the final encoder
+        # layer's hidden states). "weighted" adds one learnable scalar per
+        # encoder layer (softmax-normalized across layers) and pools a
+        # weighted sum of every layer's hidden states instead - the
+        # SUPERB-benchmark "weighted sum of hidden states" technique, since
+        # useful paralinguistic/prosodic signal is often concentrated in
+        # earlier or middle layers rather than the last one.
+        layer_pooling = util.config_val("FINETUNE", "layer_pooling", "last")
+        if layer_pooling not in ("last", "weighted"):
+            util.error(
+                f"unknown layer_pooling: {layer_pooling}; expected 'last' or 'weighted'"
+            )
+
         # loss & measure: default depends on task type. measure is NOT
         # configurable for classification (unchanged from prior behavior).
         if is_classifier:
@@ -164,4 +179,5 @@ class FinetuneConfig:
             head_activation=head_activation,
             pooling=pooling,
             warmup_ratio=warmup_ratio,
+            layer_pooling=layer_pooling,
         )

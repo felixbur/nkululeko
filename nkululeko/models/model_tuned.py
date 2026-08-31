@@ -254,6 +254,7 @@ class TunedModel(BaseModel):
         setattr(self.config, "head_layers", self.cfg.head_layers)
         setattr(self.config, "head_activation", self.cfg.head_activation)
         setattr(self.config, "pooling", self.cfg.pooling)
+        setattr(self.config, "layer_pooling", self.cfg.layer_pooling)
         # "eager" attention is universally supported; SDPA (the newer
         # default) isn't implemented for every architecture in every
         # transformers version (e.g. WavLM lacks it as of transformers 5) -
@@ -1050,6 +1051,17 @@ class Model(Wav2Vec2PreTrainedModel):
             getattr(config, "model_type", None), Wav2Vec2Model
         )
         self.wav2vec2 = backbone_cls(config)
+        # "weighted" layer_pooling combines every encoder layer's hidden
+        # states via one learnable scalar per layer (softmax-normalized),
+        # the SUPERB-benchmark technique - useful paralinguistic/prosodic
+        # signal is often stronger in earlier/middle layers than the last
+        # one. +1 for the encoder's input hidden states (index 0 of
+        # output_hidden_states), matching the length of that tuple exactly.
+        self.layer_pooling_mode = getattr(config, "layer_pooling", "last")
+        if self.layer_pooling_mode == "weighted":
+            self.layer_weights = torch.nn.Parameter(
+                torch.zeros(config.num_hidden_layers + 1)
+            )
         # "meanvar" pooling concatenates mean and variance along the
         # feature dim, doubling what the head actually receives - the head
         # can't just assume config.hidden_size the way "mean" pooling allows.
@@ -1066,6 +1078,21 @@ class Model(Wav2Vec2PreTrainedModel):
 
     def freeze_feature_extractor(self):
         self.wav2vec2.feature_extractor._freeze_parameters()
+
+    @staticmethod
+    def _weighted_layer_sum(hidden_states_tuple, layer_weights):
+        """Softmax-weighted sum of every encoder layer's hidden states.
+
+        hidden_states_tuple: output_hidden_states=True's (num_hidden_layers
+        + 1) tensors, each (batch, seq, hidden) - index 0 is the encoder's
+        input, the rest are each layer's output. Softmax keeps the
+        combination a convex combination (weights sum to 1) regardless of
+        the raw layer_weights' scale - the SUPERB-benchmark "weighted sum of
+        hidden states" technique.
+        """
+        all_layers = torch.stack(hidden_states_tuple, dim=0)
+        weights = torch.softmax(layer_weights, dim=0)
+        return (weights.view(-1, 1, 1, 1) * all_layers).sum(dim=0)
 
     def pooling(
         self,
@@ -1113,9 +1140,15 @@ class Model(Wav2Vec2PreTrainedModel):
         outputs = self.wav2vec2(
             input_values,
             attention_mask=attention_mask,
+            output_hidden_states=(self.layer_pooling_mode == "weighted"),
         )
         cnn_features = outputs.extract_features
-        hidden_states_framewise = outputs.last_hidden_state
+        if self.layer_pooling_mode == "weighted":
+            hidden_states_framewise = self._weighted_layer_sum(
+                outputs.hidden_states, self.layer_weights
+            )
+        else:
+            hidden_states_framewise = outputs.last_hidden_state
         hidden_states = self.pooling(
             hidden_states_framewise,
             attention_mask,

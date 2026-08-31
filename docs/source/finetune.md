@@ -117,6 +117,7 @@ max_duration = 10.5
 | `head_layers` | (empty) | Hidden layer sizes of the classification/regression head, e.g. `[1024, 256]`; empty/unset uses a single hidden layer sized to the backbone's own hidden size (matches the original hardcoded architecture). Matches `[MODEL] layers` for `mlp`/`mlp_reg`, so both approaches' final network can be configured identically. |
 | `head_activation` | `tanh` | Activation function in the head: `relu`, `tanh`, `sigmoid`, or `leaky_relu`. Matches `[MODEL] activation` for `mlp`/`mlp_reg`. |
 | `pooling` | `mean` | How framewise encoder output is pooled into one vector per utterance: `mean`, or `meanvar` (concatenates mean and variance, doubling the head's input dimension) |
+| `layer_pooling` | `last` | Which encoder layer(s) feed that pooling step: `last` (only the final layer, the original behavior), or `weighted` (a learnable, softmax-normalized scalar per layer combines every layer's hidden states - the SUPERB-benchmark "weighted sum of hidden states" technique, useful when relevant signal isn't concentrated in the last layer) |
 | `warmup_ratio` | 0 | Fraction of total training steps spent linearly ramping the learning rate up from 0 before the (also linear) decay begins. `0` (the default) means no warmup at all - the full learning rate hits the head and pretrained backbone simultaneously from step 1 |
 | `push_to_hub` | False | Upload the finetuned model to HuggingFace Hub |
 | `balancing` | none | Training-set balancing: `ros`, `smote`, or `adasyn` |
