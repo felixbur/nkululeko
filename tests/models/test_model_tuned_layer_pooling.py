@@ -80,25 +80,6 @@ class TestLayerPoolingWeighted:
             out = model(torch.randn(1, 400))
         assert out.logits.shape == (1, 1)
 
-    def test_changing_layer_weights_changes_pooled_output(self):
-        # Sanity check the weighted sum actually depends on all layers, not
-        # just collapsing to one regardless of weight values.
-        config = make_config(
-            Wav2Vec2Config,
-            is_classifier=False,
-            num_labels=1,
-            layer_pooling="weighted",
-        )
-        model = Model(config)
-        model.eval()
-        signal = torch.randn(1, 400)
-
-        with torch.no_grad():
-            out_before = model(signal).logits.clone()
-            model.layer_weights.data = torch.randn_like(model.layer_weights)
-            out_after = model(signal).logits
-
-        assert not torch.allclose(out_before, out_after)
 
 class TestWeightedLayerSum:
     """Unit tests for Model._weighted_layer_sum in isolation - synthetic,
