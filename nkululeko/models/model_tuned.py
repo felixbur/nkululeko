@@ -6,6 +6,7 @@ import inspect
 import json
 import os
 import pickle
+import random
 import re
 import typing
 
@@ -114,6 +115,20 @@ class TunedModel(BaseModel):
         """
         params = inspect.signature(transformers.TrainingArguments.__init__).parameters
         return "eval_strategy" if "eval_strategy" in params else "evaluation_strategy"
+
+    @staticmethod
+    def _random_seed():
+        """A fresh random seed for TrainingArguments, not tied to any fixed value.
+
+        transformers.TrainingArguments defaults seed to a hardcoded 42, so
+        without this every [EXP] runs iteration silently reused the exact
+        same weight init/data order and produced byte-identical results -
+        defeating the entire point of averaging multiple runs. random.
+        SystemRandom() draws from the OS entropy source rather than the
+        (seedable) global `random` state, so this can't itself be pinned by
+        an earlier `random.seed(...)` call elsewhere.
+        """
+        return random.SystemRandom().randint(0, 2**31 - 1)
 
     def _build_callbacks(self, evals_per_epoch):
         """Trainer callbacks: TensorBoard, plus early stopping if configured.
@@ -722,6 +737,7 @@ class TunedModel(BaseModel):
             logging_strategy="epoch",
             learning_rate=self.learning_rate,
             warmup_ratio=self.cfg.warmup_ratio,
+            seed=self._random_seed(),
             save_total_limit=2,
             metric_for_best_model=metrics_for_best_model,
             greater_is_better=greater_is_better,
