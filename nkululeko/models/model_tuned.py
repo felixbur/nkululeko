@@ -776,7 +776,13 @@ class TunedModel(BaseModel):
         processed = self.processor(
             squeezed, sampling_rate=self.sampling_rate, padding=False
         )
-        return np.asarray(processed["input_values"][0], dtype=np.float32)
+        # Model.predict() does `self(torch.from_numpy(signal))` with no
+        # unsqueeze of its own and indexes the result as a batch
+        # (`result[0].detach().numpy()[0]`), so the returned array must keep
+        # the (1, seq_len) batch dimension the raw signal already had (e.g.
+        # from audiofile.read(..., always_2d=True)) - not the bare (seq_len,)
+        # array self.processor's own output shape would otherwise give.
+        return np.asarray(processed["input_values"][0], dtype=np.float32)[None, :]
 
     def get_predictions(self):
         results = [[]].pop(0)

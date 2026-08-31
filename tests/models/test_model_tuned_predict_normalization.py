@@ -48,8 +48,8 @@ class TestNormalizeSignal:
 
         result = TunedModel._normalize_signal(fake_self, signal)
 
-        assert abs(result.mean()) < 0.1
-        assert abs(result.std() - 1.0) < 0.1
+        assert abs(result[0].mean()) < 0.1
+        assert abs(result[0].std() - 1.0) < 0.1
 
     def test_squeezes_extra_dimensions_before_normalizing(self):
         # audiofile.read(..., always_2d=True) returns shape (channels,
@@ -60,5 +60,19 @@ class TestNormalizeSignal:
 
         result = TunedModel._normalize_signal(fake_self, signal)
 
-        assert result.ndim == 1
-        assert result.shape == (4,)
+        assert result.shape == (1, 4)
+
+    def test_restores_batch_dimension_model_predict_relies_on(self):
+        # Regression: Model.predict() does `self(torch.from_numpy(signal))`
+        # with no unsqueeze of its own, and indexes the output as a batch
+        # (`result[0].detach().numpy()[0]`) - a bare (seq_len,) array (the
+        # processor's own natural output shape) gets fed to the model's conv
+        # layers as if seq_len were the channel count, crashing with
+        # "expected input[...] to have 1 channels, but got <seq_len> instead".
+        fake_self = make_fake_self(processor=FakeProcessor())
+        signal = np.random.RandomState(0).normal(size=2000)  # 1D, no batch dim
+
+        result = TunedModel._normalize_signal(fake_self, signal)
+
+        assert result.ndim == 2
+        assert result.shape == (1, 2000)
