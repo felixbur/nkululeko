@@ -134,7 +134,7 @@ To quickly test scaling techniques, you can use the provided demo example:
 cd nkululeko
 
 # Run a single scaling demo with standard scaling
-python -m nkululeko.nkululeko --config examples/exp_scaling_demo.ini
+python -m nkululeko.train --config examples/exp_scaling_demo.ini
 
 # Or run all scaling methods systematically
 bash scripts/run_scaler_experiments.sh

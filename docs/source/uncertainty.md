@@ -82,7 +82,7 @@ uncertainty_threshold = 0.4
 ### Run the Experiment
 
 ```bash
-python -m nkululeko.nkululeko --config examples/exp_emodb_uncertainty.ini
+python -m nkululeko.train --config examples/exp_emodb_uncertainty.ini
 ```
 
 ## Choosing the Right Threshold

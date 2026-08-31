@@ -5,7 +5,7 @@ This page describes the architecture and main components of Nkululeko, providing
 ## Main Files and Directories
 
 - **`nkululeko/`**: Root directory containing the main package code
-  - **`nkululeko/nkululeko.py`**: Main entry point for running experiments
+  - **`nkululeko/train.py`**: Main entry point for running experiments
   - **`nkululeko/experiment.py`**: Core Experiment class implementation
   - **`nkululeko/feature_extractor.py`**: Handles feature extraction orchestration
   - **`nkululeko/runmanager.py`**: Manages experiment runs and epochs
@@ -106,7 +106,7 @@ class Reporter:
 
 Each module provides specific functionality:
 
-- `nkululeko.nkululeko`: Main experiment runner
+- `nkululeko.train`: Main experiment runner
 - `nkululeko.explore`: Data and feature exploration
 - `nkululeko.predict`: Unified prediction (single files, folder, CSV list, microphone; feature extractors, autopredict targets, or a trained model)
 - `nkululeko.augment`: Data augmentation

@@ -858,7 +858,7 @@ subsample = 0.9       # From optimization results
 
 Then run a standard experiment to get final results:
 ```bash
-python3 -m nkululeko.nkululeko --config your_final_config.ini
+python3 -m nkululeko.train --config your_final_config.ini
 ```
 
 ## Summary

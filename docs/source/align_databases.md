@@ -95,7 +95,7 @@ uncertainty_threshold = 0.3
 ### Run the Experiment
 
 ```bash
-python -m nkululeko.nkululeko --config examples/exp_emodb_stress.ini
+python -m nkululeko.train --config examples/exp_emodb_stress.ini
 ```
 
 ## Advanced: Combining Multiple Databases

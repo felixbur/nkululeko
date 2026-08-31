@@ -1,6 +1,6 @@
-# nkululeko.nkululeko
+# nkululeko.train
 
-The experiment module (`nkululeko.nkululeko`) orchestrates the end-to-end lifecycle of an experiment: reading an INI configuration, preparing data splits, extracting features, training models, evaluating, and producing plots / reports. This is the
+The experiment module (`nkululeko.train`) orchestrates the end-to-end lifecycle of an experiment: reading an INI configuration, preparing data splits, extracting features, training models, evaluating, and producing plots / reports. This is the
 the main user interface to run experiments with Nkululeko.
 
 ## Responsibilities
@@ -15,7 +15,7 @@ the main user interface to run experiments with Nkululeko.
 Usage:
 
 ```bash
-python -m nkululeko.nkululeko --config config_file.ini
+python -m nkululeko.train --config config_file.ini
 ```
 
 The config path can also be given positionally instead of via `--config`;
@@ -24,9 +24,9 @@ if neither is given, it defaults to `exp.ini` in the current directory.
 Example:  
 
 ```bash
-python -m nkululeko.nkululeko --config examples/exp_emodb_os_svm.ini
+python -m nkululeko.train --config examples/exp_emodb_os_svm.ini
 # equivalent
-python -m nkululeko.nkululeko examples/exp_emodb_os_svm.ini
+python -m nkululeko.train examples/exp_emodb_os_svm.ini
 ```
 
 ## Key Concepts
@@ -81,7 +81,7 @@ Important classes/functions (high-level):
 ## Testing a New Database with an Existing Model
 
 When `DATA.tests` is set in the config **and** a saved experiment `.pkl`
-already exists, `nkululeko.nkululeko` skips training automatically and
+already exists, `nkululeko.train` skips training automatically and
 evaluates the stored best model on the new test database instead.  This
 produces a confusion matrix, a per-class text report, and a predictions CSV
 with all original test columns plus a `predicted` column.

@@ -76,7 +76,7 @@ Key settings:
 Run the training:
 
 ```bash
-python3 -m nkululeko.nkululeko --config tutorials/tut_bundle_polish.ini
+python3 -m nkululeko.train --config tutorials/tut_bundle_polish.ini
 ```
 
 ### Step 2: Export the Bundle

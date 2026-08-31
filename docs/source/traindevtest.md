@@ -144,7 +144,7 @@ The test set performance is typically lower than dev set performance because:
 ## Running the Experiment
 
 ```bash
-python -m nkululeko.nkululeko --config examples/exp_emodb_traindevtest.ini
+python -m nkululeko.train --config examples/exp_emodb_traindevtest.ini
 ```
 
 ## Tips

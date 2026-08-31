@@ -41,8 +41,8 @@ Before committing changes:
 
 ```bash
 # 1. Test all INI configurations
-python -m nkululeko.nkululeko --config tutorials/tut_activation_leaky_relu.ini
-python -m nkululeko.nkululeko --config tutorials/tut_activation_compare.ini
+python -m nkululeko.train --config tutorials/tut_activation_leaky_relu.ini
+python -m nkululeko.train --config tutorials/tut_activation_compare.ini
 
 # 2. Test automation script
 ./tutorials/compare_activations.sh

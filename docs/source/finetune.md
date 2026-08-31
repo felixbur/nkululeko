@@ -239,7 +239,7 @@ tensorboard --logdir examples/results/wavlm_finetuned/
 ## Running the Experiment
 
 ```bash
-python -m nkululeko.nkululeko --config examples/exp_emodb_finetune.ini
+python -m nkululeko.train --config examples/exp_emodb_finetune.ini
 ```
 
 ## Tips

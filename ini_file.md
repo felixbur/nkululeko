@@ -80,7 +80,7 @@ Database loading, label mapping, and train/test split configuration.
   * databases = ['emodb', 'timit']
 * **tests**: Datasets to be used as test data for the stored best model.
   The databases listed here do **not** have to appear in the `databases`
-  field.  When `nkululeko.nkululeko` is run with this option set **and** a
+  field.  When `nkululeko.train` is run with this option set **and** a
   saved experiment file already exists on disk, training is skipped
   entirely: the module loads the stored best model, evaluates it on the
   listed test databases, and writes a confusion matrix, a per-class text

@@ -63,10 +63,10 @@ patience = 5
 
 ```bash
 # Quick test with 5 epochs
-python -m nkululeko.nkululeko --config your_config.ini
+python -m nkululeko.train --config your_config.ini
 
 # Check activation is loaded
-python -m nkululeko.nkululeko --config your_config.ini 2>&1 | grep activation
+python -m nkululeko.train --config your_config.ini 2>&1 | grep activation
 # Should see: DEBUG: model: using activation function: leaky_relu
 ```
 

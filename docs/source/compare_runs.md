@@ -109,13 +109,13 @@ scale = standard
 
 ```bash
 # Run with OpenSMILE features
-python -m nkululeko.nkululeko --config examples/exp_emodb_compare_os.ini
+python -m nkululeko.train --config examples/exp_emodb_compare_os.ini
 
 # Run with Praat features
-python -m nkululeko.nkululeko --config examples/exp_emodb_compare_praat.ini
+python -m nkululeko.train --config examples/exp_emodb_compare_praat.ini
 
 # Run with audmodel features
-python -m nkululeko.nkululeko --config examples/exp_emodb_compare_audmodel.ini
+python -m nkululeko.train --config examples/exp_emodb_compare_audmodel.ini
 ```
 
 ### Step 3: View Comparison Results
@@ -243,9 +243,9 @@ This means:
 
 ```bash
 # 1. Compare features
-python -m nkululeko.nkululeko --config examples/exp_emodb_compare_os.ini
-python -m nkululeko.nkululeko --config examples/exp_emodb_compare_praat.ini
-python -m nkululeko.nkululeko --config examples/exp_emodb_compare_audmodel.ini
+python -m nkululeko.train --config examples/exp_emodb_compare_os.ini
+python -m nkululeko.train --config examples/exp_emodb_compare_praat.ini
+python -m nkululeko.train --config examples/exp_emodb_compare_audmodel.ini
 
 # 2. Check the comparison plot
 # Open: examples/results/exp_emodb_compare/images/runs_comparison.png
