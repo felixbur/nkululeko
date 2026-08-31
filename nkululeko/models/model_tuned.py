@@ -756,6 +756,28 @@ class TunedModel(BaseModel):
         self.util.debug(f"saved best model to {self.torch_root}")
         self.load(self.run, self.epoch)
 
+    def _normalize_signal(self, signal):
+        """Normalize raw audio the same way every training/eval batch does.
+
+        data_collator() (used for both training and HF's own internal eval
+        loop) always runs raw audio through self.processor before it ever
+        reaches the model - Wav2Vec2FeatureExtractor's do_normalize=True
+        zero-mean/unit-variance normalization. get_predictions() and
+        predict_sample() instead fed audiofile.read()'s raw signal straight
+        into Model.predict(), skipping that normalization entirely: the
+        model was finetuned to expect normalized input, so every dev/test
+        report (and every predict_sample()/demo call) was silently scored
+        against wrong-scale input, corrupting the reported metrics
+        independently of - and in addition to - the missing eval() mode bug.
+        """
+        if self.processor is None:
+            return signal
+        squeezed = np.asarray(signal).squeeze()
+        processed = self.processor(
+            squeezed, sampling_rate=self.sampling_rate, padding=False
+        )
+        return np.asarray(processed["input_values"][0], dtype=np.float32)
+
     def get_predictions(self):
         results = [[]].pop(0)
         for (file, start, end), _ in audeer.progress_bar(
@@ -770,6 +792,7 @@ class TunedModel(BaseModel):
                     file, duration=end - start, offset=start, always_2d=True
                 )
             assert sr == self.sampling_rate
+            signal = self._normalize_signal(signal)
             prediction = self.model.predict(signal)  # type: ignore
             results.append(prediction)
             # results.append(predictions.argmax())
@@ -831,6 +854,7 @@ class TunedModel(BaseModel):
     def predict_sample(self, signal):
         """Predict one sample"""
         prediction = {}
+        signal = self._normalize_signal(signal)
         if self.is_classifier:
             # get the class probabilities
             predictions = self.model.predict(signal)  # type: ignore
