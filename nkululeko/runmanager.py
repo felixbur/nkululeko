@@ -4,6 +4,8 @@ This module contains the Runmanager class which is responsible for managing the
 runs of the experiment.
 """
 
+import ast
+
 from nkululeko.experiment_context import (
     ContextAware,
     bind_experiment_context,
@@ -58,12 +60,35 @@ class Runmanager(ContextAware):
         self.target = self.context.config["DATA"]["target"]
         self.split3 = eval(self.util.config_val("EXP", "traindevtest", "False"))
 
+    def _is_random_seed_set(self):
+        """Check whether [MODEL] random_seed is set to a value that actually seeds.
+
+        Mirrors the truthiness check the model classes themselves use
+        (model_mlp.py, model_mlp_regression.py, model_adm.py: `if
+        manual_seed:` after evaluating the config string) - ast.literal_eval
+        rather than eval() since this only ever needs to recognize the two
+        documented literal forms (False, an int), not run arbitrary code.
+        """
+        raw = self.util.config_val("MODEL", "random_seed", "False")
+        try:
+            return bool(ast.literal_eval(raw))
+        except (ValueError, SyntaxError):
+            return False
+
     def do_runs(self):
         """Start the runs."""
         self.best_results = []  # keep the best result per run
         self.last_epochs = []  # keep the epoch of best result per run
+        num_runs = int(self.util.config_val("EXP", "runs", 1))
+        if num_runs > 1 and self._is_random_seed_set():
+            self.util.warn(
+                "[MODEL] random_seed is set, so every run would produce an "
+                f"identical result - ignoring [EXP] runs={num_runs} and "
+                "using runs=1 instead"
+            )
+            num_runs = 1
         # for all runs
-        for run in range(int(self.util.config_val("EXP", "runs", 1))):
+        for run in range(num_runs):
             self.util.debug(
                 f"run {run} using model {self.context.config['MODEL']['type']}"
             )

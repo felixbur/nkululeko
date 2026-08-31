@@ -495,7 +495,8 @@ Model and training specifications. In general, default values should work for cl
 * **colsample_bytree**: subsample ratio of columns for XGBoost
   * colsample_bytree = 1.0
 * **random_seed**: random seed for reproducible results
-  * random_seed = 42 # set this to *False* if #run > 1
+  * random_seed = 42
+  * a fixed seed makes every run produce an identical result, so `[EXP] runs` is automatically forced to 1 (with a warning) whenever this is set
 * **device**: device for neural network training
   * device = cpu
   * possible values: cpu, cuda

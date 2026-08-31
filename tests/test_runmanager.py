@@ -183,6 +183,116 @@ class TestLoadModelContextPropagation:
             assert get_context() is context_live
 
 
+class TestIsRandomSeedSet:
+    """_is_random_seed_set() mirrors the truthiness check the model classes
+    themselves use (model_mlp.py, model_mlp_regression.py, model_adm.py:
+    `if manual_seed:` on the evaluated config string) so do_runs() only
+    forces runs=1 exactly when a seed would actually make every run
+    identical.
+    """
+
+    def test_unset_returns_false(self, runmanager):
+        assert runmanager._is_random_seed_set() is False
+
+    def test_explicit_false_returns_false(self, runmanager):
+        glob_conf.config["MODEL"]["random_seed"] = "False"
+        assert runmanager._is_random_seed_set() is False
+
+    def test_integer_seed_returns_true(self, runmanager):
+        glob_conf.config["MODEL"]["random_seed"] = "42"
+        assert runmanager._is_random_seed_set() is True
+
+    def test_zero_seed_returns_false(self, runmanager):
+        # Matches the existing (if imperfect) `if manual_seed:` convention
+        # in the model classes, where a seed of 0 is falsy and never
+        # actually gets applied - not this method's bug to fix in isolation.
+        glob_conf.config["MODEL"]["random_seed"] = "0"
+        assert runmanager._is_random_seed_set() is False
+
+    def test_malformed_value_returns_false(self, runmanager):
+        glob_conf.config["MODEL"]["random_seed"] = "not-a-literal"
+        assert runmanager._is_random_seed_set() is False
+
+
+class TestDoRunsForcesSingleRunWhenSeeded:
+    """Regression: with [MODEL] random_seed set, every run produces an
+    identical result (confirmed empirically: an MLP baseline run with
+    random_seed=42 and runs=3 reported the exact same score three times,
+    std=0.0000) - so [EXP] runs > 1 just repeats the same training three
+    times for no benefit. do_runs() should collapse this to a single run
+    and tell the user why, rather than silently wasting compute.
+    """
+
+    def _run_do_runs(self, tmp_path, monkeypatch, runs, random_seed):
+        import pandas as pd
+
+        glob_conf.config["EXP"]["runs"] = str(runs)
+        if random_seed is not None:
+            glob_conf.config["MODEL"]["random_seed"] = random_seed
+        df = pd.DataFrame({"emotion": []})
+        feats = pd.DataFrame()
+        rm = Runmanager(df, df, feats, feats)
+
+        instantiations = []
+
+        class FakeModelrunner:
+            def __init__(self, *args, **kwargs):
+                instantiations.append(args[4] if len(args) > 4 else kwargs.get("run"))
+
+            def do_epochs(self):
+                return [_make_report(0.9, run=len(instantiations) - 1, epoch=0)], 0
+
+        monkeypatch.setattr("nkululeko.runmanager.Modelrunner", FakeModelrunner)
+        monkeypatch.setattr(Runmanager, "print_report", lambda self, r, p: None)
+
+        rm.do_runs()
+        return rm, instantiations
+
+    def test_seeded_multi_run_collapses_to_one_run(self, tmp_path, monkeypatch):
+        rm, instantiations = self._run_do_runs(
+            tmp_path, monkeypatch, runs=3, random_seed="42"
+        )
+        assert instantiations == [0]
+
+    def test_unseeded_multi_run_runs_all_requested_runs(self, tmp_path, monkeypatch):
+        rm, instantiations = self._run_do_runs(
+            tmp_path, monkeypatch, runs=3, random_seed=None
+        )
+        assert instantiations == [0, 1, 2]
+
+    def test_seeded_single_run_is_unaffected(self, tmp_path, monkeypatch):
+        rm, instantiations = self._run_do_runs(
+            tmp_path, monkeypatch, runs=1, random_seed="42"
+        )
+        assert instantiations == [0]
+
+    def test_warns_when_collapsing_runs(self, tmp_path, monkeypatch):
+        import pandas as pd
+
+        glob_conf.config["EXP"]["runs"] = "3"
+        glob_conf.config["MODEL"]["random_seed"] = "42"
+        df = pd.DataFrame({"emotion": []})
+        feats = pd.DataFrame()
+        rm = Runmanager(df, df, feats, feats)
+
+        class FakeModelrunner:
+            def __init__(self, *args, **kwargs):
+                pass
+
+            def do_epochs(self):
+                return [_make_report(0.9, run=0, epoch=0)], 0
+
+        warnings = []
+        monkeypatch.setattr("nkululeko.runmanager.Modelrunner", FakeModelrunner)
+        monkeypatch.setattr(Runmanager, "print_report", lambda self, r, p: None)
+        monkeypatch.setattr(rm.util, "warn", lambda msg: warnings.append(msg))
+
+        rm.do_runs()
+
+        assert len(warnings) == 1
+        assert "random_seed" in warnings[0]
+
+
 class TestRunmanagerInit:
     def test_stores_split3_false(self, runmanager):
         assert runmanager.split3 is False
