@@ -23,6 +23,7 @@ from transformers.models.wav2vec2.modeling_wav2vec2 import (
     Wav2Vec2PreTrainedModel,
 )
 
+from nkululeko.losses.loss_ccc import ConcordanceCorCoeff
 from nkululeko.losses.loss_pcc import PearsonCorCoeff
 from nkululeko.models.finetune_config import FinetuneConfig
 from nkululeko.models.model import Model as BaseModel
@@ -886,7 +887,12 @@ class ModelOutputReg:
                 self.cnn_features,
             ]
             result = items[index]
-            return tuple(item for item in result if item is not None)
+            filtered_result = [item for item in result if item is not None]
+
+            if not filtered_result and self.logits is not None:
+                return (self.logits,)
+
+            return tuple(filtered_result)
         elif index == 0:
             return self.logits
         elif index == 1:
@@ -1161,32 +1167,3 @@ class Emotion2vecModel(torch.nn.Module):
             logits = result.logits
 
         return logits.detach().cpu().numpy()[0]
-
-
-class ConcordanceCorCoeff(torch.nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.mean = torch.mean
-        self.var = torch.var
-        self.sum = torch.sum
-        self.sqrt = torch.sqrt
-        self.std = torch.std
-
-    def forward(self, prediction, ground_truth):
-        ground_truth = ground_truth.float()
-        mean_gt = self.mean(ground_truth, 0)
-        mean_pred = self.mean(prediction, 0)
-        var_gt = self.var(ground_truth, 0)
-        var_pred = self.var(prediction, 0)
-        v_pred = prediction - mean_pred
-        v_gt = ground_truth - mean_gt
-        cor = self.sum(v_pred * v_gt) / (
-            self.sqrt(self.sum(v_pred**2)) * self.sqrt(self.sum(v_gt**2))
-        )
-        sd_gt = self.std(ground_truth)
-        sd_pred = self.std(prediction)
-        numerator = 2 * cor * sd_gt * sd_pred
-        denominator = var_gt + var_pred + (mean_gt - mean_pred) ** 2
-        ccc = numerator / denominator
-
-        return 1 - ccc

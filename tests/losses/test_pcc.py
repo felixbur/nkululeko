@@ -142,14 +142,20 @@ class TestPearsonCorCoeff:
             assert loss.item() <= 2.1
 
     def test_constant_predictions(self, pcc_loss):
-        """Test with constant predictions (zero variance)."""
+        """Test with constant predictions (zero variance).
+
+        Regression: this used to produce NaN (division by zero: v_pred is
+        all-zero when predictions are constant, so cor = 0/0). A NaN loss
+        during real finetuning permanently corrupts the optimizer's running
+        moments - not just one bad step, training never recovers. An
+        epsilon in the denominator fixes this; the loss must stay finite.
+        """
         predictions = torch.tensor([2.0, 2.0, 2.0, 2.0, 2.0])
         ground_truth = torch.tensor([1.0, 2.0, 3.0, 4.0, 5.0])
 
-        # This may produce NaN or inf due to division by zero
-        # Just check it doesn't crash
         loss = pcc_loss(predictions, ground_truth)
         assert isinstance(loss, torch.Tensor)
+        assert torch.isfinite(loss)
 
     def test_float_precision(self, pcc_loss):
         """Test with different float precisions."""
