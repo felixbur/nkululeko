@@ -158,6 +158,12 @@ class Runmanager(ContextAware):
                     + f"_test_{best_report.run}_{best_report.epoch:03d}"
                 )
                 self.print_report(self.test_report, plot_name)
+                # Replace the dev-phase result just appended above with the
+                # real test result for top-level reporting - experiment.py
+                # aggregates via self.best_results, so leaving the dev-based
+                # best_report there would silently report dev performance
+                # as if it were the final test score.
+                self.best_results[-1] = self.test_report
 
     def print_best_result_runs(self):
         """Print the best result for all runs."""

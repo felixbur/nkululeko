@@ -146,6 +146,21 @@ Leave it unset to use the pretrained model's full depth (the default).
 
 Nkululeko validates that `0 <= freeze_layers < num_layers <= <the pretrained model's layer count>` (using the pretrained depth wherever `num_layers` is left unset) and fails fast with a clear error if not - this catches configs that would either exceed the pretrained checkpoint's depth or freeze the entire resulting backbone, leaving nothing to train.
 
+### Early Stopping
+
+Set `[MODEL] patience` (shared with every other model type, not a `[FINETUNE]` key) to stop finetuning once the dev-set metric stops improving, instead of always running the full `epochs` count:
+
+```ini
+[MODEL]
+type = finetune
+patience = 3
+
+[FINETUNE]
+pretrained_model = facebook/wav2vec2-large-robust-ft-swbd-300h
+```
+
+`patience` is in epochs, matching other model types. Internally finetuning evaluates 5 times per epoch, so this is scaled to 5x that many evaluation calls before stopping - you don't need to account for that yourself.
+
 ## Loss Functions
 
 Loss functions are automatically selected:

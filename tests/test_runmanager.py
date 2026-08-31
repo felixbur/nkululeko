@@ -198,3 +198,55 @@ class TestRunmanagerInit:
         feats = pd.DataFrame()
         rm = Runmanager(df, df, feats, feats)
         assert rm.split3 is True
+
+
+class TestDoRunsSplit3ReportsRealTestResult:
+    """Regression: under [EXP] traindevtest=True (split3), do_runs() must
+    report the real test-set result, not the dev-phase result used only for
+    checkpoint selection.
+
+    do_runs() ran the dev-monitoring loop, appended its best dev report to
+    self.best_results, then separately computed self.test_report by
+    re-evaluating the best model on the real test set - but never fed that
+    test_report back into self.best_results. Since experiment.py's final
+    summary reads exactly self.best_results (`self.reports =
+    self.runmgr.best_results`), every traindevtest=True experiment's printed
+    "final" score was silently the dev score, for every model type.
+    """
+
+    def test_best_results_holds_test_report_not_dev_report(self, tmp_path, monkeypatch):
+        import pandas as pd
+
+        glob_conf.config["EXP"]["traindevtest"] = "True"
+        glob_conf.config["EXP"]["runs"] = "1"
+        df = pd.DataFrame({"emotion": []})
+        feats = pd.DataFrame()
+        rm = Runmanager(df, df, feats, feats, dev_x=df, dev_y=feats)
+
+        dev_report = _make_report(0.90, run=0, epoch=1)
+        test_report = _make_report(0.25, run=0, epoch=1)
+
+        class FakeModel:
+            def load(self, run, epoch):
+                pass
+
+        class FakeModelrunner:
+            def __init__(self, *args, **kwargs):
+                pass
+
+            def do_epochs(self):
+                return [dev_report], 1
+
+            def _select_model(self, model_type):
+                return FakeModel()
+
+            def eval_specific_model(self, model, df_test, feats_test, split_name=None):
+                return test_report
+
+        monkeypatch.setattr("nkululeko.runmanager.Modelrunner", FakeModelrunner)
+        monkeypatch.setattr(Runmanager, "print_report", lambda self, r, p: None)
+
+        rm.do_runs()
+
+        assert rm.best_results == [test_report]
+        assert rm.best_results[0] is not dev_report

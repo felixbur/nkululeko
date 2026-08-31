@@ -62,6 +62,10 @@ class Dataset(ContextAware):
         if trains:
             train_tables = ast.literal_eval(trains)
             tables += train_tables
+        devs = self.util.config_val_data(self.name, "dev_tables", False)
+        if devs:
+            dev_tables = ast.literal_eval(devs)
+            tables += dev_tables
         return tables
 
     def _load_db(self):
@@ -475,13 +479,27 @@ class Dataset(ContextAware):
             self.df_test = self.df.loc[self.df.index.intersection(testdf.index)]
             self.df_train = self.df.loc[self.df.index.intersection(traindf.index)]
             self.df_dev = self.df.loc[self.df.index.intersection(devdf.index)]
-            # it might be necessary to copy the target values
+            # it might be necessary to copy the target values - but not when
+            # DATA.<name>.colnames renamed the target column, since testdf/
+            # traindf/devdf are read straight from the raw audformat table
+            # and never went through that renaming (self.df did, so df_test/
+            # df_train/df_dev already carry correct values via the .loc
+            # selection above; this copy is a defensive extra, not required).
             if not self.df_test.empty:
-                self.df_test[self.target] = testdf[self.target]
+                try:
+                    self.df_test[self.target] = testdf[self.target]
+                except KeyError:
+                    pass
             if not self.df_train.empty:
-                self.df_train[self.target] = traindf[self.target]
+                try:
+                    self.df_train[self.target] = traindf[self.target]
+                except KeyError:
+                    pass
             if not self.df_dev.empty:
-                self.df_dev[self.target] = devdf[self.target]
+                try:
+                    self.df_dev[self.target] = devdf[self.target]
+                except KeyError:
+                    pass
         elif split_strategy == "balanced":
             self.balanced_split(with_dev=True)
         elif split_strategy == "speaker_split":

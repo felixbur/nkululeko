@@ -2,6 +2,7 @@
 
 import ast
 import dataclasses
+import inspect
 import json
 import os
 import pickle
@@ -66,6 +67,17 @@ class TunedModel(BaseModel):
         self.util.debug(f"init: training with dropout: {self.drop}")
         self.push = self.cfg.push_to_hub
         self.balancing = self.cfg.balancing
+        # Set unconditionally (not just inside train()) so a freshly
+        # constructed instance can load() an already-trained checkpoint and
+        # predict() without training first - e.g. runmanager.get_best_model()
+        # and eval_specific_model() under [EXP] traindevtest=True build new
+        # TunedModel instances purely to reload the best-dev-epoch checkpoint
+        # and evaluate it on the real test set. Both paths are deterministic
+        # (derived from the experiment dir), so setting them here is safe
+        # even before any training has actually happened.
+        self.torch_root = audeer.path(self.util.get_path("model_dir"), "torch")
+        self.log_root = os.path.join(self.util.get_exp_dir(), "log")
+        audeer.mkdir(self.log_root)
         self._init_model()
 
     def _resolve_device(self, device):
@@ -89,6 +101,45 @@ class TunedModel(BaseModel):
             return "cuda", None
         self.util.warn(f"unrecognized device '{device}'; falling back to 'cuda'")
         return "cuda", None
+
+    @staticmethod
+    def _eval_strategy_key():
+        """Name of the TrainingArguments kwarg that selects the eval strategy.
+
+        transformers renamed evaluation_strategy -> eval_strategy at some
+        point (and later versions may drop the old name entirely) - detect
+        which one this installed version actually accepts instead of
+        hardcoding either.
+        """
+        params = inspect.signature(transformers.TrainingArguments.__init__).parameters
+        return "eval_strategy" if "eval_strategy" in params else "evaluation_strategy"
+
+    def _build_callbacks(self, evals_per_epoch):
+        """Trainer callbacks: TensorBoard, plus early stopping if configured.
+
+        MODEL.patience is shared with every other model type (SVM/MLP/CNN
+        etc. via modelrunner.do_epochs()'s own patience loop) and is in
+        epochs there. Finetuning instead evaluates `evals_per_epoch` times
+        per epoch (see train()), so patience is scaled to the matching
+        number of evaluation calls for transformers' EarlyStoppingCallback -
+        without this, load_best_model_at_end only picks the best checkpoint
+        after training runs for the full configured epoch count; it never
+        actually stops training early the way patience does for other models.
+        """
+        callbacks = [transformers.integrations.TensorBoardCallback()]
+        patience = self.util.config_val("MODEL", "patience", False)
+        if patience:
+            early_stopping_patience = int(patience) * evals_per_epoch
+            callbacks.append(
+                transformers.EarlyStoppingCallback(
+                    early_stopping_patience=early_stopping_patience
+                )
+            )
+            self.util.debug(
+                f"finetune: early stopping after {patience} epochs "
+                f"({early_stopping_patience} evaluation calls) without dev improvement"
+            )
+        return callbacks
 
     def _init_model(self):
         pretrained_model = self.cfg.pretrained_model
@@ -533,9 +584,6 @@ class TunedModel(BaseModel):
     def train(self):
         """Train the model."""
         model_root = self.util.get_path("model_dir")
-        self.log_root = os.path.join(self.util.get_exp_dir(), "log")
-        audeer.mkdir(self.log_root)
-        self.torch_root = audeer.path(model_root, "torch")
         conf_file = os.path.join(self.torch_root, "config.json")
         if os.path.isfile(conf_file):
             self.util.debug(f"reusing finetuned model: {conf_file}")
@@ -596,10 +644,15 @@ class TunedModel(BaseModel):
 
                 return (loss, outputs) if return_outputs else loss
 
+        # eval/save happen every `num_steps` (~1/evals_per_epoch of an
+        # epoch's worth of steps) - see early stopping below, which scales
+        # MODEL.patience (in epochs, matching every other model type) to
+        # this many evaluation calls.
+        evals_per_epoch = 5
         num_steps = (
             len(self.dataset["train"])
             // (self.batch_size * self.accumulation_steps)
-            // 5
+            // evals_per_epoch
         )
         num_steps = max(1, num_steps)
 
@@ -617,13 +670,12 @@ class TunedModel(BaseModel):
         else:
             self.util.error(f"unknown metric/measure: {metrics_for_best_model}")
 
-        training_args = transformers.TrainingArguments(
+        training_kwargs = dict(
             output_dir=model_root,
             logging_dir=self.log_root,
             per_device_train_batch_size=self.batch_size,
             per_device_eval_batch_size=self.batch_size,
             gradient_accumulation_steps=self.accumulation_steps,
-            eval_strategy="steps",
             num_train_epochs=self.epoch_num,
             fp16=self.device != "cpu",
             use_cpu=self.device == "cpu",
@@ -642,6 +694,8 @@ class TunedModel(BaseModel):
             hub_model_id=f"{self.util.get_name()}",
             overwrite_output_dir=True,
         )
+        training_kwargs[self._eval_strategy_key()] = "steps"
+        training_args = transformers.TrainingArguments(**training_kwargs)
 
         trainer_kwargs = {
             "model": self.model,
@@ -650,7 +704,7 @@ class TunedModel(BaseModel):
             "compute_metrics": self.compute_metrics,
             "train_dataset": self.dataset["train"],
             "eval_dataset": self.dataset["dev"],
-            "callbacks": [transformers.integrations.TensorBoardCallback()],
+            "callbacks": self._build_callbacks(evals_per_epoch),
         }
 
         if self.processor is not None:
