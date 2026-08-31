@@ -114,6 +114,10 @@ max_duration = 10.5
 | `freeze_layers` | 0 | Number of pretrained encoder layers (from the input side) to keep frozen; `0` finetunes the whole backbone |
 | `num_layers` | (empty) | Total number of encoder layers to build the model with, truncating the pretrained architecture; empty/unset uses the pretrained model's full depth |
 | `drop` | 0 | Dropout applied in the classification/regression head |
+| `head_layers` | (empty) | Hidden layer sizes of the classification/regression head, e.g. `[1024, 256]`; empty/unset uses a single hidden layer sized to the backbone's own hidden size (matches the original hardcoded architecture). Matches `[MODEL] layers` for `mlp`/`mlp_reg`, so both approaches' final network can be configured identically. |
+| `head_activation` | `tanh` | Activation function in the head: `relu`, `tanh`, `sigmoid`, or `leaky_relu`. Matches `[MODEL] activation` for `mlp`/`mlp_reg`. |
+| `pooling` | `mean` | How framewise encoder output is pooled into one vector per utterance: `mean`, or `meanvar` (concatenates mean and variance, doubling the head's input dimension) |
+| `warmup_ratio` | 0 | Fraction of total training steps spent linearly ramping the learning rate up from 0 before the (also linear) decay begins. `0` (the default) means no warmup at all - the full learning rate hits the head and pretrained backbone simultaneously from step 1 |
 | `push_to_hub` | False | Upload the finetuned model to HuggingFace Hub |
 | `balancing` | none | Training-set balancing: `ros`, `smote`, or `adasyn` |
 | `loss` | `cross` (classification) / `1-ccc` (regression) | Loss function |

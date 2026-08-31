@@ -251,6 +251,9 @@ class TunedModel(BaseModel):
         setattr(self.config, "sampling_rate", self.sampling_rate)
         setattr(self.config, "data", self.util.get_data_name())
         setattr(self.config, "is_classifier", self.is_classifier)
+        setattr(self.config, "head_layers", self.cfg.head_layers)
+        setattr(self.config, "head_activation", self.cfg.head_activation)
+        setattr(self.config, "pooling", self.cfg.pooling)
         # "eager" attention is universally supported; SDPA (the newer
         # default) isn't implemented for every architecture in every
         # transformers version (e.g. WavLM lacks it as of transformers 5) -
@@ -717,6 +720,7 @@ class TunedModel(BaseModel):
             logging_steps=num_steps,
             logging_strategy="epoch",
             learning_rate=self.learning_rate,
+            warmup_ratio=self.cfg.warmup_ratio,
             save_total_limit=2,
             metric_for_best_model=metrics_for_best_model,
             greater_is_better=greater_is_better,
@@ -983,23 +987,49 @@ class ModelOutputReg:
         return 6
 
 
+HEAD_ACTIVATIONS = {
+    "relu": torch.nn.ReLU,
+    "tanh": torch.nn.Tanh,
+    "sigmoid": torch.nn.Sigmoid,
+    "leaky_relu": torch.nn.LeakyReLU,
+}
+
+
 class ModelHead(torch.nn.Module):
-    def __init__(self, config):
+    """Classification/regression head on top of the pretrained backbone.
+
+    Configurable via config.head_layers/config.head_activation (set from
+    [FINETUNE] head_layers/head_activation in _init_huggingface_model) so its
+    capacity and activation can be matched to mlp/mlp_reg's [MODEL]
+    layers/activation for a fair embeddings-vs-finetuning comparison.
+    Defaults (a single hidden layer sized to the backbone's own hidden_size,
+    tanh) preserve the original hardcoded architecture.
+    """
+
+    def __init__(self, config, input_dim=None):
         super().__init__()
 
-        self.dense = torch.nn.Linear(config.hidden_size, config.hidden_size)
-        self.dropout = torch.nn.Dropout(config.final_dropout)
-        self.out_proj = torch.nn.Linear(config.hidden_size, config.num_labels)
+        head_layers = getattr(config, "head_layers", None) or [config.hidden_size]
+        activation_name = getattr(config, "head_activation", "tanh")
+        if activation_name not in HEAD_ACTIVATIONS:
+            raise ValueError(
+                f"unknown head_activation: {activation_name}; "
+                f"expected one of {sorted(HEAD_ACTIVATIONS)}"
+            )
+        activation_cls = HEAD_ACTIVATIONS[activation_name]
+
+        dims = [input_dim or config.hidden_size] + list(head_layers)
+        layers = []
+        for in_dim, out_dim in zip(dims[:-1], dims[1:]):
+            layers.append(torch.nn.Dropout(config.final_dropout))
+            layers.append(torch.nn.Linear(in_dim, out_dim))
+            layers.append(activation_cls())
+        layers.append(torch.nn.Dropout(config.final_dropout))
+        layers.append(torch.nn.Linear(dims[-1], config.num_labels))
+        self.net = torch.nn.Sequential(*layers)
 
     def forward(self, features, **kwargs):
-        x = features
-        x = self.dropout(x)
-        x = self.dense(x)
-        x = torch.tanh(x)
-        x = self.dropout(x)
-        x = self.out_proj(x)
-
-        return x
+        return self.net(features)
 
 
 BACKBONE_MODEL_CLASSES = {
@@ -1020,7 +1050,14 @@ class Model(Wav2Vec2PreTrainedModel):
             getattr(config, "model_type", None), Wav2Vec2Model
         )
         self.wav2vec2 = backbone_cls(config)
-        self.head = ModelHead(config)
+        # "meanvar" pooling concatenates mean and variance along the
+        # feature dim, doubling what the head actually receives - the head
+        # can't just assume config.hidden_size the way "mean" pooling allows.
+        self.pooling_mode = getattr(config, "pooling", "mean")
+        pooled_dim = (
+            config.hidden_size * 2 if self.pooling_mode == "meanvar" else config.hidden_size
+        )
+        self.head = ModelHead(config, input_dim=pooled_dim)
         self.is_classifier = config.is_classifier
         # post_init() (not the lower-level init_weights() it calls) is the
         # documented hook for subclasses - required as of transformers 5.x,
@@ -1036,23 +1073,35 @@ class Model(Wav2Vec2PreTrainedModel):
         attention_mask,
     ):
         if attention_mask is None:  # For evaluation with batch_size==1
-            outputs = torch.mean(hidden_states, dim=1)
+            mean = torch.mean(hidden_states, dim=1)
+            if self.pooling_mode == "meanvar":
+                var = torch.var(hidden_states, dim=1, unbiased=False)
+                return torch.cat([mean, var], dim=-1)
+            return mean
         else:
             attention_mask = self._get_feature_vector_attention_mask(
                 hidden_states.shape[1],
                 attention_mask,
             )
-            hidden_states = hidden_states * torch.reshape(
+            mask = torch.reshape(
                 attention_mask,
                 (-1, attention_mask.shape[-1], 1),
             )
-            outputs = torch.sum(hidden_states, dim=1)
+            masked_hidden_states = hidden_states * mask
             attention_sum = torch.sum(attention_mask, dim=1)
 
             epsilon = 1e-6  # to avoid division by zero and numerical instability
-            outputs = outputs / (torch.reshape(attention_sum, (-1, 1)) + epsilon)
+            denom = torch.reshape(attention_sum, (-1, 1)) + epsilon
+            mean = torch.sum(masked_hidden_states, dim=1) / denom
 
-        return outputs
+            if self.pooling_mode == "meanvar":
+                mean_sq = torch.sum((hidden_states**2) * mask, dim=1) / denom
+                # Clamp against tiny negative values from floating-point
+                # cancellation in E[x^2] - E[x]^2 (true variance is >= 0).
+                var = torch.clamp(mean_sq - mean**2, min=0.0)
+                return torch.cat([mean, var], dim=-1)
+
+            return mean
 
     def forward(
         self,

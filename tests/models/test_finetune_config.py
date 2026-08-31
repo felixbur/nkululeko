@@ -133,6 +133,66 @@ class TestNumLayers:
         assert cfg.num_layers is None
 
 
+class TestHeadLayers:
+    def test_head_layers_default_none(self, tmp_path):
+        util = make_util(tmp_path)
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.head_layers is None
+
+    def test_head_layers_explicit_value(self, tmp_path):
+        util = make_util(tmp_path, {"head_layers": "[1024, 256]"})
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.head_layers == [1024, 256]
+
+    def test_head_layers_empty_string_stays_none(self, tmp_path):
+        util = make_util(tmp_path, {"head_layers": ""})
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.head_layers is None
+
+
+class TestHeadActivation:
+    def test_head_activation_default_tanh(self, tmp_path):
+        util = make_util(tmp_path)
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.head_activation == "tanh"
+
+    def test_head_activation_explicit_value(self, tmp_path):
+        util = make_util(tmp_path, {"head_activation": "relu"})
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.head_activation == "relu"
+
+
+class TestPooling:
+    def test_pooling_default_mean(self, tmp_path):
+        util = make_util(tmp_path)
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.pooling == "mean"
+
+    def test_pooling_explicit_meanvar(self, tmp_path):
+        util = make_util(tmp_path, {"pooling": "meanvar"})
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.pooling == "meanvar"
+
+    def test_pooling_unknown_value_raises(self, tmp_path):
+        from nkululeko.utils.util import NkululukoError
+
+        util = make_util(tmp_path, {"pooling": "max"})
+        with pytest.raises(NkululukoError):
+            FinetuneConfig.from_util(util, is_classifier=True)
+
+
+class TestWarmupRatio:
+    def test_warmup_ratio_default_zero(self, tmp_path):
+        util = make_util(tmp_path)
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.warmup_ratio == 0.0
+
+    def test_warmup_ratio_explicit_value(self, tmp_path):
+        util = make_util(tmp_path, {"warmup_ratio": "0.1"})
+        cfg = FinetuneConfig.from_util(util, is_classifier=True)
+        assert cfg.warmup_ratio == 0.1
+
+
 class TestClassWeight:
     def test_class_weight_default_false(self, tmp_path):
         util = make_util(tmp_path)

@@ -6,6 +6,7 @@ shared with MLP/CNN) and EXP.epochs (shared epoch count, not finetune-specific).
 selector shared by every model type, not a finetune-only setting.
 """
 
+import ast
 import dataclasses
 import typing
 
@@ -52,6 +53,10 @@ class FinetuneConfig:
     pretrained_model: str
     freeze_layers: int
     num_layers: typing.Optional[int]
+    head_layers: typing.Optional[typing.List[int]]
+    head_activation: str
+    pooling: str
+    warmup_ratio: float
 
     @classmethod
     def from_util(cls, util, is_classifier: bool) -> "FinetuneConfig":
@@ -98,6 +103,40 @@ class FinetuneConfig:
         raw_num_layers = util.config_val("FINETUNE", "num_layers", False)
         num_layers = None if _is_unset(raw_num_layers) else int(raw_num_layers)
 
+        # head_layers: hidden layer sizes of the classification/regression
+        # head sitting on top of the pretrained backbone, matching
+        # [MODEL] layers for mlp/mlp_reg so the two approaches' final
+        # network can be configured identically for a fair comparison.
+        # Default None keeps today's behavior: a single hidden layer sized
+        # to the backbone's own hidden_size (config.hidden_size).
+        raw_head_layers = util.config_val("FINETUNE", "head_layers", False)
+        head_layers = (
+            None if _is_unset(raw_head_layers) else ast.literal_eval(raw_head_layers)
+        )
+
+        # head_activation: matches [MODEL] activation for mlp/mlp_reg
+        # (relu/tanh/sigmoid/leaky_relu). Default "tanh" keeps today's
+        # behavior (the head's activation was previously hardcoded to
+        # torch.tanh).
+        head_activation = util.config_val("FINETUNE", "head_activation", "tanh")
+
+        # pooling: how framewise encoder output is pooled into one vector
+        # per utterance before the head. "mean" preserves today's behavior;
+        # "meanvar" concatenates mean and variance (doubling the head's
+        # input dimension), matching the mean/meanvar pooling ablation
+        # nkululeko's own reference finetuning setups grid-search over.
+        pooling = util.config_val("FINETUNE", "pooling", "mean")
+        if pooling not in ("mean", "meanvar"):
+            util.error(f"unknown pooling: {pooling}; expected 'mean' or 'meanvar'")
+
+        # warmup_ratio: fraction of total training steps spent linearly
+        # ramping the learning rate up from 0 before the (also linear)
+        # decay begins. Default 0.0 keeps today's behavior (HF Trainer's
+        # own default - no warmup at all), which lets the full learning
+        # rate hit the randomly-initialized head and the pretrained
+        # backbone simultaneously from step 1.
+        warmup_ratio = float(util.config_val("FINETUNE", "warmup_ratio", "0.0"))
+
         # loss & measure: default depends on task type. measure is NOT
         # configurable for classification (unchanged from prior behavior).
         if is_classifier:
@@ -121,4 +160,8 @@ class FinetuneConfig:
             pretrained_model=pretrained_model,
             freeze_layers=freeze_layers,
             num_layers=num_layers,
+            head_layers=head_layers,
+            head_activation=head_activation,
+            pooling=pooling,
+            warmup_ratio=warmup_ratio,
         )
