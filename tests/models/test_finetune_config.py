@@ -55,10 +55,10 @@ class TestDefaults:
 
 
 class TestDrop:
-    def test_drop_default_is_point_one(self, tmp_path):
+    def test_drop_default_is_zero(self, tmp_path):
         util = make_util(tmp_path)
         cfg = FinetuneConfig.from_util(util, is_classifier=True)
-        assert cfg.drop == 0.1
+        assert cfg.drop == 0.0
 
     def test_drop_explicit_value(self, tmp_path):
         util = make_util(tmp_path, {"drop": "0.3"})
@@ -68,12 +68,12 @@ class TestDrop:
     def test_drop_empty_string_uses_default(self, tmp_path):
         util = make_util(tmp_path, {"drop": ""})
         cfg = FinetuneConfig.from_util(util, is_classifier=True)
-        assert cfg.drop == 0.1
+        assert cfg.drop == 0.0
 
     def test_drop_whitespace_only_uses_default(self, tmp_path):
         util = make_util(tmp_path, {"drop": "   "})
         cfg = FinetuneConfig.from_util(util, is_classifier=True)
-        assert cfg.drop == 0.1
+        assert cfg.drop == 0.0
 
 
 class TestDevice:

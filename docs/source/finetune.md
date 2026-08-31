@@ -113,7 +113,7 @@ max_duration = 10.5
 | `max_duration` | 8 | Max audio duration in seconds |
 | `freeze_layers` | 0 | Number of pretrained encoder layers (from the input side) to keep frozen; `0` finetunes the whole backbone |
 | `num_layers` | (empty) | Total number of encoder layers to build the model with, truncating the pretrained architecture; empty/unset uses the pretrained model's full depth |
-| `drop` | 0.1 | Dropout applied in the classification/regression head |
+| `drop` | 0 | Dropout applied in the classification/regression head |
 | `push_to_hub` | False | Upload the finetuned model to HuggingFace Hub |
 | `balancing` | none | Training-set balancing: `ros`, `smote`, or `adasyn` |
 | `loss` | `cross` (classification) / `1-ccc` (regression) | Loss function |

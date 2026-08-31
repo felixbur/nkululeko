@@ -858,6 +858,14 @@ class TunedModel(BaseModel):
                 self.torch_root,
                 config=self.config,
             )
+            # A freshly constructed/loaded nn.Module defaults to train mode,
+            # so without this, dropout stays active during every subsequent
+            # predict() call - corrupting exactly the dev/test evaluation
+            # this reload exists for (confirmed: the reloaded weights here
+            # match the true best-dev-CCC checkpoint bit-for-bit, but the
+            # reported dev/test metrics were far below that checkpoint's
+            # live-observed eval score until this was added).
+            self.model.eval()
         # print(f"loaded model type {type(self.model)}")
 
     def load_path(self, path, run, epoch):

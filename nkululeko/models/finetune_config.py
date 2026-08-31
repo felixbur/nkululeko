@@ -75,7 +75,7 @@ class FinetuneConfig:
         max_duration = float(util.config_val("FINETUNE", "max_duration", "8.0"))
 
         raw_drop = util.config_val("FINETUNE", "drop", False)
-        drop = 0.1 if _is_unset(raw_drop) else float(raw_drop)
+        drop = 0.0 if _is_unset(raw_drop) else float(raw_drop)
 
         push_to_hub = util.config_val_bool("FINETUNE", "push_to_hub", False)
         balancing = _parse_balancing(util.config_val("FINETUNE", "balancing", False))
