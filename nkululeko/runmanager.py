@@ -148,7 +148,14 @@ class Runmanager(ContextAware):
             self.best_results.append(best_report)
             self.last_epochs.append(last_epoch)
             if self.split3:
-                best_model = self.get_best_model()
+                # Load this run's own best checkpoint via best_report (scoped
+                # to self.reports, this run only) - NOT get_best_model(),
+                # which searches self.best_results across every run seen so
+                # far. Calling get_best_model() here let an earlier run's
+                # checkpoint silently win and get evaluated/reported as if it
+                # were the current run's test result whenever that earlier
+                # run's stored result outscored this run's own.
+                best_model = self.load_model(best_report)
                 self.test_report = self.modelrunner.eval_specific_model(
                     best_model, self.df_test, self.feats_test, split_name="test"
                 )

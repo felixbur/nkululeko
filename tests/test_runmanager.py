@@ -250,3 +250,65 @@ class TestDoRunsSplit3ReportsRealTestResult:
 
         assert rm.best_results == [test_report]
         assert rm.best_results[0] is not dev_report
+
+
+class TestDoRunsSplit3LoadsCurrentRunsOwnCheckpoint:
+    """Regression: do_runs() loaded the test-set checkpoint via
+    get_best_model(), which searches self.best_results - a list that
+    accumulates one entry per run across the ENTIRE do_runs() loop, not just
+    the current run. Whenever an earlier run's already-reported (test) result
+    outscored the current run's own (dev) result, get_best_model() picked the
+    EARLIER run's checkpoint - so the current run's "test" report silently
+    re-evaluated and printed someone else's model, corrupting every
+    multi-run traindevtest=True experiment's per-run test results.
+    """
+
+    def test_second_runs_test_report_loads_its_own_checkpoint(
+        self, tmp_path, monkeypatch
+    ):
+        import pandas as pd
+
+        glob_conf.config["EXP"]["traindevtest"] = "True"
+        glob_conf.config["EXP"]["runs"] = "2"
+        df = pd.DataFrame({"emotion": []})
+        feats = pd.DataFrame()
+        rm = Runmanager(df, df, feats, feats, dev_x=df, dev_y=feats)
+
+        # Run 0's dev result deliberately outscores run 1's - if
+        # get_best_model()'s cross-run search were still used for the test
+        # eval, run 1 would incorrectly load run 0's checkpoint.
+        dev_reports = {
+            0: _make_report(0.90, run=0, epoch=1),
+            1: _make_report(0.40, run=1, epoch=1),
+        }
+        test_reports = {
+            0: _make_report(0.85, run=0, epoch=1),
+            1: _make_report(0.35, run=1, epoch=1),
+        }
+        loaded_runs = []
+
+        class FakeModel:
+            def load(self, run, epoch):
+                loaded_runs.append(run)
+
+        class FakeModelrunner:
+            def __init__(self, *args, **kwargs):
+                self._run = args[4] if len(args) > 4 else kwargs.get("run")
+
+            def do_epochs(self):
+                return [dev_reports[self._run]], 1
+
+            def _select_model(self, model_type):
+                return FakeModel()
+
+            def eval_specific_model(self, model, df_test, feats_test, split_name=None):
+                return test_reports[self._run]
+
+        monkeypatch.setattr("nkululeko.runmanager.Modelrunner", FakeModelrunner)
+        monkeypatch.setattr(Runmanager, "print_report", lambda self, r, p: None)
+
+        rm.do_runs()
+
+        # One load() call per run, each loading its OWN run's checkpoint.
+        assert loaded_runs == [0, 1]
+        assert rm.best_results == [test_reports[0], test_reports[1]]

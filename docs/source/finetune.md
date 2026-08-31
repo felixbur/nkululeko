@@ -159,7 +159,7 @@ patience = 3
 pretrained_model = facebook/wav2vec2-large-robust-ft-swbd-300h
 ```
 
-`patience` is in epochs, matching other model types. Internally finetuning evaluates 5 times per epoch, so this is scaled to 5x that many evaluation calls before stopping - you don't need to account for that yourself.
+`patience` is in epochs, matching other model types. Internally finetuning evaluates approximately 5 times per epoch (the eval interval is `steps_per_epoch // 5`, clamped to at least 1 step, so the actual count can differ from 5 - e.g. a small dataset with fewer than 5 steps per epoch evaluates every step instead), and patience is scaled by that same nominal factor of 5 - you don't need to account for either yourself.
 
 ## Loss Functions
 

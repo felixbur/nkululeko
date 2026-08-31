@@ -142,6 +142,31 @@ class TunedModel(BaseModel):
             )
         return callbacks
 
+    @staticmethod
+    def _cast_targets(targets, is_classifier):
+        """Cast the HF Trainer's label tensor to the dtype its loss needs.
+
+        Classification losses (CrossEntropyLoss) need integer class indices.
+        Regression losses need float targets - casting to long
+        unconditionally (as this used to do) truncates every continuous
+        target to an integer (e.g. a grbas_score of 0.67 becomes 0),
+        silently destroying nearly all signal for every regression loss.
+        """
+        return targets.type(torch.long) if is_classifier else targets.float()
+
+    @staticmethod
+    def _match_loss_dtype(targets, logits, is_classifier):
+        """Align regression targets with the model's actual output dtype.
+
+        Under fp16 training, logits come out of the model as Half - torch
+        losses (MSELoss, L1Loss) require both operands to share a dtype
+        exactly, unlike CrossEntropyLoss, which accepts Long targets against
+        Half/Float logits without complaint. Classification targets are left
+        untouched; only regression targets need to track whatever precision
+        this forward pass actually used.
+        """
+        return targets if is_classifier else targets.to(logits.dtype)
+
     def _init_model(self):
         pretrained_model = self.cfg.pretrained_model
         self.num_layers = self.cfg.num_layers
@@ -624,6 +649,11 @@ class TunedModel(BaseModel):
             else:
                 self.util.error(f"criterion {criterion} not supported for regressor")
 
+        # Captured by name (not `self.is_classifier`) since compute_loss's
+        # own `self` below is the inner Trainer instance, shadowing this
+        # method's TunedModel `self`.
+        is_classifier = self.is_classifier
+
         class Trainer(transformers.Trainer):
             def compute_loss(
                 self,
@@ -633,13 +663,15 @@ class TunedModel(BaseModel):
                 num_items_in_batch=None,
             ):
                 targets = inputs.pop("labels").squeeze()
-                targets = targets.type(torch.long)
+                targets = TunedModel._cast_targets(targets, is_classifier)
 
                 outputs = model(**inputs)
                 if hasattr(outputs, "logits"):
                     logits = outputs.logits.squeeze()
                 else:
                     logits = outputs[0].squeeze()
+
+                targets = TunedModel._match_loss_dtype(targets, logits, is_classifier)
 
                 loss = criterion(logits, targets)
 
@@ -1002,7 +1034,12 @@ class Model(Wav2Vec2PreTrainedModel):
             attention_mask,
         )
         logits = self.head(hidden_states)
-        if not self.training:
+        if not self.training and self.is_classifier:
+            # Regression logits have num_labels==1, so softmax over that
+            # single-element dimension always returns exactly 1.0 regardless
+            # of the input - silently turning every eval/test regression
+            # prediction into the same constant, no matter what the model
+            # actually learned.
             logits = torch.softmax(logits, dim=1)
 
         if return_hidden:
