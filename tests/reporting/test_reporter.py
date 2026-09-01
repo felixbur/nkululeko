@@ -170,6 +170,56 @@ class TestReporterEmpty:
         assert result.test == 0
 
 
+class TestReporterBinarySensitivitySpecificity:
+    """Sensitivity/specificity should be reported automatically for binary
+    classification (issue #420), and absent for multi-class tasks."""
+
+    def test_perfect_binary_predictions(self, tmp_path):
+        truths = np.array([0, 1] * 10)
+        preds = np.array([0, 1] * 10)
+        r = Reporter(truths, preds, run=0, epoch=0)
+        # context is a shared singleton across tests; pin it explicitly.
+        r.context.label_encoder = None
+        r.context.labels = ["0", "1"]
+        r.print_results(epoch=0, file_name="binary_perfect")
+
+        res_dir = r.util.get_path("res_dir")
+        with open(res_dir + "binary_perfect.txt") as f:
+            content = f.read()
+        assert '"sensitivity": 1.0' in content
+        assert '"specificity": 1.0' in content
+        assert "sensitivity ('1'): 1.0000" in content
+        assert "specificity ('0'): 1.0000" in content
+
+    def test_imperfect_binary_predictions(self, tmp_path):
+        # class 0 (negative): 5 samples, 1 misclassified as 1 -> specificity 4/5
+        # class 1 (positive): 5 samples, 1 misclassified as 0 -> sensitivity 4/5
+        truths = np.array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1])
+        preds = np.array([0, 0, 0, 0, 1, 1, 1, 1, 1, 0])
+        r = Reporter(truths, preds, run=0, epoch=0)
+        r.context.label_encoder = None
+        r.context.labels = ["0", "1"]
+        r.print_results(epoch=0, file_name="binary_imperfect")
+
+        res_dir = r.util.get_path("res_dir")
+        with open(res_dir + "binary_imperfect.txt") as f:
+            content = f.read()
+        assert '"sensitivity": 0.8' in content
+        assert '"specificity": 0.8' in content
+
+    def test_multiclass_has_no_sensitivity_specificity(self, tmp_path):
+        r = Reporter(TRUTHS_CLS, PREDS_CLS, run=0, epoch=0)
+        r.context.label_encoder = None
+        r.context.labels = ["0", "1", "2"]
+        r.print_results(epoch=0, file_name="multiclass_no_sens_spec")
+
+        res_dir = r.util.get_path("res_dir")
+        with open(res_dir + "multiclass_no_sens_spec.txt") as f:
+            content = f.read()
+        assert "sensitivity" not in content
+        assert "specificity" not in content
+
+
 class TestReporterClassificationReportMismatch:
     """classification_report raises ValueError when target_names doesn't
     match the classes actually present in truths/preds (e.g. a class never

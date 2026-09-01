@@ -556,6 +556,29 @@ class Reporter(ContextAware):
                 f"Confusion matrix result for epoch: {epoch}, UAR: {uar_str}"
                 + f", (+-{up_str}/{low_str}), ACC: {acc_str}"
             )
+        # For binary classification, also append sensitivity/specificity.
+        if self.util.exp_is_classification():
+            conf_labels = le.classes_ if le is not None else self.context.labels
+            if conf_labels is not None and len(conf_labels) == 2:
+                try:
+                    conf_s_labels = [str(x) for x in conf_labels]
+                    cm_rpt = classification_report(
+                        truths,
+                        preds,
+                        target_names=conf_s_labels,
+                        output_dict=True,
+                    )
+                    specificity = cm_rpt[conf_s_labels[0]]["recall"]
+                    sensitivity = cm_rpt[conf_s_labels[1]]["recall"]
+                    rpt += (
+                        f", sensitivity ('{conf_s_labels[1]}'): {sensitivity:.4f}"
+                        f", specificity ('{conf_s_labels[0]}'): {specificity:.4f}"
+                    )
+                except ValueError as e:
+                    self.util.debug(
+                        "Reporter: caught a ValueError when computing"
+                        f" sensitivity/specificity for confusion matrix: {e}"
+                    )
         # print(rpt)
         self.util.debug(rpt)
         file_name = _safe_path(
@@ -633,9 +656,22 @@ class Reporter(ContextAware):
                     f"result per class (F1 score): {c_ress} from epoch: {epoch}"
                 )
                 self.util.debug(f1_per_class)
+                # For binary classification, also report sensitivity (recall of
+                # the second class) and specificity (recall of the first class).
+                is_binary = len(labels) == 2
+                if is_binary:
+                    specificity = rpt[labels[0]]["recall"]
+                    sensitivity = rpt[labels[1]]["recall"]
+                    rpt["sensitivity"] = sensitivity
+                    rpt["specificity"] = specificity
                 # convert all keys to strings
                 rpt = dict((str(key), value) for (key, value) in rpt.items())
                 rpt_str = f"{json.dumps(rpt)}\n{f1_per_class}"
+                if is_binary:
+                    rpt_str += (
+                        f"\nsensitivity ('{s_labels[1]}'): {sensitivity:.4f}, "
+                        f"specificity ('{s_labels[0]}'): {specificity:.4f}"
+                    )
                 # Append EER (and UAR) when measure=eer
                 if self.metric == "eer":
                     eer_val = float(self.result.test)
