@@ -22,7 +22,7 @@ To quickly try balancing techniques, you can use the provided demo example:
 cd nkululeko
 
 # Run the balancing demo with SMOTE
-python -m nkululeko.nkululeko --config examples/exp_balancing_demo.ini
+python -m nkululeko.train --config examples/exp_balancing_demo.ini
 ```
 
 This demo uses the test dataset included with nkululeko and applies SMOTE balancing to show how class distribution changes.

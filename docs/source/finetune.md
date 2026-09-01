@@ -113,7 +113,12 @@ max_duration = 10.5
 | `max_duration` | 8 | Max audio duration in seconds |
 | `freeze_layers` | 0 | Number of pretrained encoder layers (from the input side) to keep frozen; `0` finetunes the whole backbone |
 | `num_layers` | (empty) | Total number of encoder layers to build the model with, truncating the pretrained architecture; empty/unset uses the pretrained model's full depth |
-| `drop` | 0.1 | Dropout applied in the classification/regression head |
+| `drop` | 0 | Dropout applied in the classification/regression head |
+| `head_layers` | (empty) | Hidden layer sizes of the classification/regression head, e.g. `[1024, 256]`; empty/unset uses a single hidden layer sized to the backbone's own hidden size (matches the original hardcoded architecture). Matches `[MODEL] layers` for `mlp`/`mlp_reg`, so both approaches' final network can be configured identically. |
+| `head_activation` | `tanh` | Activation function in the head: `relu`, `tanh`, `sigmoid`, or `leaky_relu`. Matches `[MODEL] activation` for `mlp`/`mlp_reg`. |
+| `pooling` | `mean` | How framewise encoder output is pooled into one vector per utterance: `mean`, or `meanvar` (concatenates mean and variance, doubling the head's input dimension) |
+| `layer_pooling` | `last` | Which encoder layer(s) feed that pooling step: `last` (only the final layer, the original behavior), or `weighted` (a learnable, softmax-normalized scalar per layer combines every layer's hidden states - the SUPERB-benchmark "weighted sum of hidden states" technique, useful when relevant signal isn't concentrated in the last layer) |
+| `warmup_ratio` | 0 | Fraction of total training steps spent linearly ramping the learning rate up from 0 before the (also linear) decay begins. `0` (the default) means no warmup at all - the full learning rate hits the head and pretrained backbone simultaneously from step 1 |
 | `push_to_hub` | False | Upload the finetuned model to HuggingFace Hub |
 | `balancing` | none | Training-set balancing: `ros`, `smote`, or `adasyn` |
 | `loss` | `cross` (classification) / `1-ccc` (regression) | Loss function |
@@ -145,6 +150,21 @@ num_layers = 6
 Leave it unset to use the pretrained model's full depth (the default).
 
 Nkululeko validates that `0 <= freeze_layers < num_layers <= <the pretrained model's layer count>` (using the pretrained depth wherever `num_layers` is left unset) and fails fast with a clear error if not - this catches configs that would either exceed the pretrained checkpoint's depth or freeze the entire resulting backbone, leaving nothing to train.
+
+### Early Stopping
+
+Set `[MODEL] patience` (shared with every other model type, not a `[FINETUNE]` key) to stop finetuning once the dev-set metric stops improving, instead of always running the full `epochs` count:
+
+```ini
+[MODEL]
+type = finetune
+patience = 3
+
+[FINETUNE]
+pretrained_model = facebook/wav2vec2-large-robust-ft-swbd-300h
+```
+
+`patience` is in epochs, matching other model types. Internally finetuning evaluates approximately 5 times per epoch (the eval interval is `steps_per_epoch // 5`, clamped to at least 1 step, so the actual count can differ from 5 - e.g. a small dataset with fewer than 5 steps per epoch evaluates every step instead), and patience is scaled by that same nominal factor of 5 - you don't need to account for either yourself.
 
 ## Loss Functions
 
@@ -220,7 +240,7 @@ tensorboard --logdir examples/results/wavlm_finetuned/
 ## Running the Experiment
 
 ```bash
-python -m nkululeko.nkululeko --config examples/exp_emodb_finetune.ini
+python -m nkululeko.train --config examples/exp_emodb_finetune.ini
 ```
 
 ## Tips

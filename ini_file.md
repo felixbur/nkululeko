@@ -17,6 +17,7 @@
     - [SEGMENT](#segment)
     - [FEATS](#feats)
     - [MODEL](#model)
+    - [FINETUNE](#finetune)
     - [EXPL](#expl)
     - [PREDICT](#predict)
     - [EXPORT](#export)
@@ -80,7 +81,7 @@ Database loading, label mapping, and train/test split configuration.
   * databases = ['emodb', 'timit']
 * **tests**: Datasets to be used as test data for the stored best model.
   The databases listed here do **not** have to appear in the `databases`
-  field.  When `nkululeko.nkululeko` is run with this option set **and** a
+  field.  When `nkululeko.train` is run with this option set **and** a
   saved experiment file already exists on disk, training is skipped
   entirely: the module loads the stored best model, evaluates it on the
   listed test databases, and writes a confusion matrix, a per-class text
@@ -395,13 +396,7 @@ Model and training specifications. In general, default values should work for cl
     * **nb**: Naive Bayes  
     * **mlp**: [Multi-layer perceptron](http://blog.syntheticspeech.de/2021/08/30/nkululeko-multi-layer-perceptron/) (neural network)  
     * **cnn**: [Convolutional neural network](http://blog.syntheticspeech.de/2022/01/17/how-to-use-convolutional-neural-networks-with-nkululeko/)  
-    * **finetune**: [Fine-tuning](http://blog.syntheticspeech.de/2022/10/07/nkululeko-how-to-fine-tune-a-wav2vec2-model/) for pre-trained models. Settings go in a dedicated `[FINETUNE]` section (see [finetune.md](https://github.com/felixbur/nkululeko/blob/main/docs/source/finetune.md) for the full reference):
-      - pretrained_model: HF for base model
-      - push_to_hub: True
-      - max_duration: 8 (in seconds, rest are discarded)  
-      - balancing: smote (as in FEATS, only for finetune needs to be defined here)  
-      - freeze_layers: 0 (number of pretrained encoder layers to keep frozen; 0 finetunes the whole backbone)  
-      - num_layers: (empty) (truncate the model to this many encoder layers, smaller than the original; empty uses the full pretrained depth)  
+    * **finetune**: [Fine-tuning](http://blog.syntheticspeech.de/2022/10/07/nkululeko-how-to-fine-tune-a-wav2vec2-model/) for pre-trained models. Settings go in a dedicated [`[FINETUNE]`](#finetune) section below.
 * **class_weight**: add class_weight to the linear classifier (XGB, SVM) fit methods for imbalanced data (True or False)
   * class_weight = False
 * **logo**: leave-one-speaker group out. Will disregard train/dev splits and split the speakers in *logo* groups and then do a LOGO evaluation. If you want LOSO (leave one speaker out), simply set the number to the number of speakers.
@@ -495,7 +490,8 @@ Model and training specifications. In general, default values should work for cl
 * **colsample_bytree**: subsample ratio of columns for XGBoost
   * colsample_bytree = 1.0
 * **random_seed**: random seed for reproducible results
-  * random_seed = 42 # set this to *False* if #run > 1
+  * random_seed = 42
+  * a fixed seed makes every run produce an identical result, so `[EXP] runs` is automatically forced to 1 (with a warning) whenever this is set
 * **device**: device for neural network training
   * device = cpu
   * possible values: cpu, cuda
@@ -503,6 +499,70 @@ Model and training specifications. In general, default values should work for cl
   * patience = 5
 * **save**: set this to *False* if you don't want models stored on disk
   * save = True
+
+### FINETUNE
+
+Settings specific to `[MODEL] type = finetune` - finetuning a pretrained transformer (wav2vec2, WavLM, HuBERT) end-to-end instead of using it as a fixed feature extractor. Only read when `[MODEL] type = finetune`; every key below is optional and has a default. See [finetune.md](https://github.com/felixbur/nkululeko/blob/main/docs/source/finetune.md) for a full walkthrough and worked examples.
+
+* **pretrained_model**: HuggingFace model name to finetune
+  * pretrained_model = facebook/wav2vec2-large-robust-ft-swbd-300h
+* **learning_rate**: learning rate
+  * learning_rate = 0.0001
+* **batch_size**: batch size (reduce if you hit out-of-memory errors)
+  * batch_size = 8
+* **device**: device for training
+  * device = 0
+  * possible values: a GPU index (e.g. `0`, or `0,1`), `cuda:0` (the index is extracted), or `cpu`; autodetects if unset
+* **max_duration**: max audio duration in seconds; the rest of longer clips is discarded
+  * max_duration = 8
+* **freeze_layers**: number of pretrained encoder layers (counted from the input side) to keep frozen during finetuning
+  * freeze_layers = 0
+  * `0` (default) finetunes the whole backbone
+* **num_layers**: total number of encoder layers to build the model with, truncating the pretrained architecture
+  * num_layers = 6
+  * empty/unset (default) uses the pretrained model's full depth
+* **drop**: dropout applied in the classification/regression head
+  * drop = 0.1
+  * default: 0 (no dropout)
+* **head_layers**: hidden layer sizes of the classification/regression head sitting on top of the pretrained backbone
+  * head_layers = [1024, 256]
+  * empty/unset (default) uses a single hidden layer sized to the backbone's own hidden size
+  * matches `[MODEL] layers` for `mlp`/`mlp_reg`, so both approaches' final network can be configured identically
+* **head_activation**: activation function in the head
+  * head_activation = relu
+  * possible values: relu, tanh, sigmoid, leaky_relu
+  * default: tanh
+  * matches `[MODEL] activation` for `mlp`/`mlp_reg`
+* **pooling**: how framewise encoder output is pooled into one vector per utterance
+  * pooling = meanvar
+  * possible values:
+    * **mean**: mean over time (default)
+    * **meanvar**: concatenates mean and variance, doubling the head's input dimension
+* **layer_pooling**: which encoder layer(s) feed the pooling step above
+  * layer_pooling = weighted
+  * possible values:
+    * **last**: only the final encoder layer's hidden states (default)
+    * **weighted**: a learnable, softmax-normalized scalar per layer combines every layer's hidden states - the SUPERB-benchmark "weighted sum of hidden states" technique, useful when relevant signal isn't concentrated in the last layer
+* **warmup_ratio**: fraction of total training steps spent linearly ramping the learning rate up from 0 before the (also linear) decay begins
+  * warmup_ratio = 0.1
+  * default: 0 (no warmup at all - the full learning rate hits the head and pretrained backbone simultaneously from step 1)
+* **push_to_hub**: upload the finetuned model to HuggingFace Hub
+  * push_to_hub = True
+  * default: False
+* **balancing**: training-set balancing (as in `[FEATS]`, only for finetune it needs to be defined here)
+  * balancing = smote
+  * possible values: ros, smote, adasyn
+* **loss**: loss function
+  * loss = 1-ccc
+  * default: cross (classification) / 1-ccc (regression)
+  * possible values: cross (classification); 1-ccc, 1-pcc, mse, mae (regression)
+* **class_weight**: weight the loss by inverse class frequency (classification only)
+  * class_weight = True
+  * default: False
+* **measure**: evaluation metric used for early-stopping/best-checkpoint selection (regression only; classification always uses UAR)
+  * measure = ccc
+  * possible values: ccc, pcc, mse, mae
+  * default: ccc
 
 ### EXPL
 

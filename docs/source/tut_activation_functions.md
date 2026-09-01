@@ -255,7 +255,7 @@ Running the same experiment with different activations (emodb dataset, 2 emotion
 ```bash
 # Test all activations
 for activation in relu leaky_relu tanh sigmoid; do
-    python -m nkululeko.nkululeko --config exp_test_${activation}.ini
+    python -m nkululeko.train --config exp_test_${activation}.ini
 done
 ```
 
@@ -293,7 +293,7 @@ activation = leaky_relu  # Test your activation
 Check the log output to confirm your activation is being used:
 
 ```bash
-python -m nkululeko.nkululeko --config your_config.ini 2>&1 | grep "activation"
+python -m nkululeko.train --config your_config.ini 2>&1 | grep "activation"
 ```
 
 Expected output:
@@ -439,7 +439,7 @@ epoch_progression = True
 
 Run it:
 ```bash
-python -m nkululeko.nkululeko --config exp_emotion_leaky_relu.ini
+python -m nkululeko.train --config exp_emotion_leaky_relu.ini
 ```
 
 ## Summary

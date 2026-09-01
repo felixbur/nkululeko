@@ -11,7 +11,7 @@ The framework provides a high-level interface that allows users with limited pro
 3. Train different machine learning models for classification or regression tasks
 4. Evaluate model performance using appropriate metrics
 5. Generate reports and visualizations — confusion matrices, per-class text reports, and prediction CSVs
-6. **Test a trained model on a new database automatically**: when `DATA.tests` is set in the configuration and a saved experiment already exists, `nkululeko.nkululeko` skips training and evaluates the best stored model on the new database directly (see [test_new_database.md](test_new_database.md))
+6. **Test a trained model on a new database automatically**: when `DATA.tests` is set in the configuration and a saved experiment already exists, `nkululeko.train` skips training and evaluates the best stored model on the new database directly (see [test_new_database.md](test_new_database.md))
 7. **Predict labels for arbitrary audio** using the unified `nkululeko.predict` module — supports single files, folders, CSV lists, and live microphone input, using either built-in autopredict targets (age, gender, emotion, SNR, …) or the best model from a trained experiment (see [predict.md](predict.md))
 8. Investigate and mitigate potential biases in training data
 

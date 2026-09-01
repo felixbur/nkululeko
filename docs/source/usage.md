@@ -5,13 +5,13 @@ The main usage of Nkululeko is as follows:
 ```bash
 python -m nkululeko.[MODULE] --config [CONFIG_FILE.ini]
 # Example to run the experiment
-python -m nkululeko.nkululeko --config INI_FILE.ini
-# nkululeko.nkululeko and nkululeko.ensemble also accept the config
+python -m nkululeko.train --config INI_FILE.ini
+# nkululeko.train and nkululeko.ensemble also accept the config
 # path(s) as a plain positional argument instead of --config
-python -m nkululeko.nkululeko INI_FILE.ini
+python -m nkululeko.train INI_FILE.ini
 ```
 
-If no config is given at all, `nkululeko.nkululeko` defaults to `exp.ini`
+If no config is given at all, `nkululeko.train` defaults to `exp.ini`
 in the current directory.
 
 where [INI\_FILE.ini](ini_file.md) is a configuration file. The only file
@@ -38,9 +38,9 @@ type = ['os']
 type = xgb
 ```
 
-Besides [nkululeko.nkululeko], there are other functionalities. The complete functions are:
+Besides [nkululeko.train], there are other functionalities. The complete functions are:
 
--   **nkululeko.nkululeko**: run experiments — trains a model and evaluates
+-   **nkululeko.train**: run experiments — trains a model and evaluates
     it.  When `DATA.tests` is set in the INI file **and** a saved
     experiment already exists on disk, training is skipped automatically
     and the stored best model is evaluated on the new test database instead

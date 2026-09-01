@@ -48,7 +48,7 @@ An overview on all nkululeko options is listed in [INI file](ini_file).
 
 Inside a shell type (or use VSCode) and start the process with:
 
-    python -m nkululeko.nkululeko --config exp_emodb.ini
+    python -m nkululeko.train --config exp_emodb.ini
 
 5)  Inspect the results
 

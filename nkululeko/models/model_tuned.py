@@ -2,9 +2,11 @@
 
 import ast
 import dataclasses
+import inspect
 import json
 import os
 import pickle
+import random
 import re
 import typing
 
@@ -22,6 +24,7 @@ from transformers.models.wav2vec2.modeling_wav2vec2 import (
     Wav2Vec2PreTrainedModel,
 )
 
+from nkululeko.losses.loss_ccc import ConcordanceCorCoeff
 from nkululeko.losses.loss_pcc import PearsonCorCoeff
 from nkululeko.models.finetune_config import FinetuneConfig
 from nkululeko.models.model import Model as BaseModel
@@ -66,6 +69,17 @@ class TunedModel(BaseModel):
         self.util.debug(f"init: training with dropout: {self.drop}")
         self.push = self.cfg.push_to_hub
         self.balancing = self.cfg.balancing
+        # Set unconditionally (not just inside train()) so a freshly
+        # constructed instance can load() an already-trained checkpoint and
+        # predict() without training first - e.g. runmanager.get_best_model()
+        # and eval_specific_model() under [EXP] traindevtest=True build new
+        # TunedModel instances purely to reload the best-dev-epoch checkpoint
+        # and evaluate it on the real test set. Both paths are deterministic
+        # (derived from the experiment dir), so setting them here is safe
+        # even before any training has actually happened.
+        self.torch_root = audeer.path(self.util.get_path("model_dir"), "torch")
+        self.log_root = os.path.join(self.util.get_exp_dir(), "log")
+        audeer.mkdir(self.log_root)
         self._init_model()
 
     def _resolve_device(self, device):
@@ -89,6 +103,84 @@ class TunedModel(BaseModel):
             return "cuda", None
         self.util.warn(f"unrecognized device '{device}'; falling back to 'cuda'")
         return "cuda", None
+
+    @staticmethod
+    def _eval_strategy_key():
+        """Name of the TrainingArguments kwarg that selects the eval strategy.
+
+        transformers renamed evaluation_strategy -> eval_strategy at some
+        point (and later versions may drop the old name entirely) - detect
+        which one this installed version actually accepts instead of
+        hardcoding either.
+        """
+        params = inspect.signature(transformers.TrainingArguments.__init__).parameters
+        return "eval_strategy" if "eval_strategy" in params else "evaluation_strategy"
+
+    @staticmethod
+    def _random_seed():
+        """A fresh random seed for TrainingArguments, not tied to any fixed value.
+
+        transformers.TrainingArguments defaults seed to a hardcoded 42, so
+        without this every [EXP] runs iteration silently reused the exact
+        same weight init/data order and produced byte-identical results -
+        defeating the entire point of averaging multiple runs. random.
+        SystemRandom() draws from the OS entropy source rather than the
+        (seedable) global `random` state, so this can't itself be pinned by
+        an earlier `random.seed(...)` call elsewhere.
+        """
+        return random.SystemRandom().randint(0, 2**31 - 1)
+
+    def _build_callbacks(self, evals_per_epoch):
+        """Trainer callbacks: TensorBoard, plus early stopping if configured.
+
+        MODEL.patience is shared with every other model type (SVM/MLP/CNN
+        etc. via modelrunner.do_epochs()'s own patience loop) and is in
+        epochs there. Finetuning instead evaluates `evals_per_epoch` times
+        per epoch (see train()), so patience is scaled to the matching
+        number of evaluation calls for transformers' EarlyStoppingCallback -
+        without this, load_best_model_at_end only picks the best checkpoint
+        after training runs for the full configured epoch count; it never
+        actually stops training early the way patience does for other models.
+        """
+        callbacks = [transformers.integrations.TensorBoardCallback()]
+        patience = self.util.config_val("MODEL", "patience", False)
+        if patience:
+            early_stopping_patience = int(patience) * evals_per_epoch
+            callbacks.append(
+                transformers.EarlyStoppingCallback(
+                    early_stopping_patience=early_stopping_patience
+                )
+            )
+            self.util.debug(
+                f"finetune: early stopping after {patience} epochs "
+                f"({early_stopping_patience} evaluation calls) without dev improvement"
+            )
+        return callbacks
+
+    @staticmethod
+    def _cast_targets(targets, is_classifier):
+        """Cast the HF Trainer's label tensor to the dtype its loss needs.
+
+        Classification losses (CrossEntropyLoss) need integer class indices.
+        Regression losses need float targets - casting to long
+        unconditionally (as this used to do) truncates every continuous
+        target to an integer (e.g. a grbas_score of 0.67 becomes 0),
+        silently destroying nearly all signal for every regression loss.
+        """
+        return targets.type(torch.long) if is_classifier else targets.float()
+
+    @staticmethod
+    def _match_loss_dtype(targets, logits, is_classifier):
+        """Align regression targets with the model's actual output dtype.
+
+        Under fp16 training, logits come out of the model as Half - torch
+        losses (MSELoss, L1Loss) require both operands to share a dtype
+        exactly, unlike CrossEntropyLoss, which accepts Long targets against
+        Half/Float logits without complaint. Classification targets are left
+        untouched; only regression targets need to track whatever precision
+        this forward pass actually used.
+        """
+        return targets if is_classifier else targets.to(logits.dtype)
 
     def _init_model(self):
         pretrained_model = self.cfg.pretrained_model
@@ -174,6 +266,10 @@ class TunedModel(BaseModel):
         setattr(self.config, "sampling_rate", self.sampling_rate)
         setattr(self.config, "data", self.util.get_data_name())
         setattr(self.config, "is_classifier", self.is_classifier)
+        setattr(self.config, "head_layers", self.cfg.head_layers)
+        setattr(self.config, "head_activation", self.cfg.head_activation)
+        setattr(self.config, "pooling", self.cfg.pooling)
+        setattr(self.config, "layer_pooling", self.cfg.layer_pooling)
         # "eager" attention is universally supported; SDPA (the newer
         # default) isn't implemented for every architecture in every
         # transformers version (e.g. WavLM lacks it as of transformers 5) -
@@ -533,9 +629,6 @@ class TunedModel(BaseModel):
     def train(self):
         """Train the model."""
         model_root = self.util.get_path("model_dir")
-        self.log_root = os.path.join(self.util.get_exp_dir(), "log")
-        audeer.mkdir(self.log_root)
-        self.torch_root = audeer.path(model_root, "torch")
         conf_file = os.path.join(self.torch_root, "config.json")
         if os.path.isfile(conf_file):
             self.util.debug(f"reusing finetuned model: {conf_file}")
@@ -575,6 +668,11 @@ class TunedModel(BaseModel):
             else:
                 self.util.error(f"criterion {criterion} not supported for regressor")
 
+        # Captured by name (not `self.is_classifier`) since compute_loss's
+        # own `self` below is the inner Trainer instance, shadowing this
+        # method's TunedModel `self`.
+        is_classifier = self.is_classifier
+
         class Trainer(transformers.Trainer):
             def compute_loss(
                 self,
@@ -584,7 +682,7 @@ class TunedModel(BaseModel):
                 num_items_in_batch=None,
             ):
                 targets = inputs.pop("labels").squeeze()
-                targets = targets.type(torch.long)
+                targets = TunedModel._cast_targets(targets, is_classifier)
 
                 outputs = model(**inputs)
                 if hasattr(outputs, "logits"):
@@ -592,14 +690,21 @@ class TunedModel(BaseModel):
                 else:
                     logits = outputs[0].squeeze()
 
+                targets = TunedModel._match_loss_dtype(targets, logits, is_classifier)
+
                 loss = criterion(logits, targets)
 
                 return (loss, outputs) if return_outputs else loss
 
+        # eval/save happen every `num_steps` (~1/evals_per_epoch of an
+        # epoch's worth of steps) - see early stopping below, which scales
+        # MODEL.patience (in epochs, matching every other model type) to
+        # this many evaluation calls.
+        evals_per_epoch = 5
         num_steps = (
             len(self.dataset["train"])
             // (self.batch_size * self.accumulation_steps)
-            // 5
+            // evals_per_epoch
         )
         num_steps = max(1, num_steps)
 
@@ -617,13 +722,12 @@ class TunedModel(BaseModel):
         else:
             self.util.error(f"unknown metric/measure: {metrics_for_best_model}")
 
-        training_args = transformers.TrainingArguments(
+        training_kwargs = dict(
             output_dir=model_root,
             logging_dir=self.log_root,
             per_device_train_batch_size=self.batch_size,
             per_device_eval_batch_size=self.batch_size,
             gradient_accumulation_steps=self.accumulation_steps,
-            eval_strategy="steps",
             num_train_epochs=self.epoch_num,
             fp16=self.device != "cpu",
             use_cpu=self.device == "cpu",
@@ -632,6 +736,8 @@ class TunedModel(BaseModel):
             logging_steps=num_steps,
             logging_strategy="epoch",
             learning_rate=self.learning_rate,
+            warmup_ratio=self.cfg.warmup_ratio,
+            seed=self._random_seed(),
             save_total_limit=2,
             metric_for_best_model=metrics_for_best_model,
             greater_is_better=greater_is_better,
@@ -642,6 +748,8 @@ class TunedModel(BaseModel):
             hub_model_id=f"{self.util.get_name()}",
             overwrite_output_dir=True,
         )
+        training_kwargs[self._eval_strategy_key()] = "steps"
+        training_args = transformers.TrainingArguments(**training_kwargs)
 
         trainer_kwargs = {
             "model": self.model,
@@ -650,7 +758,7 @@ class TunedModel(BaseModel):
             "compute_metrics": self.compute_metrics,
             "train_dataset": self.dataset["train"],
             "eval_dataset": self.dataset["dev"],
-            "callbacks": [transformers.integrations.TensorBoardCallback()],
+            "callbacks": self._build_callbacks(evals_per_epoch),
         }
 
         if self.processor is not None:
@@ -669,6 +777,34 @@ class TunedModel(BaseModel):
         self.util.debug(f"saved best model to {self.torch_root}")
         self.load(self.run, self.epoch)
 
+    def _normalize_signal(self, signal):
+        """Normalize raw audio the same way every training/eval batch does.
+
+        data_collator() (used for both training and HF's own internal eval
+        loop) always runs raw audio through self.processor before it ever
+        reaches the model - Wav2Vec2FeatureExtractor's do_normalize=True
+        zero-mean/unit-variance normalization. get_predictions() and
+        predict_sample() instead fed audiofile.read()'s raw signal straight
+        into Model.predict(), skipping that normalization entirely: the
+        model was finetuned to expect normalized input, so every dev/test
+        report (and every predict_sample()/demo call) was silently scored
+        against wrong-scale input, corrupting the reported metrics
+        independently of - and in addition to - the missing eval() mode bug.
+        """
+        if self.processor is None:
+            return signal
+        squeezed = np.asarray(signal).squeeze()
+        processed = self.processor(
+            squeezed, sampling_rate=self.sampling_rate, padding=False
+        )
+        # Model.predict() does `self(torch.from_numpy(signal))` with no
+        # unsqueeze of its own and indexes the result as a batch
+        # (`result[0].detach().numpy()[0]`), so the returned array must keep
+        # the (1, seq_len) batch dimension the raw signal already had (e.g.
+        # from audiofile.read(..., always_2d=True)) - not the bare (seq_len,)
+        # array self.processor's own output shape would otherwise give.
+        return np.asarray(processed["input_values"][0], dtype=np.float32)[None, :]
+
     def get_predictions(self):
         results = [[]].pop(0)
         for (file, start, end), _ in audeer.progress_bar(
@@ -683,6 +819,7 @@ class TunedModel(BaseModel):
                     file, duration=end - start, offset=start, always_2d=True
                 )
             assert sr == self.sampling_rate
+            signal = self._normalize_signal(signal)
             prediction = self.model.predict(signal)  # type: ignore
             results.append(prediction)
             # results.append(predictions.argmax())
@@ -744,6 +881,7 @@ class TunedModel(BaseModel):
     def predict_sample(self, signal):
         """Predict one sample"""
         prediction = {}
+        signal = self._normalize_signal(signal)
         if self.is_classifier:
             # get the class probabilities
             predictions = self.model.predict(signal)  # type: ignore
@@ -771,6 +909,14 @@ class TunedModel(BaseModel):
                 self.torch_root,
                 config=self.config,
             )
+            # A freshly constructed/loaded nn.Module defaults to train mode,
+            # so without this, dropout stays active during every subsequent
+            # predict() call - corrupting exactly the dev/test evaluation
+            # this reload exists for (confirmed: the reloaded weights here
+            # match the true best-dev-CCC checkpoint bit-for-bit, but the
+            # reported dev/test metrics were far below that checkpoint's
+            # live-observed eval score until this was added).
+            self.model.eval()
         # print(f"loaded model type {type(self.model)}")
 
     def load_path(self, path, run, epoch):
@@ -832,7 +978,12 @@ class ModelOutputReg:
                 self.cnn_features,
             ]
             result = items[index]
-            return tuple(item for item in result if item is not None)
+            filtered_result = [item for item in result if item is not None]
+
+            if not filtered_result and self.logits is not None:
+                return (self.logits,)
+
+            return tuple(filtered_result)
         elif index == 0:
             return self.logits
         elif index == 1:
@@ -853,23 +1004,49 @@ class ModelOutputReg:
         return 6
 
 
+HEAD_ACTIVATIONS = {
+    "relu": torch.nn.ReLU,
+    "tanh": torch.nn.Tanh,
+    "sigmoid": torch.nn.Sigmoid,
+    "leaky_relu": torch.nn.LeakyReLU,
+}
+
+
 class ModelHead(torch.nn.Module):
-    def __init__(self, config):
+    """Classification/regression head on top of the pretrained backbone.
+
+    Configurable via config.head_layers/config.head_activation (set from
+    [FINETUNE] head_layers/head_activation in _init_huggingface_model) so its
+    capacity and activation can be matched to mlp/mlp_reg's [MODEL]
+    layers/activation for a fair embeddings-vs-finetuning comparison.
+    Defaults (a single hidden layer sized to the backbone's own hidden_size,
+    tanh) preserve the original hardcoded architecture.
+    """
+
+    def __init__(self, config, input_dim=None):
         super().__init__()
 
-        self.dense = torch.nn.Linear(config.hidden_size, config.hidden_size)
-        self.dropout = torch.nn.Dropout(config.final_dropout)
-        self.out_proj = torch.nn.Linear(config.hidden_size, config.num_labels)
+        head_layers = getattr(config, "head_layers", None) or [config.hidden_size]
+        activation_name = getattr(config, "head_activation", "tanh")
+        if activation_name not in HEAD_ACTIVATIONS:
+            raise ValueError(
+                f"unknown head_activation: {activation_name}; "
+                f"expected one of {sorted(HEAD_ACTIVATIONS)}"
+            )
+        activation_cls = HEAD_ACTIVATIONS[activation_name]
+
+        dims = [input_dim or config.hidden_size] + list(head_layers)
+        layers = []
+        for in_dim, out_dim in zip(dims[:-1], dims[1:]):
+            layers.append(torch.nn.Dropout(config.final_dropout))
+            layers.append(torch.nn.Linear(in_dim, out_dim))
+            layers.append(activation_cls())
+        layers.append(torch.nn.Dropout(config.final_dropout))
+        layers.append(torch.nn.Linear(dims[-1], config.num_labels))
+        self.net = torch.nn.Sequential(*layers)
 
     def forward(self, features, **kwargs):
-        x = features
-        x = self.dropout(x)
-        x = self.dense(x)
-        x = torch.tanh(x)
-        x = self.dropout(x)
-        x = self.out_proj(x)
-
-        return x
+        return self.net(features)
 
 
 BACKBONE_MODEL_CLASSES = {
@@ -890,7 +1067,25 @@ class Model(Wav2Vec2PreTrainedModel):
             getattr(config, "model_type", None), Wav2Vec2Model
         )
         self.wav2vec2 = backbone_cls(config)
-        self.head = ModelHead(config)
+        # "weighted" layer_pooling combines every encoder layer's hidden
+        # states via one learnable scalar per layer (softmax-normalized),
+        # the SUPERB-benchmark technique - useful paralinguistic/prosodic
+        # signal is often stronger in earlier/middle layers than the last
+        # one. +1 for the encoder's input hidden states (index 0 of
+        # output_hidden_states), matching the length of that tuple exactly.
+        self.layer_pooling_mode = getattr(config, "layer_pooling", "last")
+        if self.layer_pooling_mode == "weighted":
+            self.layer_weights = torch.nn.Parameter(
+                torch.zeros(config.num_hidden_layers + 1)
+            )
+        # "meanvar" pooling concatenates mean and variance along the
+        # feature dim, doubling what the head actually receives - the head
+        # can't just assume config.hidden_size the way "mean" pooling allows.
+        self.pooling_mode = getattr(config, "pooling", "mean")
+        pooled_dim = (
+            config.hidden_size * 2 if self.pooling_mode == "meanvar" else config.hidden_size
+        )
+        self.head = ModelHead(config, input_dim=pooled_dim)
         self.is_classifier = config.is_classifier
         # post_init() (not the lower-level init_weights() it calls) is the
         # documented hook for subclasses - required as of transformers 5.x,
@@ -900,29 +1095,56 @@ class Model(Wav2Vec2PreTrainedModel):
     def freeze_feature_extractor(self):
         self.wav2vec2.feature_extractor._freeze_parameters()
 
+    @staticmethod
+    def _weighted_layer_sum(hidden_states_tuple, layer_weights):
+        """Softmax-weighted sum of every encoder layer's hidden states.
+
+        hidden_states_tuple: output_hidden_states=True's (num_hidden_layers
+        + 1) tensors, each (batch, seq, hidden) - index 0 is the encoder's
+        input, the rest are each layer's output. Softmax keeps the
+        combination a convex combination (weights sum to 1) regardless of
+        the raw layer_weights' scale - the SUPERB-benchmark "weighted sum of
+        hidden states" technique.
+        """
+        all_layers = torch.stack(hidden_states_tuple, dim=0)
+        weights = torch.softmax(layer_weights, dim=0)
+        return (weights.view(-1, 1, 1, 1) * all_layers).sum(dim=0)
+
     def pooling(
         self,
         hidden_states,
         attention_mask,
     ):
         if attention_mask is None:  # For evaluation with batch_size==1
-            outputs = torch.mean(hidden_states, dim=1)
+            mean = torch.mean(hidden_states, dim=1)
+            if self.pooling_mode == "meanvar":
+                var = torch.var(hidden_states, dim=1, unbiased=False)
+                return torch.cat([mean, var], dim=-1)
+            return mean
         else:
             attention_mask = self._get_feature_vector_attention_mask(
                 hidden_states.shape[1],
                 attention_mask,
             )
-            hidden_states = hidden_states * torch.reshape(
+            mask = torch.reshape(
                 attention_mask,
                 (-1, attention_mask.shape[-1], 1),
             )
-            outputs = torch.sum(hidden_states, dim=1)
+            masked_hidden_states = hidden_states * mask
             attention_sum = torch.sum(attention_mask, dim=1)
 
             epsilon = 1e-6  # to avoid division by zero and numerical instability
-            outputs = outputs / (torch.reshape(attention_sum, (-1, 1)) + epsilon)
+            denom = torch.reshape(attention_sum, (-1, 1)) + epsilon
+            mean = torch.sum(masked_hidden_states, dim=1) / denom
 
-        return outputs
+            if self.pooling_mode == "meanvar":
+                mean_sq = torch.sum((hidden_states**2) * mask, dim=1) / denom
+                # Clamp against tiny negative values from floating-point
+                # cancellation in E[x^2] - E[x]^2 (true variance is >= 0).
+                var = torch.clamp(mean_sq - mean**2, min=0.0)
+                return torch.cat([mean, var], dim=-1)
+
+            return mean
 
     def forward(
         self,
@@ -934,15 +1156,26 @@ class Model(Wav2Vec2PreTrainedModel):
         outputs = self.wav2vec2(
             input_values,
             attention_mask=attention_mask,
+            output_hidden_states=(self.layer_pooling_mode == "weighted"),
         )
         cnn_features = outputs.extract_features
-        hidden_states_framewise = outputs.last_hidden_state
+        if self.layer_pooling_mode == "weighted":
+            hidden_states_framewise = self._weighted_layer_sum(
+                outputs.hidden_states, self.layer_weights
+            )
+        else:
+            hidden_states_framewise = outputs.last_hidden_state
         hidden_states = self.pooling(
             hidden_states_framewise,
             attention_mask,
         )
         logits = self.head(hidden_states)
-        if not self.training:
+        if not self.training and self.is_classifier:
+            # Regression logits have num_labels==1, so softmax over that
+            # single-element dimension always returns exactly 1.0 regardless
+            # of the input - silently turning every eval/test regression
+            # prediction into the same constant, no matter what the model
+            # actually learned.
             logits = torch.softmax(logits, dim=1)
 
         if return_hidden:
@@ -1107,32 +1340,3 @@ class Emotion2vecModel(torch.nn.Module):
             logits = result.logits
 
         return logits.detach().cpu().numpy()[0]
-
-
-class ConcordanceCorCoeff(torch.nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.mean = torch.mean
-        self.var = torch.var
-        self.sum = torch.sum
-        self.sqrt = torch.sqrt
-        self.std = torch.std
-
-    def forward(self, prediction, ground_truth):
-        ground_truth = ground_truth.float()
-        mean_gt = self.mean(ground_truth, 0)
-        mean_pred = self.mean(prediction, 0)
-        var_gt = self.var(ground_truth, 0)
-        var_pred = self.var(prediction, 0)
-        v_pred = prediction - mean_pred
-        v_gt = ground_truth - mean_gt
-        cor = self.sum(v_pred * v_gt) / (
-            self.sqrt(self.sum(v_pred**2)) * self.sqrt(self.sum(v_gt**2))
-        )
-        sd_gt = self.std(ground_truth)
-        sd_pred = self.std(prediction)
-        numerator = 2 * cor * sd_gt * sd_pred
-        denominator = var_gt + var_pred + (mean_gt - mean_pred) ** 2
-        ccc = numerator / denominator
-
-        return 1 - ccc

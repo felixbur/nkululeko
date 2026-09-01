@@ -130,4 +130,4 @@ more RAM/VRAM.
 - Use the predict module in `--type model` mode to apply a Nkululeko model
   you trained yourself: see [demo.md](demo.md).
 - Combine predicted labels with traditional ML pipelines via
-  [`nkululeko.nkululeko`](usage.md).
+  [`nkululeko.train`](usage.md).

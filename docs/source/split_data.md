@@ -39,7 +39,7 @@ emodb.train_tables = ['emotion.categories.train.gold_standard']
 
 **Run:**
 ```bash
-python -m nkululeko.nkululeko --config examples/exp_emodb_split_specified.ini
+python -m nkululeko.train --config examples/exp_emodb_split_specified.ini
 ```
 
 **When to use:**
@@ -64,7 +64,7 @@ emodb.test_size = 20  # 20% for test
 
 **Run:**
 ```bash
-python -m nkululeko.nkululeko --config examples/exp_emodb_split_random.ini
+python -m nkululeko.train --config examples/exp_emodb_split_random.ini
 ```
 
 **When to use:**
@@ -91,7 +91,7 @@ emodb.test_size = 20  # 20% for test
 
 **Run:**
 ```bash
-python -m nkululeko.nkululeko --config examples/exp_emodb_split_speaker.ini
+python -m nkululeko.train --config examples/exp_emodb_split_speaker.ini
 ```
 
 **When to use:**
@@ -121,7 +121,7 @@ logo = 10  # Number of speakers for LOSO cross-validation
 
 **Run:**
 ```bash
-python -m nkululeko.nkululeko --config examples/exp_emodb_split_loso.ini
+python -m nkululeko.train --config examples/exp_emodb_split_loso.ini
 ```
 
 **When to use:**
@@ -157,7 +157,7 @@ logo = 4  # Leave-One-Group-Out with 4 groups
 
 **Run:**
 ```bash
-python -m nkululeko.nkululeko --config examples/exp_emodb_split_logo.ini
+python -m nkululeko.train --config examples/exp_emodb_split_logo.ini
 ```
 
 **When to use:**
@@ -185,7 +185,7 @@ k_fold_cross = 5  # 5-fold cross-validation
 
 **Run:**
 ```bash
-python -m nkululeko.nkululeko --config examples/exp_emodb_split_kfold.ini
+python -m nkululeko.train --config examples/exp_emodb_split_kfold.ini
 ```
 
 **When to use:**
@@ -203,22 +203,22 @@ Try all split methods with EmoDB using OpenSMILE features and XGBoost:
 
 ```bash
 # 1. Specified split
-python -m nkululeko.nkululeko --config examples/exp_emodb_split_specified.ini
+python -m nkululeko.train --config examples/exp_emodb_split_specified.ini
 
 # 2. Random split
-python -m nkululeko.nkululeko --config examples/exp_emodb_split_random.ini
+python -m nkululeko.train --config examples/exp_emodb_split_random.ini
 
 # 3. Speaker split
-python -m nkululeko.nkululeko --config examples/exp_emodb_split_speaker.ini
+python -m nkululeko.train --config examples/exp_emodb_split_speaker.ini
 
 # 4. LOSO
-python -m nkululeko.nkululeko --config examples/exp_emodb_split_loso.ini
+python -m nkululeko.train --config examples/exp_emodb_split_loso.ini
 
 # 5. LOGO
-python -m nkululeko.nkululeko --config examples/exp_emodb_split_logo.ini
+python -m nkululeko.train --config examples/exp_emodb_split_logo.ini
 
 # 6. 5-fold cross-validation
-python -m nkululeko.nkululeko --config examples/exp_emodb_split_kfold.ini
+python -m nkululeko.train --config examples/exp_emodb_split_kfold.ini
 ```
 
 **Question:** Which split strategy gives the best performance? Why?
@@ -237,7 +237,7 @@ Run a neural network experiment to visualize when overfitting starts:
 **Configuration:** [exp_emodb_split_overfitting.ini](../examples/exp_emodb_split_overfitting.ini)
 
 ```bash
-python -m nkululeko.nkululeko --config examples/exp_emodb_split_overfitting.ini
+python -m nkululeko.train --config examples/exp_emodb_split_overfitting.ini
 ```
 
 This configuration:

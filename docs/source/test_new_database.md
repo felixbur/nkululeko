@@ -4,7 +4,7 @@ Sometimes you have already trained a model on one or more databases and want to
 evaluate it on a completely different database — without repeating the
 (potentially expensive) training step.
 
-The `nkululeko.nkululeko` module detects this situation automatically: if
+The `nkululeko.train` module detects this situation automatically: if
 `DATA.tests` is set in the configuration **and** a saved experiment file
 already exists on disk, it skips training entirely, loads the stored best model,
 and evaluates it on the new test database.
@@ -45,7 +45,7 @@ save = True          ; <-- keep individual epoch files too
 Run training once:
 
 ```bash
-python -m nkululeko.nkululeko --config exp_emodb_mlp.ini
+python -m nkululeko.train --config exp_emodb_mlp.ini
 ```
 
 The experiment is saved to
@@ -94,7 +94,7 @@ save = True
 ## Step 3 — Run evaluation
 
 ```bash
-python -m nkululeko.nkululeko --config test_ravdess.ini
+python -m nkululeko.train --config test_ravdess.ini
 ```
 
 Because the saved experiment file exists, nkululeko prints:
@@ -129,7 +129,7 @@ DEBUG: nkululeko: predictions CSV saved to: results/mymodel/exp_emodb_mlp/result
 
 ## How it works
 
-The detection logic in `nkululeko.nkululeko.doit()`:
+The detection logic in `nkululeko.train.doit()`:
 
 1. Checks whether `DATA.tests` is non-empty in the config.
 2. Resolves the expected save path via `util.get_save_name()`.
@@ -164,7 +164,7 @@ subsequent invocation with `DATA.tests` set evaluates without retraining.
 
 ## Related
 
-- [experiment.md](experiment.md) — full reference for `nkululeko.nkululeko`
+- [experiment.md](experiment.md) — full reference for `nkululeko.train`
 - [test_module.md](test_module.md) — train/dev/test split workflow
 - [predict.md](predict.md) — `nkululeko.predict` for file-list based inference
 - [multidb.md](multidb.md) — training across multiple databases

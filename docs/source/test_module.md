@@ -62,7 +62,7 @@ save = True
 With split strategies defined, run a single command:
 
 ```bash
-python -m nkululeko.nkululeko --config myconf.ini
+python -m nkululeko.train --config myconf.ini
 ```
 
 This trains on the train/dev data and evaluates on the test set in one go.
@@ -111,7 +111,7 @@ crema-d.split_strategy = test
 ```
 
 > **Automatic fast path**: when `DATA.tests` is set and a saved experiment
-> already exists on disk, `nkululeko.nkululeko` skips training on subsequent
+> already exists on disk, `nkululeko.train` skips training on subsequent
 > runs and evaluates the stored best model on the test databases directly.
 > The same config file therefore works for both the initial training run and
 > all later test evaluations without any changes.

@@ -37,7 +37,7 @@ cd ../..
 then, as a test, you might do
 
 ```bash
-python3 -m nkululeko.nkululeko --config data/ravdess/exp_ravdess_os_xgb.ini 
+python3 -m nkululeko.train --config data/ravdess/exp_ravdess_os_xgb.ini 
 ```
 
 Check the results in the results folder under Nkululeko parent directory.

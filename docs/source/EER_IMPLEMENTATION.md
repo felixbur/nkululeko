@@ -56,7 +56,7 @@ measure = eer
 See [data/for-2sec/exp_eer.ini](../data/for-2sec/exp_eer.ini) for a complete example:
 
 ```bash
-python -m nkululeko.nkululeko --config data/for-2sec/exp_eer.ini
+python -m nkululeko.train --config data/for-2sec/exp_eer.ini
 ```
 
 ## Key Features

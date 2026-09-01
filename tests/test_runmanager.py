@@ -183,6 +183,116 @@ class TestLoadModelContextPropagation:
             assert get_context() is context_live
 
 
+class TestIsRandomSeedSet:
+    """_is_random_seed_set() mirrors the truthiness check the model classes
+    themselves use (model_mlp.py, model_mlp_regression.py, model_adm.py:
+    `if manual_seed:` on the evaluated config string) so do_runs() only
+    forces runs=1 exactly when a seed would actually make every run
+    identical.
+    """
+
+    def test_unset_returns_false(self, runmanager):
+        assert runmanager._is_random_seed_set() is False
+
+    def test_explicit_false_returns_false(self, runmanager):
+        glob_conf.config["MODEL"]["random_seed"] = "False"
+        assert runmanager._is_random_seed_set() is False
+
+    def test_integer_seed_returns_true(self, runmanager):
+        glob_conf.config["MODEL"]["random_seed"] = "42"
+        assert runmanager._is_random_seed_set() is True
+
+    def test_zero_seed_returns_false(self, runmanager):
+        # Matches the existing (if imperfect) `if manual_seed:` convention
+        # in the model classes, where a seed of 0 is falsy and never
+        # actually gets applied - not this method's bug to fix in isolation.
+        glob_conf.config["MODEL"]["random_seed"] = "0"
+        assert runmanager._is_random_seed_set() is False
+
+    def test_malformed_value_returns_false(self, runmanager):
+        glob_conf.config["MODEL"]["random_seed"] = "not-a-literal"
+        assert runmanager._is_random_seed_set() is False
+
+
+class TestDoRunsForcesSingleRunWhenSeeded:
+    """Regression: with [MODEL] random_seed set, every run produces an
+    identical result (confirmed empirically: an MLP baseline run with
+    random_seed=42 and runs=3 reported the exact same score three times,
+    std=0.0000) - so [EXP] runs > 1 just repeats the same training three
+    times for no benefit. do_runs() should collapse this to a single run
+    and tell the user why, rather than silently wasting compute.
+    """
+
+    def _run_do_runs(self, tmp_path, monkeypatch, runs, random_seed):
+        import pandas as pd
+
+        glob_conf.config["EXP"]["runs"] = str(runs)
+        if random_seed is not None:
+            glob_conf.config["MODEL"]["random_seed"] = random_seed
+        df = pd.DataFrame({"emotion": []})
+        feats = pd.DataFrame()
+        rm = Runmanager(df, df, feats, feats)
+
+        instantiations = []
+
+        class FakeModelrunner:
+            def __init__(self, *args, **kwargs):
+                instantiations.append(args[4] if len(args) > 4 else kwargs.get("run"))
+
+            def do_epochs(self):
+                return [_make_report(0.9, run=len(instantiations) - 1, epoch=0)], 0
+
+        monkeypatch.setattr("nkululeko.runmanager.Modelrunner", FakeModelrunner)
+        monkeypatch.setattr(Runmanager, "print_report", lambda self, r, p: None)
+
+        rm.do_runs()
+        return rm, instantiations
+
+    def test_seeded_multi_run_collapses_to_one_run(self, tmp_path, monkeypatch):
+        rm, instantiations = self._run_do_runs(
+            tmp_path, monkeypatch, runs=3, random_seed="42"
+        )
+        assert instantiations == [0]
+
+    def test_unseeded_multi_run_runs_all_requested_runs(self, tmp_path, monkeypatch):
+        rm, instantiations = self._run_do_runs(
+            tmp_path, monkeypatch, runs=3, random_seed=None
+        )
+        assert instantiations == [0, 1, 2]
+
+    def test_seeded_single_run_is_unaffected(self, tmp_path, monkeypatch):
+        rm, instantiations = self._run_do_runs(
+            tmp_path, monkeypatch, runs=1, random_seed="42"
+        )
+        assert instantiations == [0]
+
+    def test_warns_when_collapsing_runs(self, tmp_path, monkeypatch):
+        import pandas as pd
+
+        glob_conf.config["EXP"]["runs"] = "3"
+        glob_conf.config["MODEL"]["random_seed"] = "42"
+        df = pd.DataFrame({"emotion": []})
+        feats = pd.DataFrame()
+        rm = Runmanager(df, df, feats, feats)
+
+        class FakeModelrunner:
+            def __init__(self, *args, **kwargs):
+                pass
+
+            def do_epochs(self):
+                return [_make_report(0.9, run=0, epoch=0)], 0
+
+        warnings = []
+        monkeypatch.setattr("nkululeko.runmanager.Modelrunner", FakeModelrunner)
+        monkeypatch.setattr(Runmanager, "print_report", lambda self, r, p: None)
+        monkeypatch.setattr(rm.util, "warn", lambda msg: warnings.append(msg))
+
+        rm.do_runs()
+
+        assert len(warnings) == 1
+        assert "random_seed" in warnings[0]
+
+
 class TestRunmanagerInit:
     def test_stores_split3_false(self, runmanager):
         assert runmanager.split3 is False
@@ -198,3 +308,117 @@ class TestRunmanagerInit:
         feats = pd.DataFrame()
         rm = Runmanager(df, df, feats, feats)
         assert rm.split3 is True
+
+
+class TestDoRunsSplit3ReportsRealTestResult:
+    """Regression: under [EXP] traindevtest=True (split3), do_runs() must
+    report the real test-set result, not the dev-phase result used only for
+    checkpoint selection.
+
+    do_runs() ran the dev-monitoring loop, appended its best dev report to
+    self.best_results, then separately computed self.test_report by
+    re-evaluating the best model on the real test set - but never fed that
+    test_report back into self.best_results. Since experiment.py's final
+    summary reads exactly self.best_results (`self.reports =
+    self.runmgr.best_results`), every traindevtest=True experiment's printed
+    "final" score was silently the dev score, for every model type.
+    """
+
+    def test_best_results_holds_test_report_not_dev_report(self, tmp_path, monkeypatch):
+        import pandas as pd
+
+        glob_conf.config["EXP"]["traindevtest"] = "True"
+        glob_conf.config["EXP"]["runs"] = "1"
+        df = pd.DataFrame({"emotion": []})
+        feats = pd.DataFrame()
+        rm = Runmanager(df, df, feats, feats, dev_x=df, dev_y=feats)
+
+        dev_report = _make_report(0.90, run=0, epoch=1)
+        test_report = _make_report(0.25, run=0, epoch=1)
+
+        class FakeModel:
+            def load(self, run, epoch):
+                pass
+
+        class FakeModelrunner:
+            def __init__(self, *args, **kwargs):
+                pass
+
+            def do_epochs(self):
+                return [dev_report], 1
+
+            def _select_model(self, model_type):
+                return FakeModel()
+
+            def eval_specific_model(self, model, df_test, feats_test, split_name=None):
+                return test_report
+
+        monkeypatch.setattr("nkululeko.runmanager.Modelrunner", FakeModelrunner)
+        monkeypatch.setattr(Runmanager, "print_report", lambda self, r, p: None)
+
+        rm.do_runs()
+
+        assert rm.best_results == [test_report]
+        assert rm.best_results[0] is not dev_report
+
+
+class TestDoRunsSplit3LoadsCurrentRunsOwnCheckpoint:
+    """Regression: do_runs() loaded the test-set checkpoint via
+    get_best_model(), which searches self.best_results - a list that
+    accumulates one entry per run across the ENTIRE do_runs() loop, not just
+    the current run. Whenever an earlier run's already-reported (test) result
+    outscored the current run's own (dev) result, get_best_model() picked the
+    EARLIER run's checkpoint - so the current run's "test" report silently
+    re-evaluated and printed someone else's model, corrupting every
+    multi-run traindevtest=True experiment's per-run test results.
+    """
+
+    def test_second_runs_test_report_loads_its_own_checkpoint(
+        self, tmp_path, monkeypatch
+    ):
+        import pandas as pd
+
+        glob_conf.config["EXP"]["traindevtest"] = "True"
+        glob_conf.config["EXP"]["runs"] = "2"
+        df = pd.DataFrame({"emotion": []})
+        feats = pd.DataFrame()
+        rm = Runmanager(df, df, feats, feats, dev_x=df, dev_y=feats)
+
+        # Run 0's dev result deliberately outscores run 1's - if
+        # get_best_model()'s cross-run search were still used for the test
+        # eval, run 1 would incorrectly load run 0's checkpoint.
+        dev_reports = {
+            0: _make_report(0.90, run=0, epoch=1),
+            1: _make_report(0.40, run=1, epoch=1),
+        }
+        test_reports = {
+            0: _make_report(0.85, run=0, epoch=1),
+            1: _make_report(0.35, run=1, epoch=1),
+        }
+        loaded_runs = []
+
+        class FakeModel:
+            def load(self, run, epoch):
+                loaded_runs.append(run)
+
+        class FakeModelrunner:
+            def __init__(self, *args, **kwargs):
+                self._run = args[4] if len(args) > 4 else kwargs.get("run")
+
+            def do_epochs(self):
+                return [dev_reports[self._run]], 1
+
+            def _select_model(self, model_type):
+                return FakeModel()
+
+            def eval_specific_model(self, model, df_test, feats_test, split_name=None):
+                return test_reports[self._run]
+
+        monkeypatch.setattr("nkululeko.runmanager.Modelrunner", FakeModelrunner)
+        monkeypatch.setattr(Runmanager, "print_report", lambda self, r, p: None)
+
+        rm.do_runs()
+
+        # One load() call per run, each loading its OWN run's checkpoint.
+        assert loaded_runs == [0, 1]
+        assert rm.best_results == [test_reports[0], test_reports[1]]

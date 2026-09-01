@@ -117,7 +117,7 @@ Then use the generated `text` column for BERT features in a subsequent experimen
 ## Running the Experiment
 
 ```bash
-python -m nkululeko.nkululeko --config examples/exp_meld_bert.ini
+python -m nkululeko.train --config examples/exp_meld_bert.ini
 ```
 
 ## Tips

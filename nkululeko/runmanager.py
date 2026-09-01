@@ -4,6 +4,8 @@ This module contains the Runmanager class which is responsible for managing the
 runs of the experiment.
 """
 
+import ast
+
 from nkululeko.experiment_context import (
     ContextAware,
     bind_experiment_context,
@@ -58,12 +60,35 @@ class Runmanager(ContextAware):
         self.target = self.context.config["DATA"]["target"]
         self.split3 = eval(self.util.config_val("EXP", "traindevtest", "False"))
 
+    def _is_random_seed_set(self):
+        """Check whether [MODEL] random_seed is set to a value that actually seeds.
+
+        Mirrors the truthiness check the model classes themselves use
+        (model_mlp.py, model_mlp_regression.py, model_adm.py: `if
+        manual_seed:` after evaluating the config string) - ast.literal_eval
+        rather than eval() since this only ever needs to recognize the two
+        documented literal forms (False, an int), not run arbitrary code.
+        """
+        raw = self.util.config_val("MODEL", "random_seed", "False")
+        try:
+            return bool(ast.literal_eval(raw))
+        except (ValueError, SyntaxError):
+            return False
+
     def do_runs(self):
         """Start the runs."""
         self.best_results = []  # keep the best result per run
         self.last_epochs = []  # keep the epoch of best result per run
+        num_runs = int(self.util.config_val("EXP", "runs", 1))
+        if num_runs > 1 and self._is_random_seed_set():
+            self.util.warn(
+                "[MODEL] random_seed is set, so every run would produce an "
+                f"identical result - ignoring [EXP] runs={num_runs} and "
+                "using runs=1 instead"
+            )
+            num_runs = 1
         # for all runs
-        for run in range(int(self.util.config_val("EXP", "runs", 1))):
+        for run in range(num_runs):
             self.util.debug(
                 f"run {run} using model {self.context.config['MODEL']['type']}"
             )
@@ -148,7 +173,14 @@ class Runmanager(ContextAware):
             self.best_results.append(best_report)
             self.last_epochs.append(last_epoch)
             if self.split3:
-                best_model = self.get_best_model()
+                # Load this run's own best checkpoint via best_report (scoped
+                # to self.reports, this run only) - NOT get_best_model(),
+                # which searches self.best_results across every run seen so
+                # far. Calling get_best_model() here let an earlier run's
+                # checkpoint silently win and get evaluated/reported as if it
+                # were the current run's test result whenever that earlier
+                # run's stored result outscored this run's own.
+                best_model = self.load_model(best_report)
                 self.test_report = self.modelrunner.eval_specific_model(
                     best_model, self.df_test, self.feats_test, split_name="test"
                 )
@@ -158,6 +190,12 @@ class Runmanager(ContextAware):
                     + f"_test_{best_report.run}_{best_report.epoch:03d}"
                 )
                 self.print_report(self.test_report, plot_name)
+                # Replace the dev-phase result just appended above with the
+                # real test result for top-level reporting - experiment.py
+                # aggregates via self.best_results, so leaving the dev-based
+                # best_report there would silently report dev performance
+                # as if it were the final test score.
+                self.best_results[-1] = self.test_report
 
     def print_best_result_runs(self):
         """Print the best result for all runs."""

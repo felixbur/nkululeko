@@ -34,7 +34,7 @@ uv venv --python 3.12
 source .venv/bin/activate
 uv pip install -e .
 # or run directly using uv run after cloning
-uv run python -m nkululeko.nkululeko --config examples/exp_polish_tree.ini
+uv run python -m nkululeko.train --config examples/exp_polish_tree.ini
 ```
 
 ### Optional Dependencies
@@ -128,7 +128,7 @@ The documentation, along with extensions of installation, usage, INI file format
 Basically, you specify your experiment in an ["ini" file](./ini_file.md) (e.g. *experiment.ini*) and then call one of the Nkululeko interfaces to run the experiment like this:
 
   ```bash
-  python -m nkululeko.nkululeko --config experiment.ini
+  python -m nkululeko.train --config experiment.ini
   ```
 
 A basic configuration looks like this:
@@ -157,7 +157,7 @@ Here is an overview of the interfaces/modules:
 
 All of them take *--config <my_config.ini>* as an argument.
 
-* **nkululeko.nkululeko**: do machine learning experiments combining features and learners (e.g. opensmile with SVM)
+* **nkululeko.train**: do machine learning experiments combining features and learners (e.g. opensmile with SVM)
 * **nkululeko.ensemble**: [combine several nkululeko experiments](http://blog.syntheticspeech.de/2024/06/25/nkululeko-ensemble-classifiers-with-late-fusion/) and report on late fusion results
 * **nkululeko.multidb**: do [multiple experiments](http://blog.syntheticspeech.de/2024/01/02/nkululeko-compare-several-databases/), comparing several databases cross and in itself
 * **nkululeko.explore**: perform [data exploration](http://blog.syntheticspeech.de/2023/05/11/nkululeko-how-to-visualize-your-data-distribution/)
@@ -195,7 +195,7 @@ All of them take *--config <my_config.ini>* as an argument.
   * *emodb* and *venv*
 * Download a copy of the file [exp_emodb.ini](meta/demos/exp_emodb.ini) to the current working directory (```nkulu_work```)
 * Run the demo
-  * ```python -m nkululeko.nkululeko --config exp_emodb.ini```
+  * ```python -m nkululeko.train --config exp_emodb.ini```
 * Find the results in the newly created folder exp_emodb 
   * Inspect ```exp_emodb/images/run_0/emodb_xgb_os_0_000_cnf.png```
   * This is the main result of your experiment: a confusion matrix for the emodb emotional categories

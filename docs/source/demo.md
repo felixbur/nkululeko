@@ -32,7 +32,7 @@ save = True
 Then train the experiment as usual:
 
 ```bash
-python -m nkululeko.nkululeko --config myconfig.ini
+python -m nkululeko.train --config myconfig.ini
 ```
 
 ## Predict a single file
@@ -114,7 +114,7 @@ the per-class scores to stdout. Press *q* + *Enter* to exit.
 
 - [predict.md](predict.md) — full reference for `nkululeko.predict`.
 - [test_new_database.md](test_new_database.md) — automatic fast path: run
-  `nkululeko.nkululeko` with `DATA.tests` set to evaluate a saved model on
+  `nkululeko.train` with `DATA.tests` set to evaluate a saved model on
   a new database without retraining.
 - [test_module.md](test_module.md) — using the predict module to re-evaluate
   on labeled test data.
