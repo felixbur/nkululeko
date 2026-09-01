@@ -46,20 +46,21 @@ def _safe_path(fig_dir, basename, fmt, max_len=240):
     return os.path.join(fig_dir, basename)
 
 
-def equal_error_rate(y_true, y_score):
+def equal_error_rate(y_true, y_score, pos_label=1):
     """Calculate Equal Error Rate (EER) for binary classification.
 
     EER is the point where False Acceptance Rate (FAR) equals False Rejection Rate (FRR).
     This metric is commonly used in biometric systems and deepfake detection.
 
     Args:
-        y_true: Ground truth binary labels (0 or 1)
+        y_true: Ground truth binary labels (encoded class values)
         y_score: Predicted scores or probabilities
+        pos_label: which encoded class value counts as "positive" (default 1)
 
     Returns:
         float: Equal Error Rate (lower is better, range 0-1)
     """
-    fpr, tpr, thresholds = roc_curve(y_true, y_score, pos_label=1)
+    fpr, tpr, thresholds = roc_curve(y_true, y_score, pos_label=pos_label)
     fnr = 1 - tpr
 
     # Find the point where FAR (fpr) equals FRR (fnr)
@@ -169,12 +170,16 @@ class Reporter(ContextAware):
                 alpha=5,
             )
         elif metric == "eer":
-            # EER requires probabilities/scores, not class predictions
-            # For binary classification, use probabilities if available
+            # EER requires probabilities/scores, not class predictions.
+            # The "positive" class must match the DATA.labels-order
+            # convention used elsewhere (see _binary_pos_neg_labels /
+            # issue #420 follow-up), not just the alphabetically-second
+            # encoded class -- probas columns are named by encoded class
+            # value, in the same (alphabetical) order as
+            # label_encoder.classes_.
+            pos_index = self._eer_positive_class_index()
             if self.probas is not None and len(self.probas.columns) >= 2:
-                # Use the positive class probability (assuming binary classification)
-                # Get the probability of the positive class (index 1)
-                y_score = self.probas.iloc[:, 1].values
+                y_score = self.probas.iloc[:, pos_index].values
             else:
                 # If no probabilities available, use predictions as scores
                 # This is a fallback but not ideal for EER
@@ -183,10 +188,13 @@ class Reporter(ContextAware):
                 )
                 y_score = preds
 
+            def _eer_metric(y_true, y_score):
+                return equal_error_rate(y_true, y_score, pos_label=pos_index)
+
             # Calculate EER with confidence intervals
             test_result, (upper, lower) = evaluate_with_conf_int(
                 y_score,
-                equal_error_rate,
+                _eer_metric,
                 truths,
                 num_bootstraps=1000,
                 alpha=5,
@@ -625,6 +633,28 @@ class Reporter(ContextAware):
         else:
             neg_label, pos_label = s_labels[0], s_labels[1]
         return pos_label, neg_label
+
+    def _eer_positive_class_index(self):
+        """Resolve which encoded class value (0 or 1) is "positive" for EER.
+
+        `self.truths`/`self.preds` and `self.probas`' columns are both
+        encoded/ordered via `label_encoder.classes_` (alphabetical).
+        Without this, EER would always treat whichever class sorts second
+        alphabetically as positive, regardless of DATA.labels -- silently
+        disagreeing with `_binary_pos_neg_labels()` (used for
+        sensitivity/specificity) whenever alphabetical order differs from
+        the user's configured DATA.labels order. Falls back to the
+        historical default (encoded value 1) when there's no label_encoder
+        to resolve a class name back to its encoded value.
+        """
+        le = self.context.label_encoder
+        if le is None or len(le.classes_) != 2:
+            return 1
+        pos_label, _ = self._binary_pos_neg_labels(le.classes_)
+        try:
+            return int(le.transform([pos_label])[0])
+        except ValueError:
+            return 1
 
     def print_results(self, epoch=None, file_name=None):
         if epoch is None:

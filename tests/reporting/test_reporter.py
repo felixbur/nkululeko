@@ -1,6 +1,7 @@
 """Unit tests for Reporter class (nkululeko/reporting/reporter.py)."""
 
 import configparser
+import sys
 
 import numpy as np
 import pytest
@@ -287,6 +288,98 @@ class TestReporterBinarySensitivitySpecificity:
         assert "specificity ('neutral'): 1.0000" in content
         assert '"sensitivity": 0.6' in content
         assert '"specificity": 1.0' in content
+
+
+class _FakeLabelEncoder:
+    """Minimal stand-in for sklearn.LabelEncoder: alphabetically-sorted
+    classes_ plus a name -> encoded-index transform, like the real thing."""
+
+    def __init__(self, classes):
+        self.classes_ = np.array(classes)
+
+    def transform(self, values):
+        classes = list(self.classes_)
+        return np.array([classes.index(v) for v in values])
+
+
+class TestEerPositiveClassIndex:
+    """EER must treat the same class as "positive" as sensitivity/specificity
+    does (_binary_pos_neg_labels), not always the alphabetically-second
+    encoded class (see reviewer follow-up to issue #420)."""
+
+    def test_follows_data_labels_order_not_encoder_alphabetization(self):
+        r = Reporter.__new__(Reporter)
+        r.context = type(
+            "Ctx",
+            (),
+            {
+                "label_encoder": _FakeLabelEncoder(["anger", "neutral"]),
+                # User wrote DATA.labels = ["neutral", "anger"]: anger is positive.
+                "labels": ["neutral", "anger"],
+            },
+        )()
+        # "anger" is encoded as 0 (alphabetically first), so that's the
+        # index EER's ROC curve must treat as positive.
+        assert r._eer_positive_class_index() == 0
+
+    def test_matches_encoder_order_when_data_labels_agrees(self):
+        r = Reporter.__new__(Reporter)
+        r.context = type(
+            "Ctx",
+            (),
+            {
+                "label_encoder": _FakeLabelEncoder(["anger", "neutral"]),
+                "labels": ["anger", "neutral"],
+            },
+        )()
+        assert r._eer_positive_class_index() == 1
+
+    def test_defaults_to_one_without_label_encoder(self):
+        r = Reporter.__new__(Reporter)
+        r.context = type("Ctx", (), {"label_encoder": None, "labels": None})()
+        assert r._eer_positive_class_index() == 1
+
+    def test_eer_uses_the_resolved_positive_class_probas_column(self, monkeypatch):
+        """End-to-end: Reporter.__init__ -> _get_test_result("eer") must
+        score against the probas column for the configured positive class
+        (index 0, "anger"), not the hard-coded column 1."""
+        import pandas as pd
+
+        from nkululeko.experiment_context import get_context
+
+        glob_conf.config["MODEL"]["measure"] = "eer"
+        ctx = get_context()
+        ctx.label_encoder = _FakeLabelEncoder(["anger", "neutral"])
+        ctx.labels = ["neutral", "anger"]  # anger (encoded 0) is positive
+
+        truths = np.array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1])
+        preds = truths.copy()
+        probas = pd.DataFrame(
+            {0: np.linspace(0.9, 0.1, 10), 1: np.linspace(0.1, 0.9, 10)}
+        )
+
+        # Look the module up via sys.modules directly (matching what
+        # Reporter's own bytecode reads) rather than a fresh `import ...
+        # as` statement, which resolves through nkululeko.reporting's
+        # package attribute -- a stale reference left behind by
+        # test_model_onnx.py's module-swapping fixture when this test
+        # happens to run later in the same session.
+        reporter_mod = sys.modules[Reporter.__module__]
+
+        captured = {}
+        orig = reporter_mod.evaluate_with_conf_int
+
+        def spy(y_score, metric_fn, y_true, **kwargs):
+            if getattr(metric_fn, "__name__", "") == "_eer_metric":
+                captured["y_score"] = np.asarray(y_score).copy()
+            return orig(y_score, metric_fn, y_true, **kwargs)
+
+        monkeypatch.setattr(reporter_mod, "evaluate_with_conf_int", spy)
+
+        Reporter(truths, preds, run=0, epoch=0, probas=probas)
+
+        assert "y_score" in captured
+        np.testing.assert_array_equal(captured["y_score"], probas[0].values)
 
 
 class TestReporterClassificationReportMismatch:
