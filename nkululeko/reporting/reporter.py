@@ -718,13 +718,29 @@ class Reporter(ContextAware):
 
         else:  # regression
             result = self.result.test
-            r2 = r2_score(self.truths_cont, self.preds_cont)
-            pcc = pearsonr(self.truths_cont, self.preds_cont)[0]
             measure = self.util.config_val("MODEL", "measure", "mse")
+            # Always report every applicable regression metric, not just the
+            # one configured as MODEL.measure.
+            other_metrics = {
+                "mse": lambda: mean_squared_error(
+                    self.truths_cont, self.preds_cont
+                ),
+                "mae": lambda: mean_absolute_error(
+                    self.truths_cont, self.preds_cont
+                ),
+                "ccc": lambda: concordance_cc(self.truths_cont, self.preds_cont),
+                "pcc": lambda: pearsonr(self.truths_cont, self.preds_cont)[0],
+                "r2": lambda: r2_score(self.truths_cont, self.preds_cont),
+            }
+            parts = [f"{measure}: {result:.3f}"]
+            for name, compute in other_metrics.items():
+                if name == measure:
+                    continue
+                parts.append(f"{name}: {compute():.3f}")
+            reg_str = ", ".join(parts)
             with open(file_name, "w") as text_file:
-                text_file.write(
-                    f"{measure}: {result:.3f}, r_2: {r2:.3f}, pcc {pcc:.3f}"
-                )
+                text_file.write(reg_str)
+            self.util.debug(reg_str)
 
     def make_conf_animation(self, out_name):
         import imageio

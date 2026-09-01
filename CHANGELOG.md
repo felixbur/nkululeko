@@ -4,6 +4,7 @@ Changelog
 Version 1.10.2 (26-09-01)
 -------------------------
 * add sensitivity and specificity to binary classification reports
+* add all available measures to results
 
 Version 1.10.1 (26-08-31)
 -------------------------

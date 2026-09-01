@@ -133,6 +133,39 @@ class TestReporterRegression:
         assert np.array_equal(r.preds_cont, PREDS_REG)
 
 
+class TestRegressionPrintResultsAllMetrics:
+    """print_results() must report every applicable regression metric
+    (mse, mae, ccc, pcc, r2), not just the one configured as MODEL.measure."""
+
+    def test_all_metrics_present_with_default_measure(self, tmp_path):
+        glob_conf.config["EXP"]["type"] = "regression"
+        r = Reporter(TRUTHS_REG, PREDS_REG, run=0, epoch=0)
+        r.print_results(epoch=0, file_name="reg_all_metrics")
+
+        res_dir = r.util.get_path("res_dir")
+        with open(res_dir + "reg_all_metrics.txt") as f:
+            content = f.read()
+        for name in ("mse", "mae", "ccc", "pcc", "r2"):
+            assert f"{name}: " in content
+
+    def test_all_metrics_present_and_no_duplicate_with_non_default_measure(
+        self, tmp_path
+    ):
+        glob_conf.config["EXP"]["type"] = "regression"
+        glob_conf.config["MODEL"]["measure"] = "ccc"
+        r = Reporter(TRUTHS_REG, PREDS_REG, run=0, epoch=0)
+        r.print_results(epoch=0, file_name="reg_all_metrics_ccc")
+
+        res_dir = r.util.get_path("res_dir")
+        with open(res_dir + "reg_all_metrics_ccc.txt") as f:
+            content = f.read()
+        for name in ("mse", "mae", "ccc", "pcc", "r2"):
+            assert f"{name}: " in content
+        # "ccc" (the configured measure) must appear exactly once, not once
+        # for the primary result and again in the always-reported metrics.
+        assert content.count("ccc: ") == 1
+
+
 class TestPrintResultsAfterPlotConfmatrix:
     """Regression: runmanager.print_report() always calls
     plot_confmatrix() before print_results(). plot_confmatrix() binarizes
@@ -142,6 +175,8 @@ class TestPrintResultsAfterPlotConfmatrix:
     binarized 0/1 labels instead of the real continuous predictions."""
 
     def test_pcc_unaffected_by_prior_plot_confmatrix_call(self, tmp_path):
+        import re
+
         from scipy.stats import pearsonr
 
         from nkululeko.reporting.report import Report
@@ -159,7 +194,7 @@ class TestPrintResultsAfterPlotConfmatrix:
         res_dir = r.util.get_path("res_dir")
         with open(res_dir + "order_bug_test.txt") as f:
             content = f.read()
-        written_pcc = float(content.split("pcc ")[1])
+        written_pcc = float(re.search(r"pcc: (-?[\d.]+)", content).group(1))
         assert written_pcc == pytest.approx(expected_pcc, abs=1e-3)
 
 
