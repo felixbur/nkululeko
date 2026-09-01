@@ -173,6 +173,8 @@ Database loading, label mapping, and train/test split configuration.
   * target = emotion
 * **labels**: for classification experiments: the names of the categories (is also used for regression when binning the values)
   * labels = ['anger', 'boredom', 'disgust', 'fear', 'happiness', 'neutral', 'sadness']
+  * For binary classification, the order matters: the first label is treated as the negative class and the second as the positive class for sensitivity/specificity and EER reporting (see [MODEL.measure](#model)), regardless of alphabetical/encoder order.
+    * labels = ["neutral", "anger"]  # "neutral" = negative, "anger" = positive
 * **bins**: array of integers to be used for binning continuous data
   * bins  = [-100, 40, 50, 60, 70, 100]
 * **no_reuse**: if False (default), reuse cached tables, and -- once a
@@ -465,6 +467,8 @@ Model and training specifications. In general, default values should work for cl
     * **ccc**: Concordance Correlation Coefficient (for regression)
     * **pcc**: Pearson Correlation Coefficient (for regression)
   * Note: When EER is specified, both EER and UAR will be reported
+  * Note: For binary classification (exactly 2 labels), sensitivity and specificity are always additionally reported in the results text file, regardless of which `measure` is selected. The positive/negative class follows the order of [DATA.labels](#data), not alphabetical order.
+  * Note: For regression, the results text file always reports every applicable metric (mse, mae, ccc, pcc, r2), not just the one selected as `measure`.
 * **activation**: The activation function for MLPs. One of ["relu", "sigmoid", "tanh", "leaky_relu"]
   * activation = relu
 * **layers**: specify the layer architecture for MLP
