@@ -174,14 +174,15 @@ class TestReporterBinarySensitivitySpecificity:
     """Sensitivity/specificity should be reported automatically for binary
     classification (issue #420), and absent for multi-class tasks."""
 
-    def test_perfect_binary_predictions(self, tmp_path):
+    def test_perfect_binary_predictions(self, tmp_path, caplog):
         truths = np.array([0, 1] * 10)
         preds = np.array([0, 1] * 10)
         r = Reporter(truths, preds, run=0, epoch=0)
         # context is a shared singleton across tests; pin it explicitly.
         r.context.label_encoder = None
         r.context.labels = ["0", "1"]
-        r.print_results(epoch=0, file_name="binary_perfect")
+        with caplog.at_level("DEBUG"):
+            r.print_results(epoch=0, file_name="binary_perfect")
 
         res_dir = r.util.get_path("res_dir")
         with open(res_dir + "binary_perfect.txt") as f:
@@ -190,6 +191,10 @@ class TestReporterBinarySensitivitySpecificity:
         assert '"specificity": 1.0' in content
         assert "sensitivity ('1'): 1.0000" in content
         assert "specificity ('0'): 1.0000" in content
+
+        # Also logged to the DEBUG log, not just written to file.
+        assert "sensitivity ('1'): 1.0000" in caplog.text
+        assert "specificity ('0'): 1.0000" in caplog.text
 
     def test_imperfect_binary_predictions(self, tmp_path):
         # class 0 (negative): 5 samples, 1 misclassified as 1 -> specificity 4/5
@@ -218,6 +223,35 @@ class TestReporterBinarySensitivitySpecificity:
             content = f.read()
         assert "sensitivity" not in content
         assert "specificity" not in content
+
+    def test_positive_class_follows_data_labels_order_not_encoder_alphabetization(
+        self, tmp_path
+    ):
+        """label_encoder.classes_ is always alphabetically sorted by sklearn,
+        which carries no domain meaning (e.g. "anger" < "neutral"). The
+        positive/negative choice must follow the order the user wrote in
+        DATA.labels (context.labels), not the encoder's alphabetical order.
+        """
+        # Simulate label_encoder encoding classes alphabetically: 0="anger", 1="neutral".
+        truths = np.array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1])
+        # anger (0): 3/5 correctly predicted (recall 0.6)
+        # neutral (1): 5/5 correctly predicted (recall 1.0)
+        preds = np.array([0, 0, 0, 1, 1, 1, 1, 1, 1, 1])
+        r = Reporter(truths, preds, run=0, epoch=0)
+        r.context.label_encoder = type(
+            "FakeEncoder", (), {"classes_": np.array(["anger", "neutral"])}
+        )()
+        # User wrote DATA.labels = ["neutral", "anger"]: neutral=negative, anger=positive.
+        r.context.labels = ["neutral", "anger"]
+        r.print_results(epoch=0, file_name="positive_class_order")
+
+        res_dir = r.util.get_path("res_dir")
+        with open(res_dir + "positive_class_order.txt") as f:
+            content = f.read()
+        assert "sensitivity ('anger'): 0.6000" in content
+        assert "specificity ('neutral'): 1.0000" in content
+        assert '"sensitivity": 0.6' in content
+        assert '"specificity": 1.0' in content
 
 
 class TestReporterClassificationReportMismatch:

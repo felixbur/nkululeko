@@ -568,11 +568,12 @@ class Reporter(ContextAware):
                         target_names=conf_s_labels,
                         output_dict=True,
                     )
-                    specificity = cm_rpt[conf_s_labels[0]]["recall"]
-                    sensitivity = cm_rpt[conf_s_labels[1]]["recall"]
+                    pos_label, neg_label = self._binary_pos_neg_labels(conf_labels)
+                    sensitivity = cm_rpt[pos_label]["recall"]
+                    specificity = cm_rpt[neg_label]["recall"]
                     rpt += (
-                        f", sensitivity ('{conf_s_labels[1]}'): {sensitivity:.4f}"
-                        f", specificity ('{conf_s_labels[0]}'): {specificity:.4f}"
+                        f", sensitivity ('{pos_label}'): {sensitivity:.4f}"
+                        f", specificity ('{neg_label}'): {specificity:.4f}"
                     )
                 except ValueError as e:
                     self.util.debug(
@@ -601,6 +602,29 @@ class Reporter(ContextAware):
             text_file.write("\n")
             text_file.write(result_str)
         self.util.debug(result_str)
+
+    def _binary_pos_neg_labels(self, labels):
+        """Determine which of two binary class labels is positive/negative.
+
+        `labels` is typically `label_encoder.classes_`, which sklearn always
+        sorts alphabetically -- that order carries no domain meaning (e.g.
+        for DATA.labels = ["neutral", "anger"], classes_ comes out as
+        ["anger", "neutral"]). Prefer the order the user actually wrote in
+        DATA.labels (self.context.labels, preserved verbatim) to decide
+        which class is "positive", falling back to `labels`' own order only
+        when DATA.labels isn't set or doesn't match the same two classes.
+        """
+        s_labels = [str(x) for x in labels]
+        configured = self.context.labels
+        if (
+            configured is not None
+            and len(configured) == 2
+            and set(str(x) for x in configured) == set(s_labels)
+        ):
+            neg_label, pos_label = str(configured[0]), str(configured[1])
+        else:
+            neg_label, pos_label = s_labels[0], s_labels[1]
+        return pos_label, neg_label
 
     def print_results(self, epoch=None, file_name=None):
         if epoch is None:
@@ -656,22 +680,26 @@ class Reporter(ContextAware):
                     f"result per class (F1 score): {c_ress} from epoch: {epoch}"
                 )
                 self.util.debug(f1_per_class)
-                # For binary classification, also report sensitivity (recall of
-                # the second class) and specificity (recall of the first class).
+                # For binary classification, also report sensitivity (recall
+                # of the positive class) and specificity (recall of the
+                # negative class).
                 is_binary = len(labels) == 2
                 if is_binary:
-                    specificity = rpt[labels[0]]["recall"]
-                    sensitivity = rpt[labels[1]]["recall"]
+                    pos_label, neg_label = self._binary_pos_neg_labels(labels)
+                    sensitivity = rpt[pos_label]["recall"]
+                    specificity = rpt[neg_label]["recall"]
                     rpt["sensitivity"] = sensitivity
                     rpt["specificity"] = specificity
+                    sens_spec_str = (
+                        f"sensitivity ('{pos_label}'): {sensitivity:.4f}, "
+                        f"specificity ('{neg_label}'): {specificity:.4f}"
+                    )
+                    self.util.debug(sens_spec_str)
                 # convert all keys to strings
                 rpt = dict((str(key), value) for (key, value) in rpt.items())
                 rpt_str = f"{json.dumps(rpt)}\n{f1_per_class}"
                 if is_binary:
-                    rpt_str += (
-                        f"\nsensitivity ('{s_labels[1]}'): {sensitivity:.4f}, "
-                        f"specificity ('{s_labels[0]}'): {specificity:.4f}"
-                    )
+                    rpt_str += f"\n{sens_spec_str}"
                 # Append EER (and UAR) when measure=eer
                 if self.metric == "eer":
                     eer_val = float(self.result.test)
