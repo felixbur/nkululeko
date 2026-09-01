@@ -828,6 +828,14 @@ class Dataset(ContextAware):
             labels = list(df[target].unique())
         if df.shape[0] == 0:
             self.util.warn(f"no match in data values for {labels}")
+        elif len(labels) > 1 and df[target].nunique() < 2:
+            remaining = sorted(str(v) for v in df[target].unique())
+            self.util.error(
+                f"{self.name}: after applying DATA.labels {labels} (and any"
+                f" DATA.{self.name}.filter), only one class remains in the"
+                f" '{target}' column: {remaining}. Check DATA.labels and"
+                f" DATA.{self.name}.filter for a mismatch."
+            )
         df["class_label"] = df[target]
         return df
 

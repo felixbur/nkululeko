@@ -46,20 +46,21 @@ def _safe_path(fig_dir, basename, fmt, max_len=240):
     return os.path.join(fig_dir, basename)
 
 
-def equal_error_rate(y_true, y_score):
+def equal_error_rate(y_true, y_score, pos_label=1):
     """Calculate Equal Error Rate (EER) for binary classification.
 
     EER is the point where False Acceptance Rate (FAR) equals False Rejection Rate (FRR).
     This metric is commonly used in biometric systems and deepfake detection.
 
     Args:
-        y_true: Ground truth binary labels (0 or 1)
+        y_true: Ground truth binary labels (encoded class values)
         y_score: Predicted scores or probabilities
+        pos_label: which encoded class value counts as "positive" (default 1)
 
     Returns:
         float: Equal Error Rate (lower is better, range 0-1)
     """
-    fpr, tpr, thresholds = roc_curve(y_true, y_score, pos_label=1)
+    fpr, tpr, thresholds = roc_curve(y_true, y_score, pos_label=pos_label)
     fnr = 1 - tpr
 
     # Find the point where FAR (fpr) equals FRR (fnr)
@@ -169,12 +170,16 @@ class Reporter(ContextAware):
                 alpha=5,
             )
         elif metric == "eer":
-            # EER requires probabilities/scores, not class predictions
-            # For binary classification, use probabilities if available
+            # EER requires probabilities/scores, not class predictions.
+            # The "positive" class must match the DATA.labels-order
+            # convention used elsewhere (see _binary_pos_neg_labels /
+            # issue #420 follow-up), not just the alphabetically-second
+            # encoded class -- probas columns are named by encoded class
+            # value, in the same (alphabetical) order as
+            # label_encoder.classes_.
+            pos_index = self._eer_positive_class_index()
             if self.probas is not None and len(self.probas.columns) >= 2:
-                # Use the positive class probability (assuming binary classification)
-                # Get the probability of the positive class (index 1)
-                y_score = self.probas.iloc[:, 1].values
+                y_score = self.probas.iloc[:, pos_index].values
             else:
                 # If no probabilities available, use predictions as scores
                 # This is a fallback but not ideal for EER
@@ -183,10 +188,13 @@ class Reporter(ContextAware):
                 )
                 y_score = preds
 
+            def _eer_metric(y_true, y_score):
+                return equal_error_rate(y_true, y_score, pos_label=pos_index)
+
             # Calculate EER with confidence intervals
             test_result, (upper, lower) = evaluate_with_conf_int(
                 y_score,
-                equal_error_rate,
+                _eer_metric,
                 truths,
                 num_bootstraps=1000,
                 alpha=5,
@@ -556,6 +564,30 @@ class Reporter(ContextAware):
                 f"Confusion matrix result for epoch: {epoch}, UAR: {uar_str}"
                 + f", (+-{up_str}/{low_str}), ACC: {acc_str}"
             )
+        # For binary classification, also append sensitivity/specificity.
+        if self.util.exp_is_classification():
+            conf_labels = le.classes_ if le is not None else self.context.labels
+            if conf_labels is not None and len(conf_labels) == 2:
+                try:
+                    conf_s_labels = [str(x) for x in conf_labels]
+                    cm_rpt = classification_report(
+                        truths,
+                        preds,
+                        target_names=conf_s_labels,
+                        output_dict=True,
+                    )
+                    pos_label, neg_label = self._binary_pos_neg_labels(conf_labels)
+                    sensitivity = cm_rpt[pos_label]["recall"]
+                    specificity = cm_rpt[neg_label]["recall"]
+                    rpt += (
+                        f", sensitivity ('{pos_label}'): {sensitivity:.4f}"
+                        f", specificity ('{neg_label}'): {specificity:.4f}"
+                    )
+                except ValueError as e:
+                    self.util.debug(
+                        "Reporter: caught a ValueError when computing"
+                        f" sensitivity/specificity for confusion matrix: {e}"
+                    )
         # print(rpt)
         self.util.debug(rpt)
         file_name = _safe_path(
@@ -578,6 +610,51 @@ class Reporter(ContextAware):
             text_file.write("\n")
             text_file.write(result_str)
         self.util.debug(result_str)
+
+    def _binary_pos_neg_labels(self, labels):
+        """Determine which of two binary class labels is positive/negative.
+
+        `labels` is typically `label_encoder.classes_`, which sklearn always
+        sorts alphabetically -- that order carries no domain meaning (e.g.
+        for DATA.labels = ["neutral", "anger"], classes_ comes out as
+        ["anger", "neutral"]). Prefer the order the user actually wrote in
+        DATA.labels (self.context.labels, preserved verbatim) to decide
+        which class is "positive", falling back to `labels`' own order only
+        when DATA.labels isn't set or doesn't match the same two classes.
+        """
+        s_labels = [str(x) for x in labels]
+        configured = self.context.labels
+        if (
+            configured is not None
+            and len(configured) == 2
+            and set(str(x) for x in configured) == set(s_labels)
+        ):
+            neg_label, pos_label = str(configured[0]), str(configured[1])
+        else:
+            neg_label, pos_label = s_labels[0], s_labels[1]
+        return pos_label, neg_label
+
+    def _eer_positive_class_index(self):
+        """Resolve which encoded class value (0 or 1) is "positive" for EER.
+
+        `self.truths`/`self.preds` and `self.probas`' columns are both
+        encoded/ordered via `label_encoder.classes_` (alphabetical).
+        Without this, EER would always treat whichever class sorts second
+        alphabetically as positive, regardless of DATA.labels -- silently
+        disagreeing with `_binary_pos_neg_labels()` (used for
+        sensitivity/specificity) whenever alphabetical order differs from
+        the user's configured DATA.labels order. Falls back to the
+        historical default (encoded value 1) when there's no label_encoder
+        to resolve a class name back to its encoded value.
+        """
+        le = self.context.label_encoder
+        if le is None or len(le.classes_) != 2:
+            return 1
+        pos_label, _ = self._binary_pos_neg_labels(le.classes_)
+        try:
+            return int(le.transform([pos_label])[0])
+        except ValueError:
+            return 1
 
     def print_results(self, epoch=None, file_name=None):
         if epoch is None:
@@ -633,9 +710,26 @@ class Reporter(ContextAware):
                     f"result per class (F1 score): {c_ress} from epoch: {epoch}"
                 )
                 self.util.debug(f1_per_class)
+                # For binary classification, also report sensitivity (recall
+                # of the positive class) and specificity (recall of the
+                # negative class).
+                is_binary = len(labels) == 2
+                if is_binary:
+                    pos_label, neg_label = self._binary_pos_neg_labels(labels)
+                    sensitivity = rpt[pos_label]["recall"]
+                    specificity = rpt[neg_label]["recall"]
+                    rpt["sensitivity"] = sensitivity
+                    rpt["specificity"] = specificity
+                    sens_spec_str = (
+                        f"sensitivity ('{pos_label}'): {sensitivity:.4f}, "
+                        f"specificity ('{neg_label}'): {specificity:.4f}"
+                    )
+                    self.util.debug(sens_spec_str)
                 # convert all keys to strings
                 rpt = dict((str(key), value) for (key, value) in rpt.items())
                 rpt_str = f"{json.dumps(rpt)}\n{f1_per_class}"
+                if is_binary:
+                    rpt_str += f"\n{sens_spec_str}"
                 # Append EER (and UAR) when measure=eer
                 if self.metric == "eer":
                     eer_val = float(self.result.test)
@@ -654,13 +748,29 @@ class Reporter(ContextAware):
 
         else:  # regression
             result = self.result.test
-            r2 = r2_score(self.truths_cont, self.preds_cont)
-            pcc = pearsonr(self.truths_cont, self.preds_cont)[0]
             measure = self.util.config_val("MODEL", "measure", "mse")
+            # Always report every applicable regression metric, not just the
+            # one configured as MODEL.measure.
+            other_metrics = {
+                "mse": lambda: mean_squared_error(
+                    self.truths_cont, self.preds_cont
+                ),
+                "mae": lambda: mean_absolute_error(
+                    self.truths_cont, self.preds_cont
+                ),
+                "ccc": lambda: concordance_cc(self.truths_cont, self.preds_cont),
+                "pcc": lambda: pearsonr(self.truths_cont, self.preds_cont)[0],
+                "r2": lambda: r2_score(self.truths_cont, self.preds_cont),
+            }
+            parts = [f"{measure}: {result:.3f}"]
+            for name, compute in other_metrics.items():
+                if name == measure:
+                    continue
+                parts.append(f"{name}: {compute():.3f}")
+            reg_str = ", ".join(parts)
             with open(file_name, "w") as text_file:
-                text_file.write(
-                    f"{measure}: {result:.3f}, r_2: {r2:.3f}, pcc {pcc:.3f}"
-                )
+                text_file.write(reg_str)
+            self.util.debug(reg_str)
 
     def make_conf_animation(self, out_name):
         import imageio

@@ -70,10 +70,23 @@ python -m nkululeko.train --config data/for-2sec/exp_eer.ini
 
 When using EER, the output will show:
 ```
-Confusion matrix result for epoch: 0, EER: 0.123, (+-0.015/0.018), UAR: 0.876, ACC: 0.892
+Confusion matrix result for epoch: 0, EER: 0.123, (+-0.015/0.018), UAR: 0.876, ACC: 0.892, sensitivity ('anger'): 0.912, specificity ('neutral'): 0.845
 ```
 
 Confusion matrix plots will display both EER and UAR in the title.
+
+Sensitivity and specificity are reported automatically for any binary classification task (2 labels), regardless of which `MODEL.measure` is selected -- not only when `measure = eer`.
+
+## Positive Class Selection
+
+For a binary task, "positive" is not the class sklearn's `LabelEncoder` happens to sort first -- it follows the order the user wrote in `DATA.labels`: the first label is negative, the second is positive. For example:
+
+```ini
+[DATA]
+labels = ["neutral", "anger"]
+```
+
+treats "anger" as positive and "neutral" as negative for sensitivity/specificity and for EER's ROC curve, even though `LabelEncoder` would otherwise sort "anger" before "neutral" alphabetically. This keeps EER's positive class consistent with what's reported for sensitivity/specificity. See `Reporter._binary_pos_neg_labels()` and `Reporter._eer_positive_class_index()` in `nkululeko/reporting/reporter.py`.
 
 ## Testing
 
