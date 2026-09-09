@@ -84,7 +84,7 @@ for file in directory_list:
     tasks.append(task)
     educations.append(education)
     folds.append(fold_dict[dir_name])
-    bdis.append(bdi_dict.get(speaker, 'na'))
+    bdis.append(bdi_dict.get(speaker, float("nan")))
 #    print(f'{file} {speaker}')
 
 
