@@ -373,6 +373,12 @@ class Reporter(ContextAware):
             plot_name (str): name for the image file.
             epoch (int, optional): Number of epoch. Defaults to None.
         """
+        if len(self.truths) == 0 or len(self.preds) == 0:
+            self.util.warn(
+                f"skipping confusion matrix/scatter plot for '{plot_name}': "
+                "no truths/predictions available (empty test set)"
+            )
+            return
         if not self.util.exp_is_classification():
             self._plot_scatter(self.truths, self.preds, f"{plot_name}_scatter", epoch)
             self.continuous_to_categorical()

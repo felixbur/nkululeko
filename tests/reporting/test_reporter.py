@@ -205,6 +205,15 @@ class TestReporterEmpty:
         result = r.get_result()
         assert result.test == 0
 
+    def test_plot_confmatrix_skips_gracefully(self, tmp_path):
+        """An empty test set (e.g. a multidb pair whose split ended up
+        empty) previously crashed plot_confmatrix() deep inside
+        evaluate_with_conf_int/roc_curve, which reject empty arrays.
+        It must instead skip plotting and return."""
+        r = Reporter([], [], run=0, epoch=0)
+        # Must not raise.
+        r.plot_confmatrix("empty_test_confmat", epoch=0)
+
 
 class TestReporterBinarySensitivitySpecificity:
     """Sensitivity/specificity should be reported automatically for binary

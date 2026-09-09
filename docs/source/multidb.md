@@ -6,6 +6,12 @@ With nkululeko since version 0.77.7 there is a new interface named multidb, whic
 
 You can state their names in the [EXP] section and they will then be processed one after each other and against each other; the results are stored in a file called heatmap.png in the experiment folder.
 
+The heatmap includes an extra "mean (cross)" row and column: the mean performance across the *other* databases, excluding each database's own self-train/self-test (diagonal) result. If every single result in the run comes back as exactly 0.0 (usually caused by an empty train/test split for every database pair, or a saved model being reused against an unlabeled test set), no heatmap is written at all -- an error message is printed instead, since an all-zero matrix isn't a meaningful result to plot.
+
+If an individual database pair fails (e.g. a split leaving train/test label sets that don't overlap), that pair is logged and left blank in the heatmap rather than aborting the whole run -- every other pair still gets computed and plotted.
+
+Each database's acoustic features (extracted once per database, before any train/test split) are shared across every pair it appears in, in a `_feat_cache` folder under `[EXP] root`, instead of being re-extracted once per pair -- set `DATA.no_reuse` or `FEATS.no_reuse` to disable this and always extract fresh.
+
 <!-- >> YOU NEED TO OMIT THE PROJECT NAME! -->
 
 Here is an example of such an INI file
@@ -47,6 +53,12 @@ Finally, you can run the experiment with the following command:
 
 ```bash
 python -m nkululeko.multidb --config my_conf.ini
+```
+
+or, equivalently, with the config file as a plain positional argument:
+
+```bash
+python -m nkululeko.multidb my_conf.ini
 ```
 
 Here's a result with two databases.

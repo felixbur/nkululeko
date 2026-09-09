@@ -37,7 +37,16 @@ for i in range(df_fold.shape[0]):
             fold_dict[value] = j 
 directory_list = audeer.list_file_names(data_root, filetype='wav', recursive=True, basenames=True)
 
-depressions, speakers, educations, genders, ages, tasks, folds = [], [], [], [], [], [], []
+# read in the BDI (Beck Depression Inventory) values per speaker
+bdi_dict = {}
+for prefix, bdi_file in [('C', f'{data_root}../bdi-control.csv'), ('P', f'{data_root}../bdi-depression.csv')]:
+    df_bdi = pd.read_csv(bdi_file, header=None, names=['file', 'bdi'])
+    df_bdi['bdi'] = pd.to_numeric(df_bdi['bdi'], errors='coerce')
+    for _, row in df_bdi.iterrows():
+        nn = row['file'].split('_')[0]
+        bdi_dict[f'{prefix}_{nn}'] = row['bdi']
+
+depressions, speakers, educations, genders, ages, tasks, folds, bdis = [], [], [], [], [], [], [], []
 file_paths = []
 print(len(directory_list))
 gender_map = {'F':'female', 'M':'male'}
@@ -75,6 +84,7 @@ for file in directory_list:
     tasks.append(task)
     educations.append(education)
     folds.append(fold_dict[dir_name])
+    bdis.append(bdi_dict.get(speaker, float("nan")))
 #    print(f'{file} {speaker}')
 
 
@@ -84,9 +94,10 @@ df = pd.DataFrame({'file':file_paths,
                    'gender':genders, 
                    'age':ages, 
                    'task':tasks, 
-                   'depression':depressions, 
-                   'education':educations, 
-                   'fold':folds})
+                   'depression':depressions,
+                   'education':educations,
+                   'fold':folds,
+                   'bdi':bdis})
 
 df = df.set_index('file')
 df.head()

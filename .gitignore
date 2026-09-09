@@ -130,6 +130,12 @@ data/*/**
 exp_*/
 results/
 results_*
+results[0-9]*/
+/x/
+/meta/demos/
+
+# Ignore top-level scratch scripts (already-tracked ones like setup.py are unaffected)
+/*.py
 *_orig/
 *_test/
 *_tests/

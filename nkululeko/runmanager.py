@@ -269,7 +269,7 @@ class Runmanager(ContextAware):
         return self.load_model(best_report)
 
     def get_best_result(self, reports):
-        best_r = Reporter([], [], None, 0, 0, context=self.context)
+        best_r = Reporter([], [], None, 0, context=self.context)
         if self.util.high_is_good():
             best_r = self.search_best_result(reports, "ascending")
         else:
@@ -277,17 +277,23 @@ class Runmanager(ContextAware):
         return best_r
 
     def search_best_result(self, reports, order):
-        best_r = Reporter([], [], None, 0, 0, context=self.context)
+        best_r = Reporter([], [], None, 0, context=self.context)
+        if not reports:
+            return best_r
+        # Start from the first report (not a sentinel value) so a report
+        # is always picked -- e.g. a strict "> 0" sentinel would otherwise
+        # never be beaten by an all-empty-test-set run reporting exactly
+        # 0.0, silently leaving best_r as an unrelated placeholder Reporter.
+        best_r = reports[0]
+        best_result = best_r.result.test
         if order == "ascending":
-            best_result = 0
-            for r in reports:
+            for r in reports[1:]:
                 res = r.result.test
                 if res > best_result:
                     best_result = res
                     best_r = r
         else:
-            best_result = 10000
-            for r in reports:
+            for r in reports[1:]:
                 res = r.result.test
                 if res < best_result:
                     best_result = res
