@@ -40,7 +40,19 @@ jobs:
     - name: Run audformat-emodb-os-svm
       run: |
         cd data/emodb
-        wget https://zenodo.org/record/7447302/files/emodb.zip
+        success=0
+        for i in 1 2 3 4 5; do
+          if wget https://zenodo.org/record/7447302/files/emodb.zip; then
+            success=1
+            break
+          fi
+          echo "wget failed (attempt $i/5), retrying in 15s..."
+          sleep 15
+        done
+        if [ "$success" -ne 1 ]; then
+          echo "Failed to download emodb.zip after 5 attempts"
+          exit 1
+        fi
         unzip emodb.zip
         cd ../..
         python3 -m nkululeko.nkululeko --config data/emodb/exp_os_svm.ini > output.txt
