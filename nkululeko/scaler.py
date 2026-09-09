@@ -90,9 +90,9 @@ class Scaler:
         if self.scaler_type != "bins":
             self.scaler.fit(self.feats_train.values)
             self.feats_train = self.scale_df(self.feats_train)
-            if self.feats_test is not None:
+            if self.feats_test is not None and not self.feats_test.empty:
                 self.feats_test = self.scale_df(self.feats_test)
-            if self.feats_dev is not None:
+            if self.feats_dev is not None and not self.feats_dev.empty:
                 self.feats_dev = self.scale_df(self.feats_dev)
         else:
             self.bin_to_three()

@@ -2,12 +2,15 @@
 
 import ast
 
+import numpy as np
+
 from nkululeko.balance import DataBalancer
 from nkululeko.experiment_context import (
     ContextAware,
     bind_experiment_context,
     use_context,
 )
+from nkululeko.reporting.reporter import Reporter
 from nkululeko.utils.util import Util
 
 # Fallback type-based heuristics used when a model instance is not yet available
@@ -121,6 +124,22 @@ class Modelrunner(ContextAware):
             self.best_performance = 100000
         self.best_epoch = 0
 
+    def _empty_test_report(self):
+        """Report a trivial zero result instead of crashing on an empty split.
+
+        An empty (0-sample) test/dev set reaches every sklearn-backed
+        model's predict_proba()/predict() as a 0-row array, which sklearn
+        rejects with ValueError -- well before Reporter's own
+        empty-truths/preds guard (which defaults to a 0.0 result) is ever
+        reached. Skipping the model call here lets that guard do its job,
+        surfacing a clear silent-zero result instead of a crash.
+        """
+        self.util.warn(
+            f"{self.split_name} set is empty (0 samples) -- skipping prediction "
+            "and reporting a zero result for this run"
+        )
+        return Reporter(np.array([]), np.array([]), self.run, 0, context=self.context)
+
     def do_epochs(self):
         # initialze results
         reports = []
@@ -140,7 +159,10 @@ class Modelrunner(ContextAware):
         if self.model.model_type == "finetuned":
             # epochs are handled by Huggingface API
             self.model.train()
-            report = self.model.predict()
+            if len(self.feats_test) == 0:
+                report = self._empty_test_report()
+            else:
+                report = self.model.predict()
             epoch = epoch_num
             report.set_id(self.run, epoch)
             plot_name = self.util.get_plot_name() + f"_{self.run}_{epoch:03d}_cnf"
@@ -166,7 +188,10 @@ class Modelrunner(ContextAware):
                 else:
                     self.model.set_id(self.run, epoch)
                     self.model.train()
-                report = self.model.predict()
+                if len(self.feats_test) == 0:
+                    report = self._empty_test_report()
+                else:
+                    report = self.model.predict()
                 report.set_id(self.run, epoch)
                 plot_name = self.util.get_plot_name() + f"_{self.run}_{epoch:03d}_cnf"
                 reports.append(report)
@@ -222,7 +247,10 @@ class Modelrunner(ContextAware):
 
     def eval_last_model(self, df_test, feats_test):
         self.model.reset_test(df_test, feats_test)
-        report = self.model.predict()
+        if len(feats_test) == 0:
+            report = self._empty_test_report()
+        else:
+            report = self.model.predict()
         report.set_id(self.run, 0)
         return report
 
@@ -244,7 +272,10 @@ class Modelrunner(ContextAware):
         if split_name:
             self.split_name = split_name.upper()
 
-        report = self.model.predict()
+        if len(feats_test) == 0:
+            report = self._empty_test_report()
+        else:
+            report = self.model.predict()
         report.set_id(self.run, 0)
 
         # Restore original split_name

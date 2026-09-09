@@ -68,6 +68,23 @@ class TestSearchBestResultAscending:
         best = runmanager.search_best_result(reports, "ascending")
         assert best.result.test == pytest.approx(0.42)
 
+    def test_returns_first_report_when_all_results_are_zero(self, runmanager):
+        """Regression: search_best_result's ascending sentinel was 0 with a
+        strict "> 0" comparison, so an all-zero-result run (e.g. every
+        test split ended up empty) never actually beat the sentinel and
+        left `best_r` as an unrelated placeholder Reporter instead of any
+        real report from the list."""
+        reports = [_make_report(0.0), _make_report(0.0)]
+        best = runmanager.search_best_result(reports, "ascending")
+        assert best is reports[0]
+
+    def test_placeholder_reporter_has_no_stray_probas(self, runmanager):
+        """The placeholder Reporter built for an empty report list must not
+        pass a stray 5th positional arg that lands in `probas` (it used to
+        pass 0, an int, which later crashed print_probabilities())."""
+        best = runmanager.search_best_result([], "ascending")
+        assert best.probas is None
+
 
 class TestSearchBestResultDescending:
     def test_picks_lowest_value(self, runmanager):

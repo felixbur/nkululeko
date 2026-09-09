@@ -238,3 +238,62 @@ class TestEvalSpecificModel:
         fake = FakeModel()
         mr.eval_specific_model(fake, df_test, feats_test, split_name="test")
         assert mr.split_name == original
+
+
+class TestEmptyTestSetGuard:
+    """An empty (0-row) test/dev split previously crashed deep inside
+    sklearn's predict()/predict_proba() (0-sample arrays are rejected there
+    before Reporter's own empty-truths/preds guard is ever reached).
+    Modelrunner must skip prediction entirely and report a trivial zero
+    result instead."""
+
+    def test_eval_specific_model_skips_predict_for_empty_test_set(self, dummy_dfs):
+        df_train, df_test, feats_train, feats_test = dummy_dfs
+        mr = Modelrunner(df_train, df_test, feats_train, feats_test, run=0)
+
+        class FakeModel:
+            store_path = "fake"
+
+            def reset_test(self, df, feats):
+                pass
+
+            def predict(self):
+                raise AssertionError("predict() must not be called for an empty test set")
+
+        report = mr.eval_specific_model(
+            FakeModel(), df_test.iloc[0:0], feats_test.iloc[0:0], split_name="test"
+        )
+
+        assert report.result.test == 0
+        assert report.probas is None
+
+    def test_eval_last_model_skips_predict_for_empty_test_set(self, dummy_dfs):
+        df_train, df_test, feats_train, feats_test = dummy_dfs
+        mr = Modelrunner(df_train, df_test, feats_train, feats_test, run=0)
+        mr.model.reset_test = lambda df, feats: None
+
+        def _fail_predict():
+            raise AssertionError("predict() must not be called for an empty test set")
+
+        mr.model.predict = _fail_predict
+
+        report = mr.eval_last_model(df_test.iloc[0:0], feats_test.iloc[0:0])
+
+        assert report.result.test == 0
+        assert report.probas is None
+
+    def test_do_epochs_skips_predict_for_empty_test_set(self, dummy_dfs):
+        df_train, df_test, feats_train, feats_test = dummy_dfs
+        mr = Modelrunner(
+            df_train, df_test.iloc[0:0], feats_train, feats_test.iloc[0:0], run=0
+        )
+
+        def _fail_predict():
+            raise AssertionError("predict() must not be called for an empty test set")
+
+        mr.model.predict = _fail_predict
+
+        reports, epoch = mr.do_epochs()
+
+        assert len(reports) == 1
+        assert reports[0].result.test == 0

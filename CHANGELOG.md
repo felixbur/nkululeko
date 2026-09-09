@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version 1.10.3 (26-09-09)
+-------------------------
+* add mean row/column (excluding self-result) to multidb heatmap
+* multidb: share each database's whole-database feature extraction across every
+  pair it appears in, instead of re-extracting it once per pair (set DATA.no_reuse
+  or FEATS.no_reuse to disable)
+* multidb: accept the config file as a positional argument, not just --config
+
 Version 1.10.2 (26-09-01)
 -------------------------
 * add sensitivity and specificity to binary classification reports

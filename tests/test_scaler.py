@@ -98,6 +98,39 @@ def test_scale_all_bins(sample_data):
             assert set(df[col].unique()).issubset({"0", "0.5", "1"})
 
 
+def test_scale_all_empty_test_set_does_not_crash(sample_data):
+    """An empty (0-row) test set previously crashed inside scale_df() ->
+    sklearn's transform(), which rejects 0-sample arrays. It must instead
+    be left as-is (nothing to scale)."""
+    train_data_df, test_data_df, _, train_feats, test_feats, _ = sample_data
+    empty_test_feats = test_feats.iloc[0:0]
+    scaler = Scaler(
+        train_data_df, test_data_df, train_feats.copy(), empty_test_feats.copy(),
+        "standard",
+    )
+    train_scaled, test_scaled = scaler.scale_all()
+    assert train_scaled.shape == train_feats.shape
+    assert test_scaled.shape == empty_test_feats.shape
+
+
+def test_scale_all_empty_dev_set_does_not_crash(sample_data):
+    train_data_df, test_data_df, dev_data_df, train_feats, test_feats, dev_feats = (
+        sample_data
+    )
+    empty_dev_feats = dev_feats.iloc[0:0]
+    scaler = Scaler(
+        train_data_df,
+        test_data_df,
+        train_feats.copy(),
+        test_feats.copy(),
+        "standard",
+        dev_x=dev_data_df,
+        dev_y=empty_dev_feats.copy(),
+    )
+    train_scaled, dev_scaled, test_scaled = scaler.scale_all()
+    assert dev_scaled.shape == empty_dev_feats.shape
+
+
 def test_scale_all_unknown_scaler(sample_data):
     train_data_df, test_data_df, _, train_feats, test_feats, _ = sample_data
     with pytest.raises(ValueError):
