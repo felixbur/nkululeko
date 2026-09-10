@@ -130,6 +130,15 @@ Database loading, label mapping, and train/test split configuration.
       * emodb.train = [3, 9, 10, 11, 13, 16]
     * **random**: split samples randomly (but NOT speaker disjunct, e.g., no speaker info given or each sample a speaker), given a percentage of samples for the test set.
       * emodb.tests_size = 50 (default:20)
+    * **column**: split by the values of an arbitrary column (e.g. recording location), instead of by speaker or a random percentage. Runnable example: [examples/exp_emodb_split_column.ini](examples/exp_emodb_split_column.ini)
+      * **the split column must be listed in DATA.*db_name*.columns (see below), or it isn't loaded and split_strategy=column fails with "split_column '...' not found in the data"** -- this applies even to columns that feel "standard", like gender
+        * emodb.columns = ["age", "gender"]
+      * emodb.split_column = gender
+      * emodb.train_vals = ['male']
+      * emodb.test_vals = ['female']
+      * emodb.dev_vals = ['...']  # only used for train/dev/test experiments
+      * train_vals/test_vals/dev_vals can also be spelled train_values/test_values/dev_values
+      * the train/test/dev value lists must be pairwise disjoint (the same value can't be assigned to two splits); rows whose value is in none of the configured lists are excluded from every split
     * **reuse**: reuse the splits after a *speaker_split* run to save time with feature extraction.
     * **train**: use the entire database for training
     * **test**: use the entire database for evaluation / testing

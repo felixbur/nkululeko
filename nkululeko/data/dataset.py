@@ -373,6 +373,8 @@ class Dataset(ContextAware):
             self.speakers_stated()
         elif split_strategy == "random":
             self.random_split()
+        elif split_strategy == "column":
+            self.split_by_column()
         else:
             try:
                 if isinstance(ast.literal_eval(split_strategy), list):
@@ -508,6 +510,8 @@ class Dataset(ContextAware):
             self.speakers_stated_3()
         elif split_strategy == "random":
             self.random_split_3()
+        elif split_strategy == "column":
+            self.split_by_column_3()
         else:
             try:
                 if isinstance(ast.literal_eval(split_strategy), list):
@@ -730,6 +734,93 @@ class Dataset(ContextAware):
         self.df_test = df[df.speaker.isin(test_smpls)]
         self.df_dev = df[df.speaker.isin(dev_smpls)]
         self.df_train = df[~df.speaker.isin(testdev_smpls)]
+
+    def _column_split_column(self):
+        """Resolve and validate DATA.<name>.split_column for
+        split_strategy="column" (issue #423)."""
+        column = self.util.config_val_data(self.name, "split_column", False)
+        if not column:
+            self.util.error(
+                f"{self.name}: split_strategy=column requires"
+                f" DATA.{self.name}.split_column"
+            )
+        if column not in self.df.columns:
+            self.util.error(
+                f"{self.name}: split_column '{column}' not found in the data"
+                f" (available columns: {list(self.df.columns)}; it may need"
+                f" to be added to DATA.{self.name}.columns)"
+            )
+        return column
+
+    def _column_split_values(self, split_name):
+        """Resolve one split's configured value list: DATA.<name>.
+        <split_name>_vals (e.g. train_vals/test_vals/dev_vals), also
+        accepting the "_values" spelling -- issue #423."""
+        vals = self.util.config_val_data(self.name, f"{split_name}_vals", False)
+        if not vals:
+            vals = self.util.config_val_data(self.name, f"{split_name}_values", False)
+        return ast.literal_eval(vals) if vals else []
+
+    def _check_column_split_disjoint(self, split_vals):
+        """Error out if the same value appears in more than one split's
+        list. Reviewer follow-up to issue #423: independent isin() filters
+        would otherwise silently put the same rows in multiple splits,
+        leaking train/test data.
+
+        Args:
+            split_vals: dict mapping split name ("train"/"test"/"dev") to
+                its configured list of column values.
+        """
+        seen = {}
+        for split_name, vals in split_vals.items():
+            for val in vals:
+                if val in seen and seen[val] != split_name:
+                    self.util.error(
+                        f"{self.name}: split_strategy=column value '{val}'"
+                        f" appears in both {seen[val]}_vals and"
+                        f" {split_name}_vals -- these lists must be pairwise"
+                        " disjoint, each value belongs to exactly one split"
+                    )
+                seen[val] = split_name
+
+    def split_by_column(self):
+        """Split train/test by the values of an arbitrary column (issue #423).
+
+        DATA.<name>.split_column names the column, and DATA.<name>.train_vals
+        / DATA.<name>.test_vals (or train_values/test_values) list which of
+        that column's values go to train / test, e.g.::
+
+            db.split_strategy = column
+            db.split_column = location
+            db.train_vals = ['tokyo', 'berlin']
+            db.test_vals = ['paris']
+
+        The two lists must be pairwise disjoint -- a value listed in both
+        would otherwise put the same rows in both splits.
+        """
+        column = self._column_split_column()
+        split_vals = {
+            "train": self._column_split_values("train"),
+            "test": self._column_split_values("test"),
+        }
+        self._check_column_split_disjoint(split_vals)
+        self.df_train = self.df[self.df[column].isin(split_vals["train"])]
+        self.df_test = self.df[self.df[column].isin(split_vals["test"])]
+
+    def split_by_column_3(self):
+        """Split train/dev/test by the values of an arbitrary column
+        (issue #423). Like split_by_column(), plus DATA.<name>.dev_vals;
+        all three value lists must be pairwise disjoint."""
+        column = self._column_split_column()
+        split_vals = {
+            "train": self._column_split_values("train"),
+            "test": self._column_split_values("test"),
+            "dev": self._column_split_values("dev"),
+        }
+        self._check_column_split_disjoint(split_vals)
+        self.df_train = self.df[self.df[column].isin(split_vals["train"])]
+        self.df_test = self.df[self.df[column].isin(split_vals["test"])]
+        self.df_dev = self.df[self.df[column].isin(split_vals["dev"])]
 
     def _add_labels(self, df):
         df.is_labeled = self.is_labeled

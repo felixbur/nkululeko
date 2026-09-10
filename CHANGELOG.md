@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version 1.10.4 (26-09-10)
+-------------------------
+* add split_strategy=column: split a database into train/dev/test by the values
+  of an arbitrary column (e.g. recording location), via DATA.<db>.split_column
+  and DATA.<db>.train_vals/test_vals/dev_vals (also accepting the "_values"
+  spelling); the value lists must be pairwise disjoint to prevent train/test
+  leakage; see examples/exp_emodb_split_column.ini for a runnable example
+
 Version 1.10.3 (26-09-09)
 -------------------------
 * add mean row/column (excluding self-result) to multidb heatmap
