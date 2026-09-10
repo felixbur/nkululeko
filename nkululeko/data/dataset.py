@@ -373,6 +373,8 @@ class Dataset(ContextAware):
             self.speakers_stated()
         elif split_strategy == "random":
             self.random_split()
+        elif split_strategy == "column":
+            self.split_by_column()
         else:
             try:
                 if isinstance(ast.literal_eval(split_strategy), list):
@@ -508,6 +510,8 @@ class Dataset(ContextAware):
             self.speakers_stated_3()
         elif split_strategy == "random":
             self.random_split_3()
+        elif split_strategy == "column":
+            self.split_by_column_3()
         else:
             try:
                 if isinstance(ast.literal_eval(split_strategy), list):
@@ -730,6 +734,52 @@ class Dataset(ContextAware):
         self.df_test = df[df.speaker.isin(test_smpls)]
         self.df_dev = df[df.speaker.isin(dev_smpls)]
         self.df_train = df[~df.speaker.isin(testdev_smpls)]
+
+    def _column_split_vals(self, split_name):
+        """Resolve DATA.<name>.split_column and one split's value list
+        (DATA.<name>.<split_name>_vals, e.g. train_vals/test_vals/dev_vals
+        -- also accepting the "_values" spelling) for split_strategy=
+        "column" (issue #423), returning the matching rows of self.df.
+        """
+        column = self.util.config_val_data(self.name, "split_column", False)
+        if not column:
+            self.util.error(
+                f"{self.name}: split_strategy=column requires"
+                f" DATA.{self.name}.split_column"
+            )
+        if column not in self.df.columns:
+            self.util.error(
+                f"{self.name}: split_column '{column}' not found in the data"
+                f" (available columns: {list(self.df.columns)}; it may need"
+                f" to be added to DATA.{self.name}.columns)"
+            )
+        vals = self.util.config_val_data(self.name, f"{split_name}_vals", False)
+        if not vals:
+            vals = self.util.config_val_data(self.name, f"{split_name}_values", False)
+        vals = ast.literal_eval(vals) if vals else []
+        return self.df[self.df[column].isin(vals)]
+
+    def split_by_column(self):
+        """Split train/test by the values of an arbitrary column (issue #423).
+
+        DATA.<name>.split_column names the column, and DATA.<name>.train_vals
+        / DATA.<name>.test_vals (or train_values/test_values) list which of
+        that column's values go to train / test, e.g.::
+
+            db.split_strategy = column
+            db.split_column = location
+            db.train_vals = ['tokyo', 'berlin']
+            db.test_vals = ['paris']
+        """
+        self.df_train = self._column_split_vals("train")
+        self.df_test = self._column_split_vals("test")
+
+    def split_by_column_3(self):
+        """Split train/dev/test by the values of an arbitrary column
+        (issue #423). Like split_by_column(), plus DATA.<name>.dev_vals."""
+        self.df_train = self._column_split_vals("train")
+        self.df_test = self._column_split_vals("test")
+        self.df_dev = self._column_split_vals("dev")
 
     def _add_labels(self, df):
         df.is_labeled = self.is_labeled

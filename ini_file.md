@@ -130,6 +130,13 @@ Database loading, label mapping, and train/test split configuration.
       * emodb.train = [3, 9, 10, 11, 13, 16]
     * **random**: split samples randomly (but NOT speaker disjunct, e.g., no speaker info given or each sample a speaker), given a percentage of samples for the test set.
       * emodb.tests_size = 50 (default:20)
+    * **column**: split by the values of an arbitrary column (e.g. recording location), instead of by speaker or a random percentage
+      * emodb.split_column = location
+      * emodb.train_vals = ['tokyo', 'berlin']
+      * emodb.test_vals = ['paris']
+      * emodb.dev_vals = ['osaka']  # only used for train/dev/test experiments
+      * train_vals/test_vals/dev_vals can also be spelled train_values/test_values/dev_values
+      * the column must already be loaded (see DATA.*db_name*.columns below); rows whose value is in none of the configured lists are excluded from every split
     * **reuse**: reuse the splits after a *speaker_split* run to save time with feature extraction.
     * **train**: use the entire database for training
     * **test**: use the entire database for evaluation / testing
