@@ -4,7 +4,7 @@ description: 'SUSAS: a speech database collected for analysis and algorithm form
   Simulated and Actual Stress, and is intendedto be employed in the study of how speech
   production and recognition varies when speaking during stressed conditions.'
 source: https://catalog.ldc.upenn.edu/LDC99S78
-usage: commercial
+usage: research
 languages: [eng]
 license: LDC
 media:
@@ -62,8 +62,3 @@ misc_tables:
     levels: {speaker: object}
     columns:
       gender: {scheme_id: gender}
-audb:
-  root: /cache/audb/susas/1.0.0/fe182b91
-  version: 1.0.0
-  flavor: {bit_depth: null, channels: null, format: wav, mixdown: true, sampling_rate: 16000}
-  complete: true
