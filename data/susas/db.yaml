@@ -1,0 +1,69 @@
+name: susas
+description: 'SUSAS: a speech database collected for analysis and algorithm formulation
+  of sp eech recognition innoise and stress. The SUSAS database refers toSpeech Under
+  Simulated and Actual Stress, and is intendedto be employed in the study of how speech
+  production and recognition varies when speaking during stressed conditions.'
+source: https://catalog.ldc.upenn.edu/LDC99S78
+usage: commercial
+languages: [eng]
+license: LDC
+media:
+  microphone: {type: other, format: sph, channels: 1, sampling_rate: 8000}
+schemes:
+  gender:
+    description: Gender of speaker
+    dtype: str
+    labels: [female, male]
+  speaker:
+    description: Speaker ids given with the database
+    dtype: str
+    labels: [general1, general2, general3, boston1, boston2, boston3, nyc1, nyc2,
+      nyc3, m1, m2, m3, m4, f1, f2, f3, rs, dt, dw, rf]
+  stress: {description: 'Stress inferred from textual description: 0: no stress, 1:
+      mild stress, 2: high stress', dtype: int, minimum: 0, maximum: 2}
+  task:
+    description: 'The tasks that were given to the speakers: neutral: Neutral Speech,
+      medst: Low Dual-Tracking Task Stress, hist: High Dual-Tracking Task Stress,
+      freefall: Free Fall Amusement Park Ride Stress, scream: Scream Machine: Roller
+      Coaster Stress, hist_oov_all: Any out-of-vocabulary files extracted from the
+      original digitizing process, or All files which contain a full roller-coaster
+      speaker run, all 35 of the SUSAS words., meds_oov_all: Any out-of-vocabulary
+      files extracted from the original digitizing process, or All files which contain
+      a full roller-coaster speaker run, all 35 of the SUSAS words., free_oov_all:
+      Any out-of-vocabulary files extracted from the original digitizing process,
+      or All files which contain a full roller-coaster speaker run, all 35 of the
+      SUSAS words., neut_oov_all: Any out-of-vocabulary files extracted from the original
+      digitizing process, or All files which contain a full roller-coaster speaker
+      run, all 35 of the SUSAS words., ff_oov_all: Any out-of-vocabulary files extracted
+      from the original digitizing process, or All files which contain a full roller-coaster
+      speaker run, all 35 of the SUSAS words., sm_oov_all: Any out-of-vocabulary files
+      extracted from the original digitizing process, or All files which contain a
+      full roller-coaster speaker run, all 35 of the SUSAS words., scre_oov_all: Any
+      out-of-vocabulary files extracted from the original digitizing process, or All
+      files which contain a full roller-coaster speaker run, all 35 of the SUSAS words.,
+      angry: Simulated Anger, clear: Clearly Enunciated Speech, cond50: Low Task Stress,
+      cond70: High Task Stress, fast: Fast Speech, lombard: Speech with 85 dBA Pink
+      Noise in Headphones, loud: Loudly Spoken Speech, question: Speech Asked as a
+      Question, slow: Slowly Uttered Speech, soft: Softly Spoken Speech, train: Neutral
+      Training Speech'
+    dtype: str
+    labels: [neutral, medst, hist, freefall, scream, hist_oov_all, meds_oov_all, free_oov_all,
+      neut_oov_all, ff_oov_all, sm_oov_all, scre_oov_all, angry, clear, cond50, cond70,
+      fast, lombard, loud, question, slow, soft, train]
+tables:
+  files:
+    type: filewise
+    columns:
+      speaker: {scheme_id: speaker}
+      task: {scheme_id: task}
+      stress: {scheme_id: stress}
+misc_tables:
+  speaker:
+    levels: {speaker: object}
+    columns:
+      gender: {scheme_id: gender}
+audb:
+  root: /cache/audb/susas/1.0.0/fe182b91
+  version: 1.0.0
+  flavor: {bit_depth: null, channels: null, format: wav, mixdown: true, sampling_rate: 16000}
+  complete: true
