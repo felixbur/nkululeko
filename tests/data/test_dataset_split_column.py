@@ -113,9 +113,28 @@ class TestSplitByColumn:
             },
         )
 
-        result = ds._column_split_vals("train")
+        result = ds._column_split_values("train")
 
-        assert list(result.index) == [0]
+        assert result == ["tokyo"]
+
+    def test_overlapping_train_test_vals_raises(self):
+        """Reviewer follow-up: a value listed in both train_vals and
+        test_vals would otherwise put the same rows in both splits,
+        leaking train/test data."""
+        df = pd.DataFrame(
+            {"location": ["tokyo", "paris"]}, index=[0, 1]
+        )
+        ds = _make_dataset(
+            df,
+            {
+                "split_column": "location",
+                "train_vals": "['tokyo', 'paris']",
+                "test_vals": "['paris']",
+            },
+        )
+
+        with pytest.raises(NkululukoError, match="paris"):
+            ds.split_by_column()
 
     def test_missing_split_column_config_raises(self):
         df = pd.DataFrame({"location": ["tokyo"]})
@@ -158,6 +177,21 @@ class TestSplitByColumn3:
         assert list(ds.df_test.index) == [2]
         # "london" (index 3) matches none of the configured value lists --
         # it's simply excluded from every split, not an error.
+
+    def test_overlapping_dev_test_vals_raises(self):
+        df = pd.DataFrame({"location": ["tokyo", "berlin"]}, index=[0, 1])
+        ds = _make_dataset(
+            df,
+            {
+                "split_column": "location",
+                "train_vals": "['tokyo']",
+                "dev_vals": "['berlin']",
+                "test_vals": "['berlin']",
+            },
+        )
+
+        with pytest.raises(NkululukoError, match="berlin"):
+            ds.split_by_column_3()
 
 
 class TestSplitDispatchesToColumnStrategy:

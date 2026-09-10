@@ -8,8 +8,8 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 
 * `'DATA'.'no_reuse'`: `'False'` (nkululeko/augment.py:43), `'False'` (nkululeko/experiment.py:161), `False` (nkululeko/utils/dataframe.py:250)
 * `'DATA'.'target'`: `'emotion'` (nkululeko/augment.py:85), `'emotion'` (nkululeko/augmenting/resampler.py:76), `'emotion'` (nkululeko/bundle.py:56), `'emotion'` (nkululeko/bundle.py:218), `None` (nkululeko/data/dataset.py:35), `None` (nkululeko/data/dataset_csv.py:84), `None` (nkululeko/experiment.py:123), `'emotion'` (nkululeko/experiment.py:621), `'emotion'` (nkululeko/experiment.py:631), `'emotion'` (nkululeko/experiment.py:641), `'emotion'` (nkululeko/export.py:108), `'emotion'` (nkululeko/feat_extract/feats_analyser.py:26), `'emotion'` (nkululeko/models/model.py:34), `'emotion'` (nkululeko/plots.py:31), `'class_label'` (nkululeko/plots.py:897), `'emotion'` (nkululeko/testing_predictor.py:71), `None` (nkululeko/utils/util.py:640)
-* `'DATA'.'tests'`: `'False'` (nkululeko/data/dataset.py:793), `False` (nkululeko/nkululeko.py:46), `False` (nkululeko/testing_predictor.py:59)
-* `'DATA'.'type'`: `False` (nkululeko/data/dataset.py:893), `'dummy'` (nkululeko/data/datasplitter.py:236)
+* `'DATA'.'tests'`: `'False'` (nkululeko/data/dataset.py:834), `False` (nkululeko/nkululeko.py:46), `False` (nkululeko/testing_predictor.py:59)
+* `'DATA'.'type'`: `False` (nkululeko/data/dataset.py:934), `'dummy'` (nkululeko/data/datasplitter.py:236)
 * `'EXP'.'epochs'`: `1` (nkululeko/modelrunner.py:148), `1` (nkululeko/models/model_tuned.py:66), `'50'` (nkululeko/optimizers/scheduler_factory.py:84)
 * `'EXP'.'language'`: `'en'` (nkululeko/autopredict/ap_text.py:31), `False` (nkululeko/bundle.py:101)
 * `'EXP'.'sample_selection'`: `'all'` (nkululeko/data/datasplitter.py:36), `'train'` (nkululeko/experiment.py:480), `'all'` (nkululeko/experiment.py:501), `'all'` (nkululeko/feat_extract/feats_analyser.py:396), `'all'` (nkululeko/plots.py:636), `'all'` (nkululeko/predict.py:577), `'all'` (nkululeko/resample.py:123), `'all'` (nkululeko/segment.py:242)
@@ -51,7 +51,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'DATA' | 'filter' | `False` | nkululeko/filter_data.py:135 |
 | 'DATA' | 'label_data' | `False` | nkululeko/experiment.py:744, nkululeko/testing_predictor.py:31 |
 | 'DATA' | 'label_result' | `False` | nkululeko/experiment.py:745 |
-| 'DATA' | 'labels' | `False` | nkululeko/data/dataset.py:873, nkululeko/experiment.py:134 |
+| 'DATA' | 'labels' | `False` | nkululeko/data/dataset.py:914, nkululeko/experiment.py:134 |
 | 'DATA' | 'limit_samples' | `False` | nkululeko/filter_data.py:26 |
 | 'DATA' | 'limit_samples_per_speaker' | `False` | nkululeko/filter_data.py:49 |
 | 'DATA' | 'max_duration_of_sample' | `False` | nkululeko/filter_data.py:76 |
@@ -62,9 +62,9 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'DATA' | 'size_diff_weight' | `'1'` | nkululeko/data/dataset.py:580 |
 | 'DATA' | 'target' | `'class_label'` / `'emotion'` / `None` | nkululeko/augment.py:85, nkululeko/augmenting/resampler.py:76, nkululeko/bundle.py:56, +14 more |
 | 'DATA' | 'target_divide_by' | `False` | nkululeko/data/datasplitter.py:311 |
-| 'DATA' | 'tests' | `'False'` / `False` | nkululeko/data/dataset.py:793, nkululeko/nkululeko.py:46, nkululeko/testing_predictor.py:59 |
+| 'DATA' | 'tests' | `'False'` / `False` | nkululeko/data/dataset.py:834, nkululeko/nkululeko.py:46, nkululeko/testing_predictor.py:59 |
 | 'DATA' | 'trains' | `False` | nkululeko/utils/naming.py:90 |
-| 'DATA' | 'type' | `'dummy'` / `False` | nkululeko/data/dataset.py:893, nkululeko/data/datasplitter.py:236 |
+| 'DATA' | 'type' | `'dummy'` / `False` | nkululeko/data/dataset.py:934, nkululeko/data/datasplitter.py:236 |
 | 'DATA' | <f'{stratif_var}_bins'> | `False` | nkululeko/data/dataset.py:573 |
 | 'EXP' | 'balancing' | `False` | nkululeko/modelrunner.py:287 |
 | 'EXP' | 'epochs' | `'50'` / `1` | nkululeko/modelrunner.py:148, nkululeko/models/model_tuned.py:66, nkululeko/optimizers/scheduler_factory.py:84 |
@@ -286,13 +286,13 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | DATA.<self.name> | 'files_tables' | `False` | nkululeko/data/dataset.py:53 |
 | DATA.<self.name> | 'label' | `self.target` | nkululeko/data/dataset.py:169, nkululeko/data/dataset.py:207 |
 | DATA.<self.name> | 'limit' | `0` | nkululeko/data/dataset.py:37 |
-| DATA.<self.name> | 'mapping' | `False` | nkululeko/data/dataset.py:855 |
+| DATA.<self.name> | 'mapping' | `False` | nkululeko/data/dataset.py:896 |
 | DATA.<self.name> | 'rename_speakers' | `False` | nkululeko/data/dataset.py:270 |
 | DATA.<self.name> | 'required' | `False` | nkululeko/data/dataset.py:257 |
 | DATA.<self.name> | 'reverse' | `'False'` | nkululeko/data/dataset.py:285 |
 | DATA.<self.name> | 'reverse.max' | `'False'` | nkululeko/data/dataset.py:287 |
 | DATA.<self.name> | 'scale' | `False` | nkululeko/data/dataset.py:296 |
-| DATA.<self.name> | 'split_column' | `False` | nkululeko/data/dataset.py:744 |
+| DATA.<self.name> | 'split_column' | `False` | nkululeko/data/dataset.py:741 |
 | DATA.<self.name> | 'split_strategy' | `'speaker_split'` | nkululeko/data/dataset.py:308, nkululeko/data/dataset.py:415 |
 | DATA.<self.name> | 'target_tables' | `False` | nkululeko/data/dataset.py:49 |
 | DATA.<self.name> | 'test' | `False` | nkululeko/data/dataset.py:643, nkululeko/data/dataset.py:658 |
@@ -300,6 +300,6 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | DATA.<self.name> | 'test_tables' | `False` | nkululeko/data/dataset.py:57, nkululeko/data/dataset.py:330, nkululeko/data/dataset.py:453 |
 | DATA.<self.name> | 'train' | `False` | nkululeko/data/dataset.py:649, nkululeko/data/dataset.py:670 |
 | DATA.<self.name> | 'train_tables' | `False` | nkululeko/data/dataset.py:61, nkululeko/data/dataset.py:337, nkululeko/data/dataset.py:460 |
-| DATA.<self.name> | 'value_counts' | `False` | nkululeko/data/dataset.py:798, nkululeko/data/dataset.py:815 |
-| DATA.<self.name> | <f'{split_name}_vals'> | `False` | nkululeko/data/dataset.py:756 |
-| DATA.<self.name> | <f'{split_name}_values'> | `False` | nkululeko/data/dataset.py:758 |
+| DATA.<self.name> | 'value_counts' | `False` | nkululeko/data/dataset.py:839, nkululeko/data/dataset.py:856 |
+| DATA.<self.name> | <f'{split_name}_vals'> | `False` | nkululeko/data/dataset.py:759 |
+| DATA.<self.name> | <f'{split_name}_values'> | `False` | nkululeko/data/dataset.py:761 |
