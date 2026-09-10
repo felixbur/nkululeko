@@ -197,6 +197,41 @@ python -m nkululeko.train --config examples/exp_emodb_split_kfold.ini
 
 ---
 
+### 7. Column Split
+
+Split by the values of an arbitrary column (e.g. recording location, session, or any other metadata) instead of by speaker or a random percentage. Useful when your train/test distinction is defined by something other than speaker identity, such as recording site or acquisition device.
+
+**Configuration:**
+```ini
+[DATA]
+emodb.columns = ["age", "gender"]  # the split column must be listed here, or it isn't loaded
+emodb.split_strategy = column
+emodb.split_column = gender
+emodb.train_vals = ['male']
+emodb.test_vals = ['female']
+```
+
+**Example:** [exp_emodb_split_column.ini](../examples/exp_emodb_split_column.ini)
+
+**Run:**
+```bash
+python -m nkululeko.train --config examples/exp_emodb_split_column.ini
+```
+
+**When to use:**
+- Your train/test distinction comes from metadata other than speaker (location, session, recording device, ...)
+- You want to evaluate generalization across a specific, known confound (e.g. train on one recording site, test on another)
+
+**How it works:**
+- `split_column` names the column to split on; `train_vals`/`test_vals` (also spelled `train_values`/`test_values`) list which of that column's values go to which split
+- For a train/dev/test experiment, also set `dev_vals`
+- Rows whose value is in none of the configured lists are excluded from every split
+- The value lists must be pairwise disjoint -- the same value can't be assigned to two splits (this is validated and raises an error if violated)
+
+**Note:** the split column must already be loaded into the dataframe via `DATA.*db_name*.columns` -- this applies even to columns that feel "standard", like `gender`.
+
+---
+
 ## Exercise 1: Compare Split Strategies
 
 Try all split methods with EmoDB using OpenSMILE features and XGBoost:
@@ -219,6 +254,9 @@ python -m nkululeko.train --config examples/exp_emodb_split_logo.ini
 
 # 6. 5-fold cross-validation
 python -m nkululeko.train --config examples/exp_emodb_split_kfold.ini
+
+# 7. Column split
+python -m nkululeko.train --config examples/exp_emodb_split_column.ini
 ```
 
 **Question:** Which split strategy gives the best performance? Why?
@@ -262,6 +300,7 @@ This configuration:
 | **LOSO** | ✅ Yes | Small datasets, per-speaker analysis | High | Very High |
 | **LOGO** | Configurable | Hyperparameter tuning | Medium | Medium |
 | **K-Fold** | Configurable | Robust evaluation | Medium-High | Medium |
+| **Column** | Depends on column chosen | Splitting by a known metadata confound (location, session, device, ...) | Low | Varies |
 
 ---
 
@@ -326,5 +365,6 @@ Choosing the right split strategy is crucial for reliable machine learning exper
 - **For quick experiments**: Use random split
 - **For small datasets**: Use k-fold cross-validation
 - **For hyperparameter tuning**: Use LOGO or k-fold
+- **For splitting by a known metadata confound**: Use column split
 
 Remember: Your test set performance is only meaningful if it represents the real-world scenario your model will face!
