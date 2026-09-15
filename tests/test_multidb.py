@@ -471,6 +471,24 @@ class TestCopyCachedFeatures:
         _copy_cached_features(str(tmp_path / "does_not_exist"), str(dst))
         assert not dst.exists()
 
+    def test_copies_layer_suffixed_ssl_cache_files(self, tmp_path):
+        """Regression: a featureset with a configurable hidden layer (e.g.
+        wav2vec2, see Wav2vec2Feature.extract()) writes
+        <db>_<feats_type>_all_l<layer>.pkl, not <db>_<feats_type>_all.pkl --
+        the old "*_all.*" glob missed this, silently forcing every multidb
+        cell to re-extract these features from scratch instead of reusing
+        the previous cell's cache."""
+        src = tmp_path / "src"
+        dst = tmp_path / "dst"
+        src.mkdir()
+        (src / "la_wav2vec2_all_l7.pkl").write_text("layer 7 features")
+        (src / "la_wav2vec2_all_l16.pkl").write_text("layer 16 features")
+
+        _copy_cached_features(str(src), str(dst))
+
+        assert (dst / "la_wav2vec2_all_l7.pkl").read_text() == "layer 7 features"
+        assert (dst / "la_wav2vec2_all_l16.pkl").read_text() == "layer 16 features"
+
 
 class TestMainSharesFeatureCacheAcrossPairs:
     """issue follow-up: the same database's whole-database features

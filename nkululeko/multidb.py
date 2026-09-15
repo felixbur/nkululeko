@@ -70,11 +70,19 @@ def _copy_cached_features(src_dir, dst_dir):
     to share across multidb pairs: unlike them, ``feats_train``/
     ``feats_test``/``traindf``/``testdf`` are split-specific and must stay
     scoped to their own pair.
+
+    Matches ``*_all*.*``, not just ``*_all.*``: a featureset with a
+    configurable hidden layer (e.g. Wav2vec2Feature.extract(), storage =
+    f"{name}_l{layer}.pkl" where name already ends in "_all") writes
+    ``<db>_<feats_type>_all_l<layer>.pkl`` instead of ``..._all.pkl``. The
+    narrower pattern silently missed those files -- every multidb cell
+    using a layered SSL feature re-extracted them from scratch instead of
+    reusing the previous cell's cache, with no error to indicate why.
     """
     if not os.path.isdir(src_dir):
         return
     os.makedirs(dst_dir, exist_ok=True)
-    for cached_file in glob.glob(os.path.join(src_dir, "*_all.*")):
+    for cached_file in glob.glob(os.path.join(src_dir, "*_all*.*")):
         dest = os.path.join(dst_dir, os.path.basename(cached_file))
         if not os.path.isfile(dest):
             shutil.copy2(cached_file, dest)
