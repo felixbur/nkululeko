@@ -53,6 +53,15 @@ def _reuse_train(config):
     return str(val).strip().lower() in ("true", "1", "yes")
 
 
+def _lodo(config):
+    """True if EXP.lodo asks for leave-one-dataset-out mode (see main()).
+    Same truthy-string parsing as _reuse_train(), for the same reason."""
+    if not config.has_section("EXP"):
+        return False
+    val = config["EXP"].get("lodo", "False")
+    return str(val).strip().lower() in ("true", "1", "yes")
+
+
 def _copy_cached_features(src_dir, dst_dir):
     """Copy whole-database feature cache files (``<db>_<feats_type>_all.*``,
     extracted once per database *before* any train/test split -- see
@@ -142,6 +151,41 @@ def main():
             raise NkululukoError(
                 "EXP.reuse_train is not supported together with AUGMENT"
             )
+
+        # EXP.lodo: leave-one-dataset-out mode. datasets[i] is held out as
+        # the fold's test set; every other entry in `datasets` is pooled for
+        # training. This is a different shape of run than the N x N matrix
+        # above (one result per fold, not one per (train, test) pair) and
+        # can't be built out of that loop's CROSSDB.train_extra pooling --
+        # train_extra is read once and shared by every cell in the run, so
+        # it's only ever the correct complement for a single fold, not all
+        # of them (e.g. datasets=[A,B,C,D,E], train_extra=[B,C,D] gives the
+        # right pool for fold "test=E", but fold "test=A" would need
+        # [B,C,D,E] instead -- a different, dynamically-computed list per
+        # fold, which is exactly what this loop computes).
+        lodo = _lodo(config)
+        lodo_dev = None
+        if lodo:
+            lodo_dev = config["EXP"].get("lodo_dev", "").strip() or None
+        if lodo and reuse_train:
+            raise NkululukoError(
+                "EXP.lodo is not supported together with EXP.reuse_train"
+            )
+        if lodo and extra_trains:
+            raise NkululukoError(
+                "EXP.lodo is not supported together with CROSSDB.train_extra"
+            )
+        if lodo and lodo_dev and lodo_dev in datasets:
+            raise NkululukoError(
+                f"EXP.lodo_dev ({lodo_dev}) must not also appear in "
+                "EXP.databases -- it needs to stay out of the fold rotation "
+                "to serve as a fixed dev domain in every fold"
+            )
+        if lodo:
+            _run_lodo(
+                config, config_file, datasets, lodo_dev, feat_cache_dir, reuse_features
+            )
+            return
 
         for i in range(dim):
             # In reuse mode, train the (i, i) diagonal cell first so its
@@ -291,6 +335,167 @@ def main():
     except NkululukoError as e:
         print(str(e))
         sys.exit(1)
+
+
+def _run_lodo(config, config_file, datasets, lodo_dev, feat_cache_dir, reuse_features):
+    """Leave-one-dataset-out: for each dataset in `datasets`, train on every
+    other dataset in the list (pooled) and test on that one held-out
+    dataset. `lodo_dev`, if given, is a fixed dataset excluded from the
+    rotation and marked split_strategy=dev in every fold (with
+    EXP.traindevtest forced True), so Runmanager gets a genuine held-out dev
+    split for early stopping instead of scoring epochs against the fold's
+    own test set -- the same fix Phase 1's dev-split harness validated.
+
+    EXP.lodo_runs (default 1) repeats each fold that many times, forcing
+    EXP.runs=1 for every repeat. This is deliberate: nkulu() with
+    EXP.runs > 1 returns only the single best-of-N-runs result (see
+    Experiment.get_best_report -- it picks the best DEV result across runs,
+    not their mean), which would fold multiple random seeds into one
+    slightly-oracle-ish scalar per fold. Repeating at this level instead and
+    averaging the returned per-repeat results is how Phase 1's devsplit
+    harness got its honest 5.80% +/- 0.36% -- same approach, generalized to
+    every fold here.
+    """
+    dim = len(datasets)
+    lodo_runs = int(config["EXP"].get("lodo_runs", "1"))
+    results = np.full((dim, lodo_runs), np.nan)
+    last_epochs = np.full((dim, lodo_runs), np.nan)
+    for i in range(dim):
+        test = datasets[i]
+        train_pool = [d for d in datasets if d != test]
+        for r in range(lodo_runs):
+            fold_config = configparser.ConfigParser()
+            fold_config.read(config_file)
+            all_dbs = train_pool + [test] + ([lodo_dev] if lodo_dev else [])
+            fold_config["DATA"]["databases"] = repr(all_dbs)
+            for train_db in train_pool:
+                fold_config["DATA"][f"{train_db}.split_strategy"] = "train"
+            fold_config["DATA"][f"{test}.split_strategy"] = "test"
+            if lodo_dev:
+                fold_config["DATA"][f"{lodo_dev}.split_strategy"] = "dev"
+                fold_config["EXP"]["traindevtest"] = "True"
+            fold_config["EXP"]["runs"] = "1"
+            fold_name = f"lodo_{test}" if lodo_runs == 1 else f"lodo_{test}_run{r}"
+            fold_config["EXP"]["name"] = fold_name
+            print(
+                f"running LODO fold {i + 1}/{dim} (run {r + 1}/{lodo_runs}): "
+                f"test={test}, train={train_pool}"
+                + (f", dev={lodo_dev}" if lodo_dev else "")
+            )
+
+            tmp_config = "tmp.ini"
+            with open(tmp_config, "w") as tmp_file:
+                fold_config.write(tmp_file)
+            fold_store = os.path.join(
+                os.path.join(fold_config["EXP"]["root"], ""), fold_name, "store"
+            )
+            if reuse_features:
+                _copy_cached_features(feat_cache_dir, fold_store)
+            try:
+                if fold_config.has_section("AUGMENT"):
+                    result, last_epoch = aug_train(tmp_config)
+                else:
+                    result, last_epoch = nkulu(tmp_config)
+            except NkululukoError as e:
+                print(
+                    f"ERROR: skipping LODO fold test={test} run={r} ({e}); "
+                    "leaving it blank"
+                )
+                continue
+            if reuse_features:
+                _copy_cached_features(fold_store, feat_cache_dir)
+            results[i, r] = float(result)
+            last_epochs[i, r] = int(last_epoch)
+
+    print(repr(results))
+    if not _all_zero(last_epochs):
+        print(repr(last_epochs))
+    if _all_failed(results):
+        print(
+            "ERROR: every LODO fold failed -- see the per-fold errors above. "
+            "No results file will be written."
+        )
+        sys.exit(1)
+    if _all_zero(results):
+        print(
+            "ERROR: all LODO results are exactly 0.0 -- this usually means "
+            "every train/test split ended up empty (check DATA config), or a "
+            "held-out fold's test set had no labels. No results file will be "
+            "written."
+        )
+        sys.exit(1)
+    _write_lodo_results(results, last_epochs, datasets, lodo_dev, config)
+
+
+def _write_lodo_results(results, last_epochs, datasets, lodo_dev, config):
+    """Write results_lodo.txt (per-fold mean +/- std across EXP.lodo_runs
+    repeats, plus the overall LODO mean +/- std across fold means) and a bar
+    plot with error bars -- LODO produces one result per fold, not a matrix,
+    so it needs its own output shape rather than plot_heatmap()'s square
+    format.
+    """
+    metric = _metric_label(config)
+    root = os.path.join(config["EXP"]["root"], "")
+    os.makedirs(root, exist_ok=True)
+
+    with warnings.catch_warnings(), np.errstate(invalid="ignore"):
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        fold_means = np.nanmean(results, axis=1)
+        fold_stds = np.nanstd(results, axis=1)
+        overall_mean = trunc_to_three(np.nanmean(fold_means))
+        overall_std = trunc_to_three(np.nanstd(fold_means))
+
+    lodo_runs = results.shape[1]
+    file_name = f"{root}results_lodo.txt"
+    with open(file_name, "w") as text_file:
+        text_file.write(
+            f"LODO mean {metric} across {len(datasets)} folds: "
+            f"{overall_mean} (std: {overall_std}, {lodo_runs} run(s)/fold)\n"
+        )
+        text_file.write(f"folds (test domain): {', '.join(datasets)}\n")
+        if lodo_dev:
+            text_file.write(f"fixed dev domain: {lodo_dev}\n")
+        text_file.write("\n")
+        for idx, test_db in enumerate(datasets):
+            runs_s = ", ".join(
+                "nan" if np.isnan(v) else f"{v:.4f}" for v in results[idx]
+            )
+            fm = fold_means[idx]
+            fs = fold_stds[idx]
+            fm_s = "nan" if np.isnan(fm) else f"{fm:.4f}"
+            fs_s = "nan" if np.isnan(fs) else f"{fs:.4f}"
+            text_file.write(
+                f"held out {test_db}: mean {fm_s} std {fs_s}  (runs: {runs_s})\n"
+            )
+
+    try:
+        fmt = config["PLOT"]["format"]
+        plot_name = f"{root}lodo.{fmt}"
+    except KeyError:
+        plot_name = f"{root}lodo.png"
+    plt.figure(figsize=(8, 5))
+    x = np.arange(len(datasets))
+    plt.bar(
+        x,
+        np.nan_to_num(fold_means),
+        yerr=np.nan_to_num(fold_stds),
+        capsize=4,
+        color="#4C72B0",
+    )
+    plt.xticks(x, datasets, rotation=30, ha="right")
+    plt.ylabel(metric)
+    plt.axhline(
+        overall_mean,
+        color="red",
+        linestyle="--",
+        linewidth=1,
+        label=f"LODO mean {overall_mean}",
+    )
+    plt.legend()
+    plt.title(f"LODO {metric} per held-out fold (mean {overall_mean} ± {overall_std})")
+    plt.tight_layout()
+    plt.savefig(plot_name)
+    plt.close()
 
 
 def trunc_to_three(x):
