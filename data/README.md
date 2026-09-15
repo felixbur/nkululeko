@@ -32,6 +32,7 @@ To support open science and reproducible research, we encourage you to submit PR
 |[cmu-mosei](cmu-mosei/)|sentiment,emotion|CMU-MOSEI, Multimodal Sentiment Analysis Dataset. English|public|unknown|
 |[crema-d](crema-d/)|emotion|Crowd-sourced Emotional Multimodal Actors Dataset (CREMA-D). English,adopted from tfds|public|Custom academic/research use|
 |[crema-d-csv](crema-d-csv/)|emotion|Crowd-sourced Emotional Multimodal Actors Dataset (CSV version)|public|Custom academic/research use|
+|[cvoicefake-small](cvoicefake_small/)|deepfake|multilingual (de, en, fr, it, zh-CN) audio deepfake dataset with genuine Common Voice clips (Bonafide) and spoofed counterparts from five vocoder/synthesis systems (Griffin-Lim, VCTK Multi-Band MelGAN, VCTK Parallel WaveGAN, VCTK Style MelGAN, WORLD)|public|unknown|
 |[dementiabank](dementiabank/)|dementia|Audio for dementia detection, English|restricted|Custom academic/research use|
 |[dementianet](dementianet/)|audio for dementia screening|hundred of public figure audio samples with a confirmed dementia diagnosis|public|MIT|
 |[demos](demos/)|emotion|DEMoS (Database of Elicited Mood in Speech). Italian|restricted|Custom academic/research use|
@@ -85,6 +86,7 @@ To support open science and reproducible research, we encourage you to submit PR
 |[ravdess](ravdess/)|emotion,speaker|English|public|CC BY 4.0|
 |[savee](savee/)|emotion|English, from tfds|restricted|Custom academic/research use|
 |[shemo](shemo/)|emotion|Persian|public|Custom academic/research use|
+|[sonar](sonar/)|deepfake|audio deepfake benchmark with genuine LibriTTS speech plus synthetic speech from eight TTS/voice-generation systems (AudioGen, FlashSpeech, NaturalSpeech3, OpenAI TTS, PromptTTS2, VALL-E, VoiceBox, xTTS)|public|unknown|
 |[stressdat](stressdat/)|stress|Slovak, induced stress|public|custom|
 |[subesco](subesco/)|emotion|Bangla|public|Custom academic/research use|
 |[susas](susas/)|stress|English|public|LDC|
@@ -100,7 +102,7 @@ To support open science and reproducible research, we encourage you to submit PR
 |[vivae](vivae/)|emotion|Variably Intense Vocalizations of Affect and Emotion Corpus (VIVAE). English vocal bursts|public|unknown|
 
 
-This recipe contains information about 80 datasets.
+This recipe contains information about 82 datasets.
 ## Performance
 
 ![Nkululeko performance](../meta/images/nkululeko_ser_20240719.png)
