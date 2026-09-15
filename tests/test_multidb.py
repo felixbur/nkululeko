@@ -20,6 +20,7 @@ from nkululeko.multidb import (
     _copy_cached_features,
     _metric_label,
     _no_reuse,
+    _reuse_train,
     main,
     plot_heatmap,
 )
@@ -554,3 +555,204 @@ class TestMainSharesFeatureCacheAcrossPairs:
         # cache file waiting for it (nothing was copied in).
         assert not any(already_there for _, _, already_there in extraction_log)
         assert not os.path.isdir("_feat_cache")
+
+
+class TestReuseTrainHelper:
+    def test_false_when_not_configured(self):
+        config = configparser.ConfigParser()
+        config.add_section("EXP")
+        assert not _reuse_train(config)
+
+    def test_false_when_no_exp_section(self):
+        assert not _reuse_train(configparser.ConfigParser())
+
+    def test_true_for_true(self):
+        config = configparser.ConfigParser()
+        config.add_section("EXP")
+        config["EXP"]["reuse_train"] = "True"
+        assert _reuse_train(config)
+
+    def test_true_for_lowercase_true(self):
+        """Regression: eval("true") raises NameError, so a lowercase
+        ini value used to crash multidb entirely instead of just being
+        falsy or truthy."""
+        config = configparser.ConfigParser()
+        config.add_section("EXP")
+        config["EXP"]["reuse_train"] = "true"
+        assert _reuse_train(config)
+
+    def test_false_for_false(self):
+        config = configparser.ConfigParser()
+        config.add_section("EXP")
+        config["EXP"]["reuse_train"] = "False"
+        assert not _reuse_train(config)
+
+
+class TestMainReuseTrain:
+    """EXP.reuse_train (opt-in): train each row once and reuse that saved
+    model for every other column in the row, instead of retraining per
+    (train, test) cell -- see main()'s reuse_train branch."""
+
+    def _run(self, tmp_path, monkeypatch, ini_extra="", fake_nkulu=None, calls=None):
+        monkeypatch.chdir(tmp_path)
+        config_path = tmp_path / "exp.ini"
+        config_path.write_text(
+            "[EXP]\nroot = .\ndatabases = ['a', 'b']\nreuse_train = True\n"
+            f"{ini_extra}"
+            "[DATA]\ntarget = emotion\n[MODEL]\ntype = xgb\n"
+        )
+        if calls is None:
+            calls = []
+        if fake_nkulu is None:
+
+            def fake_nkulu(tmp_config):
+                config = configparser.ConfigParser()
+                config.read(tmp_config)
+                call = dict(config["EXP"]) | dict(config["DATA"])
+                if config.has_section("MODEL"):
+                    call |= {f"model.{k}": v for k, v in config["MODEL"].items()}
+                calls.append(call)
+                is_diagonal = "tests" not in config["DATA"]
+                return (0.1, 1) if is_diagonal else (0.5, 1)
+
+        monkeypatch.setattr("nkululeko.multidb.nkulu", fake_nkulu)
+        monkeypatch.setattr("sys.argv", ["multidb", "--config", str(config_path)])
+        with (
+            patch("nkululeko.multidb.plt.figure"),
+            patch("nkululeko.multidb.sn.heatmap", return_value=MagicMock()),
+            patch("nkululeko.multidb.plt.savefig"),
+            patch("nkululeko.multidb.plt.close"),
+        ):
+            main()
+        return calls
+
+    def test_diagonal_runs_before_its_row_off_diagonal_cells(
+        self, tmp_path, monkeypatch
+    ):
+        calls = self._run(tmp_path, monkeypatch)
+        names = [c["name"] for c in calls]
+        # Row 'a': diagonal 'a' must precede the 'a'-trained off-diagonal
+        # cell (also named 'a' -- same EXP.name so the saved model resolves).
+        a_indices = [k for k, n in enumerate(names) if n == "a"]
+        assert len(a_indices) == 2
+        assert "tests" not in calls[a_indices[0]]
+        assert calls[a_indices[0]]["databases"] == "['a']"
+
+    def test_off_diagonal_cell_uses_data_tests_not_pooled_databases(
+        self, tmp_path, monkeypatch
+    ):
+        calls = self._run(tmp_path, monkeypatch)
+        off_diagonal = [c for c in calls if "tests" in c]
+        assert len(off_diagonal) == 2  # a-vs-b and b-vs-a
+        for c in off_diagonal:
+            # databases holds only the training db, never both -- that's
+            # what makes get_save_name() resolve to the diagonal's model.
+            assert c["databases"] in ("['a']", "['b']")
+            assert c["tests"] in ("['a']", "['b']")
+            assert c["databases"] != c["tests"]
+
+    def test_off_diagonal_test_db_gets_full_split_strategy(self, tmp_path, monkeypatch):
+        """Without this, the test database defaults to speaker_split
+        (~20% of it), not the whole database."""
+        calls = self._run(tmp_path, monkeypatch)
+        off_diagonal = [c for c in calls if "tests" in c]
+        for c in off_diagonal:
+            test_db = ast.literal_eval(c["tests"])[0]
+            assert c[f"{test_db}.split_strategy"] == "test"
+
+    def test_diagonal_cell_forces_exp_and_model_save(self, tmp_path, monkeypatch):
+        """EXP.save alone isn't enough: MODEL.save (also on by default,
+        but a base config could turn it off) gates whether the per-epoch
+        model weights get written at all -- reuse needs both forced."""
+        calls = self._run(tmp_path, monkeypatch)
+        diagonal = [c for c in calls if "tests" not in c]
+        assert len(diagonal) == 2  # 'a' and 'b', each trained once
+        for c in diagonal:
+            assert c["save"] == "True"
+            assert c["model.save"] == "True"
+
+    def test_failed_diagonal_skips_its_off_diagonal_cells(self, tmp_path, monkeypatch):
+        calls = []
+
+        def fake_nkulu(tmp_config):
+            config = configparser.ConfigParser()
+            config.read(tmp_config)
+            calls.append(dict(config["EXP"]) | dict(config["DATA"]))
+            if config["EXP"]["name"] == "a" and "tests" not in config["DATA"]:
+                raise NkululukoError("fake: diagonal training failed")
+            return 0.5, 1
+
+        self._run(tmp_path, monkeypatch, fake_nkulu=fake_nkulu, calls=calls)
+
+        # nkulu is never called for an off-diagonal cell whose row's
+        # diagonal failed -- it must not silently fall through and train
+        # on 'a' again while reporting it as some other pair.
+        assert not any(
+            c["databases"] == "['a']" and "tests" in c for c in calls
+        )
+        content = (tmp_path / "results.txt").read_text()
+        assert "nan" in content.lower()
+
+    def test_reuse_train_rejects_train_extra(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        config_path = tmp_path / "exp.ini"
+        config_path.write_text(
+            "[EXP]\nroot = .\ndatabases = ['a', 'b']\nreuse_train = True\n"
+            "[DATA]\ntarget = emotion\n[MODEL]\ntype = xgb\n"
+            "[CROSSDB]\ntrain_extra = ['c']\n"
+        )
+        monkeypatch.setattr("sys.argv", ["multidb", "--config", str(config_path)])
+
+        with pytest.raises(SystemExit):
+            main()
+
+    def test_reuse_train_rejects_augment(self, tmp_path, monkeypatch):
+        """aug_train.doit() has no DATA.tests fast path -- combined with
+        reuse_train, an off-diagonal cell would silently retrain from
+        scratch instead of reusing the diagonal's saved model."""
+        monkeypatch.chdir(tmp_path)
+        config_path = tmp_path / "exp.ini"
+        config_path.write_text(
+            "[EXP]\nroot = .\ndatabases = ['a', 'b']\nreuse_train = True\n"
+            "[DATA]\ntarget = emotion\n[MODEL]\ntype = xgb\n"
+            "[AUGMENT]\naugment = ['noise']\n"
+        )
+        monkeypatch.setattr("sys.argv", ["multidb", "--config", str(config_path)])
+
+        with pytest.raises(SystemExit):
+            main()
+
+    def test_default_behavior_unchanged_when_reuse_train_unset(
+        self, tmp_path, monkeypatch
+    ):
+        """The non-reuse path (existing default) must still retrain for
+        every cell, including same-training-data cells within a row."""
+        monkeypatch.chdir(tmp_path)
+        config_path = tmp_path / "exp.ini"
+        config_path.write_text(
+            "[EXP]\nroot = .\ndatabases = ['a', 'b']\n"
+            "[DATA]\ntarget = emotion\n[MODEL]\ntype = xgb\n"
+        )
+        calls = []
+
+        def fake_nkulu(tmp_config):
+            config = configparser.ConfigParser()
+            config.read(tmp_config)
+            calls.append(dict(config["DATA"]))
+            return 0.5, 1
+
+        monkeypatch.setattr("nkululeko.multidb.nkulu", fake_nkulu)
+        monkeypatch.setattr("sys.argv", ["multidb", "--config", str(config_path)])
+        with (
+            patch("nkululeko.multidb.plt.figure"),
+            patch("nkululeko.multidb.sn.heatmap", return_value=MagicMock()),
+            patch("nkululeko.multidb.plt.savefig"),
+            patch("nkululeko.multidb.plt.close"),
+        ):
+            main()
+
+        # 2x2 matrix, every cell retrained: no DATA.tests anywhere, and
+        # both off-diagonal cells pool both databases (the pre-existing
+        # behavior reuse_train is opt-in to replace).
+        assert len(calls) == 4
+        assert all("tests" not in c for c in calls)
