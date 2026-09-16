@@ -495,3 +495,108 @@ class TestPlotPerSpeakerCombinedResult:
         model_desc = r.util.get_model_description()
         text_path = os.path.join(res_dir, f"speaker_combined_mode_{model_desc}.txt")
         assert os.path.isfile(text_path)
+
+
+class TestPlotPerSpeakerEerAggregation:
+    """Reviewer follow-up to issue #431: when the metric is EER,
+    _get_test_result() must score against probabilities aggregated per
+    group the same way as the predictions, not the raw per-sample
+    self.probas (which would mismatch truths_grouped in length, or --
+    if the lengths happened to coincide -- silently produce a
+    non-group-level score)."""
+
+    def test_eer_scores_are_aggregated_per_group(self, monkeypatch):
+        glob_conf.config["MODEL"]["measure"] = "eer"
+
+        truths = np.array([0, 0, 1, 1])
+        preds = truths.copy()
+        # positive class (index 1, no label_encoder -> defaults to 1)
+        # probabilities: group A (rows 0,1) -> 0.2, 0.4; group B (rows 2,3) -> 0.6, 0.8
+        probas = pd.DataFrame({0: 1 - np.array([0.2, 0.4, 0.6, 0.8]), 1: [0.2, 0.4, 0.6, 0.8]})
+
+        r = Reporter(truths, preds, run=0, epoch=0, probas=probas)
+        assert r.metric == "eer"
+
+        result_df = pd.DataFrame(
+            {
+                "truths": truths,
+                "preds": preds,
+                "speakers": ["A", "A", "B", "B"],
+            }
+        )
+
+        reporter_mod = sys.modules[Reporter.__module__]
+        captured = {}
+        orig = reporter_mod.evaluate_with_conf_int
+
+        def spy(y_score, metric_fn, y_true, **kwargs):
+            if getattr(metric_fn, "__name__", "") == "_eer_metric":
+                captured["y_score"] = np.asarray(y_score).copy()
+                captured["y_true"] = np.asarray(y_true).copy()
+            return orig(y_score, metric_fn, y_true, **kwargs)
+
+        monkeypatch.setattr(reporter_mod, "evaluate_with_conf_int", spy)
+
+        with (
+            patch("nkululeko.reporting.reporter.plt.figure"),
+            patch("nkululeko.reporting.reporter.plt.savefig"),
+            patch("nkululeko.reporting.reporter.plt.close"),
+            patch("nkululeko.reporting.reporter.audplot.confusion_matrix"),
+        ):
+            r.plot_per_speaker(result_df, "combined_plot", "mean")
+
+        assert "y_score" in captured
+        # aggregated (mean) per group, aligned 1:1 with truths_grouped --
+        # not the original 4 per-sample probabilities.
+        assert len(captured["y_score"]) == len(captured["y_true"]) == 2
+        np.testing.assert_allclose(sorted(captured["y_score"]), [0.3, 0.7])
+
+
+class TestPlotPerSpeakerMeanBinningConsistency:
+    """Reviewer follow-up to issue #431: for classification + function="mean",
+    the textual combined score must be computed from the same binned
+    truths/preds arrays that get passed to _plot_confmat, not a separately
+    np.round()-ed array -- np.round() and _bin_distributions' quantile/explicit
+    bins can disagree (e.g. with >3 classes, since _bin_distributions always
+    bins into 3 categories), silently making the reported score describe a
+    different result than what the confusion-matrix plot shows."""
+
+    def test_classification_mean_scores_the_same_arrays_as_the_plot(self):
+        from nkululeko.reporting.report import Report
+
+        # 4-class classification: _bin_distributions always collapses to 3
+        # quantile-based bins, which disagrees with plain np.round() here
+        # (group truth 3 -> binned truth 2; group pred 2.9 -> binned pred 2,
+        # while np.round(2.9) -> 3), so the old np.round()-based score
+        # (perfect UAR) would not match what the plot actually shows.
+        result_df = pd.DataFrame(
+            {
+                "truths": [0, 1, 2, 3],
+                "preds": [0.1, 1.2, 1.9, 2.9],
+                "speakers": ["A", "B", "C", "D"],
+            }
+        )
+        r = Reporter(result_df["truths"].values, result_df["preds"].values, run=0, epoch=0)
+        r.context.report = Report()
+
+        captured = {}
+
+        def spy(self, truths, preds, plot_name, epoch=None, test_result=None):
+            captured["truths"] = np.asarray(truths).copy()
+            captured["preds"] = np.asarray(preds).copy()
+            captured["test_result"] = test_result
+
+        with (
+            patch("nkululeko.reporting.reporter.plt.figure"),
+            patch("nkululeko.reporting.reporter.plt.savefig"),
+            patch("nkululeko.reporting.reporter.plt.close"),
+            patch("nkululeko.reporting.reporter.audplot.confusion_matrix"),
+            patch.object(Reporter, "_plot_confmat", spy),
+        ):
+            r.plot_per_speaker(result_df, "combined_plot", "mean")
+
+        assert "test_result" in captured
+        expected_val, _, _ = r._get_test_result(
+            captured["truths"], captured["preds"], r.metric
+        )
+        assert captured["test_result"].test == pytest.approx(expected_val)

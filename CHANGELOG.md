@@ -8,6 +8,14 @@ Version 1.10.6 (26-09-16)
 * fix bug: combine_per_speaker's classification path reported the un-combined
   per-sample result mislabeled as the combined-group result; also now writes a
   textual result entry (not just a plot) for the combined score
+* fix bug: combine_per_speaker's EER metric scored the combined-group result
+  against the original per-sample probabilities instead of aggregating them
+  per group, which could mismatch lengths with the combined truths/predictions
+  or silently yield a non-group-level score
+* fix bug: combine_per_speaker's classification+mean textual result scored a
+  separate np.round() of the combined predictions, which could disagree with
+  the binning (_bin_distributions) used for the confusion-matrix plot,
+  making the reported score describe a different result than the plot
 
 Version 1.10.5 (26-09-16)
 -------------------------

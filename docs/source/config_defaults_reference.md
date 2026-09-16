@@ -28,7 +28,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 * `'MODEL'.'drop'`: `False` (nkululeko/models/model_cnn.py:57), `False` (nkululeko/models/model_cnn.py:235), `False` (nkululeko/models/model_cnn.py:252), `'False'` (nkululeko/models/model_mlp.py:53), `'False'` (nkululeko/models/model_mlp.py:274), `'False'` (nkululeko/models/model_mlp.py:307), `False` (nkululeko/models/model_mlp_regression.py:63), `False` (nkululeko/models/model_mlp_regression.py:263), `False` (nkululeko/models/model_mlp_regression.py:282)
 * `'MODEL'.'learning_rate'`: `0.3` (nkululeko/models/model_xgb.py:32), `str(default_lr)` (nkululeko/optimizers/optimizer_factory.py:32)
 * `'MODEL'.'loss'`: `'cross'` (nkululeko/models/model.py:93), `'bce'` (nkululeko/models/model_adm.py:65), `'mse'` (nkululeko/models/model_mlp_regression.py:35)
-* `'MODEL'.'measure'`: `'mse'` (nkululeko/models/model_mlp_regression.py:240), `'uar'` (nkululeko/reporting/reporter.py:83), `'mse'` (nkululeko/reporting/reporter.py:94), `'mse'` (nkululeko/reporting/reporter.py:777), `'uar'` (nkululeko/reporting/run_plotter.py:79), `'uar'` (nkululeko/runmanager.py:204), `'uar'` (nkululeko/utils/util.py:649), `'mse'` (nkululeko/utils/util.py:656)
+* `'MODEL'.'measure'`: `'mse'` (nkululeko/models/model_mlp_regression.py:240), `'uar'` (nkululeko/reporting/reporter.py:84), `'mse'` (nkululeko/reporting/reporter.py:95), `'mse'` (nkululeko/reporting/reporter.py:843), `'uar'` (nkululeko/reporting/run_plotter.py:79), `'uar'` (nkululeko/runmanager.py:204), `'uar'` (nkululeko/utils/util.py:649), `'mse'` (nkululeko/utils/util.py:656)
 * `'MODEL'.'scheduler.gamma'`: `'0.5'` (nkululeko/optimizers/scheduler_factory.py:46), `'0.95'` (nkululeko/optimizers/scheduler_factory.py:54)
 * `'MODEL'.'type'`: `'svm'` (nkululeko/bundle.py:224), `''` (nkululeko/utils/naming.py:156)
 * `'REPORT'.'latex'`: `False` (nkululeko/experiment.py:91), `'nkululeko_latex'` (nkululeko/reporting/latex_writer.py:39)
@@ -208,7 +208,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'MODEL' | 'loss' | `'bce'` / `'cross'` / `'mse'` | nkululeko/models/model.py:93, nkululeko/models/model_adm.py:65, nkululeko/models/model_mlp_regression.py:35 |
 | 'MODEL' | 'max_depth' | `6` | nkululeko/models/model_xgb.py:31 |
 | 'MODEL' | 'max_grad_norm' | `'0.0'` | nkululeko/models/model_adm.py:195 |
-| 'MODEL' | 'measure' | `'mse'` / `'uar'` | nkululeko/models/model_mlp_regression.py:240, nkululeko/reporting/reporter.py:83, nkululeko/reporting/reporter.py:94, +5 more |
+| 'MODEL' | 'measure' | `'mse'` / `'uar'` | nkululeko/models/model_mlp_regression.py:240, nkululeko/reporting/reporter.py:84, nkululeko/reporting/reporter.py:95, +5 more |
 | 'MODEL' | 'momentum' | `'0.9'` | nkululeko/optimizers/optimizer_factory.py:51 |
 | 'MODEL' | 'n_estimators' | `100` | nkululeko/models/model_xgb.py:30 |
 | 'MODEL' | 'n_jobs' | `'8'` | nkululeko/feat_extract/featureset.py:38, nkululeko/models/model.py:39 |
@@ -236,12 +236,12 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'PLOT' | 'epochs' | `False` | nkululeko/modelrunner.py:146 |
 | 'PLOT' | 'fill_areas' | `'False'` | nkululeko/plots.py:426 |
 | 'PLOT' | 'format' | `'png'` | nkululeko/feat_extract/feats_analyser.py:141, nkululeko/feat_extract/feats_analyser.py:347, nkululeko/plots.py:30, +2 more |
-| 'PLOT' | 'fps' | `'1'` | nkululeko/reporting/reporter.py:809 |
+| 'PLOT' | 'fps' | `'1'` | nkululeko/reporting/reporter.py:875 |
 | 'PLOT' | 'kind' | `'violin'` | nkululeko/plots.py:788 |
-| 'PLOT' | 'name' | `plot_name_suggest` | nkululeko/experiment.py:274, nkululeko/reporting/reporter.py:822, nkululeko/runmanager.py:125, +7 more |
+| 'PLOT' | 'name' | `plot_name_suggest` | nkululeko/experiment.py:274, nkululeko/reporting/reporter.py:888, nkululeko/runmanager.py:125, +7 more |
 | 'PLOT' | 'runs_compare' | `False` | nkululeko/experiment.py:733 |
 | 'PLOT' | 'titles' | `'True'` | nkululeko/plots.py:34, nkululeko/reporting/run_plotter.py:21 |
-| 'PLOT' | 'uncertainty_threshold' | `False` | nkululeko/reporting/reporter.py:314 |
+| 'PLOT' | 'uncertainty_threshold' | `False` | nkululeko/reporting/reporter.py:329 |
 | 'PREDICT' | 'sample_selection' | `'all'` | nkululeko/experiment.py:378 |
 | 'PREDICT' | 'target_language' | `'en'` | nkululeko/autopredict/ap_translate.py:25 |
 | 'PREDICT' | 'targets' | `None` | nkululeko/experiment.py:390 |

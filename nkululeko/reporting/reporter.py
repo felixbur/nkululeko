@@ -9,6 +9,7 @@ import audplot
 from confidence_intervals import evaluate_with_conf_int
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from scipy.special import softmax
 from scipy.stats import entropy
 from scipy.stats import pearsonr
@@ -160,7 +161,19 @@ class Reporter(ContextAware):
                 self.result.set_upper_lower(upper, lower)
                 # train and loss are being set by the model
 
-    def _get_test_result(self, truths, preds, metric):
+    def _get_test_result(self, truths, preds, metric, scores=None):
+        """Compute `metric` for (truths, preds).
+
+        Args:
+            truths, preds: ground truth / predicted labels.
+            metric: "uar", "eer", "mse", "mae", "ccc", or "pcc".
+            scores: optional explicit probability/score array for "eer",
+                overriding the default of reading `self.probas` (issue
+                #431 follow-up: after combining predictions per group,
+                `self.probas` is still per-sample, so EER needs the
+                caller to supply group-level scores aggregated the same
+                way as truths/preds, aligned with them).
+        """
         if metric == "uar":
             test_result, (upper, lower) = evaluate_with_conf_int(
                 preds,
@@ -178,7 +191,9 @@ class Reporter(ContextAware):
             # value, in the same (alphabetical) order as
             # label_encoder.classes_.
             pos_index = self._eer_positive_class_index()
-            if self.probas is not None and len(self.probas.columns) >= 2:
+            if scores is not None:
+                y_score = scores
+            elif self.probas is not None and len(self.probas.columns) >= 2:
                 y_score = self.probas.iloc[:, pos_index].values
             else:
                 # If no probabilities available, use predictions as scores
@@ -405,11 +420,33 @@ class Reporter(ContextAware):
             truths, preds = result_df["truths"].values, result_df["preds"].values
             truths, preds = self.util._bin_distributions(truths, preds)
             result_df["truths"], result_df["preds"] = truths, preds
+
+        # For EER, _get_test_result() reads probability scores from
+        # self.probas rather than the preds passed in -- but those are
+        # still per-SAMPLE after grouping, so they'd be mismatched in
+        # length against truths_grouped (or, if the lengths happened to
+        # coincide, not a group-level score at all). Aggregate the
+        # positive class's per-sample scores the same way (grouping,
+        # function) as the predictions themselves, so EER gets aligned
+        # group-level scores (issue #431 follow-up).
+        aggregate_scores = (
+            self.metric == "eer"
+            and self.probas is not None
+            and len(self.probas.columns) >= 2
+        )
+        if aggregate_scores:
+            pos_index = self._eer_positive_class_index()
+            scores_by_row = pd.Series(
+                self.probas.iloc[:, pos_index].values, index=result_df.index
+            )
+
         groups = result_df.speakers.unique()
         preds_grouped = np.zeros(0)
         truths_grouped = np.zeros(0)
+        scores_grouped = np.zeros(0) if aggregate_scores else None
         for g in groups:
-            g_df = result_df[result_df.speakers == g]
+            mask = result_df.speakers == g
+            g_df = result_df[mask]
             g_truth = g_df.truths.iloc[0]
             g_pred = None
             if function == "mode":
@@ -420,20 +457,53 @@ class Reporter(ContextAware):
                 self.util.error(f"unknown function {function}")
             preds_grouped = np.append(preds_grouped, g_pred)
             truths_grouped = np.append(truths_grouped, g_truth)
+            if aggregate_scores:
+                g_scores = scores_by_row[mask]
+                if function == "mode":
+                    g_score_mode = g_scores.mode()
+                    g_score = (
+                        g_score_mode.iloc[-1]
+                        if not g_score_mode.empty
+                        else g_scores.mean()
+                    )
+                else:  # mean
+                    g_score = g_scores.mean()
+                scores_grouped = np.append(scores_grouped, g_score)
+
+        # "mean" combination can produce a non-integer value; bin it into the
+        # same categories the confusion-matrix plot below uses, once, so both
+        # the plot and (for classification) the textual score are computed
+        # from identical arrays -- previously classification scored a
+        # separately np.round()-ed metric_preds while the plot independently
+        # re-binned preds_grouped via _bin_distributions, and those two
+        # transforms can disagree (e.g. for explicit or quantile bins),
+        # making the reported score and the plotted matrix describe
+        # different things (reviewer follow-up to issue #431).
+        if function == "mean":
+            binned_truths, binned_preds = self.util._bin_distributions(
+                truths_grouped, preds_grouped
+            )
+        else:
+            binned_truths, binned_preds = truths_grouped, preds_grouped
 
         # The actual combined-level result: previously only ever computed
         # for regression (used solely for the scatter plot's title) --
         # classification recomputed the un-combined, per-sample result
         # instead and mislabeled it as the combination result (issue #431).
-        # Round to valid class ids first for classification, since "mean"
-        # combination can produce a non-integer value.
-        metric_preds = (
-            np.round(preds_grouped).astype(int)
-            if self.is_classification
-            else preds_grouped
-        )
+        if self.is_classification:
+            metric_truths = binned_truths if function == "mean" else truths_grouped
+            metric_preds = (
+                binned_preds.astype(int)
+                if function == "mean"
+                else np.round(preds_grouped).astype(int)
+            )
+        else:
+            # regression's own metric (e.g. ccc/mse) needs the continuous,
+            # un-binned values -- binning is only for the confusion-matrix
+            # view below.
+            metric_truths, metric_preds = truths_grouped, preds_grouped
         combined_val, upper, lower = self._get_test_result(
-            truths_grouped, metric_preds, self.metric
+            metric_truths, metric_preds, self.metric, scores=scores_grouped
         )
         combined_result = Result(combined_val, None, None, None, self.METRIC)
         combined_result.set_upper_lower(upper, lower)
@@ -451,13 +521,9 @@ class Reporter(ContextAware):
                 f"{plot_name}_scatter",
                 result=combined_result,
             )
-        if function == "mean":
-            truths_grouped, preds_grouped = self.util._bin_distributions(
-                truths_grouped, preds_grouped
-            )
         self._plot_confmat(
-            truths_grouped,
-            preds_grouped.astype("int"),
+            binned_truths,
+            binned_preds.astype("int"),
             plot_name,
             test_result=combined_result,
         )
