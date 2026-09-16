@@ -1,9 +1,12 @@
 """Unit tests for Reporter class (nkululeko/reporting/reporter.py)."""
 
 import configparser
+import os
 import sys
+from unittest.mock import patch
 
 import numpy as np
+import pandas as pd
 import pytest
 
 import nkululeko.glob_conf as glob_conf
@@ -417,3 +420,78 @@ class TestReporterClassificationReportMismatch:
         with open(res_dir + "mismatch_test.txt") as f:
             content = f.read()
         assert "UAR" in content
+
+
+class TestPlotPerSpeakerCombinedResult:
+    """issue #431: the combined-per-group result must reflect the actual
+    grouped predictions, not silently recompute the un-combined per-sample
+    result (previously mislabeled as the combination result for
+    classification tasks) -- and must be written to a text file, not just
+    debug-logged."""
+
+    def _run(self, result_df, group_col_name="speaker", function="mode"):
+        from nkululeko.reporting.report import Report
+
+        r = Reporter(result_df["truths"].values, result_df["preds"].values, run=0, epoch=0)
+        r.context.report = Report()
+        with (
+            patch("nkululeko.reporting.reporter.plt.figure"),
+            patch("nkululeko.reporting.reporter.plt.savefig"),
+            patch("nkululeko.reporting.reporter.plt.close"),
+            patch("nkululeko.reporting.reporter.audplot.confusion_matrix"),
+        ):
+            r.plot_per_speaker(result_df, "combined_plot", function, group_col_name=group_col_name)
+        return r
+
+    def test_combined_result_reflects_grouped_predictions_not_per_sample(self):
+        """Per-sample accuracy is 50%, but mode-combining 2 samples per
+        speaker gives a perfect result (mode(0,0)=0, mode(1,1)=1) --
+        previously the classification path recomputed the un-combined
+        50% per-sample result and mislabeled it as the combination result."""
+        result_df = pd.DataFrame(
+            {
+                "truths": [0, 0, 1, 1],
+                "preds": [0, 1, 0, 1],
+                "speakers": ["A", "A", "B", "B"],
+            }
+        )
+        r = self._run(result_df)
+
+        res_dir = r.util.get_path("res_dir")
+        model_desc = r.util.get_model_description()
+        text_path = os.path.join(res_dir, f"speaker_combined_mode_{model_desc}.txt")
+        assert os.path.isfile(text_path)
+        content = open(text_path).read()
+        assert "speaker-combined (mode) result" in content
+        assert "1.000" in content  # perfect combined UAR, not the 50% per-sample one
+
+    def test_uses_custom_group_col_name_in_message_and_filename(self):
+        result_df = pd.DataFrame(
+            {
+                "truths": [0, 0, 1, 1],
+                "preds": [0, 0, 1, 1],
+                "speakers": ["s1", "s1", "s2", "s2"],
+            }
+        )
+        r = self._run(result_df, group_col_name="session")
+
+        res_dir = r.util.get_path("res_dir")
+        model_desc = r.util.get_model_description()
+        text_path = os.path.join(res_dir, f"session_combined_mode_{model_desc}.txt")
+        assert os.path.isfile(text_path)
+        assert "session-combined (mode) result" in open(text_path).read()
+
+    def test_defaults_group_col_name_to_speaker(self):
+        result_df = pd.DataFrame(
+            {
+                "truths": [0, 1],
+                "preds": [0, 1],
+                "speakers": ["A", "B"],
+            }
+        )
+        r = self._run(result_df)
+
+        res_dir = r.util.get_path("res_dir")
+        model_desc = r.util.get_model_description()
+        text_path = os.path.join(res_dir, f"speaker_combined_mode_{model_desc}.txt")
+        assert os.path.isfile(text_path)

@@ -384,62 +384,82 @@ class Reporter(ContextAware):
             self.continuous_to_categorical()
         self._plot_confmat(self.truths, self.preds, plot_name, epoch)
 
-    def plot_per_speaker(self, result_df, plot_name, function):
-        """Plot a confusion matrix with the mode category per speakers.
+    def plot_per_speaker(self, result_df, plot_name, function, group_col_name="speaker"):
+        """Plot a confusion matrix with the mode/mean category combined per
+        group (e.g. per speaker), and write a textual result entry for the
+        combined-level score alongside the plot.
 
         If the function is mode and the values continuous, bin first
 
         Args:
-            result_df: a pandas dataframe with columns: preds, truths and speaker.
+            result_df: a pandas dataframe with columns: preds, truths and
+                speakers (the grouping column -- whatever it actually
+                represents, e.g. speaker or session).
             plot_name: name for the figure.
             function: either mode or mean.
+            group_col_name: display name for the grouping column (e.g.
+                "speaker", "session"), used only in messages/file names
+                (issue #431).
         """
         if function == "mode" and not self.is_classification:
             truths, preds = result_df["truths"].values, result_df["preds"].values
             truths, preds = self.util._bin_distributions(truths, preds)
             result_df["truths"], result_df["preds"] = truths, preds
-        speakers = result_df.speakers.unique()
-        preds_speakers = np.zeros(0)
-        truths_speakers = np.zeros(0)
-        for s in speakers:
-            s_df = result_df[result_df.speakers == s]
-            s_truth = s_df.truths.iloc[0]
-            s_pred = None
+        groups = result_df.speakers.unique()
+        preds_grouped = np.zeros(0)
+        truths_grouped = np.zeros(0)
+        for g in groups:
+            g_df = result_df[result_df.speakers == g]
+            g_truth = g_df.truths.iloc[0]
+            g_pred = None
             if function == "mode":
-                s_pred = s_df.preds.mode().iloc[-1]
+                g_pred = g_df.preds.mode().iloc[-1]
             elif function == "mean":
-                s_pred = s_df.preds.mean()
+                g_pred = g_df.preds.mean()
             else:
                 self.util.error(f"unknown function {function}")
-            preds_speakers = np.append(preds_speakers, s_pred)
-            truths_speakers = np.append(truths_speakers, s_truth)
-        test_result, upper, lower = self._get_test_result(
-            result_df.truths.values, result_df.preds.values, self.metric
+            preds_grouped = np.append(preds_grouped, g_pred)
+            truths_grouped = np.append(truths_grouped, g_truth)
+
+        # The actual combined-level result: previously only ever computed
+        # for regression (used solely for the scatter plot's title) --
+        # classification recomputed the un-combined, per-sample result
+        # instead and mislabeled it as the combination result (issue #431).
+        # Round to valid class ids first for classification, since "mean"
+        # combination can produce a non-integer value.
+        metric_preds = (
+            np.round(preds_grouped).astype(int)
+            if self.is_classification
+            else preds_grouped
         )
-        test_result = Result(test_result, None, None, None, self.METRIC)
-        test_result.set_upper_lower(upper, lower)
-        result_msg = f"Speaker combination result: {test_result.test_result_str()}"
+        combined_val, upper, lower = self._get_test_result(
+            truths_grouped, metric_preds, self.metric
+        )
+        combined_result = Result(combined_val, None, None, None, self.METRIC)
+        combined_result.set_upper_lower(upper, lower)
+        result_msg = (
+            f"{group_col_name}-combined ({function}) result: "
+            f"{combined_result.test_result_str()}"
+        )
         self.util.debug(result_msg)
+        self.util.print_results_to_store(
+            f"{group_col_name}_combined_{function}", result_msg + "\n"
+        )
         if not self.is_classification:
-            spk_result_val, spk_upper, spk_lower = self._get_test_result(
-                truths_speakers, preds_speakers, self.metric
-            )
-            spk_result = Result(spk_result_val, None, None, None, self.METRIC)
-            spk_result.set_upper_lower(spk_upper, spk_lower)
             self._plot_scatter(
-                truths_speakers, preds_speakers,
+                truths_grouped, preds_grouped,
                 f"{plot_name}_scatter",
-                result=spk_result,
+                result=combined_result,
             )
         if function == "mean":
-            truths_speakers, preds_speakers = self.util._bin_distributions(
-                truths_speakers, preds_speakers
+            truths_grouped, preds_grouped = self.util._bin_distributions(
+                truths_grouped, preds_grouped
             )
         self._plot_confmat(
-            truths_speakers,
-            preds_speakers.astype("int"),
+            truths_grouped,
+            preds_grouped.astype("int"),
             plot_name,
-            test_result=test_result,
+            test_result=combined_result,
         )
 
     def _plot_scatter(self, truths, preds, plot_name, epoch=None, result=None):

@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version 1.10.6 (26-09-16)
+-------------------------
+* generalize PLOT.combine_per_speaker to any column via PLOT.combine_per_speaker.col
+  (e.g. session instead of speaker), defaulting to speaker for backward compatibility
+* fix bug: combine_per_speaker's classification path reported the un-combined
+  per-sample result mislabeled as the combined-group result; also now writes a
+  textual result entry (not just a plot) for the combined score
+
 Version 1.10.5 (26-09-16)
 -------------------------
 * avoid redundant retraining via opt-in EXP.reuse_train
