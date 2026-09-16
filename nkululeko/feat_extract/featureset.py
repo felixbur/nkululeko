@@ -151,8 +151,9 @@ class Featureset(ContextAware):
         return audeer.path(cache_dir, cache_name + ".csv")
 
     def _read_sample_cache(self, cache_path):
-        """Read a per-sample feature cache CSV written by _sample_cache_path()
-        users, normalizing column labels back to integers (issue #429).
+        """Read a per-sample feature cache CSV at the path returned by
+        _sample_cache_path(), normalizing column labels back to integers
+        (issue #429).
 
         CSV headers are always strings, but a freshly-extracted row's
         DataFrame has an integer RangeIndex for its columns (no explicit
@@ -160,8 +161,19 @@ class Featureset(ContextAware):
         (string column labels "0", "1", ...) with a fresh row (integer
         column labels 0, 1, ...) treats them as different columns entirely,
         silently doubling the column count and filling half of it with NaN.
+
+        Also normalizes the same `audformat.utils.read_csv` edge case
+        `read_cached_df` (nkululeko/utils/dataframe.py) already guards
+        against: a single-data-column CSV (a one-dimensional feature, e.g.
+        AudmodelSet with a scalar embedding) comes back as a bare
+        pd.Series rather than a DataFrame, which has no `.columns` to
+        reset at all.
         """
         df_part = audformat.utils.read_csv(cache_path)
+        if isinstance(df_part, pd.Series):
+            df_part = df_part.to_frame()
+        elif isinstance(df_part, pd.Index):
+            df_part = pd.DataFrame(index=df_part)
         df_part.columns = range(len(df_part.columns))
         return df_part
 

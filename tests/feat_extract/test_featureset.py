@@ -221,6 +221,24 @@ class TestReadSampleCache:
         assert list(df_part.columns) == [0, 1, 2]
         assert all(isinstance(c, int) for c in df_part.columns)
 
+    def test_single_column_cache_does_not_crash(self, featureset, tmp_path):
+        """audformat.utils.read_csv() returns a bare pd.Series (not a
+        DataFrame) when the cached CSV has a single data column -- e.g. a
+        one-dimensional AudmodelSet embedding. A Series has no .columns,
+        so resetting column labels would previously crash with
+        AttributeError, meaning that cache could never be reused."""
+        cache_path = tmp_path / "cached.csv"
+        idx = audformat.segmented_index(
+            ["a.wav"], [pd.Timedelta(0)], [pd.Timedelta(seconds=1)]
+        )
+        pd.DataFrame([[1.0]], index=idx).to_csv(cache_path)
+
+        df_part = featureset._read_sample_cache(str(cache_path))
+
+        assert isinstance(df_part, pd.DataFrame)
+        assert list(df_part.columns) == [0]
+        assert df_part.iloc[0, 0] == 1.0
+
     def test_concat_with_fresh_row_does_not_duplicate_columns(
         self, featureset, tmp_path
     ):
