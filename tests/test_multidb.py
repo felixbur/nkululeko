@@ -722,6 +722,24 @@ class TestMainReuseTrain:
         with pytest.raises(SystemExit):
             main()
 
+    def test_reuse_train_rejects_use_splits(self, tmp_path, monkeypatch):
+        """The off-diagonal reuse branch unconditionally sets
+        <test>.split_strategy = "test", ignoring EXP.use_splits -- unlike
+        the non-reuse branch, which uses as_test/as_train instead when
+        use_splits is set. Silently diverging from that semantics is worse
+        than rejecting the combination outright."""
+        monkeypatch.chdir(tmp_path)
+        config_path = tmp_path / "exp.ini"
+        config_path.write_text(
+            "[EXP]\nroot = .\ndatabases = ['a', 'b']\nreuse_train = True\n"
+            "use_splits = True\n"
+            "[DATA]\ntarget = emotion\n[MODEL]\ntype = xgb\n"
+        )
+        monkeypatch.setattr("sys.argv", ["multidb", "--config", str(config_path)])
+
+        with pytest.raises(SystemExit):
+            main()
+
     def test_default_behavior_unchanged_when_reuse_train_unset(
         self, tmp_path, monkeypatch
     ):
