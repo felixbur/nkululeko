@@ -1,0 +1,5 @@
+name: sonar
+target: deepfake
+description: audio deepfake benchmark with genuine LibriTTS speech plus synthetic speech from eight TTS/voice-generation systems (AudioGen, FlashSpeech, NaturalSpeech3, OpenAI TTS, PromptTTS2, VALL-E, VoiceBox, xTTS)
+access: public
+license: unknown

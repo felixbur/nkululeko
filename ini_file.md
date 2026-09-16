@@ -63,6 +63,8 @@ General experiment settings: paths, naming, run count, and output options.
   * databases = ['emodb', 'timit']
 * **use_splits**: can be used for multidb module to use the orginal split sets when train or test database. Else the whole database is used.
   * use_splits = True
+* **reuse_train**: for the *multidb* module only. By default, multidb retrains a fresh model for every (train, test) pair in the matrix, even the ones that share the same training database. Set to True to train each database only once and reuse that saved model for every other database it's tested against, instead of retraining. Not compatible with `train_extra` or an `[AUGMENT]` section.
+  * reuse_train = False
 * **traindevtest**: set to true if you want to specify an extra dev set, that will be used for early stopping (patience) in neural net experiments.
   * traindevtest = False
 * **sample_selection**: select the samples to process (e.g. for augmentation, re-sampling, etc.): either *train*, *test*, or *all*

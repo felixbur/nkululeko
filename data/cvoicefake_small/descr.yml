@@ -1,0 +1,5 @@
+name: cvoicefake-small
+target: deepfake
+description: multilingual (de, en, fr, it, zh-CN) audio deepfake dataset with genuine Common Voice clips (Bonafide) and spoofed counterparts from five vocoder/synthesis systems (Griffin-Lim, VCTK Multi-Band MelGAN, VCTK Parallel WaveGAN, VCTK Style MelGAN, WORLD)
+access: public
+license: unknown
