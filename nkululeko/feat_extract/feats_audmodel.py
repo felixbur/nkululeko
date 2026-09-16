@@ -126,7 +126,7 @@ class AudmodelSet(Featureset):
             for file, start, end in tqdm(self.data_df.index):
                 signal, sr = None, None
                 try:
-                    if end == pd.NaT:
+                    if pd.isna(end):
                         signal, sr = audiofile.read(file, offset=start)
                     else:
                         signal, sr = audiofile.read(
@@ -168,13 +168,12 @@ class AudmodelSet(Featureset):
         segment_cache = audeer.mkdir(
             audeer.path(self.util.get_path("cache"), model_id)
         )
-        start = index_tuple[1].total_seconds() if index_tuple[1] is not pd.NaT else 0
-        end = index_tuple[2].total_seconds() if index_tuple[2] is not pd.NaT else -1
         layer_suffix = f"_l{self.hidden_layer}" if self.hidden_layer != 0 else ""
-        cache_name = f"{audeer.basename_wo_ext(index_tuple[0])}_{start}_{end}{layer_suffix}"
-        cache_path = audeer.path(segment_cache, cache_name + ".csv")
+        cache_path = self._sample_cache_path(
+            segment_cache, index_tuple, suffix=layer_suffix
+        )
         if os.path.isfile(cache_path):
-            df_part = audformat.utils.read_csv(cache_path)
+            df_part = self._read_sample_cache(cache_path)
         else:
             features = self.extract_sample(signal, sr)
             index_part = audformat.segmented_index(

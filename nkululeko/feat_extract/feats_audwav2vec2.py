@@ -63,7 +63,7 @@ class Audwav2vec2Set(Featureset):
             for file, start, end in tqdm(self.data_df.index):
                 signal, sr = None, None
                 try:
-                    if end == pd.NaT:
+                    if pd.isna(end):
                         signal, sr = audiofile.read(file, offset=start)
                     else:
                         signal, sr = audiofile.read(
@@ -104,13 +104,10 @@ class Audwav2vec2Set(Featureset):
         segment_cache = audeer.mkdir(
             audeer.path(self.util.get_path("cache"), "feats_audwav2vec2")
         )
-        start = index_tuple[1].total_seconds() if index_tuple[1] is not pd.NaT else 0
-        end = index_tuple[2].total_seconds() if index_tuple[2] is not pd.NaT else -1
-        cache_name = f"{audeer.basename_wo_ext(index_tuple[0])}_{start}_{end}"
-        cache_path = audeer.path(segment_cache, cache_name + ".csv")
+        cache_path = self._sample_cache_path(segment_cache, index_tuple)
         if os.path.isfile(cache_path):
             # self.util.debug(f"loading cached features for {index_tuple[0]} from {cache_path}")
-            df_part = audformat.utils.read_csv(cache_path)
+            df_part = self._read_sample_cache(cache_path)
         else:
             features = self.extract_sample(signal, sr)
             # Create DataFrame with proper index matching data_df structure

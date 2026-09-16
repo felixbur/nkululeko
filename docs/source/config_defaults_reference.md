@@ -123,7 +123,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'FEATS' | 'cqcc.n_cqt_bins' | `N_CQT_BINS` | nkululeko/feat_extract/feats_cqcc.py:97 |
 | 'FEATS' | 'cqcc.sample_rate' | `SAMPLING_RATE` | nkululeko/feat_extract/feats_cqcc.py:93 |
 | 'FEATS' | 'emotion2vec.model' | `model_mapping.get(self.feat_type, 'emotion2vec/emotion2vec_base')` | nkululeko/feat_extract/feats_emotion2vec.py:56 |
-| 'FEATS' | 'fail_threshold' | `str(default)` | nkululeko/feat_extract/featureset.py:60 |
+| 'FEATS' | 'fail_threshold' | `str(default)` | nkululeko/feat_extract/featureset.py:63 |
 | 'FEATS' | 'fft_hop_dur' | `'10'` | nkululeko/feat_extract/feats_spectra.py:31 |
 | 'FEATS' | 'fft_nbands' | `'64'` | nkululeko/feat_extract/feats_spectra.py:29 |
 | 'FEATS' | 'fft_win_dur' | `'25'` | nkululeko/feat_extract/feats_spectra.py:30 |
@@ -211,7 +211,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'MODEL' | 'measure' | `'mse'` / `'uar'` | nkululeko/models/model_mlp_regression.py:240, nkululeko/reporting/reporter.py:83, nkululeko/reporting/reporter.py:94, +5 more |
 | 'MODEL' | 'momentum' | `'0.9'` | nkululeko/optimizers/optimizer_factory.py:51 |
 | 'MODEL' | 'n_estimators' | `100` | nkululeko/models/model_xgb.py:30 |
-| 'MODEL' | 'n_jobs' | `'8'` | nkululeko/feat_extract/featureset.py:35, nkululeko/models/model.py:39 |
+| 'MODEL' | 'n_jobs' | `'8'` | nkululeko/feat_extract/featureset.py:38, nkululeko/models/model.py:39 |
 | 'MODEL' | 'nan_strategy' | `'zero'` | nkululeko/models/model.py:380 |
 | 'MODEL' | 'only_test' | `False` | nkululeko/modelrunner.py:147 |
 | 'MODEL' | 'optimizer' | `default_optimizer` | nkululeko/optimizers/optimizer_factory.py:33 |
