@@ -1,6 +1,9 @@
 # featureset.py
 import ast
+import hashlib
 
+import audeer
+import audformat
 import pandas as pd
 
 from nkululeko.experiment_context import ContextAware
@@ -119,6 +122,48 @@ class Featureset(ContextAware):
         if not valid.all():
             emb_series = emb_series[valid]
         return pd.DataFrame(emb_series.values.tolist(), index=emb_series.index)
+
+    def _sample_cache_path(self, cache_dir, index_tuple, suffix=""):
+        """Build a collision-safe per-sample feature cache path (issue #429).
+
+        Used by feature sets that cache one CSV per (file, start, end)
+        sample (e.g. Audwav2vec2Set, AudmodelSet). Keyed by a hash of the
+        *full* file path, not just its basename: two different files that
+        happen to share a basename and segment duration (e.g. the same
+        utterance filename recorded under two different conditions/
+        speakers/directories) must not collide and silently return each
+        other's cached features -- the basename alone is not unique.
+
+        Args:
+            cache_dir: directory to place the cache file in.
+            index_tuple: (file, start, end) as found in data_df.index.
+            suffix: extra string appended before the extension (e.g. a
+                model-layer tag), to keep otherwise-identical samples
+                extracted under different settings from colliding too.
+        """
+        file, start, end = index_tuple[0], index_tuple[1], index_tuple[2]
+        start_s = start.total_seconds() if not pd.isna(start) else 0
+        end_s = end.total_seconds() if not pd.isna(end) else -1
+        path_hash = hashlib.md5(str(file).encode("utf-8")).hexdigest()
+        cache_name = (
+            f"{audeer.basename_wo_ext(str(file))}_{path_hash}_{start_s}_{end_s}{suffix}"
+        )
+        return audeer.path(cache_dir, cache_name + ".csv")
+
+    def _read_sample_cache(self, cache_path):
+        """Read a per-sample feature cache CSV written by _sample_cache_path()
+        users, normalizing column labels back to integers (issue #429).
+
+        CSV headers are always strings, but a freshly-extracted row's
+        DataFrame has an integer RangeIndex for its columns (no explicit
+        names are ever given). Without this, pd.concat() of a cached row
+        (string column labels "0", "1", ...) with a fresh row (integer
+        column labels 0, 1, ...) treats them as different columns entirely,
+        silently doubling the column count and filling half of it with NaN.
+        """
+        df_part = audformat.utils.read_csv(cache_path)
+        df_part.columns = range(len(df_part.columns))
+        return df_part
 
     def filter(self):
         # use only the features that are indexed in the target dataframes
