@@ -491,12 +491,18 @@ class Reporter(ContextAware):
         # classification recomputed the un-combined, per-sample result
         # instead and mislabeled it as the combination result (issue #431).
         if self.is_classification:
-            metric_truths = binned_truths if function == "mean" else truths_grouped
-            metric_preds = (
-                binned_preds.astype(int)
-                if function == "mean"
-                else np.round(preds_grouped).astype(int)
-            )
+            # EER is tied to the original encoded labels: _eer_positive_class_index()
+            # resolves a specific "positive" encoded value, and _bin_distributions'
+            # quantile/explicit bins can remap that value away (e.g. binary
+            # truths [0, 1] -> [0, 2] under default quantile bins), breaking
+            # pos_label matching in roc_curve. So EER always scores the raw
+            # grouped truths, never the binned ones -- binning is reserved for
+            # the confusion-matrix/UAR view (reviewer follow-up to issue #431).
+            if function == "mean" and self.metric != "eer":
+                metric_truths, metric_preds = binned_truths, binned_preds.astype(int)
+            else:
+                metric_truths = truths_grouped
+                metric_preds = np.round(preds_grouped).astype(int)
         else:
             # regression's own metric (e.g. ccc/mse) needs the continuous,
             # un-binned values -- binning is only for the confusion-matrix
@@ -512,8 +518,12 @@ class Reporter(ContextAware):
             f"{combined_result.test_result_str()}"
         )
         self.util.debug(result_msg)
+        # group_col_name is a configured column name (PLOT.combine_per_speaker.col)
+        # and must not be inserted into the result filename verbatim --
+        # sanitize it separately from the display text above.
+        safe_group_col_name = self.util.safe_filename_component(group_col_name)
         self.util.print_results_to_store(
-            f"{group_col_name}_combined_{function}", result_msg + "\n"
+            f"{safe_group_col_name}_combined_{function}", result_msg + "\n"
         )
         if not self.is_classification:
             self._plot_scatter(

@@ -776,7 +776,11 @@ class Experiment:
             return
         groups = self.df_test[group_col].values
         df = pd.DataFrame(data={"truths": truths, "preds": preds, "speakers": groups})
-        plot_name = f"{self.util.get_exp_name()}_{group_col}combined_{function}"
+        # group_col is a configured column name (PLOT.combine_per_speaker.col)
+        # and must not be inserted into the plot filename verbatim -- sanitize
+        # it separately from the display name used in messages below.
+        safe_group_col = self.util.safe_filename_component(group_col)
+        plot_name = f"{self.util.get_exp_name()}_{safe_group_col}combined_{function}"
         self.util.debug(
             f"plotting {group_col} combination ({function}) confusion matrix to {plot_name}"
         )

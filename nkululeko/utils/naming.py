@@ -1,6 +1,7 @@
 # naming.py - mixin for experiment/model naming helpers
 import ast
 import os
+import re
 
 # MODEL.type values backed by an artificial neural network (see
 # Model.is_ann() and the model_type "ann"/"finetuned" tags set by these
@@ -70,6 +71,20 @@ class NamingMixin:
         with open(path, "a") as f:
             f.write(contents)
         return path
+
+    def safe_filename_component(self, name: str) -> str:
+        """Return `name` with any path separators or other filesystem-unsafe
+        characters replaced, so it's safe to embed as one component of a
+        filename.
+
+        A configurable string (e.g. PLOT.combine_per_speaker.col) otherwise
+        gets inserted into result/plot filenames verbatim; if it contains
+        "/" or "..", that can create nested paths, make savefig fail because
+        the directory doesn't exist, or escape the intended output
+        directory. Use this only for the filename, not for display text.
+        """
+        safe = re.sub(r"[^A-Za-z0-9_-]+", "_", str(name))
+        return safe or "col"
 
     def _get_value_descript(self, section, name):
         if self.config_val(section, name, False):

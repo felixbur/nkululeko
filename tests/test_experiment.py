@@ -558,6 +558,11 @@ class _FakeUtilForSpeakerCombine:
     def get_exp_name(self):
         return "test_exp"
 
+    def safe_filename_component(self, name):
+        import re
+
+        return re.sub(r"[^A-Za-z0-9_-]+", "_", str(name)) or "col"
+
 
 class TestPlotConfmatPerSpeakerGrouping:
     """issue #431: combine_per_speaker should support grouping by any
@@ -629,3 +634,22 @@ class TestPlotConfmatPerSpeakerGrouping:
         args, _ = best.plot_per_speaker.call_args
         plot_name = args[1]
         assert "session" in plot_name
+
+    def test_plot_name_sanitizes_path_traversal_in_configured_column(self):
+        """A legal column name containing "/" or ".." must not be inserted
+        into the plot filename verbatim -- it could otherwise create nested
+        paths, make savefig fail, or escape the output directory."""
+        col = "../../etc/session"
+        df_test = pd.DataFrame({col: ["a", "a", "b", "b"]})
+        exp, best = self._make_exp(
+            df_test, config_values={"combine_per_speaker.col": col}
+        )
+
+        exp.plot_confmat_per_speaker("mode")
+
+        args, kwargs = best.plot_per_speaker.call_args
+        plot_name = args[1]
+        assert "/" not in plot_name
+        assert ".." not in plot_name
+        # the display name passed through untouched, for messages/titles
+        assert kwargs["group_col_name"] == col

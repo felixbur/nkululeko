@@ -16,6 +16,16 @@ Version 1.10.6 (26-09-16)
   separate np.round() of the combined predictions, which could disagree with
   the binning (_bin_distributions) used for the confusion-matrix plot,
   making the reported score describe a different result than the plot
+* fix bug: combine_per_speaker's EER metric could score against
+  _bin_distributions-binned grouped truths (e.g. binary [0, 1] remapped to
+  [0, 2] under default quantile bins), breaking the resolved positive-label
+  match and making the combined EER result NaN or crash; EER now always
+  scores the original encoded grouped truths
+* fix bug: combine_per_speaker's PLOT.combine_per_speaker.col value was
+  inserted into the plot and result filenames verbatim; a value containing
+  "/" or ".." could create nested paths, fail to save, or escape the output
+  directory -- filenames now sanitize this value separately from the
+  display text used in messages/titles
 
 Version 1.10.5 (26-09-16)
 -------------------------

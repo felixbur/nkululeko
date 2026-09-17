@@ -496,6 +496,33 @@ class TestPlotPerSpeakerCombinedResult:
         text_path = os.path.join(res_dir, f"speaker_combined_mode_{model_desc}.txt")
         assert os.path.isfile(text_path)
 
+    def test_sanitizes_path_traversal_in_group_col_name(self):
+        """A legal (if unusual) configured column name containing "/" or
+        ".." must not be inserted into the result filename verbatim -- it
+        could otherwise escape the results directory or fail to write
+        because an intermediate directory doesn't exist."""
+        col = "../../etc/session"
+        result_df = pd.DataFrame(
+            {
+                "truths": [0, 0, 1, 1],
+                "preds": [0, 1, 0, 1],
+                "speakers": ["A", "A", "B", "B"],
+            }
+        )
+        r = self._run(result_df, group_col_name=col)
+
+        res_dir = r.util.get_path("res_dir")
+        model_desc = r.util.get_model_description()
+        for _, _, files in os.walk(res_dir):
+            for f in files:
+                assert ".." not in f
+        expected_path = os.path.join(
+            res_dir, f"_etc_session_combined_mode_{model_desc}.txt"
+        )
+        assert os.path.isfile(expected_path)
+        # the display message still uses the original, unsanitized name
+        assert f"{col}-combined (mode) result" in open(expected_path).read()
+
 
 class TestPlotPerSpeakerEerAggregation:
     """Reviewer follow-up to issue #431: when the metric is EER,
@@ -550,6 +577,11 @@ class TestPlotPerSpeakerEerAggregation:
         # not the original 4 per-sample probabilities.
         assert len(captured["y_score"]) == len(captured["y_true"]) == 2
         np.testing.assert_allclose(sorted(captured["y_score"]), [0.3, 0.7])
+        # y_true must stay on the original encoded labels {0, 1}: under the
+        # default quantile bins, _bin_distributions would remap binary
+        # truths_grouped=[0, 1] to [0, 2], leaving nothing at the resolved
+        # positive-class index (1) and breaking roc_curve's pos_label match.
+        np.testing.assert_array_equal(sorted(captured["y_true"]), [0, 1])
 
 
 class TestPlotPerSpeakerMeanBinningConsistency:
