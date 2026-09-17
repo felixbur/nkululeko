@@ -533,7 +533,18 @@ class TestPlotPerSpeakerEerAggregation:
     non-group-level score)."""
 
     def test_eer_scores_are_aggregated_per_group(self, monkeypatch):
+        from nkululeko.experiment_context import get_context
+        from nkululeko.reporting.report import Report
+
         glob_conf.config["MODEL"]["measure"] = "eer"
+        # A previous test in this module (or run before it) may leave a
+        # label_encoder/labels on the shared context, which would change
+        # which probas column _eer_positive_class_index() resolves to;
+        # reset both explicitly so this test actually exercises the "no
+        # label encoder -> column 1 is positive" default path.
+        ctx = get_context()
+        ctx.label_encoder = None
+        ctx.labels = None
 
         truths = np.array([0, 0, 1, 1])
         preds = truths.copy()
@@ -542,7 +553,9 @@ class TestPlotPerSpeakerEerAggregation:
         probas = pd.DataFrame({0: 1 - np.array([0.2, 0.4, 0.6, 0.8]), 1: [0.2, 0.4, 0.6, 0.8]})
 
         r = Reporter(truths, preds, run=0, epoch=0, probas=probas)
+        r.context.report = Report()
         assert r.metric == "eer"
+        assert r._eer_positive_class_index() == 1
 
         result_df = pd.DataFrame(
             {
@@ -574,14 +587,19 @@ class TestPlotPerSpeakerEerAggregation:
 
         assert "y_score" in captured
         # aggregated (mean) per group, aligned 1:1 with truths_grouped --
-        # not the original 4 per-sample probabilities.
+        # not the original 4 per-sample probabilities. Groups are visited in
+        # result_df.speakers.unique() order (A, B), so this is checked
+        # *unsorted*: column 0 (the wrong, non-positive-class column) would
+        # give group means [0.7, 0.3] here -- the reverse order -- which a
+        # sorted() comparison against [0.3, 0.7] could not tell apart from
+        # the correct column-1 result.
         assert len(captured["y_score"]) == len(captured["y_true"]) == 2
-        np.testing.assert_allclose(sorted(captured["y_score"]), [0.3, 0.7])
+        np.testing.assert_allclose(captured["y_score"], [0.3, 0.7])
         # y_true must stay on the original encoded labels {0, 1}: under the
         # default quantile bins, _bin_distributions would remap binary
         # truths_grouped=[0, 1] to [0, 2], leaving nothing at the resolved
         # positive-class index (1) and breaking roc_curve's pos_label match.
-        np.testing.assert_array_equal(sorted(captured["y_true"]), [0, 1])
+        np.testing.assert_array_equal(captured["y_true"], [0, 1])
 
 
 class TestPlotPerSpeakerMeanBinningConsistency:
