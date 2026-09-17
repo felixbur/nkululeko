@@ -4,6 +4,7 @@ import copy
 import pickle
 import random
 import tempfile
+import numpy as np
 import pandas as pd
 import nkululeko.glob_conf as glob_conf
 
@@ -535,3 +536,120 @@ class TestExperimentCollectFeatureExtractors:
 
         exp = Experiment.__new__(Experiment)
         assert exp._collect_feature_extractors() == []
+
+
+class _FakeUtilForSpeakerCombine:
+    """Minimal Util substitute for plot_confmat_per_speaker tests."""
+
+    def __init__(self, config_values=None):
+        self.config_values = config_values or {}
+        self.warnings = []
+        self.debugs = []
+
+    def config_val(self, section, key, default):
+        return self.config_values.get(key, default)
+
+    def warn(self, msg):
+        self.warnings.append(msg)
+
+    def debug(self, msg):
+        self.debugs.append(msg)
+
+    def get_exp_name(self):
+        return "test_exp"
+
+    def safe_filename_component(self, name):
+        import re
+
+        return re.sub(r"[^A-Za-z0-9_-]+", "_", str(name)) or "col"
+
+
+class TestPlotConfmatPerSpeakerGrouping:
+    """issue #431: combine_per_speaker should support grouping by any
+    column via PLOT.combine_per_speaker.col, not just a hardcoded
+    "speaker" column."""
+
+    def _make_exp(self, df_test, config_values=None):
+        from unittest.mock import MagicMock
+
+        from nkululeko.experiment import Experiment
+
+        exp = Experiment.__new__(Experiment)
+        exp.loso = False
+        exp.logo = False
+        exp.xfoldx = False
+        exp.util = _FakeUtilForSpeakerCombine(config_values)
+        exp.df_test = df_test
+        best = MagicMock()
+        best.is_classification = True
+        best.truths = np.array([0, 1, 0, 1])
+        best.preds = np.array([0, 1, 1, 1])
+        exp.reports = [best]
+        exp.get_best_report = MagicMock(return_value=best)
+        return exp, best
+
+    def test_defaults_to_speaker_column(self):
+        df_test = pd.DataFrame({"speaker": ["s1", "s1", "s2", "s2"]})
+        exp, best = self._make_exp(df_test)
+
+        exp.plot_confmat_per_speaker("mode")
+
+        best.plot_per_speaker.assert_called_once()
+        _, kwargs = best.plot_per_speaker.call_args
+        assert kwargs["group_col_name"] == "speaker"
+
+    def test_uses_configured_column(self):
+        df_test = pd.DataFrame({"session": ["a", "a", "b", "b"]})
+        exp, best = self._make_exp(
+            df_test, config_values={"combine_per_speaker.col": "session"}
+        )
+
+        exp.plot_confmat_per_speaker("mode")
+
+        best.plot_per_speaker.assert_called_once()
+        args, kwargs = best.plot_per_speaker.call_args
+        assert kwargs["group_col_name"] == "session"
+        df_arg = args[0]
+        assert list(df_arg["speakers"]) == ["a", "a", "b", "b"]
+
+    def test_warns_and_skips_when_configured_column_missing(self):
+        df_test = pd.DataFrame({"speaker": ["s1", "s2", "s1", "s2"]})
+        exp, best = self._make_exp(
+            df_test, config_values={"combine_per_speaker.col": "session"}
+        )
+
+        exp.plot_confmat_per_speaker("mode")
+
+        best.plot_per_speaker.assert_not_called()
+        assert any("session" in w for w in exp.util.warnings)
+
+    def test_plot_name_reflects_configured_column(self):
+        df_test = pd.DataFrame({"session": ["a", "a", "b", "b"]})
+        exp, best = self._make_exp(
+            df_test, config_values={"combine_per_speaker.col": "session"}
+        )
+
+        exp.plot_confmat_per_speaker("mode")
+
+        args, _ = best.plot_per_speaker.call_args
+        plot_name = args[1]
+        assert "session" in plot_name
+
+    def test_plot_name_sanitizes_path_traversal_in_configured_column(self):
+        """A legal column name containing "/" or ".." must not be inserted
+        into the plot filename verbatim -- it could otherwise create nested
+        paths, make savefig fail, or escape the output directory."""
+        col = "../../etc/session"
+        df_test = pd.DataFrame({col: ["a", "a", "b", "b"]})
+        exp, best = self._make_exp(
+            df_test, config_values={"combine_per_speaker.col": col}
+        )
+
+        exp.plot_confmat_per_speaker("mode")
+
+        args, kwargs = best.plot_per_speaker.call_args
+        plot_name = args[1]
+        assert "/" not in plot_name
+        assert ".." not in plot_name
+        # the display name passed through untouched, for messages/titles
+        assert kwargs["group_col_name"] == col

@@ -669,8 +669,10 @@ Plot styling and output options for result figures.
   * epoch_progression = False
 * **best_model**: search for the best performing model and plot conf matrix (needs *MODEL.store* to be turned on)
   * best_model = False
-* **combine_per_speaker**: print an extra confusion plot where the predictions per speaker are combined, with either the `mode` or the `mean` function
+* **combine_per_speaker**: print an extra confusion plot where the predictions per speaker are combined, with either the `mode` or the `mean` function. Also writes a textual result entry (the combined-level score, not just the plot) to `<combine_per_speaker.col>_combined_<function>_<model_description>.txt` in the results folder.
   * combine_per_speaker = mode
+* **combine_per_speaker.col**: group by this column instead of *speaker* (e.g. *session*, or any other column loaded via `DATA.*db_name*.columns`). Defaults to *speaker*, so existing configs are unaffected.
+  * combine_per_speaker.col = session
 * **format**: format for plots, either *png* or *eps* (for scalable graphics)
   * format = png
 * **ccc**: show concordance correlation coefficient in plot headings

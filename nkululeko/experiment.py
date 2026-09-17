@@ -9,6 +9,7 @@ import audeer
 import audformat
 import pandas as pd
 
+from nkululeko.constants import COL_SPEAKER
 from nkululeko.data.dataset import Dataset
 from nkululeko.data.dataset_csv import Dataset_CSV
 from nkululeko.data.datasplitter import Datasplitter
@@ -761,16 +762,29 @@ class Experiment:
         else:
             truths = best.truths_cont
             preds = best.preds_cont
-        if "speaker" not in self.df_test.columns:
-            self.util.warn("combine_per_speaker: no speaker column in df_test, skipping")
-            return
-        speakers = self.df_test.speaker.values
-        df = pd.DataFrame(data={"truths": truths, "preds": preds, "speakers": speakers})
-        plot_name = f"{self.util.get_exp_name()}_speakercombined_{function}"
-        self.util.debug(
-            f"plotting speaker combination ({function}) confusion matrix to {plot_name}"
+        # issue #431: combine_per_speaker was hardcoded to a "speaker"
+        # column; PLOT.combine_per_speaker.col lets it group by any other
+        # column instead (e.g. "session"), defaulting to "speaker" so
+        # existing configs keep working unchanged.
+        group_col = self.util.config_val(
+            "PLOT", "combine_per_speaker.col", COL_SPEAKER
         )
-        best.plot_per_speaker(df, plot_name, function)
+        if group_col not in self.df_test.columns:
+            self.util.warn(
+                f"combine_per_speaker: no '{group_col}' column in df_test, skipping"
+            )
+            return
+        groups = self.df_test[group_col].values
+        df = pd.DataFrame(data={"truths": truths, "preds": preds, "speakers": groups})
+        # group_col is a configured column name (PLOT.combine_per_speaker.col)
+        # and must not be inserted into the plot filename verbatim -- sanitize
+        # it separately from the display name used in messages below.
+        safe_group_col = self.util.safe_filename_component(group_col)
+        plot_name = f"{self.util.get_exp_name()}_{safe_group_col}combined_{function}"
+        self.util.debug(
+            f"plotting {group_col} combination ({function}) confusion matrix to {plot_name}"
+        )
+        best.plot_per_speaker(df, plot_name, function, group_col_name=group_col)
 
     def get_best_report(self, reports):
         return self.runmgr.get_best_result(reports)

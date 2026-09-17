@@ -1,9 +1,12 @@
 """Unit tests for Reporter class (nkululeko/reporting/reporter.py)."""
 
 import configparser
+import os
 import sys
+from unittest.mock import patch
 
 import numpy as np
+import pandas as pd
 import pytest
 
 import nkululeko.glob_conf as glob_conf
@@ -417,3 +420,233 @@ class TestReporterClassificationReportMismatch:
         with open(res_dir + "mismatch_test.txt") as f:
             content = f.read()
         assert "UAR" in content
+
+
+class TestPlotPerSpeakerCombinedResult:
+    """issue #431: the combined-per-group result must reflect the actual
+    grouped predictions, not silently recompute the un-combined per-sample
+    result (previously mislabeled as the combination result for
+    classification tasks) -- and must be written to a text file, not just
+    debug-logged."""
+
+    def _run(self, result_df, group_col_name="speaker", function="mode"):
+        from nkululeko.reporting.report import Report
+
+        r = Reporter(result_df["truths"].values, result_df["preds"].values, run=0, epoch=0)
+        r.context.report = Report()
+        with (
+            patch("nkululeko.reporting.reporter.plt.figure"),
+            patch("nkululeko.reporting.reporter.plt.savefig"),
+            patch("nkululeko.reporting.reporter.plt.close"),
+            patch("nkululeko.reporting.reporter.audplot.confusion_matrix"),
+        ):
+            r.plot_per_speaker(result_df, "combined_plot", function, group_col_name=group_col_name)
+        return r
+
+    def test_combined_result_reflects_grouped_predictions_not_per_sample(self):
+        """Per-sample accuracy is 50%, but mode-combining 2 samples per
+        speaker gives a perfect result (mode(0,0)=0, mode(1,1)=1) --
+        previously the classification path recomputed the un-combined
+        50% per-sample result and mislabeled it as the combination result."""
+        result_df = pd.DataFrame(
+            {
+                "truths": [0, 0, 1, 1],
+                "preds": [0, 1, 0, 1],
+                "speakers": ["A", "A", "B", "B"],
+            }
+        )
+        r = self._run(result_df)
+
+        res_dir = r.util.get_path("res_dir")
+        model_desc = r.util.get_model_description()
+        text_path = os.path.join(res_dir, f"speaker_combined_mode_{model_desc}.txt")
+        assert os.path.isfile(text_path)
+        content = open(text_path).read()
+        assert "speaker-combined (mode) result" in content
+        assert "1.000" in content  # perfect combined UAR, not the 50% per-sample one
+
+    def test_uses_custom_group_col_name_in_message_and_filename(self):
+        result_df = pd.DataFrame(
+            {
+                "truths": [0, 0, 1, 1],
+                "preds": [0, 0, 1, 1],
+                "speakers": ["s1", "s1", "s2", "s2"],
+            }
+        )
+        r = self._run(result_df, group_col_name="session")
+
+        res_dir = r.util.get_path("res_dir")
+        model_desc = r.util.get_model_description()
+        text_path = os.path.join(res_dir, f"session_combined_mode_{model_desc}.txt")
+        assert os.path.isfile(text_path)
+        assert "session-combined (mode) result" in open(text_path).read()
+
+    def test_defaults_group_col_name_to_speaker(self):
+        result_df = pd.DataFrame(
+            {
+                "truths": [0, 1],
+                "preds": [0, 1],
+                "speakers": ["A", "B"],
+            }
+        )
+        r = self._run(result_df)
+
+        res_dir = r.util.get_path("res_dir")
+        model_desc = r.util.get_model_description()
+        text_path = os.path.join(res_dir, f"speaker_combined_mode_{model_desc}.txt")
+        assert os.path.isfile(text_path)
+
+    def test_sanitizes_path_traversal_in_group_col_name(self):
+        """A legal (if unusual) configured column name containing "/" or
+        ".." must not be inserted into the result filename verbatim -- it
+        could otherwise escape the results directory or fail to write
+        because an intermediate directory doesn't exist."""
+        col = "../../etc/session"
+        result_df = pd.DataFrame(
+            {
+                "truths": [0, 0, 1, 1],
+                "preds": [0, 1, 0, 1],
+                "speakers": ["A", "A", "B", "B"],
+            }
+        )
+        r = self._run(result_df, group_col_name=col)
+
+        res_dir = r.util.get_path("res_dir")
+        model_desc = r.util.get_model_description()
+        for _, _, files in os.walk(res_dir):
+            for f in files:
+                assert ".." not in f
+        expected_path = os.path.join(
+            res_dir, f"_etc_session_combined_mode_{model_desc}.txt"
+        )
+        assert os.path.isfile(expected_path)
+        # the display message still uses the original, unsanitized name
+        assert f"{col}-combined (mode) result" in open(expected_path).read()
+
+
+class TestPlotPerSpeakerEerAggregation:
+    """Reviewer follow-up to issue #431: when the metric is EER,
+    _get_test_result() must score against probabilities aggregated per
+    group the same way as the predictions, not the raw per-sample
+    self.probas (which would mismatch truths_grouped in length, or --
+    if the lengths happened to coincide -- silently produce a
+    non-group-level score)."""
+
+    def test_eer_scores_are_aggregated_per_group(self, monkeypatch):
+        from nkululeko.experiment_context import get_context
+        from nkululeko.reporting.report import Report
+
+        glob_conf.config["MODEL"]["measure"] = "eer"
+        # A previous test in this module (or run before it) may leave a
+        # label_encoder/labels on the shared context, which would change
+        # which probas column _eer_positive_class_index() resolves to;
+        # reset both explicitly so this test actually exercises the "no
+        # label encoder -> column 1 is positive" default path.
+        ctx = get_context()
+        ctx.label_encoder = None
+        ctx.labels = None
+
+        truths = np.array([0, 0, 1, 1])
+        preds = truths.copy()
+        # positive class (index 1, no label_encoder -> defaults to 1)
+        # probabilities: group A (rows 0,1) -> 0.2, 0.4; group B (rows 2,3) -> 0.6, 0.8
+        probas = pd.DataFrame({0: 1 - np.array([0.2, 0.4, 0.6, 0.8]), 1: [0.2, 0.4, 0.6, 0.8]})
+
+        r = Reporter(truths, preds, run=0, epoch=0, probas=probas)
+        r.context.report = Report()
+        assert r.metric == "eer"
+        assert r._eer_positive_class_index() == 1
+
+        result_df = pd.DataFrame(
+            {
+                "truths": truths,
+                "preds": preds,
+                "speakers": ["A", "A", "B", "B"],
+            }
+        )
+
+        reporter_mod = sys.modules[Reporter.__module__]
+        captured = {}
+        orig = reporter_mod.evaluate_with_conf_int
+
+        def spy(y_score, metric_fn, y_true, **kwargs):
+            if getattr(metric_fn, "__name__", "") == "_eer_metric":
+                captured["y_score"] = np.asarray(y_score).copy()
+                captured["y_true"] = np.asarray(y_true).copy()
+            return orig(y_score, metric_fn, y_true, **kwargs)
+
+        monkeypatch.setattr(reporter_mod, "evaluate_with_conf_int", spy)
+
+        with (
+            patch("nkululeko.reporting.reporter.plt.figure"),
+            patch("nkululeko.reporting.reporter.plt.savefig"),
+            patch("nkululeko.reporting.reporter.plt.close"),
+            patch("nkululeko.reporting.reporter.audplot.confusion_matrix"),
+        ):
+            r.plot_per_speaker(result_df, "combined_plot", "mean")
+
+        assert "y_score" in captured
+        # aggregated (mean) per group, aligned 1:1 with truths_grouped --
+        # not the original 4 per-sample probabilities. Groups are visited in
+        # result_df.speakers.unique() order (A, B), so this is checked
+        # *unsorted*: column 0 (the wrong, non-positive-class column) would
+        # give group means [0.7, 0.3] here -- the reverse order -- which a
+        # sorted() comparison against [0.3, 0.7] could not tell apart from
+        # the correct column-1 result.
+        assert len(captured["y_score"]) == len(captured["y_true"]) == 2
+        np.testing.assert_allclose(captured["y_score"], [0.3, 0.7])
+        # y_true must stay on the original encoded labels {0, 1}: under the
+        # default quantile bins, _bin_distributions would remap binary
+        # truths_grouped=[0, 1] to [0, 2], leaving nothing at the resolved
+        # positive-class index (1) and breaking roc_curve's pos_label match.
+        np.testing.assert_array_equal(captured["y_true"], [0, 1])
+
+
+class TestPlotPerSpeakerMeanBinningConsistency:
+    """Reviewer follow-up to issue #431: for classification + function="mean",
+    the textual combined score must be computed from the same binned
+    truths/preds arrays that get passed to _plot_confmat, not a separately
+    np.round()-ed array -- np.round() and _bin_distributions' quantile/explicit
+    bins can disagree (e.g. with >3 classes, since _bin_distributions always
+    bins into 3 categories), silently making the reported score describe a
+    different result than what the confusion-matrix plot shows."""
+
+    def test_classification_mean_scores_the_same_arrays_as_the_plot(self):
+        from nkululeko.reporting.report import Report
+
+        # 4-class classification: _bin_distributions always collapses to 3
+        # quantile-based bins, which disagrees with plain np.round() here
+        # (group truth 3 -> binned truth 2; group pred 2.9 -> binned pred 2,
+        # while np.round(2.9) -> 3), so the old np.round()-based score
+        # (perfect UAR) would not match what the plot actually shows.
+        result_df = pd.DataFrame(
+            {
+                "truths": [0, 1, 2, 3],
+                "preds": [0.1, 1.2, 1.9, 2.9],
+                "speakers": ["A", "B", "C", "D"],
+            }
+        )
+        r = Reporter(result_df["truths"].values, result_df["preds"].values, run=0, epoch=0)
+        r.context.report = Report()
+
+        captured = {}
+
+        def spy(self, truths, preds, plot_name, epoch=None, test_result=None):
+            captured["truths"] = np.asarray(truths).copy()
+            captured["preds"] = np.asarray(preds).copy()
+            captured["test_result"] = test_result
+
+        with (
+            patch("nkululeko.reporting.reporter.plt.figure"),
+            patch("nkululeko.reporting.reporter.plt.savefig"),
+            patch("nkululeko.reporting.reporter.plt.close"),
+            patch("nkululeko.reporting.reporter.audplot.confusion_matrix"),
+            patch.object(Reporter, "_plot_confmat", spy),
+        ):
+            r.plot_per_speaker(result_df, "combined_plot", "mean")
+
+        assert "test_result" in captured
+        expected_val, _, _ = r._get_test_result(
+            captured["truths"], captured["preds"], r.metric
+        )
+        assert captured["test_result"].test == pytest.approx(expected_val)
