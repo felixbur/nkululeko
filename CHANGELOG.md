@@ -1,31 +1,14 @@
 Changelog
 =========
 
+Version 1.11.0 (26-09-17)
+-------------------------
+* introducing LODO (leave-one-database-out) for multidb
+
 Version 1.10.6 (26-09-16)
 -------------------------
 * generalize PLOT.combine_per_speaker to any column via PLOT.combine_per_speaker.col
   (e.g. session instead of speaker), defaulting to speaker for backward compatibility
-* fix bug: combine_per_speaker's classification path reported the un-combined
-  per-sample result mislabeled as the combined-group result; also now writes a
-  textual result entry (not just a plot) for the combined score
-* fix bug: combine_per_speaker's EER metric scored the combined-group result
-  against the original per-sample probabilities instead of aggregating them
-  per group, which could mismatch lengths with the combined truths/predictions
-  or silently yield a non-group-level score
-* fix bug: combine_per_speaker's classification+mean textual result scored a
-  separate np.round() of the combined predictions, which could disagree with
-  the binning (_bin_distributions) used for the confusion-matrix plot,
-  making the reported score describe a different result than the plot
-* fix bug: combine_per_speaker's EER metric could score against
-  _bin_distributions-binned grouped truths (e.g. binary [0, 1] remapped to
-  [0, 2] under default quantile bins), breaking the resolved positive-label
-  match and making the combined EER result NaN or crash; EER now always
-  scores the original encoded grouped truths
-* fix bug: combine_per_speaker's PLOT.combine_per_speaker.col value was
-  inserted into the plot and result filenames verbatim; a value containing
-  "/" or ".." could create nested paths, fail to save, or escape the output
-  directory -- filenames now sanitize this value separately from the
-  display text used in messages/titles
 
 Version 1.10.5 (26-09-16)
 -------------------------
