@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 1.10.5 (26-09-16)
+-------------------------
+* avoid redundant retraining via opt-in EXP.reuse_train
+* fix bug: non-unique feature cache names
+
 Version 1.10.4 (26-09-10)
 -------------------------
 * add split_strategy=column: split a database into train/dev/test by the values

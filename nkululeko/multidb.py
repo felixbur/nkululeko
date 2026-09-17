@@ -159,6 +159,19 @@ def main():
             raise NkululukoError(
                 "EXP.reuse_train is not supported together with AUGMENT"
             )
+        if reuse_train and use_splits:
+            # The off-diagonal reuse branch below unconditionally sets
+            # <test>.split_strategy = "test", ignoring EXP.use_splits --
+            # unlike the non-reuse branch further down, which checks
+            # use_splits and sets <test>.as_test / <train>.as_train instead.
+            # Silently diverging from the non-reuse path's semantics here
+            # would be worse than rejecting the combination outright, and
+            # properly supporting it would need verifying how as_test
+            # behaves under nkululeko.py's DATA.tests load-and-evaluate-only
+            # flow, which is untested -- a separate piece of work.
+            raise NkululukoError(
+                "EXP.reuse_train is not supported together with EXP.use_splits"
+            )
 
         # EXP.lodo: leave-one-dataset-out mode. datasets[i] is held out as
         # the fold's test set; every other entry in `datasets` is pooled for

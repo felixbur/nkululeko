@@ -3,6 +3,7 @@
 import configparser
 from unittest.mock import patch
 
+import audformat
 import numpy as np
 import pandas as pd
 import pytest
@@ -137,6 +138,126 @@ class TestFeaturesetFilter:
         featureset.filter()
         assert "f1" in featureset.df.columns
         assert "ghost" not in featureset.df.columns
+
+
+class TestSampleCachePath:
+    """issue #429: two different files that happen to share a basename and
+    segment duration (e.g. the same utterance filename recorded under two
+    different conditions/speakers/directories) must not collide and
+    silently return each other's cached features -- the cache key must be
+    based on the full file path, not just its basename."""
+
+    def test_different_directories_same_basename_get_different_paths(
+        self, featureset, tmp_path
+    ):
+        idx_a = (
+            "data/condition_a/spk01/utt03.wav",
+            pd.Timedelta(0),
+            pd.Timedelta(seconds=1),
+        )
+        idx_b = (
+            "data/condition_b/spk01/utt03.wav",
+            pd.Timedelta(0),
+            pd.Timedelta(seconds=1),
+        )
+        path_a = featureset._sample_cache_path(str(tmp_path), idx_a)
+        path_b = featureset._sample_cache_path(str(tmp_path), idx_b)
+        assert path_a != path_b
+
+    def test_same_file_and_segment_gives_the_same_path(self, featureset, tmp_path):
+        idx = ("data/a/utt.wav", pd.Timedelta(0), pd.Timedelta(seconds=1))
+        assert featureset._sample_cache_path(
+            str(tmp_path), idx
+        ) == featureset._sample_cache_path(str(tmp_path), idx)
+
+    def test_different_segments_of_same_file_get_different_paths(
+        self, featureset, tmp_path
+    ):
+        idx1 = ("data/a.wav", pd.Timedelta(0), pd.Timedelta(seconds=1))
+        idx2 = ("data/a.wav", pd.Timedelta(seconds=1), pd.Timedelta(seconds=2))
+        assert featureset._sample_cache_path(
+            str(tmp_path), idx1
+        ) != featureset._sample_cache_path(str(tmp_path), idx2)
+
+    def test_suffix_differentiates_otherwise_identical_samples(
+        self, featureset, tmp_path
+    ):
+        """AudmodelSet's per-layer cache relies on this to avoid a
+        different concern (layer choice) colliding, independent of the
+        path-collision fix."""
+        idx = ("data/a.wav", pd.Timedelta(0), pd.Timedelta(seconds=1))
+        p1 = featureset._sample_cache_path(str(tmp_path), idx, suffix="_l1")
+        p2 = featureset._sample_cache_path(str(tmp_path), idx, suffix="_l2")
+        assert p1 != p2
+
+    def test_nat_start_and_end_do_not_crash(self, featureset, tmp_path):
+        idx = ("data/a.wav", pd.NaT, pd.NaT)
+        path = featureset._sample_cache_path(str(tmp_path), idx)
+        assert path.endswith(".csv")
+
+    def test_basename_kept_in_path_for_debuggability(self, featureset, tmp_path):
+        idx = ("data/condition_a/spk01/utt03.wav", pd.Timedelta(0), pd.Timedelta(seconds=1))
+        path = featureset._sample_cache_path(str(tmp_path), idx)
+        assert "utt03" in path
+
+
+class TestReadSampleCache:
+    """issue #429: cached CSV rows must get integer column labels matching
+    freshly-computed rows (a bare RangeIndex), or pd.concat() silently
+    treats them as different columns and doubles the column count with
+    NaN-filled halves."""
+
+    def test_columns_normalized_to_integers(self, featureset, tmp_path):
+        cache_path = tmp_path / "cached.csv"
+        idx = audformat.segmented_index(
+            ["a.wav"], [pd.Timedelta(0)], [pd.Timedelta(seconds=1)]
+        )
+        # Written the way extract_sample_df()'s "fresh" branch does: a
+        # single-row DataFrame with a bare integer RangeIndex for columns.
+        pd.DataFrame([[1.0, 2.0, 3.0]], index=idx).to_csv(cache_path)
+
+        df_part = featureset._read_sample_cache(str(cache_path))
+
+        assert list(df_part.columns) == [0, 1, 2]
+        assert all(isinstance(c, int) for c in df_part.columns)
+
+    def test_single_column_cache_does_not_crash(self, featureset, tmp_path):
+        """audformat.utils.read_csv() returns a bare pd.Series (not a
+        DataFrame) when the cached CSV has a single data column -- e.g. a
+        one-dimensional AudmodelSet embedding. A Series has no .columns,
+        so resetting column labels would previously crash with
+        AttributeError, meaning that cache could never be reused."""
+        cache_path = tmp_path / "cached.csv"
+        idx = audformat.segmented_index(
+            ["a.wav"], [pd.Timedelta(0)], [pd.Timedelta(seconds=1)]
+        )
+        pd.DataFrame([[1.0]], index=idx).to_csv(cache_path)
+
+        df_part = featureset._read_sample_cache(str(cache_path))
+
+        assert isinstance(df_part, pd.DataFrame)
+        assert list(df_part.columns) == [0]
+        assert df_part.iloc[0, 0] == 1.0
+
+    def test_concat_with_fresh_row_does_not_duplicate_columns(
+        self, featureset, tmp_path
+    ):
+        idx1 = audformat.segmented_index(
+            ["a.wav"], [pd.Timedelta(0)], [pd.Timedelta(seconds=1)]
+        )
+        cache_path = tmp_path / "cached.csv"
+        pd.DataFrame([[1.0, 2.0]], index=idx1).to_csv(cache_path)
+        cached_row = featureset._read_sample_cache(str(cache_path))
+
+        idx2 = audformat.segmented_index(
+            ["b.wav"], [pd.Timedelta(0)], [pd.Timedelta(seconds=1)]
+        )
+        fresh_row = pd.DataFrame([[3.0, 4.0]], index=idx2)
+
+        combined = pd.concat([cached_row, fresh_row])
+
+        assert combined.shape == (2, 2)
+        assert not combined.isna().any().any()
 
 
 class TestExtractEmbeddingsWithErrorHandling:
