@@ -1,0 +1,7 @@
+name: decro
+target: deepfake
+description: DEepfake CROss-lingual (DECRO) evaluation dataset -- matched English/Chinese subsets with the same spoofing algorithms, for isolating language effects on deepfake detection
+access: public
+license: see LICENSE in the extracted archive
+url: https://zenodo.org/record/7603208
+language: English, Chinese

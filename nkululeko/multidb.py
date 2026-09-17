@@ -29,28 +29,56 @@ from nkululeko.nkululeko import doit as nkulu
 from nkululeko.utils.errors import NkululukoError
 
 
+def _truthy(value):
+    """Parse a config value using nkululeko's truthy-string convention
+    (matches Util.config_val_bool: "true"/"1"/"yes", case-insensitive).
+    Not eval()'d: config values come straight from a user-edited ini file,
+    and eval() both risks executing arbitrary code and rejects the common
+    lowercase spelling ("true") with a NameError."""
+    return str(value).strip().lower() in ("true", "1", "yes")
+
+
 def _no_reuse(config):
-    """True if DATA.no_reuse or FEATS.no_reuse asks for fresh extraction,
-    matching Util.config_val_bool's truthy-string convention."""
+    """True if DATA.no_reuse or FEATS.no_reuse asks for fresh extraction."""
     for section in ("DATA", "FEATS"):
-        if config.has_section(section):
-            val = config[section].get("no_reuse", "False")
-            if str(val).strip().lower() in ("true", "1", "yes"):
-                return True
+        if config.has_section(section) and _truthy(
+            config[section].get("no_reuse", "False")
+        ):
+            return True
     return False
 
 
 def _reuse_train(config):
     """True if EXP.reuse_train asks for the row-wise model-reuse mode
-    (see main()). Parsed as a truthy string, not eval()'d: config values
-    come straight from a user-edited ini file, and eval() both risks
-    executing arbitrary code and rejects the common lowercase spelling
-    ("true") with a NameError -- matching Util.config_val_bool's
-    convention instead, same as _no_reuse() above."""
+    (see main())."""
     if not config.has_section("EXP"):
         return False
-    val = config["EXP"].get("reuse_train", "False")
-    return str(val).strip().lower() in ("true", "1", "yes")
+    return _truthy(config["EXP"].get("reuse_train", "False"))
+
+
+def _lodo(config):
+    """True if EXP.lodo asks for leave-one-dataset-out mode (see main())."""
+    if not config.has_section("EXP"):
+        return False
+    return _truthy(config["EXP"].get("lodo", "False"))
+
+
+def _random_seed_set(config):
+    """True if [MODEL] random_seed is set to a value that actually seeds.
+
+    Mirrors Runmanager._is_random_seed_set's convention (ast.literal_eval,
+    not eval() -- this only ever needs to recognize the two documented
+    literal forms, False or an int, not run arbitrary code), so
+    EXP.lodo_runs can apply the same "identical repeats" guard that
+    Runmanager already applies to EXP.runs.
+    """
+    if not config.has_section("MODEL"):
+        return False
+    raw = config["MODEL"].get("random_seed", "False")
+    try:
+        return bool(ast.literal_eval(raw))
+    except (ValueError, SyntaxError):
+        return False
 
 
 def _copy_cached_features(src_dir, dst_dir):
@@ -61,14 +89,55 @@ def _copy_cached_features(src_dir, dst_dir):
     to share across multidb pairs: unlike them, ``feats_train``/
     ``feats_test``/``traindf``/``testdf`` are split-specific and must stay
     scoped to their own pair.
+
+    Matches ``*_all*.*``, not just ``*_all.*``: a featureset with a
+    configurable hidden layer (e.g. Wav2vec2Feature.extract(), storage =
+    f"{name}_l{layer}.pkl" where name already ends in "_all") writes
+    ``<db>_<feats_type>_all_l<layer>.pkl`` instead of ``..._all.pkl``. The
+    narrower pattern silently missed those files -- every multidb cell
+    using a layered SSL feature re-extracted them from scratch instead of
+    reusing the previous cell's cache, with no error to indicate why.
     """
     if not os.path.isdir(src_dir):
         return
     os.makedirs(dst_dir, exist_ok=True)
-    for cached_file in glob.glob(os.path.join(src_dir, "*_all.*")):
+    for cached_file in glob.glob(os.path.join(src_dir, "*_all*.*")):
         dest = os.path.join(dst_dir, os.path.basename(cached_file))
         if not os.path.isfile(dest):
             shutil.copy2(cached_file, dest)
+
+
+def _run_cell(cell_config, cell_store, feat_cache_dir, reuse_features, error_context):
+    """Run one cell of a multidb-style experiment: write it to tmp.ini, seed
+    its store dir with cached whole-database features, dispatch to
+    aug_train/nkulu, and (on success) copy any newly extracted features back
+    to the shared cache. Shared by main()'s N x N loop and _run_lodo()'s fold
+    loop, which otherwise duplicated this dispatch/caching/error-handling
+    logic line for line -- a fix to any of it only needs to be made once.
+
+    Returns (result, last_epoch) on success, or None if the cell raised
+    NkululukoError (already printed as "ERROR: skipping <error_context> ...").
+    """
+    tmp_config = "tmp.ini"
+    with open(tmp_config, "w") as tmp_file:
+        cell_config.write(tmp_file)
+    if reuse_features:
+        _copy_cached_features(feat_cache_dir, cell_store)
+    try:
+        if cell_config.has_section("AUGMENT"):
+            result, last_epoch = aug_train(tmp_config)
+        else:
+            result, last_epoch = nkulu(tmp_config)
+    except NkululukoError as e:
+        # A single cell's data/config problem (e.g. a split leaving
+        # train/test label sets that don't overlap) shouldn't abort the
+        # whole run -- skip this cell and keep going so every other cell
+        # still gets reported.
+        print(f"ERROR: skipping {error_context} ({e}); leaving it blank")
+        return None
+    if reuse_features:
+        _copy_cached_features(cell_store, feat_cache_dir)
+    return float(result), int(last_epoch)
 
 
 def main():
@@ -155,6 +224,58 @@ def main():
             raise NkululukoError(
                 "EXP.reuse_train is not supported together with EXP.use_splits"
             )
+
+        # EXP.lodo: leave-one-dataset-out mode. datasets[i] is held out as
+        # the fold's test set; every other entry in `datasets` is pooled for
+        # training. This is a different shape of run than the N x N matrix
+        # above (one result per fold, not one per (train, test) pair) and
+        # can't be built out of that loop's CROSSDB.train_extra pooling --
+        # train_extra is read once and shared by every cell in the run, so
+        # it's only ever the correct complement for a single fold, not all
+        # of them (e.g. datasets=[A,B,C,D,E], train_extra=[B,C,D] gives the
+        # right pool for fold "test=E", but fold "test=A" would need
+        # [B,C,D,E] instead -- a different, dynamically-computed list per
+        # fold, which is exactly what this loop computes).
+        lodo = _lodo(config)
+        lodo_dev = None
+        if lodo:
+            lodo_dev = config["EXP"].get("lodo_dev", "").strip() or None
+        if lodo and reuse_train:
+            raise NkululukoError(
+                "EXP.lodo is not supported together with EXP.reuse_train"
+            )
+        if lodo and extra_trains:
+            raise NkululukoError(
+                "EXP.lodo is not supported together with CROSSDB.train_extra"
+            )
+        if lodo and use_splits:
+            # _run_lodo unconditionally sets <db>.split_strategy to
+            # train/test/dev, the same as the non-reuse N x N branch when
+            # use_splits is off -- it has no as_test/as_train equivalent, so
+            # silently dropping the flag here (unlike the identical check
+            # already done for reuse_train+use_splits above) would leave a
+            # user who set both thinking as_test/as_train behavior applies
+            # when it doesn't.
+            raise NkululukoError(
+                "EXP.lodo is not supported together with EXP.use_splits"
+            )
+        if lodo and len(datasets) < 2:
+            raise NkululukoError(
+                "EXP.lodo needs at least 2 datasets in EXP.databases -- one "
+                "to hold out per fold, and at least one left over to pool "
+                "for training"
+            )
+        if lodo and lodo_dev and lodo_dev in datasets:
+            raise NkululukoError(
+                f"EXP.lodo_dev ({lodo_dev}) must not also appear in "
+                "EXP.databases -- it needs to stay out of the fold rotation "
+                "to serve as a fixed dev domain in every fold"
+            )
+        if lodo:
+            _run_lodo(
+                config, config_file, datasets, lodo_dev, feat_cache_dir, reuse_features
+            )
+            return
 
         for i in range(dim):
             # In reuse mode, train the (i, i) diagonal cell first so its
@@ -253,30 +374,15 @@ def main():
                     last_epochs[i, j] = np.nan
                     continue
 
-                tmp_config = "tmp.ini"
-                with open(tmp_config, "w") as tmp_file:
-                    config.write(tmp_file)
                 pair_store = os.path.join(exp_root, config["EXP"]["name"], "store")
-                if reuse_features:
-                    _copy_cached_features(feat_cache_dir, pair_store)
-                try:
-                    if config.has_section("AUGMENT"):
-                        result, last_epoch = aug_train(tmp_config)
-                    else:
-                        result, last_epoch = nkulu(tmp_config)
-                except NkululukoError as e:
-                    # A single pair's data/config problem (e.g. a split
-                    # leaving train/test label sets that don't overlap)
-                    # shouldn't abort the whole run -- skip this cell and
-                    # keep going so every other pair still gets reported.
-                    print(f"ERROR: skipping this pair ({e}); leaving it blank")
+                outcome = _run_cell(
+                    config, pair_store, feat_cache_dir, reuse_features, "this pair"
+                )
+                if outcome is None:
                     results[i, j] = np.nan
                     last_epochs[i, j] = np.nan
                     continue
-                if reuse_features:
-                    _copy_cached_features(pair_store, feat_cache_dir)
-                results[i, j] = float(result)
-                last_epochs[i, j] = int(last_epoch)
+                results[i, j], last_epochs[i, j] = outcome
         print(repr(results))
         if not _all_zero(last_epochs):
             print(repr(last_epochs))
@@ -304,6 +410,182 @@ def main():
     except NkululukoError as e:
         print(str(e))
         sys.exit(1)
+
+
+def _run_lodo(config, config_file, datasets, lodo_dev, feat_cache_dir, reuse_features):
+    """Leave-one-dataset-out: for each dataset in `datasets`, train on every
+    other dataset in the list (pooled) and test on that one held-out
+    dataset. `lodo_dev`, if given, is a fixed dataset excluded from the
+    rotation and marked split_strategy=dev in every fold (with
+    EXP.traindevtest forced True), so Runmanager gets a genuine held-out dev
+    split for early stopping instead of scoring epochs against the fold's
+    own test set -- the same fix Phase 1's dev-split harness validated.
+
+    EXP.lodo_runs (default 1) repeats each fold that many times, forcing
+    EXP.runs=1 for every repeat. This is deliberate: nkulu() with
+    EXP.runs > 1 returns only the single best-of-N-runs result (see
+    Experiment.get_best_report -- it picks the best DEV result across runs,
+    not their mean), which would fold multiple random seeds into one
+    slightly-oracle-ish scalar per fold. Repeating at this level instead and
+    averaging the returned per-repeat results is how Phase 1's devsplit
+    harness got its honest 5.80% +/- 0.36% -- same approach, generalized to
+    every fold here. This honest-averaging claim only holds if each repeat
+    actually uses a different seed: if MODEL.random_seed is set, every
+    repeat would be bit-for-bit identical instead, so lodo_runs is forced
+    back down to 1 (with a warning) -- see _random_seed_set() below.
+    """
+    dim = len(datasets)
+    raw_lodo_runs = config["EXP"].get("lodo_runs", "1")
+    try:
+        lodo_runs = int(raw_lodo_runs)
+    except ValueError:
+        raise NkululukoError(
+            f"EXP.lodo_runs must be an integer >= 1, got {raw_lodo_runs!r}"
+        )
+    if lodo_runs < 1:
+        raise NkululukoError(f"EXP.lodo_runs must be an integer >= 1, got {lodo_runs}")
+    if lodo_runs > 1 and _random_seed_set(config):
+        # Runmanager._is_random_seed_set's guard only sees EXP.runs within a
+        # single nkulu() call -- it can't see this outer repeat loop, so
+        # forcing EXP.runs="1" per repeat (below) sails right past it. Without
+        # this, every repeat of every fold would be bit-for-bit identical
+        # (std 0.0000, silently contradicting the "honest multi-seed
+        # averaging" this loop exists for) instead of raising the same
+        # warning EXP.runs > 1 would have.
+        print(
+            "WARNING: [MODEL] random_seed is set, so every EXP.lodo_runs "
+            f"repeat of each fold would produce an identical result -- "
+            f"ignoring EXP.lodo_runs={lodo_runs} and using lodo_runs=1 instead"
+        )
+        lodo_runs = 1
+    results = np.full((dim, lodo_runs), np.nan)
+    last_epochs = np.full((dim, lodo_runs), np.nan)
+    for i in range(dim):
+        test = datasets[i]
+        train_pool = [d for d in datasets if d != test]
+        for r in range(lodo_runs):
+            fold_config = configparser.ConfigParser()
+            fold_config.read(config_file)
+            all_dbs = train_pool + [test] + ([lodo_dev] if lodo_dev else [])
+            fold_config["DATA"]["databases"] = repr(all_dbs)
+            for train_db in train_pool:
+                fold_config["DATA"][f"{train_db}.split_strategy"] = "train"
+            fold_config["DATA"][f"{test}.split_strategy"] = "test"
+            if lodo_dev:
+                fold_config["DATA"][f"{lodo_dev}.split_strategy"] = "dev"
+                fold_config["EXP"]["traindevtest"] = "True"
+            fold_config["EXP"]["runs"] = "1"
+            fold_name = f"lodo_{test}" if lodo_runs == 1 else f"lodo_{test}_run{r}"
+            fold_config["EXP"]["name"] = fold_name
+            print(
+                f"running LODO fold {i + 1}/{dim} (run {r + 1}/{lodo_runs}): "
+                f"test={test}, train={train_pool}"
+                + (f", dev={lodo_dev}" if lodo_dev else "")
+            )
+
+            fold_store = os.path.join(
+                os.path.join(fold_config["EXP"]["root"], ""), fold_name, "store"
+            )
+            outcome = _run_cell(
+                fold_config,
+                fold_store,
+                feat_cache_dir,
+                reuse_features,
+                f"LODO fold test={test} run={r}",
+            )
+            if outcome is None:
+                continue
+            results[i, r], last_epochs[i, r] = outcome
+
+    print(repr(results))
+    if not _all_zero(last_epochs):
+        print(repr(last_epochs))
+    if _all_failed(results):
+        print(
+            "ERROR: every LODO fold failed -- see the per-fold errors above. "
+            "No results file will be written."
+        )
+        sys.exit(1)
+    if _all_zero(results):
+        print(
+            "ERROR: all LODO results are exactly 0.0 -- this usually means "
+            "every train/test split ended up empty (check DATA config), or a "
+            "held-out fold's test set had no labels. No results file will be "
+            "written."
+        )
+        sys.exit(1)
+    _write_lodo_results(results, last_epochs, datasets, lodo_dev, config)
+
+
+def _write_lodo_results(results, last_epochs, datasets, lodo_dev, config):
+    """Write results_lodo.txt (per-fold mean +/- std across EXP.lodo_runs
+    repeats, plus the overall LODO mean +/- std across fold means) and a bar
+    plot with error bars -- LODO produces one result per fold, not a matrix,
+    so it needs its own output shape rather than plot_heatmap()'s square
+    format.
+    """
+    metric = _metric_label(config)
+    root = os.path.join(config["EXP"]["root"], "")
+    os.makedirs(root, exist_ok=True)
+
+    with warnings.catch_warnings(), np.errstate(invalid="ignore"):
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        fold_means = np.nanmean(results, axis=1)
+        fold_stds = np.nanstd(results, axis=1)
+        overall_mean = trunc_to_three(np.nanmean(fold_means))
+        overall_std = trunc_to_three(np.nanstd(fold_means))
+
+    lodo_runs = results.shape[1]
+    file_name = f"{root}results_lodo.txt"
+    with open(file_name, "w") as text_file:
+        text_file.write(
+            f"LODO mean {metric} across {len(datasets)} folds: "
+            f"{overall_mean} (std: {overall_std}, {lodo_runs} run(s)/fold)\n"
+        )
+        text_file.write(f"folds (test domain): {', '.join(datasets)}\n")
+        if lodo_dev:
+            text_file.write(f"fixed dev domain: {lodo_dev}\n")
+        text_file.write("\n")
+        for idx, test_db in enumerate(datasets):
+            runs_s = ", ".join(
+                "nan" if np.isnan(v) else f"{v:.4f}" for v in results[idx]
+            )
+            fm = fold_means[idx]
+            fs = fold_stds[idx]
+            fm_s = "nan" if np.isnan(fm) else f"{fm:.4f}"
+            fs_s = "nan" if np.isnan(fs) else f"{fs:.4f}"
+            text_file.write(
+                f"held out {test_db}: mean {fm_s} std {fs_s}  (runs: {runs_s})\n"
+            )
+
+    try:
+        fmt = config["PLOT"]["format"]
+        plot_name = f"{root}lodo.{fmt}"
+    except KeyError:
+        plot_name = f"{root}lodo.png"
+    plt.figure(figsize=(8, 5))
+    x = np.arange(len(datasets))
+    plt.bar(
+        x,
+        np.nan_to_num(fold_means),
+        yerr=np.nan_to_num(fold_stds),
+        capsize=4,
+        color="#4C72B0",
+    )
+    plt.xticks(x, datasets, rotation=30, ha="right")
+    plt.ylabel(metric)
+    plt.axhline(
+        overall_mean,
+        color="red",
+        linestyle="--",
+        linewidth=1,
+        label=f"LODO mean {overall_mean}",
+    )
+    plt.legend()
+    plt.title(f"LODO {metric} per held-out fold (mean {overall_mean} ± {overall_std})")
+    plt.tight_layout()
+    plt.savefig(plot_name)
+    plt.close()
 
 
 def trunc_to_three(x):

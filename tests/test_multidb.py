@@ -18,8 +18,10 @@ from nkululeko.multidb import (
     _all_failed,
     _all_zero,
     _copy_cached_features,
+    _lodo,
     _metric_label,
     _no_reuse,
+    _random_seed_set,
     _reuse_train,
     main,
     plot_heatmap,
@@ -470,6 +472,24 @@ class TestCopyCachedFeatures:
         _copy_cached_features(str(tmp_path / "does_not_exist"), str(dst))
         assert not dst.exists()
 
+    def test_copies_layer_suffixed_ssl_cache_files(self, tmp_path):
+        """Regression: a featureset with a configurable hidden layer (e.g.
+        wav2vec2, see Wav2vec2Feature.extract()) writes
+        <db>_<feats_type>_all_l<layer>.pkl, not <db>_<feats_type>_all.pkl --
+        the old "*_all.*" glob missed this, silently forcing every multidb
+        cell to re-extract these features from scratch instead of reusing
+        the previous cell's cache."""
+        src = tmp_path / "src"
+        dst = tmp_path / "dst"
+        src.mkdir()
+        (src / "la_wav2vec2_all_l7.pkl").write_text("layer 7 features")
+        (src / "la_wav2vec2_all_l16.pkl").write_text("layer 16 features")
+
+        _copy_cached_features(str(src), str(dst))
+
+        assert (dst / "la_wav2vec2_all_l7.pkl").read_text() == "layer 7 features"
+        assert (dst / "la_wav2vec2_all_l16.pkl").read_text() == "layer 16 features"
+
 
 class TestMainSharesFeatureCacheAcrossPairs:
     """issue follow-up: the same database's whole-database features
@@ -774,3 +794,314 @@ class TestMainReuseTrain:
         # behavior reuse_train is opt-in to replace).
         assert len(calls) == 4
         assert all("tests" not in c for c in calls)
+
+
+class TestLodoHelper:
+    def test_false_when_not_configured(self):
+        config = configparser.ConfigParser()
+        config.add_section("EXP")
+        assert not _lodo(config)
+
+    def test_false_when_no_exp_section(self):
+        assert not _lodo(configparser.ConfigParser())
+
+    def test_true_for_true(self):
+        config = configparser.ConfigParser()
+        config.add_section("EXP")
+        config["EXP"]["lodo"] = "True"
+        assert _lodo(config)
+
+    def test_true_for_lowercase_true(self):
+        config = configparser.ConfigParser()
+        config.add_section("EXP")
+        config["EXP"]["lodo"] = "true"
+        assert _lodo(config)
+
+    def test_false_for_false(self):
+        config = configparser.ConfigParser()
+        config.add_section("EXP")
+        config["EXP"]["lodo"] = "False"
+        assert not _lodo(config)
+
+
+class TestRandomSeedSetHelper:
+    def test_false_when_no_model_section(self):
+        assert not _random_seed_set(configparser.ConfigParser())
+
+    def test_false_when_not_set(self):
+        config = configparser.ConfigParser()
+        config.add_section("MODEL")
+        assert not _random_seed_set(config)
+
+    def test_false_for_literal_false(self):
+        config = configparser.ConfigParser()
+        config.add_section("MODEL")
+        config["MODEL"]["random_seed"] = "False"
+        assert not _random_seed_set(config)
+
+    def test_true_for_int(self):
+        config = configparser.ConfigParser()
+        config.add_section("MODEL")
+        config["MODEL"]["random_seed"] = "42"
+        assert _random_seed_set(config)
+
+
+class TestMainLodo:
+    """EXP.lodo (opt-in): rotate which dataset is held out as the fold's
+    test set, pooling every other dataset for training -- see main()'s
+    _run_lodo branch. Distinct from the N x N matrix above: one result per
+    fold, not one per (train, test) pair."""
+
+    def _run(
+        self,
+        tmp_path,
+        monkeypatch,
+        ini_extra="",
+        databases="['a', 'b', 'c']",
+        fake_nkulu=None,
+        calls=None,
+        model_extra="",
+    ):
+        monkeypatch.chdir(tmp_path)
+        config_path = tmp_path / "exp.ini"
+        config_path.write_text(
+            f"[EXP]\nroot = .\ndatabases = {databases}\nlodo = True\n"
+            f"{ini_extra}"
+            "[DATA]\ntarget = emotion\n[MODEL]\ntype = xgb\n"
+            f"{model_extra}"
+        )
+        if calls is None:
+            calls = []
+        if fake_nkulu is None:
+
+            def fake_nkulu(tmp_config):
+                config = configparser.ConfigParser()
+                config.read(tmp_config)
+                call = dict(config["EXP"]) | dict(config["DATA"])
+                calls.append(call)
+                return 0.3, 2
+
+        monkeypatch.setattr("nkululeko.multidb.nkulu", fake_nkulu)
+        monkeypatch.setattr("sys.argv", ["multidb", "--config", str(config_path)])
+        with (
+            patch("nkululeko.multidb.plt.figure"),
+            patch("nkululeko.multidb.plt.bar"),
+            patch("nkululeko.multidb.plt.xticks"),
+            patch("nkululeko.multidb.plt.ylabel"),
+            patch("nkululeko.multidb.plt.axhline"),
+            patch("nkululeko.multidb.plt.legend"),
+            patch("nkululeko.multidb.plt.title"),
+            patch("nkululeko.multidb.plt.tight_layout"),
+            patch("nkululeko.multidb.plt.savefig"),
+            patch("nkululeko.multidb.plt.close"),
+        ):
+            main()
+        return calls
+
+    def test_each_dataset_held_out_exactly_once(self, tmp_path, monkeypatch):
+        calls = self._run(tmp_path, monkeypatch)
+        held_out = []
+        for c in calls:
+            dbs = ast.literal_eval(c["databases"])
+            test_dbs = [d for d in dbs if c.get(f"{d}.split_strategy") == "test"]
+            assert len(test_dbs) == 1
+            held_out.append(test_dbs[0])
+        assert sorted(held_out) == ["a", "b", "c"]
+
+    def test_pool_excludes_the_held_out_dataset(self, tmp_path, monkeypatch):
+        calls = self._run(tmp_path, monkeypatch)
+        for c in calls:
+            dbs = ast.literal_eval(c["databases"])
+            test_db = [d for d in dbs if c[f"{d}.split_strategy"] == "test"][0]
+            train_dbs = [d for d in dbs if c[f"{d}.split_strategy"] == "train"]
+            assert test_db not in train_dbs
+            assert set(train_dbs) == set(dbs) - {test_db}
+            assert set(dbs) == {"a", "b", "c"}
+
+    def test_dev_domain_excluded_from_rotation_and_marked_dev(
+        self, tmp_path, monkeypatch
+    ):
+        calls = self._run(
+            tmp_path,
+            monkeypatch,
+            ini_extra="lodo_dev = dev\n",
+            databases="['a', 'b', 'c']",
+        )
+        held_out = set()
+        for c in calls:
+            dbs = ast.literal_eval(c["databases"])
+            assert "dev" in dbs
+            assert c["dev.split_strategy"] == "dev"
+            assert c["traindevtest"] == "True"
+            test_db = [d for d in dbs if c[f"{d}.split_strategy"] == "test"][0]
+            held_out.add(test_db)
+        # 'dev' is never itself a fold's held-out test set.
+        assert held_out == {"a", "b", "c"}
+
+    def test_no_traindevtest_forced_without_lodo_dev(self, tmp_path, monkeypatch):
+        calls = self._run(tmp_path, monkeypatch)
+        assert all("traindevtest" not in c for c in calls)
+
+    def test_lodo_dev_inside_databases_is_rejected(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        config_path = tmp_path / "exp.ini"
+        config_path.write_text(
+            "[EXP]\nroot = .\ndatabases = ['a', 'b', 'c']\nlodo = True\n"
+            "lodo_dev = a\n"
+            "[DATA]\ntarget = emotion\n[MODEL]\ntype = xgb\n"
+        )
+        monkeypatch.setattr("sys.argv", ["multidb", "--config", str(config_path)])
+        with pytest.raises(SystemExit):
+            main()
+
+    def test_lodo_rejects_reuse_train(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        config_path = tmp_path / "exp.ini"
+        config_path.write_text(
+            "[EXP]\nroot = .\ndatabases = ['a', 'b', 'c']\nlodo = True\n"
+            "reuse_train = True\n"
+            "[DATA]\ntarget = emotion\n[MODEL]\ntype = xgb\n"
+        )
+        monkeypatch.setattr("sys.argv", ["multidb", "--config", str(config_path)])
+        with pytest.raises(SystemExit):
+            main()
+
+    def test_lodo_rejects_train_extra(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        config_path = tmp_path / "exp.ini"
+        config_path.write_text(
+            "[EXP]\nroot = .\ndatabases = ['a', 'b', 'c']\nlodo = True\n"
+            "[DATA]\ntarget = emotion\n[MODEL]\ntype = xgb\n"
+            "[CROSSDB]\ntrain_extra = ['d']\n"
+        )
+        monkeypatch.setattr("sys.argv", ["multidb", "--config", str(config_path)])
+        with pytest.raises(SystemExit):
+            main()
+
+    def test_lodo_rejects_use_splits(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        config_path = tmp_path / "exp.ini"
+        config_path.write_text(
+            "[EXP]\nroot = .\ndatabases = ['a', 'b', 'c']\nlodo = True\n"
+            "use_splits = True\n"
+            "[DATA]\ntarget = emotion\n[MODEL]\ntype = xgb\n"
+        )
+        monkeypatch.setattr("sys.argv", ["multidb", "--config", str(config_path)])
+        with pytest.raises(SystemExit):
+            main()
+
+    def test_lodo_rejects_fewer_than_two_datasets(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        config_path = tmp_path / "exp.ini"
+        config_path.write_text(
+            "[EXP]\nroot = .\ndatabases = ['a']\nlodo = True\n"
+            "[DATA]\ntarget = emotion\n[MODEL]\ntype = xgb\n"
+        )
+        monkeypatch.setattr("sys.argv", ["multidb", "--config", str(config_path)])
+        with pytest.raises(SystemExit):
+            main()
+
+    @pytest.mark.parametrize("bad_value", ["1.0", "", "not-a-number"])
+    def test_lodo_runs_non_integer_is_rejected(self, tmp_path, monkeypatch, bad_value):
+        monkeypatch.chdir(tmp_path)
+        config_path = tmp_path / "exp.ini"
+        config_path.write_text(
+            "[EXP]\nroot = .\ndatabases = ['a', 'b', 'c']\nlodo = True\n"
+            f"lodo_runs = {bad_value}\n"
+            "[DATA]\ntarget = emotion\n[MODEL]\ntype = xgb\n"
+        )
+        monkeypatch.setattr("sys.argv", ["multidb", "--config", str(config_path)])
+        with pytest.raises(SystemExit):
+            main()
+
+    @pytest.mark.parametrize("bad_value", ["0", "-1"])
+    def test_lodo_runs_out_of_range_is_rejected(self, tmp_path, monkeypatch, bad_value):
+        monkeypatch.chdir(tmp_path)
+        config_path = tmp_path / "exp.ini"
+        config_path.write_text(
+            "[EXP]\nroot = .\ndatabases = ['a', 'b', 'c']\nlodo = True\n"
+            f"lodo_runs = {bad_value}\n"
+            "[DATA]\ntarget = emotion\n[MODEL]\ntype = xgb\n"
+        )
+        monkeypatch.setattr("sys.argv", ["multidb", "--config", str(config_path)])
+        with pytest.raises(SystemExit):
+            main()
+
+    def test_lodo_runs_with_random_seed_warns_and_forces_one(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        calls = self._run(
+            tmp_path,
+            monkeypatch,
+            ini_extra="lodo_runs = 3\n",
+            model_extra="random_seed = 42\n",
+        )
+        # 3 folds x 1 repeat each -- lodo_runs is forced down from 3 to 1
+        # because MODEL.random_seed is set, so every repeat would otherwise
+        # be bit-for-bit identical.
+        assert len(calls) == 3
+        assert all(c["runs"] == "1" for c in calls)
+        out = capsys.readouterr().out
+        assert "WARNING" in out
+        assert "random_seed" in out
+
+    def test_lodo_runs_forces_exp_runs_to_one_per_repeat(self, tmp_path, monkeypatch):
+        calls = self._run(
+            tmp_path,
+            monkeypatch,
+            ini_extra="lodo_runs = 3\n",
+        )
+        # 3 folds x 3 repeats each.
+        assert len(calls) == 9
+        assert all(c["runs"] == "1" for c in calls)
+
+    def test_results_lodo_written_with_mean_and_per_fold_lines(
+        self, tmp_path, monkeypatch
+    ):
+        self._run(tmp_path, monkeypatch)
+        content = (tmp_path / "results_lodo.txt").read_text()
+        assert "LODO mean" in content
+        for name in ("a", "b", "c"):
+            assert f"held out {name}" in content
+
+    def test_failed_fold_recorded_as_nan_others_continue(self, tmp_path, monkeypatch):
+        calls = []
+
+        def fake_nkulu(tmp_config):
+            config = configparser.ConfigParser()
+            config.read(tmp_config)
+            dbs = ast.literal_eval(config["DATA"]["databases"])
+            test_db = [
+                d for d in dbs if config["DATA"][f"{d}.split_strategy"] == "test"
+            ][0]
+            calls.append(test_db)
+            if test_db == "b":
+                raise NkululukoError("fake: fold b failed")
+            return 0.3, 2
+
+        self._run(tmp_path, monkeypatch, fake_nkulu=fake_nkulu, calls=calls)
+        assert set(calls) == {"a", "b", "c"}
+        content = (tmp_path / "results_lodo.txt").read_text()
+        assert "held out b: mean nan" in content
+        assert "held out a: mean 0.3000" in content
+
+    def test_all_folds_failing_exits_nonzero(self, tmp_path, monkeypatch):
+        def fake_nkulu(tmp_config):
+            raise NkululukoError("fake: always fails")
+
+        monkeypatch.chdir(tmp_path)
+        config_path = tmp_path / "exp.ini"
+        config_path.write_text(
+            "[EXP]\nroot = .\ndatabases = ['a', 'b', 'c']\nlodo = True\n"
+            "[DATA]\ntarget = emotion\n[MODEL]\ntype = xgb\n"
+        )
+        monkeypatch.setattr("nkululeko.multidb.nkulu", fake_nkulu)
+        monkeypatch.setattr("sys.argv", ["multidb", "--config", str(config_path)])
+        with pytest.raises(SystemExit):
+            with (
+                patch("nkululeko.multidb.plt.figure"),
+                patch("nkululeko.multidb.plt.bar"),
+                patch("nkululeko.multidb.plt.savefig"),
+                patch("nkululeko.multidb.plt.close"),
+            ):
+                main()

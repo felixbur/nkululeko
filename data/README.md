@@ -33,6 +33,7 @@ To support open science and reproducible research, we encourage you to submit PR
 |[crema-d](crema-d/)|emotion|Crowd-sourced Emotional Multimodal Actors Dataset (CREMA-D). English,adopted from tfds|public|Custom academic/research use|
 |[crema-d-csv](crema-d-csv/)|emotion|Crowd-sourced Emotional Multimodal Actors Dataset (CSV version)|public|Custom academic/research use|
 |[cvoicefake-small](cvoicefake_small/)|deepfake|multilingual (de, en, fr, it, zh-CN) audio deepfake dataset with genuine Common Voice clips (Bonafide) and spoofed counterparts from five vocoder/synthesis systems (Griffin-Lim, VCTK Multi-Band MelGAN, VCTK Parallel WaveGAN, VCTK Style MelGAN, WORLD)|public|unknown|
+|[decro](decro/)|deepfake|DEepfake CROss-lingual (DECRO) evaluation dataset -- matched English/Chinese subsets with the same spoofing algorithms, for isolating language effects on deepfake detection|public|see LICENSE in the extracted archive|
 |[dementiabank](dementiabank/)|dementia|Audio for dementia detection, English|restricted|Custom academic/research use|
 |[dementianet](dementianet/)|audio for dementia screening|hundred of public figure audio samples with a confirmed dementia diagnosis|public|MIT|
 |[demos](demos/)|emotion|DEMoS (Database of Elicited Mood in Speech). Italian|restricted|Custom academic/research use|
@@ -102,7 +103,7 @@ To support open science and reproducible research, we encourage you to submit PR
 |[vivae](vivae/)|emotion|Variably Intense Vocalizations of Affect and Emotion Corpus (VIVAE). English vocal bursts|public|unknown|
 
 
-This recipe contains information about 82 datasets.
+This recipe contains information about 83 datasets.
 ## Performance
 
 ![Nkululeko performance](../meta/images/nkululeko_ser_20240719.png)
