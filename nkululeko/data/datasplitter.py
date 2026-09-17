@@ -120,6 +120,11 @@ class Datasplitter(ContextAware):
             if self.split3:
                 self.df_dev = read_cached_df(cache_paths["dev"], self.target)
         else:
+            # source_db tags each row with its originating DATA section name
+            # before pooling -- needed by anything that trains on multiple
+            # pooled databases at once (e.g. multidb's EXP.lodo) and must
+            # know which rows came from which domain, such as domain-balanced
+            # batch sampling or a DANN domain-adversarial head.
             train_dfs, test_dfs, dev_dfs = [], [], []
             for d in all_datasets:
                 if self.split3:
@@ -132,15 +137,18 @@ class Datasplitter(ContextAware):
                 if d.df_train.shape[0] == 0:
                     self.util.debug(f"warn: {d.name} train empty")
                 else:
+                    d.df_train["source_db"] = d.name
                     train_dfs.append(d.df_train)
                 if d.df_test.shape[0] == 0:
                     self.util.debug(f"warn: {d.name} test empty")
                 else:
+                    d.df_test["source_db"] = d.name
                     test_dfs.append(d.df_test)
                 if self.split3:
                     if d.df_dev.shape[0] == 0:
                         self.util.debug(f"warn: {d.name} dev empty")
                     else:
+                        d.df_dev["source_db"] = d.name
                         dev_dfs.append(d.df_dev)
 
             self.df_train = pd.concat(train_dfs) if train_dfs else pd.DataFrame()

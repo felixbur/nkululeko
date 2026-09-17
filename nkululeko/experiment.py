@@ -184,6 +184,7 @@ class Experiment:
                     self.got_speaker = True
                 data.split()
                 data.prepare_labels()
+                data.df_test["source_db"] = d
                 self.df_test = pd.concat(
                     [self.df_test, self.util.make_segmented_index(data.df_test)]
                 )

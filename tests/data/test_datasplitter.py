@@ -441,6 +441,48 @@ class TestFillTrainAndTestsConcatenation:
         assert len(df_train) == 3  # 2 from a + 1 from b
         assert len(df_test) == 3  # 1 from a + 2 from b
 
+    def test_source_db_tags_rows_with_originating_dataset_name(
+        self, tmp_path, monkeypatch
+    ):
+        """Every row of the pooled df_train/df_test must carry a source_db
+        column naming which DATA section it came from -- needed by anything
+        that trains on multiple pooled databases at once (e.g. multidb's
+        EXP.lodo) and must know each row's domain, such as domain-balanced
+        batch sampling or a DANN domain-adversarial head.
+        """
+
+        class FakeDataset:
+            def __init__(self, name, train_files, test_files):
+                self.name = name
+                idx_tr = _make_segmented_index(train_files)
+                idx_te = _make_segmented_index(test_files)
+                self.df_train = _tag_df(pd.DataFrame(index=idx_tr))
+                self.df_test = _tag_df(pd.DataFrame(index=idx_te))
+
+            def split(self):
+                pass
+
+            def prepare_labels(self):
+                pass
+
+        monkeypatch.setitem(glob_conf.config["DATA"], "target", "none")
+        monkeypatch.setattr(glob_conf, "target", None)
+
+        ds_a = FakeDataset("a", ["/a/tr_1.wav", "/a/tr_2.wav"], ["/a/te_1.wav"])
+        ds_b = FakeDataset("b", ["/b/tr_1.wav"], ["/b/te_1.wav", "/b/te_2.wav"])
+
+        ds = Datasplitter.__new__(Datasplitter)
+        ds.util = _make_fake_util(tmp_path)
+        ds.target = None
+        ds.split3 = False
+        ds.got_speaker = False
+        ds.datasets = {"a": ds_a, "b": ds_b}
+
+        df_train, df_test = ds.fill_train_and_tests()
+
+        assert list(df_train["source_db"]) == ["a", "a", "b"]
+        assert list(df_test["source_db"]) == ["a", "b", "b"]
+
     def test_flag_aggregation_any_wins_on_self_and_splits(self, tmp_path, monkeypatch):
         """Flags should be any-wins aggregated onto self and every split DataFrame."""
 
