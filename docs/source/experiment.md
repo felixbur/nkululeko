@@ -88,5 +88,36 @@ with all original test columns plus a `predicted` column.
 
 See [test_new_database.md](test_new_database.md) for a step-by-step guide.
 
+## Combining Predictions Per Speaker (or Any Other Group)
+
+Per-sample predictions are noisy at the individual-sample level; often the
+question that actually matters is the combined judgement per speaker (or
+per session, recording location, etc.) -- e.g. "majority vote across all of
+this speaker's samples". Set `PLOT.combine_per_speaker` to `mode` (majority
+vote) or `mean` (average, then rounded/binned into a class) to get an
+extra confusion matrix plot for this combined-level view, alongside the
+usual per-sample one.
+
+```ini
+[PLOT]
+combine_per_speaker = mode
+combine_per_speaker.col = session
+```
+
+By default the samples are grouped by the `speaker` column. Set
+`combine_per_speaker.col` to group by any other column instead (e.g.
+`session`), as long as it's present in the test dataframe (loaded via
+`DATA.<db>.columns` if it isn't one of nkululeko's standard columns).
+
+This produces, in the results folder:
+
+* a confusion-matrix plot named `<exp_name>_<col>combined_<function>.png`, and
+* a text file, `<col>_combined_<function>_<model_description>.txt`, with the
+  combined-level score (not just the per-sample one) -- e.g.
+  `speaker-combined (mode) result: UAR: 0.812 (0.750/0.870)`.
+
+Not available for `loso`, `logo`, or k-fold cross-validation (`k_fold_cross`),
+since there's no single held-out test set to combine.
+
 ## Related
 See `explore.md` for dataset analysis without training and `optim.md` for hyperparameter search.

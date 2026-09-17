@@ -140,3 +140,39 @@ format = pdf
 ```
 
 Source: http://blog.syntheticspeech.de/2024/01/02/nkululeko-compare-several-databases/
+
+## Leave-one-dataset-out (LODO) mode
+
+Set `EXP.lodo = True` to switch multidb from the default N x N pairwise matrix to leave-one-dataset-out (LODO) cross-validation: for each database in `databases`, that database is held out as the fold's test set while every other database in the list is pooled together for training, rotating until every database has been the held-out test set exactly once. This is useful for estimating how well a model generalizes to an unseen recording domain, rather than to a single other database.
+
+`databases` needs at least 2 entries, and `lodo` is not compatible with `reuse_train`, `train_extra`, or `use_splits`.
+
+Instead of `heatmap.png`, LODO mode writes:
+
+* `results_lodo.txt`: the overall LODO mean +/- std across fold means, plus each fold's own mean +/- std (and, if `lodo_runs > 1`, its individual per-run results).
+* `lodo.png`: a bar chart of each fold's mean result with error bars.
+
+Two optional settings refine the fold loop:
+
+* **lodo_dev**: name of a database to exclude from the rotation and use as a fixed, genuine dev split (`split_strategy = dev`) in every fold, for real early-stopping instead of scoring epochs against the fold's own test set. Forces `traindevtest = True`. Must not also appear in `databases`.
+* **lodo_runs**: repeats each fold that many times (forcing `EXP.runs = 1` per repeat) and reports each fold's mean +/- std across those repeats. Prefer this over `EXP.runs` for honest multi-seed averaging in LODO mode: with `EXP.runs > 1`, nkululeko returns only the single best-of-N-runs result per fold, not their mean. If `MODEL.random_seed` is set, every repeat would otherwise be identical, so `lodo_runs` is silently forced back down to 1 (with a warning).
+
+```ini
+[EXP]
+root = ./experiments/lodo_demo/
+databases = ['emodb', 'polish', 'emovo']
+lodo = True
+lodo_dev = for2sec
+lodo_runs = 5
+[DATA]
+target = emotion
+labels = ['neutral', 'happy', 'sad', 'angry']
+[FEATS]
+type = ['os']
+[MODEL]
+type = xgb
+```
+
+```bash
+python -m nkululeko.multidb --config my_lodo_conf.ini
+```
