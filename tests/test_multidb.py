@@ -21,6 +21,7 @@ from nkululeko.multidb import (
     _lodo,
     _metric_label,
     _no_reuse,
+    _random_seed_set,
     _reuse_train,
     main,
     plot_heatmap,
@@ -823,6 +824,28 @@ class TestLodoHelper:
         assert not _lodo(config)
 
 
+class TestRandomSeedSetHelper:
+    def test_false_when_no_model_section(self):
+        assert not _random_seed_set(configparser.ConfigParser())
+
+    def test_false_when_not_set(self):
+        config = configparser.ConfigParser()
+        config.add_section("MODEL")
+        assert not _random_seed_set(config)
+
+    def test_false_for_literal_false(self):
+        config = configparser.ConfigParser()
+        config.add_section("MODEL")
+        config["MODEL"]["random_seed"] = "False"
+        assert not _random_seed_set(config)
+
+    def test_true_for_int(self):
+        config = configparser.ConfigParser()
+        config.add_section("MODEL")
+        config["MODEL"]["random_seed"] = "42"
+        assert _random_seed_set(config)
+
+
 class TestMainLodo:
     """EXP.lodo (opt-in): rotate which dataset is held out as the fold's
     test set, pooling every other dataset for training -- see main()'s
@@ -837,6 +860,7 @@ class TestMainLodo:
         databases="['a', 'b', 'c']",
         fake_nkulu=None,
         calls=None,
+        model_extra="",
     ):
         monkeypatch.chdir(tmp_path)
         config_path = tmp_path / "exp.ini"
@@ -844,6 +868,7 @@ class TestMainLodo:
             f"[EXP]\nroot = .\ndatabases = {databases}\nlodo = True\n"
             f"{ini_extra}"
             "[DATA]\ntarget = emotion\n[MODEL]\ntype = xgb\n"
+            f"{model_extra}"
         )
         if calls is None:
             calls = []
@@ -952,6 +977,73 @@ class TestMainLodo:
         monkeypatch.setattr("sys.argv", ["multidb", "--config", str(config_path)])
         with pytest.raises(SystemExit):
             main()
+
+    def test_lodo_rejects_use_splits(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        config_path = tmp_path / "exp.ini"
+        config_path.write_text(
+            "[EXP]\nroot = .\ndatabases = ['a', 'b', 'c']\nlodo = True\n"
+            "use_splits = True\n"
+            "[DATA]\ntarget = emotion\n[MODEL]\ntype = xgb\n"
+        )
+        monkeypatch.setattr("sys.argv", ["multidb", "--config", str(config_path)])
+        with pytest.raises(SystemExit):
+            main()
+
+    def test_lodo_rejects_fewer_than_two_datasets(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        config_path = tmp_path / "exp.ini"
+        config_path.write_text(
+            "[EXP]\nroot = .\ndatabases = ['a']\nlodo = True\n"
+            "[DATA]\ntarget = emotion\n[MODEL]\ntype = xgb\n"
+        )
+        monkeypatch.setattr("sys.argv", ["multidb", "--config", str(config_path)])
+        with pytest.raises(SystemExit):
+            main()
+
+    @pytest.mark.parametrize("bad_value", ["1.0", "", "not-a-number"])
+    def test_lodo_runs_non_integer_is_rejected(self, tmp_path, monkeypatch, bad_value):
+        monkeypatch.chdir(tmp_path)
+        config_path = tmp_path / "exp.ini"
+        config_path.write_text(
+            "[EXP]\nroot = .\ndatabases = ['a', 'b', 'c']\nlodo = True\n"
+            f"lodo_runs = {bad_value}\n"
+            "[DATA]\ntarget = emotion\n[MODEL]\ntype = xgb\n"
+        )
+        monkeypatch.setattr("sys.argv", ["multidb", "--config", str(config_path)])
+        with pytest.raises(SystemExit):
+            main()
+
+    @pytest.mark.parametrize("bad_value", ["0", "-1"])
+    def test_lodo_runs_out_of_range_is_rejected(self, tmp_path, monkeypatch, bad_value):
+        monkeypatch.chdir(tmp_path)
+        config_path = tmp_path / "exp.ini"
+        config_path.write_text(
+            "[EXP]\nroot = .\ndatabases = ['a', 'b', 'c']\nlodo = True\n"
+            f"lodo_runs = {bad_value}\n"
+            "[DATA]\ntarget = emotion\n[MODEL]\ntype = xgb\n"
+        )
+        monkeypatch.setattr("sys.argv", ["multidb", "--config", str(config_path)])
+        with pytest.raises(SystemExit):
+            main()
+
+    def test_lodo_runs_with_random_seed_warns_and_forces_one(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        calls = self._run(
+            tmp_path,
+            monkeypatch,
+            ini_extra="lodo_runs = 3\n",
+            model_extra="random_seed = 42\n",
+        )
+        # 3 folds x 1 repeat each -- lodo_runs is forced down from 3 to 1
+        # because MODEL.random_seed is set, so every repeat would otherwise
+        # be bit-for-bit identical.
+        assert len(calls) == 3
+        assert all(c["runs"] == "1" for c in calls)
+        out = capsys.readouterr().out
+        assert "WARNING" in out
+        assert "random_seed" in out
 
     def test_lodo_runs_forces_exp_runs_to_one_per_repeat(self, tmp_path, monkeypatch):
         calls = self._run(
