@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version 1.11.1 (26-09-22)
+-------------------------
+* add FEATS.type = voicesauce: VoiceSauce-style voice-quality measures (H1, H2, H4,
+  A1, A2, A3, spectral-tilt differences H1H2/H1A1/H1A2/H1A3/H2H4, and CPP), computed
+  via parselmouth/Praat rather than wrapping opensauce-python (which turned out to be
+  abandoned since 2019 and missing exactly these measures); see
+  examples/exp_emodb_voicesauce_xgb.ini for a runnable example
+
 Version 1.11.0 (26-09-17)
 -------------------------
 * introducing LODO (leave-one-database-out) for multidb

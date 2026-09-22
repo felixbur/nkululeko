@@ -138,6 +138,7 @@ class FeatureExtractor(ContextAware):
             "squim",
             "clap",
             "praat",
+            "voicesauce",
             "mld",
             "import",
             "sptk",
