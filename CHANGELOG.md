@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 1.11.2 (26-09-22)
+-------------------------
+* nkululeko.augment: accept the config file as a positional argument, not just
+  --config (matching nkululeko.py and multidb.py)
+
 Version 1.11.1 (26-09-22)
 -------------------------
 * add FEATS.type = voicesauce: VoiceSauce-style voice-quality measures (H1, H2, H4,
