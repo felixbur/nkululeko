@@ -903,16 +903,26 @@ def _predict_with_model(seg_df, args, util, out_path=None, restart=False):
     model = expr.runmgr.get_best_model()
     lab_enc = getattr(expr, "label_encoder", None)
 
-    # Build a fresh feature extractor from FEATS.type. The pickled
-    # extractor inside the experiment is unreliable: experiment.save()
-    # strips the inner model/model_interface attributes (to make the
-    # object picklable) but leaves `model_loaded=True` behind, so
-    # `extract_sample()` would skip the reload and then AttributeError.
-    feats_type = util.config_val("FEATS", "type", None)
-    if feats_type is None:
-        util.error("--type model requires FEATS.type in --config")
-    extractor_name = _first_extractor(feats_type)
-    feature_extractor = _get_feature_extractor(extractor_name, util)
+    # Finetuned (transformer) models do their own feature extraction inside
+    # predict_sample() and consume the raw audio signal directly - their
+    # configs conventionally set FEATS.type = [] (no separate feature
+    # extractor), which would otherwise resolve to no extractor at all and
+    # crash below before predict_sample() is ever reached.
+    model_type = util.config_val("MODEL", "type", None)
+    is_finetuned = model_type == "finetune"
+
+    feature_extractor = None
+    if not is_finetuned:
+        # Build a fresh feature extractor from FEATS.type. The pickled
+        # extractor inside the experiment is unreliable: experiment.save()
+        # strips the inner model/model_interface attributes (to make the
+        # object picklable) but leaves `model_loaded=True` behind, so
+        # `extract_sample()` would skip the reload and then AttributeError.
+        feats_type = util.config_val("FEATS", "type", None)
+        if feats_type is None:
+            util.error("--type model requires FEATS.type in --config")
+        extractor_name = _first_extractor(feats_type)
+        feature_extractor = _get_feature_extractor(extractor_name, util)
 
     is_classification = util.exp_is_classification()
     scale_feats = util.config_val("FEATS", "scale", False)
@@ -946,11 +956,14 @@ def _predict_with_model(seg_df, args, util, out_path=None, restart=False):
             signal, sr = audiofile.read(
                 file, offset=offset, duration=duration, always_2d=True
             )
-            features = feature_extractor.extract_sample(signal, sr)
-            if scale_feats:
-                features = (features - features.mean()) / features.std()
-            features = np.nan_to_num(features)
-            result_dict = model.predict_sample(features)
+            if is_finetuned:
+                result_dict = model.predict_sample(signal)
+            else:
+                features = feature_extractor.extract_sample(signal, sr)
+                if scale_feats:
+                    features = (features - features.mean()) / features.std()
+                features = np.nan_to_num(features)
+                result_dict = model.predict_sample(features)
         except Exception as e:
             util.warn(f"prediction failed for {file}: {e}")
             if not failures:
@@ -974,7 +987,10 @@ def _predict_with_model(seg_df, args, util, out_path=None, restart=False):
                 for k, v in result_dict.items():
                     row[str(k)] = v
         else:
-            row["predicted"] = result_dict
+            # Flatten to a plain scalar: TunedModel.predict_sample() returns
+            # a 1-element array (e.g. array([0.42])) rather than the bare
+            # scalar other model types' predict_sample() returns.
+            row["predicted"] = float(np.asarray(result_dict).reshape(-1)[0])
 
         pred_rows.append(row)
         index_keep.append(idx)

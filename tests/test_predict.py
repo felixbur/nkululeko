@@ -1232,6 +1232,109 @@ class TestPredictWithModel:
         # The fresh extractor produced features and we got back a prediction row.
         assert len(preds) == 1
 
+    def test_finetune_model_skips_feature_extractor(self, monkeypatch, tmp_path):
+        """Regression for GH #150: MODEL.type = finetune conventionally
+        pairs with FEATS.type = [], which _first_extractor()/
+        _get_feature_extractor() previously turned into an AttributeError
+        ('NoneType' object has no attribute 'lower') before predict_sample()
+        was ever reached. Finetuned models must skip extractor resolution
+        entirely and get the raw audio signal instead."""
+        import configparser
+
+        import nkululeko.glob_conf as glob_conf
+        import nkululeko.experiment as expmod
+        from nkululeko import predict as predict_mod
+
+        wav = tmp_path / "x.wav"
+        _write_silent_wav(wav)
+
+        cfg = configparser.ConfigParser()
+        cfg["EXP"] = {"root": str(tmp_path), "name": "x"}
+        cfg["DATA"] = {"databases": "['adhoc']", "target": "emotion"}
+        cfg["FEATS"] = {"type": "[]"}
+        cfg["MODEL"] = {"type": "finetune"}
+        monkeypatch.setattr(glob_conf, "config", cfg)
+
+        fake_model = MagicMock()
+        fake_model.predict_sample.return_value = {"anger": 0.7, "neutral": 0.3}
+        fake_expr = MagicMock()
+        fake_expr.runmgr.get_best_model.return_value = fake_model
+        fake_expr.label_encoder = None
+        monkeypatch.setattr(expmod, "Experiment", lambda *a, **kw: fake_expr)
+
+        # Must not be called at all for a finetuned model.
+        spy = MagicMock(side_effect=AssertionError("extractor should not be built"))
+        monkeypatch.setattr(predict_mod, "_get_feature_extractor", spy)
+
+        seg_df = predict_mod._build_segmented_df([str(wav)])
+
+        util = MagicMock()
+        util.get_save_name.return_value = str(tmp_path / "whatever")
+        util.exp_is_classification.return_value = True
+        util.config_val.side_effect = lambda section, key, default: (
+            cfg[section][key] if section in cfg and key in cfg[section] else default
+        )
+
+        preds = predict_mod._predict_with_model(seg_df, argparse.Namespace(), util)
+
+        assert not spy.called
+        # predict_sample was called with the raw (signal, ) pair, not features.
+        assert fake_model.predict_sample.called
+        (signal_arg,), _kwargs = fake_model.predict_sample.call_args
+        assert isinstance(signal_arg, np.ndarray)
+        assert len(preds) == 1
+        # No label_encoder configured -> raw predict_sample() keys are kept
+        # as-is (already label strings for TunedModel, unlike the numeric
+        # class indices other model types return).
+        assert preds.iloc[0]["anger"] == 0.7
+        assert preds.iloc[0]["neutral"] == 0.3
+
+    def test_finetune_regression_flattens_to_scalar(self, monkeypatch, tmp_path):
+        """TunedModel.predict_sample() returns a 1-element array (e.g.
+        array([0.42])) for regression, unlike other model types' bare
+        scalar - the output column must still be a plain float."""
+        import configparser
+
+        import nkululeko.glob_conf as glob_conf
+        import nkululeko.experiment as expmod
+        from nkululeko import predict as predict_mod
+
+        wav = tmp_path / "x.wav"
+        _write_silent_wav(wav)
+
+        cfg = configparser.ConfigParser()
+        cfg["EXP"] = {"root": str(tmp_path), "name": "x"}
+        cfg["DATA"] = {"databases": "['adhoc']", "target": "arousal"}
+        cfg["FEATS"] = {"type": "[]"}
+        cfg["MODEL"] = {"type": "finetune"}
+        monkeypatch.setattr(glob_conf, "config", cfg)
+
+        fake_model = MagicMock()
+        fake_model.predict_sample.return_value = np.array([0.42], dtype=np.float32)
+        fake_expr = MagicMock()
+        fake_expr.runmgr.get_best_model.return_value = fake_model
+        fake_expr.label_encoder = None
+        monkeypatch.setattr(expmod, "Experiment", lambda *a, **kw: fake_expr)
+        monkeypatch.setattr(
+            predict_mod,
+            "_get_feature_extractor",
+            MagicMock(side_effect=AssertionError("extractor should not be built")),
+        )
+
+        seg_df = predict_mod._build_segmented_df([str(wav)])
+
+        util = MagicMock()
+        util.get_save_name.return_value = str(tmp_path / "whatever")
+        util.exp_is_classification.return_value = False
+        util.config_val.side_effect = lambda section, key, default: (
+            cfg[section][key] if section in cfg and key in cfg[section] else default
+        )
+
+        preds = predict_mod._predict_with_model(seg_df, argparse.Namespace(), util)
+
+        assert preds.iloc[0]["predicted"] == pytest.approx(0.42, abs=1e-6)
+        assert isinstance(preds.iloc[0]["predicted"], float)
+
     def test_all_rows_failing_calls_error(self, monkeypatch, tmp_path):
         """Regression: if every row raises during prediction (e.g. the
         CUDA-tensor-to-numpy bug hitting every single row of a corpus),
