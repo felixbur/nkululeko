@@ -10,7 +10,12 @@ The `nkululeko.augment` module applies audio augmentations (noise, speed, pitch 
 ## Invocation
 ```bash
 python -m nkululeko.augment --config examples/exp_emodb_os_svm.ini
+# equivalent
+python -m nkululeko.augment examples/exp_emodb_os_svm.ini
 ```
+The config path can also be given positionally instead of via `--config`;
+if neither is given, it defaults to `exp.ini` in the current directory.
+
 (Augmentation options must be specified in `[DATA]` / dedicated augmentation sections; see `ini_file.md`.)
 
 ## Common Augmentations
