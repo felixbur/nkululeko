@@ -1,4 +1,7 @@
 # feats_voicesauce.py
+import os
+import tempfile
+
 import pandas as pd
 
 from nkululeko.feat_extract import feats_voicesauce_core
@@ -51,13 +54,22 @@ class VoicesauceSet(Featureset):
         import audformat
         import audiofile
 
-        tmp_audio_names = ["voicesauce_audio_tmp.wav"]
-        audiofile.write(tmp_audio_names[0], signal, sr)
-        df = pd.DataFrame(index=tmp_audio_names)
-        index = audformat.utils.to_segmented_index(df.index, allow_nat=False)
-        df = feats_voicesauce_core.compute_features(index)
-        df.set_index(index)
-        df = self.util.handle_nan(df, context="voicesauce features")
-        df = df.astype(float)
-        feats = df.to_numpy()
+        # A fixed relative filename here would be unsafe under concurrent
+        # calls (one call's audio can overwrite another's before
+        # compute_features reads it) and would litter the caller's working
+        # directory. Use a unique file under the system temp directory
+        # instead, and always remove it afterwards.
+        fd, tmp_audio_name = tempfile.mkstemp(suffix=".wav")
+        os.close(fd)
+        try:
+            audiofile.write(tmp_audio_name, signal, sr)
+            df = pd.DataFrame(index=[tmp_audio_name])
+            index = audformat.utils.to_segmented_index(df.index, allow_nat=False)
+            df = feats_voicesauce_core.compute_features(index)
+            df.set_index(index)
+            df = self.util.handle_nan(df, context="voicesauce features")
+            df = df.astype(float)
+            feats = df.to_numpy()
+        finally:
+            os.remove(tmp_audio_name)
         return feats

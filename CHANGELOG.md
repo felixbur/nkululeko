@@ -1,11 +1,6 @@
 Changelog
 =========
 
-Version 1.11.2 (26-09-22)
--------------------------
-* nkululeko.augment: accept the config file as a positional argument, not just
-  --config (matching nkululeko.py and multidb.py)
-
 Version 1.11.1 (26-09-22)
 -------------------------
 * add FEATS.type = voicesauce: VoiceSauce-style voice-quality measures (H1, H2, H4,
@@ -13,6 +8,11 @@ Version 1.11.1 (26-09-22)
   via parselmouth/Praat rather than wrapping opensauce-python (which turned out to be
   abandoned since 2019 and missing exactly these measures); see
   examples/exp_emodb_voicesauce_xgb.ini for a runnable example
+* nkululeko.augment: accept the config file as a positional argument, not just
+  --config (matching nkululeko.py and multidb.py)
+* fix bug: VoicesauceSet.extract_sample() wrote to a fixed relative filename,
+  unsafe under concurrent calls and left behind in the caller's working
+  directory; now uses a unique temp file, removed in a finally block
 
 Version 1.11.0 (26-09-17)
 -------------------------
