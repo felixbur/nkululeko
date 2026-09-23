@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version 1.11.3 (26-09-23)
+-------------------------
+* document FEATS.type = emotion2vec and [FINETUNE] pretrained_model = emotion2vec
+  in ini_file.md (both were already implemented but undocumented)
+* fix bug: nkululeko.autopredict's `--model emotion` target (ap_emotion.py) discarded
+  the extracted emotion2vec features and always returned "neutral" for every sample;
+  add FEATS.type = emotion2vec_emotion (the emotion2vec_plus_* checkpoints' own
+  classification output) and use it for a real per-file predicted emotion
 
 Version 1.11.2 (26-09-23)
 -------------------------
