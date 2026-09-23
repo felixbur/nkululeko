@@ -159,7 +159,7 @@ class Modelrunner(ContextAware):
         if self.model.model_type == "finetuned":
             # epochs are handled by Huggingface API
             self.model.train()
-            if len(self.feats_test) == 0:
+            if self.df_test is None or len(self.df_test) == 0:
                 report = self._empty_test_report()
             else:
                 report = self.model.predict()
@@ -188,7 +188,7 @@ class Modelrunner(ContextAware):
                 else:
                     self.model.set_id(self.run, epoch)
                     self.model.train()
-                if len(self.feats_test) == 0:
+                if self.df_test is None or len(self.df_test) == 0:
                     report = self._empty_test_report()
                 else:
                     report = self.model.predict()
@@ -247,7 +247,7 @@ class Modelrunner(ContextAware):
 
     def eval_last_model(self, df_test, feats_test):
         self.model.reset_test(df_test, feats_test)
-        if len(feats_test) == 0:
+        if df_test is None or len(df_test) == 0:
             report = self._empty_test_report()
         else:
             report = self.model.predict()
@@ -272,7 +272,7 @@ class Modelrunner(ContextAware):
         if split_name:
             self.split_name = split_name.upper()
 
-        if len(feats_test) == 0:
+        if df_test is None or len(df_test) == 0:
             report = self._empty_test_report()
         else:
             report = self.model.predict()

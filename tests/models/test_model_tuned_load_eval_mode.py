@@ -22,6 +22,7 @@ def make_fake_self():
     return types.SimpleNamespace(
         torch_root="/fake/torch_root",
         config="fake-config",
+        device="cpu",
         set_id=lambda run, epoch: None,
     )
 
@@ -39,6 +40,24 @@ class TestLoadSetsEvalMode:
 
         assert fake_self.model is fake_model
         fake_model.eval.assert_called_once()
+        # GH #441 (minor): reload previously left the model on whatever
+        # device from_pretrained() defaults to (CPU), ignoring [FINETUNE]
+        # device - silently running inference on CPU with device = cuda
+        # configured.
+        fake_model.to.assert_called_once_with("cpu")
+
+    def test_standard_branch_moves_to_configured_device(self):
+        fake_self = make_fake_self()
+        fake_self.device = "cuda"
+        fake_model = MagicMock()
+
+        with patch(
+            "nkululeko.models.model_tuned.Model.from_pretrained",
+            return_value=fake_model,
+        ):
+            TunedModel.load(fake_self, run=0, epoch=30)
+
+        fake_model.to.assert_called_once_with("cuda")
 
     def test_emotion2vec_branch_still_calls_eval(self):
         # Regression guard: the emotion2vec branch already called .eval()
@@ -53,3 +72,4 @@ class TestLoadSetsEvalMode:
             TunedModel.load(fake_self, run=0, epoch=30)
 
         fake_self.model.eval.assert_called_once()
+        fake_self.model.to.assert_called_once_with("cpu")

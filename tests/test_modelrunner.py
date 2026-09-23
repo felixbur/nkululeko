@@ -297,3 +297,93 @@ class TestEmptyTestSetGuard:
 
         assert len(reports) == 1
         assert reports[0].result.test == 0
+
+
+class TestFinetunedNoneFeatsTest:
+    """GH #441: finetuned models have no feature matrix (FEATS.type = [],
+    so feats_test is None, not an empty DataFrame). The empty-test-set
+    guards used to check len(feats_test)/len(self.feats_test), which
+    crashed with TypeError: object of type 'NoneType' has no len() as soon
+    as training finished on a non-empty test set. The guards must check the
+    always-present df_test instead."""
+
+    def test_do_epochs_finetuned_none_feats_test_nonempty_df(self, dummy_dfs):
+        df_train, df_test, feats_train, _feats_test = dummy_dfs
+        mr = Modelrunner(df_train, df_test, feats_train, None, run=0)
+
+        from nkululeko.reporting.reporter import Reporter
+
+        class FakeFinetunedModel:
+            model_type = "finetuned"
+            store_path = "fake"
+
+            def is_ann(self):
+                return True
+
+            def train(self):
+                pass
+
+            def predict(self):
+                return Reporter(
+                    df_test["emotion"].to_numpy(),
+                    df_test["emotion"].to_numpy(),
+                    0,
+                    1,
+                    context=mr.context,
+                )
+
+        mr.model = FakeFinetunedModel()
+
+        # Must not raise TypeError: object of type 'NoneType' has no len()
+        reports, epoch = mr.do_epochs()
+
+        assert len(reports) == 1
+        assert reports[0].result.test != 0
+
+    def test_eval_last_model_finetuned_none_feats_test_nonempty_df(self, dummy_dfs):
+        df_train, df_test, feats_train, _feats_test = dummy_dfs
+        mr = Modelrunner(df_train, df_test, feats_train, None, run=0)
+        mr.model.reset_test = lambda df, feats: None
+
+        from nkululeko.reporting.reporter import Reporter
+
+        mr.model.predict = lambda: Reporter(
+            df_test["emotion"].to_numpy(),
+            df_test["emotion"].to_numpy(),
+            0,
+            1,
+            context=mr.context,
+        )
+
+        # Must not raise TypeError: object of type 'NoneType' has no len()
+        report = mr.eval_last_model(df_test, None)
+
+        assert report.result.test != 0
+
+    def test_eval_specific_model_finetuned_none_feats_test_nonempty_df(self, dummy_dfs):
+        df_train, df_test, feats_train, _feats_test = dummy_dfs
+        mr = Modelrunner(df_train, df_test, feats_train, None, run=0)
+
+        from nkululeko.reporting.reporter import Reporter
+
+        class FakeModel:
+            store_path = "fake"
+
+            def reset_test(self, df, feats):
+                pass
+
+            def predict(self):
+                return Reporter(
+                    df_test["emotion"].to_numpy(),
+                    df_test["emotion"].to_numpy(),
+                    0,
+                    1,
+                    context=mr.context,
+                )
+
+        # Must not raise TypeError: object of type 'NoneType' has no len()
+        report = mr.eval_specific_model(
+            FakeModel(), df_test, None, split_name="test"
+        )
+
+        assert report.result.test != 0
