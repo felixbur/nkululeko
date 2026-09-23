@@ -54,19 +54,24 @@ class TestSegmentToWav:
     sample rate from file metadata (soundfile.info()) instead."""
 
     def test_does_not_fully_decode_file_for_sample_rate(self, monkeypatch):
+        import torch
         import torchaudio
 
         ext = Emotion2vec_emotion.__new__(Emotion2vec_emotion)
         ext.util = MagicMock()
 
+        # Mocked outright (not a spy-and-passthrough to the real decoder):
+        # this must hold regardless of whichever torchaudio I/O backend
+        # happens to be installed (e.g. CI resolving a torchaudio version
+        # that routes torchaudio.load() through the optional torchcodec
+        # backend, which isn't installed there).
         load_calls = []
-        orig_load = torchaudio.load
 
-        def spy_load(*args, **kwargs):
+        def fake_load(*args, **kwargs):
             load_calls.append((args, kwargs))
-            return orig_load(*args, **kwargs)
+            return torch.zeros((1, 16000)), 16000
 
-        monkeypatch.setattr(torchaudio, "load", spy_load)
+        monkeypatch.setattr(torchaudio, "load", fake_load)
 
         path, is_temp = ext._segment_to_wav(
             "./data/test/audio/debate_sample.wav",
