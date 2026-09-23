@@ -1,6 +1,8 @@
+import os
 from unittest.mock import MagicMock
 
 import numpy as np
+import pandas as pd
 import pytest
 
 from nkululeko.feat_extract.feats_emotion2vec_emotion import (
@@ -42,6 +44,45 @@ class TestScoresFromResult:
         ext = self._make_extractor()
         assert ext._scores_from_result([], "some_file.wav") == {}
         assert ext._scores_from_result(None, "some_file.wav") == {}
+
+
+class TestSegmentToWav:
+    """Reviewer follow-up: _segment_to_wav() previously called
+    torchaudio.load() on the whole file just to read its sample rate, then
+    loaded it again for the actual segment -- doubling I/O/memory per file
+    on a path autopredict commonly runs over full files. Must read the
+    sample rate from file metadata (soundfile.info()) instead."""
+
+    def test_does_not_fully_decode_file_for_sample_rate(self, monkeypatch):
+        import torchaudio
+
+        ext = Emotion2vec_emotion.__new__(Emotion2vec_emotion)
+        ext.util = MagicMock()
+
+        load_calls = []
+        orig_load = torchaudio.load
+
+        def spy_load(*args, **kwargs):
+            load_calls.append((args, kwargs))
+            return orig_load(*args, **kwargs)
+
+        monkeypatch.setattr(torchaudio, "load", spy_load)
+
+        path, is_temp = ext._segment_to_wav(
+            "./data/test/audio/debate_sample.wav",
+            pd.Timedelta(seconds=1),
+            pd.Timedelta(seconds=2),
+        )
+        try:
+            # Exactly one torchaudio.load() call (the actual segment),
+            # never a full-file, unbounded-frames decode just for the
+            # sample rate.
+            assert len(load_calls) == 1
+            _, kwargs = load_calls[0]
+            assert kwargs.get("num_frames") != -1
+        finally:
+            if is_temp:
+                os.remove(path)
 
 
 class TestPredictOne:

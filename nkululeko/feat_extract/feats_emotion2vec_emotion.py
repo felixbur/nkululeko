@@ -141,7 +141,13 @@ class Emotion2vec_emotion(Featureset):
         if not (hasattr(start, "total_seconds") and hasattr(end, "total_seconds")):
             return file, False
 
-        _, sampling_rate = torchaudio.load(file, frame_offset=0, num_frames=-1)
+        import soundfile as sf
+
+        # Read only the header for the sample rate -- torchaudio.load()
+        # would decode the whole file just to discover this, doubling
+        # I/O and memory per file (autopredict commonly processes full
+        # files through this path).
+        sampling_rate = sf.info(file).samplerate
         start_sample = int(start.total_seconds() * sampling_rate)
         num_samples = int((end - start).total_seconds() * sampling_rate)
         signal, sampling_rate = torchaudio.load(
@@ -154,8 +160,6 @@ class Emotion2vec_emotion(Featureset):
         signal_np = signal.squeeze().numpy()
         if signal_np.ndim > 1:
             signal_np = signal_np[0]
-
-        import soundfile as sf
 
         fd, tmp_path = tempfile.mkstemp(suffix=".wav")
         os.close(fd)
