@@ -299,6 +299,57 @@ class TestEmptyTestSetGuard:
         assert reports[0].result.test == 0
 
 
+class TestEmptyFeatsTestClassicModel:
+    """Regression: the df_test-only guard added for GH #441 must not drop
+    the original protection for classic (non-finetuned) models, whose
+    predict() consumes feats_test directly (model.py's get_predictions()),
+    not df_test. A desynced empty feats_test with a non-empty df_test must
+    still be caught, even though that combination is rare in practice
+    (datasplitter.py normally keeps the two in sync)."""
+
+    def test_do_epochs_skips_predict_when_feats_test_empty_but_df_test_nonempty(
+        self, dummy_dfs
+    ):
+        df_train, df_test, feats_train, feats_test = dummy_dfs
+        mr = Modelrunner(df_train, df_test, feats_train, feats_test.iloc[0:0], run=0)
+
+        def _fail_predict():
+            raise AssertionError(
+                "predict() must not be called when feats_test is empty"
+            )
+
+        mr.model.predict = _fail_predict
+
+        reports, epoch = mr.do_epochs()
+
+        assert len(reports) == 1
+        assert reports[0].result.test == 0
+
+    def test_eval_specific_model_skips_predict_when_feats_test_empty_but_df_test_nonempty(
+        self, dummy_dfs
+    ):
+        df_train, df_test, feats_train, feats_test = dummy_dfs
+        mr = Modelrunner(df_train, df_test, feats_train, feats_test, run=0)
+
+        class FakeModel:
+            store_path = "fake"
+
+            def reset_test(self, df, feats):
+                pass
+
+            def predict(self):
+                raise AssertionError(
+                    "predict() must not be called when feats_test is empty"
+                )
+
+        report = mr.eval_specific_model(
+            FakeModel(), df_test, feats_test.iloc[0:0], split_name="test"
+        )
+
+        assert report.result.test == 0
+        assert report.probas is None
+
+
 class TestFinetunedNoneFeatsTest:
     """GH #441: finetuned models have no feature matrix (FEATS.type = [],
     so feats_test is None, not an empty DataFrame). The empty-test-set
@@ -382,8 +433,6 @@ class TestFinetunedNoneFeatsTest:
                 )
 
         # Must not raise TypeError: object of type 'NoneType' has no len()
-        report = mr.eval_specific_model(
-            FakeModel(), df_test, None, split_name="test"
-        )
+        report = mr.eval_specific_model(FakeModel(), df_test, None, split_name="test")
 
         assert report.result.test != 0
