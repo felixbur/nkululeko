@@ -303,6 +303,7 @@ Feature extraction settings. Multiple feature types can be combined by listing t
       * **os.features**: list of selected features (disregard others)
     * **praat**: Praat selected features thanks to [David R. Feinberg scripts](https://github.com/drfeinberg/PraatScripts)
       * **praat.features**: list of selected features (disregard others)
+    * **voicesauce**: VoiceSauce-style voice-quality measures (H1, H2, H4, A1, A2, A3, and the spectral-tilt differences H1H2, H1A1, H1A2, H1A3, H2H4, plus CPP), computed via parselmouth/Praat rather than wrapping the (abandoned, incomplete) [opensauce-python](https://github.com/voicesauce/opensauce-python) tool -- see `nkululeko/feat_extract/feats_voicesauce_core.py` for details and caveats
     * **spectra**: Melspecs for convolutional networks
       * **fft_win_dur** = 25 *(msec analysis frame/window length)*
       * **fft_hop_dur** = 10 *(msec hop duration)*
