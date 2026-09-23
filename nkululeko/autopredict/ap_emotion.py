@@ -5,6 +5,8 @@ Uses emotion2vec models for emotion prediction.
 
 import ast
 
+import pandas as pd
+
 from nkululeko.feature_extractor import FeatureExtractor
 from nkululeko.utils.util import Util
 
@@ -34,12 +36,20 @@ class EmotionPredictor:
         # own class scores (angry/happy/neutral/...); the predicted emotion
         # is whichever column scores highest per row.
         emotion_df = self.feature_extractor.extract()
-        pred_emotion = emotion_df.idxmax(axis=1)
-        # A row that failed extraction comes back all-zero (see
-        # Emotion2vec_emotion._predict_one); idxmax would then arbitrarily
-        # pick the first column as if it were a real (confident)
-        # prediction, so mark those as unknown instead.
-        pred_emotion = pred_emotion.where(emotion_df.sum(axis=1) > 0, "unknown")
+        if emotion_df.shape[1] == 0:
+            # Every row failed extraction (see Emotion2vec_emotion.
+            # _predict_one): pd.DataFrame(all-empty-dicts) has zero
+            # columns, and idxmax(axis=1) raises ValueError on that
+            # ("attempt to get argmax of an empty sequence") rather than
+            # reaching the per-row "unknown" handling below.
+            pred_emotion = pd.Series("unknown", index=emotion_df.index)
+        else:
+            pred_emotion = emotion_df.idxmax(axis=1)
+            # A row that failed extraction comes back all-zero (see
+            # Emotion2vec_emotion._predict_one); idxmax would then
+            # arbitrarily pick the first column as if it were a real
+            # (confident) prediction, so mark those as unknown instead.
+            pred_emotion = pred_emotion.where(emotion_df.sum(axis=1) > 0, "unknown")
 
         return_df = self.df.copy()
         return_df["emotion_pred"] = pred_emotion
