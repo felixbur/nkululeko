@@ -324,6 +324,12 @@ Feature extraction settings. Multiple feature types can be combined by listing t
       * "hubert-base-ls960", "hubert-large-ll60k", "hubert-large-ls960-ft", hubert-xlarge-ll60k, "hubert-xlarge-ls960-ft"
     * **WavLM**:
       * "wavlm-base", "wavlm-base-plus", "wavlm-large"
+    * **emotion2vec variants**: [emotion2vec embeddings](https://github.com/ddlBoJack/emotion2vec) (FunASR, `pip install funasr`)
+      * "emotion2vec", "emotion2vec-base", "emotion2vec-seed", "emotion2vec-large"
+      * **emotion2vec.model** = *HuggingFace model path, overrides the default mapping for the chosen variant*
+    * **emotion2vec_emotion variants**: the same emotion2vec `_plus_*` checkpoints' own emotion classification output (one score column per class: angry/happy/neutral/...), rather than the raw embedding -- backs `nkululeko.predict --model emotion`
+      * "emotion2vec_emotion", "emotion2vec_emotion-base", "emotion2vec_emotion-seed", "emotion2vec_emotion-large"
+      * **emotion2vec.model** = *HuggingFace model path, overrides the default mapping for the chosen variant (shared with the plain emotion2vec option above)*
     * **Whisper**: [whisper models](https://huggingface.co/models?other=whisper)
       * "whisper-base", "whisper-large", "whisper-medium", "whisper-tiny"
     * **audmodel**: generic [audmodel format model](https://audeering.github.io/audmodel/index.html) import
@@ -524,10 +530,11 @@ Model and training specifications. In general, default values should work for cl
 
 ### FINETUNE
 
-Settings specific to `[MODEL] type = finetune` - finetuning a pretrained transformer (wav2vec2, WavLM, HuBERT) end-to-end instead of using it as a fixed feature extractor. Only read when `[MODEL] type = finetune`; every key below is optional and has a default. See [finetune.md](https://github.com/felixbur/nkululeko/blob/main/docs/source/finetune.md) for a full walkthrough and worked examples.
+Settings specific to `[MODEL] type = finetune` - finetuning a pretrained transformer (wav2vec2, WavLM, HuBERT, emotion2vec) end-to-end instead of using it as a fixed feature extractor. Only read when `[MODEL] type = finetune`; every key below is optional and has a default. See [finetune.md](https://github.com/felixbur/nkululeko/blob/main/docs/source/finetune.md) for a full walkthrough and worked examples.
 
 * **pretrained_model**: HuggingFace model name to finetune
   * pretrained_model = facebook/wav2vec2-large-robust-ft-swbd-300h
+  * any name containing `emotion2vec` (e.g. `emotion2vec`, `emotion2vec-base`, `emotion2vec-seed`, `emotion2vec-large`, or an explicit `iic/emotion2vec...` HuggingFace path) finetunes an emotion2vec (FunASR) backbone instead of a HuggingFace transformer; `freeze_layers` and `num_layers` below are not supported for emotion2vec and are ignored with a warning
 * **learning_rate**: learning rate
   * learning_rate = 0.0001
 * **batch_size**: batch size (reduce if you hit out-of-memory errors)
