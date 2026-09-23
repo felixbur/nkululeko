@@ -1,6 +1,11 @@
 Changelog
 =========
 
+
+Version 1.11.2 (26-09-23)
+-------------------------
+* fix: predicting a single file crashes for finetuned models
+
 Version 1.11.1 (26-09-22)
 -------------------------
 * add FEATS.type = voicesauce: VoiceSauce-style voice-quality measures (H1, H2, H4,
