@@ -10,7 +10,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 * `'DATA'.'target'`: `'emotion'` (nkululeko/augment.py:85), `'emotion'` (nkululeko/augmenting/resampler.py:76), `'emotion'` (nkululeko/bundle.py:56), `'emotion'` (nkululeko/bundle.py:218), `None` (nkululeko/data/dataset.py:35), `None` (nkululeko/data/dataset_csv.py:84), `None` (nkululeko/experiment.py:124), `'emotion'` (nkululeko/experiment.py:622), `'emotion'` (nkululeko/experiment.py:632), `'emotion'` (nkululeko/experiment.py:642), `'emotion'` (nkululeko/export.py:108), `'emotion'` (nkululeko/feat_extract/feats_analyser.py:26), `'emotion'` (nkululeko/models/model.py:34), `'emotion'` (nkululeko/plots.py:31), `'class_label'` (nkululeko/plots.py:897), `'emotion'` (nkululeko/testing_predictor.py:71), `None` (nkululeko/utils/util.py:640)
 * `'DATA'.'tests'`: `'False'` (nkululeko/data/dataset.py:834), `False` (nkululeko/nkululeko.py:46), `False` (nkululeko/testing_predictor.py:59)
 * `'DATA'.'type'`: `False` (nkululeko/data/dataset.py:934), `'dummy'` (nkululeko/data/datasplitter.py:236)
-* `'EXP'.'epochs'`: `1` (nkululeko/modelrunner.py:148), `1` (nkululeko/models/model_tuned.py:66), `'50'` (nkululeko/optimizers/scheduler_factory.py:84)
+* `'EXP'.'epochs'`: `1` (nkululeko/modelrunner.py:165), `1` (nkululeko/models/model_tuned.py:66), `'50'` (nkululeko/optimizers/scheduler_factory.py:84)
 * `'EXP'.'language'`: `'en'` (nkululeko/autopredict/ap_text.py:31), `False` (nkululeko/bundle.py:101)
 * `'EXP'.'sample_selection'`: `'all'` (nkululeko/data/datasplitter.py:36), `'train'` (nkululeko/experiment.py:481), `'all'` (nkululeko/experiment.py:502), `'all'` (nkululeko/feat_extract/feats_analyser.py:396), `'all'` (nkululeko/plots.py:636), `'all'` (nkululeko/predict.py:577), `'all'` (nkululeko/resample.py:123), `'all'` (nkululeko/segment.py:242)
 * `'EXP'.'type'`: `None` (nkululeko/data/dataset.py:150), `'classification'` (nkululeko/utils/util.py:299)
@@ -67,8 +67,8 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'DATA' | 'trains' | `False` | nkululeko/utils/naming.py:105 |
 | 'DATA' | 'type' | `'dummy'` / `False` | nkululeko/data/dataset.py:934, nkululeko/data/datasplitter.py:236 |
 | 'DATA' | <f'{stratif_var}_bins'> | `False` | nkululeko/data/dataset.py:573 |
-| 'EXP' | 'balancing' | `False` | nkululeko/modelrunner.py:287 |
-| 'EXP' | 'epochs' | `'50'` / `1` | nkululeko/modelrunner.py:148, nkululeko/models/model_tuned.py:66, nkululeko/optimizers/scheduler_factory.py:84 |
+| 'EXP' | 'balancing' | `False` | nkululeko/modelrunner.py:304 |
+| 'EXP' | 'epochs' | `'50'` / `1` | nkululeko/modelrunner.py:165, nkululeko/models/model_tuned.py:66, nkululeko/optimizers/scheduler_factory.py:84 |
 | 'EXP' | 'export_onnx' | `'False'` | nkululeko/nkululeko.py:131 |
 | 'EXP' | 'filter.sample_selection' | `'all'` | nkululeko/data/datasplitter.py:194 |
 | 'EXP' | 'language' | `'en'` / `False` | nkululeko/autopredict/ap_text.py:31, nkululeko/bundle.py:101 |
@@ -114,8 +114,8 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'FEATS' | 'aud.model' | `'./audmodel/'` | nkululeko/feat_extract/feats_auddim.py:27, nkululeko/feat_extract/feats_audwav2vec2.py:31 |
 | 'FEATS' | 'audmodel.embeddings_name' | `'hidden_states'` | nkululeko/feat_extract/feats_audmodel.py:39 |
 | 'FEATS' | 'audmodel.id' | `'audmodel'` / `False` | nkululeko/feat_extract/feats_audmodel.py:34, nkululeko/feat_extract/feats_audmodel.py:167 |
-| 'FEATS' | 'balancing' | `False` | nkululeko/modelrunner.py:409 |
-| 'FEATS' | 'balancing_random_state' | `42` | nkululeko/modelrunner.py:415 |
+| 'FEATS' | 'balancing' | `False` | nkululeko/modelrunner.py:426 |
+| 'FEATS' | 'balancing_random_state' | `42` | nkululeko/modelrunner.py:432 |
 | 'FEATS' | 'bert.layer' | `'0'` | nkululeko/feat_extract/feats_bert.py:39 |
 | 'FEATS' | 'bert.model' | `f'{self.feat_type}'` | nkululeko/feat_extract/feats_bert.py:31, nkululeko/feat_extract/feats_bert.py:79 |
 | 'FEATS' | 'bert.text_column' | `'text'` | nkululeko/feat_extract/feats_bert.py:57 |
@@ -214,11 +214,11 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'MODEL' | 'n_estimators' | `100` | nkululeko/models/model_xgb.py:30 |
 | 'MODEL' | 'n_jobs' | `'8'` | nkululeko/feat_extract/featureset.py:38, nkululeko/models/model.py:39 |
 | 'MODEL' | 'nan_strategy' | `'zero'` | nkululeko/models/model.py:380 |
-| 'MODEL' | 'only_test' | `False` | nkululeko/modelrunner.py:147 |
+| 'MODEL' | 'only_test' | `False` | nkululeko/modelrunner.py:164 |
 | 'MODEL' | 'optimizer' | `default_optimizer` | nkululeko/optimizers/optimizer_factory.py:33 |
-| 'MODEL' | 'patience' | `False` | nkululeko/modelrunner.py:153, nkululeko/models/model_tuned.py:146 |
+| 'MODEL' | 'patience' | `False` | nkululeko/modelrunner.py:170, nkululeko/models/model_tuned.py:146 |
 | 'MODEL' | 'random_seed' | `'False'` | nkululeko/models/model_adm.py:51, nkululeko/models/model_mlp.py:33, nkululeko/models/model_mlp_regression.py:50, +1 more |
-| 'MODEL' | 'save' | `'True'` | nkululeko/modelrunner.py:222 |
+| 'MODEL' | 'save' | `'True'` | nkululeko/modelrunner.py:239 |
 | 'MODEL' | 'scheduler' | `default_scheduler` | nkululeko/optimizers/scheduler_factory.py:37 |
 | 'MODEL' | 'scheduler.gamma' | `'0.5'` / `'0.95'` | nkululeko/optimizers/scheduler_factory.py:46, nkululeko/optimizers/scheduler_factory.py:54 |
 | 'MODEL' | 'scheduler.step_size' | `'10'` | nkululeko/optimizers/scheduler_factory.py:45 |
@@ -234,7 +234,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'PLOT' | 'combine_per_speaker' | `False` | nkululeko/experiment.py:726 |
 | 'PLOT' | 'combine_per_speaker.col' | `COL_SPEAKER` | nkululeko/experiment.py:769 |
 | 'PLOT' | 'epoch_progression' | `0` | nkululeko/runmanager.py:141 |
-| 'PLOT' | 'epochs' | `False` | nkululeko/modelrunner.py:146 |
+| 'PLOT' | 'epochs' | `False` | nkululeko/modelrunner.py:163 |
 | 'PLOT' | 'fill_areas' | `'False'` | nkululeko/plots.py:426 |
 | 'PLOT' | 'format' | `'png'` | nkululeko/feat_extract/feats_analyser.py:141, nkululeko/feat_extract/feats_analyser.py:347, nkululeko/plots.py:30, +2 more |
 | 'PLOT' | 'fps' | `'1'` | nkululeko/reporting/reporter.py:885 |

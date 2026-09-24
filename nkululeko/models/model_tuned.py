@@ -903,12 +903,20 @@ class TunedModel(BaseModel):
             model_path = os.path.join(self.torch_root, "pytorch_model.bin")
             if os.path.exists(model_path):
                 self.model.load_state_dict(torch.load(model_path))
+                # from_pretrained()/load_state_dict() always materialize on
+                # CPU regardless of [FINETUNE] device - training's own device
+                # placement (via HF Trainer) doesn't carry over to a reload,
+                # so every post-training predict()/predict_sample() call
+                # (reuse, or the final test evaluation) silently ran on CPU
+                # even with device = cuda configured.
+                self.model.to(self.device)
                 self.model.eval()
         else:
             self.model = Model.from_pretrained(
                 self.torch_root,
                 config=self.config,
             )
+            self.model.to(self.device)
             # A freshly constructed/loaded nn.Module defaults to train mode,
             # so without this, dropout stays active during every subsequent
             # predict() call - corrupting exactly the dev/test evaluation
@@ -1204,8 +1212,13 @@ class Model(Wav2Vec2PreTrainedModel):
                 )
 
     def predict(self, signal):
-        result = self(torch.from_numpy(signal))
-        result = result[0].detach().numpy()[0]
+        # Move the input to wherever the model's own weights live (load()
+        # places the model on [FINETUNE] device, not necessarily CPU) and
+        # bring the result back to CPU before .numpy() - a CUDA tensor
+        # raises "can't convert cuda:0 device type tensor to numpy" there.
+        device = next(self.parameters()).device
+        result = self(torch.from_numpy(signal).to(device))
+        result = result[0].detach().cpu().numpy()[0]
         return result
 
 

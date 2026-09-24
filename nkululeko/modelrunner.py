@@ -140,6 +140,23 @@ class Modelrunner(ContextAware):
         )
         return Reporter(np.array([]), np.array([]), self.run, 0, context=self.context)
 
+    @staticmethod
+    def _is_empty_split(df_test, feats_test):
+        """True if predict() would be called on an empty (0-sample) split.
+
+        df_test is checked because it's the only thing guaranteed to exist
+        for every model type - finetuned models have no feature matrix at
+        all (feats_test is None, since FEATS.type = [] skips feature
+        extraction), so only df_test can be checked there (GH #441).
+        Every other model type's predict() consumes feats_test directly
+        (see model.py's get_predictions()), not df_test, so an empty
+        feats_test must still be caught even on the rare occasion it
+        desyncs from a non-empty df_test.
+        """
+        if df_test is None or len(df_test) == 0:
+            return True
+        return feats_test is not None and len(feats_test) == 0
+
     def do_epochs(self):
         # initialze results
         reports = []
@@ -159,7 +176,7 @@ class Modelrunner(ContextAware):
         if self.model.model_type == "finetuned":
             # epochs are handled by Huggingface API
             self.model.train()
-            if len(self.feats_test) == 0:
+            if self._is_empty_split(self.df_test, self.feats_test):
                 report = self._empty_test_report()
             else:
                 report = self.model.predict()
@@ -188,7 +205,7 @@ class Modelrunner(ContextAware):
                 else:
                     self.model.set_id(self.run, epoch)
                     self.model.train()
-                if len(self.feats_test) == 0:
+                if self._is_empty_split(self.df_test, self.feats_test):
                     report = self._empty_test_report()
                 else:
                     report = self.model.predict()
@@ -247,7 +264,7 @@ class Modelrunner(ContextAware):
 
     def eval_last_model(self, df_test, feats_test):
         self.model.reset_test(df_test, feats_test)
-        if len(feats_test) == 0:
+        if self._is_empty_split(df_test, feats_test):
             report = self._empty_test_report()
         else:
             report = self.model.predict()
@@ -272,7 +289,7 @@ class Modelrunner(ContextAware):
         if split_name:
             self.split_name = split_name.upper()
 
-        if len(feats_test) == 0:
+        if self._is_empty_split(df_test, feats_test):
             report = self._empty_test_report()
         else:
             report = self.model.predict()
