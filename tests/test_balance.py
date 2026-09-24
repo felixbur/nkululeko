@@ -11,6 +11,8 @@ Combination (2): smoteenn, smotetomek
 Run with: pytest nkululeko/tests/test_balancing.py -v
 """
 
+from unittest.mock import MagicMock
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -24,9 +26,15 @@ def sample_data():
     np.random.seed(42)
 
     # Majority class: 100 samples, Minority class: 25 samples
-    # Well-separated for better algorithm performance
+    # Separated, but not by so much that every minority sample's nearest
+    # neighbors are all majority-class: ADASYN then finds zero
+    # minority-class neighbors for every point and raises RuntimeError
+    # ("division by zero... ADASYN is not suited for this dataset") -
+    # previously masked by GH #443's silent except-and-fall-back-to-original
+    # -data bug, so this test kept "passing" without ever actually
+    # exercising ADASYN successfully.
     majority_features = np.random.randn(100, 10)
-    minority_features = np.random.randn(25, 10) + 3  # Good separation
+    minority_features = np.random.randn(25, 10) + 2  # Separated but not disjoint
 
     features = np.vstack([majority_features, minority_features])
     labels = np.array([0] * 100 + [1] * 25)
@@ -252,6 +260,34 @@ class TestDataBalancer:
         # Note: The actual balance_features() with invalid method calls sys.exit()
         # This is expected behavior in the current implementation
         print("✓ Invalid method validation works correctly")
+
+
+class TestBalanceFeaturesFailsLoudlyOnError:
+    """Regression (GH #443): if a requested balancing method fails for any
+    reason (e.g. a missing imblearn install), balance_features() used to
+    log it at DEBUG level only and silently return the original, unbalanced
+    training data - training continued as if nothing had happened, and the
+    experiment name/result files still carried the "balancing-<method>" tag
+    as if it had actually been applied. It must instead fail loudly."""
+
+    def test_apply_balancing_failure_raises_instead_of_silently_continuing(
+        self, sample_data, mock_config
+    ):
+        from nkululeko.utils.errors import NkululukoError
+
+        df_train, feats_train = sample_data
+        balancer = DataBalancer(random_state=42)
+        balancer._apply_balancing_method = MagicMock(
+            side_effect=ModuleNotFoundError("No module named 'imblearn'")
+        )
+
+        with pytest.raises(NkululukoError, match="ros"):
+            balancer.balance_features(
+                df_train=df_train,
+                feats_train=feats_train,
+                target_column="target",
+                method="ros",
+            )
 
 
 def test_simple_integration():

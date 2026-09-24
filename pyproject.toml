@@ -34,6 +34,7 @@ classifiers = [
 ]
 
 dependencies = [
+    "accelerate>=0.26.0",
     "audb>=1.11.4",
     "audeer>=1.0.0",
     "audformat>=1.3.1",
@@ -98,7 +99,7 @@ all = [
     "tensorflow>=2.0.0",
     "tensorflow-hub>=0.12.0",
     "shap>=0.40.0",
-    "imblearn>=0.0.0",
+    "imbalanced-learn",
     "cylimiter>=0.0.1",
     "audtorch>=0.0.1",
     "splitutils>=0.0.1",

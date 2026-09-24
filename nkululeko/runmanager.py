@@ -199,15 +199,10 @@ class Runmanager(ContextAware):
 
     def print_best_result_runs(self):
         """Print the best result for all runs."""
-        best_report = self.get_best_result(self.best_results)
+        best_report = self.get_best_result(self.best_results, final=True)
         formatted_result = f"{best_report.result.test:.4f}"
         measure = self.util.config_val("MODEL", "measure", "uar").upper()
-        # Determine split label based on whether we're using train/dev/test
-        split_label = (
-            f" ({self.modelrunner.split_name})"
-            if hasattr(self, "modelrunner") and hasattr(self.modelrunner, "split_name")
-            else ""
-        )
+        split_label = self._split_label(final=True)
         self.util.debug(
             f"best{split_label} result all runs with run {best_report.run} and epoch {best_report.epoch} with metric {measure}: {formatted_result}"
         )
@@ -265,18 +260,44 @@ class Runmanager(ContextAware):
         return model
 
     def get_best_model(self):
-        best_report = self.get_best_result(self.best_results)
+        best_report = self.get_best_result(self.best_results, final=True)
         return self.load_model(best_report)
 
-    def get_best_result(self, reports):
+    def _split_label(self, final=False):
+        """Label for a "best result" debug line, e.g. " (TEST)".
+
+        `final=True` means `reports` is self.best_results, the
+        aggregate-across-runs list used once all runs are done - with
+        [EXP] traindevtest, do_runs() replaces every run's last entry
+        there with its test-set report (see the split3 branch above), so
+        that list always reflects test in that mode by construction.
+        self.modelrunner.split_name can't be used to detect this: it's
+        temporarily set to "test" during that swap but then restored back
+        to "dev" afterwards (see Modelrunner.eval_specific_model's
+        split_name override/restore), so reading it here after the fact
+        would print "(DEV)" for a value that's actually the test score
+        (GH #440). final=False (the default) keeps the original dynamic
+        behavior, correct for the per-run, per-epoch selection over
+        self.reports, which genuinely is whatever split_name says at that
+        point in training.
+        """
+        if final and self.split3:
+            return " (TEST)"
+        return (
+            f" ({self.modelrunner.split_name})"
+            if hasattr(self, "modelrunner") and hasattr(self.modelrunner, "split_name")
+            else ""
+        )
+
+    def get_best_result(self, reports, final=False):
         best_r = Reporter([], [], None, 0, context=self.context)
         if self.util.high_is_good():
-            best_r = self.search_best_result(reports, "ascending")
+            best_r = self.search_best_result(reports, "ascending", final=final)
         else:
-            best_r = self.search_best_result(reports, "descending")
+            best_r = self.search_best_result(reports, "descending", final=final)
         return best_r
 
-    def search_best_result(self, reports, order):
+    def search_best_result(self, reports, order, final=False):
         best_r = Reporter([], [], None, 0, context=self.context)
         if not reports:
             return best_r
@@ -299,12 +320,7 @@ class Runmanager(ContextAware):
                     best_result = res
                     best_r = r
         formatted_result = f"{best_result:.4f}"
-        # Determine split label based on whether we're using train/dev/test
-        split_label = (
-            f" ({self.modelrunner.split_name})"
-            if hasattr(self, "modelrunner") and hasattr(self.modelrunner, "split_name")
-            else ""
-        )
+        split_label = self._split_label(final=final)
         self.util.debug(
             f"search_best_result: order={order}, best epoch={best_r.epoch}, best{split_label} result={formatted_result}"
         )

@@ -17,7 +17,7 @@ sounddevice>=0.4.0
 xgboost>=1.0.0
 audplot>=1.4.7
 diffsptk>=3.3.1
-imblearn>=0.0.0
+imbalanced-learn
 shap>=0.47.2
 splitutils>=0.0.1
 pytest>=7.0.0

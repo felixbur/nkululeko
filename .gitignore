@@ -133,6 +133,7 @@ results_*
 results[0-9]*/
 /x/
 /meta/demos/
+/meta/experiments/
 
 # Ignore top-level scratch scripts (already-tracked ones like setup.py are unaffected)
 /*.py

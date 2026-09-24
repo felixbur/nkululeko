@@ -1232,6 +1232,79 @@ class TestPredictWithModel:
         # The fresh extractor produced features and we got back a prediction row.
         assert len(preds) == 1
 
+    def test_predicted_label_prefers_predict_sample_override_over_argmax(
+        self, monkeypatch, tmp_path
+    ):
+        """Regression (GH #440): predict_sample() (see model.py) can carry
+        the actual predict()-derived label under PREDICTED_LABEL_KEY,
+        since for calibrated classifiers like SVC(probability=True) it can
+        genuinely disagree with argmax(predict_proba) under class_weight
+        on imbalanced data. _predict_with_model must prefer that override,
+        not silently recompute (and potentially get wrong) the winning
+        label via max(row, key=...) over the probability columns."""
+        import configparser
+
+        import nkululeko.glob_conf as glob_conf
+        from nkululeko import predict as predict_mod
+        from nkululeko.constants import PREDICTED_LABEL_KEY
+
+        wav = tmp_path / "x.wav"
+        _write_silent_wav(wav)
+
+        cfg = configparser.ConfigParser()
+        cfg["EXP"] = {"root": str(tmp_path), "name": "x"}
+        cfg["DATA"] = {"databases": "['adhoc']", "target": "emotion"}
+        cfg["FEATS"] = {"type": "['praat']"}
+        cfg["MODEL"] = {}
+        monkeypatch.setattr(glob_conf, "config", cfg)
+
+        # Class 0 has the highest probability (naive argmax would pick it),
+        # but the classifier's own predict() -- stashed under the sentinel
+        # key -- says class 1 actually won (the exact SVC/Platt-scaling
+        # divergence this key exists to carry through).
+        fake_model = MagicMock()
+        fake_model.predict_sample.return_value = {
+            0: 0.7,
+            1: 0.3,
+            PREDICTED_LABEL_KEY: 1,
+        }
+        fake_expr = MagicMock()
+        fake_expr.runmgr.get_best_model.return_value = fake_model
+        fake_expr.label_encoder = MagicMock()
+        fake_expr.label_encoder.inverse_transform.side_effect = (
+            lambda arr: np.array(["angry" if arr[0] == 1 else "happy"])
+        )
+        import nkululeko.experiment as expmod
+
+        monkeypatch.setattr(expmod, "Experiment", lambda *a, **kw: fake_expr)
+        monkeypatch.setattr(
+            predict_mod,
+            "_get_feature_extractor",
+            MagicMock(
+                return_value=MagicMock(
+                    extract_sample=MagicMock(return_value=np.array([1.0, 2.0]))
+                )
+            ),
+        )
+
+        seg_df = predict_mod._build_segmented_df([str(wav)])
+
+        util = MagicMock()
+        util.get_save_name.return_value = str(tmp_path / "whatever")
+        util.exp_is_classification.return_value = True
+        util.config_val.side_effect = lambda section, key, default: (
+            cfg[section][key] if section in cfg and key in cfg[section] else default
+        )
+
+        preds = predict_mod._predict_with_model(seg_df, argparse.Namespace(), util)
+
+        # Would be "happy" (the argmax of the probability columns) without
+        # the fix; must be "angry" (the classifier's actual predict()).
+        assert preds.iloc[0]["predicted"] == "angry"
+        # The sentinel key must not leak into the output as a bogus
+        # probability column.
+        assert PREDICTED_LABEL_KEY not in preds.columns
+
     def test_finetune_model_skips_feature_extractor(self, monkeypatch, tmp_path):
         """Regression for GH #150: MODEL.type = finetune conventionally
         pairs with FEATS.type = [], which _first_extractor()/

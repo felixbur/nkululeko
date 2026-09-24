@@ -141,8 +141,20 @@ class TunedModel(BaseModel):
         without this, load_best_model_at_end only picks the best checkpoint
         after training runs for the full configured epoch count; it never
         actually stops training early the way patience does for other models.
+
+        TensorBoardCallback() itself raises RuntimeError at construction
+        time if tensorboard isn't installed (GH #439) - nkululeko has its
+        own separate reporting/plotting and never reads what this callback
+        writes, so it's skipped rather than declared as a hard dependency
+        when unavailable.
         """
-        callbacks = [transformers.integrations.TensorBoardCallback()]
+        callbacks = []
+        try:
+            callbacks.append(transformers.integrations.TensorBoardCallback())
+        except RuntimeError:
+            self.util.debug(
+                "finetune: tensorboard not installed, skipping TensorBoardCallback"
+            )
         patience = self.util.config_val("MODEL", "patience", False)
         if patience:
             early_stopping_patience = int(patience) * evals_per_epoch
@@ -634,7 +646,10 @@ class TunedModel(BaseModel):
             self.util.debug(f"reusing finetuned model: {conf_file}")
             self.load(self.run, self.epoch_num)
             return
-        targets = pd.DataFrame(self.dataset["train"]["targets"])
+        # datasets>=4 returns a lazy Column (no .dtype) from this double
+        # subscript, which pd.DataFrame() can't consume directly - list()
+        # forces it to a plain in-memory list first (GH #437).
+        targets = pd.DataFrame(list(self.dataset["train"]["targets"]))
 
         if self.is_classifier:
             criterion = self.cfg.loss
@@ -692,7 +707,17 @@ class TunedModel(BaseModel):
 
                 targets = TunedModel._match_loss_dtype(targets, logits, is_classifier)
 
-                loss = criterion(logits, targets)
+                # _match_loss_dtype only aligns targets with logits'
+                # dtype (and only for regression - classification targets
+                # must stay Long for CrossEntropyLoss). Under fp16 (GPU)
+                # training, logits themselves come out as Half, but a
+                # class-weighted CrossEntropyLoss's `weight` tensor is
+                # created as plain Float (torch.Tensor(train_weights)
+                # above), and PyTorch requires that weight to match the
+                # input dtype - crashing with "expected scalar type Half
+                # but found Float" (GH #438). Computing the loss in fp32
+                # is also numerically safer under fp16.
+                loss = criterion(logits.float(), targets)
 
                 return (loss, outputs) if return_outputs else loss
 
@@ -743,7 +768,15 @@ class TunedModel(BaseModel):
             greater_is_better=greater_is_better,
             load_best_model_at_end=True,
             remove_unused_columns=False,
-            report_to="none",
+            # An empty list disables every reporting integration
+            # (tensorboard, wandb, ...) unambiguously across transformers
+            # versions - some older releases don't special-case the string
+            # "none" and fall back to auto-detecting available integrations
+            # instead, which crashes with "TensorBoardCallback requires
+            # tensorboard to be installed" if it isn't (GH #439). nkululeko
+            # has its own separate reporting/plotting, so none of these
+            # integrations are needed regardless.
+            report_to=[],
             push_to_hub=self.push,
             hub_model_id=f"{self.util.get_name()}",
             overwrite_output_dir=True,
@@ -1339,10 +1372,17 @@ class Emotion2vecModel(torch.nn.Module):
 
     def predict(self, signal):
         """Predict method for compatibility with nkululeko prediction pipeline."""
+        # load() places this model on [FINETUNE] device (not necessarily
+        # CPU); the input must follow, or self(signal_tensor) raises
+        # "Expected all tensors to be on the same device" as soon as the
+        # model actually lives on GPU (GH #445 -- the same fix Model.
+        # predict() above already needed for the same reason).
+        device = next(self.parameters()).device
         if isinstance(signal, np.ndarray):
-            signal_tensor = torch.from_numpy(signal).unsqueeze(0)
+            signal_tensor = torch.from_numpy(signal).unsqueeze(0).to(device)
         else:
             signal_tensor = signal.unsqueeze(0) if signal.dim() == 1 else signal
+            signal_tensor = signal_tensor.to(device)
 
         with torch.no_grad():
             result = self(signal_tensor)
