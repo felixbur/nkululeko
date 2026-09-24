@@ -28,7 +28,20 @@ class TestDatasetsColumnToDataFrame:
         # would have failed before the fix (and flags loudly if a future
         # datasets release changes Column's pd.DataFrame() compatibility,
         # rather than silently testing something no longer true).
+        #
+        # nkululeko supports datasets>=2.0.0, and this double-subscript only
+        # returns the lazy Column type (no .dtype attribute) on datasets>=4;
+        # on older, still-supported releases it's already a plain list, and
+        # pd.DataFrame() on a plain list doesn't raise. Gate on what's
+        # actually returned here, not on parsing datasets.__version__, since
+        # that's the exact thing that determines whether this reproduces.
         column = self._make_targets_column()
+        if isinstance(column, list):
+            pytest.skip(
+                "this datasets version already returns a plain list here; "
+                "nothing to reproduce (see test_list_wrapped_column_builds_"
+                "the_expected_dataframe for the version-portable fix check)"
+            )
         with pytest.raises(AttributeError):
             pd.DataFrame(column)
 
