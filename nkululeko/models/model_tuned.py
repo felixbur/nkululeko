@@ -705,19 +705,24 @@ class TunedModel(BaseModel):
                 else:
                     logits = outputs[0].squeeze()
 
+                # Compute the loss in fp32 regardless of the model's own
+                # output dtype (Half under fp16/GPU training): a
+                # class-weighted CrossEntropyLoss's `weight` tensor is
+                # plain Float (torch.Tensor(train_weights) above), and
+                # PyTorch requires that weight to match the input dtype -
+                # crashing with "expected scalar type Half but found
+                # Float" otherwise (GH #438); this is also numerically
+                # safer under fp16. _match_loss_dtype must align regression
+                # targets with these same fp32 logits, not the original
+                # (possibly Half) ones - doing this before the .float()
+                # cast passed Float logits against Half targets to MSE/L1/
+                # CCC/PCC instead, breaking fp16 regression finetuning.
+                # Classification targets are untouched either way (must
+                # stay Long for CrossEntropyLoss).
+                logits = logits.float()
                 targets = TunedModel._match_loss_dtype(targets, logits, is_classifier)
 
-                # _match_loss_dtype only aligns targets with logits'
-                # dtype (and only for regression - classification targets
-                # must stay Long for CrossEntropyLoss). Under fp16 (GPU)
-                # training, logits themselves come out as Half, but a
-                # class-weighted CrossEntropyLoss's `weight` tensor is
-                # created as plain Float (torch.Tensor(train_weights)
-                # above), and PyTorch requires that weight to match the
-                # input dtype - crashing with "expected scalar type Half
-                # but found Float" (GH #438). Computing the loss in fp32
-                # is also numerically safer under fp16.
-                loss = criterion(logits.float(), targets)
+                loss = criterion(logits, targets)
 
                 return (loss, outputs) if return_outputs else loss
 

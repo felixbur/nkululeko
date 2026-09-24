@@ -10,7 +10,11 @@ Version 1.11.4 (26-09-24)
 * fix bug: finetuning with [FINETUNE] class_weight = True on GPU crashed with
   `RuntimeError: expected scalar type Half but found Float` (fp16 logits vs.
   the class-weight tensor's float32 dtype in CrossEntropyLoss); loss is now
-  computed in fp32, which is also numerically safer under fp16
+  computed in fp32, which is also numerically safer under fp16 -- and (a
+  follow-up fix to the fix) regression targets are now aligned to the same
+  already-fp32 logits, not the model's original (possibly Half) output
+  dtype, which had reintroduced the identical mismatch for MSE/L1/CCC/PCC
+  under fp16 regression finetuning
 * fix bug: `[MODEL] type = finetune` crashed on a fresh install with
   `ImportError: ... requires accelerate>=0.26.0` (now a declared dependency)
   and then with `RuntimeError: TensorBoardCallback requires tensorboard to be
