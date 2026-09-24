@@ -43,6 +43,6 @@ torchvision>=0.10.0
 # audobject>=1.0.0
 # cylimiter>=0.0.1
 # audtorch>=0.0.1
+# shap>=0.51.0 (only needed for EXPL.shap = True; requires Python >=3.11)
 imbalanced-learn
-shap>=0.47.2
 splitutils>=0.0.1

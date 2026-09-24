@@ -18,7 +18,7 @@ xgboost>=1.0.0
 audplot>=1.4.7
 diffsptk>=3.3.1
 imbalanced-learn
-shap>=0.47.2
+shap>=0.51.0
 splitutils>=0.0.1
 pytest>=7.0.0
 pytest-cov>=4.0.0

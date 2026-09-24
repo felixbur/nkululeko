@@ -54,6 +54,16 @@ Version 1.11.4 (26-09-24)
   them (uncertainty, session averaging, calibration, a probability
   threshold on ROC) -- were silently wrong. The predicted label (argmax)
   was already correct either way, since softmax is monotonic
+* fix: `uv lock` could not regenerate `uv.lock` from a clean checkout --
+  shap==0.50.0 declares a broken dependency on a llvmlite prerelease
+  (llvmlite==0.46.0b1) that was never published to PyPI for
+  python_full_version >= 3.14 on macOS, and shap>=0.51.0 (which fixes that)
+  requires Python>=3.11, conflicting with this project's declared
+  requires-python = ">=3.10". shap is only ever imported lazily inside
+  FeatureAnalyser.analyse_shap() (`[EXPL] shap = True`), so it's moved out
+  of the core dependencies into its own `shap` extra (and kept in the `all`
+  extra), gated by `; python_version >= '3.11'` so the requirement doesn't
+  apply at all below that floor
 
 Version 1.11.3 (26-09-23)
 -------------------------

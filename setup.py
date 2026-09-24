@@ -64,6 +64,14 @@ setup(
             "tensorflow>=2.0.0",
             "tensorflow_hub>=0.12.0",
         ],
+        "shap": [
+            # Only imported lazily inside FeatureAnalyser.analyse_shap()
+            # (EXPL.shap = True) - kept out of install_requires so a plain
+            # install on Python <3.11 isn't blocked by shap's own Python
+            # floor. shap==0.50.0's metadata is also broken for
+            # python_full_version >= '3.14' and sys_platform == 'darwin'.
+            "shap>=0.51.0 ; python_version >= '3.11'",
+        ],
         "all": [
             "torch>=1.0.0",
             "torchvision>=0.10.0",
@@ -72,7 +80,7 @@ setup(
             "sliceguard>=0.1.0",
             "tensorflow>=2.0.0",
             "tensorflow_hub>=0.12.0",
-            "shap>=0.40.0",
+            "shap>=0.51.0 ; python_version >= '3.11'",
             "imbalanced-learn",
             "cylimiter>=0.0.1",
             "audtorch>=0.0.1",
