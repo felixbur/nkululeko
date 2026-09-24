@@ -12,7 +12,6 @@
 #        -o requirements-test.lock   (then restore this header)
 #
 absl-py==2.5.0 \
-absl-py==2.5.0 \
     --hash=sha256:0c996f25c0490700fadabe6351630f6111534fa0ae252cc6d2014ea3b141135f \
     --hash=sha256:0f17b89f2a4eaaedc4f28c622998aa690564b3012a396a4ffad0821007fe03ba
     # via
