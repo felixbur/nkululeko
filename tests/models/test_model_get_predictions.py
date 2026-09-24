@@ -19,6 +19,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.datasets import make_classification
+from sklearn.utils.class_weight import compute_sample_weight
 
 from nkululeko.experiment_context import ExperimentContext, use_context
 from nkululeko.models.model_svm import SVM_model
@@ -48,7 +49,10 @@ def fitted_balanced_svm():
     df, feats = _make_imbalanced_data()
     with use_context(context):
         model = SVM_model(df, df, feats, feats)
-        model.clf.fit(feats.to_numpy(), df["emotion"])
+        # class_weight is applied via sample_weight only (GH #448), matching
+        # what Model.train() does for [MODEL] class_weight = True.
+        sample_weight = compute_sample_weight(class_weight="balanced", y=df["emotion"])
+        model.clf.fit(feats.to_numpy(), df["emotion"], sample_weight=sample_weight)
         yield model, feats
 
 

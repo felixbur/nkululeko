@@ -1,6 +1,19 @@
 Changelog
 =========
 
+Version 1.11.5 (26-09-24)
+-------------------------
+* fix bug: with `[MODEL] class_weight = True`, SVM_model applied balanced
+  weighting twice -- svm.SVC(...) was constructed with
+  `class_weight="balanced"` *and* Model.train() separately fit with a
+  balanced `sample_weight`. sklearn multiplies the two together, so each
+  class ended up weighted by the square of its balanced weight (e.g. ~30x
+  instead of ~5.5x on a 16% minority class), pushing predictions toward
+  the minority class far more aggressively than intended. class_weight is
+  no longer set on the SVC constructor; the generic sample_weight path in
+  Model.train() (shared with XGB) is now the only place weighting is
+  applied
+
 Version 1.11.4 (26-09-24)
 -------------------------
 * fix bug: nkululeko.models.model_tuned.TunedModel.train() crashed with

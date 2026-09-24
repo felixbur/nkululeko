@@ -14,17 +14,16 @@ class SVM_model(Model):
         super().__init__(df_train, df_test, feats_train, feats_test)
         self.name = "svm"
         c = float(self.util.config_val("MODEL", "C_val", "1"))
-        if eval(self.util.config_val("MODEL", "class_weight", "False")):
-            class_weight = "balanced"
-        else:
-            class_weight = None
         kernel = self.util.config_val("MODEL", "kernel", "rbf")
+        # class_weight is deliberately not set here: Model.train() already
+        # fits with a balanced sample_weight when [MODEL] class_weight =
+        # True, and sklearn multiplies class_weight by sample_weight, so
+        # setting both would square the per-class weighting (issue #448).
         self.clf = svm.SVC(
             kernel=kernel,
             C=c,
             gamma="scale",
             probability=True,
-            class_weight=class_weight,
             random_state=42,  # for consistent result
         )  # set up the classifier
 
