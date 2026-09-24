@@ -1625,18 +1625,6 @@ wheels = [
 ]
 
 [[package]]
-name = "imblearn"
-version = "0.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "imbalanced-learn" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/32/0a/f83099534a77757abf27427d339590c83cc68c3386690d4741d6454e185f/imblearn-0.0.tar.gz", hash = "sha256:d8fbb662919c1b16f438ad91a8256220e53bcf6815c9ad5502c518b798de34f2", size = 945 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/81/a7/4179e6ebfd654bd0eac0b9c06125b8b4c96a9d0a8ff9e9507eb2a26d2d7e/imblearn-0.0-py2.py3-none-any.whl", hash = "sha256:d42c2d709d22c00d2b9a91e638d57240a8b79b4014122d92181fcd2549a2f79a", size = 1874 },
-]
-
-[[package]]
 name = "importlib-metadata"
 version = "8.7.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2488,7 +2476,7 @@ dependencies = [
 all = [
     { name = "audtorch" },
     { name = "cylimiter" },
-    { name = "imblearn" },
+    { name = "imbalanced-learn" },
     { name = "renumics-spotlight" },
     { name = "shap" },
     { name = "sliceguard" },
@@ -2534,7 +2522,7 @@ requires-dist = [
     { name = "cylimiter", marker = "extra == 'all'", specifier = ">=0.0.1" },
     { name = "datasets", specifier = ">=2.0.0" },
     { name = "imageio", specifier = ">=2.0.0" },
-    { name = "imblearn", marker = "extra == 'all'", specifier = ">=0.0.0" },
+    { name = "imbalanced-learn", marker = "extra == 'all'" },
     { name = "matplotlib", specifier = ">=3.0.0" },
     { name = "numpy", specifier = ">=1.20.0" },
     { name = "opensmile", specifier = ">=2.0.0" },

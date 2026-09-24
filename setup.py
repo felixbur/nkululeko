@@ -73,7 +73,7 @@ setup(
             "tensorflow>=2.0.0",
             "tensorflow_hub>=0.12.0",
             "shap>=0.40.0",
-            "imblearn>=0.0.0",
+            "imbalanced-learn",
             "cylimiter>=0.0.1",
             "audtorch>=0.0.1",
             "splitutils>=0.0.1",
