@@ -1,6 +1,70 @@
 Changelog
 =========
 
+Version 1.11.4 (26-09-24)
+-------------------------
+* fix bug: nkululeko.models.model_tuned.TunedModel.train() crashed with
+  `AttributeError: 'Column' object has no attribute 'dtype'` on any finetune
+  run under datasets>=4 (self.dataset["train"]["targets"] returns a lazy
+  Column there instead of a list)
+* fix bug: finetuning with [FINETUNE] class_weight = True on GPU crashed with
+  `RuntimeError: expected scalar type Half but found Float` (fp16 logits vs.
+  the class-weight tensor's float32 dtype in CrossEntropyLoss); loss is now
+  computed in fp32, which is also numerically safer under fp16 -- and (a
+  follow-up fix to the fix) regression targets are now aligned to the same
+  already-fp32 logits, not the model's original (possibly Half) output
+  dtype, which had reintroduced the identical mismatch for MSE/L1/CCC/PCC
+  under fp16 regression finetuning
+* fix bug: `[MODEL] type = finetune` crashed on a fresh install with
+  `ImportError: ... requires accelerate>=0.26.0` (now a declared dependency)
+  and then with `RuntimeError: TensorBoardCallback requires tensorboard to be
+  installed` (TensorBoardCallback is now skipped gracefully when tensorboard
+  isn't installed, since nkululeko has its own separate reporting/plotting
+  and never reads what it writes)
+* fix bug: classifier predictions (get_predictions() and predict_sample())
+  took the winning label from argmax(predict_proba()) instead of predict();
+  for calibrated classifiers like SVC(probability=True), predict_proba is a
+  separate Platt-scaling fit that can disagree with the decision function,
+  so `[MODEL] class_weight = True` correctly shifted the SVM decision
+  boundary on imbalanced data, but argmax over the (unshifted) calibrated
+  probabilities silently discarded that and fell back to near-majority-class
+  predictions; predict_proba is still used for the probability/uncertainty
+  columns themselves
+* fix bug: with `[EXP] traindevtest = True`, the final "best result across
+  all runs" debug line said `best (DEV) result=...` even though the printed
+  value was the real test-set score (self.modelrunner.split_name is stale
+  by the time that line runs, having already been reset back to "dev")
+* fix bug: `[FEATS] balancing` failed silently -- any exception (e.g. a
+  missing imblearn install) was logged at DEBUG level only, and training
+  continued on the original, unbalanced data with the experiment/result
+  filenames still tagged as if balancing had been applied; now fails loudly
+* fix: declare the `imbalanced-learn` PyPI package directly instead of
+  `imblearn`, a legacy alias frozen at a single meaningless `0.0` release
+* fix bug: MLP's get_loader() called df_x.values (which re-materializes the
+  whole feature matrix) once per row inside its loop instead of once total,
+  making loader construction O(n^2) -- 16114 rows after `balancing = ros`
+  took over 10 minutes and 22 GB RSS; ~30s once hoisted outside the loop
+* fix bug: Emotion2vecModel.predict() built its input tensor with no
+  .to(device), unlike the sibling Model.predict() fixed in #442 for the
+  same reason -- raises "Expected all tensors to be on the same device"
+  once a reloaded emotion2vec finetune actually lives on GPU
+* fix bug: MLP/CNN's get_probas() wrote raw logits into the per-class
+  probability columns with no softmax; logits aren't bounded to [0, 1] and
+  don't sum to 1, so the saved probabilities -- and anything derived from
+  them (uncertainty, session averaging, calibration, a probability
+  threshold on ROC) -- were silently wrong. The predicted label (argmax)
+  was already correct either way, since softmax is monotonic
+* fix: `uv lock` could not regenerate `uv.lock` from a clean checkout --
+  shap==0.50.0 declares a broken dependency on a llvmlite prerelease
+  (llvmlite==0.46.0b1) that was never published to PyPI for
+  python_full_version >= 3.14 on macOS, and shap>=0.51.0 (which fixes that)
+  requires Python>=3.11, conflicting with this project's declared
+  requires-python = ">=3.10". shap is only ever imported lazily inside
+  FeatureAnalyser.analyse_shap() (`[EXPL] shap = True`), so it's moved out
+  of the core dependencies into its own `shap` extra (and kept in the `all`
+  extra), gated by `; python_version >= '3.11'` so the requirement doesn't
+  apply at all below that floor
+
 Version 1.11.3 (26-09-23)
 -------------------------
 * document FEATS.type = emotion2vec and [FINETUNE] pretrained_model = emotion2vec

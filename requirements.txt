@@ -1,4 +1,5 @@
 # Core dependencies
+accelerate>=0.26.0
 audeer>=1.0.0
 audformat>=1.3.1
 audinterface>=1.0.0
@@ -42,6 +43,6 @@ torchvision>=0.10.0
 # audobject>=1.0.0
 # cylimiter>=0.0.1
 # audtorch>=0.0.1
-imblearn>=0.0.0
-shap>=0.47.2
+# shap>=0.51.0 (only needed for EXPL.shap = True; requires Python >=3.11)
+imbalanced-learn
 splitutils>=0.0.1

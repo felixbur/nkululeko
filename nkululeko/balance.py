@@ -130,8 +130,14 @@ class DataBalancer(ContextAware):
             return balanced_df, X_res
 
         except Exception as e:
-            self.util.debug(f"Error applying {method} balancing: {str(e)}")
-            # Don't call sys.exit() in tests, just return original data
+            # Silently training on the original, unbalanced data here would
+            # be worse than just crashing: the experiment name/result files
+            # still carry the "balancing-<method>" tag as if it had actually
+            # been applied, with the only trace a DEBUG line nobody reads by
+            # default (GH #443) -- e.g. a missing imblearn install silently
+            # trained on an 8057 vs. 1470 sample imbalance and reported it
+            # as if `balancing = ros` had worked.
+            self.util.error(f"balancing with method '{method}' failed: {e}")
             return df_train, feats_train
 
     def _apply_balancing_method(self, features, targets, method):

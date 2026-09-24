@@ -127,6 +127,49 @@ def test_get_probas(mlp_model):
     assert set(probas.columns) == set([0, 1])
 
 
+class TestGetProbasAppliesSoftmax:
+    """Regression (GH #446): get_probas() wrote raw logits into the
+    per-class "probability" columns with no softmax. Logits aren't
+    themselves probabilities (not bounded to [0, 1], don't sum to 1), so
+    the saved columns - and anything derived from them (uncertainty,
+    session averaging, calibration, a probability threshold on ROC) - were
+    silently wrong. argmax (the predicted label) is unaffected either way,
+    since softmax is monotonic.
+
+    Row count matches mlp_model's df_test (2 rows, see dummy_data), since
+    get_probas() indexes the result by self.df_test.index."""
+
+    def test_probability_columns_are_valid_distributions(self, mlp_model):
+        # Deliberately raw-logit-like values (negative, and > 1) that
+        # would leak straight through into probas without softmax.
+        logits = torch.tensor([[-2.0, 3.0], [1.5, -0.5]])
+
+        probas = mlp_model.get_probas(logits)
+
+        row_sums = probas.sum(axis=1).to_numpy()
+        np.testing.assert_allclose(row_sums, np.ones(2), rtol=1e-5)
+        assert (probas.to_numpy() >= 0).all()
+        assert (probas.to_numpy() <= 1).all()
+
+    def test_matches_manual_softmax(self, mlp_model):
+        logits = torch.tensor([[-2.0, 3.0], [1.5, -0.5]])
+        expected = torch.softmax(logits, dim=1).numpy()
+
+        probas = mlp_model.get_probas(logits)
+
+        np.testing.assert_allclose(probas[0].to_numpy(), expected[:, 0], rtol=1e-5)
+        np.testing.assert_allclose(probas[1].to_numpy(), expected[:, 1], rtol=1e-5)
+
+    def test_argmax_label_unaffected(self, mlp_model):
+        logits = torch.tensor([[-2.0, 3.0], [1.5, -0.5]])
+
+        probas = mlp_model.get_probas(logits)
+
+        expected_argmax = logits.argmax(dim=1).numpy()
+        actual_argmax = probas.to_numpy().argmax(axis=1)
+        np.testing.assert_array_equal(actual_argmax, expected_argmax)
+
+
 def test_predict_sample(mlp_model):
     mlp_model.train()
     feats = np.random.rand(3)
@@ -192,3 +235,54 @@ def test_mlp_model_init_with_dropout_float():
     dropout_layers = [l for l in mlp_inner.linear if isinstance(l, torch.nn.Dropout)]
     assert len(dropout_layers) == 1
     assert dropout_layers[0].p == pytest.approx(0.5)
+
+
+class TestGetLoaderIsLinearNotQuadratic:
+    """Regression (GH #444): get_loader() called df_x.values once *per
+    row* inside its Python loop. df_x.values re-materializes the whole
+    (n_samples, n_features) array on every access; when the DataFrame
+    isn't a single consolidated block (e.g. after feature balancing
+    concatenates several), that materialization is itself O(n), making
+    the whole loop O(n^2) -- 16114 rows after `balancing = ros` took over
+    10 minutes and 22 GB RSS; ~30s once hoisted outside the loop.
+
+    Counts real .values property accesses directly (not wall-clock time),
+    since reliably forcing pandas' internal block fragmentation from a
+    unit test is brittle/pandas-version-dependent, while the actual
+    defect - .values evaluated N times instead of once - is not."""
+
+    def test_values_accessed_a_bounded_number_of_times_not_once_per_row(
+        self, mlp_model, dummy_data
+    ):
+        df_train, _df_test, feats_train, _feats_test = dummy_data
+        real_values = pd.DataFrame.values
+        access_count = 0
+
+        def counting_values(self):
+            nonlocal access_count
+            access_count += 1
+            return real_values.fget(self)
+
+        with patch.object(pd.DataFrame, "values", property(counting_values)):
+            mlp_model.get_loader(feats_train, df_train, shuffle=False)
+
+        # Exactly one access for df_x.values; a couple more (not N) are
+        # fine for df_y[self.target] internals - the point is this must
+        # not scale with len(df_x) (4 rows here; the bug would have made
+        # this at least 4, growing linearly with row count on real data).
+        assert access_count < len(feats_train)
+
+    def test_loader_still_yields_correct_rows_in_order(self, mlp_model, dummy_data):
+        df_train, _df_test, feats_train, _feats_test = dummy_data
+        loader = mlp_model.get_loader(feats_train, df_train, shuffle=False)
+
+        seen_features = []
+        seen_labels = []
+        for batch_x, batch_y in loader:
+            seen_features.append(batch_x.numpy())
+            seen_labels.append(batch_y.numpy())
+        features = np.concatenate(seen_features)
+        labels = np.concatenate(seen_labels)
+
+        np.testing.assert_allclose(features, feats_train.values, rtol=1e-5)
+        np.testing.assert_array_equal(labels, df_train["label"].values)

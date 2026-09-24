@@ -125,6 +125,50 @@ class TestGetBestResult:
         assert best.result.test == pytest.approx(0.5)
 
 
+class TestSplitLabel:
+    """Regression (GH #440, minor): under [EXP] traindevtest=True (split3),
+    the final "best result across all runs" debug line still said
+    "best (DEV) result=...", even though the printed value is the real test
+    score. self.best_results' last entry per run is replaced with the
+    test-set report in that mode (see TestDoRunsSplit3ReportsRealTestResult
+    above), so self.modelrunner.split_name can't be trusted for this: it's
+    only ever "test" transiently during that swap, then restored back to
+    "dev" by Modelrunner.eval_specific_model afterwards - stale by the time
+    search_best_result()/print_best_result_runs() read it."""
+
+    def test_final_with_split3_says_test_regardless_of_stale_split_name(
+        self, runmanager
+    ):
+        runmanager.split3 = True
+        # Simulates the exact stale state after do_runs()' split3 swap:
+        # eval_specific_model's split_name override has already been
+        # restored back to "dev" by the time this is read.
+        runmanager.modelrunner = types.SimpleNamespace(split_name="DEV")
+        assert runmanager._split_label(final=True) == " (TEST)"
+
+    def test_non_final_still_uses_live_split_name(self, runmanager):
+        """The per-run, per-epoch selection (self.reports, final=False)
+        must keep its original dynamic behavior - it's genuinely "dev" at
+        that point in training, split3 notwithstanding."""
+        runmanager.split3 = True
+        runmanager.modelrunner = types.SimpleNamespace(split_name="DEV")
+        assert runmanager._split_label(final=False) == " (DEV)"
+
+    def test_final_without_split3_uses_live_split_name(self, runmanager):
+        runmanager.split3 = False
+        runmanager.modelrunner = types.SimpleNamespace(split_name="TEST")
+        assert runmanager._split_label(final=True) == " (TEST)"
+
+    def test_search_best_result_final_label_reflects_test(self, runmanager):
+        runmanager.split3 = True
+        runmanager.modelrunner = types.SimpleNamespace(split_name="DEV")
+        reports = [_make_report(0.2), _make_report(0.9)]
+        # Must not raise, and must pick the same best report regardless of
+        # the label - final only changes what gets logged.
+        best = runmanager.search_best_result(reports, "ascending", final=True)
+        assert best.result.test == pytest.approx(0.9)
+
+
 class TestLoadModelContextPropagation:
     """Regression for the predict/reload path: when a pickled Runmanager
     (built during training, holding `context_train`) is reactivated under a

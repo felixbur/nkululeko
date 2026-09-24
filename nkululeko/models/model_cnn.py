@@ -145,14 +145,22 @@ class CNNModel(Model):
         self.loss = (np.asarray(losses)).mean()
 
     def get_probas(self, logits):
-        # make a dataframe for probabilites (logits)
+        # make a dataframe for probabilities: softmax first, since logits
+        # aren't themselves probabilities (not bounded to [0, 1], don't sum
+        # to 1) - the saved per-class columns, and anything derived from
+        # them (uncertainty, session averaging, calibration, a probability
+        # threshold on ROC) were silently wrong without this (GH #446, the
+        # identical bug already fixed in the sibling model_mlp.py).
+        # argmax (the predicted label) is unaffected either way, since
+        # softmax is monotonic.
+        probs = torch.softmax(logits, dim=1).numpy()
         proba_d = {}
         classes = self.df_test[self.target].unique()
         classes.sort()
         for c in classes:
             proba_d[c] = []
         for i, c in enumerate(classes):
-            proba_d[c] = list(logits.numpy().T[i])
+            proba_d[c] = list(probs.T[i])
         probas = pd.DataFrame(proba_d)
         probas = probas.set_index(self.df_test.index)
         return probas

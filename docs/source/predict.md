@@ -38,7 +38,7 @@ python -m nkululeko.predict
 | `--folder FOLDER` | Folder to scan recursively for audio (`wav`, `mp3`, `flac`, `ogg`, `m4a`, `au`, `aac`). Writes a single CSV to `--outfile`. |
 | `--list CSV` | CSV with audio paths. Existing columns and the audformat index are preserved; prediction columns are appended. Writes a single CSV to `--outfile`. |
 | `--mic` | Record `5` seconds from the microphone in a loop and print predictions to stdout. |
-| `--model MODEL` | Either an autopredict target name (`age`, `gender`, `emotion`, `mos`, `snr`, `pesq`, `sdr`, `stoi`, `arousal`, `valence`, `dominance`, `speaker`, `text`, `textclassification`, `translation`) **or** a feature-extractor name (`wav2vec2-...`, `opensmile`, `audmodel`, `emotion2vec-...`, `praat`, `clap`, `spkrec`, `trill`, `agender`, `whisper-...`, `ast`, `hubert-...`, `wavlm-...`, `squim`, `mos`, `snr`). When `--type model`, `--model` is ignored — the trained model from the experiment is used. |
+| `--model MODEL` | Either an autopredict target name (`age`, `gender`, `emotion`, `mos`, `snr`, `pesq`, `sdr`, `stoi`, `arousal`, `valence`, `dominance`, `speaker`, `text`, `textclassification`, `translation`) **or** a feature-extractor name (`wav2vec2-...`, `opensmile`, `audmodel`, `emotion2vec-...`, `emotion2vec_emotion-...`, `voicesauce`, `praat`, `clap`, `spkrec`, `trill`, `agender`, `whisper-...`, `ast`, `hubert-...`, `wavlm-...`, `squim`, `mos`, `snr`). When `--type model`, `--model` is ignored — the trained model from the experiment is used. |
 | `--type {feats,model}` | `feats` (default): use `--model` as autopredict target or feature extractor. `model`: load the best model from the experiment defined by `--config`. |
 | `--config CONFIG.ini` | Optional INI file. Required for `--type model`. With `--type feats` it may supply `FEATS.type` so that `--model` can be omitted. When passed alone (without `--file`/`--folder`/`--list`/`--mic`), the dataframe defined by the experiment's `[DATA]` section is used; `EXP.sample_selection` (default `all`) selects `train` / `test` / `all`. |
 | `--outfile OUTFILE` | Output CSV path for `--list` and `--folder`. Default: `./prediction_result.csv`. |
@@ -177,7 +177,9 @@ python -m nkululeko.predict --list audio.csv --model audmodel --outfile feats.cs
 ```
 
 Recognized prefixes / names: `wav2vec2*`, `hubert*`, `wavlm*`, `whisper*`,
-`ast*`, `emotion2vec*`, `opensmile`/`gemaps`/`compare`, `clap*`, `spkrec*` /
+`ast*`, `emotion2vec*` (covers both the embeddings extractor and its
+`emotion2vec_emotion*` classification-output variant), `voicesauce`,
+`opensmile`/`gemaps`/`compare`, `clap*`, `spkrec*` /
 `xvect*` / `ecapa*`, `trill*`, `praat*`, `audmodel*`, `agender*`, `squim*` /
 `pesq*` / `sdr*`, `mos*`, `snr*`.
 

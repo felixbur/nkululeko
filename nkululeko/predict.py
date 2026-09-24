@@ -53,7 +53,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from nkululeko.constants import VERSION, SAMPLING_RATE
+from nkululeko.constants import PREDICTED_LABEL_KEY, VERSION, SAMPLING_RATE
 from nkululeko.experiment_context import ExperimentContext, set_context
 from nkululeko.utils.errors import NkululukoError
 from nkululeko.utils.files import find_files
@@ -972,6 +972,13 @@ def _predict_with_model(seg_df, args, util, out_path=None, restart=False):
 
         row = {}
         if is_classification:
+            # Some classifiers' predict_sample() (see model.py) carry the
+            # actual predicted label under this sentinel key, since for
+            # calibrated classifiers like SVC(probability=True) it can
+            # genuinely disagree with argmax(predict_proba) (GH #440);
+            # must be popped out before the probability columns below are
+            # built from the rest of the dict.
+            predicted_label = result_dict.pop(PREDICTED_LABEL_KEY, None)
             if lab_enc is not None:
                 for k, v in result_dict.items():
                     try:
@@ -981,11 +988,20 @@ def _predict_with_model(seg_df, args, util, out_path=None, restart=False):
                     except Exception:
                         label = str(k)
                     row[label] = f"{v:.3f}"
-                if row:
+                if predicted_label is not None:
+                    try:
+                        row["predicted"] = lab_enc.inverse_transform(
+                            np.array(int(predicted_label)).reshape(1)
+                        )[0]
+                    except Exception:
+                        row["predicted"] = str(predicted_label)
+                elif row:
                     row["predicted"] = max(row, key=lambda c: float(row[c]))
             else:
                 for k, v in result_dict.items():
                     row[str(k)] = v
+                if predicted_label is not None:
+                    row["predicted"] = str(predicted_label)
         else:
             # Flatten to a plain scalar: TunedModel.predict_sample() returns
             # a 1-element array (e.g. array([0.42])) rather than the bare

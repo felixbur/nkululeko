@@ -10,6 +10,7 @@ import sklearn.utils
 from joblib import parallel_backend
 from sklearn.model_selection import GridSearchCV, LeaveOneGroupOut, StratifiedKFold
 
+from nkululeko.constants import PREDICTED_LABEL_KEY
 from nkululeko.experiment_context import ContextAware
 from nkululeko.reporting.reporter import Reporter
 from nkululeko.utils.pickle_integrity import save_checksum, verify_checksum
@@ -334,13 +335,22 @@ class Model(ContextAware):
             for c in self.clf.classes_:
                 proba_d[c] = []
             # get the class probabilities
-            predictions = self.clf.predict_proba(self.feats_test.to_numpy())
-            # pred = self.clf.predict(features)
+            class_probas = self.clf.predict_proba(self.feats_test.to_numpy())
             for i, c in enumerate(self.clf.classes_):
-                proba_d[c] = list(predictions.T[i])
+                proba_d[c] = list(class_probas.T[i])
             probas = pd.DataFrame(proba_d)
             probas = probas.set_index(self.feats_test.index)
-            predictions = probas.idxmax(axis=1).values
+            # Predicted labels come from predict(), not argmax(predict_proba()):
+            # for calibrated classifiers (e.g. SVC(probability=True)),
+            # predict_proba is a separate Platt-scaling fit that can re-learn
+            # its own class prior independently of the decision function -
+            # so for SVC(class_weight="balanced") on imbalanced data,
+            # class_weight shifts the decision function correctly, but
+            # argmax(predict_proba) threw that shift away and fell back to
+            # predicting the majority class (GH #440). predict_proba is
+            # still the right source for the probability/uncertainty
+            # columns themselves, just not for which label "wins".
+            predictions = self.clf.predict(self.feats_test.to_numpy())
         else:
             predictions = self.clf.predict(self.feats_test.to_numpy())
             probas = None
@@ -390,10 +400,15 @@ class Model(ContextAware):
         if self.util.exp_is_classification():
             # get the class probabilities
             predictions = self.clf.predict_proba(features)
-            # pred = self.clf.predict(features)
             for i in range(len(self.clf.classes_)):
                 cat = self.clf.classes_[i]
                 prediction[cat] = predictions[0][i]
+            # The winning label comes from predict(), not
+            # argmax(predict_proba) - see get_predictions() above for why
+            # (GH #440). Stashed under a sentinel key; callers must pop it
+            # out before treating the rest of this dict as per-class
+            # probabilities.
+            prediction[PREDICTED_LABEL_KEY] = self.clf.predict(features)[0]
         else:
             predictions = self.clf.predict(features)
             prediction = predictions[0]

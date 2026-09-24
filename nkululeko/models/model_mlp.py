@@ -146,14 +146,21 @@ class MLPModel(Model):
         return uar, targets, predictions, logits
 
     def get_probas(self, logits):
-        # make a dataframe for probabilites (logits)
+        # make a dataframe for probabilities: softmax first, since logits
+        # aren't themselves probabilities (not bounded to [0, 1], don't sum
+        # to 1) - the saved per-class columns, and anything derived from
+        # them (uncertainty, session averaging, calibration, a probability
+        # threshold on ROC) were silently wrong without this (GH #446).
+        # argmax (the predicted label) is unaffected either way, since
+        # softmax is monotonic.
+        probs = torch.softmax(logits, dim=1).numpy()
         proba_d = {}
         classes = self.df_test[self.target].unique()
         classes.sort()
         for c in classes:
             proba_d[c] = []
         for i, c in enumerate(classes):
-            proba_d[c] = list(logits.numpy().T[i])
+            proba_d[c] = list(probs.T[i])
         probas = pd.DataFrame(proba_d)
         probas = probas.set_index(self.df_test.index)
         return probas
@@ -190,9 +197,17 @@ class MLPModel(Model):
         return (predictions.numpy(), self.get_probas(logits))
 
     def get_loader(self, df_x, df_y, shuffle):
+        # df_x.values re-materializes the whole (n_samples, n_features)
+        # array on every access; when df_x isn't a single consolidated
+        # block (e.g. after feature balancing concatenates several), that
+        # materialization itself is O(n) -- doing it once per row inside
+        # this loop made building the loader O(n^2) (GH #444: 16114 rows
+        # after balancing = ros took over 10 minutes; ~30s once hoisted).
+        x_values = df_x.values
+        y_values = df_y[self.target].values
         data = []
         for i in range(len(df_x)):
-            data.append([df_x.values[i], df_y[self.target].iloc[i]])
+            data.append([x_values[i], y_values[i]])
         return torch.utils.data.DataLoader(
             data, shuffle=shuffle, batch_size=self.batch_size
         )

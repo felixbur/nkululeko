@@ -34,6 +34,7 @@ classifiers = [
 ]
 
 dependencies = [
+    "accelerate>=0.26.0",
     "audb>=1.11.4",
     "audeer>=1.0.0",
     "audformat>=1.3.1",
@@ -58,8 +59,7 @@ dependencies = [
     "scikit-learn>=1.0.0",
     "scipy>=1.0.0",
     "seaborn>=0.11.0",
-    "sentencepiece==0.2.1", 
-    "shap==0.50.0",
+    "sentencepiece==0.2.1",
     "sounddevice>=0.4.0",
     "splitutils",
     "transformers>=4.0.0",
@@ -89,16 +89,26 @@ tensorflow = [
     "tensorflow>=2.0.0",
     "tensorflow-hub>=0.12.0",
 ]
+shap = [
+    # Only imported lazily inside FeatureAnalyser.analyse_shap() (EXPL.shap
+    # = True), not a hard runtime requirement - kept out of the core
+    # dependencies so a plain `pip install nkululeko` on Python 3.10 isn't
+    # blocked by shap>=0.51.0's own Python floor (shap==0.50.0's metadata
+    # is also broken for python_full_version >= '3.14' and
+    # sys_platform == 'darwin': it pins a llvmlite prerelease,
+    # llvmlite==0.46.0b1, that was never published to PyPI).
+    "shap>=0.51.0 ; python_version >= '3.11'",
+]
 all = [
     "torch>=1.0.0",
-    "torchvision>=0.10.0", 
+    "torchvision>=0.10.0",
     "torchaudio>=0.10.0",
     "renumics-spotlight>=1.6.13",
     "sliceguard>=0.0.35",
     "tensorflow>=2.0.0",
     "tensorflow-hub>=0.12.0",
-    "shap>=0.40.0",
-    "imblearn>=0.0.0",
+    "shap>=0.51.0 ; python_version >= '3.11'",
+    "imbalanced-learn",
     "cylimiter>=0.0.1",
     "audtorch>=0.0.1",
     "splitutils>=0.0.1",
