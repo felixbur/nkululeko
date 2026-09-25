@@ -12,7 +12,11 @@ Version 1.11.5 (26-09-24)
   the minority class far more aggressively than intended. class_weight is
   no longer set on the SVC constructor; the generic sample_weight path in
   Model.train() (shared with XGB) is now the only place weighting is
-  applied
+  applied. Model.train() returns early into _do_logo()/_x_fold_cross() for
+  `[MODEL] logo`/`k_fold_cross`, which fit each fold with no sample_weight
+  at all -- previously masked by the now-removed constructor fallback, so
+  those two helpers were updated to compute and pass a balanced
+  sample_weight per fold themselves whenever class_weight is requested
 
 Version 1.11.4 (26-09-24)
 -------------------------
