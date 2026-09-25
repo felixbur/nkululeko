@@ -137,6 +137,7 @@ class Model(ContextAware):
         annos = pd.concat([self.df_train, self.df_test])
         targets = annos[self.target]
         _skf = StratifiedKFold(n_splits=int(self.xfoldx))
+        class_weight = self.util.config_val("MODEL", "class_weight", False)
         truths, preds, results = [], [], []
         g_index = 0
         # leave-one-speaker loop
@@ -147,7 +148,13 @@ class Model(ContextAware):
             train_x = feats.iloc[train_index].to_numpy()
             train_y = targets[train_index]
             with parallel_backend("threading", n_jobs=self.n_jobs):
-                self.clf.fit(train_x, train_y)
+                if class_weight:
+                    sample_weight = sklearn.utils.class_weight.compute_sample_weight(
+                        class_weight="balanced", y=train_y
+                    )
+                    self.clf.fit(train_x, train_y, sample_weight=sample_weight)
+                else:
+                    self.clf.fit(train_x, train_y)
             truth_x = feats.iloc[test_index].to_numpy()
             truth_y = targets[test_index]
             predict_y = self.clf.predict(truth_x)
@@ -189,6 +196,7 @@ class Model(ContextAware):
         annos = pd.concat([self.df_train, self.df_test])
         targets = annos[self.target]
         _logo = LeaveOneGroupOut()
+        class_weight = self.util.config_val("MODEL", "class_weight", False)
         truths, preds, results = [], [], []
         # get unique list of speakers
         speakers = annos["speaker"].unique()
@@ -219,7 +227,13 @@ class Model(ContextAware):
             train_x = feats.iloc[train_index].to_numpy()
             train_y = targets.iloc[train_index]
             with parallel_backend("threading", n_jobs=self.n_jobs):
-                self.clf.fit(train_x, train_y)
+                if class_weight:
+                    sample_weight = sklearn.utils.class_weight.compute_sample_weight(
+                        class_weight="balanced", y=train_y
+                    )
+                    self.clf.fit(train_x, train_y, sample_weight=sample_weight)
+                else:
+                    self.clf.fit(train_x, train_y)
 
             truth_x = feats.iloc[test_index].to_numpy()
             truth_y = targets.iloc[test_index]
