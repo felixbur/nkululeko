@@ -233,8 +233,13 @@ class Modelrunner(ContextAware):
                 )
                 # print(f"performance: {performance.split(' ')[1]}")
                 # Update best performance based on metric direction (lower is better for EER, higher for UAR/ACC)
-                is_best = getattr(self, "_kept_checkpoint", None) is None
-                if self.util.high_is_good():
+                # the first epoch is the baseline: the initial sentinel (0)
+                # would never be beaten by negative scores (pcc/ccc)
+                is_best = epoch_index == 0
+                if is_best:
+                    self.best_performance = performance
+                    self.best_epoch = epoch
+                elif self.util.high_is_good():
                     if performance > self.best_performance:
                         self.best_performance = performance
                         self.best_epoch = epoch

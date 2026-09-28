@@ -483,3 +483,41 @@ class TestDoRunsSplit3LoadsCurrentRunsOwnCheckpoint:
         # One load() call per run, each loading its OWN run's checkpoint.
         assert loaded_runs == [0, 1]
         assert rm.best_results == [test_reports[0], test_reports[1]]
+
+
+class TestTraindevtestWithSaveOff:
+    """GH #67: with save off, the retained best checkpoint must be what
+    Runmanager reloads for the test split (previously "model file not found")."""
+
+    def test_do_runs_reloads_retained_checkpoint(self, tmp_path):
+        import glob
+        import numpy as np
+        import pandas as pd
+
+        cfg = glob_conf.config
+        cfg["EXP"]["traindevtest"] = "True"
+        cfg["EXP"]["save"] = "False"
+        cfg["MODEL"]["type"] = "svm"
+        glob_conf.set_labels(["0", "1"])
+        glob_conf.set_report(types.SimpleNamespace(add_item=lambda *a, **k: None))
+        rng = np.random.default_rng(0)
+
+        def make(n):
+            idx = [f"f{i}" for i in range(n)]
+            return (
+                pd.DataFrame({"emotion": [0, 1] * (n // 2)}, index=idx),
+                pd.DataFrame(rng.random((n, 3)), index=idx),
+            )
+
+        df_train, feats_train = make(20)
+        df_dev, feats_dev = make(10)
+        df_test, feats_test = make(10)
+        rm = Runmanager(
+            df_train, df_test, feats_train, feats_test, dev_x=df_dev, dev_y=feats_dev
+        )
+        rm.do_runs()  # would raise "model file not found" before the fix
+
+        assert len(rm.best_results) == 1
+        assert rm.best_results[0] is rm.test_report
+        models = glob.glob(str(tmp_path / "**" / "*.model"), recursive=True)
+        assert len(models) == 1

@@ -506,6 +506,11 @@ class TestSaveFlag:
             f"m_{e}.model{ext}" for e in epochs for ext in ("", ".sha256", ".meta.json")
         )
 
+    def test_negative_scores_keep_best_checkpoint(self, dummy_dfs, tmp_path):
+        """pcc/ccc can be negative: the best epoch must still be retained."""
+        self.SCORES = [-0.9, -0.2, -0.5]  # best is epoch 1
+        assert self._run(dummy_dfs, tmp_path, model_save="False") == self._files(1)
+
     def test_default_stores_every_epoch(self, dummy_dfs, tmp_path):
         assert self._run(dummy_dfs, tmp_path) == self._files(0, 1, 2)
 

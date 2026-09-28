@@ -67,7 +67,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'DATA' | 'trains' | `False` | nkululeko/utils/naming.py:105 |
 | 'DATA' | 'type' | `'dummy'` / `False` | nkululeko/data/dataset.py:934, nkululeko/data/datasplitter.py:236 |
 | 'DATA' | <f'{stratif_var}_bins'> | `False` | nkululeko/data/dataset.py:573 |
-| 'EXP' | 'balancing' | `False` | nkululeko/modelrunner.py:329 |
+| 'EXP' | 'balancing' | `False` | nkululeko/modelrunner.py:334 |
 | 'EXP' | 'epochs' | `'50'` / `1` | nkululeko/modelrunner.py:176, nkululeko/models/model_tuned.py:66, nkululeko/optimizers/scheduler_factory.py:84 |
 | 'EXP' | 'export_onnx' | `'False'` | nkululeko/nkululeko.py:131 |
 | 'EXP' | 'filter.sample_selection' | `'all'` | nkululeko/data/datasplitter.py:194 |
@@ -76,7 +76,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'EXP' | 'run' | `0` | nkululeko/utils/util.py:219 |
 | 'EXP' | 'runs' | `1` | nkululeko/experiment.py:734, nkululeko/reporting/run_plotter.py:43, nkululeko/runmanager.py:82 |
 | 'EXP' | 'sample_selection' | `'all'` / `'train'` | nkululeko/data/datasplitter.py:36, nkululeko/experiment.py:481, nkululeko/experiment.py:502, +5 more |
-| 'EXP' | 'save' | `True` | nkululeko/experiment.py:711, nkululeko/modelrunner.py:252 |
+| 'EXP' | 'save' | `True` | nkululeko/experiment.py:711, nkululeko/modelrunner.py:257 |
 | 'EXP' | 'save_test' | `False` | nkululeko/experiment.py:721 |
 | 'EXP' | 'traindevtest' | `'False'` | nkululeko/experiment.py:55, nkululeko/models/model_xgb.py:74, nkululeko/runmanager.py:61 |
 | 'EXP' | 'type' | `'classification'` / `None` | nkululeko/data/dataset.py:150, nkululeko/utils/util.py:299 |
@@ -114,8 +114,8 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'FEATS' | 'aud.model' | `'./audmodel/'` | nkululeko/feat_extract/feats_auddim.py:27, nkululeko/feat_extract/feats_audwav2vec2.py:31 |
 | 'FEATS' | 'audmodel.embeddings_name' | `'hidden_states'` | nkululeko/feat_extract/feats_audmodel.py:39 |
 | 'FEATS' | 'audmodel.id' | `'audmodel'` / `False` | nkululeko/feat_extract/feats_audmodel.py:34, nkululeko/feat_extract/feats_audmodel.py:167 |
-| 'FEATS' | 'balancing' | `False` | nkululeko/modelrunner.py:451 |
-| 'FEATS' | 'balancing_random_state' | `42` | nkululeko/modelrunner.py:457 |
+| 'FEATS' | 'balancing' | `False` | nkululeko/modelrunner.py:456 |
+| 'FEATS' | 'balancing_random_state' | `42` | nkululeko/modelrunner.py:462 |
 | 'FEATS' | 'bert.layer' | `'0'` | nkululeko/feat_extract/feats_bert.py:39 |
 | 'FEATS' | 'bert.model' | `f'{self.feat_type}'` | nkululeko/feat_extract/feats_bert.py:31, nkululeko/feat_extract/feats_bert.py:79 |
 | 'FEATS' | 'bert.text_column' | `'text'` | nkululeko/feat_extract/feats_bert.py:57 |
@@ -218,7 +218,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'MODEL' | 'optimizer' | `default_optimizer` | nkululeko/optimizers/optimizer_factory.py:33 |
 | 'MODEL' | 'patience' | `False` | nkululeko/modelrunner.py:181, nkululeko/models/model_tuned.py:158 |
 | 'MODEL' | 'random_seed' | `'False'` | nkululeko/models/model_adm.py:51, nkululeko/models/model_mlp.py:33, nkululeko/models/model_mlp_regression.py:50, +1 more |
-| 'MODEL' | 'save' | `exp_save` | nkululeko/modelrunner.py:254 |
+| 'MODEL' | 'save' | `exp_save` | nkululeko/modelrunner.py:259 |
 | 'MODEL' | 'scheduler' | `default_scheduler` | nkululeko/optimizers/scheduler_factory.py:37 |
 | 'MODEL' | 'scheduler.gamma' | `'0.5'` / `'0.95'` | nkululeko/optimizers/scheduler_factory.py:46, nkululeko/optimizers/scheduler_factory.py:54 |
 | 'MODEL' | 'scheduler.step_size' | `'10'` | nkululeko/optimizers/scheduler_factory.py:45 |
