@@ -436,3 +436,38 @@ class TestFinetunedNoneFeatsTest:
         report = mr.eval_specific_model(FakeModel(), df_test, None, split_name="test")
 
         assert report.result.test != 0
+
+
+class TestSaveFlag:
+    """[MODEL] save falls back to [EXP] save; traindevtest keeps best only (#67)."""
+
+    def _run(self, dummy_dfs, exp_save=None, model_save=None, split3="False"):
+        df_train, df_test, feats_train, feats_test = dummy_dfs
+        cfg = glob_conf.config
+        cfg["EXP"]["traindevtest"] = split3
+        if exp_save is not None:
+            cfg["EXP"]["save"] = exp_save
+        if model_save is not None:
+            cfg["MODEL"]["save"] = model_save
+        mr = Modelrunner(
+            df_train, df_test.iloc[0:0], feats_train, feats_test.iloc[0:0], run=0
+        )
+        stored = []
+        mr.model.train = lambda: None
+        mr.model.store = lambda: stored.append(mr.model.epoch)
+        return mr, stored
+
+    def test_exp_save_false_disables_storing(self, dummy_dfs):
+        mr, stored = self._run(dummy_dfs, exp_save="False")
+        mr.do_epochs()
+        assert stored == []
+
+    def test_model_save_overrides_exp_save(self, dummy_dfs):
+        mr, stored = self._run(dummy_dfs, exp_save="False", model_save="True")
+        mr.do_epochs()
+        assert stored == [0]
+
+    def test_traindevtest_keeps_best_checkpoint(self, dummy_dfs):
+        mr, stored = self._run(dummy_dfs, model_save="False", split3="True")
+        mr.do_epochs()
+        assert stored == [0]

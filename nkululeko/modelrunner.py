@@ -1,6 +1,7 @@
 # modelrunner.py
 
 import ast
+import os
 
 import numpy as np
 
@@ -234,12 +235,26 @@ class Modelrunner(ContextAware):
                     self.util.debug(f"plotting conf matrix to {plot_name}")
                     report.plot_confmatrix(plot_name, epoch)
 
-                # check if we need should not store the model
+                # [MODEL] save falls back to [EXP] save, which most configs use
+                exp_save = self.util.config_val("EXP", "save", "True")
                 save_models = ast.literal_eval(
-                    self.util.config_val("MODEL", "save", "True")
+                    str(self.util.config_val("MODEL", "save", exp_save))
                 )
-                if save_models:  # in any case the model needs to be stored to disk.
+                if save_models:
                     self.model.store()
+                elif ast.literal_eval(
+                    str(self.util.config_val("EXP", "traindevtest", "False"))
+                ):
+                    # traindevtest reloads the best dev checkpoint for the
+                    # test split, so keep only the single best one on disk
+                    if epoch == self.best_epoch:
+                        prev = getattr(self, "_kept_checkpoint", None)
+                        self.model.store()
+                        if prev and prev != self.model.store_path:
+                            for f in (prev, prev + ".sha256"):
+                                if os.path.isfile(f):
+                                    os.remove(f)
+                        self._kept_checkpoint = self.model.store_path
                 if patience:
                     patience = int(patience)
                     result = report.result.get_result()
