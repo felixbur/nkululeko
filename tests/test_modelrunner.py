@@ -438,77 +438,89 @@ class TestFinetunedNoneFeatsTest:
         assert report.result.test != 0
 
 
-class TestSaveFlag:
-    """[MODEL] save falls back to [EXP] save; traindevtest keeps best only (#67)."""
+class _FakeResult:
+    metric = "uar"
 
-    def _run(self, dummy_dfs, exp_save=None, model_save=None, split3="False"):
+    def __init__(self, v):
+        self.v = v
+
+    def get_test_result(self):
+        return f"test {self.v}"
+
+
+class _FakeReport:
+    def __init__(self, v):
+        self.result = _FakeResult(v)
+
+    def get_result(self):
+        return self.result
+
+    def set_id(self, run, epoch):
+        pass
+
+    def plot_confmatrix(self, *a, **k):
+        pass
+
+
+class TestSaveFlag:
+    """[MODEL] save falls back to [EXP] save; best checkpoint kept when off (#67)."""
+
+    SCORES = [0.5, 0.8, 0.6]  # best is epoch 1
+
+    def _run(self, dummy_dfs, tmp_path, exp_save=None, model_save=None, only_test=None):
+        """Run 3 fake epochs; return names of checkpoint files left on disk."""
         df_train, df_test, feats_train, feats_test = dummy_dfs
         cfg = glob_conf.config
-        cfg["EXP"]["traindevtest"] = split3
+        cfg["EXP"]["epochs"] = "3"
         if exp_save is not None:
             cfg["EXP"]["save"] = exp_save
         if model_save is not None:
             cfg["MODEL"]["save"] = model_save
+        if only_test is not None:
+            cfg["MODEL"]["only_test"] = only_test
         mr = Modelrunner(
             df_train, df_test.iloc[0:0], feats_train, feats_test.iloc[0:0], run=0
         )
-        stored = []
-        mr.model.train = lambda: None
-        mr.model.store = lambda: stored.append(mr.model.epoch)
-        return mr, stored
-
-    def test_exp_save_false_does_not_store_every_epoch(self, dummy_dfs):
-        mr, stored = self._run(dummy_dfs, exp_save="False")
-        mr.do_epochs()
-        assert stored == [0]  # only the best, same as an explicit save=False
-
-    def test_model_save_overrides_exp_save(self, dummy_dfs):
-        mr, stored = self._run(dummy_dfs, exp_save="False", model_save="True")
-        mr.do_epochs()
-        assert stored == [0]
-
-    def test_traindevtest_keeps_best_checkpoint(self, dummy_dfs):
-        mr, stored = self._run(dummy_dfs, model_save="False", split3="True")
-        mr.do_epochs()
-        assert stored == [0]
-
-    def test_only_best_checkpoint_kept_across_epochs(self, dummy_dfs, tmp_path):
-        glob_conf.config["EXP"]["epochs"] = "3"
-        mr, _ = self._run(dummy_dfs, model_save="False")
-        scores = iter([0.5, 0.8, 0.6])  # best is epoch 1
+        scores = iter(self.SCORES)
 
         def store():
             for ext in ("", ".sha256", ".meta.json"):
                 (tmp_path / f"m_{mr.model.epoch}.model{ext}").write_text("x")
             mr.model.store_path = str(tmp_path / f"m_{mr.model.epoch}.model")
 
-        class _Result:
-            metric = "uar"
-
-            def __init__(self, v):
-                self.v = v
-
-            def get_test_result(self):
-                return f"test {self.v}"
-
-        class _Report:
-            def __init__(self, v):
-                self.result = _Result(v)
-
-            def get_result(self):
-                return self.result
-
-            def set_id(self, run, epoch):
-                pass
-
-            def plot_confmatrix(self, *a, **k):
-                pass
-
-        mr.model.store = store
+        mr.model.store_path = str(tmp_path / "m.model")
         mr.model.is_ann = lambda: True
-        mr.model.predict = lambda: _Report(next(scores))
+        mr.model.train = lambda: None
+        mr.model.load = lambda run, epoch: mr.model.set_id(run, epoch)
+        mr.model.reset_test = lambda df, feats: None
+        mr.model.store = store
+        mr.model.predict = lambda: _FakeReport(next(scores))
         mr.model.set_id = lambda run, epoch: setattr(mr.model, "epoch", epoch)
         mr._is_empty_split = lambda *a: False
         mr.do_epochs()
-        left = sorted(p.name for p in tmp_path.iterdir() if p.name.startswith("m_"))
-        assert left == ["m_1.model", "m_1.model.meta.json", "m_1.model.sha256"]
+        return sorted(p.name for p in tmp_path.iterdir() if p.name.startswith("m_"))
+
+    @staticmethod
+    def _files(*epochs):
+        return sorted(
+            f"m_{e}.model{ext}" for e in epochs for ext in ("", ".sha256", ".meta.json")
+        )
+
+    def test_default_stores_every_epoch(self, dummy_dfs, tmp_path):
+        assert self._run(dummy_dfs, tmp_path) == self._files(0, 1, 2)
+
+    def test_exp_save_false_keeps_only_best(self, dummy_dfs, tmp_path):
+        assert self._run(dummy_dfs, tmp_path, exp_save="False") == self._files(1)
+
+    def test_model_save_false_keeps_only_best(self, dummy_dfs, tmp_path):
+        assert self._run(dummy_dfs, tmp_path, model_save="False") == self._files(1)
+
+    def test_model_save_overrides_exp_save(self, dummy_dfs, tmp_path):
+        got = self._run(dummy_dfs, tmp_path, exp_save="False", model_save="True")
+        assert got == self._files(0, 1, 2)
+
+    def test_only_test_does_not_prune_existing_checkpoints(self, dummy_dfs, tmp_path):
+        for e in (0, 1, 2):
+            (tmp_path / f"m_{e}.model").write_text("x")
+        got = self._run(dummy_dfs, tmp_path, exp_save="False", only_test="True")
+        assert got == sorted(f"m_{e}.model" for e in (0, 1, 2))

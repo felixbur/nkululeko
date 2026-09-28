@@ -255,7 +255,8 @@ class Modelrunner(ContextAware):
                 )
                 if save_models:
                     self.model.store()
-                elif is_best:
+                elif is_best and not only_test:
+                    # (skipped for only_test: those models are reused from disk)
                     # later steps reload the best checkpoint from disk
                     # (get_best_model, traindevtest), so keep only the
                     # single best one instead of one per epoch
