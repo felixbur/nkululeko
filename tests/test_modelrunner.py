@@ -457,10 +457,10 @@ class TestSaveFlag:
         mr.model.store = lambda: stored.append(mr.model.epoch)
         return mr, stored
 
-    def test_exp_save_false_disables_storing(self, dummy_dfs):
+    def test_exp_save_false_does_not_store_every_epoch(self, dummy_dfs):
         mr, stored = self._run(dummy_dfs, exp_save="False")
         mr.do_epochs()
-        assert stored == []
+        assert stored == [0]  # only the best, same as an explicit save=False
 
     def test_model_save_overrides_exp_save(self, dummy_dfs):
         mr, stored = self._run(dummy_dfs, exp_save="False", model_save="True")
@@ -471,3 +471,44 @@ class TestSaveFlag:
         mr, stored = self._run(dummy_dfs, model_save="False", split3="True")
         mr.do_epochs()
         assert stored == [0]
+
+    def test_only_best_checkpoint_kept_across_epochs(self, dummy_dfs, tmp_path):
+        glob_conf.config["EXP"]["epochs"] = "3"
+        mr, _ = self._run(dummy_dfs, model_save="False")
+        scores = iter([0.5, 0.8, 0.6])  # best is epoch 1
+
+        def store():
+            for ext in ("", ".sha256", ".meta.json"):
+                (tmp_path / f"m_{mr.model.epoch}.model{ext}").write_text("x")
+            mr.model.store_path = str(tmp_path / f"m_{mr.model.epoch}.model")
+
+        class _Result:
+            metric = "uar"
+
+            def __init__(self, v):
+                self.v = v
+
+            def get_test_result(self):
+                return f"test {self.v}"
+
+        class _Report:
+            def __init__(self, v):
+                self.result = _Result(v)
+
+            def get_result(self):
+                return self.result
+
+            def set_id(self, run, epoch):
+                pass
+
+            def plot_confmatrix(self, *a, **k):
+                pass
+
+        mr.model.store = store
+        mr.model.is_ann = lambda: True
+        mr.model.predict = lambda: _Report(next(scores))
+        mr.model.set_id = lambda run, epoch: setattr(mr.model, "epoch", epoch)
+        mr._is_empty_split = lambda *a: False
+        mr.do_epochs()
+        left = sorted(p.name for p in tmp_path.iterdir() if p.name.startswith("m_"))
+        assert left == ["m_1.model", "m_1.model.meta.json", "m_1.model.sha256"]

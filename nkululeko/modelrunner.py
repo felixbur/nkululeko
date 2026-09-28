@@ -125,6 +125,16 @@ class Modelrunner(ContextAware):
             self.best_performance = 100000
         self.best_epoch = 0
 
+    def _remove_checkpoint(self, path):
+        """Delete a stored model file together with its sidecar files."""
+        sidecars = [path + ".sha256", path + ".meta.json"]
+        get_meta = getattr(self.model, "_get_meta_path", None)  # e.g. ADM
+        if get_meta is not None:
+            sidecars.append(get_meta(path))
+        for f in [path] + sidecars:
+            if os.path.isfile(f):
+                os.remove(f)
+
     def _empty_test_report(self):
         """Report a trivial zero result instead of crashing on an empty split.
 
@@ -223,38 +233,37 @@ class Modelrunner(ContextAware):
                 )
                 # print(f"performance: {performance.split(' ')[1]}")
                 # Update best performance based on metric direction (lower is better for EER, higher for UAR/ACC)
+                is_best = getattr(self, "_kept_checkpoint", None) is None
                 if self.util.high_is_good():
                     if performance > self.best_performance:
                         self.best_performance = performance
                         self.best_epoch = epoch
+                        is_best = True
                 else:
                     if performance < self.best_performance:
                         self.best_performance = performance
                         self.best_epoch = epoch
+                        is_best = True
                 if plot_epochs:
                     self.util.debug(f"plotting conf matrix to {plot_name}")
                     report.plot_confmatrix(plot_name, epoch)
 
                 # [MODEL] save falls back to [EXP] save, which most configs use
-                exp_save = self.util.config_val("EXP", "save", "True")
+                exp_save = self.util.config_val("EXP", "save", True)
                 save_models = ast.literal_eval(
                     str(self.util.config_val("MODEL", "save", exp_save))
                 )
                 if save_models:
                     self.model.store()
-                elif ast.literal_eval(
-                    str(self.util.config_val("EXP", "traindevtest", "False"))
-                ):
-                    # traindevtest reloads the best dev checkpoint for the
-                    # test split, so keep only the single best one on disk
-                    if epoch == self.best_epoch:
-                        prev = getattr(self, "_kept_checkpoint", None)
-                        self.model.store()
-                        if prev and prev != self.model.store_path:
-                            for f in (prev, prev + ".sha256"):
-                                if os.path.isfile(f):
-                                    os.remove(f)
-                        self._kept_checkpoint = self.model.store_path
+                elif is_best:
+                    # later steps reload the best checkpoint from disk
+                    # (get_best_model, traindevtest), so keep only the
+                    # single best one instead of one per epoch
+                    prev = getattr(self, "_kept_checkpoint", None)
+                    self.model.store()
+                    if prev and prev != self.model.store_path:
+                        self._remove_checkpoint(prev)
+                    self._kept_checkpoint = self.model.store_path
                 if patience:
                     patience = int(patience)
                     result = report.result.get_result()
