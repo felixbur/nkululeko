@@ -118,20 +118,22 @@ class Modelrunner(ContextAware):
         model_type = self.context.config["MODEL"]["type"]
         with use_context(self.context):
             self._select_model(model_type)
-        # Initialize best_performance based on metric direction
-        if self.util.high_is_good():
-            self.best_performance = 0
-        else:
-            self.best_performance = 100000
+        # None until the first epoch is scored (a numeric sentinel would
+        # never be beaten by e.g. negative pcc/ccc scores)
+        self.best_performance = None
         self.best_epoch = 0
+
+    def _is_better(self, performance):
+        """True if performance beats the best epoch so far (metric-aware)."""
+        if self.best_performance is None:
+            return True
+        if self.util.high_is_good():
+            return performance > self.best_performance
+        return performance < self.best_performance
 
     def _remove_checkpoint(self, path):
         """Delete a stored model file together with its sidecar files."""
-        sidecars = [path + ".sha256", path + ".meta.json"]
-        get_meta = getattr(self.model, "_get_meta_path", None)  # e.g. ADM
-        if get_meta is not None:
-            sidecars.append(get_meta(path))
-        for f in [path] + sidecars:
+        for f in [path] + self.model.sidecar_paths(path):
             if os.path.isfile(f):
                 os.remove(f)
 
@@ -172,7 +174,15 @@ class Modelrunner(ContextAware):
         # initialze results
         reports = []
         plot_epochs = self.util.config_val("PLOT", "epochs", False)
-        only_test = self.util.config_val("MODEL", "only_test", False)
+        only_test = (
+            str(self.util.config_val("MODEL", "only_test", False)).strip().lower()
+            == "true"
+        )
+        # [MODEL] save falls back to [EXP] save, which most configs use
+        exp_save = self.util.config_val("EXP", "save", True)
+        save_models = ast.literal_eval(
+            str(self.util.config_val("MODEL", "save", exp_save))
+        )
         epoch_num = int(self.util.config_val("EXP", "epochs", 1))
         if not self.model.is_ann() and epoch_num > 1:
             self.util.warn(f"setting epoch num to 1 (was {epoch_num}) if model not ANN")
@@ -208,7 +218,7 @@ class Modelrunner(ContextAware):
                 report.plot_confmatrix(plot_name, epoch)
         else:
             # for all epochs
-            for epoch_index, epoch in enumerate(range(epoch_num)):
+            for epoch in range(epoch_num):
                 if only_test:
                     self.model.load(self.run, epoch)
                     self.util.debug(f"reusing model: {self.model.store_path}")
@@ -233,34 +243,16 @@ class Modelrunner(ContextAware):
                 )
                 # print(f"performance: {performance.split(' ')[1]}")
                 # Update best performance based on metric direction (lower is better for EER, higher for UAR/ACC)
-                # the first epoch is the baseline: the initial sentinel (0)
-                # would never be beaten by negative scores (pcc/ccc)
-                is_best = epoch_index == 0
-                if is_best:
+                if self._is_better(performance):
                     self.best_performance = performance
                     self.best_epoch = epoch
-                elif self.util.high_is_good():
-                    if performance > self.best_performance:
-                        self.best_performance = performance
-                        self.best_epoch = epoch
-                        is_best = True
-                else:
-                    if performance < self.best_performance:
-                        self.best_performance = performance
-                        self.best_epoch = epoch
-                        is_best = True
                 if plot_epochs:
                     self.util.debug(f"plotting conf matrix to {plot_name}")
                     report.plot_confmatrix(plot_name, epoch)
 
-                # [MODEL] save falls back to [EXP] save, which most configs use
-                exp_save = self.util.config_val("EXP", "save", True)
-                save_models = ast.literal_eval(
-                    str(self.util.config_val("MODEL", "save", exp_save))
-                )
                 if save_models:
                     self.model.store()
-                elif is_best and not only_test:
+                elif epoch == self.best_epoch and not only_test:
                     # (skipped for only_test: those models are reused from disk)
                     # later steps reload the best checkpoint from disk
                     # (get_best_model, traindevtest), so keep only the
@@ -463,9 +455,7 @@ class Modelrunner(ContextAware):
             )
 
             # Initialize the data balancer with configurable random state
-            balancer = DataBalancer(
-                random_state=random_state, context=self.context
-            )
+            balancer = DataBalancer(random_state=random_state, context=self.context)
 
             # Apply balancing
             self.df_train, self.feats_train = balancer.balance_features(

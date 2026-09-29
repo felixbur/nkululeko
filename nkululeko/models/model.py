@@ -13,7 +13,11 @@ from sklearn.model_selection import GridSearchCV, LeaveOneGroupOut, StratifiedKF
 from nkululeko.constants import PREDICTED_LABEL_KEY
 from nkululeko.experiment_context import ContextAware
 from nkululeko.reporting.reporter import Reporter
-from nkululeko.utils.pickle_integrity import save_checksum, verify_checksum
+from nkululeko.utils.pickle_integrity import (
+    checksum_path,
+    save_checksum,
+    verify_checksum,
+)
 from nkululeko.utils.util import Util
 
 
@@ -432,6 +436,11 @@ class Model(ContextAware):
         with open(self.store_path, "wb") as handle:
             pickle.dump(self.clf, handle)
         save_checksum(self.store_path)
+
+    @staticmethod
+    def sidecar_paths(model_path):
+        """Files written next to a stored model that go away with it."""
+        return [checksum_path(model_path)]
 
     def load(self, run, epoch):
         self.set_id(run, epoch)

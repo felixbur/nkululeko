@@ -5,17 +5,20 @@ Pickle deserialization can execute arbitrary Python code. These utilities
 store a SHA256 checksum alongside each pickle file and verify it before
 loading, protecting against tampered files on shared filesystems.
 """
+
 import hashlib
 import logging
 import os
 
-
 logger = logging.getLogger(__name__)
 
 
-def _checksum_path(pickle_path: str) -> str:
+def checksum_path(pickle_path: str) -> str:
     """Return the path to the checksum file for a given pickle file."""
     return pickle_path + ".sha256"
+
+
+_checksum_path = checksum_path
 
 
 def save_checksum(pickle_path: str) -> None:

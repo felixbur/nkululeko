@@ -521,3 +521,75 @@ class TestTraindevtestWithSaveOff:
         assert rm.best_results[0] is rm.test_report
         models = glob.glob(str(tmp_path / "**" / "*.model"), recursive=True)
         assert len(models) == 1
+
+    def test_ann_multi_epoch_prunes_and_reloads_best(self, tmp_path, monkeypatch):
+        """ANN + traindevtest + save off over several epochs: each new best
+        dev epoch replaces the previous checkpoint, and the test split reloads
+        exactly the retained (best) one."""
+        import glob
+        import os
+
+        import numpy as np
+        import pandas as pd
+
+        from nkululeko.models.model_mlp import MLPModel
+
+        cfg = glob_conf.config
+        cfg["EXP"]["traindevtest"] = "True"
+        cfg["EXP"]["save"] = "False"
+        cfg["EXP"]["epochs"] = "4"
+        cfg["MODEL"]["type"] = "mlp"
+        cfg["MODEL"]["layers"] = "{'l1': 4, 'l2': 2}"
+        cfg["MODEL"]["device"] = "cpu"
+        cfg["MODEL"]["batch_size"] = "4"
+        glob_conf.set_labels(["0", "1"])
+        glob_conf.set_report(types.SimpleNamespace(add_item=lambda *a, **k: None))
+        rng = np.random.default_rng(0)
+
+        def make(n):
+            idx = [f"f{i}" for i in range(n)]
+            return (
+                pd.DataFrame({"emotion": [0, 1] * (n // 2)}, index=idx),
+                pd.DataFrame(rng.random((n, 3)), index=idx),
+            )
+
+        df_train, feats_train = make(20)
+        df_dev, feats_dev = make(10)
+        df_test, feats_test = make(10)
+
+        # scripted dev scores (best at epoch 2, after an improvement at 1):
+        # 0.4 -> 0.6 (new best) -> 0.9 (new best) -> 0.5; later calls
+        # (the test-split evaluation) keep the real score
+        dev_scores = iter([0.4, 0.6, 0.9, 0.5])
+        real_predict = MLPModel.predict
+        seen_on_disk = []
+
+        def scripted_predict(self):
+            report = real_predict(self)
+            score = next(dev_scores, None)
+            if score is not None:
+                report.result.test = score
+                seen_on_disk.append(
+                    sorted(
+                        os.path.basename(p)
+                        for p in glob.glob(str(tmp_path / "**" / "*.model"), recursive=True)
+                    )
+                )
+            return report
+
+        monkeypatch.setattr(MLPModel, "predict", scripted_predict)
+
+        rm = Runmanager(
+            df_train, df_test, feats_train, feats_test, dev_x=df_dev, dev_y=feats_dev
+        )
+        rm.do_runs()
+
+        models = glob.glob(str(tmp_path / "**" / "*.model"), recursive=True)
+        assert len(models) == 1
+        assert models[0].endswith("_0_002.model")  # run 0, best epoch 2
+        # predict() runs before that epoch's store(): at each dev epoch only
+        # the previous best checkpoint may be on disk (older ones pruned)
+        names = [[n.rsplit("_", 1)[1] for n in files] for files in seen_on_disk]
+        assert names == [[], ["000.model"], ["001.model"], ["002.model"]]
+        assert rm.test_report.epoch == 2
+        assert rm.best_results[0] is rm.test_report

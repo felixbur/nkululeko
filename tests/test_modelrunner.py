@@ -1,6 +1,7 @@
 """Tests for nkululeko/modelrunner.py — Modelrunner class."""
 
 import configparser
+import os
 
 import numpy as np
 import pandas as pd
@@ -64,16 +65,19 @@ class TestModelrunnerInit:
         mr = Modelrunner(df_train, df_test, feats_train, feats_test, run=0)
         assert mr.split_name == "TEST"
 
-    def test_high_is_good_sets_best_performance_zero(self, dummy_dfs):
+    def test_best_performance_unset_until_first_epoch(self, dummy_dfs):
         df_train, df_test, feats_train, feats_test = dummy_dfs
         mr = Modelrunner(df_train, df_test, feats_train, feats_test, run=0)
-        assert mr.best_performance == 0
+        assert mr.best_performance is None
 
-    def test_low_is_good_sets_best_performance_large(self, dummy_dfs):
-        glob_conf.config["MODEL"]["measure"] = "eer"
+    def test_first_score_is_always_best_for_either_direction(self, dummy_dfs):
         df_train, df_test, feats_train, feats_test = dummy_dfs
         mr = Modelrunner(df_train, df_test, feats_train, feats_test, run=0)
-        assert mr.best_performance == 100000
+        assert mr._is_better(-5.0)  # high-is-good (uar), no baseline yet
+        glob_conf.config["MODEL"]["measure"] = "eer"
+        mr = Modelrunner(df_train, df_test, feats_train, feats_test, run=0)
+        assert mr.best_performance is None
+        assert mr._is_better(99999.0)  # low-is-good (eer), no baseline yet
 
 
 class TestSelectModel:
@@ -484,9 +488,10 @@ class TestSaveFlag:
         scores = iter(self.SCORES)
 
         def store():
-            for ext in ("", ".sha256", ".meta.json"):
-                (tmp_path / f"m_{mr.model.epoch}.model{ext}").write_text("x")
-            mr.model.store_path = str(tmp_path / f"m_{mr.model.epoch}.model")
+            path = str(tmp_path / f"m_{mr.model.epoch}.model")
+            for f in [path] + mr.model.sidecar_paths(path):
+                (tmp_path / os.path.basename(f)).write_text("x")
+            mr.model.store_path = path
 
         mr.model.store_path = str(tmp_path / "m.model")
         mr.model.is_ann = lambda: True
@@ -503,7 +508,7 @@ class TestSaveFlag:
     @staticmethod
     def _files(*epochs):
         return sorted(
-            f"m_{e}.model{ext}" for e in epochs for ext in ("", ".sha256", ".meta.json")
+            f"m_{e}.model{ext}" for e in epochs for ext in ("", ".sha256")
         )
 
     def test_negative_scores_keep_best_checkpoint(self, dummy_dfs, tmp_path):
@@ -529,3 +534,22 @@ class TestSaveFlag:
             (tmp_path / f"m_{e}.model").write_text("x")
         got = self._run(dummy_dfs, tmp_path, exp_save="False", only_test="True")
         assert got == sorted(f"m_{e}.model" for e in (0, 1, 2))
+
+    def test_only_test_false_string_is_not_truthy(self, dummy_dfs, tmp_path):
+        """An explicit `only_test = False` (a string in the ini) must not
+        disable checkpoint retention."""
+        got = self._run(dummy_dfs, tmp_path, exp_save="False", only_test="False")
+        assert got == self._files(1)
+
+    def test_remove_checkpoint_deletes_adm_sidecars(self, dummy_dfs, tmp_path):
+        from nkululeko.models.model_adm import ADMModel
+
+        df_train, df_test, feats_train, feats_test = dummy_dfs
+        mr = Modelrunner(df_train, df_test, feats_train, feats_test, run=0)
+        mr.model.sidecar_paths = ADMModel.sidecar_paths
+        path = str(tmp_path / "m.model")
+        files = [path] + ADMModel.sidecar_paths(path)
+        for f in files:
+            open(f, "w").write("x")
+        mr._remove_checkpoint(path)
+        assert not any(os.path.exists(f) for f in files)
