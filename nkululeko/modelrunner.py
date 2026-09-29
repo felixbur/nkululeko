@@ -190,10 +190,9 @@ class Modelrunner(ContextAware):
             self.context.config["EXP"]["epochs"] = "1"
         patience = self.util.config_val("MODEL", "patience", False)
         patience_counter = -1
-        if self.util.high_is_good():
-            highest = 0
-        else:
-            highest = 100000
+        # None until the first epoch is scored (a numeric sentinel would
+        # never be beaten by e.g. negative pcc/ccc scores)
+        highest = None
         if self.model.model_type == "finetuned":
             # epochs are handled by Huggingface API
             self.model.train()
@@ -207,7 +206,9 @@ class Modelrunner(ContextAware):
             reports.append(report)
             test_score_metric = reports[-1].get_result().get_test_result()
             metric_label = reports[-1].get_result().metric.upper()
-            performance = float(test_score_metric.split(" ")[1])
+            # Raw score, not the .3f-rounded display string -- must match
+            # what runmanager.search_best_result compares (GH #450 review).
+            performance = reports[-1].get_result().get_result()
             formatted_performance = f"{performance:.4f}"
             self.util.debug(
                 f"run: {self.run} epoch: {epoch}: result ({self.split_name}): "
@@ -234,8 +235,12 @@ class Modelrunner(ContextAware):
                 plot_name = self.util.get_plot_name() + f"_{self.run}_{epoch:03d}_cnf"
                 reports.append(report)
                 test_score_metric = report.get_result().get_test_result()
-                # Extract performance value and format to 4 digits with leading zeros
-                performance = float(test_score_metric.split(" ")[1])
+                # Raw score, not the .3f-rounded display string -- must
+                # match what runmanager.search_best_result compares, or
+                # near-tied epochs that round the same way can make this
+                # method keep a different checkpoint than runmanager later
+                # reloads as "best" (GH #450 review).
+                performance = report.get_result().get_result()
                 formatted_performance = f"{performance:.4f}"
                 metric_label = report.get_result().metric.upper()
                 self.util.debug(
@@ -265,7 +270,10 @@ class Modelrunner(ContextAware):
                 if patience:
                     patience = int(patience)
                     result = report.result.get_result()
-                    if self.util.high_is_good():
+                    if highest is None:
+                        highest = result
+                        patience_counter = 0
+                    elif self.util.high_is_good():
                         if result > highest:
                             highest = result
                             patience_counter = 0

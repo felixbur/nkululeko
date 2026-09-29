@@ -449,7 +449,12 @@ class _FakeResult:
         self.v = v
 
     def get_test_result(self):
-        return f"test {self.v}"
+        # Match the real Result.get_test_result()'s .3f rounding: near-tied
+        # raw scores can come out identical here even though they aren't.
+        return f"test: {self.v:.3f} {self.metric}"
+
+    def get_result(self):
+        return self.v
 
 
 class _FakeReport:
@@ -540,6 +545,29 @@ class TestSaveFlag:
         disable checkpoint retention."""
         got = self._run(dummy_dfs, tmp_path, exp_save="False", only_test="False")
         assert got == self._files(1)
+
+    def test_near_tied_rounded_scores_pick_true_raw_best(self, dummy_dfs, tmp_path):
+        """GH #450 review: best-epoch selection must compare raw scores,
+        not the .3f-rounded display string -- two epochs whose raw scores
+        differ but round to the same value must not tie, since
+        runmanager.search_best_result compares the raw floats to decide
+        which epoch to reload later."""
+        self.SCORES = [0.85499, 0.85501, 0.3]  # both round to 0.855; epoch 1 wins
+        assert self._run(dummy_dfs, tmp_path, model_save="False") == self._files(1)
+
+    def test_patience_baseline_not_beaten_by_negative_first_epoch(
+        self, dummy_dfs, tmp_path
+    ):
+        """GH #450 review: patience's initial sentinel (`highest = 0`) must
+        not block a legitimately-improving negative-valued metric run (e.g.
+        pcc/ccc) from ever registering an improvement. With the old
+        `highest = 0` sentinel and high_is_good() == True, no negative
+        score can ever beat it, so patience_counter increments from epoch 0
+        and can trigger early stopping even while scores strictly improve."""
+        self.SCORES = [-0.5, -0.3, -0.1]  # strictly improving, all negative
+        glob_conf.config["MODEL"]["patience"] = "1"
+        got = self._run(dummy_dfs, tmp_path, model_save="True")
+        assert got == self._files(0, 1, 2)
 
     def test_remove_checkpoint_deletes_adm_sidecars(self, dummy_dfs, tmp_path):
         from nkululeko.models.model_adm import ADMModel
