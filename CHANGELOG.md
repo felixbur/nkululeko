@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 1.11.6 (26-09-29)
+-------------------------
+* [MODEL] save now defaults to [EXP] save (was hard-coded True), so configs setting only [EXP] save=False no longer write every epoch.
+* With traindevtest=True and save disabled, the single best dev checkpoint is kept (older best is deleted) so the test-split reload no longer crashes with 'model file not found'.
+
 Version 1.11.5 (26-09-24)
 -------------------------
 * fix bug: with `[MODEL] class_weight = True`, SVM_model applied balanced
