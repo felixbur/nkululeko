@@ -1,6 +1,7 @@
 # modelrunner.py
 
 import ast
+import os
 
 import numpy as np
 
@@ -117,12 +118,24 @@ class Modelrunner(ContextAware):
         model_type = self.context.config["MODEL"]["type"]
         with use_context(self.context):
             self._select_model(model_type)
-        # Initialize best_performance based on metric direction
-        if self.util.high_is_good():
-            self.best_performance = 0
-        else:
-            self.best_performance = 100000
+        # None until the first epoch is scored (a numeric sentinel would
+        # never be beaten by e.g. negative pcc/ccc scores)
+        self.best_performance = None
         self.best_epoch = 0
+
+    def _is_better(self, performance):
+        """True if performance beats the best epoch so far (metric-aware)."""
+        if self.best_performance is None:
+            return True
+        if self.util.high_is_good():
+            return performance > self.best_performance
+        return performance < self.best_performance
+
+    def _remove_checkpoint(self, path):
+        """Delete a stored model file together with its sidecar files."""
+        for f in [path] + self.model.sidecar_paths(path):
+            if os.path.isfile(f):
+                os.remove(f)
 
     def _empty_test_report(self):
         """Report a trivial zero result instead of crashing on an empty split.
@@ -161,7 +174,15 @@ class Modelrunner(ContextAware):
         # initialze results
         reports = []
         plot_epochs = self.util.config_val("PLOT", "epochs", False)
-        only_test = self.util.config_val("MODEL", "only_test", False)
+        only_test = (
+            str(self.util.config_val("MODEL", "only_test", False)).strip().lower()
+            == "true"
+        )
+        # [MODEL] save falls back to [EXP] save, which most configs use
+        exp_save = self.util.config_val("EXP", "save", True)
+        save_models = ast.literal_eval(
+            str(self.util.config_val("MODEL", "save", exp_save))
+        )
         epoch_num = int(self.util.config_val("EXP", "epochs", 1))
         if not self.model.is_ann() and epoch_num > 1:
             self.util.warn(f"setting epoch num to 1 (was {epoch_num}) if model not ANN")
@@ -169,10 +190,9 @@ class Modelrunner(ContextAware):
             self.context.config["EXP"]["epochs"] = "1"
         patience = self.util.config_val("MODEL", "patience", False)
         patience_counter = -1
-        if self.util.high_is_good():
-            highest = 0
-        else:
-            highest = 100000
+        # None until the first epoch is scored (a numeric sentinel would
+        # never be beaten by e.g. negative pcc/ccc scores)
+        highest = None
         if self.model.model_type == "finetuned":
             # epochs are handled by Huggingface API
             self.model.train()
@@ -186,7 +206,9 @@ class Modelrunner(ContextAware):
             reports.append(report)
             test_score_metric = reports[-1].get_result().get_test_result()
             metric_label = reports[-1].get_result().metric.upper()
-            performance = float(test_score_metric.split(" ")[1])
+            # Raw score, not the .3f-rounded display string -- must match
+            # what runmanager.search_best_result compares (GH #450 review).
+            performance = reports[-1].get_result().get_result()
             formatted_performance = f"{performance:.4f}"
             self.util.debug(
                 f"run: {self.run} epoch: {epoch}: result ({self.split_name}): "
@@ -197,7 +219,7 @@ class Modelrunner(ContextAware):
                 report.plot_confmatrix(plot_name, epoch)
         else:
             # for all epochs
-            for epoch_index, epoch in enumerate(range(epoch_num)):
+            for epoch in range(epoch_num):
                 if only_test:
                     self.model.load(self.run, epoch)
                     self.util.debug(f"reusing model: {self.model.store_path}")
@@ -213,8 +235,12 @@ class Modelrunner(ContextAware):
                 plot_name = self.util.get_plot_name() + f"_{self.run}_{epoch:03d}_cnf"
                 reports.append(report)
                 test_score_metric = report.get_result().get_test_result()
-                # Extract performance value and format to 4 digits with leading zeros
-                performance = float(test_score_metric.split(" ")[1])
+                # Raw score, not the .3f-rounded display string -- must
+                # match what runmanager.search_best_result compares, or
+                # near-tied epochs that round the same way can make this
+                # method keep a different checkpoint than runmanager later
+                # reloads as "best" (GH #450 review).
+                performance = report.get_result().get_result()
                 formatted_performance = f"{performance:.4f}"
                 metric_label = report.get_result().metric.upper()
                 self.util.debug(
@@ -222,28 +248,32 @@ class Modelrunner(ContextAware):
                 )
                 # print(f"performance: {performance.split(' ')[1]}")
                 # Update best performance based on metric direction (lower is better for EER, higher for UAR/ACC)
-                if self.util.high_is_good():
-                    if performance > self.best_performance:
-                        self.best_performance = performance
-                        self.best_epoch = epoch
-                else:
-                    if performance < self.best_performance:
-                        self.best_performance = performance
-                        self.best_epoch = epoch
+                if self._is_better(performance):
+                    self.best_performance = performance
+                    self.best_epoch = epoch
                 if plot_epochs:
                     self.util.debug(f"plotting conf matrix to {plot_name}")
                     report.plot_confmatrix(plot_name, epoch)
 
-                # check if we need should not store the model
-                save_models = ast.literal_eval(
-                    self.util.config_val("MODEL", "save", "True")
-                )
-                if save_models:  # in any case the model needs to be stored to disk.
+                if save_models:
                     self.model.store()
+                elif epoch == self.best_epoch and not only_test:
+                    # (skipped for only_test: those models are reused from disk)
+                    # later steps reload the best checkpoint from disk
+                    # (get_best_model, traindevtest), so keep only the
+                    # single best one instead of one per epoch
+                    prev = getattr(self, "_kept_checkpoint", None)
+                    self.model.store()
+                    if prev and prev != self.model.store_path:
+                        self._remove_checkpoint(prev)
+                    self._kept_checkpoint = self.model.store_path
                 if patience:
                     patience = int(patience)
                     result = report.result.get_result()
-                    if self.util.high_is_good():
+                    if highest is None:
+                        highest = result
+                        patience_counter = 0
+                    elif self.util.high_is_good():
                         if result > highest:
                             highest = result
                             patience_counter = 0
@@ -433,9 +463,7 @@ class Modelrunner(ContextAware):
             )
 
             # Initialize the data balancer with configurable random state
-            balancer = DataBalancer(
-                random_state=random_state, context=self.context
-            )
+            balancer = DataBalancer(random_state=random_state, context=self.context)
 
             # Apply balancing
             self.df_train, self.feats_train = balancer.balance_features(

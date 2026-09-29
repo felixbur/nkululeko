@@ -513,7 +513,7 @@ class ADMModel(Model):
         # instance attributes set by __init__. Support both the current short
         # hashed sidecar name and the legacy "<model>.meta.json" sidecar.
         meta_path = self._get_meta_path(self.store_path)
-        legacy_meta_path = self.store_path + ".meta.json"
+        legacy_meta_path = self._get_legacy_meta_path(self.store_path)
         meta = None
         try:
             with open(meta_path) as f:
@@ -570,6 +570,18 @@ class ADMModel(Model):
         except FileNotFoundError:
             self.util.error(f"model file not found: {self.store_path}")
         self.model.eval()
+
+    @staticmethod
+    def _get_legacy_meta_path(model_path):
+        """Path of the pre-hashed-name "<model>.meta.json" metadata sidecar."""
+        return model_path + ".meta.json"
+
+    @classmethod
+    def sidecar_paths(cls, model_path):
+        return super().sidecar_paths(model_path) + [
+            cls._get_meta_path(model_path),
+            cls._get_legacy_meta_path(model_path),
+        ]
 
     @staticmethod
     def _get_meta_path(model_path):

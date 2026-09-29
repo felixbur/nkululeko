@@ -57,6 +57,7 @@ General experiment settings: paths, naming, run count, and output options.
   * epochs = 1
 * **save**: save the experiment as a pickle file to be restored again later (True or False)
   * save = False
+  * this also acts as the default for `[MODEL] save`; see there for the single best checkpoint that is kept even when *False*
 * **save_test**: save the test predictions as a new database in CSV format (default is False)
   * save_test = ./my_saved_test_predictions.csv
 * **databases**: name of databases to compare for the *multidb* module
@@ -525,8 +526,10 @@ Model and training specifications. In general, default values should work for cl
   * possible values: cpu, cuda
 * **patience**: early stopping patience for neural networks  
   * patience = 5
-* **save**: set this to *False* if you don't want models stored on disk
+* **save**: set this to *False* to avoid storing one model file per epoch
   * save = True
+  * if not set, this falls back to `[EXP] save`, so a config that only sets `[EXP] save = False` no longer stores every epoch
+  * *False* does not mean zero model files: the single best checkpoint (by dev/test score) is still kept, because later steps (`traindevtest`, ONNX export, `save_test`, SHAP, per-database test evaluation) reload it from disk. Older, worse epochs are deleted as soon as a better one is found. With `only_test = True` nothing is deleted, as the models are reused from disk.
 
 ### FINETUNE
 
