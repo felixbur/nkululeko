@@ -102,6 +102,13 @@ class NamingMixin:
         return "_".join(ast.literal_eval(self.config["FEATS"]["type"]))
 
     def get_exp_name(self, only_train=False, only_data=False):
+        # [EXP] res_name overrides the auto-constructed name entirely (GH
+        # #451): with many databases/features/model options, the default
+        # name (databases + target + model description) can get too long
+        # for a filesystem path.
+        res_name = self.config_val("EXP", "res_name", False)
+        if res_name:
+            return res_name
         trains_val = self.config_val("DATA", "trains", False)
         if only_train and trains_val:
             ds = "-".join(ast.literal_eval(self.config["DATA"]["trains"]))

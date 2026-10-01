@@ -347,6 +347,62 @@ class _FakeDatasplitter:
         self.feature_extractor = feature_extractor
 
 
+class _FakeReportForRun:
+    class _FakeResult:
+        test = 0.5
+
+    result = _FakeResult()
+
+
+class _FakeRunmgrForRun:
+    best_results = [_FakeReportForRun()]
+    last_epochs = 0
+
+    def do_runs(self):
+        pass
+
+
+class TestExperimentRunRespectsSaveFlag:
+    """Regression for GH #452: `EXP.save = False` (a string in the ini) was
+    ignored because Experiment.run() read it via config_val(), which
+    returns the raw string "False" -- truthy -- with no type coercion.
+    """
+
+    def _make_exp(self, mock_config, tmp_path, save_value):
+        import time
+
+        from nkululeko.experiment import Experiment
+        from nkululeko.utils.util import Util
+
+        mock_config.set("EXP", "root", str(tmp_path))
+        if save_value is not None:
+            mock_config.set("EXP", "save", save_value)
+        glob_conf.init_config(mock_config)
+
+        exp = Experiment.__new__(Experiment)
+        exp.runmgr = _FakeRunmgrForRun()
+        exp.util = Util("test")
+        exp.start = time.process_time()
+        exp.saved = []
+        exp.save = lambda path: exp.saved.append(path)
+        return exp
+
+    def test_save_false_string_does_not_save(self, mock_config, tmp_path):
+        exp = self._make_exp(mock_config, tmp_path, "False")
+        exp.run()
+        assert exp.saved == []
+
+    def test_save_true_string_does_save(self, mock_config, tmp_path):
+        exp = self._make_exp(mock_config, tmp_path, "True")
+        exp.run()
+        assert len(exp.saved) == 1
+
+    def test_save_unset_defaults_to_saving(self, mock_config, tmp_path):
+        exp = self._make_exp(mock_config, tmp_path, None)
+        exp.run()
+        assert len(exp.saved) == 1
+
+
 class TestExperimentSave:
     """Regression for Experiment.save():
 
