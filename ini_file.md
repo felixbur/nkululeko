@@ -45,7 +45,7 @@ General experiment settings: paths, naming, run count, and output options.
   * store = ./store/
 * **name**: a name for debugging output
   * name = emodb_exp
-* **res_name**: optional override for the auto-constructed experiment name used in result/plot/checkpoint filenames (which is otherwise built from the databases, target, and model description, and can get very long for a project with many databases or feature sets)
+* **res_name**: optional override for the auto-constructed experiment name used in result/plot/checkpoint filenames (which is otherwise built from the databases, target, and model description, and can get very long for a project with many databases or feature sets); see [examples/exp_emodb_res_name.ini](https://github.com/felixbur/nkululeko/blob/main/examples/exp_emodb_res_name.ini)
   * res_name = my_exp_result
 * **fig_dir**: (relative to *root*) folder for plots
   * fig_dir = ./images/

@@ -108,7 +108,10 @@ class NamingMixin:
         # for a filesystem path.
         res_name = self.config_val("EXP", "res_name", False)
         if res_name:
-            return res_name
+            # Configuration-controlled and used verbatim in filesystem
+            # paths below; sanitize so a stray "/" or ".." can't escape
+            # the configured output directory or break a path join.
+            return self.safe_filename_component(res_name)
         trains_val = self.config_val("DATA", "trains", False)
         if only_train and trains_val:
             ds = "-".join(ast.literal_eval(self.config["DATA"]["trains"]))

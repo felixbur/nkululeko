@@ -58,6 +58,15 @@ class TestNamingMixin(unittest.TestCase):
         u = make_util(exp_extra="res_name = my_exp_result")
         self.assertEqual(u.get_exp_name(), "my_exp_result")
 
+    def test_get_exp_name_res_name_is_sanitized(self):
+        """res_name is configuration-controlled and used verbatim in
+        filesystem paths elsewhere, so a stray "/" or ".." must not be
+        able to escape the configured output directory."""
+        u = make_util(exp_extra="res_name = ../../etc/passwd")
+        name = u.get_exp_name()
+        self.assertNotIn("/", name)
+        self.assertNotIn("..", name)
+
     def test_get_exp_name_res_name_override_applies_to_all_variants(self):
         """The override replaces the name regardless of only_train/
         only_data, since callers (checkpoint names, plot names, result
