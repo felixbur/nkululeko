@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 1.11.7 (26-10-01)
+-------------------------
+* add `[EXP] res_name` to override the auto-constructed experiment name (databases + target + model description) used in result/plot/checkpoint filenames, which can get too long for a project with many databases or feature sets (#451)
+* fix bug: `[EXP] save = False` was ignored -- `Experiment.run()` read it via `config_val()`, which returns the raw string `"False"` (truthy) with no type coercion, so the experiment was always saved regardless of the ini setting; now uses `config_val_bool()` (#452)
+
 Version 1.11.6 (26-09-29)
 -------------------------
 * [MODEL] save now defaults to [EXP] save (was hard-coded True), so configs setting only [EXP] save=False no longer write every epoch.

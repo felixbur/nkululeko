@@ -6,7 +6,7 @@ import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.util import Util
 
 
-def make_util(extra_sections=""):
+def make_util(extra_sections="", exp_extra=""):
     """Helper: create a Util with a minimal config."""
     c = configparser.ConfigParser()
     c.read_string(
@@ -14,6 +14,7 @@ def make_util(extra_sections=""):
 [EXP]
 name = test
 root = /tmp
+{exp_extra}
 [DATA]
 databases = ["emodb"]
 target = emotion
@@ -49,6 +50,35 @@ class TestNamingMixin(unittest.TestCase):
         u = make_util()
         name = u.get_exp_name(only_data=True)
         self.assertEqual(name, "emodb")
+
+    def test_get_exp_name_res_name_override(self):
+        """GH #451: [EXP] res_name overrides the auto-constructed name,
+        which can otherwise get too long for a project with many
+        databases/features/model options."""
+        u = make_util(exp_extra="res_name = my_exp_result")
+        self.assertEqual(u.get_exp_name(), "my_exp_result")
+
+    def test_get_exp_name_res_name_is_sanitized(self):
+        """res_name is configuration-controlled and used verbatim in
+        filesystem paths elsewhere, so a stray "/" or ".." must not be
+        able to escape the configured output directory."""
+        u = make_util(exp_extra="res_name = ../../etc/passwd")
+        name = u.get_exp_name()
+        self.assertNotIn("/", name)
+        self.assertNotIn("..", name)
+
+    def test_get_exp_name_res_name_override_applies_to_all_variants(self):
+        """The override replaces the name regardless of only_train/
+        only_data, since callers (checkpoint names, plot names, result
+        files) all just want the same short name."""
+        u = make_util(exp_extra="res_name = my_exp_result")
+        self.assertEqual(u.get_exp_name(only_train=True), "my_exp_result")
+        self.assertEqual(u.get_exp_name(only_data=True), "my_exp_result")
+
+    def test_get_exp_name_no_res_name_falls_back_to_auto_name(self):
+        u = make_util()
+        name = u.get_exp_name()
+        self.assertIn("emodb", name)
 
     def test_get_target_name(self):
         u = make_util()

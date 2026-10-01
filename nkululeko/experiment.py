@@ -708,7 +708,7 @@ class Experiment:
         self.reports = self.runmgr.best_results
         last_epochs = self.runmgr.last_epochs
         # try to save yourself
-        save = self.util.config_val("EXP", "save", True)
+        save = self.util.config_val_bool("EXP", "save", True)
         if save:
             # save the experiment for future use
             self.save(self.util.get_save_name())
