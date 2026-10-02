@@ -117,3 +117,49 @@ class TestPrepareSkipsFiltersOnSplitReuse:
 
         # Not reduced to 8 -- the random per-dataset filter never ran.
         assert len(ds.df) == 50
+
+
+class _PassthroughDataFilter:
+    """Stand-in for DataFilter that leaves self.df untouched, so the
+    required-column filter's effect (applied just before DataFilter is
+    constructed) survives to the assertion."""
+
+    def __init__(self, df, context=None):
+        self.df = df
+
+    def all_filters(self, data_name=None):
+        return self.df
+
+
+class TestPrepareRequiredFilterHandlesNaSentinel:
+    """Regression (review on #456 / GH #455): Dataset._drop_or_fill_missing()
+    fills missing non-target values with the literal string "na" instead
+    of leaving them NaN. DATA.<name>.required's notna()-based filter must
+    still treat that sentinel as missing, or the documented
+    `required = gender` option silently stops filtering anything."""
+
+    def test_na_sentinel_rows_are_filtered_like_real_nan(self, monkeypatch):
+        idx = _make_segmented_index([f"/data/f_{i}.wav" for i in range(3)])
+        df = pd.DataFrame(
+            {
+                "emotion": ["happy", "sad", "angry"],
+                "gender": ["male", "na", "female"],
+            },
+            index=idx,
+        )
+        ds = _make_dataset(df)
+        util = _make_util()
+        util.config_val_data.side_effect = (
+            lambda name, key, default: "gender" if key == "required" else default
+        )
+        ds.util = util
+
+        monkeypatch.setattr(
+            "nkululeko.data.dataset.should_reuse_split", lambda util, split3: False
+        )
+        monkeypatch.setattr("nkululeko.data.dataset.DataFilter", _PassthroughDataFilter)
+
+        ds.prepare()
+
+        assert len(ds.df) == 2
+        assert "na" not in ds.df["gender"].values

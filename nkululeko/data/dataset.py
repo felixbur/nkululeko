@@ -287,7 +287,12 @@ class Dataset(ContextAware):
             required = self.util.config_val_data(self.name, "required", False)
             if required:
                 pre = self.df.shape[0]
-                self.df = self.df[self.df[required].notna()]
+                # _drop_or_fill_missing() (GH #455) fills missing values
+                # in non-target columns -- including this one -- with the
+                # literal string "na" instead of leaving them NaN, so
+                # notna() alone would no longer catch them here.
+                is_missing = self.df[required].isna() | (self.df[required] == "na")
+                self.df = self.df[~is_missing]
                 post = self.df.shape[0]
                 self.util.debug(
                     f"{self.name}: kept {post} samples with {required} (from {pre},"
