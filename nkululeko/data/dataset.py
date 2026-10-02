@@ -103,6 +103,37 @@ class Dataset(ContextAware):
                     )
         return df
 
+    def _drop_or_fill_missing(self, df):
+        """Only require the target to be non-null (GH #455).
+
+        A blanket ``dropna()`` silently dropped every row missing *any*
+        auto-probed demographic column (age/gender/speaker), which can
+        exclude an entire source database with no error or row-count
+        logged, if that database simply lacks a demographic scheme. Other
+        columns get filled with the literal string "na" instead of
+        dropping the row, so missing demographic data is visible rather
+        than silent.
+        """
+        if self.col_label is None or self.col_label not in df.columns:
+            return df.dropna()
+
+        before = df.shape[0]
+        df = df.dropna(subset=[self.col_label]).copy()
+        after = df.shape[0]
+        if after < before:
+            self.util.debug(
+                f"{self.name}: dropped {before - after} samples with "
+                f"missing target '{self.col_label}' (kept {after})"
+            )
+        other_cols = [c for c in df.columns if c != self.col_label]
+        na_counts = {c: int(n) for c in other_cols if (n := df[c].isna().sum())}
+        if na_counts:
+            df[list(na_counts.keys())] = df[list(na_counts.keys())].fillna("na")
+            self.util.debug(
+                f"{self.name}: filled missing values with 'na' in: {na_counts}"
+            )
+        return df
+
     def _get_columns(self, db: audformat.Database):
         columns = self.util.config_val_data(self.name, "columns", False)
         if columns:
@@ -200,8 +231,7 @@ class Dataset(ContextAware):
                 df = self.db.get(self.col_label, columns)
             else:
                 df = self.db.get(self.col_label)
-        # remove NAs
-        df = df.dropna()
+        df = self._drop_or_fill_missing(df)
         # check if columns should be renamed
         df = self._check_cols(df)
         self.col_label = self.util.config_val_data(self.name, "label", self.target)
