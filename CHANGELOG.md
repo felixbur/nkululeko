@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.11.8 (26-10-02)
+-------------------------
+* fix bug: `Dataset.load()` used a blanket `dropna()` after merging in auto-probed demographic columns (age/gender/speaker), so any row missing *any* of these -- not just the target -- was silently dropped, with no row count or warning logged; a source database lacking a demographic scheme entirely lost every one of its rows without any visible sign anything was wrong. Only the target now requires a non-null value; other columns get the literal string `"na"` instead of dropping the row, and both the drop and the fill are logged via `Util.debug()` (#455)
+
 Version 1.11.7 (26-10-01)
 -------------------------
 * add `[EXP] res_name` to override the auto-constructed experiment name (databases + target + model description) used in result/plot/checkpoint filenames, which can get too long for a project with many databases or feature sets (#451)
