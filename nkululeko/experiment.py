@@ -25,7 +25,7 @@ from nkululeko.reporting.report import Report
 from nkululeko.runmanager import Runmanager
 from nkululeko.scaler import Scaler
 from nkululeko.testing_predictor import TestPredictor
-from nkululeko.utils.dataframe import read_cached_df
+from nkululeko.utils.dataframe import cache_has_source_db, read_cached_df
 from nkululeko.utils.pickle_integrity import save_checksum, verify_checksum
 from nkululeko.utils.util import Util
 
@@ -163,7 +163,12 @@ class Experiment:
         store = self.util.get_path("store")
         storage_test = f"{store}extra_testdf.csv"
         # Only use the cached (integer-encoded) CSV when encode=True
-        if encode and os.path.isfile(storage_test) and not start_fresh:
+        if (
+            encode
+            and os.path.isfile(storage_test)
+            and cache_has_source_db(storage_test)
+            and not start_fresh
+        ):
             self.util.debug(f"reusing previously stored {storage_test}")
             self.df_test = self._import_csv(storage_test)
         else:

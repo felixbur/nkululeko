@@ -12,6 +12,7 @@ import pandas as pd
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.dataframe import (
+    cache_has_source_db,
     remap_augmented_index,
     should_reuse_file,
     should_reuse_split,
@@ -606,3 +607,49 @@ class TestRemapAugmentedIndex(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestCacheHasSourceDb(unittest.TestCase):
+    """Caches written before pooled rows were tagged with source_db must be
+    treated as stale, because the origin cannot be recovered after pooling."""
+
+    def _write(self, store, name, df):
+        path = os.path.join(store, name)
+        df.to_csv(path, index=False)
+        return path
+
+    def test_true_when_column_present(self):
+        with tempfile.TemporaryDirectory() as store:
+            path = self._write(
+                store, "a.csv", pd.DataFrame({"file": ["x"], "source_db": ["db"]})
+            )
+            self.assertTrue(cache_has_source_db(path))
+
+    def test_false_when_rows_but_no_column(self):
+        with tempfile.TemporaryDirectory() as store:
+            path = self._write(store, "a.csv", pd.DataFrame({"file": ["x"]}))
+            self.assertFalse(cache_has_source_db(path))
+
+    def test_true_for_empty_cache(self):
+        with tempfile.TemporaryDirectory() as store:
+            path = self._write(store, "a.csv", pd.DataFrame({"file": []}))
+            self.assertTrue(cache_has_source_db(path))
+            empty = os.path.join(store, "zero.csv")
+            open(empty, "w").close()
+            self.assertTrue(cache_has_source_db(empty))
+
+    def test_should_reuse_split_false_for_old_cache(self):
+        with tempfile.TemporaryDirectory() as store:
+            util = MagicMock()
+            util.config_val_bool.return_value = False
+            util.get_path.return_value = store + os.sep
+            for name in ("traindf.csv", "testdf.csv"):
+                self._write(store, name, pd.DataFrame({"file": ["x"]}))
+            self.assertFalse(should_reuse_split(util, split3=False))
+            for name in ("traindf.csv", "testdf.csv"):
+                self._write(
+                    store,
+                    name,
+                    pd.DataFrame({"file": ["x"], "source_db": ["db"]}),
+                )
+            self.assertTrue(should_reuse_split(util, split3=False))
