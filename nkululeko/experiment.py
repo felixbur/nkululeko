@@ -165,9 +165,9 @@ class Experiment:
         # Only use the cached (integer-encoded) CSV when encode=True
         if (
             encode
+            and not start_fresh
             and os.path.isfile(storage_test)
             and cache_has_source_db(storage_test)
-            and not start_fresh
         ):
             self.util.debug(f"reusing previously stored {storage_test}")
             self.df_test = self._import_csv(storage_test)
