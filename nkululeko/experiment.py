@@ -25,7 +25,7 @@ from nkululeko.reporting.report import Report
 from nkululeko.runmanager import Runmanager
 from nkululeko.scaler import Scaler
 from nkululeko.testing_predictor import TestPredictor
-from nkululeko.utils.dataframe import read_cached_df
+from nkululeko.utils.dataframe import cache_has_source_db, read_cached_df
 from nkululeko.utils.pickle_integrity import save_checksum, verify_checksum
 from nkululeko.utils.util import Util
 
@@ -163,7 +163,12 @@ class Experiment:
         store = self.util.get_path("store")
         storage_test = f"{store}extra_testdf.csv"
         # Only use the cached (integer-encoded) CSV when encode=True
-        if encode and os.path.isfile(storage_test) and not start_fresh:
+        if (
+            encode
+            and not start_fresh
+            and os.path.isfile(storage_test)
+            and cache_has_source_db(storage_test)
+        ):
             self.util.debug(f"reusing previously stored {storage_test}")
             self.df_test = self._import_csv(storage_test)
         else:
@@ -184,8 +189,10 @@ class Experiment:
                     self.got_speaker = True
                 data.split()
                 data.prepare_labels()
+                # Tag a copy: data.df_test may be the same object as data.df.
+                tagged = data.df_test.assign(source_db=d)
                 self.df_test = pd.concat(
-                    [self.df_test, self.util.make_segmented_index(data.df_test)]
+                    [self.df_test, self.util.make_segmented_index(tagged)]
                 )
                 self.df_test.is_labeled = data.is_labeled
             self.df_test.got_gender = self.got_gender

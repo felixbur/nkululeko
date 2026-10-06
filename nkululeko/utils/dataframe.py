@@ -234,6 +234,19 @@ def split_cache_paths(store, split3):
     return paths
 
 
+def cache_has_source_db(path):
+    """False if the cached CSV at `path` has rows but no `source_db` column,
+    i.e. it was written before pooled rows were tagged with their originating
+    database. That information cannot be recovered after pooling, so such a
+    cache has to be rebuilt. An empty (header-only) cache is fine as is.
+    """
+    try:
+        head = pd.read_csv(path, nrows=1)
+    except (pd.errors.EmptyDataError, ValueError):
+        return True
+    return head.empty or "source_db" in head.columns
+
+
 def should_reuse_split(util, split3):
     """True if a previously cached train/dev/test split (see
     split_cache_paths) will be reused instead of computing a fresh one --
@@ -251,7 +264,8 @@ def should_reuse_split(util, split3):
         return False
     store = util.get_path("store")
     return all(
-        os.path.isfile(p) for p in split_cache_paths(store, split3).values()
+        os.path.isfile(p) and cache_has_source_db(p)
+        for p in split_cache_paths(store, split3).values()
     )
 
 
