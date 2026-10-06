@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 1.11.9 (26-10-06)
+-------------------------
+* Add a source_db column to the pooled dataframes. Its value is the name of the
+[DATA] section the row came from (e.g. emodb).
+
 Version 1.11.8 (26-10-02)
 -------------------------
 * fix bug: `Dataset.load()` used a blanket `dropna()` after merging in auto-probed demographic columns (age/gender/speaker), so any row missing *any* of these -- not just the target -- was silently dropped, with no row count or warning logged; a source database lacking a demographic scheme entirely lost every one of its rows without any visible sign anything was wrong. Only the target now requires a non-null value; other columns get the literal string `"na"` instead of dropping the row, and both the drop and the fill are logged via `Util.debug()` (#455)
