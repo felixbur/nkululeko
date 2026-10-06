@@ -725,6 +725,7 @@ class TestFillTestsSourceDb:
         from nkululeko.experiment import Experiment
 
         calls = []
+        created = []
 
         class FakeDataset:
             got_gender = got_age = got_speaker = False
@@ -736,7 +737,10 @@ class TestFillTestsSourceDb:
                     [[f"/{name}/a.wav"], [pd.Timedelta(0)], [pd.NaT]],
                     names=["file", "start", "end"],
                 )
-                self.df_test = pd.DataFrame({"emotion": ["happy"]}, index=idx)
+                # like split_strategy "test": df_test is the same object as df
+                self.df = pd.DataFrame({"emotion": ["happy"]}, index=idx)
+                self.df_test = self.df
+                created.append(self)
 
             def load(self):
                 pass
@@ -760,6 +764,7 @@ class TestFillTestsSourceDb:
         exp.target = "emotion"
         exp.label_encoder = LabelEncoder().fit(["happy", "sad"])
         exp.got_gender = exp.got_age = exp.got_speaker = False
+        exp.created = created
         return exp, calls
 
     def test_fresh_build_tags_rows_and_caches_column(self, tmp_path, monkeypatch):
@@ -791,3 +796,12 @@ class TestFillTestsSourceDb:
 
         assert calls == ["dbx"]  # cache rejected, datasets reloaded
         assert list(exp.df_test["source_db"]) == ["dbx"]
+
+    def test_tagging_does_not_mutate_dataset_df(self, tmp_path, monkeypatch):
+        exp, calls = self._make_experiment(tmp_path, monkeypatch)
+
+        exp.fill_tests()
+
+        assert exp.created
+        for data in exp.created:
+            assert "source_db" not in data.df.columns

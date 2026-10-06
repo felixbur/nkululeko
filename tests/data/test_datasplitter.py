@@ -496,6 +496,44 @@ class TestFillTrainAndTestsConcatenation:
         if split3:
             assert list(ds.df_dev["source_db"]) == ["a", "b"]
 
+    def test_source_db_tagging_does_not_mutate_dataset_df(self, tmp_path, monkeypatch):
+        """With split_strategy train/test, Dataset.split() sets
+        df_train = df_test = df (no copy). Tagging must not leak source_db
+        into the dataset's own df."""
+
+        class AliasingDataset:
+            def __init__(self, name, files):
+                self.name = name
+                self.df = _tag_df(pd.DataFrame(index=_make_segmented_index(files)))
+                self.df_train = self.df
+                self.df_test = self.df
+
+            def split(self):
+                pass
+
+            def prepare_labels(self):
+                pass
+
+        monkeypatch.setitem(glob_conf.config["DATA"], "target", "none")
+        monkeypatch.setattr(glob_conf, "target", None)
+
+        ds_a = AliasingDataset("a", ["/a/1.wav", "/a/2.wav"])
+        ds_b = AliasingDataset("b", ["/b/1.wav"])
+
+        ds = Datasplitter.__new__(Datasplitter)
+        ds.util = _make_fake_util(tmp_path)
+        ds.target = None
+        ds.split3 = False
+        ds.got_speaker = False
+        ds.datasets = {"a": ds_a, "b": ds_b}
+
+        df_train, df_test = ds.fill_train_and_tests()
+
+        assert list(df_train["source_db"]) == ["a", "a", "b"]
+        assert list(df_test["source_db"]) == ["a", "a", "b"]
+        assert "source_db" not in ds_a.df.columns
+        assert "source_db" not in ds_b.df.columns
+
     def test_flag_aggregation_any_wins_on_self_and_splits(self, tmp_path, monkeypatch):
         """Flags should be any-wins aggregated onto self and every split DataFrame."""
 

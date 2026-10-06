@@ -189,9 +189,10 @@ class Experiment:
                     self.got_speaker = True
                 data.split()
                 data.prepare_labels()
-                data.df_test["source_db"] = d
+                # Tag a copy: data.df_test may be the same object as data.df.
+                tagged = data.df_test.assign(source_db=d)
                 self.df_test = pd.concat(
-                    [self.df_test, self.util.make_segmented_index(data.df_test)]
+                    [self.df_test, self.util.make_segmented_index(tagged)]
                 )
                 self.df_test.is_labeled = data.is_labeled
             self.df_test.got_gender = self.got_gender
