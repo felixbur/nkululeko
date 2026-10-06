@@ -605,8 +605,6 @@ class TestRemapAugmentedIndex(unittest.TestCase):
         self.assertEqual(df.index.get_level_values(0)[0], "a.wav")
 
 
-if __name__ == "__main__":
-    unittest.main()
 
 
 class TestCacheHasSourceDb(unittest.TestCase):
@@ -653,3 +651,7 @@ class TestCacheHasSourceDb(unittest.TestCase):
                     pd.DataFrame({"file": ["x"], "source_db": ["db"]}),
                 )
             self.assertTrue(should_reuse_split(util, split3=False))
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -709,3 +709,85 @@ class TestPlotConfmatPerSpeakerGrouping:
         assert ".." not in plot_name
         # the display name passed through untouched, for messages/titles
         assert kwargs["group_col_name"] == col
+
+
+class TestFillTestsSourceDb:
+    """fill_tests() must tag extra-test rows with source_db and must not
+    reuse an extra_testdf.csv cache that predates the column."""
+
+    @staticmethod
+    def _make_experiment(tmp_path, monkeypatch):
+        from unittest.mock import MagicMock
+
+        from sklearn.preprocessing import LabelEncoder
+
+        import nkululeko.experiment as experiment_mod
+        from nkululeko.experiment import Experiment
+
+        calls = []
+
+        class FakeDataset:
+            got_gender = got_age = got_speaker = False
+            is_labeled = True
+
+            def __init__(self, name, context=None):
+                calls.append(name)
+                idx = pd.MultiIndex.from_arrays(
+                    [[f"/{name}/a.wav"], [pd.Timedelta(0)], [pd.NaT]],
+                    names=["file", "start", "end"],
+                )
+                self.df_test = pd.DataFrame({"emotion": ["happy"]}, index=idx)
+
+            def load(self):
+                pass
+
+            def split(self):
+                pass
+
+            def prepare_labels(self):
+                pass
+
+        monkeypatch.setattr(experiment_mod, "Dataset", FakeDataset)
+
+        exp = Experiment.__new__(Experiment)
+        exp.context = MagicMock()
+        exp.context.config = {"DATA": {"tests": "['dbx']"}}
+        exp.util = MagicMock()
+        exp.util.config_val.return_value = "False"
+        exp.util.get_path.return_value = str(tmp_path) + "/"
+        exp.util.config_val_data.return_value = "audformat"
+        exp.util.make_segmented_index.side_effect = lambda df: df
+        exp.target = "emotion"
+        exp.label_encoder = LabelEncoder().fit(["happy", "sad"])
+        exp.got_gender = exp.got_age = exp.got_speaker = False
+        return exp, calls
+
+    def test_fresh_build_tags_rows_and_caches_column(self, tmp_path, monkeypatch):
+        exp, calls = self._make_experiment(tmp_path, monkeypatch)
+
+        exp.fill_tests()
+
+        assert list(exp.df_test["source_db"]) == ["dbx"]
+        assert "source_db" in pd.read_csv(tmp_path / "extra_testdf.csv").columns
+
+    def test_cache_with_source_db_is_reused(self, tmp_path, monkeypatch):
+        exp, calls = self._make_experiment(tmp_path, monkeypatch)
+        exp.fill_tests()
+        assert calls == ["dbx"]
+
+        exp.fill_tests()
+
+        assert calls == ["dbx"]  # second call came from the cache
+        assert list(exp.df_test["source_db"]) == ["dbx"]
+
+    def test_legacy_cache_without_source_db_is_rebuilt(self, tmp_path, monkeypatch):
+        exp, calls = self._make_experiment(tmp_path, monkeypatch)
+        legacy = pd.DataFrame(
+            {"file": ["/old/a.wav"], "start": ["0 days"], "end": [""], "emotion": [0]}
+        )
+        legacy.to_csv(tmp_path / "extra_testdf.csv", index=False)
+
+        exp.fill_tests()
+
+        assert calls == ["dbx"]  # cache rejected, datasets reloaded
+        assert list(exp.df_test["source_db"]) == ["dbx"]
