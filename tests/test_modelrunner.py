@@ -104,6 +104,24 @@ class TestSelectModel:
         mr = self._make_mr("knn", dummy_dfs)
         assert isinstance(mr.model, KNN_model)
 
+    def test_aasist_model_selected(self, dummy_dfs, monkeypatch):
+        # AasistModel loads an SSL checkpoint in __init__, so patch in a
+        # stand-in; this only checks that "aasist" is routed to the class.
+        import nkululeko.models.model_aasist as model_aasist
+
+        class FakeAasist:
+            is_classifier = True
+            is_regressor = False
+
+            def __init__(self, df_train, df_test, feats_train, feats_test):
+                self.df_train = df_train
+
+        monkeypatch.setattr(model_aasist, "AasistModel", FakeAasist)
+
+        mr = self._make_mr("aasist", dummy_dfs)
+
+        assert isinstance(mr.model, FakeAasist)
+
     def test_bayes_model_selected(self, dummy_dfs):
         from nkululeko.models.model_bayes import Bayes_model
 

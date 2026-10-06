@@ -18,6 +18,7 @@
     - [FEATS](#feats)
     - [MODEL](#model)
     - [FINETUNE](#finetune)
+    - [AASIST](#aasist)
     - [EXPL](#expl)
     - [PREDICT](#predict)
     - [EXPORT](#export)
@@ -425,6 +426,7 @@ Model and training specifications. In general, default values should work for cl
     * **nb**: Naive Bayes  
     * **mlp**: [Multi-layer perceptron](http://blog.syntheticspeech.de/2021/08/30/nkululeko-multi-layer-perceptron/) (neural network)  
     * **cnn**: [Convolutional neural network](http://blog.syntheticspeech.de/2022/01/17/how-to-use-convolutional-neural-networks-with-nkululeko/)  
+    * **aasist**: [AASIST](#aasist) anti-spoofing / audio deepfake detection: SSL (wav2vec2/XLS-R) frontend + spectro-temporal graph attention backend, trained end-to-end on raw audio (binary classification only; requires `[FEATS] type = []`). Settings go in a dedicated [`[AASIST]`](#aasist) section below.
     * **finetune**: [Fine-tuning](http://blog.syntheticspeech.de/2022/10/07/nkululeko-how-to-fine-tune-a-wav2vec2-model/) for pre-trained models. Settings go in a dedicated [`[FINETUNE]`](#finetune) section below.
 * **class_weight**: add class_weight to the linear classifier (XGB, SVM) fit methods for imbalanced data (True or False)
   * class_weight = False
@@ -597,6 +599,30 @@ Settings specific to `[MODEL] type = finetune` - finetuning a pretrained transfo
   * measure = ccc
   * possible values: ccc, pcc, mse, mae
   * default: ccc
+
+### AASIST
+
+Settings specific to `[MODEL] type = aasist` - AASIST (spectro-temporal graph attention network, Jung et al., ICASSP 2022) with an SSL (wav2vec2/XLS-R) frontend, trained end-to-end on raw waveforms. It is a binary (two-class) model, intended for tasks such as audio deepfake detection. Only read when `[MODEL] type = aasist`; every key below is optional and has a default. Requires `[FEATS] type = []` (no precomputed features - the model reads audio directly, the same way `[MODEL] type = finetune` does). `[MODEL] learning_rate`/`optimizer`/`weight_decay`/`loss`/`class_weight`/`patience`/`random_seed`/`device`/`n_jobs` are read from the shared `[MODEL]` section (matching `adm`), not from `[AASIST]`. Only `loss = cross` is supported.
+
+* **ssl_model**: HuggingFace SSL frontend checkpoint
+  * ssl_model = facebook/wav2vec2-xls-r-300m
+* **max_len**: fixed waveform length in samples every clip is padded (by tiling) or truncated to
+  * max_len = 64600
+  * default: 64600 (~4.0375s at 16kHz), matching the upstream AASIST paper's own setting
+* **batch_size**: batch size (reduce if you hit out-of-memory errors)
+  * batch_size = 24
+  * `[MODEL] n_jobs` (shared, default 8) sets the DataLoader's `num_workers`, parallelizing each sample's audio read against GPU compute - set `n_jobs = 0` to fall back to a single-process loader
+* **ssl_layer_pooling**: which SSL encoder layer(s) feed the AASIST backend
+  * ssl_layer_pooling = weighted
+  * default: last
+  * possible values:
+    * **last**: only the final encoder layer's hidden states (default)
+    * **weighted**: a learnable, softmax-normalized scalar per hidden-state layer (the CNN feature-extractor's output plus every transformer layer) combines all of them - the same technique `[FINETUNE] layer_pooling=weighted` already offers for `type = finetune`. Motivation: for spoof detection, useful signal in wav2vec2/XLS-R can sit in lower/middle layers rather than only the last one
+  * `weighted` disables the SSL model's own LayerDrop regularization internally (forces it to 0), since LayerDrop's random per-layer skipping during training makes the number of returned hidden-state layers vary call to call, which a fixed-size learned combination can't tolerate
+* **freeze_ssl_frontend**: skip training the SSL frontend's own parameters entirely
+  * freeze_ssl_frontend = True
+  * default: False
+  * PyTorch's autograd then builds no backward graph through the frontend at all (not just skipping its weight update), so training is considerably faster
 
 ### EXPL
 
