@@ -264,6 +264,75 @@ class TestStoreLoad:
         assert errors and "model file not found" in errors[0]
 
 
+class _FakeUtil:
+    def __init__(self, values):
+        self.values = values
+        self.errors = []
+
+    def config_val(self, section, key, default):
+        return self.values.get((section, key), default)
+
+    def error(self, message):
+        self.errors.append(message)
+
+    def debug(self, message):
+        pass
+
+
+def _bare_model(**values):
+    with patch.object(AasistModel, "__init__", return_value=None):
+        model = AasistModel(pd.DataFrame(), pd.DataFrame(), None, None)
+    model.util = _FakeUtil({("MODEL", k): v for k, v in values.items()})
+    model.target = "label"
+    model.class_num = 2
+    model.device = "cpu"
+    model._get_label_smoothing = lambda: 0.0
+    return model
+
+
+class TestBuildCriterionClassWeight:
+    """MODEL.class_weight is a raw INI string, so "False" must mean off."""
+
+    df_train = pd.DataFrame({"label": [0, 0, 0, 1]})
+
+    def test_default_has_no_class_weights(self):
+        model = _bare_model()
+        model._build_criterion(self.df_train)
+        assert model.criterion.weight is None
+
+    def test_explicit_false_string_has_no_class_weights(self):
+        model = _bare_model(class_weight="False")
+        model._build_criterion(self.df_train)
+        assert model.criterion.weight is None
+
+    @pytest.mark.parametrize("value", ["True", "auto"])
+    def test_true_or_auto_balances_classes(self, value):
+        model = _bare_model(class_weight=value)
+        model._build_criterion(self.df_train)
+        # minority class gets the larger weight
+        assert model.criterion.weight[1] > model.criterion.weight[0]
+
+
+class TestParseSeed:
+    @pytest.mark.parametrize("value", ["False", "false", "None", "", False, "0"])
+    def test_unset_values_give_none(self, value):
+        assert _bare_model()._parse_seed(value) is None
+
+    def test_integer_string_is_parsed(self):
+        assert _bare_model()._parse_seed("42") == 42
+
+    def test_code_is_not_evaluated(self):
+        model = _bare_model()
+        marker = "__import__('os').environ.__setitem__('AASIST_EVAL', '1')"
+
+        model._parse_seed(marker)
+
+        import os
+
+        assert "AASIST_EVAL" not in os.environ
+        assert model.util.errors  # reported as invalid instead
+
+
 class TestEvaluateAndProbas:
     def test_evaluate_returns_predictions_for_every_row(self, aasist_model):
         loader = [

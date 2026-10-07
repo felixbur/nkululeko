@@ -97,10 +97,12 @@ class AasistModel(Model):
         self.name = "aasist"
         self.target = self.context.config["DATA"]["target"]
 
-        manual_seed = eval(self.util.config_val("MODEL", "random_seed", "False"))
-        if manual_seed:
+        manual_seed = self._parse_seed(
+            self.util.config_val("MODEL", "random_seed", "False")
+        )
+        if manual_seed is not None:
             self.util.debug(f"seeding random to {manual_seed}")
-            torch.manual_seed(int(manual_seed))
+            torch.manual_seed(manual_seed)
 
         labels = self.context.labels
         self.class_num = len(labels)
@@ -133,6 +135,18 @@ class AasistModel(Model):
         self.trainloader = self.get_loader(df_train, shuffle=True)
         self.testloader = self.get_loader(df_test, shuffle=False)
 
+    def _parse_seed(self, value):
+        """MODEL.random_seed as an int, or None if unset/False (no eval())."""
+        text = str(value).strip().lower()
+        if text in ("", "false", "none", "0"):
+            return None
+        try:
+            return int(text)
+        except ValueError:
+            self.util.error(
+                f"MODEL.random_seed must be an integer or False (got '{value}')"
+            )
+
     def _build_criterion(self, df_train):
         """CrossEntropyLoss over the fixed 2-way output, with optional
         MODEL.class_weight="auto" balancing (matching ADM's own
@@ -147,7 +161,11 @@ class AasistModel(Model):
             )
         label_smoothing = self._get_label_smoothing()
         weight = None
-        if self.util.config_val("MODEL", "class_weight", False):
+        # config_val returns the raw INI string, so "False" must not count as on
+        use_class_weight = str(
+            self.util.config_val("MODEL", "class_weight", "False")
+        ).strip().lower() in ("true", "auto", "1", "yes")
+        if use_class_weight:
             classes = np.arange(self.class_num)
             cw = compute_class_weight(
                 class_weight="balanced", classes=classes, y=df_train[self.target]
