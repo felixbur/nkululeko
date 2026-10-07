@@ -622,7 +622,7 @@ Settings specific to `[MODEL] type = aasist` - AASIST (spectro-temporal graph at
 * **freeze_ssl_frontend**: skip training the SSL frontend's own parameters entirely
   * freeze_ssl_frontend = True
   * default: False
-  * PyTorch's autograd then builds no backward graph through the frontend at all (not just skipping its weight update), so training is considerably faster
+  * PyTorch's autograd then builds no backward graph through the frontend at all (not just skipping its weight update), so training is considerably faster. The frontend's forward pass is still computed for every batch in every epoch; its output is not cached
 
 ### EXPL
 

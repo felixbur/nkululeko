@@ -386,6 +386,9 @@ class AasistBackend(nn.Module):
         self.out_layer = nn.Linear(self.feat_dim, 2)
 
     def forward(self, x):
+        # With freeze_ssl the frontend still runs its forward pass every
+        # epoch (freezing only skips its backward pass and weight update).
+        # Caching its output once per sample would remove that cost.
         x_ssl_feat = self.ssl_model.extract_feat(x.squeeze(-1))
         x = self.ll(x_ssl_feat)  # (bs, frames, 128)
 

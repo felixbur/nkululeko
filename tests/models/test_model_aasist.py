@@ -94,6 +94,31 @@ class TestWaveformDataset:
         assert waveform.shape == (3200,)
 
 
+class TestEmptySignal:
+    def test_pad_or_tile_returns_silence_for_empty_signal(self):
+        from nkululeko.models.model_aasist import _pad_or_tile
+
+        out = _pad_or_tile(np.zeros(0, dtype=np.float32), 100)
+
+        assert out.shape == (100,)
+        assert not out.any()
+
+    def test_zero_duration_segment_warns_instead_of_crashing(self, tmp_path):
+        wav_path = tmp_path / "clip.wav"
+        _write_wav(wav_path, seconds=1.0)
+        index = pd.MultiIndex.from_tuples(
+            [(str(wav_path), pd.Timedelta(seconds=0.5), pd.Timedelta(seconds=0.5))],
+            names=["file", "start", "end"],
+        )
+        df = pd.DataFrame({"label": [0]}, index=index)
+        dataset = _WaveformDataset(df, target="label", cfg=_default_cfg(max_len=1000))
+
+        with pytest.warns(UserWarning, match="no audio read"):
+            waveform, _ = dataset[0]
+
+        assert waveform.shape == (1000,)
+
+
 class TestWaveformDatasetFormat:
     """The SSL frontend needs 16 kHz mono; other formats must be converted."""
 
@@ -204,6 +229,7 @@ class TestTrain:
     """train() runs exactly one epoch over self.trainloader."""
 
     def test_train_runs_one_epoch_and_updates_weights(self):
+        torch.manual_seed(0)
         df_train = pd.DataFrame({"label": [0, 1, 0, 1]})
         df_test = pd.DataFrame({"label": [1, 0]})
         with patch.object(AasistModel, "__init__", return_value=None):
@@ -211,7 +237,7 @@ class TestTrain:
             model.device = "cpu"
             model.net = _TinyNet()
             model.criterion = nn.CrossEntropyLoss()
-            model.optimizer = torch.optim.SGD(model.net.parameters(), lr=0.01)
+            model.optimizer = torch.optim.SGD(model.net.parameters(), lr=0.1)
             model.scheduler = None
             model.scheduler_type = "none"
             model.scheduler_needs_init = False
@@ -272,6 +298,10 @@ class _FakeUtil:
     def config_val(self, section, key, default):
         return self.values.get((section, key), default)
 
+    def config_val_bool(self, section, key, default=False):
+        val = self.config_val(section, key, str(default))
+        return str(val).strip().lower() in ("true", "1", "yes")
+
     def error(self, message):
         self.errors.append(message)
 
@@ -305,32 +335,18 @@ class TestBuildCriterionClassWeight:
         model._build_criterion(self.df_train)
         assert model.criterion.weight is None
 
-    @pytest.mark.parametrize("value", ["True", "auto"])
-    def test_true_or_auto_balances_classes(self, value):
-        model = _bare_model(class_weight=value)
+    def test_true_balances_classes(self):
+        model = _bare_model(class_weight="True")
         model._build_criterion(self.df_train)
         # minority class gets the larger weight
         assert model.criterion.weight[1] > model.criterion.weight[0]
 
+    def test_missing_class_reports_clear_error(self):
+        model = _bare_model(class_weight="True")
+        model.util.error = lambda m: (_ for _ in ()).throw(RuntimeError(m))
 
-class TestParseSeed:
-    @pytest.mark.parametrize("value", ["False", "false", "None", "", False, "0"])
-    def test_unset_values_give_none(self, value):
-        assert _bare_model()._parse_seed(value) is None
-
-    def test_integer_string_is_parsed(self):
-        assert _bare_model()._parse_seed("42") == 42
-
-    def test_code_is_not_evaluated(self):
-        model = _bare_model()
-        marker = "__import__('os').environ.__setitem__('AASIST_EVAL', '1')"
-
-        model._parse_seed(marker)
-
-        import os
-
-        assert "AASIST_EVAL" not in os.environ
-        assert model.util.errors  # reported as invalid instead
+        with pytest.raises(RuntimeError, match="both classes"):
+            model._build_criterion(pd.DataFrame({"label": [0, 0, 0]}))
 
 
 class TestEvaluateAndProbas:

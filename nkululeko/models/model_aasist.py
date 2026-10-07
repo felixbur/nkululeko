@@ -14,6 +14,8 @@ identically to how it does for model_adm.py -- the model this is meant
 to be directly comparable against.
 """
 
+import warnings
+
 import audresample
 import numpy as np
 import pandas as pd
@@ -32,14 +34,21 @@ from nkululeko.optimizers import (
     step_scheduler,
 )
 from nkululeko.reporting.reporter import Reporter
+from nkululeko.utils.random_seed import parse_seed
 
 # The SSL frontends (wav2vec2/XLS-R) expect 16 kHz mono input.
 _TARGET_SR = 16000
 
 
 def _pad_or_tile(signal, max_len):
-    """Pad-by-tiling (upstream's convention) or truncate to a fixed length."""
+    """Pad-by-tiling (upstream's convention) or truncate to a fixed length.
+
+    An empty signal (e.g. a zero-duration segment) cannot be tiled; it is
+    replaced by silence of max_len samples.
+    """
     sig_len = signal.shape[0]
+    if sig_len == 0:
+        return np.zeros(max_len, dtype=signal.dtype)
     if sig_len >= max_len:
         return signal[:max_len]
     num_repeats = int(max_len / sig_len) + 1
@@ -79,6 +88,12 @@ class _WaveformDataset(Dataset):
         if sr != _TARGET_SR:
             signal = audresample.resample(signal, sr, _TARGET_SR).squeeze()
 
+        if signal.shape[0] == 0:
+            warnings.warn(
+                f"aasist: no audio read from {file} (start={start}, end={end}); "
+                "using silence for this sample",
+                stacklevel=2,
+            )
         signal = _pad_or_tile(signal, self.cfg.max_len)
         row = self.df.iloc[idx]
         label = row[self.target]
@@ -97,9 +112,13 @@ class AasistModel(Model):
         self.name = "aasist"
         self.target = self.context.config["DATA"]["target"]
 
-        manual_seed = self._parse_seed(
-            self.util.config_val("MODEL", "random_seed", "False")
-        )
+        seed_value = self.util.config_val("MODEL", "random_seed", "False")
+        try:
+            manual_seed = parse_seed(seed_value)
+        except ValueError:
+            self.util.error(
+                f"MODEL.random_seed must be an integer or False (got '{seed_value}')"
+            )
         if manual_seed is not None:
             self.util.debug(f"seeding random to {manual_seed}")
             torch.manual_seed(manual_seed)
@@ -135,24 +154,10 @@ class AasistModel(Model):
         self.trainloader = self.get_loader(df_train, shuffle=True)
         self.testloader = self.get_loader(df_test, shuffle=False)
 
-    def _parse_seed(self, value):
-        """MODEL.random_seed as an int, or None if unset/False (no eval())."""
-        text = str(value).strip().lower()
-        if text in ("", "false", "none", "0"):
-            return None
-        try:
-            return int(text)
-        except ValueError:
-            self.util.error(
-                f"MODEL.random_seed must be an integer or False (got '{value}')"
-            )
-
     def _build_criterion(self, df_train):
         """CrossEntropyLoss over the fixed 2-way output, with optional
-        MODEL.class_weight="auto" balancing (matching ADM's own
-        MODEL.class_weight convention, adapted for a 2-logit softmax head
-        instead of ADM's single-logit sigmoid). Only MODEL.loss=cross is
-        supported.
+        MODEL.class_weight (True = balanced class weights). Only
+        MODEL.loss=cross is supported.
         """
         loss_type = self.util.config_val("MODEL", "loss", "cross")
         if loss_type != "cross":
@@ -161,12 +166,14 @@ class AasistModel(Model):
             )
         label_smoothing = self._get_label_smoothing()
         weight = None
-        # config_val returns the raw INI string, so "False" must not count as on
-        use_class_weight = str(
-            self.util.config_val("MODEL", "class_weight", "False")
-        ).strip().lower() in ("true", "auto", "1", "yes")
-        if use_class_weight:
+        if self.util.config_val_bool("MODEL", "class_weight", False):
             classes = np.arange(self.class_num)
+            present = set(df_train[self.target].unique())
+            if not set(classes) <= present:
+                self.util.error(
+                    "MODEL.class_weight needs both classes in the training "
+                    f"split, but it only contains {sorted(present)}"
+                )
             cw = compute_class_weight(
                 class_weight="balanced", classes=classes, y=df_train[self.target]
             )
