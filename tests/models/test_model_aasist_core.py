@@ -204,6 +204,8 @@ class TestAasistBackendForward:
         assert backend.ssl_model.layer_pooling == "weighted"
         assert hasattr(backend.ssl_model, "layer_weights")
         assert all(not p.requires_grad for p in backend.ssl_model.model.parameters())
+        # the learned layer mix stays trainable: it is not a pretrained weight
+        assert backend.ssl_model.layer_weights.requires_grad
 
         x = torch.randn(2, 16000)
         with torch.no_grad():

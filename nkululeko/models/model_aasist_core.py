@@ -79,6 +79,12 @@ class HFWav2Vec2Frontend(nn.Module):
             # it's unaffected regardless of layerdrop.
             self.model.config.layerdrop = 0.0
             num_layers = self.model.config.num_hidden_layers + 1
+            # Deliberately trainable even when freeze=True: freeze only
+            # covers the pretrained wav2vec2 weights above. layer_weights
+            # are new parameters of this pooling step, and learning how to
+            # mix a frozen model's layers is the point of "weighted".
+            # Gradients flow only into these weights, never into the
+            # frozen transformer.
             self.layer_weights = nn.Parameter(torch.zeros(num_layers))
 
     def extract_feat(self, input_data: torch.Tensor) -> torch.Tensor:
