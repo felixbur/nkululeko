@@ -193,6 +193,28 @@ class NamingMixin:
             return ""
         return "_" + "".join(b[0] for b in branches)
 
+    def get_dann_columns(self):
+        """MODEL.dann_columns as a list of column names ([] = DANN off);
+        the one place the key is parsed. A malformed value is a config
+        error."""
+        raw = self.config_val("MODEL", "dann_columns", "[]")
+        try:
+            return parse_dann_columns(raw)
+        except ValueError:
+            self.error(
+                f"MODEL.dann_columns = {raw} is not a list of column names; "
+                "write it like ['source_db', 'language']"
+            )
+
+    def get_dann_number(self, key, default="1.0"):
+        """MODEL.<key> (dann_lambda, dann_weight) as a float; a value that
+        is not a number is a config error."""
+        raw = self.config_val("MODEL", key, default)
+        try:
+            return float(raw)
+        except (TypeError, ValueError):
+            self.error(f"MODEL.{key} = {raw} is not a number")
+
     def _get_dann_suffix(self):
         """Return a DANN suffix (e.g. '_dann-source_db') when the model type
         uses MODEL.dann_columns, so DANN runs don't share result/checkpoint
@@ -200,14 +222,7 @@ class NamingMixin:
         Non-default lambda/weight/reverse are appended."""
         if self.get_model_type() not in DANN_MODEL_TYPES:
             return ""
-        raw = self.config_val("MODEL", "dann_columns", "[]")
-        try:
-            columns = parse_dann_columns(raw)
-        except ValueError:
-            self.error(
-                f"MODEL.dann_columns = {raw} is not a list of column names; "
-                "write it like ['source_db', 'language']"
-            )
+        columns = self.get_dann_columns()
         if not columns:
             return ""
         # Path-safe, and unambiguous: ['a+b'] and ['a', 'b'] must not share
@@ -217,12 +232,12 @@ class NamingMixin:
         if safe != columns or any("+" in c for c in columns):
             digest = hashlib.sha1(repr(columns).encode()).hexdigest()[:6]
             suffix += f"-{digest}"
-        lambda_ = str(self.config_val("MODEL", "dann_lambda", "1.0"))
-        weight = str(self.config_val("MODEL", "dann_weight", "1.0"))
-        if float(lambda_) != 1.0:
-            suffix += f"-l{lambda_.replace('.', '-')}"
-        if float(weight) != 1.0:
-            suffix += f"-w{weight.replace('.', '-')}"
+        lambda_ = self.get_dann_number("dann_lambda")
+        weight = self.get_dann_number("dann_weight")
+        if lambda_ != 1.0:
+            suffix += f"-l{lambda_:g}".replace(".", "-")
+        if weight != 1.0:
+            suffix += f"-w{weight:g}".replace(".", "-")
         if not self.config_val_bool("MODEL", "dann_reverse", True):
             suffix += "-noreverse"
         return suffix

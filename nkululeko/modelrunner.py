@@ -343,7 +343,7 @@ class Modelrunner(ContextAware):
     def _select_model(self, model_type):
         if (
             model_type in DANN_MODEL_TYPES
-            and self.util.config_val_list("MODEL", "dann_columns", [])
+            and self.util.get_dann_columns()
             and self._feature_balancing_method()
         ):
             # Feature balancing rebuilds df_train with only the target column
@@ -360,9 +360,7 @@ class Modelrunner(ContextAware):
         # Validate model/experiment type compatibility before instantiation
         task = "classification" if self.util.exp_is_classification() else "regression"
         validate_model_task_support(model_type, task)
-        if model_type not in DANN_MODEL_TYPES and self.util.config_val_list(
-            "MODEL", "dann_columns", []
-        ):
+        if model_type not in DANN_MODEL_TYPES and self.util.get_dann_columns():
             self.util.warn(
                 f"MODEL.dann_columns is set, but model type '{model_type}' does "
                 f"not support domain-adversarial training; it is ignored "

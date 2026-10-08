@@ -113,3 +113,10 @@ class TestDannConfig:
         util = make_util(tmp_path, model_section={"dann_columns": "[1, 2]"})
         with pytest.raises(NkululukoError, match="dann_columns"):
             AasistConfig.from_util(util)
+
+    def test_non_numeric_weight_is_a_clean_error(self, tmp_path):
+        from nkululeko.utils.errors import NkululukoError
+
+        util = make_util(tmp_path, model_section={"dann_weight": "heavy"})
+        with pytest.raises(NkululukoError, match="dann_weight"):
+            AasistConfig.from_util(util)

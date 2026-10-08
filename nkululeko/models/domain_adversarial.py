@@ -37,8 +37,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from nkululeko.utils.naming import parse_dann_columns
-
 
 class _GradientReversalFunction(torch.autograd.Function):
     @staticmethod
@@ -84,6 +82,7 @@ class DomainAdversarialHead(nn.Module):
         super().__init__()
         # The GRL multiplies the backward gradient by -lambda_, so
         # lambda_ = -1 passes it through unchanged (auxiliary head).
+        # `lambda_` therefore only matters when reverse=True.
         self.grl = GradientReversalLayer(lambda_ if reverse else -1.0)
         self.classifier = nn.Sequential(
             nn.Linear(feat_dim, hidden_dim),
@@ -106,18 +105,10 @@ class DannConfig:
 
     @classmethod
     def from_util(cls, util) -> "DannConfig":
-        raw = util.config_val("MODEL", "dann_columns", "[]")
-        try:
-            columns = parse_dann_columns(raw)
-        except ValueError:
-            util.error(
-                f"MODEL.dann_columns = {raw} is not a list of column names; "
-                "write it like ['source_db', 'language']"
-            )
         return cls(
-            columns=columns,
-            lambda_=float(util.config_val("MODEL", "dann_lambda", "1.0")),
-            weight=float(util.config_val("MODEL", "dann_weight", "1.0")),
+            columns=util.get_dann_columns(),
+            lambda_=util.get_dann_number("dann_lambda"),
+            weight=util.get_dann_number("dann_weight"),
             reverse=util.config_val_bool("MODEL", "dann_reverse", True),
         )
 
