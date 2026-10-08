@@ -12,6 +12,7 @@ from nkululeko.experiment_context import (
     use_context,
 )
 from nkululeko.reporting.reporter import Reporter
+from nkululeko.utils.naming import DANN_MODEL_TYPES
 from nkululeko.utils.util import Util
 
 # Fallback type-based heuristics used when a model instance is not yet available
@@ -20,8 +21,6 @@ from nkululeko.utils.util import Util
 CLASSIFIER_TYPES = frozenset(
     {"svm", "xgb", "bayes", "gmm", "knn", "tree", "cnn", "mlp", "adm", "aasist"}
 )
-# Model types that implement domain-adversarial training (MODEL.dann_columns)
-DANN_MODEL_TYPES = frozenset({"aasist", "mlp", "mlp_reg", "cnn", "adm"})
 # Model types that only support regression
 REGRESSOR_TYPES = frozenset({"svr", "xgr", "knn_reg", "lin_reg", "tree_reg", "mlp_reg"})
 
@@ -342,9 +341,11 @@ class Modelrunner(ContextAware):
             self.util.debug(f"new test size: {self.df_test.shape}")
 
     def _select_model(self, model_type):
-        if self.util.config_val_list(
-            "MODEL", "dann_columns", []
-        ) and self.util.config_val("FEATS", "balancing", False):
+        if (
+            model_type in DANN_MODEL_TYPES
+            and self.util.config_val_list("MODEL", "dann_columns", [])
+            and self._feature_balancing_method()
+        ):
             # Feature balancing rebuilds df_train with only the target column
             # (and synthetic rows have no domain), so there is nothing for
             # the DANN heads to learn from.
@@ -478,9 +479,20 @@ class Modelrunner(ContextAware):
         validate_model_task_support(model_type, task, model=self.model)
         return self.model
 
+    def _feature_balancing_method(self):
+        """FEATS.balancing as an algorithm name, or None when it is off.
+
+        config_val returns the raw INI string, so an explicit 'False' (or
+        'none', or an empty value) must not count as an algorithm.
+        """
+        balancing = self.util.config_val("FEATS", "balancing", False)
+        if not balancing or str(balancing).strip().lower() in ("", "false", "none"):
+            return None
+        return balancing
+
     def _check_feature_balancing(self):
         """Check and apply feature balancing using the dedicated DataBalancer class."""
-        balancing = self.util.config_val("FEATS", "balancing", False)
+        balancing = self._feature_balancing_method()
         if balancing:
             self.util.debug("Applying feature balancing using DataBalancer")
 
