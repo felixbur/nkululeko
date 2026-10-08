@@ -625,6 +625,21 @@ Settings specific to `[MODEL] type = aasist` - AASIST (spectro-temporal graph at
   * default: False
   * PyTorch's autograd then builds no backward graph through the pretrained frontend at all (not just skipping its weight update), so training is considerably faster. With `ssl_layer_pooling = weighted` the learned layer weights are not frozen: they are new parameters of the pooling step, not pretrained weights. The frontend's forward pass is still computed for every batch in every epoch; its output is not cached
 
+Domain-adversarial training (DANN, Ganin & Lempitsky 2015) is available for `aasist`, with its keys in the shared `[MODEL]` section. It is meant for cross-corpus or cross-lingual setups where the model should not rely on which database or language a clip comes from. One small classifier head is attached per listed column, and the shared features are trained to make it fail:
+
+* **dann_columns**: dataframe columns that hold the label to become invariant to
+  * dann_columns = ['source_db']
+  * default: [] (DANN off)
+  * `source_db` is the database a row came from (added automatically); any other column of the training data works too, e.g. `language`. List several to attach several heads. Each column needs at least 2 distinct values and no missing values in the training split. The heads are used only for training; they are not applied to dev/test data and are not saved with the model
+* **dann_lambda**: strength of the gradient reversal
+  * dann_lambda = 1.0
+* **dann_weight**: weight of each domain loss relative to the task loss
+  * dann_weight = 1.0
+* **dann_reverse**: if `False`, the gradient is not reversed, so the heads become ordinary auxiliary classifiers that encourage the features to carry the domain information (useful as an ablation)
+  * dann_reverse = True
+
+See [examples/exp_emodb_aasist_dann.ini](https://github.com/felixbur/nkululeko/blob/main/examples/exp_emodb_aasist_dann.ini).
+
 ### EXPL
 
 Feature exploration and visualisation options, used by the `explore` module.

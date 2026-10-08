@@ -9,11 +9,11 @@ from nkululeko.models.aasist_config import AasistConfig
 from nkululeko.utils.util import Util
 
 
-def make_util(tmp_path, aasist_section=None):
+def make_util(tmp_path, aasist_section=None, model_section=None):
     config = configparser.ConfigParser()
     config["EXP"] = {"type": "classification", "name": "testexp", "root": str(tmp_path)}
     config["DATA"] = {"target": "label", "databases": "['itw']"}
-    config["MODEL"] = {"type": "aasist"}
+    config["MODEL"] = {"type": "aasist", **(model_section or {})}
     config["AASIST"] = aasist_section or {}
     config["FEATS"] = {"type": "[]"}
     glob_conf.config = config
@@ -74,3 +74,28 @@ class TestOverrides:
         glob_conf.config["MODEL"]["device"] = "cpu"
         cfg = AasistConfig.from_util(util)
         assert cfg.device == "cpu"
+
+
+class TestDannConfig:
+    def test_defaults_are_off(self, tmp_path):
+        cfg = AasistConfig.from_util(make_util(tmp_path))
+        assert cfg.dann_columns == []
+        assert cfg.dann_lambda == 1.0
+        assert cfg.dann_weight == 1.0
+        assert cfg.dann_reverse is True
+
+    def test_reads_values_from_model_section(self, tmp_path):
+        util = make_util(
+            tmp_path,
+            model_section={
+                "dann_columns": "['source_db', 'language']",
+                "dann_lambda": "0.5",
+                "dann_weight": "2.0",
+                "dann_reverse": "False",
+            },
+        )
+        cfg = AasistConfig.from_util(util)
+        assert cfg.dann_columns == ["source_db", "language"]
+        assert cfg.dann_lambda == 0.5
+        assert cfg.dann_weight == 2.0
+        assert cfg.dann_reverse is False
