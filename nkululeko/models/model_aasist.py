@@ -281,7 +281,9 @@ class AasistModel(Model):
         self.net.eval()
         all_logits, all_targets, losses = [], [], []
         with torch.no_grad():
-            for waveforms, labels in loader:
+            for batch in loader:
+                # the DANN train loader has a third item (domain labels)
+                waveforms, labels = batch[0], batch[1]
                 waveforms = waveforms.to(self.device)
                 labels_t = labels.long().to(self.device)
                 logits = self.net(waveforms)

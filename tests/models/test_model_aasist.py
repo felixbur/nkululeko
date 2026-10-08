@@ -365,6 +365,18 @@ class TestDann:
         task_only = model.criterion(model.net(x), y)
         assert with_dann.item() > task_only.item()
 
+    def test_evaluate_accepts_domain_label_batches(self):
+        model, _ = _dann_model(columns=("source_db",))
+        loader = [
+            (
+                torch.randn(4, 16000),
+                torch.tensor([0, 1, 0, 1]),
+                torch.tensor([[0], [0], [1], [1]]),
+            )
+        ]
+        uar, targets, predictions, logits, loss = model.evaluate(loader)
+        assert logits.shape == (4, 2)
+
     def test_train_updates_heads_and_net(self):
         torch.manual_seed(0)
         model, _ = _dann_model(columns=("source_db",))

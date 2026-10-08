@@ -252,6 +252,18 @@ class TestCheckFeatureBalancing:
         assert mr.df_train.shape[0] == mr.feats_train.shape[0]
 
 
+class TestDannWithBalancing:
+    def test_dann_with_feature_balancing_is_rejected(self, dummy_dfs):
+        glob_conf.config["FEATS"]["balancing"] = "ros"
+        glob_conf.config["MODEL"]["dann_columns"] = "['source_db']"
+        df_train, df_test, feats_train, feats_test = dummy_dfs
+        try:
+            with pytest.raises(NkululukoError, match="FEATS.balancing"):
+                Modelrunner(df_train, df_test, feats_train, feats_test, run=0)
+        finally:
+            del glob_conf.config["MODEL"]["dann_columns"]
+
+
 class TestEvalSpecificModel:
     def test_split_name_restored_after_eval(self, dummy_dfs):
         df_train, df_test, feats_train, feats_test = dummy_dfs
