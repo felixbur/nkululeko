@@ -253,15 +253,43 @@ class TestCheckFeatureBalancing:
 
 
 class TestDannWithBalancing:
-    def test_dann_with_feature_balancing_is_rejected(self, dummy_dfs):
-        glob_conf.config["FEATS"]["balancing"] = "ros"
+    @pytest.fixture
+    def fake_mlp(self, monkeypatch):
+        """MLPModel stand-in: only the routing/guards are under test."""
+        import nkululeko.models.model_mlp as model_mlp
+
+        class FakeMLP:
+            is_classifier = True
+            is_regressor = False
+
+            def __init__(self, *args, **kwargs):
+                pass
+
+        monkeypatch.setattr(model_mlp, "MLPModel", FakeMLP)
+
+    def _run(self, dummy_dfs, model_type, balancing):
+        glob_conf.config["MODEL"]["type"] = model_type
+        glob_conf.config["FEATS"]["balancing"] = balancing
         glob_conf.config["MODEL"]["dann_columns"] = "['source_db']"
         df_train, df_test, feats_train, feats_test = dummy_dfs
         try:
-            with pytest.raises(NkululukoError, match="FEATS.balancing"):
-                Modelrunner(df_train, df_test, feats_train, feats_test, run=0)
+            return Modelrunner(df_train, df_test, feats_train, feats_test, run=0)
         finally:
             del glob_conf.config["MODEL"]["dann_columns"]
+
+    def test_dann_with_feature_balancing_is_rejected(self, dummy_dfs, fake_mlp):
+        with pytest.raises(NkululukoError, match="FEATS.balancing"):
+            self._run(dummy_dfs, "mlp", "ros")
+
+    @pytest.mark.parametrize("off", ["False", "false", "none", ""])
+    def test_balancing_off_spellings_are_not_balancing(self, dummy_dfs, fake_mlp, off):
+        """config_val returns raw strings: 'False' must not count as on."""
+        mr = self._run(dummy_dfs, "mlp", off)
+        assert mr.df_train.shape[0] == dummy_dfs[0].shape[0]
+
+    def test_unsupported_model_with_balancing_is_not_rejected(self, dummy_dfs):
+        mr = self._run(dummy_dfs, "svm", "ros")
+        assert mr.df_train.shape[0] == mr.feats_train.shape[0]
 
 
 class TestEvalSpecificModel:

@@ -214,6 +214,50 @@ type = os
         u = make_util()
         self.assertEqual(u._get_adm_branch_suffix(), "")
 
+    def _dann_util(self, model_type="mlp", extra=""):
+        c = configparser.ConfigParser()
+        c.read_string(f"""
+[EXP]
+name = test
+root = /tmp
+[DATA]
+databases = ["emodb"]
+target = emotion
+[MODEL]
+type = {model_type}
+{extra}
+[FEATS]
+type = os
+""")
+        glob_conf.config = c
+        return Util("test")
+
+    def test_dann_suffix_empty_when_off(self):
+        self.assertEqual(self._dann_util()._get_dann_suffix(), "")
+
+    def test_dann_suffix_lists_columns(self):
+        u = self._dann_util(extra="dann_columns = ['source_db', 'language']")
+        self.assertEqual(u._get_dann_suffix(), "_dann-source_db+language")
+
+    def test_dann_suffix_includes_non_default_settings(self):
+        u = self._dann_util(
+            extra="dann_columns = ['source_db']\ndann_lambda = 0.5\n"
+            "dann_weight = 2.0\ndann_reverse = False"
+        )
+        self.assertEqual(
+            u._get_dann_suffix(), "_dann-source_db-l0-5-w2-0-noreverse"
+        )
+
+    def test_dann_suffix_ignored_for_unsupported_model(self):
+        u = self._dann_util("svm", "dann_columns = ['source_db']")
+        self.assertEqual(u._get_dann_suffix(), "")
+
+    def test_dann_changes_model_description(self):
+        plain = self._dann_util().get_model_description()
+        dann = self._dann_util(extra="dann_columns = ['source_db']").get_model_description()
+        self.assertNotEqual(plain, dann)
+        self.assertIn("dann-source_db", dann)
+
     def test_aug_suffix_present(self):
         c = configparser.ConfigParser()
         c.read_string("""
