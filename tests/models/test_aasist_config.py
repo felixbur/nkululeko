@@ -117,6 +117,11 @@ class TestDannConfig:
     def test_non_numeric_weight_is_a_clean_error(self, tmp_path):
         from nkululeko.utils.errors import NkululukoError
 
-        util = make_util(tmp_path, model_section={"dann_weight": "heavy"})
+        util = make_util(tmp_path, model_section={"dann_columns": "['source_db']", "dann_weight": "heavy"})
         with pytest.raises(NkululukoError, match="dann_weight"):
             AasistConfig.from_util(util)
+
+    def test_other_keys_ignored_when_off(self, tmp_path):
+        # with no dann_columns the lambda/weight keys are not read at all
+        util = make_util(tmp_path, model_section={"dann_weight": "heavy"})
+        assert AasistConfig.from_util(util).dann.columns == []

@@ -133,6 +133,18 @@ class TestSelectModel:
             del glob_conf.config["MODEL"]["dann_columns"]
         assert any("dann_columns" in w and "'svm'" in w for w in warnings)
 
+    def test_malformed_dann_columns_only_warns_for_unsupported_model(
+        self, dummy_dfs, monkeypatch
+    ):
+        glob_conf.config["MODEL"]["dann_columns"] = "source_db"  # unquoted
+        warnings = []
+        monkeypatch.setattr(Util, "warn", lambda self, msg: warnings.append(msg))
+        try:
+            self._make_mr("svm", dummy_dfs)
+        finally:
+            del glob_conf.config["MODEL"]["dann_columns"]
+        assert any("dann_columns" in w and "'svm'" in w for w in warnings)
+
     def test_no_dann_warning_when_unset(self, dummy_dfs, monkeypatch):
         warnings = []
         monkeypatch.setattr(Util, "warn", lambda self, msg: warnings.append(msg))

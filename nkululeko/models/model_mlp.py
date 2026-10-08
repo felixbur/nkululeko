@@ -271,7 +271,7 @@ class MLPModel(Model):
             x = x.squeeze(dim=1).float()
             if not return_features:
                 return self.linear(x)
-            # last hidden layer's activations: where DANN heads attach
+            # input to the output layer: where DANN heads attach
             hidden = self.linear[:-1](x)
             return self.linear[-1](hidden), hidden
 

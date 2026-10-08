@@ -34,8 +34,11 @@ DANN_MODEL_TYPES = frozenset({"aasist", "mlp", "mlp_reg", "cnn", "adm"})
 
 def parse_dann_columns(raw):
     """Parse MODEL.dann_columns (an INI string such as "['source_db']", or
-    an already parsed list) into a list of column names; "" and "[]" mean
-    DANN off. Raises ValueError if the value is not a list of names."""
+    an already parsed list) into a list of column names; an unset value
+    (False/None), "" and "[]" mean DANN off. Raises ValueError if the
+    value is not a list of names."""
+    if raw is None or raw is False:
+        return []
     if isinstance(raw, str):
         raw = raw.strip()
         if not raw or raw.lower() in ("false", "none"):
@@ -197,7 +200,7 @@ class NamingMixin:
         """MODEL.dann_columns as a list of column names ([] = DANN off);
         the one place the key is parsed. A malformed value is a config
         error."""
-        raw = self.config_val("MODEL", "dann_columns", "[]")
+        raw = self.config_val("MODEL", "dann_columns", False)
         try:
             return parse_dann_columns(raw)
         except ValueError:

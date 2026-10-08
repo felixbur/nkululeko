@@ -16,13 +16,11 @@ Nothing here depends on a particular architecture: DomainAdversarialHead
 only needs a pooled feature vector of known width from whatever backbone
 produces one. DannConfig and DannHeads bundle the shared [MODEL] keys and
 the per-column heads, so a model only has to expose its feature vector
-and add DannHeads.loss() to its task loss (AasistModel and MLPModel do). Two independent heads
-with two independent nuisance labels (e.g. source_db for cross-dataset
-invariance, language for cross-lingual invariance) can be attached to
-the same feature vector simultaneously -- that combination is this
-project's "two-axis DANN" -- by constructing two DomainAdversarialHead
-instances and summing their losses into the main task loss (see
-AasistModel._forward_loss()).
+and add DannHeads.loss() to its task loss (the aasist, mlp, mlp_reg, cnn
+and adm models do, via Model._init_dann()). Several nuisance labels (e.g.
+source_db for cross-dataset invariance and language for cross-lingual
+invariance) can be used at once: DannHeads builds one head per column on
+the same feature vector, and DannHeads.loss() sums their losses.
 
 Setting reverse=False turns this into a plain multitask auxiliary head
 (gradients flow normally, no reversal) -- an ablation some studies find
@@ -105,8 +103,11 @@ class DannConfig:
 
     @classmethod
     def from_util(cls, util) -> "DannConfig":
+        columns = util.get_dann_columns()
+        if not columns:  # DANN off: don't read the other keys
+            return cls(columns=[], lambda_=1.0, weight=1.0, reverse=True)
         return cls(
-            columns=util.get_dann_columns(),
+            columns=columns,
             lambda_=util.get_dann_number("dann_lambda"),
             weight=util.get_dann_number("dann_weight"),
             reverse=util.config_val_bool("MODEL", "dann_reverse", True),
