@@ -167,3 +167,9 @@ class TestDannHeads:
             heads.loss(feats, dom).backward()
             grads[reverse] = feats.grad.clone()
         assert torch.allclose(grads[True], -grads[False], atol=1e-6)
+
+
+def test_build_puts_heads_on_the_requested_device():
+    """Regression: heads were left on CPU while features were on CUDA."""
+    heads = DannHeads.build(_df(), 8, _cfg(["source_db"]), _Util(), device="meta")
+    assert all(p.device.type == "meta" for p in heads.parameters())

@@ -165,11 +165,13 @@ class DannHeads(nn.Module):
         )
 
     @classmethod
-    def build(cls, df_train, feat_dim, cfg: DannConfig, util):
-        """Return DannHeads, or None if cfg.columns is empty (DANN off)."""
+    def build(cls, df_train, feat_dim, cfg: DannConfig, util, device="cpu"):
+        """Return DannHeads on `device`, or None if cfg.columns is empty
+        (DANN off). The heads must live on the same device as the model's
+        features."""
         if not cfg.columns:
             return None
-        return cls(df_train, feat_dim, cfg, util)
+        return cls(df_train, feat_dim, cfg, util).to(device)
 
     def encode(self, df) -> np.ndarray:
         """Class indices of every row, shape (len(df), len(columns))."""
