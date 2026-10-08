@@ -346,7 +346,8 @@ class TestDann:
 
     def test_one_head_per_column(self):
         model, _ = _dann_model(columns=("source_db", "language"))
-        assert set(model.dann_heads.heads.keys()) == {"source_db", "language"}
+        assert model.dann_heads.columns == ["source_db", "language"]
+        assert len(model.dann_heads.heads) == 2
 
     def test_train_loader_yields_domain_labels_test_loader_does_not(self):
         model, df = _dann_model(columns=("source_db", "language"))
@@ -395,7 +396,7 @@ class TestDann:
                 torch.tensor([[0], [0], [1], [1]]),
             )
         ]
-        head = model.dann_heads.heads["source_db"].classifier[0]
+        head = model.dann_heads.head("source_db").classifier[0]
         before = head.weight.clone()
         model.train()
         assert torch.isfinite(torch.tensor(model.loss))

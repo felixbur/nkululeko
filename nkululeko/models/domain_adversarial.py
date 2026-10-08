@@ -125,7 +125,11 @@ class DannHeads(nn.Module):
         self.columns = list(cfg.columns)
         self.weight = cfg.weight
         self.label_maps = {}
-        heads = {}
+        if len(set(self.columns)) != len(self.columns):
+            util.error(f"MODEL.dann_columns lists a column twice: {self.columns}")
+        # A ModuleList, not a ModuleDict: column names such as "speaker.id"
+        # are not valid module names. Head i belongs to self.columns[i].
+        heads = []
         for col in self.columns:
             if col not in df_train.columns:
                 util.error(
@@ -145,13 +149,15 @@ class DannHeads(nn.Module):
                     "needs at least 2 to discriminate between"
                 )
             self.label_maps[col] = {v: i for i, v in enumerate(values)}
-            heads[col] = DomainAdversarialHead(
-                feat_dim=feat_dim,
-                num_classes=len(values),
-                reverse=cfg.reverse,
-                lambda_=cfg.lambda_,
+            heads.append(
+                DomainAdversarialHead(
+                    feat_dim=feat_dim,
+                    num_classes=len(values),
+                    reverse=cfg.reverse,
+                    lambda_=cfg.lambda_,
+                )
             )
-        self.heads = nn.ModuleDict(heads)
+        self.heads = nn.ModuleList(heads)
         util.debug(
             f"DANN heads for {self.columns} (reverse={cfg.reverse}, "
             f"lambda={cfg.lambda_}, weight={cfg.weight})"
@@ -166,6 +172,10 @@ class DannHeads(nn.Module):
             return None
         return cls(df_train, feat_dim, cfg, util).to(device)
 
+    def head(self, col) -> DomainAdversarialHead:
+        """The head for column `col`."""
+        return self.heads[self.columns.index(col)]
+
     def encode(self, df) -> np.ndarray:
         """Class indices of every row, shape (len(df), len(columns))."""
         return np.stack(
@@ -179,8 +189,8 @@ class DannHeads(nn.Module):
         `domain_labels` is a (batch, len(columns)) long tensor from encode().
         """
         total = 0.0
-        for i, col in enumerate(self.columns):
+        for i, head in enumerate(self.heads):
             total = total + self.weight * nn.functional.cross_entropy(
-                self.heads[col](features), domain_labels[:, i]
+                head(features), domain_labels[:, i]
             )
         return total

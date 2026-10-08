@@ -77,7 +77,7 @@ class TestMlpReg:
 
     def test_train_with_dann_updates_heads(self):
         model = self._model(with_dann=True)
-        head = model.dann_heads.heads["domain"].classifier[0]
+        head = model.dann_heads.head("domain").classifier[0]
         before = head.weight.clone()
         model.train()
         assert np.isfinite(model.loss)
@@ -127,7 +127,7 @@ class TestCnn:
 
     def test_train_with_dann_updates_heads(self):
         model = self._model()
-        head = model.dann_heads.heads["domain"].classifier[0]
+        head = model.dann_heads.head("domain").classifier[0]
         before = head.weight.clone()
         model.train()
         assert np.isfinite(model.loss)
@@ -203,7 +203,7 @@ class TestAdm:
 
     def test_train_with_dann_updates_heads(self):
         model = self._model()
-        head = model.dann_heads.heads["domain"].classifier[0]
+        head = model.dann_heads.head("domain").classifier[0]
         before = head.weight.clone()
         model.train()
         assert np.isfinite(model.loss)

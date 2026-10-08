@@ -322,7 +322,7 @@ def test_train_with_dann_updates_heads_and_features_net(mlp_model):
         False,
         domain_labels=mlp_model.dann_heads.encode(df_train),
     )
-    head = mlp_model.dann_heads.heads["domain"].classifier[0]
+    head = mlp_model.dann_heads.head("domain").classifier[0]
     head_before = head.weight.clone()
     net_before = mlp_model.model.linear[0].weight.clone()
 

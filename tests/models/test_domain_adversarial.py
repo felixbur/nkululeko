@@ -126,8 +126,8 @@ class TestDannHeads:
 
     def test_one_head_per_column_sized_by_distinct_values(self):
         heads = DannHeads.build(_df(), 8, _cfg(["source_db", "language"]), _Util())
-        assert heads.heads["source_db"].classifier[-1].out_features == 3
-        assert heads.heads["language"].classifier[-1].out_features == 2
+        assert heads.head("source_db").classifier[-1].out_features == 3
+        assert heads.head("language").classifier[-1].out_features == 2
 
     def test_encode_maps_values_to_sorted_indices(self):
         heads = DannHeads.build(_df(), 8, _cfg(["source_db", "language"]), _Util())
@@ -142,6 +142,17 @@ class TestDannHeads:
         heads = DannHeads.build(df, 8, _cfg(["age_group"]), _Util())
         assert heads.encode(df).shape == (4, 1)
         assert len(heads.label_maps["age_group"]) == 3
+
+    def test_column_name_with_dot_works(self):
+        df = pd.DataFrame({"speaker.id": ["s1", "s2", "s1"]})
+        heads = DannHeads.build(df, 8, _cfg(["speaker.id"]), _Util())
+        assert heads.head("speaker.id").classifier[-1].out_features == 2
+        labels = torch.from_numpy(heads.encode(df))
+        assert torch.isfinite(heads.loss(torch.randn(3, 8), labels))
+
+    def test_duplicate_column_is_an_error(self):
+        with pytest.raises(RuntimeError, match="twice"):
+            DannHeads.build(_df(), 8, _cfg(["source_db", "source_db"]), _Util())
 
     def test_missing_column_is_an_error(self):
         with pytest.raises(RuntimeError, match="not a column"):
