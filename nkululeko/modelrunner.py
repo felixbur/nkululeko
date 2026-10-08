@@ -342,6 +342,17 @@ class Modelrunner(ContextAware):
             self.util.debug(f"new test size: {self.df_test.shape}")
 
     def _select_model(self, model_type):
+        if self.util.config_val_list(
+            "MODEL", "dann_columns", []
+        ) and self.util.config_val("FEATS", "balancing", False):
+            # Feature balancing rebuilds df_train with only the target column
+            # (and synthetic rows have no domain), so there is nothing for
+            # the DANN heads to learn from.
+            self.util.error(
+                "MODEL.dann_columns cannot be combined with FEATS.balancing: "
+                "balancing drops the domain columns (and oversampling methods "
+                "such as smote create rows without a domain). Disable one of them."
+            )
         self._check_balancing()
         self._check_feature_balancing()
 
