@@ -336,3 +336,17 @@ def test_train_with_dann_updates_heads_and_features_net(mlp_model):
 def test_dann_off_loader_yields_pairs(mlp_model):
     batch = next(iter(mlp_model.trainloader))
     assert len(batch) == 2
+
+
+def test_predict_works_when_train_loader_has_domain_labels(mlp_model):
+    """predict() also evaluates the train loader for the train UAR; with
+    DANN that loader has a third item per batch."""
+    df_train = pd.DataFrame({"label": [0, 1, 0, 1], "domain": ["a", "a", "b", "b"]})
+    mlp_model.trainloader = mlp_model.get_loader(
+        mlp_model.feats_train,
+        df_train,
+        False,
+        domain_labels=np.array([[0], [0], [1], [1]]),
+    )
+    report = mlp_model.predict()
+    assert hasattr(report.result, "train")

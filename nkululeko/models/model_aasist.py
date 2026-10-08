@@ -154,7 +154,7 @@ class AasistModel(Model):
 
         self._build_criterion(df_train)
         self.dann_heads = DannHeads.build(
-            df_train, self.net.feat_dim, self.cfg.dann, self.util
+            df_train, self.net.feat_dim, self.cfg.dann, self.util, self.device
         )
 
         params = (

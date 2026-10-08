@@ -73,10 +73,12 @@ class MLPModel(Model):
 
         # domain-adversarial heads on the last hidden layer (MODEL.dann_columns)
         self.dann_heads = DannHeads.build(
-            df_train, self.model.feat_dim, DannConfig.from_util(self.util), self.util
+            df_train,
+            self.model.feat_dim,
+            DannConfig.from_util(self.util),
+            self.util,
+            self.device,
         )
-        if self.dann_heads is not None:
-            self.dann_heads.to(self.device)
         params = (
             itertools.chain(self.model.parameters(), self.dann_heads.parameters())
             if self.dann_heads is not None
@@ -163,7 +165,9 @@ class MLPModel(Model):
         model.eval()
         losses = []
         with torch.no_grad():
-            for index, (features, labels) in enumerate(loader):
+            for index, batch in enumerate(loader):
+                # the DANN train loader has a third item (domain labels)
+                features, labels = batch[0], batch[1]
                 start_index = index * loader.batch_size
                 end_index = (index + 1) * loader.batch_size
                 if end_index > len(loader.dataset):
