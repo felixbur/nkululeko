@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 1.12.0 (26-10-08)
+-------------------------
+* add `source_db` column to pooled train/dev/test rows, tagging each row with the name of the `[DATA]` section it came from -- needed for per-database analysis of a pooled run, or anything that must treat databases as separate domains (e.g. domain-balanced batch sampling, domain-adversarial training) (#457)
+* add `[MODEL] type = aasist`: an SSL frontend (HuggingFace wav2vec2/XLS-R) feeding the AASIST spectro-temporal graph-attention back end (Jung et al., ICASSP 2022) for audio anti-spoofing / deepfake detection, trained end to end on raw audio. Binary classification only; settings go in a new `[AASIST]` section (`ssl_model`, `max_len`, `batch_size`, `ssl_layer_pooling`, `freeze_ssl_frontend`) (#460)
+
 Version 1.11.8 (26-10-02)
 -------------------------
 * fix bug: `Dataset.load()` used a blanket `dropna()` after merging in auto-probed demographic columns (age/gender/speaker), so any row missing *any* of these -- not just the target -- was silently dropped, with no row count or warning logged; a source database lacking a demographic scheme entirely lost every one of its rows without any visible sign anything was wrong. Only the target now requires a non-null value; other columns get the literal string `"na"` instead of dropping the row, and both the drop and the fill are logged via `Util.debug()` (#455)
