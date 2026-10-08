@@ -209,6 +209,21 @@ class TestAdm:
         assert np.isfinite(model.loss)
         assert not torch.allclose(head.weight, before)
 
+    def test_grad_clipping_covers_the_dann_heads(self, monkeypatch):
+        model = self._model()
+        model.max_grad_norm = 1.0
+        clipped = []
+        monkeypatch.setattr(
+            torch.nn.utils,
+            "clip_grad_norm_",
+            lambda params, max_norm: clipped.extend(params),
+        )
+        model.train()
+        head_params = list(model.dann_heads.parameters())
+        assert head_params
+        assert all(any(p is c for c in clipped) for p in head_params)
+        assert all(any(p is c for c in clipped) for p in model.model.parameters())
+
     def test_evaluate_accepts_domain_label_batches(self):
         model = self._model()
         uar, targets, predictions, logits = model.evaluate(

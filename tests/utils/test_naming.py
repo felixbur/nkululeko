@@ -248,6 +248,27 @@ type = os
             u._get_dann_suffix(), "_dann-source_db-l0-5-w2-0-noreverse"
         )
 
+    def test_dann_suffix_distinguishes_plus_in_column_names(self):
+        joined = self._dann_util(extra="dann_columns = ['a+b']")._get_dann_suffix()
+        split = self._dann_util(extra="dann_columns = ['a', 'b']")._get_dann_suffix()
+        self.assertNotEqual(joined, split)
+
+    def test_dann_suffix_is_path_safe(self):
+        u = self._dann_util(extra="dann_columns = ['../x y']")
+        suffix = u._get_dann_suffix()
+        self.assertNotIn("/", suffix)
+        self.assertNotIn(".", suffix)
+        self.assertNotIn(" ", suffix)
+        other = self._dann_util(extra="dann_columns = ['__x_y']")._get_dann_suffix()
+        self.assertNotEqual(suffix, other)
+
+    def test_dann_suffix_malformed_columns_is_an_error(self):
+        from nkululeko.utils.errors import NkululukoError
+
+        u = self._dann_util(extra="dann_columns = source_db")
+        with self.assertRaises(NkululukoError):
+            u._get_dann_suffix()
+
     def test_dann_suffix_ignored_for_unsupported_model(self):
         u = self._dann_util("svm", "dann_columns = ['source_db']")
         self.assertEqual(u._get_dann_suffix(), "")

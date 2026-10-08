@@ -37,6 +37,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+from nkululeko.utils.naming import parse_dann_columns
+
 
 class _GradientReversalFunction(torch.autograd.Function):
     @staticmethod
@@ -66,8 +68,8 @@ class GradientReversalLayer(nn.Module):
 class DomainAdversarialHead(nn.Module):
     """A small MLP classifier over a nuisance label (dataset identity,
     language, ...), fed through a GradientReversalLayer when
-    `reverse=True` (the adversarial/DANN mode) or directly when
-    `reverse=False` (a plain multitask auxiliary head -- no invariance
+    `reverse=True` (the adversarial/DANN mode) or with the gradient left
+    as is when `reverse=False` (a plain multitask auxiliary head -- no invariance
     pressure, just an extra supervised signal; see module docstring for
     why this ablation matters)."""
 
@@ -80,22 +82,14 @@ class DomainAdversarialHead(nn.Module):
         lambda_: float = 1.0,
     ):
         super().__init__()
-        self.reverse = reverse
-        self.grl = GradientReversalLayer(lambda_) if reverse else nn.Identity()
+        # The GRL multiplies the backward gradient by -lambda_, so
+        # lambda_ = -1 passes it through unchanged (auxiliary head).
+        self.grl = GradientReversalLayer(lambda_ if reverse else -1.0)
         self.classifier = nn.Sequential(
             nn.Linear(feat_dim, hidden_dim),
             nn.ReLU(),
             nn.Linear(hidden_dim, num_classes),
         )
-
-    @property
-    def lambda_(self) -> float:
-        return self.grl.lambda_ if self.reverse else 1.0
-
-    @lambda_.setter
-    def lambda_(self, value: float):
-        if self.reverse:
-            self.grl.lambda_ = value
 
     def forward(self, features):
         return self.classifier(self.grl(features))
@@ -112,8 +106,16 @@ class DannConfig:
 
     @classmethod
     def from_util(cls, util) -> "DannConfig":
+        raw = util.config_val("MODEL", "dann_columns", "[]")
+        try:
+            columns = parse_dann_columns(raw)
+        except ValueError:
+            util.error(
+                f"MODEL.dann_columns = {raw} is not a list of column names; "
+                "write it like ['source_db', 'language']"
+            )
         return cls(
-            columns=util.config_val_list("MODEL", "dann_columns", []),
+            columns=columns,
             lambda_=float(util.config_val("MODEL", "dann_lambda", "1.0")),
             weight=float(util.config_val("MODEL", "dann_weight", "1.0")),
             reverse=util.config_val_bool("MODEL", "dann_reverse", True),
@@ -144,7 +146,7 @@ class DannHeads(nn.Module):
                     f"MODEL.dann_columns column '{col}' has missing values "
                     "in the training data"
                 )
-            values = sorted(df_train[col].unique().tolist())
+            values = sorted(df_train[col].unique().tolist(), key=str)
             if len(values) < 2:
                 util.error(
                     f"MODEL.dann_columns includes '{col}', but the training "

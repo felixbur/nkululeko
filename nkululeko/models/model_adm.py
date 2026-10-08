@@ -8,7 +8,6 @@ Multi-stream neural model that detects synthesis artifacts using:
 - PhaseADM: phase-dynamics artifacts from STFT features
 """
 
-import itertools
 import json
 import os
 import zlib
@@ -18,7 +17,6 @@ import pandas as pd
 import torch
 from sklearn.metrics import recall_score
 
-from nkululeko.models.domain_adversarial import DannConfig, DannHeads
 from nkululeko.models.model import Model
 from nkululeko.models.model_adm_core import DeepfakeADMModel
 from nkululeko.optimizers import (
@@ -34,8 +32,6 @@ class ADMModel(Model):
     """ADM = Artifact Detection Module for deepfake detection."""
 
     is_classifier = True
-    supports_dann = True
-    dann_heads = None  # DannHeads when MODEL.dann_columns is set
 
     def __init__(self, df_train, df_test, feats_train, feats_test, context=None):
         """Constructor, taking all dataframes.
@@ -179,18 +175,8 @@ class ADMModel(Model):
 
         # Domain-adversarial heads on the branches' penultimate features
         # (MODEL.dann_columns)
-        self.dann_heads = DannHeads.build(
-            df_train,
-            self.model.feat_dim,
-            DannConfig.from_util(self.util),
-            self.util,
-            self.device,
-        )
-        params = (
-            itertools.chain(self.model.parameters(), self.dann_heads.parameters())
-            if self.dann_heads is not None
-            else self.model.parameters()
-        )
+        self._init_dann(df_train, self.model.feat_dim)
+        params = self._dann_params(self.model)
 
         # Learning rate and optimizer
         self.optimizer, self.learning_rate = get_optimizer(
@@ -226,11 +212,7 @@ class ADMModel(Model):
             feats_train,
             df_train,
             True,
-            domain_labels=(
-                self.dann_heads.encode(df_train)
-                if self.dann_heads is not None
-                else None
-            ),
+            domain_labels=self._domain_labels(df_train),
         )
         self.testloader = self.get_loader(feats_test, df_test, False)
 
@@ -293,7 +275,7 @@ class ADMModel(Model):
             loss.backward()
             if self.max_grad_norm > 0:
                 torch.nn.utils.clip_grad_norm_(
-                    self.model.parameters(), max_norm=self.max_grad_norm
+                    self._dann_params(self.model), max_norm=self.max_grad_norm
                 )
             self.optimizer.step()
 
