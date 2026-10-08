@@ -21,7 +21,7 @@ CLASSIFIER_TYPES = frozenset(
     {"svm", "xgb", "bayes", "gmm", "knn", "tree", "cnn", "mlp", "adm", "aasist"}
 )
 # Model types that implement domain-adversarial training (MODEL.dann_columns)
-DANN_MODEL_TYPES = frozenset({"aasist", "mlp"})
+DANN_MODEL_TYPES = frozenset({"aasist", "mlp", "mlp_reg", "cnn", "adm"})
 # Model types that only support regression
 REGRESSOR_TYPES = frozenset({"svr", "xgr", "knn_reg", "lin_reg", "tree_reg", "mlp_reg"})
 

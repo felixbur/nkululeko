@@ -8,6 +8,7 @@ Multi-stream neural model that detects synthesis artifacts using:
 - PhaseADM: phase-dynamics artifacts from STFT features
 """
 
+import itertools
 import json
 import os
 import zlib
@@ -17,6 +18,7 @@ import pandas as pd
 import torch
 from sklearn.metrics import recall_score
 
+from nkululeko.models.domain_adversarial import DannConfig, DannHeads
 from nkululeko.models.model import Model
 from nkululeko.models.model_adm_core import DeepfakeADMModel
 from nkululeko.optimizers import (
@@ -32,6 +34,8 @@ class ADMModel(Model):
     """ADM = Artifact Detection Module for deepfake detection."""
 
     is_classifier = True
+    supports_dann = True
+    dann_heads = None  # DannHeads when MODEL.dann_columns is set
 
     def __init__(self, df_train, df_test, feats_train, feats_test, context=None):
         """Constructor, taking all dataframes.
@@ -173,9 +177,24 @@ class ADMModel(Model):
             },
         ).to(self.device)
 
+        # Domain-adversarial heads on the branches' penultimate features
+        # (MODEL.dann_columns)
+        self.dann_heads = DannHeads.build(
+            df_train,
+            self.model.feat_dim,
+            DannConfig.from_util(self.util),
+            self.util,
+            self.device,
+        )
+        params = (
+            itertools.chain(self.model.parameters(), self.dann_heads.parameters())
+            if self.dann_heads is not None
+            else self.model.parameters()
+        )
+
         # Learning rate and optimizer
         self.optimizer, self.learning_rate = get_optimizer(
-            self.model.parameters(),
+            params,
             self.util,
             default_lr=0.0001,
             default_optimizer="adamw",
@@ -203,7 +222,16 @@ class ADMModel(Model):
         feats_test = self._handle_model_nan(feats_test, "Model, test")
 
         # Set up data loaders
-        self.trainloader = self.get_loader(feats_train, df_train, True)
+        self.trainloader = self.get_loader(
+            feats_train,
+            df_train,
+            True,
+            domain_labels=(
+                self.dann_heads.encode(df_train)
+                if self.dann_heads is not None
+                else None
+            ),
+        )
         self.testloader = self.get_loader(feats_test, df_test, False)
 
     def set_testdata(self, data_df, feats_df):
@@ -227,7 +255,12 @@ class ADMModel(Model):
 
         self.model.train()
         losses = []
-        for features, labels in self.trainloader:
+        for batch in self.trainloader:
+            if self.dann_heads is not None:
+                features, labels, domain_labels = batch
+            else:
+                features, labels = batch
+                domain_labels = None
             features = features.float()
             labels_float = labels.float().to(self.device)
 
@@ -240,14 +273,20 @@ class ADMModel(Model):
                 self._split_feature_streams(features)
             )
 
-            logits = self.model(
+            model_inputs = (
                 ssl_feats.to(self.device),
                 spec_feats.to(self.device),
                 phase_feats.to(self.device),
                 {k: v.to(self.device) for k, v in extra_feats.items()},
             )
-
-            loss = self.criterion(logits, labels_float)
+            if domain_labels is None:
+                logits = self.model(*model_inputs)
+                loss = self.criterion(logits, labels_float)
+            else:
+                logits, hidden = self.model(*model_inputs, return_features=True)
+                loss = self.criterion(logits, labels_float) + self.dann_heads.loss(
+                    hidden, domain_labels.to(self.device)
+                )
             losses.append(loss.item())
 
             self.optimizer.zero_grad()
@@ -340,7 +379,9 @@ class ADMModel(Model):
         losses = []
 
         with torch.no_grad():
-            for index, (features, labels) in enumerate(loader):
+            for index, batch in enumerate(loader):
+                # the DANN train loader has a third item (domain labels)
+                features, labels = batch[0], batch[1]
                 start_index = index * loader.batch_size
                 end_index = start_index + len(labels)
                 batch_logits, batch_targets, loss = self._evaluate_batch(
@@ -441,12 +482,19 @@ class ADMModel(Model):
         )
         return (predictions.numpy(), self.get_probas(logits))
 
-    def get_loader(self, df_x, df_y, shuffle):
-        """Create a data loader using TensorDataset for efficient batch loading."""
+    def get_loader(self, df_x, df_y, shuffle, domain_labels=None):
+        """Create a data loader using TensorDataset for efficient batch loading.
+
+        domain_labels: optional (n, n_dann_columns) int array, added as a
+        third item per sample (train loader with MODEL.dann_columns only).
+        """
         features_tensor = torch.tensor(df_x.values, dtype=torch.float32)
         label_values = self._encode_labels(df_y[self.target])
         labels_tensor = torch.tensor(label_values, dtype=torch.float32)
-        dataset = torch.utils.data.TensorDataset(features_tensor, labels_tensor)
+        tensors = [features_tensor, labels_tensor]
+        if domain_labels is not None:
+            tensors.append(torch.as_tensor(domain_labels, dtype=torch.long))
+        dataset = torch.utils.data.TensorDataset(*tensors)
         return torch.utils.data.DataLoader(
             dataset, shuffle=shuffle, batch_size=self.batch_size
         )
