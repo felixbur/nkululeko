@@ -1,5 +1,6 @@
 # model_mlp.py
 import ast
+import itertools
 from collections import OrderedDict
 
 import numpy as np
@@ -13,6 +14,7 @@ from audmetric import (
 
 from nkululeko.losses.loss_ccc import ConcordanceCorCoeff
 from nkululeko.losses.loss_pcc import PearsonCorCoeff
+from nkululeko.models.domain_adversarial import DannConfig, DannHeads
 from nkululeko.models.model import Model
 from nkululeko.optimizers import get_optimizer
 from nkululeko.reporting.reporter import Reporter
@@ -22,6 +24,8 @@ class MLP_Reg_model(Model):
     """MLP = multi layer perceptron"""
 
     is_classifier = False
+    supports_dann = True
+    dann_heads = None  # DannHeads when MODEL.dann_columns is set
 
     def __init__(self, df_train, df_test, feats_train, feats_test, context=None):
         """Constructor taking the configuration and all dataframes"""
@@ -67,9 +71,23 @@ class MLP_Reg_model(Model):
             self.device
         )
 
+        # domain-adversarial heads on the last hidden layer (MODEL.dann_columns)
+        self.dann_heads = DannHeads.build(
+            df_train,
+            self.model.feat_dim,
+            DannConfig.from_util(self.util),
+            self.util,
+            self.device,
+        )
+        params = (
+            itertools.chain(self.model.parameters(), self.dann_heads.parameters())
+            if self.dann_heads is not None
+            else self.model.parameters()
+        )
+
         # set up optimizer
         self.optimizer, self.learning_rate = get_optimizer(
-            self.model.parameters(),
+            params,
             self.util,
             default_lr=0.0001,
             default_optimizer="adamw",
@@ -82,7 +100,16 @@ class MLP_Reg_model(Model):
         feats_train = self._handle_model_nan(feats_train, "Model, train")
         feats_test = self._handle_model_nan(feats_test, "Model, test")
         # set up the data_loaders
-        self.trainloader = self.get_loader(feats_train, df_train, True)
+        self.trainloader = self.get_loader(
+            feats_train,
+            df_train,
+            True,
+            domain_labels=(
+                self.dann_heads.encode(df_train)
+                if self.dann_heads is not None
+                else None
+            ),
+        )
         self.testloader = self.get_loader(feats_test, df_test, False)
 
     def _get_activation(self):
@@ -136,8 +163,8 @@ class MLP_Reg_model(Model):
         report.result.train = result
         return report
 
-    def get_loader(self, df_x, df_y, shuffle):
-        data_set = self.Dataset(df_y, df_x, self.target)
+    def get_loader(self, df_x, df_y, shuffle, domain_labels=None):
+        data_set = self.Dataset(df_y, df_x, self.target, domain_labels)
         loader = torch.utils.data.DataLoader(
             dataset=data_set,
             batch_size=self.batch_size,
@@ -147,8 +174,11 @@ class MLP_Reg_model(Model):
         return loader
 
     class Dataset(torch.utils.data.Dataset):
-        def __init__(self, df, features, label: str):
+        def __init__(self, df, features, label: str, domain_labels=None):
             super().__init__()
+            # (len(df), n_dann_columns) int array; when set, items carry a
+            # third element (train loader with MODEL.dann_columns only)
+            self.domain_labels = domain_labels
             self.df = df
             self.df_features = features
             self.label = label
@@ -162,7 +192,9 @@ class MLP_Reg_model(Model):
             labels = (
                 np.array([self.df.loc[index, self.label]]).astype("float32").squeeze()
             )
-            return features, labels
+            if self.domain_labels is None:
+                return features, labels
+            return features, labels, self.domain_labels[item]
 
     class MLP(torch.nn.Module):
         def __init__(self, i, layers, o, drop, activation):
@@ -173,6 +205,7 @@ class MLP_Reg_model(Model):
                 keys = [str(i) for i in range(len(layers_list))]
                 layers = dict(zip(keys, layers_list))
             sorted_layers = sorted(layers.items(), key=lambda x: x[1])
+            self.feat_dim = sorted_layers[-1][1]  # width of the last hidden layer
             layers = OrderedDict()
             layers["0"] = torch.nn.Linear(i, sorted_layers[0][1])
             layers["0_r"] = activation
@@ -188,10 +221,14 @@ class MLP_Reg_model(Model):
             )
             self.linear = torch.nn.Sequential(layers)
 
-        def forward(self, x):
+        def forward(self, x, return_features=False):
             # x: (batch_size, channels, samples)
             x = x.squeeze(dim=1).float()
-            return self.linear(x)
+            if not return_features:
+                return self.linear(x)
+            # last hidden layer's activations: where DANN heads attach
+            hidden = self.linear[:-1](x)
+            return self.linear[-1](hidden), hidden
 
     def train_epoch(self, model, loader, device, optimizer):
         # first check if the model already has been trained
@@ -201,13 +238,21 @@ class MLP_Reg_model(Model):
         #     return
         self.model.train()
         losses = []
-        for features, labels in loader:
-            logits = model(features.to(device)).reshape(-1)
+        for batch in loader:
+            if self.dann_heads is not None:
+                features, labels, domain_labels = batch
+                logits, hidden = model(features.to(device), return_features=True)
+                logits = logits.reshape(-1)
+            else:
+                features, labels = batch
+                logits = model(features.to(device)).reshape(-1)
             loss = self.criterion(logits, labels.to(device))
             # print(f'loss: {loss.item()}')
             if torch.isnan(loss):
                 # possible that ccc returns NaN if batch contains only one value
                 continue
+            if self.dann_heads is not None:
+                loss = loss + self.dann_heads.loss(hidden, domain_labels.to(device))
             losses.append(loss.item())
             optimizer.zero_grad()
             loss.backward()
@@ -220,7 +265,9 @@ class MLP_Reg_model(Model):
         model.eval()
         losses = []
         with torch.no_grad():
-            for index, (features, labels) in enumerate(loader):
+            for index, batch in enumerate(loader):
+                # the DANN train loader has a third item (domain labels)
+                features, labels = batch[0], batch[1]
                 start_index = index * loader.batch_size
                 end_index = (index + 1) * loader.batch_size
                 if end_index > len(loader.dataset):

@@ -537,7 +537,7 @@ Model and training specifications. In general, default values should work for cl
 
 #### Domain-adversarial training (DANN)
 
-Available for `type = aasist` and `type = mlp` (other model types ignore it and log a warning). Meant for cross-corpus or cross-lingual setups where the model should not rely on which database or language a clip comes from (Ganin & Lempitsky 2015). One small classifier head is attached per listed column, reading the model's last hidden features (AASIST: its pooled readout; MLP: the last hidden layer). A gradient-reversal layer trains the shared features to make that head fail, while the main head trains as usual.
+Available for `type = aasist`, `mlp`, `mlp_reg`, `cnn` and `adm` (other model types ignore it and log a warning; classic models such as svm or xgb have no gradients to reverse, and `finetune` is not supported yet). Meant for cross-corpus or cross-lingual setups where the model should not rely on which database or language a clip comes from (Ganin & Lempitsky 2015). One small classifier head is attached per listed column, reading the model's last hidden features (AASIST: its pooled readout; MLP, MLP regression and CNN: the last hidden layer; ADM: the concatenated penultimate activations of its branches). A gradient-reversal layer trains the shared features to make that head fail, while the main head trains as usual.
 
 * **dann_columns**: dataframe columns that hold the label to become invariant to
   * dann_columns = ['source_db']
@@ -550,7 +550,7 @@ Available for `type = aasist` and `type = mlp` (other model types ignore it and 
 * **dann_reverse**: if `False`, the gradient is not reversed, so the heads become ordinary auxiliary classifiers that encourage the features to carry the domain information (useful as an ablation)
   * dann_reverse = True
 
-Examples: [exp_emodb_aasist_dann.ini](https://github.com/felixbur/nkululeko/blob/main/examples/exp_emodb_aasist_dann.ini) and [exp_emodb_mlp_dann.ini](https://github.com/felixbur/nkululeko/blob/main/examples/exp_emodb_mlp_dann.ini).
+Examples: [exp_emodb_aasist_dann.ini](https://github.com/felixbur/nkululeko/blob/main/examples/exp_emodb_aasist_dann.ini) and [exp_emodb_mlp_dann.ini](https://github.com/felixbur/nkululeko/blob/main/examples/exp_emodb_mlp_dann.ini) (the same keys work for the other models).
 
 ### FINETUNE
 

@@ -47,7 +47,7 @@ class TimeADM(nn.Module):
 
         self.fc_out = nn.Linear(hidden_dim // 2, 1)
 
-    def forward(self, x):
+    def forward(self, x, return_features=False):
         # x: (B, D) - aggregated features
         if x.dim() == 3:
             x = x.squeeze(-1)
@@ -64,8 +64,11 @@ class TimeADM(nn.Module):
         x = F.gelu(self.ln3(self.fc3(x)))
         x = self.dropout3(x)
 
-        x = self.fc_out(x)
-        return x
+        score = self.fc_out(x)
+        if return_features:
+            # penultimate activations (hidden_dim // 2): DANN attaches here
+            return score, x
+        return score
 
 
 # --------------------------------------------------
@@ -103,7 +106,7 @@ class SpectralADM(nn.Module):
 
         self.fc_out = nn.Linear(hidden_dim // 2, 1)
 
-    def forward(self, x):
+    def forward(self, x, return_features=False):
         # x: (B, F) or (B, F, T) - handle both cases
         if x.dim() == 3:
             x = x.squeeze(-1)
@@ -120,8 +123,11 @@ class SpectralADM(nn.Module):
         x = F.gelu(self.ln3(self.fc3(x)))
         x = self.dropout3(x)
 
-        x = self.fc_out(x)
-        return x
+        score = self.fc_out(x)
+        if return_features:
+            # penultimate activations (hidden_dim // 2): DANN attaches here
+            return score, x
+        return score
 
 
 # --------------------------------------------------
@@ -157,7 +163,7 @@ class PhaseADM(nn.Module):
 
         self.fc_out = nn.Linear(hidden_dim // 2, 1)
 
-    def forward(self, x):
+    def forward(self, x, return_features=False):
         # x: (B, D) or (B, T, D) - aggregated features
         if x.dim() == 3:
             x = x.squeeze(1)
@@ -174,8 +180,11 @@ class PhaseADM(nn.Module):
         x = F.gelu(self.ln3(self.fc3(x)))
         x = self.dropout3(x)
 
-        x = self.fc_out(x)
-        return x
+        score = self.fc_out(x)
+        if return_features:
+            # penultimate activations (hidden_dim // 2): DANN attaches here
+            return score, x
+        return score
 
 
 # --------------------------------------------------
@@ -206,6 +215,7 @@ class DeepfakeADMModel(nn.Module):
         self.fusion = fusion
         self.branches = branches
         self.extra_stream_dims = extra_stream_dims or {}
+        self.hidden_dim = hidden_dim
 
         # Create only requested branches with configurable hidden_dim
         self.time_adm = (
@@ -243,7 +253,16 @@ class DeepfakeADMModel(nn.Module):
         count += len(self.extra_adms)
         return count
 
-    def forward(self, ssl_feats, spec_feats, phase_feats, extra_feats=None):
+    @property
+    def feat_dim(self):
+        """Width of the features returned by forward(return_features=True):
+        the concatenated penultimate activations of the active branches
+        (hidden_dim // 2 each)."""
+        return self._num_active_branches() * (self.hidden_dim // 2)
+
+    def forward(
+        self, ssl_feats, spec_feats, phase_feats, extra_feats=None, return_features=False
+    ):
         """
         Args:
             ssl_feats   : (B, D, T)
@@ -252,20 +271,29 @@ class DeepfakeADMModel(nn.Module):
             extra_feats : optional dict of named branch tensors
 
         Returns:
-            artifact_score : (B,)
+            artifact_score : (B,), or with return_features=True the tuple
+            (artifact_score, branch_features) where branch_features is
+            (B, feat_dim): the branches' penultimate activations,
+            concatenated. Domain-adversarial heads attach to it.
         """
         # Compute scores only for active branches
         branch_scores = []
+        branch_feats = []
         extra_feats = extra_feats or {}
         for branch in self.branches:
             if branch == "time" and self.time_adm is not None:
-                branch_scores.append(self.time_adm(ssl_feats))
+                module, x = self.time_adm, ssl_feats
             elif branch == "spectral" and self.spec_adm is not None:
-                branch_scores.append(self.spec_adm(spec_feats))
+                module, x = self.spec_adm, spec_feats
             elif branch == "phase" and self.phase_adm is not None:
-                branch_scores.append(self.phase_adm(phase_feats))
+                module, x = self.phase_adm, phase_feats
             elif branch in self.extra_adms:
-                branch_scores.append(self.extra_adms[branch](extra_feats[branch]))
+                module, x = self.extra_adms[branch], extra_feats[branch]
+            else:
+                continue
+            score, feats = module(x, return_features=True)
+            branch_scores.append(score)
+            branch_feats.append(feats)
 
         if not branch_scores:
             raise ValueError("No active ADM branches produced scores.")
@@ -288,6 +316,8 @@ class DeepfakeADMModel(nn.Module):
         else:
             raise ValueError(f"Unknown fusion method: {self.fusion}")
 
+        if return_features:
+            return out.squeeze(1), torch.cat(branch_feats, dim=1)
         return out.squeeze(1)
 
     @torch.no_grad()
