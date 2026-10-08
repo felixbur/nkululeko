@@ -192,3 +192,24 @@ def test_build_puts_heads_on_the_requested_device():
     """Regression: heads were left on CPU while features were on CUDA."""
     heads = DannHeads.build(_df(), 8, _cfg(["source_db"]), _Util(), device="meta")
     assert all(p.device.type == "meta" for p in heads.parameters())
+
+
+class TestParseDannColumns:
+    @pytest.mark.parametrize("raw", [None, False, "", "[]", "False", "none"])
+    def test_off_values(self, raw):
+        from nkululeko.utils.naming import parse_dann_columns
+
+        assert parse_dann_columns(raw) == []
+
+    def test_list_and_bare_string(self):
+        from nkululeko.utils.naming import parse_dann_columns
+
+        assert parse_dann_columns("['a', 'b']") == ["a", "b"]
+        assert parse_dann_columns("'a'") == ["a"]
+
+    @pytest.mark.parametrize("raw", ["source_db", "[1, 2]", "{'a': 1}"])
+    def test_malformed_values(self, raw):
+        from nkululeko.utils.naming import parse_dann_columns
+
+        with pytest.raises(ValueError):
+            parse_dann_columns(raw)

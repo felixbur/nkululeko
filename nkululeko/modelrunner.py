@@ -360,7 +360,11 @@ class Modelrunner(ContextAware):
         # Validate model/experiment type compatibility before instantiation
         task = "classification" if self.util.exp_is_classification() else "regression"
         validate_model_task_support(model_type, task)
-        if model_type not in DANN_MODEL_TYPES and self.util.get_dann_columns():
+        # Unsupported types ignore the key, so only check that it's set
+        # (a malformed value is not an error for them).
+        if model_type not in DANN_MODEL_TYPES and str(
+            self.util.config_val("MODEL", "dann_columns", "")
+        ).strip() not in ("", "[]"):
             self.util.warn(
                 f"MODEL.dann_columns is set, but model type '{model_type}' does "
                 f"not support domain-adversarial training; it is ignored "
