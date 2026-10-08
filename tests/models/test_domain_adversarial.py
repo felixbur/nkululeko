@@ -6,7 +6,11 @@ import pytest
 import torch
 import torch.nn as nn
 
+import pandas as pd
+
 from nkululeko.models.domain_adversarial import (
+    DannConfig,
+    DannHeads,
     DomainAdversarialHead,
     GradientReversalLayer,
 )
@@ -95,3 +99,71 @@ class TestDomainAdversarialHead:
         head2(feats2).sum().backward()
 
         assert torch.allclose(feats2.grad, 2.0 * grad_at_2, atol=1e-5)
+
+
+class _Util:
+    def debug(self, message):
+        pass
+
+    def error(self, message):
+        raise RuntimeError(message)
+
+
+def _df():
+    return pd.DataFrame(
+        {"source_db": ["a", "a", "b", "c"], "language": ["en", "ja", "en", "ja"]}
+    )
+
+
+def _cfg(columns, reverse=True):
+    return DannConfig(columns=columns, lambda_=1.0, weight=1.0, reverse=reverse)
+
+
+class TestDannHeads:
+    def test_off_returns_none(self):
+        assert DannHeads.build(_df(), 8, _cfg([]), _Util()) is None
+
+    def test_one_head_per_column_sized_by_distinct_values(self):
+        heads = DannHeads.build(_df(), 8, _cfg(["source_db", "language"]), _Util())
+        assert heads.heads["source_db"].classifier[-1].out_features == 3
+        assert heads.heads["language"].classifier[-1].out_features == 2
+
+    def test_encode_maps_values_to_sorted_indices(self):
+        heads = DannHeads.build(_df(), 8, _cfg(["source_db", "language"]), _Util())
+        encoded = heads.encode(_df())
+        assert encoded.shape == (4, 2)
+        assert encoded[:, 0].tolist() == [0, 0, 1, 2]
+        assert encoded[:, 1].tolist() == [0, 1, 0, 1]
+
+    def test_missing_column_is_an_error(self):
+        with pytest.raises(RuntimeError, match="not a column"):
+            DannHeads.build(_df(), 8, _cfg(["nope"]), _Util())
+
+    def test_single_valued_column_is_an_error(self):
+        df = _df().assign(source_db="a")
+        with pytest.raises(RuntimeError, match="at least 2"):
+            DannHeads.build(df, 8, _cfg(["source_db"]), _Util())
+
+    def test_missing_values_are_an_error(self):
+        df = _df()
+        df.loc[0, "source_db"] = None
+        with pytest.raises(RuntimeError, match="missing values"):
+            DannHeads.build(df, 8, _cfg(["source_db"]), _Util())
+
+    def test_loss_sums_one_term_per_column(self):
+        torch.manual_seed(0)
+        heads = DannHeads.build(_df(), 8, _cfg(["source_db", "language"]), _Util())
+        feats = torch.randn(4, 8)
+        dom = torch.as_tensor(heads.encode(_df()))
+        assert heads.loss(feats, dom).item() > 0
+
+    def test_reversal_flips_feature_gradient_sign(self):
+        grads = {}
+        for reverse in (True, False):
+            torch.manual_seed(0)
+            heads = DannHeads.build(_df(), 8, _cfg(["source_db"], reverse), _Util())
+            feats = torch.randn(4, 8, requires_grad=True)
+            dom = torch.as_tensor(heads.encode(_df()))
+            heads.loss(feats, dom).backward()
+            grads[reverse] = feats.grad.clone()
+        assert torch.allclose(grads[True], -grads[False], atol=1e-6)

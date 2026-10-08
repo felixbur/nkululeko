@@ -286,3 +286,53 @@ class TestGetLoaderIsLinearNotQuadratic:
 
         np.testing.assert_allclose(features, feats_train.values, rtol=1e-5)
         np.testing.assert_array_equal(labels, df_train["label"].values)
+
+
+class _DannUtil(DummyUtil):
+    def config_val_list(self, section, key, default):
+        return ["domain"]
+
+    def config_val_bool(self, section, key, default):
+        return default
+
+
+def test_mlp_returns_hidden_features():
+    mlp = MLPModel.MLP(3, {"a": 8, "b": 4}, 2, False, torch.nn.ReLU())
+    x = torch.rand(5, 3)
+    logits, hidden = mlp(x, return_features=True)
+    assert hidden.shape == (5, mlp.feat_dim) == (5, 8)
+    assert torch.equal(logits, mlp(x))
+
+
+def test_train_with_dann_updates_heads_and_features_net(mlp_model):
+    from nkululeko.models.domain_adversarial import DannConfig, DannHeads
+
+    df_train = pd.DataFrame({"label": [0, 1, 0, 1], "domain": ["a", "a", "b", "b"]})
+    cfg = DannConfig(columns=["domain"], lambda_=1.0, weight=1.0, reverse=True)
+    mlp_model.dann_heads = DannHeads.build(
+        df_train, mlp_model.model.feat_dim, cfg, mlp_model.util
+    )
+    mlp_model.optimizer = torch.optim.SGD(
+        list(mlp_model.model.parameters()) + list(mlp_model.dann_heads.parameters()),
+        lr=0.1,
+    )
+    mlp_model.trainloader = mlp_model.get_loader(
+        mlp_model.feats_train,
+        df_train,
+        False,
+        domain_labels=mlp_model.dann_heads.encode(df_train),
+    )
+    head = mlp_model.dann_heads.heads["domain"].classifier[0]
+    head_before = head.weight.clone()
+    net_before = mlp_model.model.linear[0].weight.clone()
+
+    mlp_model.train()
+
+    assert np.isfinite(mlp_model.loss)
+    assert not torch.allclose(head.weight, head_before)
+    assert not torch.allclose(mlp_model.model.linear[0].weight, net_before)
+
+
+def test_dann_off_loader_yields_pairs(mlp_model):
+    batch = next(iter(mlp_model.trainloader))
+    assert len(batch) == 2

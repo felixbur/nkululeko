@@ -21,13 +21,12 @@ import audresample
 import numpy as np
 import pandas as pd
 import torch
-import torch.nn as nn
 from sklearn.metrics import recall_score
 from sklearn.utils.class_weight import compute_class_weight
 from torch.utils.data import DataLoader, Dataset
 
 from nkululeko.models.aasist_config import AasistConfig
-from nkululeko.models.domain_adversarial import DomainAdversarialHead
+from nkululeko.models.domain_adversarial import DannHeads
 from nkululeko.models.model import Model
 from nkululeko.models.model_aasist_core import AasistBackend
 from nkululeko.optimizers import (
@@ -69,14 +68,14 @@ class _WaveformDataset(Dataset):
     since the SSL frontend only works on 16 kHz mono input.
     """
 
-    def __init__(self, df, target, cfg, dann_label_maps=None):
+    def __init__(self, df, target, cfg, domain_labels=None):
         self.df = df
         self.target = target
         self.cfg = cfg
-        # {column: {raw_value: int_index}} -- when set, items are
+        # (len(df), n_dann_columns) int array -- when set, items are
         # (waveform, label, domain_labels) instead of (waveform, label).
         # Only the train loader sets it.
-        self.dann_label_maps = dann_label_maps
+        self.domain_labels = domain_labels
 
     def __len__(self):
         return len(self.df)
@@ -105,19 +104,17 @@ class _WaveformDataset(Dataset):
         row = self.df.iloc[idx]
         label = row[self.target]
         waveform = torch.tensor(signal, dtype=torch.float32)
-        if self.dann_label_maps is None:
+        if self.domain_labels is None:
             return waveform, label
-        domain_labels = torch.tensor(
-            [self.dann_label_maps[col][row[col]] for col in self.cfg.dann_columns],
-            dtype=torch.long,
-        )
-        return waveform, label, domain_labels
+        return waveform, label, torch.from_numpy(self.domain_labels[idx])
 
 
 class AasistModel(Model):
     """AASIST = spectro-temporal graph attention network for deepfake detection."""
 
     is_classifier = True
+    supports_dann = True
+    dann_heads = None  # DannHeads when MODEL.dann_columns is set
 
     def __init__(self, df_train, df_test, feats_train, feats_test, context=None):
         super().__init__(df_train, df_test, feats_train, feats_test, context=context)
@@ -156,7 +153,9 @@ class AasistModel(Model):
         ).to(self.device)
 
         self._build_criterion(df_train)
-        self._build_dann_heads(df_train)
+        self.dann_heads = DannHeads.build(
+            df_train, self.net.feat_dim, self.cfg.dann, self.util
+        )
 
         params = (
             itertools.chain(self.net.parameters(), self.dann_heads.parameters())
@@ -172,47 +171,6 @@ class AasistModel(Model):
 
         self.trainloader = self.get_loader(df_train, shuffle=True, train=True)
         self.testloader = self.get_loader(df_test, shuffle=False)
-
-    def _build_dann_heads(self, df_train):
-        """One DomainAdversarialHead per MODEL.dann_columns entry, attached
-        to the backend's pooled feature vector. Label maps come from
-        df_train; the heads only ever run on the train split."""
-        self.dann_label_maps = {}
-        self.dann_heads = None
-        if not self.cfg.dann_columns:
-            return
-        heads = {}
-        for col in self.cfg.dann_columns:
-            if col not in df_train.columns:
-                self.util.error(
-                    f"MODEL.dann_columns includes '{col}', which is not a "
-                    "column of the training data"
-                )
-            if df_train[col].isna().any():
-                self.util.error(
-                    f"MODEL.dann_columns column '{col}' has missing values "
-                    "in the training data"
-                )
-            values = sorted(df_train[col].unique().tolist())
-            if len(values) < 2:
-                self.util.error(
-                    f"MODEL.dann_columns includes '{col}', but the training "
-                    f"data has {len(values)} distinct value(s) for it; DANN "
-                    "needs at least 2 to discriminate between"
-                )
-            self.dann_label_maps[col] = {v: i for i, v in enumerate(values)}
-            heads[col] = DomainAdversarialHead(
-                feat_dim=self.net.feat_dim,
-                num_classes=len(values),
-                reverse=self.cfg.dann_reverse,
-                lambda_=self.cfg.dann_lambda,
-            )
-        self.dann_heads = nn.ModuleDict(heads).to(self.device)
-        self.util.debug(
-            f"aasist: DANN heads for {self.cfg.dann_columns} "
-            f"(reverse={self.cfg.dann_reverse}, lambda={self.cfg.dann_lambda}, "
-            f"weight={self.cfg.dann_weight})"
-        )
 
     def _build_criterion(self, df_train):
         """CrossEntropyLoss over the fixed 2-way output, with optional
@@ -248,7 +206,9 @@ class AasistModel(Model):
             df,
             self.target,
             self.cfg,
-            dann_label_maps=self.dann_label_maps if train else None,
+            domain_labels=(
+                self.dann_heads.encode(df) if train and self.dann_heads is not None else None
+            ),
         )
         # Each __getitem__ does its own audiofile.read() -- CPU-bound work
         # that a single-process loader (num_workers=0) serializes with GPU
@@ -313,13 +273,9 @@ class AasistModel(Model):
         if self.dann_heads is None:
             return self.criterion(self.net(waveforms), labels)
         logits, feats = self.net(waveforms, return_features=True)
-        loss = self.criterion(logits, labels)
-        for i, col in enumerate(self.cfg.dann_columns):
-            domain_logits = self.dann_heads[col](feats)
-            loss = loss + self.cfg.dann_weight * nn.functional.cross_entropy(
-                domain_logits, domain_labels[:, i]
-            )
-        return loss
+        return self.criterion(logits, labels) + self.dann_heads.loss(
+            feats, domain_labels
+        )
 
     def evaluate(self, loader):
         self.net.eval()

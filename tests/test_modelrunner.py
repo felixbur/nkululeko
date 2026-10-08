@@ -10,6 +10,7 @@ import pytest
 import nkululeko.glob_conf as glob_conf
 from nkululeko.modelrunner import Modelrunner, validate_model_task_support
 from nkululeko.utils.errors import NkululukoError
+from nkululeko.utils.util import Util
 
 
 @pytest.fixture(autouse=True)
@@ -121,6 +122,22 @@ class TestSelectModel:
         mr = self._make_mr("aasist", dummy_dfs)
 
         assert isinstance(mr.model, FakeAasist)
+
+    def test_dann_columns_warns_for_unsupported_model(self, dummy_dfs, monkeypatch):
+        glob_conf.config["MODEL"]["dann_columns"] = "['source_db']"
+        warnings = []
+        monkeypatch.setattr(Util, "warn", lambda self, msg: warnings.append(msg))
+        try:
+            self._make_mr("svm", dummy_dfs)
+        finally:
+            del glob_conf.config["MODEL"]["dann_columns"]
+        assert any("dann_columns" in w and "'svm'" in w for w in warnings)
+
+    def test_no_dann_warning_when_unset(self, dummy_dfs, monkeypatch):
+        warnings = []
+        monkeypatch.setattr(Util, "warn", lambda self, msg: warnings.append(msg))
+        self._make_mr("svm", dummy_dfs)
+        assert not any("dann_columns" in w for w in warnings)
 
     def test_bayes_model_selected(self, dummy_dfs):
         from nkululeko.models.model_bayes import Bayes_model
