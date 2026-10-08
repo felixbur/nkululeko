@@ -606,6 +606,7 @@ Settings specific to `[MODEL] type = aasist` - AASIST (spectro-temporal graph at
 
 * **ssl_model**: HuggingFace SSL frontend checkpoint
   * ssl_model = facebook/wav2vec2-xls-r-300m
+  * Input audio is normalized (zero mean, unit variance per utterance) if the checkpoint's own preprocessor config says `do_normalize = True`, as `finetune` does.
 * **max_len**: fixed waveform length in samples every clip is padded (by tiling) or truncated to
   * max_len = 64600
   * default: 64600 (~4.0375s at 16kHz), matching the upstream AASIST paper's own setting

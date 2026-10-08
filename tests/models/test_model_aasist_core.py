@@ -8,8 +8,9 @@ AasistBackend's graph-attention pipeline is exercised end-to-end on real
 XLS-R checkpoint.
 """
 
+import pytest
 import torch
-from transformers import Wav2Vec2Config, Wav2Vec2Model
+from transformers import Wav2Vec2Config, Wav2Vec2FeatureExtractor, Wav2Vec2Model
 
 from nkululeko.models import model_aasist_core as core
 
@@ -26,6 +27,67 @@ def _tiny_wav2vec2(hidden_size=32):
         attn_implementation="eager",
     )
     return Wav2Vec2Model(config)
+
+
+@pytest.fixture(autouse=True)
+def _offline_feature_extractor(monkeypatch):
+    """Never hit the network for the checkpoint's preprocessor config."""
+    monkeypatch.setattr(
+        Wav2Vec2FeatureExtractor,
+        "from_pretrained",
+        lambda *a, **k: Wav2Vec2FeatureExtractor(do_normalize=True),
+    )
+
+
+class TestInputNormalization:
+    def _frontend(self, monkeypatch, do_normalize):
+        tiny = _tiny_wav2vec2()
+        monkeypatch.setattr(Wav2Vec2Model, "from_pretrained", lambda *a, **k: tiny)
+        monkeypatch.setattr(
+            Wav2Vec2FeatureExtractor,
+            "from_pretrained",
+            lambda *a, **k: Wav2Vec2FeatureExtractor(do_normalize=do_normalize),
+        )
+        frontend = core.HFWav2Vec2Frontend("dummy/checkpoint")
+        frontend.eval()
+        return frontend
+
+    def test_respects_checkpoint_do_normalize(self, monkeypatch):
+        assert self._frontend(monkeypatch, True).do_normalize is True
+        assert self._frontend(monkeypatch, False).do_normalize is False
+
+    def test_normalized_frontend_ignores_input_scale_and_offset(self, monkeypatch):
+        frontend = self._frontend(monkeypatch, True)
+        x = torch.randn(2, 16000)
+        with torch.no_grad():
+            a = frontend.extract_feat(x)
+            b = frontend.extract_feat(x * 100 + 5)
+        assert torch.allclose(a, b, atol=1e-3)
+
+    def test_unnormalized_frontend_passes_raw_input(self, monkeypatch):
+        # (The tiny model's group-norm conv stem is itself roughly
+        # scale-invariant, so check the input the HF model sees directly.)
+        frontend = self._frontend(monkeypatch, False)
+        seen = []
+        orig = frontend.model.forward
+
+        def spy(x, *a, **k):
+            seen.append(x)
+            return orig(x, *a, **k)
+
+        monkeypatch.setattr(frontend.model, "forward", spy)
+        x = torch.randn(2, 16000) * 100 + 5
+        with torch.no_grad():
+            frontend.extract_feat(x)
+        assert torch.equal(seen[0], x)
+
+    def test_missing_preprocessor_config_falls_back_to_true(self, monkeypatch):
+        def boom(*a, **k):
+            raise OSError("no preprocessor_config.json")
+
+        monkeypatch.setattr(Wav2Vec2FeatureExtractor, "from_pretrained", boom)
+        with pytest.warns(UserWarning, match="do_normalize=True"):
+            assert core._checkpoint_do_normalize("local/model") is True
 
 
 class TestHFWav2Vec2Frontend:

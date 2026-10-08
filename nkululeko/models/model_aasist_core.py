@@ -19,12 +19,33 @@ ResidualBlock.forward and AasistBackend.forward) and the frontend's loading
 mechanism.
 """
 
+import warnings
 from typing import Union
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from transformers import Wav2Vec2Model
+from transformers import Wav2Vec2FeatureExtractor, Wav2Vec2Model
+
+
+def _checkpoint_do_normalize(pretrained_model: str) -> bool:
+    """Read `do_normalize` from the checkpoint's own preprocessor config.
+
+    It differs between checkpoints (e.g. True for most wav2vec2/XLS-R, False
+    for some WavLM ones), so it is not hardcoded. Falls back to True, the
+    wav2vec2 default, if the checkpoint has no preprocessor config
+    (the same fallback model_tuned.py uses).
+    """
+    try:
+        extractor = Wav2Vec2FeatureExtractor.from_pretrained(pretrained_model)
+        return bool(extractor.do_normalize)
+    except Exception as e:
+        warnings.warn(
+            f"could not load feature extractor config for {pretrained_model} "
+            f"({e}); assuming do_normalize=True",
+            stacklevel=2,
+        )
+        return True
 
 
 class HFWav2Vec2Frontend(nn.Module):
@@ -61,6 +82,7 @@ class HFWav2Vec2Frontend(nn.Module):
     ):
         super().__init__()
         self.model = Wav2Vec2Model.from_pretrained(pretrained_model)
+        self.do_normalize = _checkpoint_do_normalize(pretrained_model)
         self.out_dim = self.model.config.hidden_size
         self.layer_pooling = layer_pooling
         if freeze:
@@ -90,6 +112,14 @@ class HFWav2Vec2Frontend(nn.Module):
     def extract_feat(self, input_data: torch.Tensor) -> torch.Tensor:
         if input_data.ndim == 3:
             input_data = input_data[:, :, 0]
+        if self.do_normalize:
+            # Same per-utterance zero-mean/unit-variance normalization as
+            # Wav2Vec2FeatureExtractor(do_normalize=True), which Wav2Vec2Model
+            # itself does not apply. Inputs are fixed-length (no padding), so
+            # no attention mask is needed.
+            mean = input_data.mean(dim=-1, keepdim=True)
+            var = input_data.var(dim=-1, unbiased=False, keepdim=True)
+            input_data = (input_data - mean) / torch.sqrt(var + 1e-7)
         if self.layer_pooling == "weighted":
             hidden_states = self.model(
                 input_data, output_hidden_states=True
