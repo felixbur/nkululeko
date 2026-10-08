@@ -78,17 +78,19 @@ class TestDropOrFillMissing:
         assert out.shape[0] == 2
         assert out["gender"].tolist() == ["male", "female"]
 
-    def test_col_label_none_falls_back_to_blanket_dropna(self):
-        """No target resolved at all (e.g. no columns, no label) -- df is
-        just an index-only frame, so the old blanket dropna() behavior is
-        preserved rather than crashing on subset=[None]."""
+    def test_col_label_none_keeps_all_rows(self):
+        """No target resolved at all (e.g. no columns, no label) -- there's
+        nothing to require non-null for, so nothing should be dropped
+        either (not even a blanket dropna(), which previously
+        reintroduced the #455 bug for unlabeled/predict-only loading --
+        GH #461)."""
         ds = _make_dataset(None)
         df = pd.DataFrame(index=["f1.wav", "f2.wav"])
         out = ds._drop_or_fill_missing(df)
         assert out.shape[0] == 2
 
-    def test_col_label_not_in_df_falls_back_to_blanket_dropna(self):
+    def test_col_label_not_in_df_keeps_rows_with_missing_other_columns(self):
         ds = _make_dataset("emotion")
         df = pd.DataFrame({"gender": ["male", None]})
         out = ds._drop_or_fill_missing(df)
-        assert out.shape[0] == 1
+        assert out.shape[0] == 2

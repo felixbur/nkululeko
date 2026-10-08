@@ -118,7 +118,12 @@ class Dataset(ContextAware):
         Real NaN needs no special-casing by any downstream consumer.
         """
         if self.col_label is None or self.col_label not in df.columns:
-            return df.dropna()
+            # No target to require non-null for (e.g. unlabeled/predict-only
+            # loading with no columns at all) -- nothing should be dropped
+            # on that basis either. This used to fall back to a blanket
+            # dropna(), silently reintroducing the #455 bug for exactly the
+            # unlabeled-data paths where it's easiest to miss (GH #461).
+            return df
 
         before = df.shape[0]
         df = df.dropna(subset=[self.col_label]).copy()

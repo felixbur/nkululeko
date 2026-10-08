@@ -114,17 +114,22 @@ class AudmodelSet(Featureset):
         """Extract the features based on the initialized dataset or re-open them when found on disk."""
         store = self.util.get_path("store")
         store_format = self.util.config_val("FEATS", "store_format", "pkl")
-        # audmodel.embeddings_name is part of the cache key (GH #459):
-        # without it, switching to a different output head of the same
-        # model silently reused the previous head's cached values.
+        # audmodel.id and audmodel.embeddings_name are both part of the
+        # cache key (GH #459 and its review): self.name alone (e.g.
+        # "mydb_train_audmodel", built in feature_extractor.py from the
+        # database name + feats_type, never the model) is identical
+        # regardless of which audmodel.id/embeddings_name are configured,
+        # so without both here, changing either one silently reuses the
+        # previous model/head's cached values.
+        model_id = self.util.config_val("FEATS", "audmodel.id", "audmodel")
         embeddings_name = self.util.config_val(
             "FEATS", "audmodel.embeddings_name", "hidden_states"
         )
         if self.hidden_layer == 0:
-            storage = f"{store}{self.name}_{embeddings_name}.{store_format}"
+            storage = f"{store}{self.name}_{model_id}_{embeddings_name}.{store_format}"
         else:
             storage = (
-                f"{store}{self.name}_{embeddings_name}_l{self.hidden_layer}."
+                f"{store}{self.name}_{model_id}_{embeddings_name}_l{self.hidden_layer}."
                 f"{store_format}"
             )
         if self._needs_extraction(storage):

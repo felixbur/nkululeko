@@ -68,6 +68,27 @@ class TestDedupeSpeakersForDistribution:
 
         assert out is df_speakers
 
+    def test_regression_target_falls_back_to_given_df_speakers(self):
+        """Review on #462: class_label is also present for regression
+        targets (continuous values), not just classification. Grouping by
+        its exact value would put almost every sample in its own group
+        (since continuous measurements rarely repeat exactly), reverting
+        these plots to sample-level weighting instead of fixing anything
+        -- so the per-class expansion must only apply to categorical
+        (classification) targets."""
+        df = pd.DataFrame(
+            {
+                "speaker": ["s1", "s1", "s1", "s2", "s2"],
+                "class_label": [23.1, 23.4, 22.9, 41.0, 40.5],
+            }
+        )
+        plots = self._make_plots()
+        df_speakers = df.groupby("speaker").head(1)
+        out = plots._dedupe_speakers_for_distribution(df, df_speakers)
+
+        assert out is df_speakers
+        assert len(out) == 2
+
 
 class TestFindMostSignificantDifferenceSafe:
     """GH #462: a statistic that ends up with fewer than 2 groups (e.g.

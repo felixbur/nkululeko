@@ -99,6 +99,54 @@ class TestCacheKeyIncludesEmbeddingsName:
         storage_arg = instance.util.get_store.call_args[0][0]
         assert "valence" in storage_arg
 
+    def test_extract_storage_filename_includes_model_id(self):
+        """Review on #459: self.name alone (built in feature_extractor.py
+        from the database name + feats_type) doesn't vary with which
+        audmodel.id is configured, so without the model id here too,
+        switching models while keeping the same embeddings_name would
+        silently reuse the previous model's cached whole-dataset features."""
+        instance = _make_instance()
+        instance.name = "mydb_feats"
+        instance.context = MagicMock()
+        instance.data_df = pd.DataFrame()
+        instance.util.get_path.return_value = "/store/"
+        instance.util.config_val.side_effect = self._config_val(
+            {
+                "store_format": "pkl",
+                "audmodel.id": "1c250fd7-1.1.2",
+                "audmodel.embeddings_name": "valence",
+            }
+        )
+        instance._needs_extraction = MagicMock(return_value=False)
+        instance.util.get_store = MagicMock(return_value=pd.DataFrame())
+
+        instance.extract()
+
+        storage_arg = instance.util.get_store.call_args[0][0]
+        assert "1c250fd7-1.1.2" in storage_arg
+
+    def test_different_model_id_gives_different_storage_filename(self):
+        results = {}
+        for model_id in ("model-a", "model-b"):
+            instance = _make_instance()
+            instance.name = "mydb_feats"
+            instance.context = MagicMock()
+            instance.data_df = pd.DataFrame()
+            instance.util.get_path.return_value = "/store/"
+            instance.util.config_val.side_effect = self._config_val(
+                {
+                    "store_format": "pkl",
+                    "audmodel.id": model_id,
+                    "audmodel.embeddings_name": "valence",
+                }
+            )
+            instance._needs_extraction = MagicMock(return_value=False)
+            instance.util.get_store = MagicMock(return_value=pd.DataFrame())
+            instance.extract()
+            results[model_id] = instance.util.get_store.call_args[0][0]
+
+        assert results["model-a"] != results["model-b"]
+
     def test_different_embeddings_name_gives_different_storage_filename(self):
         results = {}
         for embeddings_name in ("valence", "arousal"):

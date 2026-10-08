@@ -50,9 +50,15 @@ class Plots(ContextAware):
             df: the full (non-deduplicated) samples dataframe.
             df_speakers: one row per speaker (first sample), as already
                 computed by the caller -- returned unchanged if "class_label"
-                isn't present (e.g. unlabeled/regression targets).
+                isn't present (e.g. unlabeled loading), or isn't categorical
+                (regression targets): grouping by a continuous value's exact
+                number would put almost every sample in its own group,
+                reverting these plots to sample-level weighting instead of
+                fixing anything.
         """
-        if "class_label" not in df.columns:
+        if "class_label" not in df.columns or not self.util.is_categorical(
+            df["class_label"]
+        ):
             return df_speakers
         return (
             df.groupby(["speaker", "class_label"], observed=True)
