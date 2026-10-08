@@ -245,7 +245,7 @@ type = os
             "dann_weight = 2.0\ndann_reverse = False"
         )
         self.assertEqual(
-            u._get_dann_suffix(), "_dann-source_db-l0-5-w2-0-noreverse"
+            u._get_dann_suffix(), "_dann-source_db-l0-5-w2-noreverse"
         )
 
     def test_dann_suffix_distinguishes_plus_in_column_names(self):
@@ -267,6 +267,13 @@ type = os
 
         u = self._dann_util(extra="dann_columns = source_db")
         with self.assertRaises(NkululukoError):
+            u._get_dann_suffix()
+
+    def test_dann_suffix_non_numeric_lambda_is_an_error(self):
+        from nkululeko.utils.errors import NkululukoError
+
+        u = self._dann_util(extra="dann_columns = ['a']\ndann_lambda = high")
+        with self.assertRaisesRegex(NkululukoError, "dann_lambda"):
             u._get_dann_suffix()
 
     def test_dann_suffix_ignored_for_unsupported_model(self):

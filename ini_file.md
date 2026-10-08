@@ -543,7 +543,7 @@ Available for `type = aasist`, `mlp`, `mlp_reg`, `cnn` and `adm` (other model ty
   * dann_columns = ['source_db']
   * default: [] (DANN off)
   * `source_db` is the database a row came from (added automatically); any other column of the training data works too, e.g. `language`. List several to attach several heads. Each column needs at least 2 distinct values in the training split and must have no missing values there (DANN stops with an error if it finds any). DANN cannot be combined with `[FEATS] balancing` (that option drops the domain columns); this raises an error. The heads are used only for training; they are not applied to dev/test data and are not saved with the model
-* **dann_lambda**: strength of the gradient reversal
+* **dann_lambda**: strength of the gradient reversal (used only when `dann_reverse = True`; ignored otherwise)
   * dann_lambda = 1.0
 * **dann_weight**: weight of each domain loss relative to the task loss
   * dann_weight = 1.0
