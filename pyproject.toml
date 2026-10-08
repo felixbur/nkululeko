@@ -43,6 +43,7 @@ dependencies = [
     "auglib>=1.0.4",
     "audinterface>=1.0.0",
     "audiofile>=1.0.0",
+    "audresample>=1.0.0",
     "audiomentations>=0.42.0",
     "audmetric>=1.0.0",
     "audonnx>=0.7.0",

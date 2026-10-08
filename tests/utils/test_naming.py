@@ -613,7 +613,7 @@ type = os
             )
 
     def test_model_description_excludes_activation_for_cnn_adm_finetune(self):
-        for model_type in ("cnn", "adm", "finetune"):
+        for model_type in ("cnn", "adm", "finetune", "aasist"):
             c = configparser.ConfigParser()
             c.read_string(f"""
 [EXP]
@@ -635,7 +635,7 @@ type = os
             )
 
     def test_model_description_includes_optimizer_for_cnn_mlp_mlp_reg_adm(self):
-        for model_type in ("cnn", "mlp", "mlp_reg", "adm"):
+        for model_type in ("cnn", "mlp", "mlp_reg", "adm", "aasist"):
             c = configparser.ConfigParser()
             c.read_string(f"""
 [EXP]
@@ -715,7 +715,7 @@ type = os
         self.assertNotIn("drop", u.get_model_description())
 
     def test_model_description_includes_loss_for_all_ann_types(self):
-        for model_type in ("cnn", "mlp", "mlp_reg", "adm", "finetune"):
+        for model_type in ("cnn", "mlp", "mlp_reg", "adm", "finetune", "aasist"):
             c = configparser.ConfigParser()
             c.read_string(f"""
 [EXP]
