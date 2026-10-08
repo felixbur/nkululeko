@@ -34,6 +34,32 @@ class Plots(ContextAware):
         self.titles = eval(self.util.config_val("PLOT", "titles", "True"))
         self.print_stats = eval(self.util.config_val("EXPL", "print_stats", "False"))
 
+    def _dedupe_speakers_for_distribution(self, df, df_speakers):
+        """One row per speaker, except where the target varies within the
+        speaker (GH #462).
+
+        Collapsing a speaker to its first sample is only correct if the
+        target is constant across that speaker's rows. For a within-speaker
+        design (e.g. paired/repeated-measures recordings, every speaker has
+        samples of every class), that silently counted every speaker only
+        for whichever class happened to sort first. Representing a speaker
+        once per class it actually has samples of instead counts it in
+        each class it contributed to.
+
+        Args:
+            df: the full (non-deduplicated) samples dataframe.
+            df_speakers: one row per speaker (first sample), as already
+                computed by the caller -- returned unchanged if "class_label"
+                isn't present (e.g. unlabeled/regression targets).
+        """
+        if "class_label" not in df.columns:
+            return df_speakers
+        return (
+            df.groupby(["speaker", "class_label"], observed=True)
+            .head(1)
+            .reset_index(drop=True)
+        )
+
     def plot_distributions_speaker(self, df: pd.DataFrame):
         """Plot sample and speaker distributions broken down by speaker identity.
 
@@ -56,6 +82,7 @@ class Plots(ContextAware):
             df_speaker = df[df.speaker == s]
             df_speaker["samplenum"] = df_speaker.shape[0]
             df_speakers = pd.concat([df_speakers, df_speaker.head(1)])
+        df_speakers_for_dist = self._dedupe_speakers_for_distribution(df, df_speakers)
         # plot the distribution of samples per speaker
         self.util.debug("plotting samples per speaker")
         if "gender" in df_speakers:
@@ -109,7 +136,7 @@ class Plots(ContextAware):
                 "speakers",
             )
 
-        self.plot_distributions(df_speakers, type_s="speakers")
+        self.plot_distributions(df_speakers_for_dist, type_s="speakers")
 
     def plot_distributions(self, df: pd.DataFrame, type_s: str = "samples"):
         """Plot distributions of attributes against the target variable.
@@ -264,10 +291,30 @@ class Plots(ContextAware):
                     f" {att} has more than 2 values. Perhaps you forgot to state a list of lists?"
                 )
 
+    def _find_most_significant_difference_safe(self, val_dict, mean_featnum, context):
+        """Wrap su.find_most_significant_difference(), skipping instead of
+        raising when fewer than 2 groups are present (GH #462).
+
+        A speaker-level (or any grouped) statistic can legitimately end up
+        with only one group -- e.g. a within-speaker design where every
+        speaker has samples of every class collapses to a single group once
+        speakers are deduplicated per class -- and that shouldn't abort the
+        whole explore run.
+        """
+        if len(val_dict) < 2:
+            self.util.warn(
+                f"{context}: need at least 2 groups for a statistical "
+                f"comparison, got {len(val_dict)}; skipping this statistic"
+            )
+            return None, None
+        return su.find_most_significant_difference(val_dict, mean_featnum)
+
     def _save_distribution_stats(self, df, cat_col, cont_col, res_filename):
         """Compute KW + pairwise t-tests and append results to res_filename."""
         val_dict, mean_featnum = self.util.df_to_categorical_dict(df, cat_col, cont_col)
-        pairwise_results, overall_results = su.find_most_significant_difference(val_dict, mean_featnum)
+        pairwise_results, overall_results = self._find_most_significant_difference_safe(
+            val_dict, mean_featnum, f"{cat_col}/{cont_col}"
+        )
         if overall_results is not None:
             self.util.append_to_result_file(res_filename, f"overall: {overall_results['all_results']}")
         if pairwise_results is not None:
@@ -872,8 +919,8 @@ class Plots(ContextAware):
             val_dict, mean_featnum = self.util.df_to_categorical_dict(
                 df_plot, label, feature
             )
-            pairwise_results, overall_results = su.find_most_significant_difference(
-                val_dict, mean_featnum
+            pairwise_results, overall_results = self._find_most_significant_difference_safe(
+                val_dict, mean_featnum, f"{label}/{feature}"
             )
             # 'approach', 'combo', test statistic, 'p_value', 'significance','all_results'
             if overall_results is not None:

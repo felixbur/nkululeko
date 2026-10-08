@@ -104,15 +104,18 @@ class Dataset(ContextAware):
         return df
 
     def _drop_or_fill_missing(self, df):
-        """Only require the target to be non-null (GH #455).
+        """Only require the target to be non-null (GH #455, #461).
 
         A blanket ``dropna()`` silently dropped every row missing *any*
         auto-probed demographic column (age/gender/speaker), which can
         exclude an entire source database with no error or row-count
-        logged, if that database simply lacks a demographic scheme. Other
-        columns get filled with the literal string "na" instead of
-        dropping the row, so missing demographic data is visible rather
-        than silent.
+        logged, if that database simply lacks a demographic scheme.
+        Other columns keep their real ``NaN`` values instead -- an
+        earlier version of this fix filled them with the literal string
+        "na", but that broke on Categorical-dtype scheme columns, changed
+        numeric columns to object dtype, and made every missing speaker
+        collapse into one fake "na" speaker for speaker-based splitting.
+        Real NaN needs no special-casing by any downstream consumer.
         """
         if self.col_label is None or self.col_label not in df.columns:
             return df.dropna()
@@ -128,9 +131,8 @@ class Dataset(ContextAware):
         other_cols = [c for c in df.columns if c != self.col_label]
         na_counts = {c: int(n) for c in other_cols if (n := df[c].isna().sum())}
         if na_counts:
-            df[list(na_counts.keys())] = df[list(na_counts.keys())].fillna("na")
             self.util.debug(
-                f"{self.name}: filled missing values with 'na' in: {na_counts}"
+                f"{self.name}: missing (NaN) values kept in: {na_counts}"
             )
         return df
 
@@ -287,12 +289,7 @@ class Dataset(ContextAware):
             required = self.util.config_val_data(self.name, "required", False)
             if required:
                 pre = self.df.shape[0]
-                # _drop_or_fill_missing() (GH #455) fills missing values
-                # in non-target columns -- including this one -- with the
-                # literal string "na" instead of leaving them NaN, so
-                # notna() alone would no longer catch them here.
-                is_missing = self.df[required].isna() | (self.df[required] == "na")
-                self.df = self.df[~is_missing]
+                self.df = self.df[self.df[required].notna()]
                 post = self.df.shape[0]
                 self.util.debug(
                     f"{self.name}: kept {post} samples with {required} (from {pre},"
@@ -368,16 +365,23 @@ class Dataset(ContextAware):
             if entry_test_tables:
                 test_tables = ast.literal_eval(entry_test_tables)
                 for test_table in test_tables:
-                    testdf = pd.concat([testdf, self.db.tables[test_table].df]).dropna()
+                    testdf = pd.concat([testdf, self.db.tables[test_table].df])
+            # Only require the target column to be non-null here (GH #464,
+            # consistent with _drop_or_fill_missing() / GH #455): a blanket
+            # dropna() silently dropped rows missing any column of the
+            # split table, even an unused one, losing them from
+            # train/test with no row-count logged.
+            if self.target in testdf.columns:
+                testdf = testdf.dropna(subset=[self.target])
             entry_train_tables = self.util.config_val_data(
                 self.name, "train_tables", False
             )
             if entry_train_tables:
                 train_tables = ast.literal_eval(entry_train_tables)
                 for train_table in train_tables:
-                    traindf = pd.concat(
-                        [traindf, self.db.tables[train_table].df]
-                    ).dropna()
+                    traindf = pd.concat([traindf, self.db.tables[train_table].df])
+            if self.target in traindf.columns:
+                traindf = traindf.dropna(subset=[self.target])
             # use only the train and test samples that were not perhaps filtered out by an earlier processing step
             # testdf.index.map(lambda x: os.path.join(self.root, x))
             #            testdf.index = testdf.index.to_series().apply(lambda x: self.root+x)
@@ -722,28 +726,55 @@ class Dataset(ContextAware):
             self.df_test = df
             self.df_train = pd.DataFrame()
             return
+        # Rows with no speaker id (GH #461) can't be speaker-disjoint split
+        # at all -- pandas' unique()/isin() treat every NaN as the same
+        # value, so a plain sample(df.speaker.unique(), ...) could draw NaN
+        # as one "speaker" and lump every unidentified row into one split.
+        # Keep them out of the sampling population entirely, in train.
+        no_speaker = df.speaker.isna()
+        if no_speaker.any():
+            self.util.debug(
+                f"{self.name}: {no_speaker.sum()} samples have no speaker id; "
+                "keeping them in the train split (speaker_split needs a real "
+                "speaker id to assign a sample to test)"
+            )
+        known = df[~no_speaker]
         test_percent = int(self.util.config_val_data(self.name, "test_size", 20))
-        s_num = df.speaker.nunique()
+        s_num = known.speaker.nunique()
         test_num = int(s_num * (test_percent / 100))
-        test_spkrs = sample(list(df.speaker.unique()), test_num)
-        self.df_test = df[df.speaker.isin(test_spkrs)]
-        self.df_train = df[~df.index.isin(self.df_test.index)]
+        test_spkrs = sample(list(known.speaker.unique()), test_num)
+        self.df_test = known[known.speaker.isin(test_spkrs)]
+        self.df_train = pd.concat(
+            [known[~known.index.isin(self.df_test.index)], df[no_speaker]]
+        )
 
     def split_speakers_3(self):
         """One way to split train, dev and test sets: Specify percentage speakers."""
         test_percent = int(self.util.config_val_data(self.name, "test_size", 20))
         dev_percent = int(self.util.config_val_data(self.name, "dev_size", 20))
         df = self.df
-        s_num = df.speaker.nunique()
+        # See split_speakers() above: rows with no speaker id are excluded
+        # from the sampling population and always kept in train (GH #461).
+        no_speaker = df.speaker.isna()
+        if no_speaker.any():
+            self.util.debug(
+                f"{self.name}: {no_speaker.sum()} samples have no speaker id; "
+                "keeping them in the train split (speaker_split needs a real "
+                "speaker id to assign a sample to test/dev)"
+            )
+        known = df[~no_speaker]
+        s_num = known.speaker.nunique()
         test_num = int(s_num * (test_percent / 100))
         dev_num = int(s_num * (dev_percent / 100))
-        testdev_spkrs = sample(list(df.speaker.unique()), test_num + dev_num)
+        testdev_spkrs = sample(list(known.speaker.unique()), test_num + dev_num)
         # sample from testdev speakers for test and dev
         test_spkrs = sample(testdev_spkrs, test_num)
         dev_spkrs = [spkr for spkr in testdev_spkrs if spkr not in test_spkrs]
-        self.df_test = df[df.speaker.isin(test_spkrs)]
-        self.df_dev = df[df.speaker.isin(dev_spkrs)]
-        self.df_train = df[~df.speaker.isin(testdev_spkrs)]
+        self.df_test = known[known.speaker.isin(test_spkrs)]
+        self.df_dev = known[known.speaker.isin(dev_spkrs)]
+        self.df_train = pd.concat(
+            [known[~known.speaker.isin(testdev_spkrs)], df[no_speaker]]
+        )
 
     def random_split(self):
         """One way to split train and eval sets: Specify percentage of random samples."""

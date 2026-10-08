@@ -114,10 +114,19 @@ class AudmodelSet(Featureset):
         """Extract the features based on the initialized dataset or re-open them when found on disk."""
         store = self.util.get_path("store")
         store_format = self.util.config_val("FEATS", "store_format", "pkl")
+        # audmodel.embeddings_name is part of the cache key (GH #459):
+        # without it, switching to a different output head of the same
+        # model silently reused the previous head's cached values.
+        embeddings_name = self.util.config_val(
+            "FEATS", "audmodel.embeddings_name", "hidden_states"
+        )
         if self.hidden_layer == 0:
-            storage = f"{store}{self.name}.{store_format}"
+            storage = f"{store}{self.name}_{embeddings_name}.{store_format}"
         else:
-            storage = f"{store}{self.name}_l{self.hidden_layer}.{store_format}"
+            storage = (
+                f"{store}{self.name}_{embeddings_name}_l{self.hidden_layer}."
+                f"{store_format}"
+            )
         if self._needs_extraction(storage):
             self.util.debug(
                 "extracting audmodel embeddings, this might take a while..."
@@ -165,8 +174,13 @@ class AudmodelSet(Featureset):
             pd.DataFrame: Features as a single-row DataFrame with proper index
         """
         model_id = self.util.config_val("FEATS", "audmodel.id", "audmodel")
+        # audmodel.embeddings_name is part of the cache key too (GH #459),
+        # same reasoning as the whole-dataset storage path in extract().
+        embeddings_name = self.util.config_val(
+            "FEATS", "audmodel.embeddings_name", "hidden_states"
+        )
         segment_cache = audeer.mkdir(
-            audeer.path(self.util.get_path("cache"), model_id)
+            audeer.path(self.util.get_path("cache"), model_id, embeddings_name)
         )
         layer_suffix = f"_l{self.hidden_layer}" if self.hidden_layer != 0 else ""
         cache_path = self._sample_cache_path(
@@ -175,21 +189,51 @@ class AudmodelSet(Featureset):
         if os.path.isfile(cache_path):
             df_part = self._read_sample_cache(cache_path)
         else:
-            features = self.extract_sample(signal, sr)
+            features, labels = self._extract_sample_with_labels(signal, sr)
             index_part = audformat.segmented_index(
                 index_tuple[0], index_tuple[1], index_tuple[2]
             )
-            df_part = pd.DataFrame([features], index=index_part)
+            df_part = pd.DataFrame([features], columns=labels, index=index_part)
             df_part.to_csv(cache_path)
 
         return df_part
 
     def extract_sample(self, signal, sr):
+        """Extract one sample's features as a plain array.
+
+        Kept to the generic Featureset contract (a plain feature array, no
+        labels) since this is called directly by other code paths, e.g.
+        nkululeko.predict's generic feature-extractor dispatch, which runs
+        arithmetic (mean/std) on the result -- see
+        _extract_sample_with_labels() for the labeled variant used by
+        extract_sample_df().
+        """
+        features, _ = self._extract_sample_with_labels(signal, sr)
+        return features
+
+    def _extract_sample_with_labels(self, signal, sr):
+        """Extract one sample's features, with column labels.
+
+        Returns:
+            tuple: (features, labels) -- labels are the real output names
+            (e.g. "sadness", "arousal") for the ONNX path, since
+            audinterface.Feature already carries them as result.columns
+            from the audmodel.labels() passed in at construction (GH #459);
+            generic `{embeddings_name}_{i}` names for the torch path, which
+            has no per-dimension names to offer.
+        """
         if not self.model_loaded:
             self._load_model()
         if not self.use_torch:
             result = self.model_interface.process_signal(signal, sr)
-            return np.asarray(result.values).flatten()
+            if len(result.columns) == 1:
+                # A one-dimensional head (e.g. embeddings_name="valence"):
+                # the column is just the head name itself, not prefixed
+                # with itself.
+                labels = [self.embeddings_name]
+            else:
+                labels = [f"{self.embeddings_name}_{c}" for c in result.columns]
+            return np.asarray(result.values).flatten(), labels
         # Torch path: resample if needed, pool last hidden state
         import torchaudio
         signal_tensor = torch.from_numpy(signal).float()
@@ -205,4 +249,6 @@ class AudmodelSet(Featureset):
             outputs = self.model(**inputs)
             y = outputs.last_hidden_state  # [batch, time, hidden_size]
             y = torch.mean(y, dim=1)       # pool over time -> [batch, hidden_size]
-            return y.detach().cpu().numpy().flatten()
+            features = y.detach().cpu().numpy().flatten()
+            labels = [f"{self.embeddings_name}_{i}" for i in range(len(features))]
+            return features, labels

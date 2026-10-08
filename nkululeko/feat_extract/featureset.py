@@ -153,14 +153,18 @@ class Featureset(ContextAware):
     def _read_sample_cache(self, cache_path):
         """Read a per-sample feature cache CSV at the path returned by
         _sample_cache_path(), normalizing column labels back to integers
-        (issue #429).
+        when no real names were ever given (issue #429).
 
-        CSV headers are always strings, but a freshly-extracted row's
-        DataFrame has an integer RangeIndex for its columns (no explicit
-        names are ever given). Without this, pd.concat() of a cached row
-        (string column labels "0", "1", ...) with a fresh row (integer
-        column labels 0, 1, ...) treats them as different columns entirely,
-        silently doubling the column count and filling half of it with NaN.
+        CSV headers are always strings. A feature set that never names its
+        columns (e.g. Audwav2vec2Set) writes a plain integer RangeIndex, so
+        the CSV round-trips it as digit strings "0", "1", .... Without
+        converting those back to integers, pd.concat() of a cached row
+        (string column labels) with a freshly-extracted row (integer
+        column labels) would treat them as different columns entirely,
+        silently doubling the column count and filling half of it with
+        NaN. A feature set that *does* give its columns real names (e.g.
+        AudmodelSet's output-head labels, issue #459) keeps them as-is --
+        those aren't the digit-string artifact this guards against.
 
         Also normalizes the same `audformat.utils.read_csv` edge case
         `read_cached_df` (nkululeko/utils/dataframe.py) already guards
@@ -174,7 +178,8 @@ class Featureset(ContextAware):
             df_part = df_part.to_frame()
         elif isinstance(df_part, pd.Index):
             df_part = pd.DataFrame(index=df_part)
-        df_part.columns = range(len(df_part.columns))
+        if list(df_part.columns) == [str(i) for i in range(len(df_part.columns))]:
+            df_part.columns = range(len(df_part.columns))
         return df_part
 
     def filter(self):

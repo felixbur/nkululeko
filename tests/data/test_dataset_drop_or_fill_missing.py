@@ -5,8 +5,16 @@ missing an auto-probed demographic column (age/gender/speaker) -- not just
 a missing target -- was silently dropped. A source database lacking a
 demographic scheme entirely therefore lost every one of its rows, with no
 row count logged and no warning. Only the target should require a
-non-null value; other columns get the literal string "na" instead of
-dropping the row, and both the drop and the fill are logged.
+non-null value; other columns keep their real NaN and the drop is logged.
+
+An earlier version of this fix (GH #456) filled other columns with the
+literal string "na" instead of leaving them NaN, to make missing data
+visible. GH #461 found that this broke on Categorical-dtype scheme
+columns (fillna raises if "na" isn't already a category), silently
+converted numeric columns to object dtype, and made every missing
+speaker collapse into one fake "na" speaker for speaker-based splitting
+and limit_samples_per_speaker. Reverted to real NaN, which needs no
+special-casing by any downstream consumer.
 """
 
 from unittest.mock import MagicMock
@@ -44,15 +52,16 @@ class TestDropOrFillMissing:
         out = ds._drop_or_fill_missing(df)
         assert out.shape[0] == 3
 
-    def test_missing_demographic_values_filled_with_na_string(self):
+    def test_missing_demographic_values_stay_real_nan(self):
         ds = _make_dataset("emotion")
         df = pd.DataFrame(
             {"emotion": ["happy", "sad"], "gender": ["male", None]}
         )
         out = ds._drop_or_fill_missing(df)
-        assert out["gender"].tolist() == ["male", "na"]
+        assert out["gender"].iloc[0] == "male"
+        assert pd.isna(out["gender"].iloc[1])
 
-    def test_drop_and_fill_are_logged(self):
+    def test_drop_and_remaining_nans_are_logged(self):
         ds = _make_dataset("emotion")
         df = pd.DataFrame(
             {"emotion": ["happy", None, "sad"], "gender": ["male", "female", None]}
@@ -60,7 +69,7 @@ class TestDropOrFillMissing:
         ds._drop_or_fill_missing(df)
         debug_calls = [c.args[0] for c in ds.util.debug.call_args_list]
         assert any("dropped" in m and "missing target" in m for m in debug_calls)
-        assert any("filled missing values" in m for m in debug_calls)
+        assert any("missing (NaN) values kept in" in m for m in debug_calls)
 
     def test_no_missing_values_is_a_noop(self):
         ds = _make_dataset("emotion")
