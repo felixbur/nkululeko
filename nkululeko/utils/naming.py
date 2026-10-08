@@ -1,5 +1,6 @@
 # naming.py - mixin for experiment/model naming helpers
 import ast
+import hashlib
 import os
 import re
 
@@ -28,6 +29,29 @@ ACTIVATION_MODEL_TYPES = frozenset({"mlp", "mlp_reg"})
 # Types that implement domain-adversarial training (MODEL.dann_columns);
 # every other type ignores the dann_* keys.
 DANN_MODEL_TYPES = frozenset({"aasist", "mlp", "mlp_reg", "cnn", "adm"})
+
+
+
+def parse_dann_columns(raw):
+    """Parse MODEL.dann_columns (an INI string such as "['source_db']", or
+    an already parsed list) into a list of column names; "" and "[]" mean
+    DANN off. Raises ValueError if the value is not a list of names."""
+    if isinstance(raw, str):
+        raw = raw.strip()
+        if not raw or raw.lower() in ("false", "none"):
+            return []
+        try:
+            raw = ast.literal_eval(raw)
+        except (ValueError, SyntaxError) as e:
+            raise ValueError(f"cannot parse dann_columns {raw!r}") from e
+    if isinstance(raw, str):
+        raw = [raw]
+    if not isinstance(raw, (list, tuple)) or not all(
+        isinstance(c, str) for c in raw
+    ):
+        raise ValueError(f"dann_columns must be a list of column names: {raw!r}")
+    return list(raw)
+
 
 # Maps a MODEL.<key> naming option to the MODEL.type values it's actually
 # read by, so result filenames only mention parameters the chosen model
@@ -176,27 +200,32 @@ class NamingMixin:
         Non-default lambda/weight/reverse are appended."""
         if self.get_model_type() not in DANN_MODEL_TYPES:
             return ""
-        columns = self.config_val("MODEL", "dann_columns", False)
-        if not columns:
-            return ""
+        raw = self.config_val("MODEL", "dann_columns", "[]")
         try:
-            columns = ast.literal_eval(columns)
-        except (ValueError, SyntaxError):
-            return ""
+            columns = parse_dann_columns(raw)
+        except ValueError:
+            self.error(
+                f"MODEL.dann_columns = {raw} is not a list of column names; "
+                "write it like ['source_db', 'language']"
+            )
         if not columns:
             return ""
-        if isinstance(columns, str):
-            columns = [columns]
-        suffix = "_dann-" + "+".join(str(c) for c in columns)
+        # Path-safe, and unambiguous: ['a+b'] and ['a', 'b'] must not share
+        # a name, so if sanitizing changed any name, add a hash of the list.
+        safe = [self.safe_filename_component(c) for c in columns]
+        suffix = "_dann-" + "+".join(safe)
+        if safe != columns or any("+" in c for c in columns):
+            digest = hashlib.sha1(repr(columns).encode()).hexdigest()[:6]
+            suffix += f"-{digest}"
         lambda_ = str(self.config_val("MODEL", "dann_lambda", "1.0"))
         weight = str(self.config_val("MODEL", "dann_weight", "1.0"))
         if float(lambda_) != 1.0:
-            suffix += f"-l{lambda_}"
+            suffix += f"-l{lambda_.replace('.', '-')}"
         if float(weight) != 1.0:
-            suffix += f"-w{weight}"
+            suffix += f"-w{weight.replace('.', '-')}"
         if not self.config_val_bool("MODEL", "dann_reverse", True):
             suffix += "-noreverse"
-        return suffix.replace(".", "-")
+        return suffix
 
     def _get_aug_suffix(self):
         """Return augmentation suffix if [AUGMENT] augment is configured."""

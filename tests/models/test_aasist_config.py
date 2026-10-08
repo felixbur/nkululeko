@@ -99,3 +99,17 @@ class TestDannConfig:
         assert dann.lambda_ == 0.5
         assert dann.weight == 2.0
         assert dann.reverse is False
+
+    def test_unquoted_columns_is_a_clean_error(self, tmp_path):
+        from nkululeko.utils.errors import NkululukoError
+
+        util = make_util(tmp_path, model_section={"dann_columns": "source_db"})
+        with pytest.raises(NkululukoError, match="dann_columns"):
+            AasistConfig.from_util(util)
+
+    def test_bare_list_of_non_strings_is_an_error(self, tmp_path):
+        from nkululeko.utils.errors import NkululukoError
+
+        util = make_util(tmp_path, model_section={"dann_columns": "[1, 2]"})
+        with pytest.raises(NkululukoError, match="dann_columns"):
+            AasistConfig.from_util(util)

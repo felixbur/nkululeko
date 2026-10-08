@@ -1,6 +1,5 @@
 # model_mlp.py
 import ast
-import itertools
 from collections import OrderedDict
 
 import numpy as np
@@ -8,7 +7,6 @@ import pandas as pd
 import torch
 from sklearn.metrics import recall_score
 
-from nkululeko.models.domain_adversarial import DannConfig, DannHeads
 from nkululeko.models.model import Model
 from nkululeko.optimizers import get_optimizer
 from nkululeko.reporting.reporter import Reporter
@@ -18,8 +16,6 @@ class MLPModel(Model):
     """MLP = multi layer perceptron."""
 
     is_classifier = True
-    supports_dann = True
-    dann_heads = None  # DannHeads when MODEL.dann_columns is set
 
     def __init__(self, df_train, df_test, feats_train, feats_test, context=None):
         """Constructor, taking all dataframes.
@@ -72,18 +68,8 @@ class MLPModel(Model):
         ).to(self.device)
 
         # domain-adversarial heads on the last hidden layer (MODEL.dann_columns)
-        self.dann_heads = DannHeads.build(
-            df_train,
-            self.model.feat_dim,
-            DannConfig.from_util(self.util),
-            self.util,
-            self.device,
-        )
-        params = (
-            itertools.chain(self.model.parameters(), self.dann_heads.parameters())
-            if self.dann_heads is not None
-            else self.model.parameters()
-        )
+        self._init_dann(df_train, self.model.feat_dim)
+        params = self._dann_params(self.model)
 
         # set up optimizer
         self.optimizer, self.learning_rate = get_optimizer(
@@ -104,11 +90,7 @@ class MLPModel(Model):
             feats_train,
             df_train,
             True,
-            domain_labels=(
-                self.dann_heads.encode(df_train)
-                if self.dann_heads is not None
-                else None
-            ),
+            domain_labels=self._domain_labels(df_train),
         )
         self.testloader = self.get_loader(feats_test, df_test, False)
 

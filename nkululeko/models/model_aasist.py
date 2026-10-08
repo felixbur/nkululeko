@@ -14,7 +14,6 @@ identically to how it does for model_adm.py -- the model this is meant
 to be directly comparable against.
 """
 
-import itertools
 import warnings
 
 import audresample
@@ -26,7 +25,6 @@ from sklearn.utils.class_weight import compute_class_weight
 from torch.utils.data import DataLoader, Dataset
 
 from nkululeko.models.aasist_config import AasistConfig
-from nkululeko.models.domain_adversarial import DannHeads
 from nkululeko.models.model import Model
 from nkululeko.models.model_aasist_core import AasistBackend
 from nkululeko.optimizers import (
@@ -113,8 +111,6 @@ class AasistModel(Model):
     """AASIST = spectro-temporal graph attention network for deepfake detection."""
 
     is_classifier = True
-    supports_dann = True
-    dann_heads = None  # DannHeads when MODEL.dann_columns is set
 
     def __init__(self, df_train, df_test, feats_train, feats_test, context=None):
         super().__init__(df_train, df_test, feats_train, feats_test, context=context)
@@ -153,15 +149,8 @@ class AasistModel(Model):
         ).to(self.device)
 
         self._build_criterion(df_train)
-        self.dann_heads = DannHeads.build(
-            df_train, self.net.feat_dim, self.cfg.dann, self.util, self.device
-        )
-
-        params = (
-            itertools.chain(self.net.parameters(), self.dann_heads.parameters())
-            if self.dann_heads is not None
-            else self.net.parameters()
-        )
+        self._init_dann(df_train, self.net.feat_dim, self.cfg.dann)
+        params = self._dann_params(self.net)
         self.optimizer, self.learning_rate = get_optimizer(
             params, self.util, default_lr=1e-5, default_optimizer="adam"
         )
@@ -206,9 +195,7 @@ class AasistModel(Model):
             df,
             self.target,
             self.cfg,
-            domain_labels=(
-                self.dann_heads.encode(df) if train and self.dann_heads is not None else None
-            ),
+            domain_labels=self._domain_labels(df) if train else None,
         )
         # Each __getitem__ does its own audiofile.read() -- CPU-bound work
         # that a single-process loader (num_workers=0) serializes with GPU

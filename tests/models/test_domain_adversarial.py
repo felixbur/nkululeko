@@ -71,21 +71,22 @@ class TestDomainAdversarialHead:
 
     def test_reverse_false_is_plain_multitask_head(self):
         head = DomainAdversarialHead(feat_dim=8, num_classes=3, reverse=False)
-        assert isinstance(head.grl, nn.Identity)
-
         feats = torch.randn(2, 8, requires_grad=True)
-        head(feats).sum().backward()  # must run without error, no reversal involved
+        head(feats).sum().backward()  # must run without error
 
-        # lambda_ has no meaning without a GRL -- setter is a no-op, getter is fixed at 1.0.
-        head.lambda_ = 99.0
-        assert head.lambda_ == 1.0
-
-    def test_lambda_property_reads_through_to_grl(self):
-        head = DomainAdversarialHead(feat_dim=4, num_classes=2, reverse=True, lambda_=0.3)
-        assert head.lambda_ == pytest.approx(0.3)
-
-        head.lambda_ = 0.7
-        assert head.grl.lambda_ == pytest.approx(0.7)
+        # The gradient reaches the features unreversed, whatever lambda_ is.
+        head2 = DomainAdversarialHead(
+            feat_dim=8, num_classes=3, reverse=False, lambda_=5.0
+        )
+        head2.classifier.load_state_dict(head.classifier.state_dict())
+        feats2 = feats.detach().clone().requires_grad_(True)
+        head2(feats2).sum().backward()
+        assert torch.allclose(feats.grad, feats2.grad)
+        reversed_head = DomainAdversarialHead(feat_dim=8, num_classes=3, reverse=True)
+        reversed_head.classifier.load_state_dict(head.classifier.state_dict())
+        feats3 = feats.detach().clone().requires_grad_(True)
+        reversed_head(feats3).sum().backward()
+        assert torch.allclose(feats.grad, -feats3.grad, atol=1e-6)
 
     def test_gradient_scales_with_lambda(self):
         head = DomainAdversarialHead(feat_dim=6, num_classes=2, reverse=True, lambda_=2.0)
@@ -134,6 +135,13 @@ class TestDannHeads:
         assert encoded.shape == (4, 2)
         assert encoded[:, 0].tolist() == [0, 0, 1, 2]
         assert encoded[:, 1].tolist() == [0, 1, 0, 1]
+
+    def test_mixed_type_column_values_do_not_break_ordering(self):
+        # e.g. a numeric column in which a missing value was filled with "na"
+        df = pd.DataFrame({"age_group": [1, 2, "na", 1]})
+        heads = DannHeads.build(df, 8, _cfg(["age_group"]), _Util())
+        assert heads.encode(df).shape == (4, 1)
+        assert len(heads.label_maps["age_group"]) == 3
 
     def test_missing_column_is_an_error(self):
         with pytest.raises(RuntimeError, match="not a column"):
