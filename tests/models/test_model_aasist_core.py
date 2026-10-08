@@ -239,6 +239,21 @@ class TestAasistBackendForward:
         assert logits.shape == (3, 2)
         assert torch.all(torch.isfinite(logits))
 
+    def test_forward_can_also_return_pooled_features(self, monkeypatch):
+        tiny = _tiny_wav2vec2(hidden_size=32)
+        monkeypatch.setattr(Wav2Vec2Model, "from_pretrained", lambda *a, **k: tiny)
+
+        backend = core.AasistBackend("dummy/checkpoint")
+        backend.eval()
+
+        x = torch.randn(3, 16000)
+        with torch.no_grad():
+            logits, feats = backend(x, return_features=True)
+            plain = backend(x)
+
+        assert feats.shape == (3, backend.feat_dim)
+        assert torch.equal(logits, plain)
+
     def test_forward_handles_trailing_channel_dim_input(self, monkeypatch):
         tiny = _tiny_wav2vec2(hidden_size=32)
         monkeypatch.setattr(Wav2Vec2Model, "from_pretrained", lambda *a, **k: tiny)
