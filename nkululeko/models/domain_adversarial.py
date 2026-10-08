@@ -12,17 +12,17 @@ the adversarial head *cannot* use to guess the nuisance label -- i.e.
 invariant to it -- while the main classification head still trains
 normally on top of the same features.
 
-Nothing here depends on AASIST's architecture: DomainAdversarialHead
+Nothing here depends on a particular architecture: DomainAdversarialHead
 only needs a pooled feature vector of known width from whatever backbone
-produces one (AasistBackend.forward(..., return_features=True)'s
-last_hidden; ADM's DeepfakeADMModel could attach the same head to its
-own fused representation before its final layer). Two independent heads
+produces one. DannConfig and DannHeads bundle the shared [MODEL] keys and
+the per-column heads, so a model only has to expose its feature vector
+and add DannHeads.loss() to its task loss (AasistModel and MLPModel do). Two independent heads
 with two independent nuisance labels (e.g. source_db for cross-dataset
 invariance, language for cross-lingual invariance) can be attached to
 the same feature vector simultaneously -- that combination is this
 project's "two-axis DANN" -- by constructing two DomainAdversarialHead
 instances and summing their losses into the main task loss (see
-AasistModel.train()'s DANN branch).
+AasistModel._forward_loss()).
 
 Setting reverse=False turns this into a plain multitask auxiliary head
 (gradients flow normally, no reversal) -- an ablation some studies find
@@ -31,6 +31,9 @@ et al. 2026, arXiv:2607.23961), available here via the same class
 without a separate implementation.
 """
 
+import dataclasses
+
+import numpy as np
 import torch
 import torch.nn as nn
 
@@ -81,7 +84,7 @@ class DomainAdversarialHead(nn.Module):
         self.grl = GradientReversalLayer(lambda_) if reverse else nn.Identity()
         self.classifier = nn.Sequential(
             nn.Linear(feat_dim, hidden_dim),
-            nn.ReLU(inplace=True),
+            nn.ReLU(),
             nn.Linear(hidden_dim, num_classes),
         )
 
@@ -96,3 +99,93 @@ class DomainAdversarialHead(nn.Module):
 
     def forward(self, features):
         return self.classifier(self.grl(features))
+
+
+@dataclasses.dataclass
+class DannConfig:
+    """The shared [MODEL] dann_* keys (read the same way for every model)."""
+
+    columns: list
+    lambda_: float
+    weight: float
+    reverse: bool
+
+    @classmethod
+    def from_util(cls, util) -> "DannConfig":
+        return cls(
+            columns=util.config_val_list("MODEL", "dann_columns", []),
+            lambda_=float(util.config_val("MODEL", "dann_lambda", "1.0")),
+            weight=float(util.config_val("MODEL", "dann_weight", "1.0")),
+            reverse=util.config_val_bool("MODEL", "dann_reverse", True),
+        )
+
+
+class DannHeads(nn.Module):
+    """One DomainAdversarialHead per configured column, plus the mapping
+    from raw column values to class indices (built from the training data).
+
+    Use DannHeads.build(), which returns None when DANN is off.
+    """
+
+    def __init__(self, df_train, feat_dim, cfg: DannConfig, util):
+        super().__init__()
+        self.columns = list(cfg.columns)
+        self.weight = cfg.weight
+        self.label_maps = {}
+        heads = {}
+        for col in self.columns:
+            if col not in df_train.columns:
+                util.error(
+                    f"MODEL.dann_columns includes '{col}', which is not a "
+                    "column of the training data"
+                )
+            if df_train[col].isna().any():
+                util.error(
+                    f"MODEL.dann_columns column '{col}' has missing values "
+                    "in the training data"
+                )
+            values = sorted(df_train[col].unique().tolist())
+            if len(values) < 2:
+                util.error(
+                    f"MODEL.dann_columns includes '{col}', but the training "
+                    f"data has {len(values)} distinct value(s) for it; DANN "
+                    "needs at least 2 to discriminate between"
+                )
+            self.label_maps[col] = {v: i for i, v in enumerate(values)}
+            heads[col] = DomainAdversarialHead(
+                feat_dim=feat_dim,
+                num_classes=len(values),
+                reverse=cfg.reverse,
+                lambda_=cfg.lambda_,
+            )
+        self.heads = nn.ModuleDict(heads)
+        util.debug(
+            f"DANN heads for {self.columns} (reverse={cfg.reverse}, "
+            f"lambda={cfg.lambda_}, weight={cfg.weight})"
+        )
+
+    @classmethod
+    def build(cls, df_train, feat_dim, cfg: DannConfig, util):
+        """Return DannHeads, or None if cfg.columns is empty (DANN off)."""
+        if not cfg.columns:
+            return None
+        return cls(df_train, feat_dim, cfg, util)
+
+    def encode(self, df) -> np.ndarray:
+        """Class indices of every row, shape (len(df), len(columns))."""
+        return np.stack(
+            [df[col].map(self.label_maps[col]).to_numpy() for col in self.columns],
+            axis=1,
+        ).astype(np.int64)
+
+    def loss(self, features, domain_labels):
+        """Sum of the weighted domain cross-entropies, one per column.
+
+        `domain_labels` is a (batch, len(columns)) long tensor from encode().
+        """
+        total = 0.0
+        for i, col in enumerate(self.columns):
+            total = total + self.weight * nn.functional.cross_entropy(
+                self.heads[col](features), domain_labels[:, i]
+            )
+        return total

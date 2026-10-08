@@ -78,11 +78,11 @@ class TestOverrides:
 
 class TestDannConfig:
     def test_defaults_are_off(self, tmp_path):
-        cfg = AasistConfig.from_util(make_util(tmp_path))
-        assert cfg.dann_columns == []
-        assert cfg.dann_lambda == 1.0
-        assert cfg.dann_weight == 1.0
-        assert cfg.dann_reverse is True
+        dann = AasistConfig.from_util(make_util(tmp_path)).dann
+        assert dann.columns == []
+        assert dann.lambda_ == 1.0
+        assert dann.weight == 1.0
+        assert dann.reverse is True
 
     def test_reads_values_from_model_section(self, tmp_path):
         util = make_util(
@@ -94,8 +94,8 @@ class TestDannConfig:
                 "dann_reverse": "False",
             },
         )
-        cfg = AasistConfig.from_util(util)
-        assert cfg.dann_columns == ["source_db", "language"]
-        assert cfg.dann_lambda == 0.5
-        assert cfg.dann_weight == 2.0
-        assert cfg.dann_reverse is False
+        dann = AasistConfig.from_util(util).dann
+        assert dann.columns == ["source_db", "language"]
+        assert dann.lambda_ == 0.5
+        assert dann.weight == 2.0
+        assert dann.reverse is False

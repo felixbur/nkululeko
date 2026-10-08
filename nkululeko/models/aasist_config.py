@@ -10,6 +10,8 @@ reads them, for direct comparability between the two model types.
 
 import dataclasses
 
+from nkululeko.models.domain_adversarial import DannConfig
+
 
 @dataclasses.dataclass
 class AasistConfig:
@@ -21,10 +23,7 @@ class AasistConfig:
     batch_size: int
     ssl_layer_pooling: str
     freeze_ssl_frontend: bool
-    dann_columns: list
-    dann_lambda: float
-    dann_weight: float
-    dann_reverse: bool
+    dann: DannConfig
 
     @classmethod
     def from_util(cls, util) -> "AasistConfig":
@@ -80,14 +79,8 @@ class AasistConfig:
             "AASIST", "freeze_ssl_frontend", False
         )
 
-        # dann_columns: dataframe columns holding a nuisance label (e.g.
-        # source_db for the dataset, language) to attach a
-        # DomainAdversarialHead to; empty (default) turns DANN off. Read
-        # from [MODEL] like the other shared training keys.
-        dann_columns = util.config_val_list("MODEL", "dann_columns", [])
-        dann_lambda = float(util.config_val("MODEL", "dann_lambda", "1.0"))
-        dann_weight = float(util.config_val("MODEL", "dann_weight", "1.0"))
-        dann_reverse = util.config_val_bool("MODEL", "dann_reverse", True)
+        # Domain-adversarial training keys, shared with other models.
+        dann = DannConfig.from_util(util)
 
         return cls(
             device=device,
@@ -96,8 +89,5 @@ class AasistConfig:
             batch_size=batch_size,
             ssl_layer_pooling=ssl_layer_pooling,
             freeze_ssl_frontend=freeze_ssl_frontend,
-            dann_columns=dann_columns,
-            dann_lambda=dann_lambda,
-            dann_weight=dann_weight,
-            dann_reverse=dann_reverse,
+            dann=dann,
         )

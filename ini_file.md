@@ -535,6 +535,23 @@ Model and training specifications. In general, default values should work for cl
   * if not set, this falls back to `[EXP] save`, so a config that only sets `[EXP] save = False` no longer stores every epoch
   * *False* does not mean zero model files: the single best checkpoint (by dev/test score) is still kept, because later steps (`traindevtest`, ONNX export, `save_test`, SHAP, per-database test evaluation) reload it from disk. Older, worse epochs are deleted as soon as a better one is found. With `only_test = True` nothing is deleted, as the models are reused from disk.
 
+#### Domain-adversarial training (DANN)
+
+Available for `type = aasist` and `type = mlp` (other model types ignore it and log a warning). Meant for cross-corpus or cross-lingual setups where the model should not rely on which database or language a clip comes from (Ganin & Lempitsky 2015). One small classifier head is attached per listed column, reading the model's last hidden features (AASIST: its pooled readout; MLP: the last hidden layer). A gradient-reversal layer trains the shared features to make that head fail, while the main head trains as usual.
+
+* **dann_columns**: dataframe columns that hold the label to become invariant to
+  * dann_columns = ['source_db']
+  * default: [] (DANN off)
+  * `source_db` is the database a row came from (added automatically); any other column of the training data works too, e.g. `language`. List several to attach several heads. Each column needs at least 2 distinct values and no missing values in the training split. The heads are used only for training; they are not applied to dev/test data and are not saved with the model
+* **dann_lambda**: strength of the gradient reversal
+  * dann_lambda = 1.0
+* **dann_weight**: weight of each domain loss relative to the task loss
+  * dann_weight = 1.0
+* **dann_reverse**: if `False`, the gradient is not reversed, so the heads become ordinary auxiliary classifiers that encourage the features to carry the domain information (useful as an ablation)
+  * dann_reverse = True
+
+Examples: [exp_emodb_aasist_dann.ini](https://github.com/felixbur/nkululeko/blob/main/examples/exp_emodb_aasist_dann.ini) and [exp_emodb_mlp_dann.ini](https://github.com/felixbur/nkululeko/blob/main/examples/exp_emodb_mlp_dann.ini).
+
 ### FINETUNE
 
 Settings specific to `[MODEL] type = finetune` - finetuning a pretrained transformer (wav2vec2, WavLM, HuBERT, emotion2vec) end-to-end instead of using it as a fixed feature extractor. Only read when `[MODEL] type = finetune`; every key below is optional and has a default. See [finetune.md](https://github.com/felixbur/nkululeko/blob/main/docs/source/finetune.md) for a full walkthrough and worked examples.
@@ -624,21 +641,6 @@ Settings specific to `[MODEL] type = aasist` - AASIST (spectro-temporal graph at
   * freeze_ssl_frontend = True
   * default: False
   * PyTorch's autograd then builds no backward graph through the pretrained frontend at all (not just skipping its weight update), so training is considerably faster. With `ssl_layer_pooling = weighted` the learned layer weights are not frozen: they are new parameters of the pooling step, not pretrained weights. The frontend's forward pass is still computed for every batch in every epoch; its output is not cached
-
-Domain-adversarial training (DANN, Ganin & Lempitsky 2015) is available for `aasist`, with its keys in the shared `[MODEL]` section. It is meant for cross-corpus or cross-lingual setups where the model should not rely on which database or language a clip comes from. One small classifier head is attached per listed column, and the shared features are trained to make it fail:
-
-* **dann_columns**: dataframe columns that hold the label to become invariant to
-  * dann_columns = ['source_db']
-  * default: [] (DANN off)
-  * `source_db` is the database a row came from (added automatically); any other column of the training data works too, e.g. `language`. List several to attach several heads. Each column needs at least 2 distinct values and no missing values in the training split. The heads are used only for training; they are not applied to dev/test data and are not saved with the model
-* **dann_lambda**: strength of the gradient reversal
-  * dann_lambda = 1.0
-* **dann_weight**: weight of each domain loss relative to the task loss
-  * dann_weight = 1.0
-* **dann_reverse**: if `False`, the gradient is not reversed, so the heads become ordinary auxiliary classifiers that encourage the features to carry the domain information (useful as an ablation)
-  * dann_reverse = True
-
-See [examples/exp_emodb_aasist_dann.ini](https://github.com/felixbur/nkululeko/blob/main/examples/exp_emodb_aasist_dann.ini).
 
 ### EXPL
 

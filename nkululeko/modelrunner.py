@@ -20,6 +20,8 @@ from nkululeko.utils.util import Util
 CLASSIFIER_TYPES = frozenset(
     {"svm", "xgb", "bayes", "gmm", "knn", "tree", "cnn", "mlp", "adm", "aasist"}
 )
+# Model types that implement domain-adversarial training (MODEL.dann_columns)
+DANN_MODEL_TYPES = frozenset({"aasist", "mlp"})
 # Model types that only support regression
 REGRESSOR_TYPES = frozenset({"svr", "xgr", "knn_reg", "lin_reg", "tree_reg", "mlp_reg"})
 
@@ -346,6 +348,14 @@ class Modelrunner(ContextAware):
         # Validate model/experiment type compatibility before instantiation
         task = "classification" if self.util.exp_is_classification() else "regression"
         validate_model_task_support(model_type, task)
+        if model_type not in DANN_MODEL_TYPES and self.util.config_val_list(
+            "MODEL", "dann_columns", []
+        ):
+            self.util.warn(
+                f"MODEL.dann_columns is set, but model type '{model_type}' does "
+                f"not support domain-adversarial training; it is ignored "
+                f"(supported: {', '.join(sorted(DANN_MODEL_TYPES))})"
+            )
 
         if model_type == "svm":
             from nkululeko.models.model_svm import SVM_model
