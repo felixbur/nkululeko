@@ -59,6 +59,14 @@ class DataFrameMixin:
 
         Uses the labels and bins from the ini if present.
 
+        Missing (NaN) values are preserved as missing in the output,
+        rather than being silently assigned a bin: with the default,
+        data-derived bins, a plain np.quantile() on a series containing
+        NaN returns NaN cut points, which would corrupt the whole
+        column's bin assignment, not just the missing rows (GH #461,
+        now that an attribute column can legitimately contain NaN
+        instead of every row with a missing value being dropped).
+
         :param series: a pandas series
         :return a pandas series with discretized values as categories
         """
@@ -66,14 +74,16 @@ class DataFrameMixin:
             bins = ast.literal_eval(self.config["DATA"]["bins"])
             labels = ast.literal_eval(self.config["DATA"]["labels"])
         except KeyError:
-            b1 = np.quantile(series, 0.33)
-            b2 = np.quantile(series, 0.66)
+            b1 = np.nanquantile(series, 0.33)
+            b2 = np.nanquantile(series, 0.66)
             bins = [-1000000, b1, b2, 1000000]
             labels = ["0_low", "1_middle", "2_high"]
+        is_missing = pd.isna(series)
         result = np.digitize(series, bins) - 1
-        result = pd.Series(result)
+        result = pd.Series(result, index=getattr(series, "index", None)).astype("object")
         for i, lab in enumerate(labels):
             result = result.replace(i, str(lab))
+        result[is_missing] = np.nan
         return result.astype("category")
 
     def _bin_distributions(self, truths, preds):
@@ -141,7 +151,17 @@ class DataFrameMixin:
         result = {}
         for category in df[categorical_column].unique():
             mask = df[categorical_column] == category
-            result[category] = df.loc[mask, value_column].tolist()
+            # Drop missing values (GH #461: value_column can now legitimately
+            # contain NaN instead of every such row being dropped earlier) --
+            # check_na() (utils/stats.py), used downstream by the
+            # significance tests this dict feeds, calls a.size and does
+            # boolean-array assignment, neither of which a plain Python list
+            # (what .tolist() returns) supports, so a NaN reaching it as a
+            # list element crashed with AttributeError rather than being
+            # handled. Excluding missing values here is also the
+            # statistically correct choice for a distribution comparison,
+            # rather than silently coercing them to 0.
+            result[category] = df.loc[mask, value_column].dropna().tolist()
 
         mean_values_per_category = (
             sum(len(v) for v in result.values()) / len(result) if result else 0.0

@@ -129,6 +129,27 @@ class TestLimitSpeakers:
         result = f.limit_speakers()
         assert len(result) == len(speaker_df)
 
+    def test_rows_with_no_speaker_id_are_kept_unfiltered(self):
+        """Regression for GH #461: Series.eq(nan) never matches, so every
+        per-speaker group for the NaN "speaker" came back empty and those
+        rows were silently dropped entirely, instead of just not being
+        subject to a per-speaker cap."""
+        df = pd.DataFrame(
+            {
+                "emotion": ["happy", "sad", "angry", "happy", "sad"],
+                "speaker": ["s1", "s1", "s1", None, None],
+            }
+        )
+        df.is_labeled = True
+        df.got_gender = False
+        df.got_speaker = True
+        glob_conf.config["DATA"]["limit_samples_per_speaker"] = "1"
+        f = DataFilter(df)
+        result = f.limit_speakers()
+        # s1 capped to 1 sample; the 2 no-speaker rows pass through untouched.
+        assert len(result) == 3
+        assert result["speaker"].isna().sum() == 2
+
 
 class TestFilterValue:
     def test_no_filter_returns_unchanged(self, simple_df):

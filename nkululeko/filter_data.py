@@ -52,13 +52,26 @@ class DataFilter:
                 data_name, "limit_samples_per_speaker", False
             )
         if max:
+            # Rows with no speaker id (GH #461) can't be grouped by speaker
+            # at all -- Series.eq(nan) never matches, so every s_df for the
+            # NaN "speaker" came back empty and those rows were silently
+            # dropped from the result. Keep them unfiltered instead.
+            no_speaker = self.df.speaker.isna()
+            if no_speaker.any():
+                self.util.debug(
+                    f"{data_name}: {no_speaker.sum()} samples have no speaker "
+                    "id; keeping them unfiltered (limit_samples_per_speaker "
+                    "needs a real speaker id to group by)"
+                )
+            known = self.df[~no_speaker]
             df = pd.DataFrame()
-            for s in self.df.speaker.unique():
-                s_df = self.df[self.df["speaker"].eq(s)]
+            for s in known.speaker.unique():
+                s_df = known[known["speaker"].eq(s)]
                 if s_df.shape[0] < int(max):
                     df = pd.concat([df, s_df])
                 else:
                     df = pd.concat([df, s_df.sample(int(max))])
+            df = pd.concat([df, self.df[no_speaker]])
             self.util.debug(
                 f"{data_name}: limited samples to {max} per speaker, reduced"
                 f" samples from {self.df.shape[0]} to {df.shape[0]}"

@@ -137,7 +137,7 @@ class TestDannHeads:
         assert encoded[:, 1].tolist() == [0, 1, 0, 1]
 
     def test_mixed_type_column_values_do_not_break_ordering(self):
-        # e.g. a numeric column in which a missing value was filled with "na"
+        # e.g. a column mixing numbers and strings
         df = pd.DataFrame({"age_group": [1, 2, "na", 1]})
         heads = DannHeads.build(df, 8, _cfg(["age_group"]), _Util())
         assert heads.encode(df).shape == (4, 1)
