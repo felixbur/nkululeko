@@ -151,7 +151,17 @@ class DataFrameMixin:
         result = {}
         for category in df[categorical_column].unique():
             mask = df[categorical_column] == category
-            result[category] = df.loc[mask, value_column].tolist()
+            # Drop missing values (GH #461: value_column can now legitimately
+            # contain NaN instead of every such row being dropped earlier) --
+            # check_na() (utils/stats.py), used downstream by the
+            # significance tests this dict feeds, calls a.size and does
+            # boolean-array assignment, neither of which a plain Python list
+            # (what .tolist() returns) supports, so a NaN reaching it as a
+            # list element crashed with AttributeError rather than being
+            # handled. Excluding missing values here is also the
+            # statistically correct choice for a distribution comparison,
+            # rather than silently coercing them to 0.
+            result[category] = df.loc[mask, value_column].dropna().tolist()
 
         mean_values_per_category = (
             sum(len(v) for v in result.values()) / len(result) if result else 0.0

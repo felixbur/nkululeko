@@ -190,6 +190,25 @@ class TestDataFrameMixin(unittest.TestCase):
         self.assertEqual(len(result["happy"]), 2)
         self.assertAlmostEqual(mean_count, 1.5)
 
+    def test_df_to_categorical_dict_drops_missing_values(self):
+        """Review on #466: value_column can now legitimately contain NaN
+        (GH #461 -- an attribute column's missing rows are no longer
+        dropped). The downstream significance tests' check_na()
+        (utils/stats.py) crashes with AttributeError on a plain Python
+        list containing NaN (it calls a.size and does boolean-array
+        assignment, neither of which a list supports), so missing values
+        must be excluded here rather than passed through."""
+        u = make_util()
+        df = pd.DataFrame(
+            {
+                "emotion": ["happy", "sad", "happy", "happy"],
+                "score": [0.8, 0.6, np.nan, 0.9],
+            }
+        )
+        result, mean_count = u.df_to_categorical_dict(df, "emotion", "score")
+        self.assertEqual(result["happy"], [0.8, 0.9])
+        self.assertNotIn(np.nan, result["happy"])
+
     # --- is_dict_with_string_values ---
 
     def test_is_dict_with_string_values_true(self):
