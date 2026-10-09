@@ -12,6 +12,7 @@ from nkululeko.experiment_context import (
     use_context,
 )
 from nkululeko.reporting.reporter import Reporter
+from nkululeko.utils.naming import DANN_MODEL_TYPES
 from nkululeko.utils.util import Util
 
 # Fallback type-based heuristics used when a model instance is not yet available
@@ -340,12 +341,35 @@ class Modelrunner(ContextAware):
             self.util.debug(f"new test size: {self.df_test.shape}")
 
     def _select_model(self, model_type):
+        if (
+            model_type in DANN_MODEL_TYPES
+            and self.util.get_dann_columns()
+            and self._feature_balancing_method()
+        ):
+            # Feature balancing rebuilds df_train with only the target column
+            # (and synthetic rows have no domain), so there is nothing for
+            # the DANN heads to learn from.
+            self.util.error(
+                "MODEL.dann_columns cannot be combined with FEATS.balancing: "
+                "balancing drops the domain columns (and oversampling methods "
+                "such as smote create rows without a domain). Disable one of them."
+            )
         self._check_balancing()
         self._check_feature_balancing()
 
         # Validate model/experiment type compatibility before instantiation
         task = "classification" if self.util.exp_is_classification() else "regression"
         validate_model_task_support(model_type, task)
+        # Unsupported types ignore the key, so only check that it's set
+        # (a malformed value is not an error for them).
+        if model_type not in DANN_MODEL_TYPES and str(
+            self.util.config_val("MODEL", "dann_columns", "")
+        ).strip() not in ("", "[]"):
+            self.util.warn(
+                f"MODEL.dann_columns is set, but model type '{model_type}' does "
+                f"not support domain-adversarial training; it is ignored "
+                f"(supported: {', '.join(sorted(DANN_MODEL_TYPES))})"
+            )
 
         if model_type == "svm":
             from nkululeko.models.model_svm import SVM_model
@@ -457,9 +481,20 @@ class Modelrunner(ContextAware):
         validate_model_task_support(model_type, task, model=self.model)
         return self.model
 
+    def _feature_balancing_method(self):
+        """FEATS.balancing as an algorithm name, or None when it is off.
+
+        config_val returns the raw INI string, so an explicit 'False' (or
+        'none', or an empty value) must not count as an algorithm.
+        """
+        balancing = self.util.config_val("FEATS", "balancing", False)
+        if not balancing or str(balancing).strip().lower() in ("", "false", "none"):
+            return None
+        return balancing
+
     def _check_feature_balancing(self):
         """Check and apply feature balancing using the dedicated DataBalancer class."""
-        balancing = self.util.config_val("FEATS", "balancing", False)
+        balancing = self._feature_balancing_method()
         if balancing:
             self.util.debug("Applying feature balancing using DataBalancer")
 

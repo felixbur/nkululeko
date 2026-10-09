@@ -1,5 +1,6 @@
 # naming.py - mixin for experiment/model naming helpers
 import ast
+import hashlib
 import os
 import re
 
@@ -25,6 +26,35 @@ DROPOUT_MODEL_TYPES = frozenset({"cnn", "mlp", "mlp_reg", "finetune"})
 # ANN types with a configurable hidden-layer activation function. cnn, adm
 # and finetune don't expose MODEL.activation.
 ACTIVATION_MODEL_TYPES = frozenset({"mlp", "mlp_reg"})
+# Types that implement domain-adversarial training (MODEL.dann_columns);
+# every other type ignores the dann_* keys.
+DANN_MODEL_TYPES = frozenset({"aasist", "mlp", "mlp_reg", "cnn", "adm"})
+
+
+
+def parse_dann_columns(raw):
+    """Parse MODEL.dann_columns (an INI string such as "['source_db']", or
+    an already parsed list) into a list of column names; an unset value
+    (False/None), "" and "[]" mean DANN off. Raises ValueError if the
+    value is not a list of names."""
+    if raw is None or raw is False:
+        return []
+    if isinstance(raw, str):
+        raw = raw.strip()
+        if not raw or raw.lower() in ("false", "none"):
+            return []
+        try:
+            raw = ast.literal_eval(raw)
+        except (ValueError, SyntaxError) as e:
+            raise ValueError(f"cannot parse dann_columns {raw!r}") from e
+    if isinstance(raw, str):
+        raw = [raw]
+    if not isinstance(raw, (list, tuple)) or not all(
+        isinstance(c, str) for c in raw
+    ):
+        raise ValueError(f"dann_columns must be a list of column names: {raw!r}")
+    return list(raw)
+
 
 # Maps a MODEL.<key> naming option to the MODEL.type values it's actually
 # read by, so result filenames only mention parameters the chosen model
@@ -166,6 +196,55 @@ class NamingMixin:
             return ""
         return "_" + "".join(b[0] for b in branches)
 
+    def get_dann_columns(self):
+        """MODEL.dann_columns as a list of column names ([] = DANN off);
+        the one place the key is parsed. A malformed value is a config
+        error."""
+        raw = self.config_val("MODEL", "dann_columns", False)
+        try:
+            return parse_dann_columns(raw)
+        except ValueError:
+            self.error(
+                f"MODEL.dann_columns = {raw} is not a list of column names; "
+                "write it like ['source_db', 'language']"
+            )
+
+    def get_dann_number(self, key, default="1.0"):
+        """MODEL.<key> (dann_lambda, dann_weight) as a float; a value that
+        is not a number is a config error."""
+        raw = self.config_val("MODEL", key, default)
+        try:
+            return float(raw)
+        except (TypeError, ValueError):
+            self.error(f"MODEL.{key} = {raw} is not a number")
+
+    def _get_dann_suffix(self):
+        """Return a DANN suffix (e.g. '_dann-source_db') when the model type
+        uses MODEL.dann_columns, so DANN runs don't share result/checkpoint
+        paths with plain runs or with runs using other DANN settings.
+        Non-default lambda/weight/reverse are appended."""
+        if self.get_model_type() not in DANN_MODEL_TYPES:
+            return ""
+        columns = self.get_dann_columns()
+        if not columns:
+            return ""
+        # Path-safe, and unambiguous: ['a+b'] and ['a', 'b'] must not share
+        # a name, so if sanitizing changed any name, add a hash of the list.
+        safe = [self.safe_filename_component(c) for c in columns]
+        suffix = "_dann-" + "+".join(safe)
+        if safe != columns or any("+" in c for c in columns):
+            digest = hashlib.sha1(repr(columns).encode()).hexdigest()[:6]
+            suffix += f"-{digest}"
+        lambda_ = self.get_dann_number("dann_lambda")
+        weight = self.get_dann_number("dann_weight")
+        if lambda_ != 1.0:
+            suffix += f"-l{lambda_:g}".replace(".", "-")
+        if weight != 1.0:
+            suffix += f"-w{weight:g}".replace(".", "-")
+        if not self.config_val_bool("MODEL", "dann_reverse", True):
+            suffix += "-noreverse"
+        return suffix
+
     def _get_aug_suffix(self):
         """Return augmentation suffix if [AUGMENT] augment is configured."""
         aug = self.config_val("AUGMENT", "augment", False)
@@ -209,6 +288,7 @@ class NamingMixin:
             return_string = return_string.replace("__", "_").strip("_")
 
         return_string += self._get_adm_branch_suffix()
+        return_string += self._get_dann_suffix()
         return_string += self._get_aug_suffix()
         return return_string
 

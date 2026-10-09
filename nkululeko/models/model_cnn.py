@@ -59,9 +59,13 @@ class CNNModel(Model):
             self.util.debug(f"init: training with dropout: {drop}")
         self.model = myCNN(layers, self.class_num).to(self.device)
 
+        # domain-adversarial heads on the last hidden layer (MODEL.dann_columns)
+        self._init_dann(df_train, self.model.feat_dim)
+        params = self._dann_params(self.model)
+
         # set up optimizer
         self.optimizer, self.learning_rate = get_optimizer(
-            self.model.parameters(),
+            params,
             self.util,
             default_lr=0.0001,
             default_optimizer="adamw",
@@ -82,7 +86,11 @@ class CNNModel(Model):
             ]
         )
         train_set = self.Dataset_image(
-            feats_train, df_train, self.target, transformations
+            feats_train,
+            df_train,
+            self.target,
+            transformations,
+            domain_labels=self._domain_labels(df_train),
         )
         test_set = self.Dataset_image(feats_test, df_test, self.target, transformations)
         # Define data loaders
@@ -100,7 +108,12 @@ class CNNModel(Model):
         )
 
     class Dataset_image(Dataset):
-        def __init__(self, df_feats, df_labels, target, transform=None):
+        def __init__(
+            self, df_feats, df_labels, target, transform=None, domain_labels=None
+        ):
+            # (len(df), n_dann_columns) int array; when set, items carry a
+            # third element (train loader with MODEL.dann_columns only)
+            self.domain_labels = domain_labels
             self.df_feats = df_feats
             self.df_labels = df_labels
             self.transform = transform
@@ -117,7 +130,9 @@ class CNNModel(Model):
             label = self.df_labels[self.target].iloc[idx]
             if self.transform:
                 image = self.transform(image)
-            return image, label
+            if self.domain_labels is None:
+                return image, label
+            return image, label, self.domain_labels[idx]
 
     def set_testdata(self, data_df, feats_df):
         test_set = self.Dataset_image(feats_df, data_df)
@@ -135,9 +150,20 @@ class CNNModel(Model):
     def train(self):
         self.model.train()
         losses = []
-        for images, labels in self.trainloader:
-            logits = self.model(images.to(self.device))
+        for batch in self.trainloader:
+            if self.dann_heads is not None:
+                images, labels, domain_labels = batch
+                logits, hidden = self.model(
+                    images.to(self.device), return_features=True
+                )
+            else:
+                images, labels = batch
+                logits = self.model(images.to(self.device))
             loss = self.criterion(logits, labels.to(self.device, dtype=torch.int64))
+            if self.dann_heads is not None:
+                loss = loss + self.dann_heads.loss(
+                    hidden, domain_labels.to(self.device)
+                )
             losses.append(loss.item())
             self.optimizer.zero_grad()
             loss.backward()
@@ -171,7 +197,9 @@ class CNNModel(Model):
         model.eval()
         losses = []
         with torch.no_grad():
-            for index, (images, labels) in enumerate(loader):
+            for index, batch in enumerate(loader):
+                # the DANN train loader has a third item (domain labels)
+                images, labels = batch[0], batch[1]
                 start_index = index * loader.batch_size
                 end_index = (index + 1) * loader.batch_size
                 if end_index > len(loader.dataset):
@@ -278,6 +306,7 @@ class myCNN(torch.nn.Module):
         l1 = sorted_layers[0][1]
         l2 = sorted_layers[1][1]
         super(myCNN, self).__init__()
+        self.feat_dim = l2  # width of the last hidden layer
         self.conv1 = nn.Conv2d(3, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(6, 16, 5)
@@ -285,12 +314,15 @@ class myCNN(torch.nn.Module):
         self.fc2 = nn.Linear(l1, l2)
         self.fc3 = nn.Linear(l2, class_num)
 
-    def forward(self, x):
+    def forward(self, x, return_features=False):
         # -> n, 3, 256, 256
         x = self.pool(F.relu(self.conv1(x)))  # -> n, 6, 126, 126
         x = self.pool(F.relu(self.conv2(x)))  # -> n, 16, 61, 61
         x = x.view(-1, 16 * 61 * 61)  # -> n, 59536
         x = F.relu(self.fc1(x))  # -> n, 120
         x = F.relu(self.fc2(x))  # -> n, 84
-        x = self.fc3(x)  # -> n, 7
-        return x
+        logits = self.fc3(x)  # -> n, 7
+        if return_features:
+            # last hidden layer: where DANN heads attach
+            return logits, x
+        return logits

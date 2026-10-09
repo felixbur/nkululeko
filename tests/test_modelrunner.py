@@ -10,6 +10,7 @@ import pytest
 import nkululeko.glob_conf as glob_conf
 from nkululeko.modelrunner import Modelrunner, validate_model_task_support
 from nkululeko.utils.errors import NkululukoError
+from nkululeko.utils.util import Util
 
 
 @pytest.fixture(autouse=True)
@@ -122,6 +123,34 @@ class TestSelectModel:
 
         assert isinstance(mr.model, FakeAasist)
 
+    def test_dann_columns_warns_for_unsupported_model(self, dummy_dfs, monkeypatch):
+        glob_conf.config["MODEL"]["dann_columns"] = "['source_db']"
+        warnings = []
+        monkeypatch.setattr(Util, "warn", lambda self, msg: warnings.append(msg))
+        try:
+            self._make_mr("svm", dummy_dfs)
+        finally:
+            del glob_conf.config["MODEL"]["dann_columns"]
+        assert any("dann_columns" in w and "'svm'" in w for w in warnings)
+
+    def test_malformed_dann_columns_only_warns_for_unsupported_model(
+        self, dummy_dfs, monkeypatch
+    ):
+        glob_conf.config["MODEL"]["dann_columns"] = "source_db"  # unquoted
+        warnings = []
+        monkeypatch.setattr(Util, "warn", lambda self, msg: warnings.append(msg))
+        try:
+            self._make_mr("svm", dummy_dfs)
+        finally:
+            del glob_conf.config["MODEL"]["dann_columns"]
+        assert any("dann_columns" in w and "'svm'" in w for w in warnings)
+
+    def test_no_dann_warning_when_unset(self, dummy_dfs, monkeypatch):
+        warnings = []
+        monkeypatch.setattr(Util, "warn", lambda self, msg: warnings.append(msg))
+        self._make_mr("svm", dummy_dfs)
+        assert not any("dann_columns" in w for w in warnings)
+
     def test_bayes_model_selected(self, dummy_dfs):
         from nkululeko.models.model_bayes import Bayes_model
 
@@ -232,6 +261,46 @@ class TestCheckFeatureBalancing:
         df_train, df_test, feats_train, feats_test = dummy_dfs
         mr = Modelrunner(df_train, df_test, feats_train, feats_test, run=0)
         # After balancing df_train and feats_train sizes must still match
+        assert mr.df_train.shape[0] == mr.feats_train.shape[0]
+
+
+class TestDannWithBalancing:
+    @pytest.fixture
+    def fake_mlp(self, monkeypatch):
+        """MLPModel stand-in: only the routing/guards are under test."""
+        import nkululeko.models.model_mlp as model_mlp
+
+        class FakeMLP:
+            is_classifier = True
+            is_regressor = False
+
+            def __init__(self, *args, **kwargs):
+                pass
+
+        monkeypatch.setattr(model_mlp, "MLPModel", FakeMLP)
+
+    def _run(self, dummy_dfs, model_type, balancing):
+        glob_conf.config["MODEL"]["type"] = model_type
+        glob_conf.config["FEATS"]["balancing"] = balancing
+        glob_conf.config["MODEL"]["dann_columns"] = "['source_db']"
+        df_train, df_test, feats_train, feats_test = dummy_dfs
+        try:
+            return Modelrunner(df_train, df_test, feats_train, feats_test, run=0)
+        finally:
+            del glob_conf.config["MODEL"]["dann_columns"]
+
+    def test_dann_with_feature_balancing_is_rejected(self, dummy_dfs, fake_mlp):
+        with pytest.raises(NkululukoError, match="FEATS.balancing"):
+            self._run(dummy_dfs, "mlp", "ros")
+
+    @pytest.mark.parametrize("off", ["False", "false", "none", ""])
+    def test_balancing_off_spellings_are_not_balancing(self, dummy_dfs, fake_mlp, off):
+        """config_val returns raw strings: 'False' must not count as on."""
+        mr = self._run(dummy_dfs, "mlp", off)
+        assert mr.df_train.shape[0] == dummy_dfs[0].shape[0]
+
+    def test_unsupported_model_with_balancing_is_not_rejected(self, dummy_dfs):
+        mr = self._run(dummy_dfs, "svm", "ros")
         assert mr.df_train.shape[0] == mr.feats_train.shape[0]
 
 

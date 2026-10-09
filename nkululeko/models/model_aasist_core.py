@@ -421,7 +421,7 @@ class AasistBackend(nn.Module):
         self.feat_dim = 5 * _GAT_DIMS[1]
         self.out_layer = nn.Linear(self.feat_dim, 2)
 
-    def forward(self, x):
+    def forward(self, x, return_features=False):
         # With freeze_ssl the frontend still runs its forward pass every
         # epoch (freezing only skips its backward pass and weight update).
         # Caching its output once per sample would remove that cost.
@@ -488,4 +488,8 @@ class AasistBackend(nn.Module):
         last_hidden = torch.cat([t_max, t_avg, s_max, s_avg, master.squeeze(1)], dim=1)
         last_hidden = self.drop(last_hidden)
         logits = self.out_layer(last_hidden)
+        if return_features:
+            # last_hidden (the pooled readout before out_layer) is where
+            # DomainAdversarialHead attaches (MODEL.dann_columns).
+            return logits, last_hidden
         return logits

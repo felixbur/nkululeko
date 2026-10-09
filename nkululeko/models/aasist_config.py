@@ -10,6 +10,8 @@ reads them, for direct comparability between the two model types.
 
 import dataclasses
 
+from nkululeko.models.domain_adversarial import DannConfig
+
 
 @dataclasses.dataclass
 class AasistConfig:
@@ -21,6 +23,7 @@ class AasistConfig:
     batch_size: int
     ssl_layer_pooling: str
     freeze_ssl_frontend: bool
+    dann: DannConfig
 
     @classmethod
     def from_util(cls, util) -> "AasistConfig":
@@ -76,6 +79,9 @@ class AasistConfig:
             "AASIST", "freeze_ssl_frontend", False
         )
 
+        # Domain-adversarial training keys, shared with other models.
+        dann = DannConfig.from_util(util)
+
         return cls(
             device=device,
             ssl_model=ssl_model,
@@ -83,4 +89,5 @@ class AasistConfig:
             batch_size=batch_size,
             ssl_layer_pooling=ssl_layer_pooling,
             freeze_ssl_frontend=freeze_ssl_frontend,
+            dann=dann,
         )

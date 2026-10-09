@@ -66,10 +66,14 @@ class _WaveformDataset(Dataset):
     since the SSL frontend only works on 16 kHz mono input.
     """
 
-    def __init__(self, df, target, cfg):
+    def __init__(self, df, target, cfg, domain_labels=None):
         self.df = df
         self.target = target
         self.cfg = cfg
+        # (len(df), n_dann_columns) int array -- when set, items are
+        # (waveform, label, domain_labels) instead of (waveform, label).
+        # Only the train loader sets it.
+        self.domain_labels = domain_labels
 
     def __len__(self):
         return len(self.df)
@@ -98,7 +102,9 @@ class _WaveformDataset(Dataset):
         row = self.df.iloc[idx]
         label = row[self.target]
         waveform = torch.tensor(signal, dtype=torch.float32)
-        return waveform, label
+        if self.domain_labels is None:
+            return waveform, label
+        return waveform, label, torch.from_numpy(self.domain_labels[idx])
 
 
 class AasistModel(Model):
@@ -143,15 +149,16 @@ class AasistModel(Model):
         ).to(self.device)
 
         self._build_criterion(df_train)
-
+        self._init_dann(df_train, self.net.feat_dim, self.cfg.dann)
+        params = self._dann_params(self.net)
         self.optimizer, self.learning_rate = get_optimizer(
-            self.net.parameters(), self.util, default_lr=1e-5, default_optimizer="adam"
+            params, self.util, default_lr=1e-5, default_optimizer="adam"
         )
         self.scheduler, self.scheduler_type, self.scheduler_needs_init = get_scheduler(
             self.optimizer, self.util, default_scheduler="none"
         )
 
-        self.trainloader = self.get_loader(df_train, shuffle=True)
+        self.trainloader = self.get_loader(df_train, shuffle=True, train=True)
         self.testloader = self.get_loader(df_test, shuffle=False)
 
     def _build_criterion(self, df_train):
@@ -183,8 +190,13 @@ class AasistModel(Model):
             weight=weight, label_smoothing=label_smoothing
         )
 
-    def get_loader(self, df, shuffle):
-        dataset = _WaveformDataset(df, self.target, self.cfg)
+    def get_loader(self, df, shuffle, train=False):
+        dataset = _WaveformDataset(
+            df,
+            self.target,
+            self.cfg,
+            domain_labels=self._domain_labels(df) if train else None,
+        )
         # Each __getitem__ does its own audiofile.read() -- CPU-bound work
         # that a single-process loader (num_workers=0) serializes with GPU
         # compute. MODEL.n_jobs (already read by the base Model class into
@@ -218,11 +230,17 @@ class AasistModel(Model):
 
         self.net.train()
         losses = []
-        for waveforms, labels in self.trainloader:
+        for batch in self.trainloader:
+            if self.dann_heads is not None:
+                waveforms, labels, domain_labels = batch
+                domain_labels = domain_labels.to(self.device)
+            else:
+                waveforms, labels = batch
+                domain_labels = None
             waveforms = waveforms.to(self.device)
             labels = labels.long().to(self.device)
 
-            loss = self.criterion(self.net(waveforms), labels)
+            loss = self._forward_loss(waveforms, labels, domain_labels)
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
@@ -233,11 +251,26 @@ class AasistModel(Model):
         step_scheduler(self.scheduler, self.scheduler_type, step_per_batch=False)
         self.loss = float(np.mean(losses)) if losses else 0.0
 
+    def _forward_loss(self, waveforms, labels, domain_labels):
+        """Task loss, plus one weighted domain-classification loss per
+        DANN head when MODEL.dann_columns is set. The heads sit behind a
+        gradient-reversal layer (unless dann_reverse = False), so
+        minimizing the sum trains the shared features to be useless for
+        guessing the domain."""
+        if self.dann_heads is None:
+            return self.criterion(self.net(waveforms), labels)
+        logits, feats = self.net(waveforms, return_features=True)
+        return self.criterion(logits, labels) + self.dann_heads.loss(
+            feats, domain_labels
+        )
+
     def evaluate(self, loader):
         self.net.eval()
         all_logits, all_targets, losses = [], [], []
         with torch.no_grad():
-            for waveforms, labels in loader:
+            for batch in loader:
+                # the DANN train loader has a third item (domain labels)
+                waveforms, labels = batch[0], batch[1]
                 waveforms = waveforms.to(self.device)
                 labels_t = labels.long().to(self.device)
                 logits = self.net(waveforms)
