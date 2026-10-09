@@ -967,20 +967,33 @@ class Plots(ContextAware):
                     )
             label = self.util.config_val("DATA", "target", "class_label")
             if self.titles:
-                if cat_num > 2:
+                base_title = f"{title} samples ({sample_num})"
+                # _find_most_significant_difference_safe() (GH #462/#461
+                # review) can legitimately return (None, None) -- e.g. a
+                # feature where only one class has any non-missing values
+                # left after df_to_categorical_dict() drops the rest --
+                # so the statistics line is only added when actually
+                # computed, instead of unconditionally dereferencing it.
+                if (
+                    cat_num > 2
+                    and overall_results is not None
+                    and pairwise_results is not None
+                ):
                     title = (
-                        f"{title} samples ({sample_num})\n"
+                        f"{base_title}\n"
                         + f"{overall_results['approach']}: {overall_results['combo']}:"
                         f"{overall_results['significance']})\n"
                         + f"{pairwise_results['approach']}: {pairwise_results['combo']}:"
                         f"{pairwise_results['significance']})"
                     )
-                else:
+                elif cat_num <= 2 and pairwise_results is not None:
                     title = (
-                        f"{title} samples ({sample_num})\n"
+                        f"{base_title}\n"
                         + f"{pairwise_results['approach']}: {pairwise_results['combo']}:"
                         f"{pairwise_results['significance']})"
                     )
+                else:
+                    title = base_title
 
                 ax.set(title=title, xlabel=label)
             else:

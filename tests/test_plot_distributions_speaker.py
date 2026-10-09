@@ -219,3 +219,45 @@ class TestPlotDistributionsSpeakerWithinSpeakerDesign:
         with open(res_file) as f:
             content = f.read()
         assert "overall:" in content or "pairwise:" in content
+
+
+class TestPlotFeatureHandlesSkippedStatistics:
+    """Review on #466: _find_most_significant_difference_safe() can
+    legitimately return (None, None) -- e.g. a feature where only one
+    class has any non-missing values left after df_to_categorical_dict()
+    drops the rest. plot_feature() must not crash building its title in
+    that case (PLOT.titles defaults to True)."""
+
+    def _make_plots(self, tmp_path):
+        from nkululeko.plots import Plots
+
+        fig_dir = os.path.join(str(tmp_path), "images")
+        res_dir = os.path.join(str(tmp_path), "results", "run_0")
+        os.makedirs(fig_dir, exist_ok=True)
+        os.makedirs(res_dir, exist_ok=True)
+
+        with patch(
+            "nkululeko.utils.util.Util.get_path",
+            side_effect=lambda p: fig_dir + "/" if p == "fig_dir" else res_dir + "/",
+        ):
+            plots = Plots()
+        return plots, fig_dir, res_dir
+
+    def test_does_not_crash_when_one_class_has_no_usable_values(self, tmp_path):
+        import numpy as np
+
+        glob_conf.config["PLOT"]["titles"] = "True"
+        plots, fig_dir, res_dir = self._make_plots(tmp_path)
+        df_labels = pd.DataFrame({"class_label": ["a", "a", "b", "b"]})
+        df_features = pd.DataFrame({"feat1": [1.0, 2.0, np.nan, np.nan]})
+
+        with (
+            patch(
+                "nkululeko.utils.util.Util.get_path",
+                side_effect=lambda p: fig_dir + "/" if p == "fig_dir" else res_dir + "/",
+            ),
+            patch("matplotlib.pyplot.savefig"),
+            patch("matplotlib.pyplot.close"),
+        ):
+            # must not raise TypeError building the title
+            plots.plot_feature("all", "feat1", "class_label", df_labels, df_features)
