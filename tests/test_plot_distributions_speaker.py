@@ -69,25 +69,48 @@ class TestDedupeSpeakersForDistribution:
         assert out is df_speakers
 
     def test_regression_target_falls_back_to_given_df_speakers(self):
-        """Review on #462: class_label is also present for regression
+        """Review on #462/#466: class_label is also present for regression
         targets (continuous values), not just classification. Grouping by
         its exact value would put almost every sample in its own group
         (since continuous measurements rarely repeat exactly), reverting
         these plots to sample-level weighting instead of fixing anything
-        -- so the per-class expansion must only apply to categorical
-        (classification) targets."""
+        -- so the per-class expansion must only apply when the experiment
+        actually is a classification task (EXP.type, via
+        exp_is_classification()), not merely when class_label's dtype
+        happens to look categorical. A classification target can have
+        numeric-looking labels (e.g. 0/1) when EXP.type=classification is
+        set explicitly, so a dtype check alone isn't enough."""
         df = pd.DataFrame(
             {
                 "speaker": ["s1", "s1", "s1", "s2", "s2"],
                 "class_label": [23.1, 23.4, 22.9, 41.0, 40.5],
             }
         )
+        glob_conf.config["EXP"]["type"] = "regression"
         plots = self._make_plots()
         df_speakers = df.groupby("speaker").head(1)
         out = plots._dedupe_speakers_for_distribution(df, df_speakers)
 
         assert out is df_speakers
         assert len(out) == 2
+
+    def test_numeric_coded_classification_target_still_gets_expanded(self):
+        """The dtype-based check this replaced would have wrongly treated
+        this as regression (numeric labels), reproducing #462's original
+        bug for any classification target encoded as e.g. 0/1 ints."""
+        df = pd.DataFrame(
+            {
+                "speaker": ["s1", "s1", "s2", "s2"],
+                "class_label": [0, 1, 0, 1],
+            }
+        )
+        glob_conf.config["EXP"]["type"] = "classification"
+        plots = self._make_plots()
+        df_speakers = df.groupby("speaker").head(1)
+        out = plots._dedupe_speakers_for_distribution(df, df_speakers)
+
+        assert len(out) == 4
+        assert set(out["class_label"]) == {0, 1}
 
 
 class TestFindMostSignificantDifferenceSafe:
@@ -219,6 +242,35 @@ class TestPlotDistributionsSpeakerWithinSpeakerDesign:
         with open(res_file) as f:
             content = f.read()
         assert "overall:" in content or "pairwise:" in content
+
+    def test_does_not_crash_when_speaker_column_is_entirely_missing(self, tmp_path):
+        """Review on #466: Dataset.got_speaker (which gates whether this
+        method is even called) only checks column presence, not whether
+        any row actually has a speaker id. A database with no speaker
+        scheme keeps its rows with a NaN speaker instead of being dropped
+        (GH #461) -- df.speaker == s never matches NaN, so the per-speaker
+        loop produced a completely empty df_speakers and crashed plotting
+        it."""
+        import numpy as np
+
+        plots, fig_dir, res_dir = self._make_plots(tmp_path)
+        df = pd.DataFrame(
+            {
+                "speaker": [np.nan, np.nan, np.nan, np.nan],
+                "class_label": ["sober", "intoxicated", "sober", "intoxicated"],
+                "duration": [1.0, 2.0, 3.0, 4.0],
+            }
+        )
+
+        with (
+            patch(
+                "nkululeko.utils.util.Util.get_path",
+                side_effect=lambda p: fig_dir + "/" if p == "fig_dir" else res_dir + "/",
+            ),
+            patch("matplotlib.pyplot.savefig"),
+            patch("matplotlib.pyplot.close"),
+        ):
+            plots.plot_distributions_speaker(df)  # must not raise
 
 
 class TestPlotFeatureHandlesSkippedStatistics:

@@ -50,15 +50,20 @@ class Plots(ContextAware):
             df: the full (non-deduplicated) samples dataframe.
             df_speakers: one row per speaker (first sample), as already
                 computed by the caller -- returned unchanged if "class_label"
-                isn't present (e.g. unlabeled loading), or isn't categorical
-                (regression targets): grouping by a continuous value's exact
-                number would put almost every sample in its own group,
-                reverting these plots to sample-level weighting instead of
-                fixing anything.
+                isn't present (e.g. unlabeled loading), or the experiment
+                isn't a classification task: grouping by a continuous
+                value's exact number would put almost every sample in its
+                own group, reverting these plots to sample-level weighting
+                instead of fixing anything.
         """
-        if "class_label" not in df.columns or not self.util.is_categorical(
-            df["class_label"]
-        ):
+        # exp_is_classification() (EXP.type), not is_categorical()'s dtype
+        # check (review on #462/#466): a classification target can have
+        # numeric-looking labels (e.g. 0/1) when EXP.type=classification is
+        # set explicitly -- Dataset._autodetect_experiment_type() respects
+        # that -- so a dtype check alone wrongly treats it as regression
+        # and reproduces the exact bug #462 fixed, just for numeric-coded
+        # classification labels.
+        if "class_label" not in df.columns or not self.util.exp_is_classification():
             return df_speakers
         return (
             df.groupby(["speaker", "class_label"], observed=True)
@@ -79,6 +84,20 @@ class Plots(ContextAware):
         if df.empty:
             self.util.warn(
                 "plot_distributions_speaker: empty DataFrame, nothing to plot"
+            )
+            return
+        # Dataset.got_speaker (which gates whether this method is even
+        # called) only checks column presence, not whether any row
+        # actually has a speaker id. A database with no speaker scheme
+        # keeps its rows with a NaN speaker instead of being dropped
+        # (GH #461), so the column can be entirely missing while still
+        # present -- df.speaker == s never matches NaN (unlike .isna()),
+        # so the per-speaker loop below would produce a completely empty
+        # df_speakers and crash plotting it.
+        if "speaker" not in df.columns or df["speaker"].isna().all():
+            self.util.warn(
+                "plot_distributions_speaker: no speaker ids available, "
+                "nothing to plot"
             )
             return
         self.type_s = "speaker"
