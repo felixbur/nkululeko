@@ -337,7 +337,13 @@ class Plots(ContextAware):
         """
         usable = {k: v for k, v in val_dict.items() if len(v) > 0}
         if len(usable) < len(val_dict):
-            empty = sorted(set(val_dict) - set(usable))
+            # Insertion order, not sorted() (review): a retained-missing
+            # categorical value (GH #461) can itself be a NaN key here --
+            # df_to_categorical_dict()'s category loop never matches NaN
+            # via `==`, so a NaN category always comes back empty -- and
+            # sorting a mix of that NaN key with ordinary string keys
+            # raises TypeError before this method ever gets to warn.
+            empty = [k for k in val_dict if k not in usable]
             self.util.warn(
                 f"{context}: group(s) with no usable values after removing "
                 f"missing data, excluded from comparison: {empty}"
@@ -988,16 +994,17 @@ class Plots(ContextAware):
             if self.titles:
                 base_title = f"{title} samples ({sample_num})"
                 # _find_most_significant_difference_safe() (GH #462/#461
-                # review) can legitimately return (None, None) -- e.g. a
-                # feature where only one class has any non-missing values
-                # left after df_to_categorical_dict() drops the rest --
-                # so the statistics line is only added when actually
-                # computed, instead of unconditionally dereferencing it.
-                if (
-                    cat_num > 2
-                    and overall_results is not None
-                    and pairwise_results is not None
-                ):
+                # review) can legitimately return (None, None), or
+                # overall_results alone as None even with pairwise_results
+                # present: it only runs Kruskal-Wallis when the *actual*
+                # usable group count (after dropping empty groups) is > 2,
+                # which can differ from the original cat_num (review) --
+                # e.g. 3 categories but one ends up empty still has a
+                # valid 2-group pairwise comparison. So the title is
+                # chosen from what was actually returned, not from
+                # cat_num, and each result is only dereferenced once it's
+                # confirmed present.
+                if overall_results is not None and pairwise_results is not None:
                     title = (
                         f"{base_title}\n"
                         + f"{overall_results['approach']}: {overall_results['combo']}:"
@@ -1005,7 +1012,7 @@ class Plots(ContextAware):
                         + f"{pairwise_results['approach']}: {pairwise_results['combo']}:"
                         f"{pairwise_results['significance']})"
                     )
-                elif cat_num <= 2 and pairwise_results is not None:
+                elif pairwise_results is not None:
                     title = (
                         f"{base_title}\n"
                         + f"{pairwise_results['approach']}: {pairwise_results['combo']}:"

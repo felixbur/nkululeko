@@ -165,6 +165,25 @@ class TestFindMostSignificantDifferenceSafe:
         )
         assert pairwise is not None
 
+    def test_mixed_type_empty_keys_do_not_crash_sorting(self):
+        """Review on #466: df_to_categorical_dict() can produce multiple
+        empty groups whose keys aren't mutually orderable -- a retained
+        missing categorical value (GH #461) is itself a NaN key here (the
+        category loop's `==` comparison never matches NaN, so a NaN
+        category always comes back empty), mixed with a named category
+        that's empty for an unrelated reason (all its values were
+        missing). sorted() on {nan, "b"} raises TypeError before this
+        method ever gets to warn and skip."""
+        plots = self._make_plots()
+        pairwise, overall = plots._find_most_significant_difference_safe(
+            {"a": [1, 2, 3], float("nan"): [], "b": []},
+            mean_featnum=10,
+            context="test",
+        )
+        assert pairwise is None
+        assert overall is None
+        assert plots.util.warn.called
+
 
 @pytest.fixture(autouse=True)
 def setup_glob_conf(tmp_path):
@@ -313,3 +332,44 @@ class TestPlotFeatureHandlesSkippedStatistics:
         ):
             # must not raise TypeError building the title
             plots.plot_feature("all", "feat1", "class_label", df_labels, df_features)
+
+    def test_pairwise_result_shown_when_overall_is_skipped(self, tmp_path):
+        """Review on #466: with 3 categories but one entirely empty after
+        missing-value removal, _find_most_significant_difference_safe()
+        correctly compares the 2 remaining usable groups and returns a
+        real pairwise_results (Kruskal-Wallis, which needs >2 usable
+        groups, is skipped -- overall_results is None). The title logic
+        must pick its branch from what was actually returned, not from
+        the original (3) category count, or it silently hides the valid
+        pairwise result."""
+        import matplotlib.axes
+        import numpy as np
+
+        glob_conf.config["PLOT"]["titles"] = "True"
+        plots, fig_dir, res_dir = self._make_plots(tmp_path)
+        df_labels = pd.DataFrame({"class_label": ["a", "a", "b", "b", "c", "c"]})
+        df_features = pd.DataFrame(
+            {"feat1": [1.0, 2.0, 10.0, 11.0, np.nan, np.nan]}
+        )
+
+        captured = {}
+        original_set = matplotlib.axes.Axes.set
+
+        def spy_set(self, **kwargs):
+            captured.update(kwargs)
+            return original_set(self, **kwargs)
+
+        with (
+            patch(
+                "nkululeko.utils.util.Util.get_path",
+                side_effect=lambda p: fig_dir + "/" if p == "fig_dir" else res_dir + "/",
+            ),
+            patch("matplotlib.pyplot.savefig"),
+            patch("matplotlib.pyplot.close"),
+            patch.object(matplotlib.axes.Axes, "set", spy_set),
+        ):
+            plots.plot_feature("all", "feat1", "class_label", df_labels, df_features)
+
+        title = captured.get("title", "")
+        assert title != "all samples (6)"
+        assert "Mann-Whitney" in title or "t-test" in title
