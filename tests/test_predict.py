@@ -252,6 +252,7 @@ class TestBuildParser:
         assert args.outfile == DEFAULT_OUTFILE
         assert args.ptype == "feats"
         assert args.config is None
+        assert args.config_positional is None
         assert args.model is None
         # Playback is enabled by default in --mic mode.
         assert args.no_playback is False
@@ -298,6 +299,33 @@ class TestBuildParser:
 
         args = _build_parser().parse_args(["--list", "in.csv"])
         assert args.list_path == "in.csv"
+
+    def test_config_accepted_positionally(self):
+        """GH #458: config file accepted positionally, like other modules
+        (e.g. nkululeko.augment), not just via --config."""
+        from nkululeko.predict import _build_parser
+
+        args = _build_parser().parse_args(["myconfig.ini"])
+        assert args.config_positional == "myconfig.ini"
+
+    def test_positional_config_takes_priority_in_main(self, monkeypatch):
+        """main() resolves args.config from the positional argument,
+        matching nkululeko.augment's convention."""
+        import nkululeko.predict as predict_mod
+
+        captured = {}
+
+        def fake_load_config(args):
+            captured["config"] = args.config
+            raise SystemExit(0)
+
+        monkeypatch.setattr(predict_mod, "_load_config", fake_load_config)
+        monkeypatch.setattr("sys.argv", ["nkululeko.predict", "positional.ini"])
+
+        with pytest.raises(SystemExit):
+            predict_mod.main()
+
+        assert captured["config"] == "positional.ini"
 
     def test_mutually_exclusive_sources(self):
         from nkululeko.predict import _build_parser

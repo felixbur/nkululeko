@@ -183,12 +183,20 @@ def _build_parser():
             "--config."
         ),
     )
+    parser.add_argument(
+        "config_positional",
+        nargs="?",
+        default=None,
+        metavar="CONFIG",
+        help="ini configuration file (positional alternative to --config).",
+    )
     parser.add_argument("--config", help="ini configuration file.")
     return parser
 
 
 def main():
     args = _build_parser().parse_args()
+    args.config = args.config_positional or args.config
 
     try:
         # accept --file "a.mp3 b.wav" as a single space-separated argument

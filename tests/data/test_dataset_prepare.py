@@ -131,19 +131,21 @@ class _PassthroughDataFilter:
         return self.df
 
 
-class TestPrepareRequiredFilterHandlesNaSentinel:
-    """Regression (review on #456 / GH #455): Dataset._drop_or_fill_missing()
-    fills missing non-target values with the literal string "na" instead
-    of leaving them NaN. DATA.<name>.required's notna()-based filter must
-    still treat that sentinel as missing, or the documented
-    `required = gender` option silently stops filtering anything."""
+class TestPrepareRequiredFilterHandlesRealNan:
+    """GH #461: an earlier version of Dataset._drop_or_fill_missing() (GH
+    #456) filled missing non-target values with the literal string "na",
+    which made DATA.<name>.required's filter conflate that sentinel with a
+    column that legitimately contains the real value "na" as data (e.g. a
+    language code). Reverted to real NaN (GH #461), so the required
+    filter is a plain notna() again: real NaN is still filtered, and a
+    genuine "na" string value is correctly kept."""
 
-    def test_na_sentinel_rows_are_filtered_like_real_nan(self, monkeypatch):
+    def test_real_nan_rows_are_filtered(self, monkeypatch):
         idx = _make_segmented_index([f"/data/f_{i}.wav" for i in range(3)])
         df = pd.DataFrame(
             {
                 "emotion": ["happy", "sad", "angry"],
-                "gender": ["male", "na", "female"],
+                "gender": ["male", None, "female"],
             },
             index=idx,
         )
@@ -162,4 +164,31 @@ class TestPrepareRequiredFilterHandlesNaSentinel:
         ds.prepare()
 
         assert len(ds.df) == 2
-        assert "na" not in ds.df["gender"].values
+
+    def test_genuine_na_string_value_is_not_treated_as_missing(self, monkeypatch):
+        """A column whose real data legitimately includes the string "na"
+        (e.g. a language code) must not be filtered out by `required`."""
+        idx = _make_segmented_index([f"/data/f_{i}.wav" for i in range(3)])
+        df = pd.DataFrame(
+            {
+                "emotion": ["happy", "sad", "angry"],
+                "language": ["en", "na", "de"],
+            },
+            index=idx,
+        )
+        ds = _make_dataset(df)
+        util = _make_util()
+        util.config_val_data.side_effect = (
+            lambda name, key, default: "language" if key == "required" else default
+        )
+        ds.util = util
+
+        monkeypatch.setattr(
+            "nkululeko.data.dataset.should_reuse_split", lambda util, split3: False
+        )
+        monkeypatch.setattr("nkululeko.data.dataset.DataFilter", _PassthroughDataFilter)
+
+        ds.prepare()
+
+        assert len(ds.df) == 3
+        assert "na" in ds.df["language"].values

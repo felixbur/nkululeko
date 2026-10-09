@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version 1.12.1 (26-10-08)
+-------------------------
+* fix bug: `Dataset._drop_or_fill_missing()` (#455/#456) filled missing non-target values with the literal string `"na"`, which crashed outright on Categorical-dtype scheme columns (the normal shape of a gender/age/speaker scheme), silently converted numeric columns to object dtype, made `DATA.<name>.required` conflate the sentinel with a column that legitimately contains the real value `"na"`, and collapsed every row with no speaker id into one fake "na" speaker for speaker-based splitting/`limit_samples_per_speaker`. Reverted to real `NaN`, which needs no special-casing by any downstream consumer; rows with no speaker id are now excluded from speaker-split sampling and always kept in train instead (#461)
+* fix bug: `Dataset.split()`'s `specified` split strategy (`DATA.<name>.test_tables`/`train_tables`) still applied a blanket `dropna()` to the split tables, dropping rows missing a value in *any* column of that table, even one that's never used; now only requires the target column to be non-null, consistent with the #455 fix (#464)
+* `nkululeko.explore` and `nkululeko.predict` accept the config file as a positional argument, not just `--config`, matching `nkululeko.train`/`nkululeko.ensemble`/`nkululeko.augment` (#458)
+* fix bug: `explore`'s speaker-level `value_counts` represented each speaker by its first sample, so for a within-speaker design (every speaker has samples of every target class, e.g. paired recordings) every speaker was counted only for whichever class happened to sort first -- wrong speaker-level distributions, and a crash once the speaker-level data collapsed to a single class. A speaker is now represented once per class it actually has samples of; a statistic that ends up with fewer than 2 groups is skipped with a warning instead of aborting the whole explore run (#462)
+* fix bug: `feats_audmodel.py`'s cache key (both the whole-dataset store and the per-sample cache) didn't include `FEATS.audmodel.embeddings_name`, so switching to a different output head of the same model silently reused the previous head's cached values; feature columns also lost their real labels (e.g. "sadness", "arousal") and came back as plain integers. Both the cache key and the column labels are now fixed (#459)
+
 Version 1.12.0 (26-10-08)
 -------------------------
 * add `source_db` column to pooled train/dev/test rows, tagging each row with the name of the `[DATA]` section it came from -- needed for per-database analysis of a pooled run, or anything that must treat databases as separate domains (e.g. domain-balanced batch sampling, domain-adversarial training) (#457)

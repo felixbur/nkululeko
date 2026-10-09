@@ -34,6 +34,43 @@ class Plots(ContextAware):
         self.titles = eval(self.util.config_val("PLOT", "titles", "True"))
         self.print_stats = eval(self.util.config_val("EXPL", "print_stats", "False"))
 
+    def _dedupe_speakers_for_distribution(self, df, df_speakers):
+        """One row per speaker, except where the target varies within the
+        speaker (GH #462).
+
+        Collapsing a speaker to its first sample is only correct if the
+        target is constant across that speaker's rows. For a within-speaker
+        design (e.g. paired/repeated-measures recordings, every speaker has
+        samples of every class), that silently counted every speaker only
+        for whichever class happened to sort first. Representing a speaker
+        once per class it actually has samples of instead counts it in
+        each class it contributed to.
+
+        Args:
+            df: the full (non-deduplicated) samples dataframe.
+            df_speakers: one row per speaker (first sample), as already
+                computed by the caller -- returned unchanged if "class_label"
+                isn't present (e.g. unlabeled loading), or the experiment
+                isn't a classification task: grouping by a continuous
+                value's exact number would put almost every sample in its
+                own group, reverting these plots to sample-level weighting
+                instead of fixing anything.
+        """
+        # exp_is_classification() (EXP.type), not is_categorical()'s dtype
+        # check (review on #462/#466): a classification target can have
+        # numeric-looking labels (e.g. 0/1) when EXP.type=classification is
+        # set explicitly -- Dataset._autodetect_experiment_type() respects
+        # that -- so a dtype check alone wrongly treats it as regression
+        # and reproduces the exact bug #462 fixed, just for numeric-coded
+        # classification labels.
+        if "class_label" not in df.columns or not self.util.exp_is_classification():
+            return df_speakers
+        return (
+            df.groupby(["speaker", "class_label"], observed=True)
+            .head(1)
+            .reset_index(drop=True)
+        )
+
     def plot_distributions_speaker(self, df: pd.DataFrame):
         """Plot sample and speaker distributions broken down by speaker identity.
 
@@ -49,6 +86,20 @@ class Plots(ContextAware):
                 "plot_distributions_speaker: empty DataFrame, nothing to plot"
             )
             return
+        # Dataset.got_speaker (which gates whether this method is even
+        # called) only checks column presence, not whether any row
+        # actually has a speaker id. A database with no speaker scheme
+        # keeps its rows with a NaN speaker instead of being dropped
+        # (GH #461), so the column can be entirely missing while still
+        # present -- df.speaker == s never matches NaN (unlike .isna()),
+        # so the per-speaker loop below would produce a completely empty
+        # df_speakers and crash plotting it.
+        if "speaker" not in df.columns or df["speaker"].isna().all():
+            self.util.warn(
+                "plot_distributions_speaker: no speaker ids available, "
+                "nothing to plot"
+            )
+            return
         self.type_s = "speaker"
         df_speakers = pd.DataFrame()
         pd.options.mode.chained_assignment = None  # default='warn'
@@ -56,6 +107,7 @@ class Plots(ContextAware):
             df_speaker = df[df.speaker == s]
             df_speaker["samplenum"] = df_speaker.shape[0]
             df_speakers = pd.concat([df_speakers, df_speaker.head(1)])
+        df_speakers_for_dist = self._dedupe_speakers_for_distribution(df, df_speakers)
         # plot the distribution of samples per speaker
         self.util.debug("plotting samples per speaker")
         if "gender" in df_speakers:
@@ -109,7 +161,7 @@ class Plots(ContextAware):
                 "speakers",
             )
 
-        self.plot_distributions(df_speakers, type_s="speakers")
+        self.plot_distributions(df_speakers_for_dist, type_s="speakers")
 
     def plot_distributions(self, df: pd.DataFrame, type_s: str = "samples"):
         """Plot distributions of attributes against the target variable.
@@ -264,10 +316,54 @@ class Plots(ContextAware):
                     f" {att} has more than 2 values. Perhaps you forgot to state a list of lists?"
                 )
 
+    def _find_most_significant_difference_safe(self, val_dict, mean_featnum, context):
+        """Wrap su.find_most_significant_difference(), skipping instead of
+        raising when fewer than 2 usable groups are present (GH #462, #461
+        review).
+
+        A speaker-level (or any grouped) statistic can legitimately end up
+        with only one group -- e.g. a within-speaker design where every
+        speaker has samples of every class collapses to a single group once
+        speakers are deduplicated per class -- and that shouldn't abort the
+        whole explore run.
+
+        A group can also be present but empty: df_to_categorical_dict()
+        (GH #461 review) now drops missing values per category, so a
+        category whose every row was missing the attribute being compared
+        ends up with an empty list. Counting dict keys alone would miss
+        that and pass the empty list on to scipy, which doesn't raise but
+        silently returns NaN statistics instead of the warn-and-skip this
+        method promises -- so empty groups are filtered out first.
+        """
+        usable = {k: v for k, v in val_dict.items() if len(v) > 0}
+        if len(usable) < len(val_dict):
+            # Insertion order, not sorted() (review): a retained-missing
+            # categorical value (GH #461) can itself be a NaN key here --
+            # df_to_categorical_dict()'s category loop never matches NaN
+            # via `==`, so a NaN category always comes back empty -- and
+            # sorting a mix of that NaN key with ordinary string keys
+            # raises TypeError before this method ever gets to warn.
+            empty = [k for k in val_dict if k not in usable]
+            self.util.warn(
+                f"{context}: group(s) with no usable values after removing "
+                f"missing data, excluded from comparison: {empty}"
+            )
+        if len(usable) < 2:
+            self.util.warn(
+                f"{context}: need at least 2 usable groups for a "
+                f"statistical comparison, got {len(usable)}; skipping this "
+                "statistic"
+            )
+            return None, None
+        mean_featnum = sum(len(v) for v in usable.values()) / len(usable)
+        return su.find_most_significant_difference(usable, mean_featnum)
+
     def _save_distribution_stats(self, df, cat_col, cont_col, res_filename):
         """Compute KW + pairwise t-tests and append results to res_filename."""
         val_dict, mean_featnum = self.util.df_to_categorical_dict(df, cat_col, cont_col)
-        pairwise_results, overall_results = su.find_most_significant_difference(val_dict, mean_featnum)
+        pairwise_results, overall_results = self._find_most_significant_difference_safe(
+            val_dict, mean_featnum, f"{cat_col}/{cont_col}"
+        )
         if overall_results is not None:
             self.util.append_to_result_file(res_filename, f"overall: {overall_results['all_results']}")
         if pairwise_results is not None:
@@ -872,8 +968,8 @@ class Plots(ContextAware):
             val_dict, mean_featnum = self.util.df_to_categorical_dict(
                 df_plot, label, feature
             )
-            pairwise_results, overall_results = su.find_most_significant_difference(
-                val_dict, mean_featnum
+            pairwise_results, overall_results = self._find_most_significant_difference_safe(
+                val_dict, mean_featnum, f"{label}/{feature}"
             )
             # 'approach', 'combo', test statistic, 'p_value', 'significance','all_results'
             if overall_results is not None:
@@ -896,20 +992,34 @@ class Plots(ContextAware):
                     )
             label = self.util.config_val("DATA", "target", "class_label")
             if self.titles:
-                if cat_num > 2:
+                base_title = f"{title} samples ({sample_num})"
+                # _find_most_significant_difference_safe() (GH #462/#461
+                # review) can legitimately return (None, None), or
+                # overall_results alone as None even with pairwise_results
+                # present: it only runs Kruskal-Wallis when the *actual*
+                # usable group count (after dropping empty groups) is > 2,
+                # which can differ from the original cat_num (review) --
+                # e.g. 3 categories but one ends up empty still has a
+                # valid 2-group pairwise comparison. So the title is
+                # chosen from what was actually returned, not from
+                # cat_num, and each result is only dereferenced once it's
+                # confirmed present.
+                if overall_results is not None and pairwise_results is not None:
                     title = (
-                        f"{title} samples ({sample_num})\n"
+                        f"{base_title}\n"
                         + f"{overall_results['approach']}: {overall_results['combo']}:"
                         f"{overall_results['significance']})\n"
                         + f"{pairwise_results['approach']}: {pairwise_results['combo']}:"
                         f"{pairwise_results['significance']})"
                     )
-                else:
+                elif pairwise_results is not None:
                     title = (
-                        f"{title} samples ({sample_num})\n"
+                        f"{base_title}\n"
                         + f"{pairwise_results['approach']}: {pairwise_results['combo']}:"
                         f"{pairwise_results['significance']})"
                     )
+                else:
+                    title = base_title
 
                 ax.set(title=title, xlabel=label)
             else:

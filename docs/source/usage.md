@@ -6,7 +6,8 @@ The main usage of Nkululeko is as follows:
 python -m nkululeko.[MODULE] --config [CONFIG_FILE.ini]
 # Example to run the experiment
 python -m nkululeko.train --config INI_FILE.ini
-# nkululeko.train and nkululeko.ensemble also accept the config
+# nkululeko.train, nkululeko.ensemble, nkululeko.augment,
+# nkululeko.explore and nkululeko.predict also accept the config
 # path(s) as a plain positional argument instead of --config
 python -m nkululeko.train INI_FILE.ini
 ```

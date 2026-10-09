@@ -259,6 +259,38 @@ class TestReadSampleCache:
         assert combined.shape == (2, 2)
         assert not combined.isna().any().any()
 
+    def test_real_string_labels_are_preserved(self, featureset, tmp_path):
+        """GH #459: a feature set that gives its columns real names (e.g.
+        AudmodelSet's "emotion.acoustic_sadness") must keep them on a
+        cache hit -- only the digit-string artifact from issue #429 (no
+        names ever given) should be normalized back to integers."""
+        cache_path = tmp_path / "cached.csv"
+        idx = audformat.segmented_index(
+            ["a.wav"], [pd.Timedelta(0)], [pd.Timedelta(seconds=1)]
+        )
+        pd.DataFrame(
+            [[0.1, 0.9]], columns=["emotion.acoustic_sadness", "emotion.acoustic_anger"], index=idx
+        ).to_csv(cache_path)
+
+        df_part = featureset._read_sample_cache(str(cache_path))
+
+        assert list(df_part.columns) == [
+            "emotion.acoustic_sadness",
+            "emotion.acoustic_anger",
+        ]
+
+    def test_single_real_label_is_preserved(self, featureset, tmp_path):
+        cache_path = tmp_path / "cached.csv"
+        idx = audformat.segmented_index(
+            ["a.wav"], [pd.Timedelta(0)], [pd.Timedelta(seconds=1)]
+        )
+        pd.DataFrame([[0.42]], columns=["valence"], index=idx).to_csv(cache_path)
+
+        df_part = featureset._read_sample_cache(str(cache_path))
+
+        assert list(df_part.columns) == ["valence"]
+        assert df_part.iloc[0, 0] == 0.42
+
 
 class TestExtractEmbeddingsWithErrorHandling:
     """Tests for Featureset._extract_embeddings_with_error_handling."""
