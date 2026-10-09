@@ -299,21 +299,39 @@ class Plots(ContextAware):
 
     def _find_most_significant_difference_safe(self, val_dict, mean_featnum, context):
         """Wrap su.find_most_significant_difference(), skipping instead of
-        raising when fewer than 2 groups are present (GH #462).
+        raising when fewer than 2 usable groups are present (GH #462, #461
+        review).
 
         A speaker-level (or any grouped) statistic can legitimately end up
         with only one group -- e.g. a within-speaker design where every
         speaker has samples of every class collapses to a single group once
         speakers are deduplicated per class -- and that shouldn't abort the
         whole explore run.
+
+        A group can also be present but empty: df_to_categorical_dict()
+        (GH #461 review) now drops missing values per category, so a
+        category whose every row was missing the attribute being compared
+        ends up with an empty list. Counting dict keys alone would miss
+        that and pass the empty list on to scipy, which doesn't raise but
+        silently returns NaN statistics instead of the warn-and-skip this
+        method promises -- so empty groups are filtered out first.
         """
-        if len(val_dict) < 2:
+        usable = {k: v for k, v in val_dict.items() if len(v) > 0}
+        if len(usable) < len(val_dict):
+            empty = sorted(set(val_dict) - set(usable))
             self.util.warn(
-                f"{context}: need at least 2 groups for a statistical "
-                f"comparison, got {len(val_dict)}; skipping this statistic"
+                f"{context}: group(s) with no usable values after removing "
+                f"missing data, excluded from comparison: {empty}"
+            )
+        if len(usable) < 2:
+            self.util.warn(
+                f"{context}: need at least 2 usable groups for a "
+                f"statistical comparison, got {len(usable)}; skipping this "
+                "statistic"
             )
             return None, None
-        return su.find_most_significant_difference(val_dict, mean_featnum)
+        mean_featnum = sum(len(v) for v in usable.values()) / len(usable)
+        return su.find_most_significant_difference(usable, mean_featnum)
 
     def _save_distribution_stats(self, df, cat_col, cont_col, res_filename):
         """Compute KW + pairwise t-tests and append results to res_filename."""

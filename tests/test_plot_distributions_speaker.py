@@ -120,6 +120,28 @@ class TestFindMostSignificantDifferenceSafe:
         assert pairwise is not None
         assert not plots.util.warn.called
 
+    def test_empty_group_is_excluded_not_passed_to_scipy(self):
+        """Review on #466: df_to_categorical_dict() drops missing values
+        per category, so a category whose every row was missing the
+        compared attribute ends up with an empty list. Counting dict keys
+        alone (2 here) would miss that and pass the empty list to scipy,
+        which doesn't raise but silently returns NaN statistics instead of
+        the warn-and-skip this method promises."""
+        plots = self._make_plots()
+        pairwise, overall = plots._find_most_significant_difference_safe(
+            {"a": [1, 2, 3], "b": []}, mean_featnum=10, context="test"
+        )
+        assert pairwise is None
+        assert overall is None
+        assert plots.util.warn.called
+
+    def test_two_usable_groups_survive_a_third_empty_one(self):
+        plots = self._make_plots()
+        pairwise, overall = plots._find_most_significant_difference_safe(
+            {"a": [1, 2, 3], "b": [10, 11, 12], "c": []}, mean_featnum=10, context="test"
+        )
+        assert pairwise is not None
+
 
 @pytest.fixture(autouse=True)
 def setup_glob_conf(tmp_path):

@@ -7,14 +7,14 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 **⚠ 27 key(s) have inconsistent defaults across call sites:**
 
 * `'DATA'.'no_reuse'`: `'False'` (nkululeko/augment.py:43), `'False'` (nkululeko/experiment.py:162), `False` (nkululeko/utils/dataframe.py:283)
-* `'DATA'.'target'`: `'emotion'` (nkululeko/augment.py:85), `'emotion'` (nkululeko/augmenting/resampler.py:76), `'emotion'` (nkululeko/bundle.py:56), `'emotion'` (nkululeko/bundle.py:218), `None` (nkululeko/data/dataset.py:35), `None` (nkululeko/data/dataset_csv.py:84), `None` (nkululeko/experiment.py:124), `'emotion'` (nkululeko/experiment.py:629), `'emotion'` (nkululeko/experiment.py:639), `'emotion'` (nkululeko/experiment.py:649), `'emotion'` (nkululeko/export.py:108), `'emotion'` (nkululeko/feat_extract/feats_analyser.py:26), `'emotion'` (nkululeko/models/model.py:39), `'emotion'` (nkululeko/plots.py:31), `'class_label'` (nkululeko/plots.py:950), `'emotion'` (nkululeko/testing_predictor.py:71), `None` (nkululeko/utils/util.py:640)
+* `'DATA'.'target'`: `'emotion'` (nkululeko/augment.py:85), `'emotion'` (nkululeko/augmenting/resampler.py:76), `'emotion'` (nkululeko/bundle.py:56), `'emotion'` (nkululeko/bundle.py:218), `None` (nkululeko/data/dataset.py:35), `None` (nkululeko/data/dataset_csv.py:84), `None` (nkululeko/experiment.py:124), `'emotion'` (nkululeko/experiment.py:629), `'emotion'` (nkululeko/experiment.py:639), `'emotion'` (nkululeko/experiment.py:649), `'emotion'` (nkululeko/export.py:108), `'emotion'` (nkululeko/feat_extract/feats_analyser.py:26), `'emotion'` (nkululeko/models/model.py:39), `'emotion'` (nkululeko/plots.py:31), `'class_label'` (nkululeko/plots.py:968), `'emotion'` (nkululeko/testing_predictor.py:71), `None` (nkululeko/utils/util.py:640)
 * `'DATA'.'tests'`: `'False'` (nkululeko/data/dataset.py:905), `False` (nkululeko/nkululeko.py:46), `False` (nkululeko/testing_predictor.py:59)
 * `'DATA'.'type'`: `False` (nkululeko/data/dataset.py:1005), `'dummy'` (nkululeko/data/datasplitter.py:241)
 * `'EXP'.'epochs'`: `1` (nkululeko/modelrunner.py:186), `1` (nkululeko/models/model_tuned.py:66), `'50'` (nkululeko/optimizers/scheduler_factory.py:84)
 * `'EXP'.'language'`: `'en'` (nkululeko/autopredict/ap_text.py:31), `False` (nkululeko/bundle.py:101)
-* `'EXP'.'sample_selection'`: `'all'` (nkululeko/data/datasplitter.py:36), `'train'` (nkululeko/experiment.py:488), `'all'` (nkululeko/experiment.py:509), `'all'` (nkululeko/feat_extract/feats_analyser.py:396), `'all'` (nkululeko/plots.py:689), `'all'` (nkululeko/predict.py:585), `'all'` (nkululeko/resample.py:123), `'all'` (nkululeko/segment.py:242)
+* `'EXP'.'sample_selection'`: `'all'` (nkululeko/data/datasplitter.py:36), `'train'` (nkululeko/experiment.py:488), `'all'` (nkululeko/experiment.py:509), `'all'` (nkululeko/feat_extract/feats_analyser.py:396), `'all'` (nkululeko/plots.py:707), `'all'` (nkululeko/predict.py:585), `'all'` (nkululeko/resample.py:123), `'all'` (nkululeko/segment.py:242)
 * `'EXP'.'type'`: `None` (nkululeko/data/dataset.py:188), `'classification'` (nkululeko/utils/util.py:299)
-* `'EXPL'.'dist_type'`: `'hist'` (nkululeko/plots.py:182), `'kde'` (nkululeko/plots.py:478)
+* `'EXPL'.'dist_type'`: `'hist'` (nkululeko/plots.py:182), `'kde'` (nkululeko/plots.py:496)
 * `'EXPL'.'model'`: `False` (nkululeko/explore.py:98), `"['log_reg']"` (nkululeko/feat_extract/feats_analyser.py:172)
 * `'EXPL'.'plot_tree'`: `'False'` (nkululeko/explore.py:99), `False` (nkululeko/feat_extract/feats_analyser.py:96)
 * `'FEATS'.'audmodel.id'`: `False` (nkululeko/feat_extract/feats_audmodel.py:34), `'audmodel'` (nkululeko/feat_extract/feats_audmodel.py:124), `'audmodel'` (nkululeko/feat_extract/feats_audmodel.py:181)
@@ -86,9 +86,9 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'EXP' | 'save_test' | `False` | nkululeko/experiment.py:728 |
 | 'EXP' | 'traindevtest' | `'False'` | nkululeko/experiment.py:55, nkululeko/models/model_xgb.py:74, nkululeko/runmanager.py:61 |
 | 'EXP' | 'type' | `'classification'` / `None` | nkululeko/data/dataset.py:188, nkululeko/utils/util.py:299 |
-| 'EXPL' | 'dist_type' | `'hist'` / `'kde'` | nkululeko/plots.py:182, nkululeko/plots.py:478 |
+| 'EXPL' | 'dist_type' | `'hist'` / `'kde'` | nkululeko/plots.py:182, nkululeko/plots.py:496 |
 | 'EXPL' | 'feature_distributions' | `'False'` | nkululeko/experiment.py:507, nkululeko/explore.py:92 |
-| 'EXPL' | 'ignore_gender' | `'False'` | nkululeko/plots.py:855 |
+| 'EXPL' | 'ignore_gender' | `'False'` | nkululeko/plots.py:873 |
 | 'EXPL' | 'max_feats' | `'10'` | nkululeko/feat_extract/feats_analyser.py:174 |
 | 'EXPL' | 'model' | `"['log_reg']"` / `False` | nkululeko/explore.py:98, nkululeko/feat_extract/feats_analyser.py:172 |
 | 'EXPL' | 'pca' | `'False'` | nkululeko/experiment.py:647, nkululeko/explore.py:95 |
@@ -99,14 +99,14 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'EXPL' | 'print_stats' | `'False'` | nkululeko/plots.py:35, nkululeko/reporting/run_plotter.py:44 |
 | 'EXPL' | 'regplot' | `None` | nkululeko/feat_extract/feats_analyser.py:407 |
 | 'EXPL' | 'scatter' | `'False'` | nkululeko/experiment.py:568, nkululeko/explore.py:96 |
-| 'EXPL' | 'scatter.dim' | `2` | nkululeko/plots.py:686 |
+| 'EXPL' | 'scatter.dim' | `2` | nkululeko/plots.py:704 |
 | 'EXPL' | 'scatter.target' | `default_scatter_target` | nkululeko/experiment.py:580 |
 | 'EXPL' | 'shap' | `'False'` | nkululeko/experiment.py:560, nkululeko/explore.py:97, nkululeko/flags.py:297 |
 | 'EXPL' | 'spotlight' | `'False'` | nkululeko/experiment.py:535 |
 | 'EXPL' | 'tsne' | `'False'` | nkululeko/experiment.py:627, nkululeko/explore.py:93 |
 | 'EXPL' | 'umap' | `'False'` | nkululeko/experiment.py:637, nkululeko/explore.py:94 |
 | 'EXPL' | 'value_counts' | `False` | nkululeko/experiment.py:526, nkululeko/plots.py:162 |
-| 'EXPL' | <f'{att}.bin_reals'> | `'False'` | nkululeko/plots.py:375 |
+| 'EXPL' | <f'{att}.bin_reals'> | `'False'` | nkululeko/plots.py:393 |
 | 'EXPORT' | 'bundle_path' | `os.path.join(expr.root, expr.name, 'export')` | nkululeko/bundle.py:233 |
 | 'EXPORT' | 'data_name' | `'export'` | nkululeko/export.py:99 |
 | 'EXPORT' | 'orig_root' | `None` | nkululeko/export.py:98 |
@@ -241,10 +241,10 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'PLOT' | 'combine_per_speaker.col' | `COL_SPEAKER` | nkululeko/experiment.py:776 |
 | 'PLOT' | 'epoch_progression' | `0` | nkululeko/runmanager.py:141 |
 | 'PLOT' | 'epochs' | `False` | nkululeko/modelrunner.py:176 |
-| 'PLOT' | 'fill_areas' | `'False'` | nkululeko/plots.py:479 |
+| 'PLOT' | 'fill_areas' | `'False'` | nkululeko/plots.py:497 |
 | 'PLOT' | 'format' | `'png'` | nkululeko/feat_extract/feats_analyser.py:141, nkululeko/feat_extract/feats_analyser.py:347, nkululeko/plots.py:30, +2 more |
 | 'PLOT' | 'fps' | `'1'` | nkululeko/reporting/reporter.py:885 |
-| 'PLOT' | 'kind' | `'violin'` | nkululeko/plots.py:841 |
+| 'PLOT' | 'kind' | `'violin'` | nkululeko/plots.py:859 |
 | 'PLOT' | 'name' | `plot_name_suggest` | nkululeko/experiment.py:281, nkululeko/reporting/reporter.py:898, nkululeko/runmanager.py:125, +7 more |
 | 'PLOT' | 'runs_compare' | `False` | nkululeko/experiment.py:740 |
 | 'PLOT' | 'titles' | `'True'` | nkululeko/plots.py:34, nkululeko/reporting/run_plotter.py:21 |
