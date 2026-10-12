@@ -130,6 +130,30 @@ class TestCacheKeyIncludesEmbeddingsName:
         storage_arg = instance.util.get_store.call_args[0][0]
         assert "valence" in storage_arg
 
+    def test_duplicate_head_calls_util_error_not_a_raw_valueerror(self):
+        """Review on #468: the cache-key computation in extract() runs
+        before _needs_extraction()/_load_model(), so a duplicate-head
+        config must be turned into a clean util.error() here too, not a
+        bare ValueError leaking out of embeddings_cache_key()."""
+        instance = _make_instance()
+        instance.name = "mydb_feats"
+        instance.context = MagicMock()
+        instance.data_df = pd.DataFrame()
+        instance.util.get_path.return_value = "/store/"
+        instance.util.error.side_effect = RuntimeError("boom")
+        instance.util.config_val.side_effect = self._config_val(
+            {
+                "store_format": "pkl",
+                "audmodel.embeddings_name": "['valence', 'valence']",
+            }
+        )
+
+        with pytest.raises(RuntimeError):
+            instance.extract()
+
+        assert instance.util.error.called
+        assert "duplicate" in instance.util.error.call_args[0][0]
+
     def test_extract_storage_filename_includes_model_id(self):
         """Review on #459: self.name alone (built in feature_extractor.py
         from the database name + feats_type) doesn't vary with which
@@ -258,6 +282,19 @@ class TestParseEmbeddingsNames:
     def test_empty_list_raises(self):
         with pytest.raises(ValueError):
             parse_embeddings_names("[]")
+
+    def test_duplicate_head_raises(self):
+        """Review on #468: a repeated head name produces duplicate feature
+        columns (AudmodelSet builds one column per configured head, with
+        no uniqueness check), and AudmodelPredictor's pred_df[head] then
+        returns a DataFrame instead of a Series for that head, breaking
+        the <head>_pred assignment. Reject it up front instead."""
+        with pytest.raises(ValueError, match="duplicate"):
+            parse_embeddings_names("['valence', 'valence']")
+
+    def test_duplicate_among_three_heads_raises(self):
+        with pytest.raises(ValueError, match="duplicate"):
+            parse_embeddings_names("['arousal', 'valence', 'arousal']")
 
 
 class _FakeOnnxModel:

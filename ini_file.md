@@ -675,11 +675,12 @@ Feature exploration and visualisation options, used by the `explore` module.
 Automatic soft-label prediction using pre-trained models (e.g., age, gender, arousal).
 
 * **targets**: Speaker/speech characteristics to be predicted by some models
-  * targets = ['text', 'translation', 'textclassification', 'speaker', 'gender', 'age', 'snr', 'arousal', 'valence', 'dominance', 'pesq', 'mos', 'audmodel']
+  * targets = ['text', 'translation', 'textclassification', 'speaker', 'gender', 'age', 'snr', 'arousal', 'valence', 'dominance', 'pesq', 'mos']
   * textclassifier.candidates = ["sadness", "anger", "neutral"]: for target *textclassification*: the labels for the categories that should be predicted (using [joeddav/xlm-roberta-large-xnli](https://huggingface.co/joeddav/xlm-roberta-large-xnli))
-  * for target *audmodel*: predicts with an arbitrary [audmodel](https://audeering.github.io/audmodel/index.html), reusing the same `FEATS.audmodel.id`/`FEATS.audmodel.embeddings_name` keys as the `audmodel` feature extractor (see [FEATS](#feats), including its multi-head list form). Writes one `<head>_pred` column per configured head: the raw value for a single-dimension head (e.g. `valence_pred`), or the argmax class label for a multi-dimension head (e.g. `emotion.acoustic_pred`). Currently only reachable via the standalone `nkululeko.predict --model audmodel` CLI (see [emotion_prediction.md](emotion_prediction.md)), not via this `[PREDICT] targets` list in an experiment config.
 * **target_language**: target language for the translation prediction
   * target_language = en
+
+Note: a generic *audmodel* predictor also exists, reusing the same `FEATS.audmodel.id`/`FEATS.audmodel.embeddings_name` keys as the `audmodel` feature extractor (see [FEATS](#feats), including its multi-head list form) and writing one `<head>_pred` column per configured head: the raw value for a single-dimension head (e.g. `valence_pred`), or the argmax class label for a multi-dimension head (e.g. `emotion.acoustic_pred`). It is **not** usable via this `targets` list -- only via the standalone `nkululeko.predict --model audmodel` CLI (see [emotion_prediction.md](emotion_prediction.md)).
 
 ### EXPORT
 

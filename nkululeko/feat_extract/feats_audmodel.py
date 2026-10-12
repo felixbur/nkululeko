@@ -34,7 +34,15 @@ def parse_embeddings_names(raw):
     if isinstance(parsed, (list, tuple)):
         if len(parsed) == 0:
             raise ValueError("FEATS.audmodel.embeddings_name is an empty list")
-        return [str(p) for p in parsed]
+        heads = [str(p) for p in parsed]
+        seen = set()
+        duplicates = [h for h in heads if (h in seen) or seen.add(h)]
+        if duplicates:
+            raise ValueError(
+                "FEATS.audmodel.embeddings_name has duplicate head(s): "
+                f"{sorted(set(duplicates))}"
+            )
+        return heads
     return [str(parsed)]
 
 
@@ -206,7 +214,10 @@ class AudmodelSet(Featureset):
         raw_embeddings_name = self.util.config_val(
             "FEATS", "audmodel.embeddings_name", "hidden_states"
         )
-        embeddings_name = embeddings_cache_key(raw_embeddings_name)
+        try:
+            embeddings_name = embeddings_cache_key(raw_embeddings_name)
+        except ValueError as error:
+            self.util.error(str(error))
         if self.hidden_layer == 0:
             storage = f"{store}{self.name}_{model_id}_{embeddings_name}.{store_format}"
         else:
@@ -297,7 +308,10 @@ class AudmodelSet(Featureset):
         raw_embeddings_name = self.util.config_val(
             "FEATS", "audmodel.embeddings_name", "hidden_states"
         )
-        embeddings_name = embeddings_cache_key(raw_embeddings_name)
+        try:
+            embeddings_name = embeddings_cache_key(raw_embeddings_name)
+        except ValueError as error:
+            self.util.error(str(error))
         segment_cache = audeer.mkdir(
             audeer.path(self.util.get_path("cache"), model_id, embeddings_name)
         )
