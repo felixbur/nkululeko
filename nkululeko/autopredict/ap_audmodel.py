@@ -57,16 +57,18 @@ class AudmodelPredictor:
                 return_df[f"{head}_pred"] = "unknown"
                 continue
             head_scores = pred_df[head_cols]
-            # a row that failed extraction comes back all-NaN (see
-            # feats_audmodel.py's AudmodelSet.extract()); idxmax on an
-            # all-NaN row is deprecated (pandas warns it will raise
-            # ValueError in a future version), so fill with -inf just for
-            # the argmax pick -- the real "every row failed" case is still
-            # caught below via the sum check (NaN sums to 0 by default)
-            # and overridden to unknown, same reasoning as
-            # ap_emotion.py's EmotionPredictor.
+            # A row that failed extraction comes back all-NaN (see
+            # feats_audmodel.py's AudmodelSet.extract()). A generic audmodel
+            # head isn't guaranteed to output non-negative probabilities --
+            # some models emit raw logits, where a valid row can legitimately
+            # sum to <= 0 (e.g. [-2, 1]) -- so failure must be detected from
+            # the NaNs themselves, not the sign of the sum (review on #468).
+            # idxmax on an all-NaN row is also deprecated (pandas warns it
+            # will raise ValueError in a future version), so fill with -inf
+            # just for the argmax pick.
+            all_failed = head_scores.isna().all(axis=1)
             pred_label = head_scores.fillna(-np.inf).idxmax(axis=1)
-            pred_label = pred_label.where(head_scores.sum(axis=1) > 0, "unknown")
+            pred_label = pred_label.where(~all_failed, "unknown")
             return_df[f"{head}_pred"] = pred_label.str.removeprefix(f"{head}_")
 
         return return_df

@@ -46,9 +46,9 @@ class TestAudmodelPredictor:
     ):
         pred_df = pd.DataFrame(
             {
-                "emotion.acoustic_angry": [0.7, 0.1, 0.0],
-                "emotion.acoustic_happy": [0.2, 0.8, 0.0],
-                "emotion.acoustic_neutral": [0.1, 0.1, 0.0],
+                "emotion.acoustic_angry": [0.7, 0.1, np.nan],
+                "emotion.acoustic_happy": [0.2, 0.8, np.nan],
+                "emotion.acoustic_neutral": [0.1, 0.1, np.nan],
             }
         )
         mock_extractor = Mock()
@@ -123,3 +123,29 @@ class TestAudmodelPredictor:
             result = AudmodelPredictor(df).predict("train")
 
         assert list(result["emotion.acoustic_pred"]) == ["angry", "unknown"]
+
+    @patch("nkululeko.autopredict.ap_audmodel.FeatureExtractor")
+    def test_valid_negative_sum_row_is_not_misclassified_as_unknown(
+        self, mock_feature_extractor
+    ):
+        """Review on #468: a generic audmodel head isn't guaranteed to
+        output non-negative probabilities -- some models emit raw logits,
+        where a legitimately successful row can sum to <= 0 (e.g.
+        [-2, 1] or [1, -1]). Failure must be detected from the NaNs
+        AudmodelSet.extract() actually produces, not from the sign of the
+        row sum, or these valid rows get wrongly replaced with "unknown"."""
+        pred_df = pd.DataFrame(
+            {
+                "emotion.acoustic_angry": [-2.0, 1.0],
+                "emotion.acoustic_happy": [1.0, -1.0],
+            }
+        )
+        mock_extractor = Mock()
+        mock_extractor.extract.return_value = pred_df
+        mock_feature_extractor.return_value = mock_extractor
+
+        df = pd.DataFrame({"dummy": [1, 2]})
+        with use_context(_context("emotion.acoustic")):
+            result = AudmodelPredictor(df).predict("train")
+
+        assert list(result["emotion.acoustic_pred"]) == ["happy", "angry"]

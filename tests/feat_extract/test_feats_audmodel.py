@@ -486,8 +486,11 @@ class TestExtractPreservesFailedRows:
         assert pd.isna(instance.df.loc[b_key, "valence"])
 
     def test_every_file_failing_leaves_an_all_nan_frame(self):
-        """If every row fails, the resulting store has no columns at all
-        (matching ap_audmodel.py's "no head_cols found at all" branch)."""
+        """If every row fails but FEATS.fail_threshold tolerates it (set to
+        1.0 here to isolate this from the threshold-enforcement behavior,
+        covered separately in TestFailThresholdEnforcement), the resulting
+        store has no columns at all (matching ap_audmodel.py's "no
+        head_cols found at all" branch)."""
         instance = _make_instance()
         instance.name = "mydb_feats"
         instance.context = MagicMock()
@@ -495,7 +498,11 @@ class TestExtractPreservesFailedRows:
             index=audformat.segmented_index(["a.wav"], [0], [1])
         )
         instance.util.get_path.return_value = "/store/"
-        instance.util.config_val.side_effect = lambda section, key, default: default
+        instance.util.config_val.side_effect = (
+            lambda section, key, default: "1.0"
+            if key == "fail_threshold"
+            else default
+        )
         instance._needs_extraction = MagicMock(return_value=True)
         instance.util.write_store = MagicMock()
         instance.extract_sample_df = MagicMock(side_effect=RuntimeError("boom"))
@@ -512,3 +519,113 @@ class TestExtractPreservesFailedRows:
         assert not instance.util.error.called
         assert instance.df.shape[1] == 0
         assert len(instance.df) == 1
+
+
+class TestFailThresholdEnforcement:
+    """Review on #468: preserving a failed file as a NaN row (instead of
+    aborting) must not bypass FEATS.fail_threshold -- a store that's
+    entirely or mostly empty must not be persisted and later reused as if
+    extraction had succeeded."""
+
+    def _instance(self, fail_threshold=None):
+        instance = _make_instance()
+        instance.name = "mydb_feats"
+        instance.context = MagicMock()
+        instance.util.get_path.return_value = "/store/"
+        overrides = {}
+        if fail_threshold is not None:
+            overrides["fail_threshold"] = str(fail_threshold)
+        instance.util.config_val.side_effect = (
+            lambda section, key, default: overrides.get(key, default)
+        )
+        instance._needs_extraction = MagicMock(return_value=True)
+        instance.util.write_store = MagicMock()
+        return instance
+
+    def test_failure_rate_exceeding_default_threshold_raises(self):
+        instance = self._instance()
+        instance.util.error.side_effect = RuntimeError("boom")
+        instance.data_df = pd.DataFrame(
+            index=audformat.segmented_index(["a.wav", "b.wav"], [0, 0], [1, 1])
+        )
+        instance.extract_sample_df = MagicMock(side_effect=RuntimeError("extraction failed"))
+
+        with (
+            patch(
+                "nkululeko.feat_extract.feats_audmodel.audiofile.read",
+                return_value=(np.array([0.0]), 16000),
+            ),
+            patch("nkululeko.feat_extract.feats_audmodel.audiofile.write"),
+            pytest.raises(RuntimeError),
+        ):
+            instance.extract()
+
+        assert instance.util.error.called
+        assert not instance.util.write_store.called
+
+    def test_failure_rate_within_default_threshold_does_not_raise(self):
+        instance = self._instance()
+        instance.data_df = pd.DataFrame(
+            index=audformat.segmented_index(
+                ["a.wav", "b.wav", "c.wav", "d.wav"], [0, 0, 0, 0], [1, 1, 1, 1]
+            )
+        )
+        good_df = pd.DataFrame(
+            [[0.5]],
+            columns=["valence"],
+            index=audformat.segmented_index(["ok"], [0], [1]),
+        )
+
+        def fake_extract_sample_df(signal, sr, index_tuple):
+            if index_tuple[0] == "a.wav":
+                raise RuntimeError("boom")
+            return good_df
+
+        instance.extract_sample_df = MagicMock(side_effect=fake_extract_sample_df)
+
+        with (
+            patch(
+                "nkululeko.feat_extract.feats_audmodel.audiofile.read",
+                return_value=(np.array([0.0]), 16000),
+            ),
+            patch("nkululeko.feat_extract.feats_audmodel.audiofile.write"),
+        ):
+            instance.extract()
+
+        assert not instance.util.error.called
+        assert instance.util.write_store.called
+        assert len(instance.df) == 4
+
+    def test_custom_fail_threshold_is_honored(self):
+        """A 67% failure rate exceeds the 0.5 default but is within a
+        custom, higher threshold -- must not raise."""
+        instance = self._instance(fail_threshold=0.9)
+        instance.data_df = pd.DataFrame(
+            index=audformat.segmented_index(
+                ["a.wav", "b.wav", "c.wav"], [0, 0, 0], [1, 1, 1]
+            )
+        )
+        good_df = pd.DataFrame(
+            [[0.5]],
+            columns=["valence"],
+            index=audformat.segmented_index(["ok"], [0], [1]),
+        )
+
+        def fake_extract_sample_df(signal, sr, index_tuple):
+            if index_tuple[0] in ("a.wav", "b.wav"):
+                raise RuntimeError("boom")
+            return good_df
+
+        instance.extract_sample_df = MagicMock(side_effect=fake_extract_sample_df)
+
+        with (
+            patch(
+                "nkululeko.feat_extract.feats_audmodel.audiofile.read",
+                return_value=(np.array([0.0]), 16000),
+            ),
+            patch("nkululeko.feat_extract.feats_audmodel.audiofile.write"),
+        ):
+            instance.extract()
+
+        assert not instance.util.error.called
+        assert instance.util.write_store.called

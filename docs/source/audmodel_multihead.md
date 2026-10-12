@@ -122,7 +122,11 @@ python -m nkululeko.nkululeko --config my_config.ini
 - A per-file extraction failure no longer aborts the whole run: it's kept
   as a missing (NaN) row, so the rest of the dataset is still usable, and
   the `audmodel` PREDICT target marks a fully-failed categorical row as
-  `unknown` instead of picking an arbitrary class.
+  `unknown` instead of picking an arbitrary class (a legitimate negative
+  row sum, e.g. from a model that outputs raw logits, is not mistaken for
+  a failure). If the failure rate exceeds `FEATS.fail_threshold` (default
+  0.5), extraction still raises a clear error instead of silently
+  persisting a mostly-empty feature store.
 - If `onnxruntime` silently falls back to CPU despite `MODEL.device = cuda`
   (e.g. a missing cuDNN 9), a warning is logged pointing at the likely
   `LD_LIBRARY_PATH` fix.

@@ -198,6 +198,8 @@ class AudmodelSet(Featureset):
                 "extracting audmodel embeddings, this might take a while..."
             )
             df = pd.DataFrame()
+            total = len(self.data_df.index)
+            failed = 0
             for file, start, end in tqdm(self.data_df.index):
                 signal, sr = None, None
                 try:
@@ -227,7 +229,25 @@ class AudmodelSet(Featureset):
                     f_df = pd.DataFrame(
                         index=audformat.segmented_index(file, start, end)
                     )
+                    failed += 1
                 df = pd.concat([df, f_df])
+            if failed > 0:
+                self.util.warn(
+                    f"audmodel extraction: {failed}/{total} files failed"
+                    f" ({100 * failed / total:.1f}%)"
+                )
+                fail_threshold = self._get_fail_threshold()
+                if total > 0 and failed / total > fail_threshold:
+                    # Enforce the same FEATS.fail_threshold contract as
+                    # _extract_embeddings_with_error_handling() (review on
+                    # #468): keeping individual failures as NaN rows must
+                    # not let a store that's entirely (or mostly) empty get
+                    # persisted and silently reused as if extraction had
+                    # succeeded.
+                    self.util.error(
+                        f"audmodel extraction failure rate {failed / total:.0%}"
+                        f" exceeds threshold {fail_threshold:.0%}"
+                    )
             self.df = df
             self.util.write_store(self.df, storage, store_format)
             try:
