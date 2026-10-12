@@ -149,3 +149,29 @@ class TestAudmodelPredictor:
             result = AudmodelPredictor(df).predict("train")
 
         assert list(result["emotion.acoustic_pred"]) == ["happy", "angry"]
+
+    @patch("nkululeko.autopredict.ap_audmodel.FeatureExtractor")
+    def test_overlapping_head_names_do_not_mix_columns(self, mock_feature_extractor):
+        """Review on #468: with heads "foo" (categorical) and "foo_bar"
+        (one-dimensional), naive startswith("foo_") matching for "foo"
+        would also claim "foo_bar"'s own column as one of foo's own
+        category scores, corrupting foo's argmax. Processing the longer
+        head name first and removing its claimed column from the shared
+        pool prevents that."""
+        pred_df = pd.DataFrame(
+            {
+                "foo_angry": [0.1, 0.9],
+                "foo_happy": [0.9, 0.1],
+                "foo_bar": [5.0, 6.0],
+            }
+        )
+        mock_extractor = Mock()
+        mock_extractor.extract.return_value = pred_df
+        mock_feature_extractor.return_value = mock_extractor
+
+        df = pd.DataFrame({"dummy": [1, 2]})
+        with use_context(_context("['foo', 'foo_bar']")):
+            result = AudmodelPredictor(df).predict("train")
+
+        assert list(result["foo_pred"]) == ["happy", "angry"]
+        assert list(result["foo_bar_pred"]) == [5.0, 6.0]

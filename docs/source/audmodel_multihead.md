@@ -39,24 +39,38 @@ feature columns are each head's own column(s), prefixed with the head name:
 `emotion.acoustic_angry`, `emotion.acoustic_happy`, ... for a multi-dimension
 head.
 
-### 2. Add a prediction target using the same heads
+### 2. Add predicted columns with nkululeko.predict
 
-```ini
-[PREDICT]
-targets = ['audmodel']
+```bash
+python -m nkululeko.predict \
+    --list ./your_dataset.csv \
+    --model audmodel \
+    --config your_feats_config.ini \
+    --outfile ./your_dataset_with_audmodel.csv
 ```
 
-The `audmodel` PREDICT target reuses the same `FEATS.audmodel.id` /
-`FEATS.audmodel.embeddings_name` keys configured above -- no separate
-`[PREDICT]` key needed. For each configured head it writes one `<head>_pred`
-column: the raw value for a one-dimensional head (`valence_pred`), or the
-argmax class label for a multi-dimension head (`emotion.acoustic_pred`). A
-row whose extraction failed is marked `unknown` for a categorical head,
-rather than silently picking an arbitrary class.
+`your_feats_config.ini` only needs the `[FEATS] audmodel.id`/
+`audmodel.embeddings_name` keys from step 1 -- the `audmodel` autopredict
+target reuses them, no separate config key needed. For each configured
+head it writes one `<head>_pred` column onto the CSV: the raw value for a
+one-dimensional head (`valence_pred`), or the argmax class label for a
+multi-dimension head (`emotion.acoustic_pred`). A row whose extraction
+failed is marked `unknown` for a categorical head, rather than silently
+picking an arbitrary class. (`[PREDICT] targets = [...]` in an experiment
+config, by contrast, is not wired into any runnable entry point yet --
+this standalone command is the one that actually produces the columns.)
 
 ### 3. Analyze the new columns
 
+Point a normal explore experiment at the enriched CSV from step 2 and add:
+
 ```ini
+[DATA]
+databases = ['mydb']
+mydb = ./your_dataset_with_audmodel.csv
+mydb.type = csv
+target = depression
+
 [EXPL]
 value_counts = [['emotion.acoustic_pred']]
 feature_distributions = True
@@ -77,6 +91,29 @@ per sample even within one speaker.
 
 ## Full example
 
+`your_feats_config.ini` (just the keys the `audmodel` extractor/predictor
+need):
+
+```ini
+[FEATS]
+type = ['audmodel']
+audmodel.id = 1c250fd7-1.1.2
+audmodel.embeddings_name = ['arousal', 'valence', 'emotion.acoustic']
+```
+
+Step 2, add the predicted columns:
+
+```bash
+python -m nkululeko.predict \
+    --list ./your_dataset.csv \
+    --model audmodel \
+    --config your_feats_config.ini \
+    --outfile ./your_dataset_with_audmodel.csv
+```
+
+Step 3, a normal explore experiment on the enriched CSV
+(`exp_audmodel_multihead.ini`):
+
 ```ini
 [EXP]
 root = ./results/
@@ -84,7 +121,8 @@ name = exp_audmodel_multihead
 
 [DATA]
 databases = ['mydb']
-mydb = ./data/mydb
+mydb = ./your_dataset_with_audmodel.csv
+mydb.type = csv
 target = depression
 labels = ['depressed', 'control']
 
@@ -92,9 +130,6 @@ labels = ['depressed', 'control']
 type = ['audmodel']
 audmodel.id = 1c250fd7-1.1.2
 audmodel.embeddings_name = ['arousal', 'valence', 'emotion.acoustic']
-
-[PREDICT]
-targets = ['audmodel']
 
 [EXPL]
 sample_selection = all
@@ -105,16 +140,16 @@ feature_distributions = True
 Run with:
 
 ```bash
-python -m nkululeko.nkululeko --config my_config.ini
+python -m nkululeko.explore --config exp_audmodel_multihead.ini
 ```
 
 ## Output
 
-- `store/`: extracted feature columns `arousal`, `valence`,
+- `your_dataset_with_audmodel.csv` (step 2): the original columns plus
+  `arousal_pred`, `valence_pred`, `emotion.acoustic_pred`.
+- `store/` (step 3): extracted feature columns `arousal`, `valence`,
   `emotion.acoustic_angry`, `emotion.acoustic_happy`, ... (and so on for
   every configured head).
-- Data columns (after the `audmodel` PREDICT target runs): `arousal_pred`,
-  `valence_pred`, `emotion.acoustic_pred`.
 - `results/<exp>/images/`: `feat_dist_*` plots per feature, plus a
   `*_speaker` variant per feature when speaker ids are available.
 
@@ -126,8 +161,8 @@ python -m nkululeko.nkululeko --config my_config.ini
   named output heads, and raises a clear config error if a list is given.
 - A per-file extraction failure no longer aborts the whole run: it's kept
   as a missing (NaN) row, so the rest of the dataset is still usable, and
-  the `audmodel` PREDICT target marks a fully-failed categorical row as
-  `unknown` instead of picking an arbitrary class (a legitimate negative
+  the `audmodel` autopredict target marks a fully-failed categorical row
+  as `unknown` instead of picking an arbitrary class (a legitimate negative
   row sum, e.g. from a model that outputs raw logits, is not mistaken for
   a failure). If the failure rate exceeds `FEATS.fail_threshold` (default
   0.5), extraction still raises a clear error instead of silently

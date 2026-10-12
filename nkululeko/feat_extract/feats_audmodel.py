@@ -1,5 +1,6 @@
 # feats_audmodel.py
 import ast
+import hashlib
 import os
 
 import numpy as np
@@ -35,6 +36,26 @@ def parse_embeddings_names(raw):
             raise ValueError("FEATS.audmodel.embeddings_name is an empty list")
         return [str(p) for p in parsed]
     return [str(parsed)]
+
+
+def embeddings_cache_key(raw):
+    """Collision-free cache-key component for FEATS.audmodel.embeddings_name.
+
+    Single head: the bare head name, kept human-readable (unchanged from
+    before multi-head support existed). Multiple heads: joining the names
+    with a plain separator like "-" is ambiguous -- ['foo-bar', 'baz'] and
+    ['foo', 'bar-baz'] would both join to "foo-bar-baz" (review on #468),
+    silently reusing a different head selection's cached features. Hashing
+    the ordered list instead (joined on an ASCII unit separator a real head
+    name won't contain, so the pre-hash string itself is already
+    unambiguous) avoids that, and sidesteps escaping concerns for using
+    arbitrary head names in a filesystem path.
+    """
+    heads = parse_embeddings_names(raw)
+    if len(heads) == 1:
+        return heads[0]
+    digest = hashlib.sha256("\x1f".join(heads).encode()).hexdigest()[:16]
+    return f"multihead-{digest}"
 
 
 class AudmodelSet(Featureset):
@@ -184,7 +205,7 @@ class AudmodelSet(Featureset):
         raw_embeddings_name = self.util.config_val(
             "FEATS", "audmodel.embeddings_name", "hidden_states"
         )
-        embeddings_name = "-".join(parse_embeddings_names(raw_embeddings_name))
+        embeddings_name = embeddings_cache_key(raw_embeddings_name)
         if self.hidden_layer == 0:
             storage = f"{store}{self.name}_{model_id}_{embeddings_name}.{store_format}"
         else:
@@ -275,7 +296,7 @@ class AudmodelSet(Featureset):
         raw_embeddings_name = self.util.config_val(
             "FEATS", "audmodel.embeddings_name", "hidden_states"
         )
-        embeddings_name = "-".join(parse_embeddings_names(raw_embeddings_name))
+        embeddings_name = embeddings_cache_key(raw_embeddings_name)
         segment_cache = audeer.mkdir(
             audeer.path(self.util.get_path("cache"), model_id, embeddings_name)
         )

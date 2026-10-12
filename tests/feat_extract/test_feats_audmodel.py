@@ -17,7 +17,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from nkululeko.feat_extract.feats_audmodel import AudmodelSet, parse_embeddings_names
+from nkululeko.feat_extract.feats_audmodel import (
+    AudmodelSet,
+    embeddings_cache_key,
+    parse_embeddings_names,
+)
 
 
 def _make_instance(embeddings_names=("valence",), head_label_counts=(1,)):
@@ -272,6 +276,41 @@ class _FakeOnnxModel:
                 result.extend(self._head_labels[name])
             return result
         return self._head_labels[outputs]
+
+
+class TestEmbeddingsCacheKey:
+    """Review on #468: joining multi-head names with a plain "-" separator
+    is ambiguous -- ['foo-bar', 'baz'] and ['foo', 'bar-baz'] both joined
+    to the same "foo-bar-baz" string, silently reusing a different head
+    selection's cached features."""
+
+    def test_single_head_stays_the_bare_name(self):
+        assert embeddings_cache_key("valence") == "valence"
+
+    def test_multi_head_is_not_a_plain_join(self):
+        key = embeddings_cache_key("['arousal', 'valence']")
+        assert key != "arousal-valence"
+        assert key.startswith("multihead-")
+
+    def test_hyphenated_head_names_do_not_collide(self):
+        key_a = embeddings_cache_key("['foo-bar', 'baz']")
+        key_b = embeddings_cache_key("['foo', 'bar-baz']")
+
+        assert key_a != key_b
+
+    def test_same_heads_in_same_order_give_the_same_key(self):
+        key_a = embeddings_cache_key("['arousal', 'valence']")
+        key_b = embeddings_cache_key("['arousal', 'valence']")
+
+        assert key_a == key_b
+
+    def test_different_head_order_gives_a_different_key(self):
+        """Order matters: extraction concatenates heads in list order, so
+        a different order is a different cache entry."""
+        key_a = embeddings_cache_key("['arousal', 'valence']")
+        key_b = embeddings_cache_key("['valence', 'arousal']")
+
+        assert key_a != key_b
 
 
 class TestLoadOnnxModelMultiHead:

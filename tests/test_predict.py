@@ -231,8 +231,28 @@ class TestAutopredictTargets:
             "text",
             "translation",
             "textclassification",
+            "audmodel",
         ):
             assert t in AUTOPREDICT_TARGETS
+
+    def test_audmodel_target_dispatches_to_audmodel_predictor(self):
+        """GH #459/#468: [PREDICT] targets=['audmodel'] (Experiment.autopredict())
+        is unreachable from any entry point -- nkululeko.nkululeko never calls
+        it, and this standalone CLI has its own separate dispatch. "audmodel"
+        must be reachable here (python -m nkululeko.predict --model audmodel),
+        the only mechanism that actually runs for any autopredict target."""
+        from nkululeko.predict import _dispatch_autopredict
+
+        df = pd.DataFrame({"dummy": [1, 2]})
+        with patch("nkululeko.autopredict.ap_audmodel.AudmodelPredictor") as mock_cls:
+            mock_instance = mock_cls.return_value
+            mock_instance.predict.return_value = "RESULT"
+
+            result = _dispatch_autopredict("audmodel", df)
+
+        mock_cls.assert_called_once_with(df)
+        mock_instance.predict.assert_called_once_with("all")
+        assert result == "RESULT"
 
 
 # ---------------------------------------------------------------------------

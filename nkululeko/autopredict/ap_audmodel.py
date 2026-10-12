@@ -19,9 +19,10 @@ from nkululeko.utils.util import Util
 class AudmodelPredictor:
     """
     AudmodelPredictor
-    writes one column per output dimension of each configured audmodel
-    head, plus an argmax label column for any head with more than one
-    dimension (treated as categorical, e.g. "emotion.acoustic").
+    writes exactly one `<head>_pred` column per configured audmodel head:
+    the raw value for a one-dimensional head (e.g. "valence"), or the
+    argmax class label for a multi-dimension (categorical) head, e.g.
+    "emotion.acoustic".
     """
 
     def __init__(self, df):
@@ -44,11 +45,25 @@ class AudmodelPredictor:
         raw_embeddings_name = self.util.config_val(
             "FEATS", "audmodel.embeddings_name", "hidden_states"
         )
-        for head in parse_embeddings_names(raw_embeddings_name):
-            if head in pred_df.columns:
+        heads = parse_embeddings_names(raw_embeddings_name)
+        # Longest head name first, claiming each matched column out of a
+        # shared pool as we go (review on #468): a shorter head's name can
+        # be a strict prefix of a longer one (e.g. "foo" and "foo_bar"), so
+        # matching heads in arbitrary/configured order would let "foo"'s
+        # startswith("foo_") also claim "foo_bar"'s own column, corrupting
+        # "foo"'s argmax with a score that belongs to a different head.
+        # Processing the longest names first and removing claimed columns
+        # from the pool means a later, shorter head can never re-claim a
+        # column a longer head already took.
+        remaining_columns = list(pred_df.columns)
+        for head in sorted(heads, key=len, reverse=True):
+            if head in remaining_columns:
                 return_df[f"{head}_pred"] = pred_df[head]
+                remaining_columns.remove(head)
                 continue
-            head_cols = [c for c in pred_df.columns if c.startswith(f"{head}_")]
+            head_cols = [c for c in remaining_columns if c.startswith(f"{head}_")]
+            for c in head_cols:
+                remaining_columns.remove(c)
             if not head_cols:
                 # Every row failed extraction for this head (extract()
                 # returned no columns at all): no numeric value to report

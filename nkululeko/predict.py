@@ -76,6 +76,7 @@ AUTOPREDICT_TARGETS = {
     "valence",
     "dominance",
     "emotion",
+    "audmodel",
 }
 
 AUDIO_EXTS = ["aac", "au", "flac", "m4a", "mp3", "ogg", "wav"]
@@ -702,6 +703,8 @@ def _dispatch_autopredict(target, df):
         from nkululeko.autopredict.ap_dominance import DominancePredictor as P
     elif target == "emotion":
         from nkululeko.autopredict.ap_emotion import EmotionPredictor as P
+    elif target == "audmodel":
+        from nkululeko.autopredict.ap_audmodel import AudmodelPredictor as P
     else:
         raise ValueError(f"unknown autopredict target: {target}")
     return P(df).predict("all")
