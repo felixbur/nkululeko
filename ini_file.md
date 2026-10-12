@@ -681,37 +681,6 @@ Automatic soft-label prediction using pre-trained models (e.g., age, gender, aro
 * **target_language**: target language for the translation prediction
   * target_language = en
 
-#### Example: multi-head audmodel extraction + prediction
-
-Correlate a target with several output heads of one audEERING model (e.g.
-devAIce expression: `arousal`, `valence`, `emotion.acoustic`) in a single
-experiment, without one run per head:
-
-```ini
-[DATA]
-databases = ['mydb']
-target = depression
-
-[FEATS]
-type = ['audmodel']
-audmodel.id = 1c250fd7-1.1.2
-audmodel.embeddings_name = ['arousal', 'valence', 'emotion.acoustic']
-
-[PREDICT]
-targets = ['audmodel']
-
-[EXPL]
-value_counts = [['emotion.acoustic_pred']]
-feature_distributions = True
-```
-
-This extracts all three heads in one ONNX forward pass (feature columns:
-`arousal`, `valence`, `emotion.acoustic_<label>` per class), then the
-`audmodel` PREDICT target adds `arousal_pred`/`valence_pred` (raw values)
-and `emotion.acoustic_pred` (the argmax class label) as new data columns,
-ready for `value_counts`/`feature_distributions` to analyze against
-`target`.
-
 ### EXPORT
 
 Options for exporting the dataset (audio files and annotations) to a new location or format.
