@@ -105,6 +105,13 @@ class AudmodelSet(Featureset):
                 "<venv>/lib/.../site-packages/nvidia/cudnn/lib)."
             )
         heads = self.embeddings_names
+        invalid = [h for h in heads if h not in self.model.outputs]
+        if invalid:
+            valid = sorted(self.model.outputs.keys())
+            self.util.error(
+                f"FEATS.audmodel.embeddings_name: unknown output head(s) "
+                f"{invalid}; this model's valid output names are: {valid}"
+            )
         multi_head = len(heads) > 1
         self._head_label_counts = [len(self.model.labels(h)) for h in heads]
         feature_names = self.model.labels(heads if multi_head else heads[0])

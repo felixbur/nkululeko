@@ -258,10 +258,11 @@ class TestParseEmbeddingsNames:
 
 class _FakeOnnxModel:
     """Stand-in for audonnx.Model: only the bits _load_onnx_model() touches
-    (.sess.get_providers(), .labels())."""
+    (.sess.get_providers(), .labels(), .outputs)."""
 
     def __init__(self, head_labels, providers=("CPUExecutionProvider",)):
         self._head_labels = head_labels
+        self.outputs = dict(head_labels)
         self.sess = MagicMock(get_providers=MagicMock(return_value=list(providers)))
 
     def labels(self, outputs):
@@ -317,6 +318,52 @@ class TestLoadOnnxModelMultiHead:
             "outputs": ["valence", "emotion.acoustic"],
             "concat": True,
         }
+
+
+class TestUnknownHeadValidation:
+    """A typo'd/unknown FEATS.audmodel.embeddings_name used to surface as a
+    bare `KeyError` from inside audonnx.Model.labels(), with no indication
+    of what the valid output names actually are."""
+
+    def _load(self, embeddings_names, fake_model):
+        instance = AudmodelSet.__new__(AudmodelSet)
+        instance.util = MagicMock()
+        instance.util.error.side_effect = RuntimeError("boom")
+        instance.embeddings_names = embeddings_names
+        instance.n_jobs = 1
+        instance.device = "cpu"
+        with (
+            patch(
+                "nkululeko.feat_extract.feats_audmodel.audonnx.load",
+                return_value=fake_model,
+            ),
+            patch("nkululeko.feat_extract.feats_audmodel.audinterface.Feature"),
+            pytest.raises(RuntimeError),
+        ):
+            instance._load_onnx_model("/fake/model/root")
+        return instance
+
+    def test_unknown_head_lists_valid_names_instead_of_keyerror(self):
+        fake_model = _FakeOnnxModel(
+            {"valence": ["valence"], "arousal": ["arousal"]}
+        )
+
+        instance = self._load(["valennce"], fake_model)
+
+        message = instance.util.error.call_args[0][0]
+        assert "valennce" in message
+        assert "arousal" in message and "valence" in message
+
+    def test_one_valid_one_unknown_head_still_reports_the_bad_one(self):
+        fake_model = _FakeOnnxModel(
+            {"valence": ["valence"], "arousal": ["arousal"]}
+        )
+
+        instance = self._load(["valence", "arousall"], fake_model)
+
+        message = instance.util.error.call_args[0][0]
+        assert "arousall" in message
+        assert "valence" not in message.split(";")[0]
 
 
 class TestGpuFallbackWarning:

@@ -126,6 +126,9 @@ python -m nkululeko.nkululeko --config my_config.ini
 - If `onnxruntime` silently falls back to CPU despite `MODEL.device = cuda`
   (e.g. a missing cuDNN 9), a warning is logged pointing at the likely
   `LD_LIBRARY_PATH` fix.
+- A typo'd or unknown head name in `audmodel.embeddings_name` raises a clear
+  config error listing the model's actual valid output names, instead of a
+  bare lookup error.
 
 ## Related
 
