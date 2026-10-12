@@ -30,6 +30,8 @@ audmodel.id = 1c250fd7-1.1.2
 audmodel.embeddings_name = ['arousal', 'valence', 'emotion.acoustic']
 ```
 
+Runnable example: [`examples/exp_emodb_audmodel_multihead.ini`](https://github.com/felixbur/nkululeko/blob/main/examples/exp_emodb_audmodel_multihead.ini).
+
 `audmodel.embeddings_name` also still accepts a single bare name (e.g.
 `valence`) for the original single-head behavior. As a list, all configured
 heads are extracted together via one ONNX forward pass (`audonnx`'s native
@@ -118,6 +120,7 @@ Step 3, a normal explore experiment on the enriched CSV
 [EXP]
 root = ./results/
 name = exp_audmodel_multihead
+sample_selection = all
 
 [DATA]
 databases = ['mydb']
@@ -132,7 +135,6 @@ audmodel.id = 1c250fd7-1.1.2
 audmodel.embeddings_name = ['arousal', 'valence', 'emotion.acoustic']
 
 [EXPL]
-sample_selection = all
 value_counts = [['emotion.acoustic_pred']]
 feature_distributions = True
 ```

@@ -396,6 +396,39 @@ class TestLoadOnnxModelMultiHead:
         }
 
 
+class TestCollidingGeneratedColumnNames:
+    """Review on #468: distinct, non-duplicate head names can still
+    generate the identical column string -- e.g. a one-dimension head
+    "foo_bar" and a categorical head "foo" with a label "bar" both
+    produce the column "foo_bar" -- leaving pred_df with duplicate-named
+    columns, which breaks any single-column selection downstream
+    (AudmodelPredictor's pred_df[head] would return a DataFrame, not a
+    Series, for that name)."""
+
+    def test_collision_between_categorical_label_and_another_heads_name(self):
+        fake_model = _FakeOnnxModel({"foo": ["bar", "baz"], "foo_bar": ["foo_bar"]})
+        instance = AudmodelSet.__new__(AudmodelSet)
+        instance.util = MagicMock()
+        instance.util.error.side_effect = RuntimeError("boom")
+        instance.embeddings_names = ["foo", "foo_bar"]
+        instance.n_jobs = 1
+        instance.device = "cpu"
+
+        with (
+            patch(
+                "nkululeko.feat_extract.feats_audmodel.audonnx.load",
+                return_value=fake_model,
+            ),
+            patch("nkululeko.feat_extract.feats_audmodel.audinterface.Feature"),
+            pytest.raises(RuntimeError),
+        ):
+            instance._load_onnx_model("/fake/model/root")
+
+        assert instance.util.error.called
+        message = instance.util.error.call_args[0][0]
+        assert "foo_bar" in message
+
+
 class TestUnknownHeadValidation:
     """A typo'd/unknown FEATS.audmodel.embeddings_name used to surface as a
     bare `KeyError` from inside audonnx.Model.labels(), with no indication

@@ -17,7 +17,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 * `'EXPL'.'dist_type'`: `'hist'` (nkululeko/plots.py:201), `'kde'` (nkululeko/plots.py:521)
 * `'EXPL'.'model'`: `False` (nkululeko/explore.py:144), `"['log_reg']"` (nkululeko/feat_extract/feats_analyser.py:195)
 * `'EXPL'.'plot_tree'`: `'False'` (nkululeko/explore.py:145), `False` (nkululeko/feat_extract/feats_analyser.py:96)
-* `'FEATS'.'audmodel.id'`: `False` (nkululeko/feat_extract/feats_audmodel.py:83), `'audmodel'` (nkululeko/feat_extract/feats_audmodel.py:213), `'audmodel'` (nkululeko/feat_extract/feats_audmodel.py:305)
+* `'FEATS'.'audmodel.id'`: `False` (nkululeko/feat_extract/feats_audmodel.py:83), `'audmodel'` (nkululeko/feat_extract/feats_audmodel.py:232), `'audmodel'` (nkululeko/feat_extract/feats_audmodel.py:324)
 * `'FEATS'.'emotion2vec.model'`: `model_mapping.get(self.feat_type, 'emotion2vec/emotion2vec_base')` (nkululeko/feat_extract/feats_emotion2vec.py:56), `_MODEL_MAPPING.get(self.feats_type, 'emotion2vec/emotion2vec_plus_large')` (nkululeko/feat_extract/feats_emotion2vec_emotion.py:76)
 * `'FEATS'.'type'`: `['os']` (nkululeko/bundle.py:220), `'os'` (nkululeko/data/datasplitter.py:417), `['os']` (nkululeko/experiment.py:235), `['os']` (nkululeko/infer.py:208), `None` (nkululeko/predict.py:224), `None` (nkululeko/predict.py:932)
 * `'FINETUNE'.'loss'`: `'cross'` (nkululeko/models/finetune_config.py:158), `'1-ccc'` (nkululeko/models/finetune_config.py:161)
@@ -118,8 +118,8 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'FEATS' | 'assignments' | `10` | nkululeko/feat_extract/feats_oxbow.py:62 |
 | 'FEATS' | 'ast.model' | `'MIT/ast-finetuned-audioset-10-10-0.4593'` | nkululeko/feat_extract/feats_ast.py:25 |
 | 'FEATS' | 'aud.model' | `'./audmodel/'` | nkululeko/feat_extract/feats_auddim.py:27, nkululeko/feat_extract/feats_audwav2vec2.py:31 |
-| 'FEATS' | 'audmodel.embeddings_name' | `'hidden_states'` | nkululeko/autopredict/ap_audmodel.py:57, nkululeko/feat_extract/feats_audmodel.py:88, nkululeko/feat_extract/feats_audmodel.py:214, +1 more |
-| 'FEATS' | 'audmodel.id' | `'audmodel'` / `False` | nkululeko/feat_extract/feats_audmodel.py:83, nkululeko/feat_extract/feats_audmodel.py:213, nkululeko/feat_extract/feats_audmodel.py:305 |
+| 'FEATS' | 'audmodel.embeddings_name' | `'hidden_states'` | nkululeko/autopredict/ap_audmodel.py:57, nkululeko/feat_extract/feats_audmodel.py:88, nkululeko/feat_extract/feats_audmodel.py:233, +1 more |
+| 'FEATS' | 'audmodel.id' | `'audmodel'` / `False` | nkululeko/feat_extract/feats_audmodel.py:83, nkululeko/feat_extract/feats_audmodel.py:232, nkululeko/feat_extract/feats_audmodel.py:324 |
 | 'FEATS' | 'balancing' | `False` | nkululeko/modelrunner.py:462 |
 | 'FEATS' | 'balancing_random_state' | `42` | nkululeko/modelrunner.py:468 |
 | 'FEATS' | 'bert.layer' | `'0'` | nkululeko/feat_extract/feats_bert.py:39 |

@@ -144,6 +144,25 @@ class AudmodelSet(Featureset):
         multi_head = len(heads) > 1
         self._head_label_counts = [len(self.model.labels(h)) for h in heads]
         feature_names = self.model.labels(heads if multi_head else heads[0])
+        prefixed_names = self._prefixed_head_labels(feature_names)
+        seen = set()
+        collisions = sorted({n for n in prefixed_names if n in seen or seen.add(n)})
+        if collisions:
+            # Two different heads' generated column names (head name for a
+            # one-dimension head, "{head}_{label}" otherwise) can still
+            # collide even with unique, non-duplicate head names -- e.g. a
+            # one-dimension head "foo_bar" and a categorical head "foo"
+            # with a label "bar" both produce the column "foo_bar". That
+            # leaves pred_df with duplicate-named columns, which breaks
+            # any single-column selection downstream (AudmodelPredictor's
+            # pred_df[head] would return a DataFrame, not a Series).
+            self.util.error(
+                "FEATS.audmodel.embeddings_name: generated feature column "
+                f"name(s) collide across different heads: {collisions}. "
+                "Choose head names that don't produce the same prefixed "
+                "column (e.g. a one-dimension head's own name must not "
+                "equal another head's '<head>_<label>' combination)."
+            )
         process_func_args = {"outputs": heads if multi_head else heads[0]}
         if multi_head:
             process_func_args["concat"] = True
