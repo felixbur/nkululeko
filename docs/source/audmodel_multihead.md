@@ -66,9 +66,14 @@ feature_distributions = True
 target. `feature_distributions` runs Kruskal-Wallis/pairwise significance
 tests on every extracted feature (including each head's raw value) grouped
 by the target, and -- when speaker ids are available -- also produces a
-speaker-level version of the same plot (one row per speaker, each feature
-averaged by mean), to avoid significance being dominated by segment count
-rather than real effect size.
+speaker-level version of the same plot (each feature averaged by mean),
+to avoid significance being dominated by segment count rather than real
+effect size. The aggregation differs by target type: for a classification
+target, one row per `(speaker, label)` -- a speaker with samples of more
+than one class still contributes once per class, not collapsed into a
+single speaker-wide average; for a regression target, one row per speaker
+(both the label and the feature averaged), since a continuous label varies
+per sample even within one speaker.
 
 ## Full example
 

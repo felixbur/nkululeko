@@ -634,7 +634,7 @@ Feature exploration and visualisation options, used by the `explore` module.
 
 * **feature_distributions**: plot distributions for features and analyze importance
   * feature_distributions = False
-  * when speaker ids are available, a speaker-level distribution plot (one row per speaker, feature averaged by mean) is also produced alongside the sample-level one, mirroring `value_counts`' existing speaker-level plot -- avoids significance tests being dominated by segment count rather than real effect size
+  * when speaker ids are available, a speaker-level distribution plot (feature averaged by mean) is also produced alongside the sample-level one, mirroring `value_counts`' existing speaker-level plot -- avoids significance tests being dominated by segment count rather than real effect size. One row per `(speaker, label)` for a classification target (a speaker with samples of more than one class contributes once per class); one row per speaker for a regression target (label and feature both averaged, since a continuous label varies per sample even within one speaker)
 * **ignore_gender**: ignore gender when plotting feature distribution
   * ignore_gender = False
 * **model**: Which model to use to estimate feature importance.

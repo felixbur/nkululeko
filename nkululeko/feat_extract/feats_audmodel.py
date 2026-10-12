@@ -1,7 +1,6 @@
 # feats_audmodel.py
 import ast
 import os
-import uuid
 
 import numpy as np
 import pandas as pd
@@ -15,7 +14,7 @@ import audiofile
 import audmodel
 import audonnx
 
-from nkululeko.feat_extract.featureset import Featureset
+from nkululeko.feat_extract.featureset import EXTRACTION_ERRORS, Featureset
 
 
 def parse_embeddings_names(raw):
@@ -201,7 +200,6 @@ class AudmodelSet(Featureset):
             total = len(self.data_df.index)
             failed = 0
             for file, start, end in tqdm(self.data_df.index):
-                signal, sr = None, None
                 try:
                     if pd.isna(end):
                         signal, sr = audiofile.read(file, offset=start)
@@ -210,21 +208,23 @@ class AudmodelSet(Featureset):
                             file, duration=end - start, offset=start
                         )
                     f_df = self.extract_sample_df(signal, sr, (file, start, end))
-                except Exception as ror:
-                    tmp_file_name = f"tmp_{uuid.uuid4()}.wav"
-                    if signal is not None and sr is not None:
-                        try:
-                            audiofile.write(tmp_file_name, signal, sr)
-                            self.util.debug(f"segment from {file} written to {tmp_file_name} for debugging.")
-                        except Exception as write_err:
-                            self.util.warn(f"could not write debug audio: {write_err}")
+                except EXTRACTION_ERRORS as ror:
                     # Keep this row as missing (NaN once concatenated with
                     # the columns other rows have) instead of aborting the
                     # whole extraction (review on #468): a single bad file
                     # would otherwise abort every downstream consumer,
                     # including ap_audmodel.py's PREDICT target, whose
                     # all-zero-row "unknown" fallback could never actually
-                    # be reached as long as this raised here.
+                    # be reached as long as this raised here. Only the
+                    # shared EXTRACTION_ERRORS types (bad/corrupt audio,
+                    # I/O issues) are tolerated this way -- anything else
+                    # (e.g. a KeyError/TypeError from a programming bug)
+                    # still propagates and aborts, same as before. No debug
+                    # audio dump here (review on #468): with a tolerated
+                    # failure rate instead of an immediate abort, a large
+                    # dataset could otherwise leak many undeleted temp
+                    # files; the warning's file/start/end already points
+                    # at the original audio for manual inspection.
                     self.util.warn(f"audmodel extraction failed on file {file}: {ror}")
                     f_df = pd.DataFrame(
                         index=audformat.segmented_index(file, start, end)

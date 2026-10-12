@@ -490,3 +490,32 @@ class TestPlotFeatureSpeaker:
         args, _ = plots.plot_feature.call_args
         _, _, _, labels_speaker, _ = args
         assert sorted(labels_speaker["speaker"].tolist()) == ["s1", "s2"]
+
+    def test_aligns_by_index_when_features_have_fewer_rows_than_labels(self):
+        """Review on #468: FEATS.nan_strategy=drop can remove rows from
+        df_features while df_labels stays unchanged (e.g. a NaN in some
+        other feature column caused that row to be dropped dataset-wide).
+        The frames must be aligned by index, not combined via .values
+        arrays -- which would raise "All arrays must be of the same
+        length" the moment the two differ in size."""
+        plots = self._make_plots()
+        plots.plot_feature = MagicMock()
+        df_labels = pd.DataFrame(
+            {
+                "speaker": ["s1", "s1", "s2", "s2"],
+                "class_label": ["a", "a", "b", "b"],
+            },
+            index=[0, 1, 2, 3],
+        )
+        # row index 1 (s1) is missing from df_features entirely.
+        df_features = pd.DataFrame({"feat1": [1.0, 10.0, 12.0]}, index=[0, 2, 3])
+
+        plots.plot_feature_speaker(
+            "all", "feat1", "class_label", df_labels, df_features
+        )
+
+        args, _ = plots.plot_feature.call_args
+        _, _, _, labels_speaker, features_speaker = args
+        merged = labels_speaker.join(features_speaker)
+        by_speaker = dict(zip(merged["speaker"], merged["feat1"]))
+        assert by_speaker == {"s1": 1.0, "s2": 11.0}

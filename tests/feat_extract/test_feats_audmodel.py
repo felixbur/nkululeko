@@ -520,6 +520,64 @@ class TestExtractPreservesFailedRows:
         assert instance.df.shape[1] == 0
         assert len(instance.df) == 1
 
+    def test_no_debug_audio_is_written_on_failure(self):
+        """Review on #468: with the loop now tolerating failures instead
+        of aborting on the first one, writing a debug .wav per failure
+        could leak many undeleted temp files on a large dataset with a
+        tolerated failure rate -- removed entirely."""
+        instance = _make_instance()
+        instance.name = "mydb_feats"
+        instance.context = MagicMock()
+        instance.data_df = pd.DataFrame(
+            index=audformat.segmented_index(["a.wav"], [0], [1])
+        )
+        instance.util.get_path.return_value = "/store/"
+        instance.util.config_val.side_effect = lambda section, key, default: default
+        instance._needs_extraction = MagicMock(return_value=True)
+        instance.util.write_store = MagicMock()
+        instance.extract_sample_df = MagicMock(side_effect=RuntimeError("boom"))
+
+        with (
+            patch(
+                "nkululeko.feat_extract.feats_audmodel.audiofile.read",
+                return_value=(np.array([0.0]), 16000),
+            ),
+            patch("nkululeko.feat_extract.feats_audmodel.audiofile.write") as write_mock,
+        ):
+            instance.extract()
+
+        assert not write_mock.called
+
+    def test_unexpected_exception_type_still_propagates(self):
+        """Review on #468: only the shared EXTRACTION_ERRORS types (bad
+        audio, I/O issues) are tolerated as a per-file miss -- a
+        programming/model-contract bug (e.g. KeyError, TypeError) must
+        still abort loudly instead of being silently counted as a
+        tolerated failure."""
+        instance = _make_instance()
+        instance.name = "mydb_feats"
+        instance.context = MagicMock()
+        instance.data_df = pd.DataFrame(
+            index=audformat.segmented_index(["a.wav"], [0], [1])
+        )
+        instance.util.get_path.return_value = "/store/"
+        instance.util.config_val.side_effect = lambda section, key, default: default
+        instance._needs_extraction = MagicMock(return_value=True)
+        instance.util.write_store = MagicMock()
+        instance.extract_sample_df = MagicMock(side_effect=KeyError("unexpected"))
+
+        with (
+            patch(
+                "nkululeko.feat_extract.feats_audmodel.audiofile.read",
+                return_value=(np.array([0.0]), 16000),
+            ),
+            patch("nkululeko.feat_extract.feats_audmodel.audiofile.write"),
+            pytest.raises(KeyError),
+        ):
+            instance.extract()
+
+        assert not instance.util.warn.called
+
 
 class TestFailThresholdEnforcement:
     """Review on #468: preserving a failed file as a NaN row (instead of

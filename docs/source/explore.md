@@ -4,7 +4,7 @@ The `nkululeko.explore` module focuses on exploratory data analysis and feature 
 
 ## Features
 * Feature importance (tree / xgb model quick fit).
-* Feature distributions per category (with statistical tests like Mann-Whitney, t-test, Levene), plus a speaker-level distribution (one row per speaker, feature averaged by mean) when speaker ids are available.
+* Feature distributions per category (with statistical tests like Mann-Whitney, t-test, Levene), plus a speaker-level distribution (feature averaged by mean) when speaker ids are available -- one row per `(speaker, label)` for a classification target, one row per speaker for a regression target.
 * Scatter plots (PCA, t-SNE, UMAP) for feature space structure.
 * Regression plots (`regplot`) between feature pairs (categorical or continuous targets).
 * Bias / correlation plots between automatically predicted properties and target labels.

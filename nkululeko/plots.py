@@ -1070,13 +1070,21 @@ class Plots(ContextAware):
                 f"{feature}, nothing to plot"
             )
             return
+        # Align by index rather than position (review on #468):
+        # FEATS.nan_strategy=drop can remove rows from df_features while
+        # df_labels is unchanged, so the two can differ in length/order.
+        # Passing Series (not .values arrays) lets pd.DataFrame's
+        # constructor align them by index -- a row present in df_labels
+        # but dropped from df_features becomes NaN in `feature` instead of
+        # a length-mismatch crash (or a silent positional misalignment, if
+        # lengths just happened to match).
+        common_index = df_labels.index.intersection(df_features.index)
         df_plot = pd.DataFrame(
             {
-                "speaker": df_labels["speaker"].values,
-                label: df_labels[label].values,
-                feature: df_features[feature].values,
-            },
-            index=df_labels.index,
+                "speaker": df_labels.loc[common_index, "speaker"],
+                label: df_labels.loc[common_index, label],
+                feature: df_features.loc[common_index, feature],
+            }
         ).dropna(subset=["speaker"])
         if df_plot.empty:
             self.util.warn(
