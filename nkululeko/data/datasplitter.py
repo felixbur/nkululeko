@@ -11,6 +11,7 @@ from nkululeko.experiment_context import ContextAware
 from nkululeko.file_checker import FileChecker
 from nkululeko.filter_data import DataFilter
 from nkululeko.utils.dataframe import (
+    latest_source_csv_mtime,
     read_cached_df,
     should_reuse_split,
     split_cache_paths,
@@ -106,7 +107,8 @@ class Datasplitter(ContextAware):
         self.df_dev = None
         all_datasets = list(self.datasets.values())
         store = self.util.get_path("store")
-        used_cache = should_reuse_split(self.util, self.split3)
+        source_mtime = latest_source_csv_mtime(self.datasets.keys(), self.util)
+        used_cache = should_reuse_split(self.util, self.split3, source_mtime=source_mtime)
         cache_paths = split_cache_paths(store, self.split3)
 
         if used_cache:

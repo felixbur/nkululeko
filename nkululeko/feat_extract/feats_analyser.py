@@ -168,6 +168,29 @@ class FeatureAnalyser(ContextAware):
         self.util.debug(f"Saved SHAP feature importance to {csv_filename}")
         self.util.debug(f"plotted SHAP feature importance to {filename}")
 
+    def _plot_features_distribution(self, features_to_plot, sample_selection):
+        """Plot each feature's sample-level distribution, plus a
+        speaker-level one (GH #459 item 5(c)) when speaker ids are
+        available -- mirrors Experiment.plot_distribution()'s identical
+        got_speaker gate for the value_counts speaker-level plot."""
+        got_speaker = self.context.got_speaker
+        for feature in features_to_plot:
+            self.plots.plot_feature(
+                sample_selection,
+                feature,
+                "class_label",
+                self.df_labels,
+                self.features,
+            )
+            if got_speaker and "speaker" in self.df_labels.columns:
+                self.plots.plot_feature_speaker(
+                    sample_selection,
+                    feature,
+                    "class_label",
+                    self.df_labels,
+                    self.features,
+                )
+
     def analyse(self):
         models = ast.literal_eval(self.util.config_val("EXPL", "model", "['log_reg']"))
         model_name = "_".join(models)
@@ -394,15 +417,7 @@ class FeatureAnalyser(ContextAware):
             features_to_plot.extend(plot_feats_list)
             self.util.debug(f"also plotting additional features: {plot_feats_list}")
         sample_selection = self.util.config_val("EXP", "sample_selection", "all")
-        for feature in features_to_plot:
-            # plot_feature(self, title, feature, label, df_labels, df_features):
-            self.plots.plot_feature(
-                sample_selection,
-                feature,
-                "class_label",
-                self.df_labels,
-                self.features,
-            )
+        self._plot_features_distribution(features_to_plot, sample_selection)
         # Check for feature combinations to do a regression plot
         regplot_list = self.util.config_val("EXPL", "regplot", None)
         if regplot_list:

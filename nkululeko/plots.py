@@ -1047,6 +1047,56 @@ class Plots(ContextAware):
             )
         )
 
+    def plot_feature_speaker(self, title, feature, label, df_labels, df_features):
+        """Like plot_feature(), but aggregated to one row per (speaker,
+        label) using the speaker's mean of the feature, instead of one row
+        per sample (GH #459 item 5(c)).
+
+        Many segments per speaker make every feature come out "highly
+        significant" in the Kruskal-Wallis/pairwise tests regardless of
+        real effect size (e.g. 2897 segments across 116 speakers). This
+        mirrors the existing value_counts speaker-level precedent
+        (plot_distributions_speaker(), which reuses plot_distributions() on
+        a deduped df) -- unlike that df, though, a continuous feature's
+        first sample doesn't represent the speaker, so this aggregates by
+        mean rather than by `.head(1)`.
+
+        The aggregated frame carries no gender column, so the delegated
+        plot_feature() call always takes its no-gender branch.
+        """
+        if "speaker" not in df_labels.columns:
+            self.util.warn(
+                f"plot_feature_speaker: no speaker ids available for "
+                f"{feature}, nothing to plot"
+            )
+            return
+        df_plot = pd.DataFrame(
+            {
+                "speaker": df_labels["speaker"].values,
+                label: df_labels[label].values,
+                feature: df_features[feature].values,
+            },
+            index=df_labels.index,
+        ).dropna(subset=["speaker"])
+        if df_plot.empty:
+            self.util.warn(
+                f"plot_feature_speaker: no usable speaker ids for "
+                f"{feature}, nothing to plot"
+            )
+            return
+        grouped = (
+            df_plot.groupby(["speaker", label], observed=True)[feature]
+            .mean()
+            .reset_index()
+        )
+        self.plot_feature(
+            f"{title}_speaker",
+            feature,
+            label,
+            grouped[["speaker", label]],
+            grouped[[feature]],
+        )
+
     def regplot(self, reglist, labels, features):
         """Plot a regression (or bubble) scatter plot between two features.
 

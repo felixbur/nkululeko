@@ -373,3 +373,92 @@ class TestPlotFeatureHandlesSkippedStatistics:
         title = captured.get("title", "")
         assert title != "all samples (6)"
         assert "Mann-Whitney" in title or "t-test" in title
+
+
+class TestPlotFeatureSpeaker:
+    """GH #459 item 5(c): feature_distributions significance tests at
+    sample level are dominated by segment count rather than real effect
+    size when there are many segments per speaker. plot_feature_speaker()
+    aggregates to one row per (speaker, label) via the feature's mean
+    before delegating to the existing plot_feature() statistics/plotting
+    pipeline."""
+
+    def _make_plots(self):
+        from nkululeko.plots import Plots
+
+        with patch("nkululeko.utils.util.Util.get_path", return_value="/tmp/"):
+            plots = Plots()
+        plots.util = MagicMock()
+        return plots
+
+    def test_no_speaker_column_warns_and_returns(self):
+        plots = self._make_plots()
+        plots.plot_feature = MagicMock()
+        df_labels = pd.DataFrame({"class_label": ["a", "b"]})
+        df_features = pd.DataFrame({"feat1": [1.0, 2.0]})
+
+        plots.plot_feature_speaker(
+            "all", "feat1", "class_label", df_labels, df_features
+        )
+
+        assert plots.util.warn.called
+        plots.plot_feature.assert_not_called()
+
+    def test_all_speaker_ids_missing_warns_and_returns(self):
+        plots = self._make_plots()
+        plots.plot_feature = MagicMock()
+        df_labels = pd.DataFrame(
+            {"speaker": [None, None], "class_label": ["a", "b"]}
+        )
+        df_features = pd.DataFrame({"feat1": [1.0, 2.0]})
+
+        plots.plot_feature_speaker(
+            "all", "feat1", "class_label", df_labels, df_features
+        )
+
+        assert plots.util.warn.called
+        plots.plot_feature.assert_not_called()
+
+    def test_aggregates_by_speaker_mean_before_delegating(self):
+        plots = self._make_plots()
+        plots.plot_feature = MagicMock()
+        df_labels = pd.DataFrame(
+            {
+                "speaker": ["s1", "s1", "s2", "s2"],
+                "class_label": ["a", "a", "b", "b"],
+            }
+        )
+        df_features = pd.DataFrame({"feat1": [1.0, 3.0, 10.0, 12.0]})
+
+        plots.plot_feature_speaker(
+            "all", "feat1", "class_label", df_labels, df_features
+        )
+
+        plots.plot_feature.assert_called_once()
+        args, _ = plots.plot_feature.call_args
+        title, feature, label, labels_speaker, features_speaker = args
+        assert title == "all_speaker"
+        assert feature == "feat1"
+        assert label == "class_label"
+        merged = labels_speaker.join(features_speaker)
+        values = dict(zip(merged["speaker"], merged["feat1"]))
+        assert values == {"s1": 2.0, "s2": 11.0}
+
+    def test_drops_rows_with_missing_speaker_before_aggregating(self):
+        plots = self._make_plots()
+        plots.plot_feature = MagicMock()
+        df_labels = pd.DataFrame(
+            {
+                "speaker": ["s1", None, "s2"],
+                "class_label": ["a", "a", "b"],
+            }
+        )
+        df_features = pd.DataFrame({"feat1": [1.0, 999.0, 10.0]})
+
+        plots.plot_feature_speaker(
+            "all", "feat1", "class_label", df_labels, df_features
+        )
+
+        args, _ = plots.plot_feature.call_args
+        _, _, _, labels_speaker, _ = args
+        assert sorted(labels_speaker["speaker"].tolist()) == ["s1", "s2"]

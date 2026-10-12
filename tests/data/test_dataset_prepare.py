@@ -55,7 +55,7 @@ class TestPrepareSkipsFiltersOnSplitReuse:
         ds.util = _make_util()
 
         monkeypatch.setattr(
-            "nkululeko.data.dataset.should_reuse_split", lambda util, split3: True
+            "nkululeko.data.dataset.should_reuse_split", lambda util, split3, **kwargs: True
         )
         mock_filter_cls = MagicMock()
         monkeypatch.setattr("nkululeko.data.dataset.DataFilter", mock_filter_cls)
@@ -72,7 +72,7 @@ class TestPrepareSkipsFiltersOnSplitReuse:
         ds.util = _make_util()
 
         monkeypatch.setattr(
-            "nkululeko.data.dataset.should_reuse_split", lambda util, split3: False
+            "nkululeko.data.dataset.should_reuse_split", lambda util, split3, **kwargs: False
         )
         mock_filter_instance = MagicMock()
         mock_filter_instance.all_filters.return_value = df
@@ -110,7 +110,7 @@ class TestPrepareSkipsFiltersOnSplitReuse:
         ds.util = util
 
         monkeypatch.setattr(
-            "nkululeko.data.dataset.should_reuse_split", lambda util, split3: True
+            "nkululeko.data.dataset.should_reuse_split", lambda util, split3, **kwargs: True
         )
 
         ds.prepare()
@@ -157,7 +157,7 @@ class TestPrepareRequiredFilterHandlesRealNan:
         ds.util = util
 
         monkeypatch.setattr(
-            "nkululeko.data.dataset.should_reuse_split", lambda util, split3: False
+            "nkululeko.data.dataset.should_reuse_split", lambda util, split3, **kwargs: False
         )
         monkeypatch.setattr("nkululeko.data.dataset.DataFilter", _PassthroughDataFilter)
 
@@ -184,7 +184,7 @@ class TestPrepareRequiredFilterHandlesRealNan:
         ds.util = util
 
         monkeypatch.setattr(
-            "nkululeko.data.dataset.should_reuse_split", lambda util, split3: False
+            "nkululeko.data.dataset.should_reuse_split", lambda util, split3, **kwargs: False
         )
         monkeypatch.setattr("nkululeko.data.dataset.DataFilter", _PassthroughDataFilter)
 

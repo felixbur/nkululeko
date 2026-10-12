@@ -1,4 +1,5 @@
 # feats_audmodel.py
+import ast
 import os
 import uuid
 
@@ -15,6 +16,26 @@ import audmodel
 import audonnx
 
 from nkululeko.feat_extract.featureset import Featureset
+
+
+def parse_embeddings_names(raw):
+    """Parse FEATS.audmodel.embeddings_name into a list of output names.
+
+    Accepts either a single bare name (e.g. "valence", the back-compat
+    default) or a list literal (e.g. "['arousal', 'valence']") for
+    multi-head extraction (GH #459): a bare word isn't valid Python literal
+    syntax, so ast.literal_eval raises and we fall back to treating `raw`
+    as the one name as-is.
+    """
+    try:
+        parsed = ast.literal_eval(raw)
+    except (ValueError, SyntaxError):
+        parsed = raw
+    if isinstance(parsed, (list, tuple)):
+        if len(parsed) == 0:
+            raise ValueError("FEATS.audmodel.embeddings_name is an empty list")
+        return [str(p) for p in parsed]
+    return [str(parsed)]
 
 
 class AudmodelSet(Featureset):
@@ -36,13 +57,32 @@ class AudmodelSet(Featureset):
             self.util.error(
                 "Please set the audmodel.id in the config file to the model you want to use."
             )
-        self.embeddings_name = self.util.config_val(
+        raw_embeddings_name = self.util.config_val(
             "FEATS", "audmodel.embeddings_name", "hidden_states"
         )
+        try:
+            self.embeddings_names = parse_embeddings_names(raw_embeddings_name)
+        except ValueError as error:
+            self.util.error(str(error))
+        # kept for any external/older code that still reads the singular
+        # attribute; only meaningful for the (default) single-head case.
+        self.embeddings_name = self.embeddings_names[0]
         self.util.debug(f"loading audmodel {model_id}, this might take a while...")
         model_root = audmodel.load(model_id)
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
+
+        if len(self.embeddings_names) > 1 and (
+            self.hidden_layer != 0
+            or not os.path.isfile(os.path.join(model_root, "model.onnx"))
+        ):
+            self.util.error(
+                "FEATS.audmodel.embeddings_name as a list (multi-head "
+                "extraction) is only supported for ONNX models with named "
+                "output heads; this model would use the torch path "
+                "(audmodel.wav2vec2.layer != 0, or no model.onnx present), "
+                "which has no concept of named output heads."
+            )
 
         if self.hidden_layer != 0 or not os.path.isfile(
             os.path.join(model_root, "model.onnx")
@@ -56,12 +96,25 @@ class AudmodelSet(Featureset):
     def _load_onnx_model(self, model_root):
         self.util.debug("loading as ONNX model")
         self.model = audonnx.load(model_root, device=self.device)
+        providers = self.model.sess.get_providers()
+        if self.device == "cuda" and "CUDAExecutionProvider" not in providers:
+            self.util.warn(
+                "FEATS.audmodel: requested CUDA but onnxruntime fell back to "
+                f"{providers} -- extraction will be much slower. Check that "
+                "cuDNN 9 is on LD_LIBRARY_PATH (torch ships it under "
+                "<venv>/lib/.../site-packages/nvidia/cudnn/lib)."
+            )
+        heads = self.embeddings_names
+        multi_head = len(heads) > 1
+        self._head_label_counts = [len(self.model.labels(h)) for h in heads]
+        feature_names = self.model.labels(heads if multi_head else heads[0])
+        process_func_args = {"outputs": heads if multi_head else heads[0]}
+        if multi_head:
+            process_func_args["concat"] = True
         self.model_interface = audinterface.Feature(
-            self.model.labels(self.embeddings_name),
+            feature_names,
             process_func=self.model,
-            process_func_args={
-                "outputs": self.embeddings_name,
-            },
+            process_func_args=process_func_args,
             sampling_rate=16000,
             resample=True,
             num_workers=self.n_jobs,
@@ -122,9 +175,10 @@ class AudmodelSet(Featureset):
         # so without both here, changing either one silently reuses the
         # previous model/head's cached values.
         model_id = self.util.config_val("FEATS", "audmodel.id", "audmodel")
-        embeddings_name = self.util.config_val(
+        raw_embeddings_name = self.util.config_val(
             "FEATS", "audmodel.embeddings_name", "hidden_states"
         )
+        embeddings_name = "-".join(parse_embeddings_names(raw_embeddings_name))
         if self.hidden_layer == 0:
             storage = f"{store}{self.name}_{model_id}_{embeddings_name}.{store_format}"
         else:
@@ -181,9 +235,10 @@ class AudmodelSet(Featureset):
         model_id = self.util.config_val("FEATS", "audmodel.id", "audmodel")
         # audmodel.embeddings_name is part of the cache key too (GH #459),
         # same reasoning as the whole-dataset storage path in extract().
-        embeddings_name = self.util.config_val(
+        raw_embeddings_name = self.util.config_val(
             "FEATS", "audmodel.embeddings_name", "hidden_states"
         )
+        embeddings_name = "-".join(parse_embeddings_names(raw_embeddings_name))
         segment_cache = audeer.mkdir(
             audeer.path(self.util.get_path("cache"), model_id, embeddings_name)
         )
@@ -231,13 +286,7 @@ class AudmodelSet(Featureset):
             self._load_model()
         if not self.use_torch:
             result = self.model_interface.process_signal(signal, sr)
-            if len(result.columns) == 1:
-                # A one-dimensional head (e.g. embeddings_name="valence"):
-                # the column is just the head name itself, not prefixed
-                # with itself.
-                labels = [self.embeddings_name]
-            else:
-                labels = [f"{self.embeddings_name}_{c}" for c in result.columns]
+            labels = self._prefixed_head_labels(result.columns)
             return np.asarray(result.values).flatten(), labels
         # Torch path: resample if needed, pool last hidden state
         import torchaudio
@@ -257,3 +306,26 @@ class AudmodelSet(Featureset):
             features = y.detach().cpu().numpy().flatten()
             labels = [f"{self.embeddings_name}_{i}" for i in range(len(features))]
             return features, labels
+
+    def _prefixed_head_labels(self, columns):
+        """Prefix each ONNX output column with its owning head's name.
+
+        With multi-head extraction (GH #459 item 3), `columns` is every
+        configured head's labels concatenated in head order with no
+        indication of where one head's columns end and the next begin --
+        `self._head_label_counts` (each head's own label count, recorded at
+        load time in the same order) recovers the boundaries. A
+        one-dimensional head's single column is the head name itself
+        (not prefixed with itself), matching the prior single-head
+        behavior exactly when there's only one configured head.
+        """
+        labels = []
+        pos = 0
+        for head, count in zip(self.embeddings_names, self._head_label_counts):
+            head_columns = columns[pos : pos + count]
+            pos += count
+            if count == 1:
+                labels.append(head)
+            else:
+                labels.extend(f"{head}_{c}" for c in head_columns)
+        return labels

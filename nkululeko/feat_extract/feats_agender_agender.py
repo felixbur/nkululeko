@@ -35,6 +35,14 @@ class Agender_agenderSet(Featureset):
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         device = self.util.config_val("MODEL", "device", cuda)
         self.model = audonnx.load(model_root, device=device)
+        providers = self.model.sess.get_providers()
+        if device == "cuda" and "CUDAExecutionProvider" not in providers:
+            self.util.warn(
+                f"FEATS.agender: requested CUDA but onnxruntime fell back to "
+                f"{providers} -- extraction will be much slower. Check that "
+                "cuDNN 9 is on LD_LIBRARY_PATH (torch ships it under "
+                "<venv>/lib/.../site-packages/nvidia/cudnn/lib)."
+            )
         #        pytorch_total_params = sum(p.numel() for p in self.model.parameters())
         # self.util.debug(
         #     f"initialized agender model with {pytorch_total_params} parameters in total"

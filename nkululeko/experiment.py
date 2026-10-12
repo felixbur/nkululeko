@@ -475,6 +475,11 @@ class Experiment:
 
                 predictor = EmotionPredictor(df)
                 df = predictor.predict(sample_selection)
+            elif target == "audmodel":
+                from nkululeko.autopredict.ap_audmodel import AudmodelPredictor
+
+                predictor = AudmodelPredictor(df)
+                df = predictor.predict(sample_selection)
             else:
                 self.util.error(f"unknown auto predict target: {target}")
         return df

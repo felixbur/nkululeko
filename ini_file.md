@@ -205,7 +205,10 @@ Database loading, label mapping, and train/test split configuration.
   to always start completely fresh instead. Also controls whether the
   *silero-denoise* augmentation method (see [AUGMENT](#augment)) reuses
   files it already denoised in a previous run, instead of redoing that
-  (slow) work.
+  (slow) work. For a CSV-backed database (`DATA.<name>.type = csv`), a
+  cached split is also automatically rebuilt -- regardless of this setting
+  -- if the source CSV file's modification time is newer than the cache,
+  e.g. after adding a column to it.
   * no_reuse = False
 * **min_dur_test**: specify a minimum duration for test samples (in seconds)
   * min_dur_test = 3.5
@@ -338,7 +341,7 @@ Feature extraction settings. Multiple feature types can be combined by listing t
       * "whisper-base", "whisper-large", "whisper-medium", "whisper-tiny"
     * **audmodel**: generic [audmodel format model](https://audeering.github.io/audmodel/index.html) import
       * **audmodel.id** = audmodel id 
-      * **audmodel.embeddings_name** = hidden_states
+      * **audmodel.embeddings_name** = hidden_states, or a list of output names to extract several heads in one pass, e.g. `['arousal', 'valence', 'emotion.acoustic']` (ONNX models only; concatenated and prefixed per head, e.g. `emotion.acoustic_angry`, while a single-dimension head like `valence` keeps just its own name)
     * **audwav2vec2**: [audEERING emotion model embeddings](https://arxiv.org/abs/2203.07378), wav2vec2.0 model finetuned on [MSPPodcast](https://www.lab-msp.com/MSP/MSP-Podcast.html) emotions, embeddings
       * **aud.model** = ./audmodel/ (*path to the audEERING model folder*)
     * **auddim**: [audEERING emotion model dimensions](https://arxiv.org/abs/2203.07378), wav2vec2.0 model finetuned on [MSPPodcast](https://ecs.utdallas.edu/research/researchlabs/msp-lab/MSP-Podcast.html) arousal, dominance, valence
@@ -671,8 +674,9 @@ Feature exploration and visualisation options, used by the `explore` module.
 Automatic soft-label prediction using pre-trained models (e.g., age, gender, arousal).
 
 * **targets**: Speaker/speech characteristics to be predicted by some models
-  * targets = ['text', 'translation', 'textclassification', 'speaker', 'gender', 'age', 'snr', 'arousal', 'valence', 'dominance', 'pesq', 'mos']
+  * targets = ['text', 'translation', 'textclassification', 'speaker', 'gender', 'age', 'snr', 'arousal', 'valence', 'dominance', 'pesq', 'mos', 'audmodel']
   * textclassifier.candidates = ["sadness", "anger", "neutral"]: for target *textclassification*: the labels for the categories that should be predicted (using [joeddav/xlm-roberta-large-xnli](https://huggingface.co/joeddav/xlm-roberta-large-xnli))
+  * for target *audmodel*: predicts with an arbitrary [audmodel](https://audeering.github.io/audmodel/index.html), reusing the same `FEATS.audmodel.id`/`FEATS.audmodel.embeddings_name` keys as the `audmodel` feature extractor (see [FEATS](#feats), including its multi-head list form). Writes one `<head>_pred` column per configured head: the raw value for a single-dimension head (e.g. `valence_pred`), or the argmax class label for a multi-dimension head (e.g. `emotion.acoustic_pred`).
 * **target_language**: target language for the translation prediction
   * target_language = en
   

@@ -10,27 +10,29 @@ Regression for GH #459:
    and came back as plain integers 0..n-1.
 """
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
 
-from nkululeko.feat_extract.feats_audmodel import AudmodelSet
+from nkululeko.feat_extract.feats_audmodel import AudmodelSet, parse_embeddings_names
 
 
-def _make_instance():
+def _make_instance(embeddings_names=("valence",), head_label_counts=(1,)):
     instance = AudmodelSet.__new__(AudmodelSet)
     instance.util = MagicMock()
     instance.model_loaded = True
     instance.use_torch = False
     instance.hidden_layer = 0
+    instance.embeddings_names = list(embeddings_names)
+    instance.embeddings_name = instance.embeddings_names[0]
+    instance._head_label_counts = list(head_label_counts)
     return instance
 
 
 class TestExtractSampleWithLabels:
     def test_multi_dim_head_labels_are_prefixed(self):
-        instance = _make_instance()
-        instance.embeddings_name = "emotion.acoustic"
+        instance = _make_instance(["emotion.acoustic"], [3])
         result = pd.DataFrame([[0.1, 0.7, 0.2]], columns=["anger", "sadness", "neutral"])
         instance.model_interface = MagicMock(
             process_signal=MagicMock(return_value=result)
@@ -46,8 +48,7 @@ class TestExtractSampleWithLabels:
         assert list(features) == [0.1, 0.7, 0.2]
 
     def test_one_dimensional_head_label_is_just_the_head_name(self):
-        instance = _make_instance()
-        instance.embeddings_name = "valence"
+        instance = _make_instance(["valence"], [1])
         result = pd.DataFrame([[0.42]], columns=["valence"])
         instance.model_interface = MagicMock(
             process_signal=MagicMock(return_value=result)
@@ -62,8 +63,7 @@ class TestExtractSampleWithLabels:
         """extract_sample() keeps the generic Featureset contract (a plain
         feature array) since nkululeko.predict's generic extractor dispatch
         calls it directly and runs arithmetic (mean/std) on the result."""
-        instance = _make_instance()
-        instance.embeddings_name = "valence"
+        instance = _make_instance(["valence"], [1])
         result = pd.DataFrame([[0.42]], columns=["valence"])
         instance.model_interface = MagicMock(
             process_signal=MagicMock(return_value=result)
@@ -73,6 +73,31 @@ class TestExtractSampleWithLabels:
 
         assert not isinstance(features, tuple)
         assert list(features) == [0.42]
+
+    def test_multi_head_labels_are_prefixed_per_head_boundary(self):
+        """GH #459 item 3: with two configured heads extracted in one pass
+        (concat=True), result.columns is both heads' labels concatenated
+        with no boundary marker -- _head_label_counts (recorded at load
+        time) must be used to prefix each column with its own head, not
+        the first/only head."""
+        instance = _make_instance(["valence", "emotion.acoustic"], [1, 3])
+        result = pd.DataFrame(
+            [[0.42, 0.1, 0.7, 0.2]],
+            columns=["valence", "anger", "sadness", "neutral"],
+        )
+        instance.model_interface = MagicMock(
+            process_signal=MagicMock(return_value=result)
+        )
+
+        features, labels = instance._extract_sample_with_labels("signal", 16000)
+
+        assert labels == [
+            "valence",
+            "emotion.acoustic_anger",
+            "emotion.acoustic_sadness",
+            "emotion.acoustic_neutral",
+        ]
+        assert list(features) == [0.42, 0.1, 0.7, 0.2]
 
 
 class TestCacheKeyIncludesEmbeddingsName:
@@ -166,8 +191,7 @@ class TestCacheKeyIncludesEmbeddingsName:
         assert results["valence"] != results["arousal"]
 
     def test_extract_sample_df_cache_dir_includes_embeddings_name(self, tmp_path):
-        instance = _make_instance()
-        instance.embeddings_name = "emotion.acoustic"
+        instance = _make_instance(["emotion.acoustic"], [2])
         result = pd.DataFrame([[0.1, 0.9]], columns=["a", "b"])
         instance.model_interface = MagicMock(
             process_signal=MagicMock(return_value=result)
@@ -204,3 +228,159 @@ class TestCacheKeyIncludesEmbeddingsName:
         assert paths["valence"] != paths["arousal"]
         assert paths["valence"].is_dir()
         assert paths["arousal"].is_dir()
+
+
+class TestParseEmbeddingsNames:
+    """GH #459 item 3: FEATS.audmodel.embeddings_name must still accept a
+    single bare name (back-compat) as well as a list literal for
+    multi-head extraction."""
+
+    def test_bare_word_stays_a_single_item_list(self):
+        assert parse_embeddings_names("valence") == ["valence"]
+
+    def test_dotted_name_stays_a_single_item_list(self):
+        # "emotion.acoustic" isn't valid Python literal syntax either
+        # (ast.literal_eval raises), same fallback path as a plain word.
+        assert parse_embeddings_names("emotion.acoustic") == ["emotion.acoustic"]
+
+    def test_list_literal_is_parsed(self):
+        assert parse_embeddings_names("['arousal', 'valence']") == [
+            "arousal",
+            "valence",
+        ]
+
+    def test_empty_list_raises(self):
+        with pytest.raises(ValueError):
+            parse_embeddings_names("[]")
+
+
+class _FakeOnnxModel:
+    """Stand-in for audonnx.Model: only the bits _load_onnx_model() touches
+    (.sess.get_providers(), .labels())."""
+
+    def __init__(self, head_labels, providers=("CPUExecutionProvider",)):
+        self._head_labels = head_labels
+        self.sess = MagicMock(get_providers=MagicMock(return_value=list(providers)))
+
+    def labels(self, outputs):
+        if isinstance(outputs, (list, tuple)):
+            result = []
+            for name in outputs:
+                result.extend(self._head_labels[name])
+            return result
+        return self._head_labels[outputs]
+
+
+class TestLoadOnnxModelMultiHead:
+    def _load(self, embeddings_names, fake_model, device="cpu"):
+        instance = AudmodelSet.__new__(AudmodelSet)
+        instance.util = MagicMock()
+        instance.embeddings_names = embeddings_names
+        instance.n_jobs = 1
+        instance.device = device
+        with (
+            patch(
+                "nkululeko.feat_extract.feats_audmodel.audonnx.load",
+                return_value=fake_model,
+            ),
+            patch(
+                "nkululeko.feat_extract.feats_audmodel.audinterface.Feature"
+            ) as feature_cls,
+        ):
+            instance._load_onnx_model("/fake/model/root")
+        return instance, feature_cls
+
+    def test_single_head_passes_plain_string_outputs_no_concat(self):
+        fake_model = _FakeOnnxModel({"valence": ["valence"]})
+        instance, feature_cls = self._load(["valence"], fake_model)
+
+        assert instance._head_label_counts == [1]
+        call_args, call_kwargs = feature_cls.call_args
+        assert call_args[0] == ["valence"]
+        assert call_kwargs["process_func_args"] == {"outputs": "valence"}
+
+    def test_multi_head_passes_list_outputs_with_concat(self):
+        fake_model = _FakeOnnxModel(
+            {
+                "valence": ["valence"],
+                "emotion.acoustic": ["anger", "sadness", "neutral"],
+            }
+        )
+        instance, feature_cls = self._load(["valence", "emotion.acoustic"], fake_model)
+
+        assert instance._head_label_counts == [1, 3]
+        call_args, call_kwargs = feature_cls.call_args
+        assert call_args[0] == ["valence", "anger", "sadness", "neutral"]
+        assert call_kwargs["process_func_args"] == {
+            "outputs": ["valence", "emotion.acoustic"],
+            "concat": True,
+        }
+
+
+class TestGpuFallbackWarning:
+    """GH #459 item 5(a): onnxruntime silently falls back to CPU when CUDA
+    was requested but isn't actually available (e.g. missing cuDNN 9)."""
+
+    def _load(self, providers, device):
+        fake_model = _FakeOnnxModel({"valence": ["valence"]}, providers=providers)
+        instance = AudmodelSet.__new__(AudmodelSet)
+        instance.util = MagicMock()
+        instance.embeddings_names = ["valence"]
+        instance.n_jobs = 1
+        instance.device = device
+        with (
+            patch(
+                "nkululeko.feat_extract.feats_audmodel.audonnx.load",
+                return_value=fake_model,
+            ),
+            patch("nkululeko.feat_extract.feats_audmodel.audinterface.Feature"),
+        ):
+            instance._load_onnx_model("/fake/model/root")
+        return instance
+
+    def test_warns_when_cuda_requested_but_fell_back_to_cpu(self):
+        instance = self._load(("CPUExecutionProvider",), "cuda")
+
+        assert instance.util.warn.called
+        message = instance.util.warn.call_args[0][0]
+        assert "CUDA" in message
+
+    def test_no_warning_when_cuda_is_actually_active(self):
+        instance = self._load(
+            ("CUDAExecutionProvider", "CPUExecutionProvider"), "cuda"
+        )
+
+        assert not instance.util.warn.called
+
+    def test_no_warning_when_cpu_was_requested(self):
+        instance = self._load(("CPUExecutionProvider",), "cpu")
+
+        assert not instance.util.warn.called
+
+
+class TestMultiHeadRejectedForTorchPath:
+    def test_multi_head_with_nonzero_hidden_layer_errors(self):
+        instance = AudmodelSet.__new__(AudmodelSet)
+        instance.util = MagicMock()
+        instance.util.error.side_effect = RuntimeError("boom")
+        instance.util.config_val.side_effect = lambda section, key, default: {
+            ("FEATS", "audmodel.id"): "modelid",
+            ("FEATS", "audmodel.embeddings_name"): "['arousal', 'valence']",
+            ("MODEL", "device"): "cpu",
+        }.get((section, key), default)
+        instance.hidden_layer = 1
+
+        with (
+            patch(
+                "nkululeko.feat_extract.feats_audmodel.audmodel.load",
+                return_value="/fake/root",
+            ),
+            patch(
+                "nkululeko.feat_extract.feats_audmodel.os.path.isfile",
+                return_value=False,
+            ),
+            pytest.raises(RuntimeError),
+        ):
+            instance._load_model()
+
+        assert instance.util.error.called
