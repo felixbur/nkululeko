@@ -17,7 +17,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 * `'EXPL'.'dist_type'`: `'hist'` (nkululeko/plots.py:201), `'kde'` (nkululeko/plots.py:521)
 * `'EXPL'.'model'`: `False` (nkululeko/explore.py:144), `"['log_reg']"` (nkululeko/feat_extract/feats_analyser.py:195)
 * `'EXPL'.'plot_tree'`: `'False'` (nkululeko/explore.py:145), `False` (nkululeko/feat_extract/feats_analyser.py:96)
-* `'FEATS'.'audmodel.id'`: `False` (nkululeko/feat_extract/feats_audmodel.py:75), `'audmodel'` (nkululeko/feat_extract/feats_audmodel.py:204), `'audmodel'` (nkululeko/feat_extract/feats_audmodel.py:293)
+* `'FEATS'.'audmodel.id'`: `False` (nkululeko/feat_extract/feats_audmodel.py:75), `'audmodel'` (nkululeko/feat_extract/feats_audmodel.py:205), `'audmodel'` (nkululeko/feat_extract/feats_audmodel.py:294)
 * `'FEATS'.'emotion2vec.model'`: `model_mapping.get(self.feat_type, 'emotion2vec/emotion2vec_base')` (nkululeko/feat_extract/feats_emotion2vec.py:56), `_MODEL_MAPPING.get(self.feats_type, 'emotion2vec/emotion2vec_plus_large')` (nkululeko/feat_extract/feats_emotion2vec_emotion.py:76)
 * `'FEATS'.'type'`: `['os']` (nkululeko/bundle.py:220), `'os'` (nkululeko/data/datasplitter.py:417), `['os']` (nkululeko/experiment.py:235), `['os']` (nkululeko/infer.py:208), `None` (nkululeko/predict.py:224), `None` (nkululeko/predict.py:932)
 * `'FINETUNE'.'loss'`: `'cross'` (nkululeko/models/finetune_config.py:158), `'1-ccc'` (nkululeko/models/finetune_config.py:161)
@@ -118,8 +118,8 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'FEATS' | 'assignments' | `10` | nkululeko/feat_extract/feats_oxbow.py:62 |
 | 'FEATS' | 'ast.model' | `'MIT/ast-finetuned-audioset-10-10-0.4593'` | nkululeko/feat_extract/feats_ast.py:25 |
 | 'FEATS' | 'aud.model' | `'./audmodel/'` | nkululeko/feat_extract/feats_auddim.py:27, nkululeko/feat_extract/feats_audwav2vec2.py:31 |
-| 'FEATS' | 'audmodel.embeddings_name' | `'hidden_states'` | nkululeko/autopredict/ap_audmodel.py:45, nkululeko/feat_extract/feats_audmodel.py:80, nkululeko/feat_extract/feats_audmodel.py:205, +1 more |
-| 'FEATS' | 'audmodel.id' | `'audmodel'` / `False` | nkululeko/feat_extract/feats_audmodel.py:75, nkululeko/feat_extract/feats_audmodel.py:204, nkululeko/feat_extract/feats_audmodel.py:293 |
+| 'FEATS' | 'audmodel.embeddings_name' | `'hidden_states'` | nkululeko/autopredict/ap_audmodel.py:57, nkululeko/feat_extract/feats_audmodel.py:80, nkululeko/feat_extract/feats_audmodel.py:206, +1 more |
+| 'FEATS' | 'audmodel.id' | `'audmodel'` / `False` | nkululeko/feat_extract/feats_audmodel.py:75, nkululeko/feat_extract/feats_audmodel.py:205, nkululeko/feat_extract/feats_audmodel.py:294 |
 | 'FEATS' | 'balancing' | `False` | nkululeko/modelrunner.py:462 |
 | 'FEATS' | 'balancing_random_state' | `42` | nkululeko/modelrunner.py:468 |
 | 'FEATS' | 'bert.layer' | `'0'` | nkululeko/feat_extract/feats_bert.py:39 |
@@ -159,7 +159,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'FEATS' | 'sptk.frame_period' | `FRAME_PERIOD` | nkululeko/feat_extract/feats_sptk.py:46 |
 | 'FEATS' | 'sptk.n_channel' | `N_CHANNEL` | nkululeko/feat_extract/feats_sptk.py:49 |
 | 'FEATS' | 'sptk.sample_rate' | `SR` | nkululeko/feat_extract/feats_sptk.py:50 |
-| 'FEATS' | 'store_format' | `'pkl'` | nkululeko/feat_extract/feats_agender.py:46, nkululeko/feat_extract/feats_agender_agender.py:56, nkululeko/feat_extract/feats_auddim.py:49, +16 more |
+| 'FEATS' | 'store_format' | `'pkl'` | nkululeko/feat_extract/feats_agender.py:46, nkululeko/feat_extract/feats_agender_agender.py:57, nkululeko/feat_extract/feats_auddim.py:50, +16 more |
 | 'FEATS' | 'trill.model' | `'https://tfhub.dev/google/nonsemantic-speech-benchmark/trill/3'` | nkululeko/feat_extract/feats_trill.py:37 |
 | 'FEATS' | 'type' | `'os'` / `None` / `['os']` | nkululeko/bundle.py:220, nkululeko/data/datasplitter.py:417, nkululeko/experiment.py:235, +3 more |
 | 'FEATS' | 'wav2vec2.layer' | `'0'` | nkululeko/feat_extract/feats_audmodel.py:71, nkululeko/feat_extract/feats_wav2vec2.py:38 |

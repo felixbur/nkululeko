@@ -117,7 +117,8 @@ class AudmodelSet(Featureset):
         self.util.debug("loading as ONNX model")
         self.model = audonnx.load(model_root, device=self.device)
         providers = self.model.sess.get_providers()
-        if self.device == "cuda" and "CUDAExecutionProvider" not in providers:
+        requested_cuda = self.device == "cuda" or self.device.startswith("cuda:")
+        if requested_cuda and "CUDAExecutionProvider" not in providers:
             self.util.warn(
                 "FEATS.audmodel: requested CUDA but onnxruntime fell back to "
                 f"{providers} -- extraction will be much slower. Check that "

@@ -445,6 +445,15 @@ class TestGpuFallbackWarning:
 
         assert not instance.util.warn.called
 
+    def test_warns_when_indexed_cuda_device_requested_but_fell_back_to_cpu(self):
+        """Review on #468: MODEL.device = "cuda:0" (an indexed CUDA device,
+        which audonnx accepts) bypassed the warning entirely since only the
+        bare "cuda" string was checked."""
+        instance = self._load(("CPUExecutionProvider",), "cuda:0")
+
+        assert instance.util.warn.called
+        assert "CUDA" in instance.util.warn.call_args[0][0]
+
 
 class TestMultiHeadRejectedForTorchPath:
     def test_multi_head_with_nonzero_hidden_layer_errors(self):

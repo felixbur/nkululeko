@@ -175,3 +175,40 @@ class TestAudmodelPredictor:
 
         assert list(result["foo_pred"]) == ["happy", "angry"]
         assert list(result["foo_bar_pred"]) == [5.0, 6.0]
+
+    @patch("nkululeko.autopredict.ap_audmodel.FeatureExtractor")
+    def test_forces_no_reuse_to_avoid_stale_ad_hoc_cache(self, mock_feature_extractor):
+        """Review on #468: AudmodelSet's whole-dataset cache is keyed only
+        by database name + feats_type + model id/embeddings_name, never by
+        the actual input rows -- the standalone `nkululeko.predict --model
+        audmodel` CLI defaults every --list input to the same database
+        name ("adhoc"), so without forcing a fresh extraction here, a
+        second invocation on a different file list would silently reuse
+        the first invocation's cached features."""
+        pred_df = pd.DataFrame({"valence": [0.1]})
+        mock_extractor = Mock()
+        mock_extractor.extract.return_value = pred_df
+        mock_feature_extractor.return_value = mock_extractor
+
+        df = pd.DataFrame({"dummy": [1]})
+        context = _context("valence")
+        with use_context(context):
+            AudmodelPredictor(df).predict("train")
+
+        assert context.config["FEATS"]["no_reuse"] == "True"
+
+    @patch("nkululeko.autopredict.ap_audmodel.FeatureExtractor")
+    def test_forces_no_reuse_even_without_an_existing_feats_section(
+        self, mock_feature_extractor
+    ):
+        pred_df = pd.DataFrame({"valence": [0.1]})
+        mock_extractor = Mock()
+        mock_extractor.extract.return_value = pred_df
+        mock_feature_extractor.return_value = mock_extractor
+
+        df = pd.DataFrame({"dummy": [1]})
+        context = ExperimentContext(config={"DATA": {"databases": "['test_db']"}})
+        with use_context(context):
+            AudmodelPredictor(df).predict("train")
+
+        assert context.config["FEATS"]["no_reuse"] == "True"

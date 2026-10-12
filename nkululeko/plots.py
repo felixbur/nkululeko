@@ -1048,9 +1048,11 @@ class Plots(ContextAware):
         )
 
     def plot_feature_speaker(self, title, feature, label, df_labels, df_features):
-        """Like plot_feature(), but aggregated to one row per (speaker,
-        label) using the speaker's mean of the feature, instead of one row
-        per sample (GH #459 item 5(c)).
+        """Like plot_feature(), but aggregated by speaker instead of one
+        row per sample (GH #459 item 5(c)): one row per (speaker, label)
+        for a classification target, or one row per speaker (label and
+        feature both averaged) for a regression target -- see the
+        exp_is_classification() branch below for why they differ.
 
         Many segments per speaker make every feature come out "highly
         significant" in the Kruskal-Wallis/pairwise tests regardless of

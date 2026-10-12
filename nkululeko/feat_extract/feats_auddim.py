@@ -34,7 +34,8 @@ class AuddimSet(Featureset):
         device = self.util.config_val("MODEL", "device", cuda)
         self.model = audonnx.load(model_root, device=device)
         providers = self.model.sess.get_providers()
-        if device == "cuda" and "CUDAExecutionProvider" not in providers:
+        requested_cuda = device == "cuda" or device.startswith("cuda:")
+        if requested_cuda and "CUDAExecutionProvider" not in providers:
             self.util.warn(
                 f"FEATS.aud: requested CUDA but onnxruntime fell back to "
                 f"{providers} -- extraction will be much slower. Check that "

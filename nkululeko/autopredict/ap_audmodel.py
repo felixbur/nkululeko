@@ -32,6 +32,18 @@ class AudmodelPredictor:
     def predict(self, split_selection):
         self.util.debug(f"predicting audmodel outputs for {split_selection} samples")
         feats_name = "_".join(ast.literal_eval(self.util.config["DATA"]["databases"]))
+        # AudmodelSet's whole-dataset cache is keyed only by database name +
+        # feats_type + model id/embeddings_name, never by the actual input
+        # rows (review on #468): fine for a real experiment (the same
+        # DATA.databases across runs means the same data), but the
+        # standalone `nkululeko.predict --model audmodel` CLI defaults
+        # every --list input to the same database name ("adhoc"), so a
+        # second invocation on a different file list would otherwise
+        # silently reuse the first invocation's cached features. Force a
+        # fresh extraction every time for this ad-hoc path.
+        if "FEATS" not in self.util.config:
+            self.util.config["FEATS"] = {}
+        self.util.config["FEATS"]["no_reuse"] = "True"
         self.feature_extractor = FeatureExtractor(
             self.df,
             ["audmodel"],
