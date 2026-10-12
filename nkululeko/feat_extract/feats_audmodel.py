@@ -209,7 +209,17 @@ class AudmodelSet(Featureset):
                             self.util.debug(f"segment from {file} written to {tmp_file_name} for debugging.")
                         except Exception as write_err:
                             self.util.warn(f"could not write debug audio: {write_err}")
-                    self.util.error(f"error {ror} on file {file}")
+                    # Keep this row as missing (NaN once concatenated with
+                    # the columns other rows have) instead of aborting the
+                    # whole extraction (review on #468): a single bad file
+                    # would otherwise abort every downstream consumer,
+                    # including ap_audmodel.py's PREDICT target, whose
+                    # all-zero-row "unknown" fallback could never actually
+                    # be reached as long as this raised here.
+                    self.util.warn(f"audmodel extraction failed on file {file}: {ror}")
+                    f_df = pd.DataFrame(
+                        index=audformat.segmented_index(file, start, end)
+                    )
                 df = pd.concat([df, f_df])
             self.df = df
             self.util.write_store(self.df, storage, store_format)

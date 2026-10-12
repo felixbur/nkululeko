@@ -276,7 +276,16 @@ class Dataset(ContextAware):
         elif self.df.duration.dtype == "timedelta64[ns]":
             self.df["duration"] = self.df["duration"].map(lambda x: x.total_seconds())
 
-        source_mtime = latest_source_csv_mtime([self.name], self.util)
+        # All configured datasets, not just this one (review on #468):
+        # Datasplitter.fill_train_and_tests() decides whether to rebuild
+        # the combined split based on every configured dataset's source
+        # file, so checking only self.name here could disagree with it --
+        # e.g. dataset B's CSV changed but A's didn't, so A would skip its
+        # own required/DataFilter rules here assuming the cache holds,
+        # while Datasplitter rebuilds the combined split anyway (because B
+        # changed) and silently includes A's unfiltered rows in it.
+        all_dataset_names = ast.literal_eval(self.util.config["DATA"]["databases"])
+        source_mtime = latest_source_csv_mtime(all_dataset_names, self.util)
         if should_reuse_split(self.util, self.context.split3, source_mtime=source_mtime):
             # A cached train/dev/test split is about to be reused verbatim
             # (see Datasplitter.fill_train_and_tests). Filtering self.df

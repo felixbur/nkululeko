@@ -12,6 +12,8 @@ Regression for GH #459:
 
 from unittest.mock import MagicMock, patch
 
+import audformat
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -384,3 +386,82 @@ class TestMultiHeadRejectedForTorchPath:
             instance._load_model()
 
         assert instance.util.error.called
+
+
+class TestExtractPreservesFailedRows:
+    """Review on #468: a single bad file used to abort the whole
+    extraction (self.util.error() raises), which also meant
+    ap_audmodel.py's AudmodelPredictor could never actually reach its
+    all-zero-row "unknown" fallback -- that path was dead code. A failed
+    file now becomes a NaN row (once concatenated with the columns other
+    rows have) instead of aborting."""
+
+    def test_failed_file_becomes_nan_row_instead_of_aborting(self):
+        instance = _make_instance()
+        instance.name = "mydb_feats"
+        instance.context = MagicMock()
+        instance.data_df = pd.DataFrame(
+            index=audformat.segmented_index(["a.wav", "b.wav"], [0, 0], [1, 1])
+        )
+        instance.util.get_path.return_value = "/store/"
+        instance.util.config_val.side_effect = lambda section, key, default: default
+        instance._needs_extraction = MagicMock(return_value=True)
+        instance.util.write_store = MagicMock()
+
+        good_df = pd.DataFrame(
+            [[0.5]],
+            columns=["valence"],
+            index=audformat.segmented_index(["a.wav"], [0], [1]),
+        )
+
+        def fake_extract_sample_df(signal, sr, index_tuple):
+            if index_tuple[0] == "b.wav":
+                raise RuntimeError("boom")
+            return good_df
+
+        instance.extract_sample_df = MagicMock(side_effect=fake_extract_sample_df)
+
+        with (
+            patch(
+                "nkululeko.feat_extract.feats_audmodel.audiofile.read",
+                return_value=(np.array([0.0]), 16000),
+            ),
+            patch("nkululeko.feat_extract.feats_audmodel.audiofile.write"),
+        ):
+            instance.extract()
+
+        assert not instance.util.error.called
+        assert instance.util.warn.called
+        assert len(instance.df) == 2
+        a_key = ("a.wav", pd.Timedelta(0), pd.Timedelta(seconds=1))
+        b_key = ("b.wav", pd.Timedelta(0), pd.Timedelta(seconds=1))
+        assert instance.df.loc[a_key, "valence"] == 0.5
+        assert pd.isna(instance.df.loc[b_key, "valence"])
+
+    def test_every_file_failing_leaves_an_all_nan_frame(self):
+        """If every row fails, the resulting store has no columns at all
+        (matching ap_audmodel.py's "no head_cols found at all" branch)."""
+        instance = _make_instance()
+        instance.name = "mydb_feats"
+        instance.context = MagicMock()
+        instance.data_df = pd.DataFrame(
+            index=audformat.segmented_index(["a.wav"], [0], [1])
+        )
+        instance.util.get_path.return_value = "/store/"
+        instance.util.config_val.side_effect = lambda section, key, default: default
+        instance._needs_extraction = MagicMock(return_value=True)
+        instance.util.write_store = MagicMock()
+        instance.extract_sample_df = MagicMock(side_effect=RuntimeError("boom"))
+
+        with (
+            patch(
+                "nkululeko.feat_extract.feats_audmodel.audiofile.read",
+                return_value=(np.array([0.0]), 16000),
+            ),
+            patch("nkululeko.feat_extract.feats_audmodel.audiofile.write"),
+        ):
+            instance.extract()
+
+        assert not instance.util.error.called
+        assert instance.df.shape[1] == 0
+        assert len(instance.df) == 1

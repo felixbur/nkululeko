@@ -1,5 +1,6 @@
 from unittest.mock import Mock, patch
 
+import numpy as np
 import pandas as pd
 
 from nkululeko.autopredict.ap_audmodel import AudmodelPredictor
@@ -96,3 +97,29 @@ class TestAudmodelPredictor:
             result = AudmodelPredictor(df).predict("train")
 
         assert list(result["valence_pred"]) == ["unknown", "unknown", "unknown"]
+
+    @patch("nkululeko.autopredict.ap_audmodel.FeatureExtractor")
+    def test_a_row_with_all_nan_scores_is_unknown_not_a_crash(
+        self, mock_feature_extractor
+    ):
+        """Review on #468: with AudmodelSet.extract() now preserving a
+        failed file as a NaN row instead of aborting, a categorical head's
+        row can be all-NaN rather than all-zero. idxmax(axis=1) on an
+        all-NaN row is deprecated in pandas (warns it will raise
+        ValueError in a future version) -- must not hit that path, and
+        must still end up "unknown" like the all-zero case did."""
+        pred_df = pd.DataFrame(
+            {
+                "emotion.acoustic_angry": [0.7, np.nan],
+                "emotion.acoustic_happy": [0.2, np.nan],
+            }
+        )
+        mock_extractor = Mock()
+        mock_extractor.extract.return_value = pred_df
+        mock_feature_extractor.return_value = mock_extractor
+
+        df = pd.DataFrame({"dummy": [1, 2]})
+        with use_context(_context("emotion.acoustic")):
+            result = AudmodelPredictor(df).predict("train")
+
+        assert list(result["emotion.acoustic_pred"]) == ["angry", "unknown"]

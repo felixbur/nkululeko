@@ -444,6 +444,34 @@ class TestPlotFeatureSpeaker:
         values = dict(zip(merged["speaker"], merged["feat1"]))
         assert values == {"s1": 2.0, "s2": 11.0}
 
+    def test_regression_target_groups_by_speaker_only_and_averages_label_too(self):
+        """Review on #468: for a continuous target, grouping by
+        (speaker, label) barely aggregates anything -- each distinct label
+        value stays its own group, since the label varies per sample even
+        within one speaker. Must group by speaker alone and average both
+        the label and the feature."""
+        plots = self._make_plots()
+        plots.util.exp_is_classification.return_value = False
+        plots.plot_feature = MagicMock()
+        df_labels = pd.DataFrame(
+            {
+                "speaker": ["s1", "s1", "s2", "s2"],
+                "age": [20.0, 22.0, 40.0, 44.0],
+            }
+        )
+        df_features = pd.DataFrame({"feat1": [1.0, 3.0, 10.0, 12.0]})
+
+        plots.plot_feature_speaker("all", "feat1", "age", df_labels, df_features)
+
+        plots.plot_feature.assert_called_once()
+        args, _ = plots.plot_feature.call_args
+        _, _, _, labels_speaker, features_speaker = args
+        merged = labels_speaker.join(features_speaker)
+        by_speaker = {
+            row.speaker: (row.age, row.feat1) for row in merged.itertuples()
+        }
+        assert by_speaker == {"s1": (21.0, 2.0), "s2": (42.0, 11.0)}
+
     def test_drops_rows_with_missing_speaker_before_aggregating(self):
         plots = self._make_plots()
         plots.plot_feature = MagicMock()

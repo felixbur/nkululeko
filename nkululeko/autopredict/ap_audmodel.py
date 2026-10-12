@@ -9,6 +9,8 @@ parallel [PREDICT]-section key.
 
 import ast
 
+import numpy as np
+
 from nkululeko.feat_extract.feats_audmodel import parse_embeddings_names
 from nkululeko.feature_extractor import FeatureExtractor
 from nkululeko.utils.util import Util
@@ -55,11 +57,15 @@ class AudmodelPredictor:
                 return_df[f"{head}_pred"] = "unknown"
                 continue
             head_scores = pred_df[head_cols]
-            # a row that failed extraction comes back all-zero (same
-            # reasoning as ap_emotion.py's EmotionPredictor); idxmax would
-            # then arbitrarily pick the first column as if it were a real
-            # (confident) prediction, so mark those as unknown instead.
-            pred_label = head_scores.idxmax(axis=1)
+            # a row that failed extraction comes back all-NaN (see
+            # feats_audmodel.py's AudmodelSet.extract()); idxmax on an
+            # all-NaN row is deprecated (pandas warns it will raise
+            # ValueError in a future version), so fill with -inf just for
+            # the argmax pick -- the real "every row failed" case is still
+            # caught below via the sum check (NaN sums to 0 by default)
+            # and overridden to unknown, same reasoning as
+            # ap_emotion.py's EmotionPredictor.
+            pred_label = head_scores.fillna(-np.inf).idxmax(axis=1)
             pred_label = pred_label.where(head_scores.sum(axis=1) > 0, "unknown")
             return_df[f"{head}_pred"] = pred_label.str.removeprefix(f"{head}_")
 

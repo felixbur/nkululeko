@@ -8,8 +8,8 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 
 * `'DATA'.'no_reuse'`: `'False'` (nkululeko/augment.py:43), `'False'` (nkululeko/experiment.py:162), `False` (nkululeko/utils/dataframe.py:312)
 * `'DATA'.'target'`: `'emotion'` (nkululeko/augment.py:85), `'emotion'` (nkululeko/augmenting/resampler.py:76), `'emotion'` (nkululeko/bundle.py:56), `'emotion'` (nkululeko/bundle.py:218), `None` (nkululeko/data/dataset.py:35), `None` (nkululeko/data/dataset_csv.py:84), `None` (nkululeko/experiment.py:124), `'emotion'` (nkululeko/experiment.py:634), `'emotion'` (nkululeko/experiment.py:644), `'emotion'` (nkululeko/experiment.py:654), `'emotion'` (nkululeko/export.py:108), `'emotion'` (nkululeko/feat_extract/feats_analyser.py:26), `'emotion'` (nkululeko/models/model.py:39), `'emotion'` (nkululeko/plots.py:31), `'class_label'` (nkululeko/plots.py:993), `'emotion'` (nkululeko/testing_predictor.py:71), `None` (nkululeko/utils/util.py:640)
-* `'DATA'.'tests'`: `'False'` (nkululeko/data/dataset.py:906), `False` (nkululeko/nkululeko.py:46), `False` (nkululeko/testing_predictor.py:59)
-* `'DATA'.'type'`: `False` (nkululeko/data/dataset.py:1006), `'dummy'` (nkululeko/data/datasplitter.py:243)
+* `'DATA'.'tests'`: `'False'` (nkululeko/data/dataset.py:915), `False` (nkululeko/nkululeko.py:46), `False` (nkululeko/testing_predictor.py:59)
+* `'DATA'.'type'`: `False` (nkululeko/data/dataset.py:1015), `'dummy'` (nkululeko/data/datasplitter.py:243)
 * `'EXP'.'epochs'`: `1` (nkululeko/modelrunner.py:186), `1` (nkululeko/models/model_tuned.py:66), `'50'` (nkululeko/optimizers/scheduler_factory.py:84)
 * `'EXP'.'language'`: `'en'` (nkululeko/autopredict/ap_text.py:31), `False` (nkululeko/bundle.py:101)
 * `'EXP'.'sample_selection'`: `'all'` (nkululeko/data/datasplitter.py:37), `'train'` (nkululeko/experiment.py:493), `'all'` (nkululeko/experiment.py:514), `'all'` (nkululeko/feat_extract/feats_analyser.py:419), `'all'` (nkululeko/plots.py:732), `'all'` (nkululeko/predict.py:585), `'all'` (nkululeko/resample.py:123), `'all'` (nkululeko/segment.py:242)
@@ -17,7 +17,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 * `'EXPL'.'dist_type'`: `'hist'` (nkululeko/plots.py:201), `'kde'` (nkululeko/plots.py:521)
 * `'EXPL'.'model'`: `False` (nkululeko/explore.py:98), `"['log_reg']"` (nkululeko/feat_extract/feats_analyser.py:195)
 * `'EXPL'.'plot_tree'`: `'False'` (nkululeko/explore.py:99), `False` (nkululeko/feat_extract/feats_analyser.py:96)
-* `'FEATS'.'audmodel.id'`: `False` (nkululeko/feat_extract/feats_audmodel.py:55), `'audmodel'` (nkululeko/feat_extract/feats_audmodel.py:177), `'audmodel'` (nkululeko/feat_extract/feats_audmodel.py:235)
+* `'FEATS'.'audmodel.id'`: `False` (nkululeko/feat_extract/feats_audmodel.py:55), `'audmodel'` (nkululeko/feat_extract/feats_audmodel.py:177), `'audmodel'` (nkululeko/feat_extract/feats_audmodel.py:245)
 * `'FEATS'.'emotion2vec.model'`: `model_mapping.get(self.feat_type, 'emotion2vec/emotion2vec_base')` (nkululeko/feat_extract/feats_emotion2vec.py:56), `_MODEL_MAPPING.get(self.feats_type, 'emotion2vec/emotion2vec_plus_large')` (nkululeko/feat_extract/feats_emotion2vec_emotion.py:76)
 * `'FEATS'.'type'`: `['os']` (nkululeko/bundle.py:220), `'os'` (nkululeko/data/datasplitter.py:417), `['os']` (nkululeko/experiment.py:235), `['os']` (nkululeko/infer.py:208), `None` (nkululeko/predict.py:223), `None` (nkululeko/predict.py:929)
 * `'FINETUNE'.'loss'`: `'cross'` (nkululeko/models/finetune_config.py:158), `'1-ccc'` (nkululeko/models/finetune_config.py:161)
@@ -50,14 +50,14 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'AUGMENT' | 'silero_model' | `'small_slow'` | nkululeko/augmenting/augmenter_silero.py:36 |
 | 'AUGMENT' | 'top_db' | `'12'` | nkululeko/augmenting/randomsplicer.py:45 |
 | 'AUGMENT' | 'transformations' | `'["room", "music", "noise", "babble", "crop", "cough"]'` | nkululeko/augmenting/augmenter_auglib.py:31 |
-| 'DATA' | 'balance' | `False` | nkululeko/data/dataset.py:606 |
-| 'DATA' | 'bins' | `False` | nkululeko/data/dataset.py:596 |
+| 'DATA' | 'balance' | `False` | nkululeko/data/dataset.py:615 |
+| 'DATA' | 'bins' | `False` | nkululeko/data/dataset.py:605 |
 | 'DATA' | 'check_size' | `False` | nkululeko/file_checker.py:37 |
 | 'DATA' | 'check_vad' | `False` | nkululeko/file_checker.py:11, nkululeko/file_checker.py:67 |
 | 'DATA' | 'filter' | `False` | nkululeko/filter_data.py:148 |
 | 'DATA' | 'label_data' | `False` | nkululeko/experiment.py:757, nkululeko/testing_predictor.py:31 |
 | 'DATA' | 'label_result' | `False` | nkululeko/experiment.py:758 |
-| 'DATA' | 'labels' | `False` | nkululeko/data/dataset.py:986, nkululeko/experiment.py:135 |
+| 'DATA' | 'labels' | `False` | nkululeko/data/dataset.py:995, nkululeko/experiment.py:135 |
 | 'DATA' | 'limit_samples' | `False` | nkululeko/filter_data.py:26 |
 | 'DATA' | 'limit_samples_per_speaker' | `False` | nkululeko/filter_data.py:49 |
 | 'DATA' | 'max_duration_of_sample' | `False` | nkululeko/filter_data.py:89 |
@@ -65,13 +65,13 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'DATA' | 'no_reuse' | `'False'` / `False` | nkululeko/augment.py:43, nkululeko/experiment.py:162, nkululeko/utils/dataframe.py:312 |
 | 'DATA' | 'root_folders' | `False` | nkululeko/utils/util.py:72 |
 | 'DATA' | 'sample_selection' | `'all'` | nkululeko/experiment.py:351 |
-| 'DATA' | 'size_diff_weight' | `'1'` | nkululeko/data/dataset.py:625 |
+| 'DATA' | 'size_diff_weight' | `'1'` | nkululeko/data/dataset.py:634 |
 | 'DATA' | 'target' | `'class_label'` / `'emotion'` / `None` | nkululeko/augment.py:85, nkululeko/augmenting/resampler.py:76, nkululeko/bundle.py:56, +14 more |
 | 'DATA' | 'target_divide_by' | `False` | nkululeko/data/datasplitter.py:318 |
-| 'DATA' | 'tests' | `'False'` / `False` | nkululeko/data/dataset.py:906, nkululeko/nkululeko.py:46, nkululeko/testing_predictor.py:59 |
+| 'DATA' | 'tests' | `'False'` / `False` | nkululeko/data/dataset.py:915, nkululeko/nkululeko.py:46, nkululeko/testing_predictor.py:59 |
 | 'DATA' | 'trains' | `False` | nkululeko/utils/naming.py:115 |
-| 'DATA' | 'type' | `'dummy'` / `False` | nkululeko/data/dataset.py:1006, nkululeko/data/datasplitter.py:243 |
-| 'DATA' | <f'{stratif_var}_bins'> | `False` | nkululeko/data/dataset.py:618 |
+| 'DATA' | 'type' | `'dummy'` / `False` | nkululeko/data/dataset.py:1015, nkululeko/data/datasplitter.py:243 |
+| 'DATA' | <f'{stratif_var}_bins'> | `False` | nkululeko/data/dataset.py:627 |
 | 'EXP' | 'balancing' | `False` | nkululeko/modelrunner.py:334 |
 | 'EXP' | 'epochs' | `'50'` / `1` | nkululeko/modelrunner.py:186, nkululeko/models/model_tuned.py:66, nkululeko/optimizers/scheduler_factory.py:84 |
 | 'EXP' | 'export_onnx' | `'False'` | nkululeko/nkululeko.py:131 |
@@ -118,8 +118,8 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'FEATS' | 'assignments' | `10` | nkululeko/feat_extract/feats_oxbow.py:62 |
 | 'FEATS' | 'ast.model' | `'MIT/ast-finetuned-audioset-10-10-0.4593'` | nkululeko/feat_extract/feats_ast.py:25 |
 | 'FEATS' | 'aud.model' | `'./audmodel/'` | nkululeko/feat_extract/feats_auddim.py:27, nkululeko/feat_extract/feats_audwav2vec2.py:31 |
-| 'FEATS' | 'audmodel.embeddings_name' | `'hidden_states'` | nkululeko/autopredict/ap_audmodel.py:42, nkululeko/feat_extract/feats_audmodel.py:60, nkululeko/feat_extract/feats_audmodel.py:178, +1 more |
-| 'FEATS' | 'audmodel.id' | `'audmodel'` / `False` | nkululeko/feat_extract/feats_audmodel.py:55, nkululeko/feat_extract/feats_audmodel.py:177, nkululeko/feat_extract/feats_audmodel.py:235 |
+| 'FEATS' | 'audmodel.embeddings_name' | `'hidden_states'` | nkululeko/autopredict/ap_audmodel.py:44, nkululeko/feat_extract/feats_audmodel.py:60, nkululeko/feat_extract/feats_audmodel.py:178, +1 more |
+| 'FEATS' | 'audmodel.id' | `'audmodel'` / `False` | nkululeko/feat_extract/feats_audmodel.py:55, nkululeko/feat_extract/feats_audmodel.py:177, nkululeko/feat_extract/feats_audmodel.py:245 |
 | 'FEATS' | 'balancing' | `False` | nkululeko/modelrunner.py:462 |
 | 'FEATS' | 'balancing_random_state' | `42` | nkululeko/modelrunner.py:468 |
 | 'FEATS' | 'bert.layer' | `'0'` | nkululeko/feat_extract/feats_bert.py:39 |
@@ -284,31 +284,31 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | DATA.<name> | '' | `''` | nkululeko/utils/dataframe.py:282 |
 | DATA.<self.name> | '' | `''` | nkululeko/data/dataset.py:72, nkululeko/data/dataset_csv.py:21 |
 | DATA.<self.name> | 'absolute_path' | `'True'` | nkululeko/data/dataset_csv.py:49 |
-| DATA.<self.name> | 'as_test' | `'False'` | nkululeko/data/dataset.py:432, nkululeko/data/dataset.py:569 |
-| DATA.<self.name> | 'as_train' | `'False'` | nkululeko/data/dataset.py:435, nkululeko/data/dataset.py:573 |
+| DATA.<self.name> | 'as_test' | `'False'` | nkululeko/data/dataset.py:441, nkululeko/data/dataset.py:578 |
+| DATA.<self.name> | 'as_train' | `'False'` | nkululeko/data/dataset.py:444, nkululeko/data/dataset.py:582 |
 | DATA.<self.name> | 'audio_path' | `'./'` | nkululeko/data/dataset_csv.py:26 |
 | DATA.<self.name> | 'colnames' | `False` | nkululeko/data/dataset.py:81, nkululeko/data/dataset.py:91, nkululeko/data/dataset_csv.py:44 |
 | DATA.<self.name> | 'columns' | `False` | nkululeko/data/dataset.py:145 |
-| DATA.<self.name> | 'dev' | `False` | nkululeko/data/dataset.py:709 |
-| DATA.<self.name> | 'dev_size' | `20` | nkululeko/data/dataset.py:760, nkululeko/data/dataset.py:798 |
-| DATA.<self.name> | 'dev_tables' | `False` | nkululeko/data/dataset.py:65, nkululeko/data/dataset.py:512 |
+| DATA.<self.name> | 'dev' | `False` | nkululeko/data/dataset.py:718 |
+| DATA.<self.name> | 'dev_size' | `20` | nkululeko/data/dataset.py:769, nkululeko/data/dataset.py:807 |
+| DATA.<self.name> | 'dev_tables' | `False` | nkululeko/data/dataset.py:65, nkululeko/data/dataset.py:521 |
 | DATA.<self.name> | 'files_tables' | `False` | nkululeko/data/dataset.py:53 |
 | DATA.<self.name> | 'label' | `self.target` | nkululeko/data/dataset.py:207, nkululeko/data/dataset.py:244 |
 | DATA.<self.name> | 'limit' | `0` | nkululeko/data/dataset.py:37 |
-| DATA.<self.name> | 'mapping' | `False` | nkululeko/data/dataset.py:968 |
-| DATA.<self.name> | 'rename_speakers' | `False` | nkululeko/data/dataset.py:308 |
-| DATA.<self.name> | 'required' | `False` | nkululeko/data/dataset.py:295 |
-| DATA.<self.name> | 'reverse' | `'False'` | nkululeko/data/dataset.py:323 |
-| DATA.<self.name> | 'reverse.max' | `'False'` | nkululeko/data/dataset.py:325 |
-| DATA.<self.name> | 'scale' | `False` | nkululeko/data/dataset.py:334 |
-| DATA.<self.name> | 'split_column' | `False` | nkululeko/data/dataset.py:813 |
-| DATA.<self.name> | 'split_strategy' | `'speaker_split'` | nkululeko/data/dataset.py:346, nkululeko/data/dataset.py:460 |
+| DATA.<self.name> | 'mapping' | `False` | nkululeko/data/dataset.py:977 |
+| DATA.<self.name> | 'rename_speakers' | `False` | nkululeko/data/dataset.py:317 |
+| DATA.<self.name> | 'required' | `False` | nkululeko/data/dataset.py:304 |
+| DATA.<self.name> | 'reverse' | `'False'` | nkululeko/data/dataset.py:332 |
+| DATA.<self.name> | 'reverse.max' | `'False'` | nkululeko/data/dataset.py:334 |
+| DATA.<self.name> | 'scale' | `False` | nkululeko/data/dataset.py:343 |
+| DATA.<self.name> | 'split_column' | `False` | nkululeko/data/dataset.py:822 |
+| DATA.<self.name> | 'split_strategy' | `'speaker_split'` | nkululeko/data/dataset.py:355, nkululeko/data/dataset.py:469 |
 | DATA.<self.name> | 'target_tables' | `False` | nkululeko/data/dataset.py:49 |
-| DATA.<self.name> | 'test' | `False` | nkululeko/data/dataset.py:688, nkululeko/data/dataset.py:703 |
-| DATA.<self.name> | 'test_size' | `20` | nkululeko/data/dataset.py:591, nkululeko/data/dataset.py:748, nkululeko/data/dataset.py:759, +2 more |
-| DATA.<self.name> | 'test_tables' | `False` | nkululeko/data/dataset.py:57, nkululeko/data/dataset.py:368, nkululeko/data/dataset.py:498 |
-| DATA.<self.name> | 'train' | `False` | nkululeko/data/dataset.py:694, nkululeko/data/dataset.py:715 |
-| DATA.<self.name> | 'train_tables' | `False` | nkululeko/data/dataset.py:61, nkululeko/data/dataset.py:382, nkululeko/data/dataset.py:505 |
-| DATA.<self.name> | 'value_counts' | `False` | nkululeko/data/dataset.py:911, nkululeko/data/dataset.py:928 |
-| DATA.<self.name> | <f'{split_name}_vals'> | `False` | nkululeko/data/dataset.py:831 |
-| DATA.<self.name> | <f'{split_name}_values'> | `False` | nkululeko/data/dataset.py:833 |
+| DATA.<self.name> | 'test' | `False` | nkululeko/data/dataset.py:697, nkululeko/data/dataset.py:712 |
+| DATA.<self.name> | 'test_size' | `20` | nkululeko/data/dataset.py:600, nkululeko/data/dataset.py:757, nkululeko/data/dataset.py:768, +2 more |
+| DATA.<self.name> | 'test_tables' | `False` | nkululeko/data/dataset.py:57, nkululeko/data/dataset.py:377, nkululeko/data/dataset.py:507 |
+| DATA.<self.name> | 'train' | `False` | nkululeko/data/dataset.py:703, nkululeko/data/dataset.py:724 |
+| DATA.<self.name> | 'train_tables' | `False` | nkululeko/data/dataset.py:61, nkululeko/data/dataset.py:391, nkululeko/data/dataset.py:514 |
+| DATA.<self.name> | 'value_counts' | `False` | nkululeko/data/dataset.py:920, nkululeko/data/dataset.py:937 |
+| DATA.<self.name> | <f'{split_name}_vals'> | `False` | nkululeko/data/dataset.py:840 |
+| DATA.<self.name> | <f'{split_name}_values'> | `False` | nkululeko/data/dataset.py:842 |

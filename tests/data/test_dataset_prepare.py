@@ -44,6 +44,7 @@ def _make_util():
     util.config_val_data.side_effect = lambda name, key, default: default
     util.exp_is_classification.return_value = True
     util.make_segmented_index.side_effect = lambda d: d
+    util.config = {"DATA": {"databases": "['mydb']"}}
     return util
 
 
@@ -117,6 +118,45 @@ class TestPrepareSkipsFiltersOnSplitReuse:
 
         # Not reduced to 8 -- the random per-dataset filter never ran.
         assert len(ds.df) == 50
+
+
+class TestPrepareStalenessCheckUsesAllDatasets:
+    """Review on #468: Dataset.prepare()'s staleness check only looked at
+    its own source file, which could disagree with
+    Datasplitter.fill_train_and_tests() -- that one checks every
+    configured dataset. If dataset B's CSV changed but A's didn't, A would
+    skip its own required/DataFilter rules here (assuming reuse), while
+    Datasplitter rebuilds the combined split anyway because B changed,
+    silently including A's unfiltered rows in it."""
+
+    def test_latest_source_csv_mtime_receives_every_configured_dataset(
+        self, monkeypatch
+    ):
+        idx = _make_segmented_index(["/data/a.wav", "/data/b.wav"])
+        df = pd.DataFrame({"emotion": ["happy", "sad"]}, index=idx)
+        ds = _make_dataset(df)
+        util = _make_util()
+        util.config = {"DATA": {"databases": "['mydb', 'otherdb']"}}
+        ds.util = util
+
+        captured_names = []
+
+        def fake_latest_source_csv_mtime(names, util):
+            captured_names.append(list(names))
+            return None
+
+        monkeypatch.setattr(
+            "nkululeko.data.dataset.latest_source_csv_mtime",
+            fake_latest_source_csv_mtime,
+        )
+        monkeypatch.setattr(
+            "nkululeko.data.dataset.should_reuse_split",
+            lambda util, split3, **kwargs: True,
+        )
+
+        ds.prepare()
+
+        assert captured_names == [["mydb", "otherdb"]]
 
 
 class _PassthroughDataFilter:

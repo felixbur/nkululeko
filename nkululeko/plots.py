@@ -1084,11 +1084,28 @@ class Plots(ContextAware):
                 f"{feature}, nothing to plot"
             )
             return
-        grouped = (
-            df_plot.groupby(["speaker", label], observed=True)[feature]
-            .mean()
-            .reset_index()
-        )
+        if self.util.exp_is_classification():
+            # label is a discrete class: group by (speaker, label) so a
+            # within-speaker design (a speaker with samples of more than
+            # one class) still gets one row per class it contributed to,
+            # not collapsed into a single speaker-wide mean.
+            grouped = (
+                df_plot.groupby(["speaker", label], observed=True)[feature]
+                .mean()
+                .reset_index()
+            )
+        else:
+            # label is a continuous target: it varies per sample even
+            # within one speaker, so grouping by (speaker, label) as
+            # above would barely aggregate anything (review on #468 --
+            # each distinct label value stays its own group, still
+            # effectively segment-level). Average both label and feature
+            # per speaker instead.
+            grouped = (
+                df_plot.groupby("speaker", observed=True)[[label, feature]]
+                .mean()
+                .reset_index()
+            )
         self.plot_feature(
             f"{title}_speaker",
             feature,
