@@ -58,6 +58,7 @@ class TestSavedExperimentIsStale:
         util.config_val_data.side_effect = (
             lambda name, key, default: data_files.get(name, default)
         )
+        util.config_val_bool.return_value = False
         return util
 
     def test_false_when_no_csv_backed_dataset(self):
@@ -120,3 +121,63 @@ class TestSavedExperimentIsStale:
 
         util = self._util({})
         assert not _saved_experiment_is_stale("/no/such/save.pkl", {"DATA": {}}, util)
+
+
+class TestShouldReuseSavedExperiment:
+    """Review on #468 (round 2): DATA.no_reuse=True must force a fresh
+    load of the saved experiment regardless of _saved_experiment_is_stale()
+    -- that check only catches one specific kind of staleness (a newer
+    CSV) and was never meant to be the only way to force a fresh run."""
+
+    def _util(self, data_files, no_reuse=False):
+        util = MagicMock()
+        util.config_val_data.side_effect = (
+            lambda name, key, default: data_files.get(name, default)
+        )
+        util.config_val_bool.return_value = no_reuse
+        return util
+
+    def test_reused_when_not_stale_and_no_reuse_unset(self):
+        from nkululeko.explore import _should_reuse_saved_experiment
+
+        with tempfile.TemporaryDirectory() as tmp:
+            csv_path = os.path.join(tmp, "data.csv")
+            save_path = os.path.join(tmp, "save.pkl")
+            open(csv_path, "w").close()
+            open(save_path, "w").close()
+            os.utime(csv_path, (1, 1))
+
+            util = self._util({"mydb": csv_path}, no_reuse=False)
+            config = {"DATA": {"databases": "['mydb']"}}
+
+            assert _should_reuse_saved_experiment(save_path, config, util)
+
+    def test_not_reused_when_no_reuse_set_even_if_not_stale(self):
+        from nkululeko.explore import _should_reuse_saved_experiment
+
+        with tempfile.TemporaryDirectory() as tmp:
+            csv_path = os.path.join(tmp, "data.csv")
+            save_path = os.path.join(tmp, "save.pkl")
+            open(csv_path, "w").close()
+            open(save_path, "w").close()
+            os.utime(csv_path, (1, 1))
+
+            util = self._util({"mydb": csv_path}, no_reuse=True)
+            config = {"DATA": {"databases": "['mydb']"}}
+
+            assert not _should_reuse_saved_experiment(save_path, config, util)
+
+    def test_not_reused_when_stale_even_if_no_reuse_unset(self):
+        from nkululeko.explore import _should_reuse_saved_experiment
+
+        with tempfile.TemporaryDirectory() as tmp:
+            csv_path = os.path.join(tmp, "data.csv")
+            save_path = os.path.join(tmp, "save.pkl")
+            open(save_path, "w").close()
+            os.utime(save_path, (1, 1))
+            open(csv_path, "w").close()
+
+            util = self._util({"mydb": csv_path}, no_reuse=False)
+            config = {"DATA": {"databases": "['mydb']"}}
+
+            assert not _should_reuse_saved_experiment(save_path, config, util)

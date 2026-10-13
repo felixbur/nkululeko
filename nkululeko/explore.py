@@ -61,6 +61,20 @@ def _saved_experiment_is_stale(save_name, config, util):
     )
 
 
+def _should_reuse_saved_experiment(save_name, config, util):
+    """True if a saved experiment at `save_name` should be loaded instead
+    of starting fresh from load_datasets()/fill_train_and_tests().
+
+    False whenever either DATA.no_reuse is set -- a separate, explicit
+    reason to skip it (same convention as should_reuse_split()/
+    should_reuse_file(), review on #468), independent of mtime -- or the
+    saved experiment is stale per _saved_experiment_is_stale().
+    """
+    if util.config_val_bool("DATA", "no_reuse", False):
+        return False
+    return not _saved_experiment_is_stale(save_name, config, util)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Call the nkululeko EXPLORE framework."
@@ -104,17 +118,17 @@ def main():
         # file, or a column added to the data CSV after the experiment was
         # last run stays silently invisible.
         save_name = util.get_save_name()
-        pickle_is_stale = _saved_experiment_is_stale(save_name, config, util)
-        if pickle_is_stale:
+        if _saved_experiment_is_stale(save_name, config, util):
             util.warn(
                 "DATA source file(s) changed since the saved experiment "
                 f"{save_name} was written -- loading fresh instead of "
                 "reusing it"
             )
+        should_reuse = _should_reuse_saved_experiment(save_name, config, util)
 
         needs_feats = False
         experiment_loaded = False
-        if not pickle_is_stale:
+        if should_reuse:
             try:
                 # load the experiment
                 expr.load(save_name)
