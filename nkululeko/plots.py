@@ -1104,6 +1104,15 @@ class Plots(ContextAware):
                 .mean()
                 .reset_index()
             )
+            # plot_feature() decides categorical-vs-continuous from
+            # dtype, not EXP.type (review on #468) -- a numeric-coded
+            # classification label (e.g. int 0/1) would otherwise take
+            # the regression/scatter path there, the same ambiguity
+            # _dedupe_speakers_for_distribution() already resolves via
+            # exp_is_classification() for the value_counts speaker plot.
+            # Converting to strings preserves the real class values while
+            # making plot_feature()'s own dtype check come out right.
+            grouped[label] = grouped[label].astype(str)
         else:
             # label is a continuous target: it varies per sample even
             # within one speaker, so grouping by (speaker, label) as
@@ -1116,6 +1125,17 @@ class Plots(ContextAware):
                 .mean()
                 .reset_index()
             )
+            if len(grouped) < 2:
+                # _plot2cont()'s stats.pearsonr() needs at least two
+                # points (review on #468) -- a dataset with only one
+                # usable speaker left after aggregation would otherwise
+                # raise instead of just skipping this one plot.
+                self.util.warn(
+                    f"plot_feature_speaker: only {len(grouped)} usable "
+                    f"speaker(s) for {feature}, need at least 2 for a "
+                    "regression plot -- skipping"
+                )
+                return
         self.plot_feature(
             f"{title}_speaker",
             feature,

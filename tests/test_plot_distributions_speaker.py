@@ -519,3 +519,46 @@ class TestPlotFeatureSpeaker:
         merged = labels_speaker.join(features_speaker)
         by_speaker = dict(zip(merged["speaker"], merged["feat1"]))
         assert by_speaker == {"s1": 1.0, "s2": 11.0}
+
+    def test_numeric_coded_classification_label_stays_categorical_for_plot_feature(
+        self,
+    ):
+        """Review on #468: plot_feature() decides categorical-vs-continuous
+        from dtype, not EXP.type -- a numeric-coded classification label
+        (e.g. int 0/1) would otherwise take the regression/scatter path
+        there, the same ambiguity _dedupe_speakers_for_distribution()
+        already resolves via exp_is_classification() for the value_counts
+        speaker plot. The grouped label must be converted so plot_feature()
+        sees it as categorical."""
+        plots = self._make_plots()
+        plots.util.exp_is_classification.return_value = True
+        plots.plot_feature = MagicMock()
+        df_labels = pd.DataFrame(
+            {"speaker": ["s1", "s1", "s2", "s2"], "class_label": [0, 0, 1, 1]}
+        )
+        df_features = pd.DataFrame({"feat1": [1.0, 3.0, 10.0, 12.0]})
+
+        plots.plot_feature_speaker(
+            "all", "feat1", "class_label", df_labels, df_features
+        )
+
+        args, _ = plots.plot_feature.call_args
+        _, _, _, labels_speaker, _ = args
+        assert labels_speaker["class_label"].dtype == object
+        assert sorted(labels_speaker["class_label"].unique()) == ["0", "1"]
+
+    def test_regression_with_fewer_than_two_speakers_warns_and_skips(self):
+        """Review on #468: _plot2cont()'s stats.pearsonr() needs at least
+        two points -- a regression dataset with only one usable speaker
+        left after aggregation must not be delegated to plot_feature(),
+        which would otherwise raise instead of just skipping this plot."""
+        plots = self._make_plots()
+        plots.util.exp_is_classification.return_value = False
+        plots.plot_feature = MagicMock()
+        df_labels = pd.DataFrame({"speaker": ["s1", "s1"], "age": [20.0, 22.0]})
+        df_features = pd.DataFrame({"feat1": [1.0, 3.0]})
+
+        plots.plot_feature_speaker("all", "feat1", "age", df_labels, df_features)
+
+        plots.plot_feature.assert_not_called()
+        assert plots.util.warn.called
