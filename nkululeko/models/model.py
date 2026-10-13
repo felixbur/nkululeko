@@ -24,6 +24,35 @@ from nkululeko.utils.util import Util
 class Model(ContextAware):
     """Generic model class for linear (non-neural) algorithms."""
 
+    dann_heads = None  # DannHeads when MODEL.dann_columns is set (see _init_dann)
+
+    def _init_dann(self, df_train, feat_dim, cfg=None):
+        """Build the domain-adversarial heads (MODEL.dann_columns) on
+        self.device; self.dann_heads stays None when DANN is off. Neural
+        models call this once their network exists, before the optimizer."""
+        from nkululeko.models.domain_adversarial import DannConfig, DannHeads
+
+        self.dann_heads = DannHeads.build(
+            df_train,
+            feat_dim,
+            cfg if cfg is not None else DannConfig.from_util(self.util),
+            self.util,
+            self.device,
+        )
+
+    def _dann_params(self, module):
+        """All trainable parameters: `module`'s plus the DANN heads'. Use
+        for the optimizer and for gradient clipping alike."""
+        params = list(module.parameters())
+        if self.dann_heads is not None:
+            params += list(self.dann_heads.parameters())
+        return params
+
+    def _domain_labels(self, df):
+        """(len(df), n_columns) domain labels for a train loader, or None
+        when DANN is off."""
+        return self.dann_heads.encode(df) if self.dann_heads is not None else None
+
     def __init__(self, df_train, df_test, feats_train, feats_test, context=None):
         """Constructor taking the configuration and all dataframes."""
         self.name = "undefined"

@@ -24,6 +24,7 @@ import torch
 import torch.nn as nn
 
 from nkululeko.models.aasist_config import AasistConfig
+from nkululeko.models.domain_adversarial import DannConfig, DannHeads
 from nkululeko.models.model_aasist import AasistModel, _WaveformDataset
 
 
@@ -35,6 +36,7 @@ def _default_cfg(**overrides):
         "batch_size": 2,
         "ssl_layer_pooling": "last",
         "freeze_ssl_frontend": False,
+        "dann": DannConfig(columns=[], lambda_=1.0, weight=1.0, reverse=True),
     }
     fields.update(overrides)
     return AasistConfig(**fields)
@@ -236,6 +238,7 @@ class TestTrain:
             model = AasistModel(df_train, df_test, pd.DataFrame(), pd.DataFrame())
             model.device = "cpu"
             model.net = _TinyNet()
+            model.dann_heads = None
             model.criterion = nn.CrossEntropyLoss()
             model.optimizer = torch.optim.SGD(model.net.parameters(), lr=0.1)
             model.scheduler = None
@@ -251,6 +254,153 @@ class TestTrain:
 
         assert torch.isfinite(torch.tensor(model.loss))
         assert not torch.allclose(model.net.fc.weight, before)
+
+
+class _FeatNet(nn.Module):
+    """Stand-in backend that also exposes a pooled feature vector."""
+
+    feat_dim = 4
+
+    def __init__(self):
+        super().__init__()
+        self.enc = nn.Linear(1, self.feat_dim)
+        self.out = nn.Linear(self.feat_dim, 2)
+
+    def forward(self, x, return_features=False):
+        feats = self.enc(x.mean(dim=1, keepdim=True))
+        logits = self.out(feats)
+        return (logits, feats) if return_features else logits
+
+
+def _dann_df():
+    index = pd.MultiIndex.from_tuples(
+        [(f"/f{i}.wav", pd.Timedelta(0), pd.NaT) for i in range(4)],
+        names=["file", "start", "end"],
+    )
+    return pd.DataFrame(
+        {
+            "label": [0, 1, 0, 1],
+            "source_db": ["a", "a", "b", "b"],
+            "language": ["en", "ja", "en", "ja"],
+        },
+        index=index,
+    )
+
+
+class _Util:
+    def debug(self, message):
+        pass
+
+    def error(self, message):
+        raise RuntimeError(message)
+
+
+def _dann_model(columns=("source_db",), reverse=True):
+    """AasistModel with __init__ patched out and DANN built for real."""
+    df = _dann_df()
+    with patch.object(AasistModel, "__init__", return_value=None):
+        model = AasistModel(df, df, None, None)
+    dann = DannConfig(
+        columns=list(columns), lambda_=1.0, weight=1.0, reverse=reverse
+    )
+    model.cfg = _default_cfg(dann=dann)
+    model.device = "cpu"
+    model.net = _FeatNet()
+    model.target = "label"
+    model.n_jobs = 0
+    model.criterion = nn.CrossEntropyLoss()
+    model.util = _Util()
+    model.dann_heads = DannHeads.build(df, model.net.feat_dim, dann, model.util)
+    return model, df
+
+
+class TestDann:
+    def test_off_by_default_keeps_two_tuples_and_no_heads(self, tmp_path):
+        """Regression: with DANN off, the train loader must yield 2-tuples
+        (train() unpacks two values)."""
+        model, df = _dann_model(columns=())
+        wav = tmp_path / "a.wav"
+        _write_wav(wav, seconds=0.5)
+        df.index = pd.MultiIndex.from_tuples(
+            [(str(wav), pd.Timedelta(0), pd.NaT)] * len(df),
+            names=["file", "start", "end"],
+        )
+        assert model.dann_heads is None
+        loader = model.get_loader(df, shuffle=False, train=True)
+        assert loader.dataset.domain_labels is None
+        assert len(loader.dataset[0]) == 2
+
+    def test_train_runs_with_dann_off_through_the_real_loader(self):
+        torch.manual_seed(0)
+        model, df = _dann_model(columns=())
+        # a real (tiny) waveform per row instead of reading files
+        model.trainloader = [(torch.randn(4, 16000), torch.tensor([0, 1, 0, 1]))]
+        model.optimizer = torch.optim.SGD(model.net.parameters(), lr=0.1)
+        model.scheduler, model.scheduler_type, model.scheduler_needs_init = (
+            None,
+            "none",
+            False,
+        )
+        model.train()
+        assert torch.isfinite(torch.tensor(model.loss))
+
+    def test_one_head_per_column(self):
+        model, _ = _dann_model(columns=("source_db", "language"))
+        assert model.dann_heads.columns == ["source_db", "language"]
+        assert len(model.dann_heads.heads) == 2
+
+    def test_train_loader_yields_domain_labels_test_loader_does_not(self):
+        model, df = _dann_model(columns=("source_db", "language"))
+        train_ds = model.get_loader(df, shuffle=False, train=True).dataset
+        test_ds = model.get_loader(df, shuffle=False).dataset
+        assert train_ds.domain_labels.shape == (4, 2)
+        assert test_ds.domain_labels is None
+
+    def test_forward_loss_adds_domain_terms(self):
+        torch.manual_seed(0)
+        model, _ = _dann_model(columns=("source_db", "language"))
+        x = torch.randn(4, 16000)
+        y = torch.tensor([0, 1, 0, 1])
+        dom = torch.tensor([[0, 0], [0, 1], [1, 0], [1, 1]])
+        with_dann = model._forward_loss(x, y, dom)
+        task_only = model.criterion(model.net(x), y)
+        assert with_dann.item() > task_only.item()
+
+    def test_evaluate_accepts_domain_label_batches(self):
+        model, _ = _dann_model(columns=("source_db",))
+        loader = [
+            (
+                torch.randn(4, 16000),
+                torch.tensor([0, 1, 0, 1]),
+                torch.tensor([[0], [0], [1], [1]]),
+            )
+        ]
+        uar, targets, predictions, logits, loss = model.evaluate(loader)
+        assert logits.shape == (4, 2)
+
+    def test_train_updates_heads_and_net(self):
+        torch.manual_seed(0)
+        model, _ = _dann_model(columns=("source_db",))
+        model.optimizer = torch.optim.SGD(
+            list(model.net.parameters()) + list(model.dann_heads.parameters()), lr=0.1
+        )
+        model.scheduler, model.scheduler_type, model.scheduler_needs_init = (
+            None,
+            "none",
+            False,
+        )
+        model.trainloader = [
+            (
+                torch.randn(4, 16000),
+                torch.tensor([0, 1, 0, 1]),
+                torch.tensor([[0], [0], [1], [1]]),
+            )
+        ]
+        head = model.dann_heads.head("source_db").classifier[0]
+        before = head.weight.clone()
+        model.train()
+        assert torch.isfinite(torch.tensor(model.loss))
+        assert not torch.allclose(head.weight, before)
 
 
 class TestStoreLoad:

@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.13.1 (26-10-13)
+-------------------------
+* add domain-adversarial training (DANN) for `[MODEL] type = aasist`, `mlp`, `mlp_reg`, `cnn` and `adm`: `[MODEL] dann_columns = ['source_db']` attaches one domain classifier per listed column to the model's last shared layer through a gradient-reversal layer, so the learned representation becomes invariant to e.g. the corpus or language of a sample -- useful for cross-corpus / cross-lingual generalization. Tuned with `dann_lambda`, `dann_weight` and `dann_reverse`; the heads are used for training only and are not saved with the model. Other model types ignore the keys (with a warning). DANN cannot be combined with `[FEATS] balancing`, and the auto-generated run/result names now carry the DANN settings (`..._dann-source_db`) so DANN runs don't share result or checkpoint paths with plain runs (with `[EXP] res_name` set the name is yours, so use a different `res_name` for each run). `finetune` is not supported yet (#465)
+
 Version 1.13.0 (26-10-12)
 -------------------------
 * `FEATS.audmodel.embeddings_name` now also accepts a list of output names (e.g. `['arousal', 'valence', 'emotion.acoustic']`), extracting all of them in a single ONNX forward pass instead of one experiment per head; each head's columns are prefixed with its own name (#459)

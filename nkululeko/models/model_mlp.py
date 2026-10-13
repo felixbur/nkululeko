@@ -67,9 +67,13 @@ class MLPModel(Model):
             feats_train.shape[1], layers, self.class_num, drop, activation
         ).to(self.device)
 
+        # domain-adversarial heads on the last hidden layer (MODEL.dann_columns)
+        self._init_dann(df_train, self.model.feat_dim)
+        params = self._dann_params(self.model)
+
         # set up optimizer
         self.optimizer, self.learning_rate = get_optimizer(
-            self.model.parameters(),
+            params,
             self.util,
             default_lr=0.0001,
             default_optimizer="adamw",
@@ -82,7 +86,12 @@ class MLPModel(Model):
         feats_train = self._handle_model_nan(feats_train, "Model, train")
         feats_test = self._handle_model_nan(feats_test, "Model, test")
         # set up the data_loaders
-        self.trainloader = self.get_loader(feats_train, df_train, True)
+        self.trainloader = self.get_loader(
+            feats_train,
+            df_train,
+            True,
+            domain_labels=self._domain_labels(df_train),
+        )
         self.testloader = self.get_loader(feats_test, df_test, False)
 
     def _get_activation(self):
@@ -112,9 +121,20 @@ class MLPModel(Model):
     def train(self):
         self.model.train()
         losses = []
-        for features, labels in self.trainloader:
-            logits = self.model(features.to(self.device))
+        for batch in self.trainloader:
+            if self.dann_heads is not None:
+                features, labels, domain_labels = batch
+                logits, hidden = self.model(
+                    features.to(self.device), return_features=True
+                )
+            else:
+                features, labels = batch
+                logits = self.model(features.to(self.device))
             loss = self.criterion(logits, labels.to(self.device, dtype=torch.int64))
+            if self.dann_heads is not None:
+                loss = loss + self.dann_heads.loss(
+                    hidden, domain_labels.to(self.device)
+                )
             losses.append(loss.item())
             self.optimizer.zero_grad()
             loss.backward()
@@ -127,7 +147,9 @@ class MLPModel(Model):
         model.eval()
         losses = []
         with torch.no_grad():
-            for index, (features, labels) in enumerate(loader):
+            for index, batch in enumerate(loader):
+                # the DANN train loader has a third item (domain labels)
+                features, labels = batch[0], batch[1]
                 start_index = index * loader.batch_size
                 end_index = (index + 1) * loader.batch_size
                 if end_index > len(loader.dataset):
@@ -196,7 +218,7 @@ class MLPModel(Model):
         )
         return (predictions.numpy(), self.get_probas(logits))
 
-    def get_loader(self, df_x, df_y, shuffle):
+    def get_loader(self, df_x, df_y, shuffle, domain_labels=None):
         # df_x.values re-materializes the whole (n_samples, n_features)
         # array on every access; when df_x isn't a single consolidated
         # block (e.g. after feature balancing concatenates several), that
@@ -207,7 +229,10 @@ class MLPModel(Model):
         y_values = df_y[self.target].values
         data = []
         for i in range(len(df_x)):
-            data.append([x_values[i], y_values[i]])
+            item = [x_values[i], y_values[i]]
+            if domain_labels is not None:
+                item.append(domain_labels[i])
+            data.append(item)
         return torch.utils.data.DataLoader(
             data, shuffle=shuffle, batch_size=self.batch_size
         )
@@ -221,6 +246,7 @@ class MLPModel(Model):
                 keys = [str(i) for i in range(len(layers_list))]
                 layers = dict(zip(keys, layers_list))
             sorted_layers = sorted(layers.items(), key=lambda x: x[1])
+            self.feat_dim = sorted_layers[-1][1]  # width of the last hidden layer
             layers = OrderedDict()
             layers["0"] = torch.nn.Linear(i, sorted_layers[0][1])
             layers["0_r"] = activation
@@ -240,10 +266,14 @@ class MLPModel(Model):
             )
             self.linear = torch.nn.Sequential(layers)
 
-        def forward(self, x):
+        def forward(self, x, return_features=False):
             # x: (batch_size, channels, samples)
             x = x.squeeze(dim=1).float()
-            return self.linear(x)
+            if not return_features:
+                return self.linear(x)
+            # input to the output layer: where DANN heads attach
+            hidden = self.linear[:-1](x)
+            return self.linear[-1](hidden), hidden
 
     def predict_shap(self, features):
         # predict outputs for all samples in SHAP format (pd. dataframe)
