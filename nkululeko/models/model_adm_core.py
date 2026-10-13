@@ -291,9 +291,12 @@ class DeepfakeADMModel(nn.Module):
                 module, x = self.extra_adms[branch], extra_feats[branch]
             else:
                 continue
-            score, feats = module(x, return_features=True)
+            if return_features:
+                score, feats = module(x, return_features=True)
+                branch_feats.append(feats)
+            else:
+                score = module(x)
             branch_scores.append(score)
-            branch_feats.append(feats)
 
         if not branch_scores:
             raise ValueError("No active ADM branches produced scores.")

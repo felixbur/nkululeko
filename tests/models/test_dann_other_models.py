@@ -167,6 +167,26 @@ class TestAdm:
         assert feats.shape == (3, core.feat_dim) == (3, len(branches) * 8)
         assert torch.equal(score, plain)
 
+    def test_branches_are_not_asked_for_features_by_default(self, monkeypatch):
+        core = self._core()
+        core.eval()
+        calls = []
+        for branch in (core.time_adm, core.spec_adm, core.phase_adm):
+            original = branch.forward
+
+            def spy(x, return_features=False, _original=original):
+                calls.append(return_features)
+                return _original(x, return_features=return_features)
+
+            monkeypatch.setattr(branch, "forward", spy)
+        args = (torch.rand(3, 8), torch.rand(3, 5), torch.rand(3, 6))
+        with torch.no_grad():
+            core(*args)
+            assert calls == [False, False, False]
+            calls.clear()
+            core(*args, return_features=True)
+            assert calls == [True, True, True]
+
     def _model(self):
         torch.manual_seed(0)
         model = ADMModel.__new__(ADMModel)
