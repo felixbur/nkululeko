@@ -7,13 +7,22 @@ from nkululeko.autopredict.ap_audmodel import AudmodelPredictor
 from nkululeko.experiment_context import ExperimentContext, use_context
 
 
-def _context(embeddings_name):
-    return ExperimentContext(
-        config={
-            "DATA": {"databases": "['test_db']"},
-            "FEATS": {"audmodel.embeddings_name": embeddings_name},
-        }
-    )
+def _context():
+    return ExperimentContext(config={"DATA": {"databases": "['test_db']"}})
+
+
+def _mock_extractor(pred_df, embeddings_names, head_label_counts=None):
+    """Stand-in for FeatureExtractor: .extract() returns pred_df, and
+    .feat_extractor is the underlying AudmodelSet-shaped object
+    AudmodelPredictor reads the head-to-columns boundary from (review on
+    #468: this boundary must come from the extractor itself, not be
+    reconstructed from column-name string matching)."""
+    mock_extractor = Mock()
+    mock_extractor.extract.return_value = pred_df
+    mock_extractor.feat_extractor.embeddings_names = embeddings_names
+    if head_label_counts is not None:
+        mock_extractor.feat_extractor._head_label_counts = head_label_counts
+    return mock_extractor
 
 
 class TestAudmodelPredictor:
@@ -27,12 +36,10 @@ class TestAudmodelPredictor:
     @patch("nkululeko.autopredict.ap_audmodel.FeatureExtractor")
     def test_single_dim_head_is_copied_as_is(self, mock_feature_extractor):
         pred_df = pd.DataFrame({"valence": [0.1, 0.5, 0.9]})
-        mock_extractor = Mock()
-        mock_extractor.extract.return_value = pred_df
-        mock_feature_extractor.return_value = mock_extractor
+        mock_feature_extractor.return_value = _mock_extractor(pred_df, ["valence"])
 
         df = pd.DataFrame({"dummy": [1, 2, 3]})
-        with use_context(_context("valence")):
+        with use_context(_context()):
             result = AudmodelPredictor(df).predict("train")
 
         assert list(result["valence_pred"]) == [0.1, 0.5, 0.9]
@@ -51,12 +58,12 @@ class TestAudmodelPredictor:
                 "emotion.acoustic_neutral": [0.1, 0.1, np.nan],
             }
         )
-        mock_extractor = Mock()
-        mock_extractor.extract.return_value = pred_df
-        mock_feature_extractor.return_value = mock_extractor
+        mock_feature_extractor.return_value = _mock_extractor(
+            pred_df, ["emotion.acoustic"]
+        )
 
         df = pd.DataFrame({"dummy": [1, 2, 3]})
-        with use_context(_context("emotion.acoustic")):
+        with use_context(_context()):
             result = AudmodelPredictor(df).predict("train")
 
         assert list(result["emotion.acoustic_pred"]) == ["angry", "happy", "unknown"]
@@ -70,12 +77,12 @@ class TestAudmodelPredictor:
                 "emotion.acoustic_happy": [0.2, 0.9],
             }
         )
-        mock_extractor = Mock()
-        mock_extractor.extract.return_value = pred_df
-        mock_feature_extractor.return_value = mock_extractor
+        mock_feature_extractor.return_value = _mock_extractor(
+            pred_df, ["valence", "emotion.acoustic"], head_label_counts=[1, 2]
+        )
 
         df = pd.DataFrame({"dummy": [1, 2]})
-        with use_context(_context("['valence', 'emotion.acoustic']")):
+        with use_context(_context()):
             result = AudmodelPredictor(df).predict("train")
 
         assert list(result["valence_pred"]) == [0.1, 0.9]
@@ -88,15 +95,31 @@ class TestAudmodelPredictor:
         so the column still gets written, as "unknown" for every row,
         rather than being silently omitted."""
         pred_df = pd.DataFrame(index=[0, 1, 2])
-        mock_extractor = Mock()
-        mock_extractor.extract.return_value = pred_df
-        mock_feature_extractor.return_value = mock_extractor
+        mock_feature_extractor.return_value = _mock_extractor(pred_df, ["valence"])
 
         df = pd.DataFrame({"dummy": [1, 2, 3]})
-        with use_context(_context("valence")):
+        with use_context(_context()):
             result = AudmodelPredictor(df).predict("train")
 
         assert list(result["valence_pred"]) == ["unknown", "unknown", "unknown"]
+
+    @patch("nkululeko.autopredict.ap_audmodel.FeatureExtractor")
+    def test_one_of_several_heads_missing_entirely_falls_back_to_unknown(
+        self, mock_feature_extractor
+    ):
+        """Same as above, but for one head out of several (the dataframe
+        is short just that head's columns, not empty altogether)."""
+        pred_df = pd.DataFrame({"valence": [0.1, 0.9]})
+        mock_feature_extractor.return_value = _mock_extractor(
+            pred_df, ["valence", "emotion.acoustic"], head_label_counts=[1, 2]
+        )
+
+        df = pd.DataFrame({"dummy": [1, 2]})
+        with use_context(_context()):
+            result = AudmodelPredictor(df).predict("train")
+
+        assert list(result["valence_pred"]) == [0.1, 0.9]
+        assert list(result["emotion.acoustic_pred"]) == ["unknown", "unknown"]
 
     @patch("nkululeko.autopredict.ap_audmodel.FeatureExtractor")
     def test_a_row_with_all_nan_scores_is_unknown_not_a_crash(
@@ -114,12 +137,12 @@ class TestAudmodelPredictor:
                 "emotion.acoustic_happy": [0.2, np.nan],
             }
         )
-        mock_extractor = Mock()
-        mock_extractor.extract.return_value = pred_df
-        mock_feature_extractor.return_value = mock_extractor
+        mock_feature_extractor.return_value = _mock_extractor(
+            pred_df, ["emotion.acoustic"]
+        )
 
         df = pd.DataFrame({"dummy": [1, 2]})
-        with use_context(_context("emotion.acoustic")):
+        with use_context(_context()):
             result = AudmodelPredictor(df).predict("train")
 
         assert list(result["emotion.acoustic_pred"]) == ["angry", "unknown"]
@@ -140,12 +163,12 @@ class TestAudmodelPredictor:
                 "emotion.acoustic_happy": [1.0, -1.0],
             }
         )
-        mock_extractor = Mock()
-        mock_extractor.extract.return_value = pred_df
-        mock_feature_extractor.return_value = mock_extractor
+        mock_feature_extractor.return_value = _mock_extractor(
+            pred_df, ["emotion.acoustic"]
+        )
 
         df = pd.DataFrame({"dummy": [1, 2]})
-        with use_context(_context("emotion.acoustic")):
+        with use_context(_context()):
             result = AudmodelPredictor(df).predict("train")
 
         assert list(result["emotion.acoustic_pred"]) == ["happy", "angry"]
@@ -153,11 +176,11 @@ class TestAudmodelPredictor:
     @patch("nkululeko.autopredict.ap_audmodel.FeatureExtractor")
     def test_overlapping_head_names_do_not_mix_columns(self, mock_feature_extractor):
         """Review on #468: with heads "foo" (categorical) and "foo_bar"
-        (one-dimensional), naive startswith("foo_") matching for "foo"
-        would also claim "foo_bar"'s own column as one of foo's own
-        category scores, corrupting foo's argmax. Processing the longer
-        head name first and removing its claimed column from the shared
-        pool prevents that."""
+        (one-dimensional), column-name string matching (however the heads
+        are ordered) can misattribute columns between them. Reading the
+        boundary directly from the extractor's own per-head column
+        counts -- not reconstructing it from the names -- sidesteps that
+        entirely."""
         pred_df = pd.DataFrame(
             {
                 "foo_angry": [0.1, 0.9],
@@ -165,16 +188,44 @@ class TestAudmodelPredictor:
                 "foo_bar": [5.0, 6.0],
             }
         )
-        mock_extractor = Mock()
-        mock_extractor.extract.return_value = pred_df
-        mock_feature_extractor.return_value = mock_extractor
+        mock_feature_extractor.return_value = _mock_extractor(
+            pred_df, ["foo", "foo_bar"], head_label_counts=[2, 1]
+        )
 
         df = pd.DataFrame({"dummy": [1, 2]})
-        with use_context(_context("['foo', 'foo_bar']")):
+        with use_context(_context()):
             result = AudmodelPredictor(df).predict("train")
 
         assert list(result["foo_pred"]) == ["happy", "angry"]
         assert list(result["foo_bar_pred"]) == [5.0, 6.0]
+
+    @patch("nkululeko.autopredict.ap_audmodel.FeatureExtractor")
+    def test_overlapping_head_names_with_ambiguous_label_do_not_mix_columns(
+        self, mock_feature_extractor
+    ):
+        """Review on #468: this is the case that broke prefix matching
+        even with longest-name-first ordering -- head "foo" has a label
+        literally named "bar_angry", producing a column "foo_bar_angry"
+        that looks exactly like it belongs to head "foo_bar". Positional
+        slicing by the extractor's own recorded per-head counts isn't
+        fooled by this, since it never inspects the column text at all."""
+        pred_df = pd.DataFrame(
+            {
+                "foo_bar_angry": [0.9, 0.1],  # head "foo"'s own column
+                "foo_bar_x": [0.2, 0.8],
+                "foo_bar_y": [0.8, 0.2],
+            }
+        )
+        mock_feature_extractor.return_value = _mock_extractor(
+            pred_df, ["foo", "foo_bar"], head_label_counts=[1, 2]
+        )
+
+        df = pd.DataFrame({"dummy": [1, 2]})
+        with use_context(_context()):
+            result = AudmodelPredictor(df).predict("train")
+
+        assert list(result["foo_pred"]) == [0.9, 0.1]
+        assert list(result["foo_bar_pred"]) == ["y", "x"]
 
     @patch("nkululeko.autopredict.ap_audmodel.FeatureExtractor")
     def test_forces_no_reuse_to_avoid_stale_ad_hoc_cache(self, mock_feature_extractor):
@@ -186,12 +237,10 @@ class TestAudmodelPredictor:
         second invocation on a different file list would silently reuse
         the first invocation's cached features."""
         pred_df = pd.DataFrame({"valence": [0.1]})
-        mock_extractor = Mock()
-        mock_extractor.extract.return_value = pred_df
-        mock_feature_extractor.return_value = mock_extractor
+        mock_feature_extractor.return_value = _mock_extractor(pred_df, ["valence"])
 
         df = pd.DataFrame({"dummy": [1]})
-        context = _context("valence")
+        context = _context()
         with use_context(context):
             AudmodelPredictor(df).predict("train")
 
@@ -202,9 +251,7 @@ class TestAudmodelPredictor:
         self, mock_feature_extractor
     ):
         pred_df = pd.DataFrame({"valence": [0.1]})
-        mock_extractor = Mock()
-        mock_extractor.extract.return_value = pred_df
-        mock_feature_extractor.return_value = mock_extractor
+        mock_feature_extractor.return_value = _mock_extractor(pred_df, ["valence"])
 
         df = pd.DataFrame({"dummy": [1]})
         context = ExperimentContext(config={"DATA": {"databases": "['test_db']"}})

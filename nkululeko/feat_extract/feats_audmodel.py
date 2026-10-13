@@ -108,7 +108,7 @@ class AudmodelSet(Featureset):
                 "FEATS.audmodel.embeddings_name as a list (multi-head "
                 "extraction) is only supported for ONNX models with named "
                 "output heads; this model would use the torch path "
-                "(audmodel.wav2vec2.layer != 0, or no model.onnx present), "
+                "(FEATS.wav2vec2.layer != 0, or no model.onnx present), "
                 "which has no concept of named output heads."
             )
 

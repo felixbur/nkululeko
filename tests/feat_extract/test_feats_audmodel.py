@@ -551,6 +551,11 @@ class TestMultiHeadRejectedForTorchPath:
             instance._load_model()
 
         assert instance.util.error.called
+        # Review on #468: the error must name the actual config key
+        # (FEATS.wav2vec2.layer, read at __init__) that controls the
+        # torch-path switch, not a nonexistent "audmodel.wav2vec2.layer".
+        message = instance.util.error.call_args[0][0]
+        assert "FEATS.wav2vec2.layer" in message
 
 
 class TestExtractPreservesFailedRows:

@@ -159,7 +159,7 @@ python -m nkululeko.explore --config exp_audmodel_multihead.ini
 
 - Multi-head extraction is only supported for ONNX-backed audmodels (the
   common case). A model that falls back to the torch path (a nonzero
-  `audmodel.wav2vec2.layer`, or no `model.onnx` present) has no concept of
+  `FEATS.wav2vec2.layer`, or no `model.onnx` present) has no concept of
   named output heads, and raises a clear config error if a list is given.
 - A per-file extraction failure no longer aborts the whole run: it's kept
   as a missing (NaN) row, so the rest of the dataset is still usable, and
