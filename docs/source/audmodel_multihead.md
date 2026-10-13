@@ -175,6 +175,11 @@ python -m nkululeko.explore --config exp_audmodel_multihead.ini
 - A typo'd or unknown head name in `audmodel.embeddings_name` raises a clear
   config error listing the model's actual valid output names, instead of a
   bare lookup error.
+- The `audmodel` autopredict target temporarily disables `FEATS.features`
+  (a generic feature-subset/reorder filter) for the duration of its own
+  extraction, restoring it afterward: that filter would otherwise
+  reshuffle or drop audmodel's own output columns before the predictor
+  can turn them into `<head>_pred` columns.
 
 ## Related
 

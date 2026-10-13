@@ -44,7 +44,8 @@ class AudmodelPredictor:
         # skipped by a cache hit), which self._head_label_counts relies on.
         if "FEATS" not in self.util.config:
             self.util.config["FEATS"] = {}
-        self.util.config["FEATS"]["no_reuse"] = "True"
+        feats_section = self.util.config["FEATS"]
+        feats_section["no_reuse"] = "True"
         self.feature_extractor = FeatureExtractor(
             self.df,
             ["audmodel"],
@@ -52,7 +53,24 @@ class AudmodelPredictor:
             split_selection,
             context=self.util.context,
         )
-        pred_df = self.feature_extractor.extract()
+        # FEATS.features (a generic feature-subset/reorder filter applied
+        # by Featureset.filter(), e.g. to restrict a model to a hand-picked
+        # subset) runs inside extract() below and would reshuffle/drop
+        # audmodel's own output columns before this predictor ever sees
+        # them, breaking the positional head->column mapping that follows
+        # (review on #468). This predictor's whole job is to turn
+        # audmodel's complete output into <head>_pred columns, so disable
+        # that filter for the duration of this extraction, restoring it
+        # afterward in case something else in the same run still needs it.
+        had_features_key = "features" in feats_section
+        original_features = feats_section.get("features") if had_features_key else None
+        if had_features_key:
+            del feats_section["features"]
+        try:
+            pred_df = self.feature_extractor.extract()
+        finally:
+            if had_features_key:
+                feats_section["features"] = original_features
         return_df = self.df.copy()
 
         # Read the head-to-columns boundary straight from the AudmodelSet

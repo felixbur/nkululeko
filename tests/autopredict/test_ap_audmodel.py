@@ -259,3 +259,45 @@ class TestAudmodelPredictor:
             AudmodelPredictor(df).predict("train")
 
         assert context.config["FEATS"]["no_reuse"] == "True"
+
+    @patch("nkululeko.autopredict.ap_audmodel.FeatureExtractor")
+    def test_disables_feats_features_during_extraction_and_restores_it(
+        self, mock_feature_extractor
+    ):
+        """Review on #468: FEATS.features (a generic feature-subset/reorder
+        filter, applied inside Featureset.filter()) would reshuffle/drop
+        audmodel's own output columns before this predictor ever sees
+        them, breaking the positional head->column mapping. It must be
+        disabled just for this extraction and restored afterward, since
+        something else in the same run might still need it."""
+        pred_df = pd.DataFrame({"valence": [0.1]})
+        mock_extractor = _mock_extractor(pred_df, ["valence"])
+        captured = {}
+        context = _context()
+        context.config["FEATS"] = {"features": "['valence']"}
+
+        def fake_extract():
+            captured["features_during_extract"] = "features" in context.config["FEATS"]
+            return pred_df
+
+        mock_extractor.extract.side_effect = fake_extract
+        mock_feature_extractor.return_value = mock_extractor
+
+        df = pd.DataFrame({"dummy": [1]})
+        with use_context(context):
+            AudmodelPredictor(df).predict("train")
+
+        assert captured["features_during_extract"] is False
+        assert context.config["FEATS"]["features"] == "['valence']"
+
+    @patch("nkululeko.autopredict.ap_audmodel.FeatureExtractor")
+    def test_no_feats_features_key_is_a_no_op(self, mock_feature_extractor):
+        pred_df = pd.DataFrame({"valence": [0.1]})
+        mock_feature_extractor.return_value = _mock_extractor(pred_df, ["valence"])
+
+        df = pd.DataFrame({"dummy": [1]})
+        context = _context()
+        with use_context(context):
+            AudmodelPredictor(df).predict("train")
+
+        assert "features" not in context.config["FEATS"]
