@@ -209,14 +209,25 @@ class NamingMixin:
                 "write it like ['source_db', 'language']"
             )
 
-    def get_dann_number(self, key, default="1.0"):
-        """MODEL.<key> (dann_lambda, dann_weight) as a float; a value that
-        is not a number is a config error."""
-        raw = self.config_val("MODEL", key, default)
+    def _dann_float(self, key, raw):
+        """MODEL.<key> as a float; a value that is not a number is a config
+        error."""
         try:
             return float(raw)
         except (TypeError, ValueError):
             self.error(f"MODEL.{key} = {raw} is not a number")
+
+    def get_dann_lambda(self):
+        """MODEL.dann_lambda: strength of the gradient reversal."""
+        return self._dann_float(
+            "dann_lambda", self.config_val("MODEL", "dann_lambda", "1.0")
+        )
+
+    def get_dann_weight(self):
+        """MODEL.dann_weight: weight of each domain loss."""
+        return self._dann_float(
+            "dann_weight", self.config_val("MODEL", "dann_weight", "1.0")
+        )
 
     def _get_dann_suffix(self):
         """Return a DANN suffix (e.g. '_dann-source_db') when the model type
@@ -237,8 +248,8 @@ class NamingMixin:
         if safe != columns or any("+" in c or "__" in c for c in columns):
             digest = hashlib.sha1(repr(columns).encode()).hexdigest()[:6]
             suffix += f"-{digest}"
-        lambda_ = self.get_dann_number("dann_lambda")
-        weight = self.get_dann_number("dann_weight")
+        lambda_ = self.get_dann_lambda()
+        weight = self.get_dann_weight()
         if lambda_ != 1.0:
             suffix += f"-l{lambda_:g}".replace(".", "-")
         if weight != 1.0:

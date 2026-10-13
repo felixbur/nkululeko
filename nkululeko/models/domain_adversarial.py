@@ -108,8 +108,8 @@ class DannConfig:
             return cls(columns=[], lambda_=1.0, weight=1.0, reverse=True)
         return cls(
             columns=columns,
-            lambda_=util.get_dann_number("dann_lambda"),
-            weight=util.get_dann_number("dann_weight"),
+            lambda_=util.get_dann_lambda(),
+            weight=util.get_dann_weight(),
             reverse=util.config_val_bool("MODEL", "dann_reverse", True),
         )
 
