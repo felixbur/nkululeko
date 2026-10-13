@@ -1047,6 +1047,103 @@ class Plots(ContextAware):
             )
         )
 
+    def plot_feature_speaker(self, title, feature, label, df_labels, df_features):
+        """Like plot_feature(), but aggregated by speaker instead of one
+        row per sample (GH #459 item 5(c)): one row per (speaker, label)
+        for a classification target, or one row per speaker (label and
+        feature both averaged) for a regression target -- see the
+        exp_is_classification() branch below for why they differ.
+
+        Many segments per speaker make every feature come out "highly
+        significant" in the Kruskal-Wallis/pairwise tests regardless of
+        real effect size (e.g. 2897 segments across 116 speakers). This
+        mirrors the existing value_counts speaker-level precedent
+        (plot_distributions_speaker(), which reuses plot_distributions() on
+        a deduped df) -- unlike that df, though, a continuous feature's
+        first sample doesn't represent the speaker, so this aggregates by
+        mean rather than by `.head(1)`.
+
+        The aggregated frame carries no gender column, so the delegated
+        plot_feature() call always takes its no-gender branch.
+        """
+        if "speaker" not in df_labels.columns:
+            self.util.warn(
+                f"plot_feature_speaker: no speaker ids available for "
+                f"{feature}, nothing to plot"
+            )
+            return
+        # Align by index rather than position (review on #468):
+        # FEATS.nan_strategy=drop can remove rows from df_features while
+        # df_labels is unchanged, so the two can differ in length/order.
+        # Passing Series (not .values arrays) lets pd.DataFrame's
+        # constructor align them by index -- a row present in df_labels
+        # but dropped from df_features becomes NaN in `feature` instead of
+        # a length-mismatch crash (or a silent positional misalignment, if
+        # lengths just happened to match).
+        common_index = df_labels.index.intersection(df_features.index)
+        df_plot = pd.DataFrame(
+            {
+                "speaker": df_labels.loc[common_index, "speaker"],
+                label: df_labels.loc[common_index, label],
+                feature: df_features.loc[common_index, feature],
+            }
+        ).dropna(subset=["speaker"])
+        if df_plot.empty:
+            self.util.warn(
+                f"plot_feature_speaker: no usable speaker ids for "
+                f"{feature}, nothing to plot"
+            )
+            return
+        if self.util.exp_is_classification():
+            # label is a discrete class: group by (speaker, label) so a
+            # within-speaker design (a speaker with samples of more than
+            # one class) still gets one row per class it contributed to,
+            # not collapsed into a single speaker-wide mean.
+            grouped = (
+                df_plot.groupby(["speaker", label], observed=True)[feature]
+                .mean()
+                .reset_index()
+            )
+            # plot_feature() decides categorical-vs-continuous from
+            # dtype, not EXP.type (review on #468) -- a numeric-coded
+            # classification label (e.g. int 0/1) would otherwise take
+            # the regression/scatter path there, the same ambiguity
+            # _dedupe_speakers_for_distribution() already resolves via
+            # exp_is_classification() for the value_counts speaker plot.
+            # Converting to strings preserves the real class values while
+            # making plot_feature()'s own dtype check come out right.
+            grouped[label] = grouped[label].astype(str)
+        else:
+            # label is a continuous target: it varies per sample even
+            # within one speaker, so grouping by (speaker, label) as
+            # above would barely aggregate anything (review on #468 --
+            # each distinct label value stays its own group, still
+            # effectively segment-level). Average both label and feature
+            # per speaker instead.
+            grouped = (
+                df_plot.groupby("speaker", observed=True)[[label, feature]]
+                .mean()
+                .reset_index()
+            )
+            if len(grouped) < 2:
+                # _plot2cont()'s stats.pearsonr() needs at least two
+                # points (review on #468) -- a dataset with only one
+                # usable speaker left after aggregation would otherwise
+                # raise instead of just skipping this one plot.
+                self.util.warn(
+                    f"plot_feature_speaker: only {len(grouped)} usable "
+                    f"speaker(s) for {feature}, need at least 2 for a "
+                    "regression plot -- skipping"
+                )
+                return
+        self.plot_feature(
+            f"{title}_speaker",
+            feature,
+            label,
+            grouped[["speaker", label]],
+            grouped[[feature]],
+        )
+
     def regplot(self, reglist, labels, features):
         """Plot a regression (or bubble) scatter plot between two features.
 

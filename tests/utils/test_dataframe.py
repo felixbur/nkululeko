@@ -13,6 +13,7 @@ import pandas as pd
 import nkululeko.glob_conf as glob_conf
 from nkululeko.utils.dataframe import (
     cache_has_source_db,
+    latest_source_csv_mtime,
     remap_augmented_index,
     should_reuse_file,
     should_reuse_split,
@@ -499,6 +500,100 @@ class TestShouldReuseSplit(unittest.TestCase):
         util = self._make_util("/no/such/store/dir/", no_reuse=False)
 
         self.assertFalse(should_reuse_split(util, split3=False))
+
+    def test_source_mtime_none_skips_the_staleness_check(self):
+        """Default behavior: no dataset is CSV-backed (or the caller
+        didn't ask), so should_reuse_split falls back to the pre-#459
+        file-existence-only check."""
+        with tempfile.TemporaryDirectory() as store:
+            store = store + os.sep
+            for fname in ("traindf.csv", "testdf.csv"):
+                open(os.path.join(store, fname), "w").close()
+            util = self._make_util(store, no_reuse=False)
+
+            self.assertTrue(should_reuse_split(util, split3=False, source_mtime=None))
+
+    def test_true_when_source_is_older_than_cache(self):
+        with tempfile.TemporaryDirectory() as store:
+            store = store + os.sep
+            for fname in ("traindf.csv", "testdf.csv"):
+                open(os.path.join(store, fname), "w").close()
+            util = self._make_util(store, no_reuse=False)
+            cache_mtime = min(
+                os.path.getmtime(os.path.join(store, f))
+                for f in ("traindf.csv", "testdf.csv")
+            )
+
+            self.assertTrue(
+                should_reuse_split(
+                    util, split3=False, source_mtime=cache_mtime - 10
+                )
+            )
+
+    def test_false_and_warns_when_source_is_newer_than_cache(self):
+        """GH #459: a column added to the data CSV after the split was
+        cached must not be silently hidden behind a reused stale split."""
+        with tempfile.TemporaryDirectory() as store:
+            store = store + os.sep
+            for fname in ("traindf.csv", "testdf.csv"):
+                open(os.path.join(store, fname), "w").close()
+            util = self._make_util(store, no_reuse=False)
+            cache_mtime = max(
+                os.path.getmtime(os.path.join(store, f))
+                for f in ("traindf.csv", "testdf.csv")
+            )
+
+            self.assertFalse(
+                should_reuse_split(
+                    util, split3=False, source_mtime=cache_mtime + 10
+                )
+            )
+            self.assertTrue(util.warn.called)
+
+
+class TestLatestSourceCsvMtime(unittest.TestCase):
+    """Direct unit tests for latest_source_csv_mtime (GH #459 item 5(b))."""
+
+    def _util(self, data_files):
+        util = MagicMock()
+        util.config_val_data.side_effect = (
+            lambda name, key, default: data_files.get(name, default)
+        )
+        return util
+
+    def test_none_when_no_dataset_is_csv_backed(self):
+        # audb-managed datasets: DATA.<name> isn't a local file path at all.
+        util = self._util({"mydb": "mydb"})
+
+        self.assertIsNone(latest_source_csv_mtime(["mydb"], util))
+
+    def test_returns_mtime_of_the_one_csv_backed_dataset(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            csv_path = os.path.join(tmp, "data.csv")
+            open(csv_path, "w").close()
+            util = self._util({"mydb": csv_path})
+
+            result = latest_source_csv_mtime(["mydb"], util)
+
+            self.assertEqual(result, os.path.getmtime(csv_path))
+
+    def test_returns_max_across_multiple_csv_backed_datasets(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            older = os.path.join(tmp, "older.csv")
+            newer = os.path.join(tmp, "newer.csv")
+            open(older, "w").close()
+            open(newer, "w").close()
+            os.utime(older, (1, 1))
+            util = self._util({"a": older, "b": newer})
+
+            result = latest_source_csv_mtime(["a", "b"], util)
+
+            self.assertEqual(result, os.path.getmtime(newer))
+
+    def test_skips_datasets_whose_source_file_does_not_exist(self):
+        util = self._util({"audb_db": "audb_db", "missing": "/no/such/file.csv"})
+
+        self.assertIsNone(latest_source_csv_mtime(["audb_db", "missing"], util))
 
 
 class TestShouldReuseFile(unittest.TestCase):

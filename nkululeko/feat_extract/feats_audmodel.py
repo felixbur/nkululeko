@@ -1,6 +1,7 @@
 # feats_audmodel.py
+import ast
+import hashlib
 import os
-import uuid
 
 import numpy as np
 import pandas as pd
@@ -14,7 +15,90 @@ import audiofile
 import audmodel
 import audonnx
 
-from nkululeko.feat_extract.featureset import Featureset
+from nkululeko.feat_extract.featureset import EXTRACTION_ERRORS, Featureset
+from nkululeko.utils.errors import NkululukoError
+
+
+def parse_embeddings_names(raw):
+    """Parse FEATS.audmodel.embeddings_name into a list of output names.
+
+    Accepts either a single bare name (e.g. "valence", the back-compat
+    default) or a list literal (e.g. "['arousal', 'valence']") for
+    multi-head extraction (GH #459): a bare word isn't valid Python literal
+    syntax, so ast.literal_eval raises and we fall back to treating `raw`
+    as the one name as-is.
+    """
+    try:
+        parsed = ast.literal_eval(raw)
+    except (ValueError, SyntaxError):
+        parsed = raw
+    if isinstance(parsed, (list, tuple)):
+        if len(parsed) == 0:
+            raise ValueError("FEATS.audmodel.embeddings_name is an empty list")
+        heads = [str(p) for p in parsed]
+        seen = set()
+        duplicates = [h for h in heads if (h in seen) or seen.add(h)]
+        if duplicates:
+            raise ValueError(
+                "FEATS.audmodel.embeddings_name has duplicate head(s): "
+                f"{sorted(set(duplicates))}"
+            )
+        return heads
+    return [str(parsed)]
+
+
+def embeddings_cache_key(raw):
+    """Collision-free cache-key component for FEATS.audmodel.embeddings_name.
+
+    Single head: the bare head name, kept human-readable (unchanged from
+    before multi-head support existed). Multiple heads: joining the names
+    with a plain separator like "-" is ambiguous -- ['foo-bar', 'baz'] and
+    ['foo', 'bar-baz'] would both join to "foo-bar-baz" (review on #468),
+    silently reusing a different head selection's cached features. Hashing
+    the ordered list instead (joined on an ASCII unit separator a real head
+    name won't contain, so the pre-hash string itself is already
+    unambiguous) avoids that, and sidesteps escaping concerns for using
+    arbitrary head names in a filesystem path.
+    """
+    heads = parse_embeddings_names(raw)
+    if len(heads) == 1:
+        return heads[0]
+    digest = hashlib.sha256("\x1f".join(heads).encode()).hexdigest()[:16]
+    return f"multihead-{digest}"
+
+
+def _dynamic_axis(shape):
+    """Index of the first dynamic (-1) dimension in `shape`, or None."""
+    for idx, dim in enumerate(shape):
+        if dim == -1:
+            return idx
+    return None
+
+
+def _concat_axis(shapes):
+    """Return the axis `shapes` can be concatenated on, or None if they
+    can't be.
+
+    Faithfully mirrors audonnx's own (undocumented, private) compatibility
+    rule for `Model.__call__(..., concat=True)` -- audonnx.core.model's
+    `_concat_axis`, not part of its public API, so reimplemented here
+    rather than imported -- so an incompatible multi-head selection can be
+    rejected with a clear config error before extraction starts (review on
+    #468), instead of surfacing as a RuntimeError during the first file's
+    inference. That would otherwise be misreported by the per-file except
+    clause as an ordinary per-file extraction miss, repeated for every
+    file, ending in either a generic failure-rate error or (with a
+    permissive FEATS.fail_threshold) an empty store persisted silently.
+    """
+    if len({len(shape) for shape in shapes}) != 1:
+        return None
+    if len({_dynamic_axis(shape) for shape in shapes}) != 1:
+        return None
+    axis = len(shapes[0]) - (2 if shapes[0][-1] == -1 else 1)
+    shapes_without_axis = [shape[:axis] + shape[axis + 1 :] for shape in shapes]
+    if not all(shape == shapes_without_axis[0] for shape in shapes_without_axis):
+        return None
+    return axis
 
 
 class AudmodelSet(Featureset):
@@ -36,13 +120,32 @@ class AudmodelSet(Featureset):
             self.util.error(
                 "Please set the audmodel.id in the config file to the model you want to use."
             )
-        self.embeddings_name = self.util.config_val(
+        raw_embeddings_name = self.util.config_val(
             "FEATS", "audmodel.embeddings_name", "hidden_states"
         )
+        try:
+            self.embeddings_names = parse_embeddings_names(raw_embeddings_name)
+        except ValueError as error:
+            self.util.error(str(error))
+        # kept for any external/older code that still reads the singular
+        # attribute; only meaningful for the (default) single-head case.
+        self.embeddings_name = self.embeddings_names[0]
         self.util.debug(f"loading audmodel {model_id}, this might take a while...")
         model_root = audmodel.load(model_id)
         cuda = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = self.util.config_val("MODEL", "device", cuda)
+
+        if len(self.embeddings_names) > 1 and (
+            self.hidden_layer != 0
+            or not os.path.isfile(os.path.join(model_root, "model.onnx"))
+        ):
+            self.util.error(
+                "FEATS.audmodel.embeddings_name as a list (multi-head "
+                "extraction) is only supported for ONNX models with named "
+                "output heads; this model would use the torch path "
+                "(FEATS.wav2vec2.layer != 0, or no model.onnx present), "
+                "which has no concept of named output heads."
+            )
 
         if self.hidden_layer != 0 or not os.path.isfile(
             os.path.join(model_root, "model.onnx")
@@ -56,12 +159,61 @@ class AudmodelSet(Featureset):
     def _load_onnx_model(self, model_root):
         self.util.debug("loading as ONNX model")
         self.model = audonnx.load(model_root, device=self.device)
+        providers = self.model.sess.get_providers()
+        requested_cuda = self.device == "cuda" or self.device.startswith("cuda:")
+        if requested_cuda and "CUDAExecutionProvider" not in providers:
+            self.util.warn(
+                "FEATS.audmodel: requested CUDA but onnxruntime fell back to "
+                f"{providers} -- extraction will be much slower. Check that "
+                "cuDNN 9 is on LD_LIBRARY_PATH (torch ships it under "
+                "<venv>/lib/.../site-packages/nvidia/cudnn/lib)."
+            )
+        heads = self.embeddings_names
+        invalid = [h for h in heads if h not in self.model.outputs]
+        if invalid:
+            valid = sorted(self.model.outputs.keys())
+            self.util.error(
+                f"FEATS.audmodel.embeddings_name: unknown output head(s) "
+                f"{invalid}; this model's valid output names are: {valid}"
+            )
+        multi_head = len(heads) > 1
+        self._head_label_counts = [len(self.model.labels(h)) for h in heads]
+        feature_names = self.model.labels(heads if multi_head else heads[0])
+        prefixed_names = self._prefixed_head_labels(feature_names)
+        seen = set()
+        collisions = sorted({n for n in prefixed_names if n in seen or seen.add(n)})
+        if collisions:
+            # Two different heads' generated column names (head name for a
+            # one-dimension head, "{head}_{label}" otherwise) can still
+            # collide even with unique, non-duplicate head names -- e.g. a
+            # one-dimension head "foo_bar" and a categorical head "foo"
+            # with a label "bar" both produce the column "foo_bar". That
+            # leaves pred_df with duplicate-named columns, which breaks
+            # any single-column selection downstream (AudmodelPredictor's
+            # pred_df[head] would return a DataFrame, not a Series).
+            self.util.error(
+                "FEATS.audmodel.embeddings_name: generated feature column "
+                f"name(s) collide across different heads: {collisions}. "
+                "Choose head names that don't produce the same prefixed "
+                "column (e.g. a one-dimension head's own name must not "
+                "equal another head's '<head>_<label>' combination)."
+            )
+        process_func_args = {"outputs": heads if multi_head else heads[0]}
+        if multi_head:
+            shapes = [self.model.outputs[h].shape for h in heads]
+            if _concat_axis(shapes) is None:
+                self.util.error(
+                    "FEATS.audmodel.embeddings_name: the selected heads' "
+                    "output shapes cannot be concatenated -- number of "
+                    "dimensions, position of the dynamic axis, and all "
+                    "dimensions except the last non-dynamic one must "
+                    f"match. Got: {dict(zip(heads, shapes))}"
+                )
+            process_func_args["concat"] = True
         self.model_interface = audinterface.Feature(
-            self.model.labels(self.embeddings_name),
+            feature_names,
             process_func=self.model,
-            process_func_args={
-                "outputs": self.embeddings_name,
-            },
+            process_func_args=process_func_args,
             sampling_rate=16000,
             resample=True,
             num_workers=self.n_jobs,
@@ -122,9 +274,13 @@ class AudmodelSet(Featureset):
         # so without both here, changing either one silently reuses the
         # previous model/head's cached values.
         model_id = self.util.config_val("FEATS", "audmodel.id", "audmodel")
-        embeddings_name = self.util.config_val(
+        raw_embeddings_name = self.util.config_val(
             "FEATS", "audmodel.embeddings_name", "hidden_states"
         )
+        try:
+            embeddings_name = embeddings_cache_key(raw_embeddings_name)
+        except ValueError as error:
+            self.util.error(str(error))
         if self.hidden_layer == 0:
             storage = f"{store}{self.name}_{model_id}_{embeddings_name}.{store_format}"
         else:
@@ -136,9 +292,21 @@ class AudmodelSet(Featureset):
             self.util.debug(
                 "extracting audmodel embeddings, this might take a while..."
             )
+            # Model loading stays lazy (inside extract_sample_df() /
+            # _extract_sample_with_labels(), triggered on the first file
+            # that isn't already in the per-sample cache) rather than
+            # eager here (review on #468): eagerly loading unconditionally
+            # would download/open the model and create an ONNX session
+            # even on a run where every segment is already per-sample
+            # cached, defeating cache-only rebuilds. The per-sample cache
+            # already honors FEATS.no_reuse, so a run that actually needs
+            # fresh extraction (including ap_audmodel.py's
+            # AudmodelPredictor, which always forces no_reuse) still loads
+            # the model lazily on its first real extraction attempt.
             df = pd.DataFrame()
+            total = len(self.data_df.index)
+            failed = 0
             for file, start, end in tqdm(self.data_df.index):
-                signal, sr = None, None
                 try:
                     if pd.isna(end):
                         signal, sr = audiofile.read(file, offset=start)
@@ -147,16 +315,56 @@ class AudmodelSet(Featureset):
                             file, duration=end - start, offset=start
                         )
                     f_df = self.extract_sample_df(signal, sr, (file, start, end))
-                except Exception as ror:
-                    tmp_file_name = f"tmp_{uuid.uuid4()}.wav"
-                    if signal is not None and sr is not None:
-                        try:
-                            audiofile.write(tmp_file_name, signal, sr)
-                            self.util.debug(f"segment from {file} written to {tmp_file_name} for debugging.")
-                        except Exception as write_err:
-                            self.util.warn(f"could not write debug audio: {write_err}")
-                    self.util.error(f"error {ror} on file {file}")
+                except EXTRACTION_ERRORS as ror:
+                    # NkululukoError (raised by util.error(), e.g. an
+                    # unknown/duplicate head or an incompatible multi-head
+                    # shape combination from a lazily-triggered
+                    # _load_model()) subclasses RuntimeError, one of the
+                    # EXTRACTION_ERRORS types below -- but it signals a
+                    # fatal config problem, not a per-file data issue, so
+                    # it must propagate immediately instead of being
+                    # swallowed and retried on every subsequent file.
+                    if isinstance(ror, NkululukoError):
+                        raise
+                    # Keep this row as missing (NaN once concatenated with
+                    # the columns other rows have) instead of aborting the
+                    # whole extraction (review on #468): a single bad file
+                    # would otherwise abort every downstream consumer,
+                    # including ap_audmodel.py's PREDICT target, whose
+                    # all-zero-row "unknown" fallback could never actually
+                    # be reached as long as this raised here. Only the
+                    # shared EXTRACTION_ERRORS types (bad/corrupt audio,
+                    # I/O issues) are tolerated this way -- anything else
+                    # (e.g. a KeyError/TypeError from a programming bug)
+                    # still propagates and aborts, same as before. No debug
+                    # audio dump here (review on #468): with a tolerated
+                    # failure rate instead of an immediate abort, a large
+                    # dataset could otherwise leak many undeleted temp
+                    # files; the warning's file/start/end already points
+                    # at the original audio for manual inspection.
+                    self.util.warn(f"audmodel extraction failed on file {file}: {ror}")
+                    f_df = pd.DataFrame(
+                        index=audformat.segmented_index(file, start, end)
+                    )
+                    failed += 1
                 df = pd.concat([df, f_df])
+            if failed > 0:
+                self.util.warn(
+                    f"audmodel extraction: {failed}/{total} files failed"
+                    f" ({100 * failed / total:.1f}%)"
+                )
+                fail_threshold = self._get_fail_threshold()
+                if total > 0 and failed / total > fail_threshold:
+                    # Enforce the same FEATS.fail_threshold contract as
+                    # _extract_embeddings_with_error_handling() (review on
+                    # #468): keeping individual failures as NaN rows must
+                    # not let a store that's entirely (or mostly) empty get
+                    # persisted and silently reused as if extraction had
+                    # succeeded.
+                    self.util.error(
+                        f"audmodel extraction failure rate {failed / total:.0%}"
+                        f" exceeds threshold {fail_threshold:.0%}"
+                    )
             self.df = df
             self.util.write_store(self.df, storage, store_format)
             try:
@@ -181,9 +389,13 @@ class AudmodelSet(Featureset):
         model_id = self.util.config_val("FEATS", "audmodel.id", "audmodel")
         # audmodel.embeddings_name is part of the cache key too (GH #459),
         # same reasoning as the whole-dataset storage path in extract().
-        embeddings_name = self.util.config_val(
+        raw_embeddings_name = self.util.config_val(
             "FEATS", "audmodel.embeddings_name", "hidden_states"
         )
+        try:
+            embeddings_name = embeddings_cache_key(raw_embeddings_name)
+        except ValueError as error:
+            self.util.error(str(error))
         segment_cache = audeer.mkdir(
             audeer.path(self.util.get_path("cache"), model_id, embeddings_name)
         )
@@ -191,7 +403,16 @@ class AudmodelSet(Featureset):
         cache_path = self._sample_cache_path(
             segment_cache, index_tuple, suffix=layer_suffix
         )
-        if os.path.isfile(cache_path):
+        # The per-sample cache key is (file path, start, end) only -- it
+        # has no way to detect that the audio at that path changed, so it
+        # must still honor FEATS.no_reuse explicitly (review on #468):
+        # without this, forcing no_reuse at the whole-dataset level (e.g.
+        # ap_audmodel.py's AudmodelPredictor, for every ad-hoc standalone
+        # prediction) would still silently return a stale cached sample
+        # if a file at the same path/segment was predicted before.
+        if os.path.isfile(cache_path) and not self.util.config_val_bool(
+            "FEATS", "no_reuse", False
+        ):
             df_part = self._read_sample_cache(cache_path)
         else:
             features, labels = self._extract_sample_with_labels(signal, sr)
@@ -231,13 +452,7 @@ class AudmodelSet(Featureset):
             self._load_model()
         if not self.use_torch:
             result = self.model_interface.process_signal(signal, sr)
-            if len(result.columns) == 1:
-                # A one-dimensional head (e.g. embeddings_name="valence"):
-                # the column is just the head name itself, not prefixed
-                # with itself.
-                labels = [self.embeddings_name]
-            else:
-                labels = [f"{self.embeddings_name}_{c}" for c in result.columns]
+            labels = self._prefixed_head_labels(result.columns)
             return np.asarray(result.values).flatten(), labels
         # Torch path: resample if needed, pool last hidden state
         import torchaudio
@@ -257,3 +472,26 @@ class AudmodelSet(Featureset):
             features = y.detach().cpu().numpy().flatten()
             labels = [f"{self.embeddings_name}_{i}" for i in range(len(features))]
             return features, labels
+
+    def _prefixed_head_labels(self, columns):
+        """Prefix each ONNX output column with its owning head's name.
+
+        With multi-head extraction (GH #459 item 3), `columns` is every
+        configured head's labels concatenated in head order with no
+        indication of where one head's columns end and the next begin --
+        `self._head_label_counts` (each head's own label count, recorded at
+        load time in the same order) recovers the boundaries. A
+        one-dimensional head's single column is the head name itself
+        (not prefixed with itself), matching the prior single-head
+        behavior exactly when there's only one configured head.
+        """
+        labels = []
+        pos = 0
+        for head, count in zip(self.embeddings_names, self._head_label_counts):
+            head_columns = columns[pos : pos + count]
+            pos += count
+            if count == 1:
+                labels.append(head)
+            else:
+                labels.extend(f"{head}_{c}" for c in head_columns)
+        return labels

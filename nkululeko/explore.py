@@ -25,15 +25,54 @@ for an `exp.ini` file in the same directory as the script.
 # explore the feature sets
 
 import argparse
+import ast
 import configparser
+import os
 from pathlib import Path
 
 import sys
 
 from nkululeko.constants import VERSION
 from nkululeko.experiment import Experiment
+from nkululeko.utils.dataframe import latest_source_csv_mtime
 from nkululeko.utils.errors import NkululukoError
 from nkululeko.utils.util import Util
+
+
+def _saved_experiment_is_stale(save_name, config, util):
+    """True if a saved experiment pickle at `save_name` is older than a
+    CSV-backed dataset's source file listed in DATA.databases (see
+    latest_source_csv_mtime) -- i.e. it must not be reused as-is, since a
+    column could have been added to the data CSV after it was written.
+
+    False (never stale) whenever there's no mtime signal to compare
+    against: no DATA.databases list, no CSV-backed dataset among them
+    (e.g. all audb-managed), or no save file to begin with.
+    """
+    try:
+        dataset_names = ast.literal_eval(config["DATA"]["databases"])
+    except (KeyError, ValueError, SyntaxError):
+        dataset_names = []
+    source_mtime = latest_source_csv_mtime(dataset_names, util)
+    return (
+        source_mtime is not None
+        and os.path.isfile(save_name)
+        and source_mtime > os.path.getmtime(save_name)
+    )
+
+
+def _should_reuse_saved_experiment(save_name, config, util):
+    """True if a saved experiment at `save_name` should be loaded instead
+    of starting fresh from load_datasets()/fill_train_and_tests().
+
+    False whenever either DATA.no_reuse is set -- a separate, explicit
+    reason to skip it (same convention as should_reuse_split()/
+    should_reuse_file(), review on #468), independent of mtime -- or the
+    saved experiment is stale per _saved_experiment_is_stale().
+    """
+    if util.config_val_bool("DATA", "no_reuse", False):
+        return False
+    return not _saved_experiment_is_stale(save_name, config, util)
 
 
 def main():
@@ -70,16 +109,37 @@ def main():
             import warnings
 
             warnings.filterwarnings("ignore")
+        # A saved experiment pickle is a second, separate cache layer from
+        # the traindf.csv/testdf.csv split cache (should_reuse_split) --
+        # loading it below bypasses load_datasets()/Dataset.prepare()
+        # entirely, so that cache's own source-file staleness check never
+        # runs (review on #468). Apply the same check here: don't reuse a
+        # saved experiment that's older than a CSV-backed dataset's source
+        # file, or a column added to the data CSV after the experiment was
+        # last run stays silently invisible.
+        save_name = util.get_save_name()
+        if _saved_experiment_is_stale(save_name, config, util):
+            util.warn(
+                "DATA source file(s) changed since the saved experiment "
+                f"{save_name} was written -- loading fresh instead of "
+                "reusing it"
+            )
+        should_reuse = _should_reuse_saved_experiment(save_name, config, util)
+
         needs_feats = False
         experiment_loaded = False
-        try:
-            # load the experiment
-            expr.load(f"{util.get_save_name()}")
-            expr.util.set_config(config)
-            needs_feats = True
-            experiment_loaded = True
-        except FileNotFoundError:
-            # first time: load the data
+        if should_reuse:
+            try:
+                # load the experiment
+                expr.load(save_name)
+                expr.util.set_config(config)
+                needs_feats = True
+                experiment_loaded = True
+            except FileNotFoundError:
+                pass
+        if not experiment_loaded:
+            # first time (or the saved experiment was ignored as stale):
+            # load the data
             expr.load_datasets()
 
             # split into train and test

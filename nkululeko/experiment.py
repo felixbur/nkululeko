@@ -475,6 +475,14 @@ class Experiment:
 
                 predictor = EmotionPredictor(df)
                 df = predictor.predict(sample_selection)
+            elif target == "audmodel_pred":
+                # Not "audmodel": that name is already used elsewhere as a
+                # generic feature-extractor name (see predict.py), kept
+                # distinct here too for consistency (review on #468).
+                from nkululeko.autopredict.ap_audmodel import AudmodelPredictor
+
+                predictor = AudmodelPredictor(df)
+                df = predictor.predict(sample_selection)
             else:
                 self.util.error(f"unknown auto predict target: {target}")
         return df

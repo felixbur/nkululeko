@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version 1.13.0 (26-10-12)
+-------------------------
+* `FEATS.audmodel.embeddings_name` now also accepts a list of output names (e.g. `['arousal', 'valence', 'emotion.acoustic']`), extracting all of them in a single ONNX forward pass instead of one experiment per head; each head's columns are prefixed with its own name (#459)
+* add a generic `audmodel_pred` autopredict target, reusing `FEATS.audmodel.id`/`FEATS.audmodel.embeddings_name`, writing one `<head>_pred` column per configured head (the raw value for a single-dimension head, or the argmax class label for a multi-dimension one) -- run it with `python -m nkululeko.predict --model audmodel_pred --config your_feats_config.ini --list your_dataset.csv --outfile your_dataset_with_audmodel.csv`. Named `audmodel_pred`, not `audmodel`, to avoid shadowing the existing `--model audmodel` generic feature-extractor usage (#459)
+* fix bug: a cached train/dev/test split (`store/traindf.csv`/`testdf.csv`) was reused purely by file existence, so adding a column to a CSV-backed database's data file after a prior run silently kept using the stale split -- `value_counts`/`feature_distributions` on the new column failed with "unknown feature" until `store/` was deleted by hand. The split is now also rebuilt automatically when the source CSV is newer than the cache (#459)
+* `explore`'s `feature_distributions` now also plots a speaker-level distribution (using the feature's mean) when speaker ids are available, alongside the existing sample-level one -- one row per `(speaker, label)` for a classification target, one row per speaker for a regression target -- mirrors `value_counts`' existing speaker-level plot, and avoids significance tests being dominated by segment count rather than real effect size (#459)
+* warn when CUDA was requested (`MODEL.device`) for an ONNX-based feature extractor (`audmodel`, `auddim`, `agender_agender`) but onnxruntime silently fell back to CPU, e.g. missing cuDNN 9 (#459)
+
 Version 1.12.1 (26-10-08)
 -------------------------
 * fix bug: `Dataset._drop_or_fill_missing()` (#455/#456) filled missing non-target values with the literal string `"na"`, which crashed outright on Categorical-dtype scheme columns (the normal shape of a gender/age/speaker scheme), silently converted numeric columns to object dtype, made `DATA.<name>.required` conflate the sentinel with a column that legitimately contains the real value `"na"`, and collapsed every row with no speaker id into one fake "na" speaker for speaker-based splitting/`limit_samples_per_speaker`. Reverted to real `NaN`, which needs no special-casing by any downstream consumer; rows with no speaker id are now excluded from speaker-split sampling and always kept in train instead (#461)

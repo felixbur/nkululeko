@@ -267,10 +267,29 @@ def cache_has_source_db(path):
     return head.empty or "source_db" in head.columns
 
 
-def should_reuse_split(util, split3):
+def latest_source_csv_mtime(dataset_names, util):
+    """Latest modification time across every CSV-backed dataset's source
+    file, or None if none are CSV-backed.
+
+    Only `Dataset_CSV`-type datasets have a single local file to watch
+    (`DATA.<name>` points straight at it); audb-managed databases aren't
+    backed by one local file, so they're silently skipped here rather than
+    treated as "no signal" for the whole check (see should_reuse_split).
+    """
+    mtimes = [
+        os.path.getmtime(data_file)
+        for name in dataset_names
+        if os.path.isfile(data_file := util.config_val_data(name, "", ""))
+    ]
+    return max(mtimes) if mtimes else None
+
+
+def should_reuse_split(util, split3, source_mtime=None):
     """True if a previously cached train/dev/test split (see
     split_cache_paths) will be reused instead of computing a fresh one --
-    i.e. DATA.no_reuse is not set and the cache files all already exist.
+    i.e. DATA.no_reuse is not set, the cache files all already exist, and
+    (when source_mtime is given) the data source is not newer than the
+    cache.
 
     Anything that touches the raw per-dataset data before the split is
     combined and cached (e.g. a random sample-limiting filter applied at
@@ -279,14 +298,35 @@ def should_reuse_split(util, split3):
     was actually computed from -- picture a fresh, differently-random
     sample landing in `self.df` on this run while the cached split still
     reflects a past run's different random sample.
+
+    Args:
+        source_mtime: latest modification time of the data source(s) this
+            split would be built from (see latest_source_csv_mtime), or
+            None to skip this check entirely (e.g. no CSV-backed dataset
+            to compare against). When given and newer than the cache, the
+            cache is stale -- e.g. a column was added to the data CSV
+            after the split was last computed -- and must not be reused
+            (GH #459): reusing it anyway silently hides the new column
+            from everything downstream until `store/` is deleted by hand.
     """
     if util.config_val_bool("DATA", "no_reuse", False):
         return False
     store = util.get_path("store")
-    return all(
-        os.path.isfile(p) and cache_has_source_db(p)
-        for p in split_cache_paths(store, split3).values()
-    )
+    cache_paths = split_cache_paths(store, split3)
+    if not all(
+        os.path.isfile(p) and cache_has_source_db(p) for p in cache_paths.values()
+    ):
+        return False
+    if source_mtime is not None:
+        cache_mtime = min(os.path.getmtime(p) for p in cache_paths.values())
+        if source_mtime > cache_mtime:
+            util.warn(
+                "DATA source file(s) changed since the cached train/test "
+                "split was written -- rebuilding instead of reusing the "
+                "stale cache (set DATA.no_reuse=True to always force this)"
+            )
+            return False
+    return True
 
 
 def should_reuse_file(util, section, storage, force_key=None):

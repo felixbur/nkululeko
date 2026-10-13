@@ -48,6 +48,7 @@ There is also `a deepwiki available <https://deepwiki.com/felixbur/nkululeko>`__
    hello_world_aud.md
    hello_world_csv.md
    emotion_prediction.md
+   audmodel_multihead.md
    comparing.md
    scaler.md
    balance.md

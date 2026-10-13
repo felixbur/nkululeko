@@ -205,7 +205,10 @@ Database loading, label mapping, and train/test split configuration.
   to always start completely fresh instead. Also controls whether the
   *silero-denoise* augmentation method (see [AUGMENT](#augment)) reuses
   files it already denoised in a previous run, instead of redoing that
-  (slow) work.
+  (slow) work. For a CSV-backed database (`DATA.<name>.type = csv`), a
+  cached split is also automatically rebuilt -- regardless of this setting
+  -- if the source CSV file's modification time is newer than the cache,
+  e.g. after adding a column to it.
   * no_reuse = False
 * **min_dur_test**: specify a minimum duration for test samples (in seconds)
   * min_dur_test = 3.5
@@ -338,7 +341,7 @@ Feature extraction settings. Multiple feature types can be combined by listing t
       * "whisper-base", "whisper-large", "whisper-medium", "whisper-tiny"
     * **audmodel**: generic [audmodel format model](https://audeering.github.io/audmodel/index.html) import
       * **audmodel.id** = audmodel id 
-      * **audmodel.embeddings_name** = hidden_states
+      * **audmodel.embeddings_name** = hidden_states, or a list of output names to extract several heads in one pass, e.g. `['arousal', 'valence', 'emotion.acoustic']` (ONNX models only; concatenated and prefixed per head, e.g. `emotion.acoustic_angry`, while a single-dimension head like `valence` keeps just its own name)
     * **audwav2vec2**: [audEERING emotion model embeddings](https://arxiv.org/abs/2203.07378), wav2vec2.0 model finetuned on [MSPPodcast](https://www.lab-msp.com/MSP/MSP-Podcast.html) emotions, embeddings
       * **aud.model** = ./audmodel/ (*path to the audEERING model folder*)
     * **auddim**: [audEERING emotion model dimensions](https://arxiv.org/abs/2203.07378), wav2vec2.0 model finetuned on [MSPPodcast](https://ecs.utdallas.edu/research/researchlabs/msp-lab/MSP-Podcast.html) arousal, dominance, valence
@@ -631,6 +634,7 @@ Feature exploration and visualisation options, used by the `explore` module.
 
 * **feature_distributions**: plot distributions for features and analyze importance
   * feature_distributions = False
+  * when speaker ids are available, a speaker-level distribution plot (feature averaged by mean) is also produced alongside the sample-level one, mirroring `value_counts`' existing speaker-level plot -- avoids significance tests being dominated by segment count rather than real effect size. One row per `(speaker, label)` for a classification target (a speaker with samples of more than one class contributes once per class); one row per speaker for a regression target (label and feature both averaged, since a continuous label varies per sample even within one speaker)
 * **ignore_gender**: ignore gender when plotting feature distribution
   * ignore_gender = False
 * **model**: Which model to use to estimate feature importance.
@@ -675,7 +679,8 @@ Automatic soft-label prediction using pre-trained models (e.g., age, gender, aro
   * textclassifier.candidates = ["sadness", "anger", "neutral"]: for target *textclassification*: the labels for the categories that should be predicted (using [joeddav/xlm-roberta-large-xnli](https://huggingface.co/joeddav/xlm-roberta-large-xnli))
 * **target_language**: target language for the translation prediction
   * target_language = en
-  
+
+Note: a generic *audmodel_pred* predictor also exists, reusing the same `FEATS.audmodel.id`/`FEATS.audmodel.embeddings_name` keys as the `audmodel` feature extractor (see [FEATS](#feats), including its multi-head list form) and writing one `<head>_pred` column per configured head: the raw value for a single-dimension head (e.g. `valence_pred`), or the argmax class label for a multi-dimension head (e.g. `emotion.acoustic_pred`) -- every multi-dimension head is assumed categorical, so only configure heads whose columns are genuinely class scores, not a continuous output like the `hidden_states` default. Named *audmodel_pred*, not *audmodel*, to avoid shadowing the pre-existing, documented `--model audmodel` generic feature-extractor usage (see [predict.md](https://github.com/felixbur/nkululeko/blob/main/docs/source/predict.md)). It is **not** usable via this `targets` list -- only via the standalone `nkululeko.predict --model audmodel_pred` CLI (see [emotion_prediction.md](https://github.com/felixbur/nkululeko/blob/main/docs/source/emotion_prediction.md) for the same CLI pattern applied to another autopredict target).
 
 ### EXPORT
 

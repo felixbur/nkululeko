@@ -373,3 +373,197 @@ class TestPlotFeatureHandlesSkippedStatistics:
         title = captured.get("title", "")
         assert title != "all samples (6)"
         assert "Mann-Whitney" in title or "t-test" in title
+
+
+class TestPlotFeatureSpeaker:
+    """GH #459 item 5(c): feature_distributions significance tests at
+    sample level are dominated by segment count rather than real effect
+    size when there are many segments per speaker. plot_feature_speaker()
+    aggregates to one row per (speaker, label) via the feature's mean
+    before delegating to the existing plot_feature() statistics/plotting
+    pipeline."""
+
+    def _make_plots(self):
+        from nkululeko.plots import Plots
+
+        with patch("nkululeko.utils.util.Util.get_path", return_value="/tmp/"):
+            plots = Plots()
+        plots.util = MagicMock()
+        return plots
+
+    def test_no_speaker_column_warns_and_returns(self):
+        plots = self._make_plots()
+        plots.plot_feature = MagicMock()
+        df_labels = pd.DataFrame({"class_label": ["a", "b"]})
+        df_features = pd.DataFrame({"feat1": [1.0, 2.0]})
+
+        plots.plot_feature_speaker(
+            "all", "feat1", "class_label", df_labels, df_features
+        )
+
+        assert plots.util.warn.called
+        plots.plot_feature.assert_not_called()
+
+    def test_all_speaker_ids_missing_warns_and_returns(self):
+        plots = self._make_plots()
+        plots.plot_feature = MagicMock()
+        df_labels = pd.DataFrame(
+            {"speaker": [None, None], "class_label": ["a", "b"]}
+        )
+        df_features = pd.DataFrame({"feat1": [1.0, 2.0]})
+
+        plots.plot_feature_speaker(
+            "all", "feat1", "class_label", df_labels, df_features
+        )
+
+        assert plots.util.warn.called
+        plots.plot_feature.assert_not_called()
+
+    def test_aggregates_by_speaker_mean_before_delegating(self):
+        plots = self._make_plots()
+        plots.plot_feature = MagicMock()
+        df_labels = pd.DataFrame(
+            {
+                "speaker": ["s1", "s1", "s2", "s2"],
+                "class_label": ["a", "a", "b", "b"],
+            }
+        )
+        df_features = pd.DataFrame({"feat1": [1.0, 3.0, 10.0, 12.0]})
+
+        plots.plot_feature_speaker(
+            "all", "feat1", "class_label", df_labels, df_features
+        )
+
+        plots.plot_feature.assert_called_once()
+        args, _ = plots.plot_feature.call_args
+        title, feature, label, labels_speaker, features_speaker = args
+        assert title == "all_speaker"
+        assert feature == "feat1"
+        assert label == "class_label"
+        merged = labels_speaker.join(features_speaker)
+        values = dict(zip(merged["speaker"], merged["feat1"]))
+        assert values == {"s1": 2.0, "s2": 11.0}
+
+    def test_regression_target_groups_by_speaker_only_and_averages_label_too(self):
+        """Review on #468: for a continuous target, grouping by
+        (speaker, label) barely aggregates anything -- each distinct label
+        value stays its own group, since the label varies per sample even
+        within one speaker. Must group by speaker alone and average both
+        the label and the feature."""
+        plots = self._make_plots()
+        plots.util.exp_is_classification.return_value = False
+        plots.plot_feature = MagicMock()
+        df_labels = pd.DataFrame(
+            {
+                "speaker": ["s1", "s1", "s2", "s2"],
+                "age": [20.0, 22.0, 40.0, 44.0],
+            }
+        )
+        df_features = pd.DataFrame({"feat1": [1.0, 3.0, 10.0, 12.0]})
+
+        plots.plot_feature_speaker("all", "feat1", "age", df_labels, df_features)
+
+        plots.plot_feature.assert_called_once()
+        args, _ = plots.plot_feature.call_args
+        _, _, _, labels_speaker, features_speaker = args
+        merged = labels_speaker.join(features_speaker)
+        by_speaker = {
+            row.speaker: (row.age, row.feat1) for row in merged.itertuples()
+        }
+        assert by_speaker == {"s1": (21.0, 2.0), "s2": (42.0, 11.0)}
+
+    def test_drops_rows_with_missing_speaker_before_aggregating(self):
+        plots = self._make_plots()
+        plots.plot_feature = MagicMock()
+        df_labels = pd.DataFrame(
+            {
+                "speaker": ["s1", None, "s2"],
+                "class_label": ["a", "a", "b"],
+            }
+        )
+        df_features = pd.DataFrame({"feat1": [1.0, 999.0, 10.0]})
+
+        plots.plot_feature_speaker(
+            "all", "feat1", "class_label", df_labels, df_features
+        )
+
+        args, _ = plots.plot_feature.call_args
+        _, _, _, labels_speaker, _ = args
+        assert sorted(labels_speaker["speaker"].tolist()) == ["s1", "s2"]
+
+    def test_aligns_by_index_when_features_have_fewer_rows_than_labels(self):
+        """Review on #468: FEATS.nan_strategy=drop can remove rows from
+        df_features while df_labels stays unchanged (e.g. a NaN in some
+        other feature column caused that row to be dropped dataset-wide).
+        The frames must be aligned by index, not combined via .values
+        arrays -- which would raise "All arrays must be of the same
+        length" the moment the two differ in size."""
+        plots = self._make_plots()
+        plots.plot_feature = MagicMock()
+        df_labels = pd.DataFrame(
+            {
+                "speaker": ["s1", "s1", "s2", "s2"],
+                "class_label": ["a", "a", "b", "b"],
+            },
+            index=[0, 1, 2, 3],
+        )
+        # row index 1 (s1) is missing from df_features entirely.
+        df_features = pd.DataFrame({"feat1": [1.0, 10.0, 12.0]}, index=[0, 2, 3])
+
+        plots.plot_feature_speaker(
+            "all", "feat1", "class_label", df_labels, df_features
+        )
+
+        args, _ = plots.plot_feature.call_args
+        _, _, _, labels_speaker, features_speaker = args
+        merged = labels_speaker.join(features_speaker)
+        by_speaker = dict(zip(merged["speaker"], merged["feat1"]))
+        assert by_speaker == {"s1": 1.0, "s2": 11.0}
+
+    def test_numeric_coded_classification_label_stays_categorical_for_plot_feature(
+        self,
+    ):
+        """Review on #468: plot_feature() decides categorical-vs-continuous
+        from dtype, not EXP.type -- a numeric-coded classification label
+        (e.g. int 0/1) would otherwise take the regression/scatter path
+        there, the same ambiguity _dedupe_speakers_for_distribution()
+        already resolves via exp_is_classification() for the value_counts
+        speaker plot. The grouped label must be converted so plot_feature()
+        sees it as categorical."""
+        plots = self._make_plots()
+        plots.util.exp_is_classification.return_value = True
+        plots.plot_feature = MagicMock()
+        df_labels = pd.DataFrame(
+            {"speaker": ["s1", "s1", "s2", "s2"], "class_label": [0, 0, 1, 1]}
+        )
+        df_features = pd.DataFrame({"feat1": [1.0, 3.0, 10.0, 12.0]})
+
+        plots.plot_feature_speaker(
+            "all", "feat1", "class_label", df_labels, df_features
+        )
+
+        args, _ = plots.plot_feature.call_args
+        _, _, _, labels_speaker, _ = args
+        # Asserting the exact dtype (e.g. `object`) is pandas-version
+        # dependent: pandas 3.0's default string dtype for .astype(str)
+        # is neither `object` nor plain-numeric, but Util.is_categorical()
+        # (what plot_feature() actually checks) treats it as categorical
+        # either way -- what matters here is that it is no longer numeric.
+        assert not pd.api.types.is_numeric_dtype(labels_speaker["class_label"])
+        assert sorted(labels_speaker["class_label"].unique()) == ["0", "1"]
+
+    def test_regression_with_fewer_than_two_speakers_warns_and_skips(self):
+        """Review on #468: _plot2cont()'s stats.pearsonr() needs at least
+        two points -- a regression dataset with only one usable speaker
+        left after aggregation must not be delegated to plot_feature(),
+        which would otherwise raise instead of just skipping this plot."""
+        plots = self._make_plots()
+        plots.util.exp_is_classification.return_value = False
+        plots.plot_feature = MagicMock()
+        df_labels = pd.DataFrame({"speaker": ["s1", "s1"], "age": [20.0, 22.0]})
+        df_features = pd.DataFrame({"feat1": [1.0, 3.0]})
+
+        plots.plot_feature_speaker("all", "feat1", "age", df_labels, df_features)
+
+        plots.plot_feature.assert_not_called()
+        assert plots.util.warn.called
