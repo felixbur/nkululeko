@@ -248,6 +248,21 @@ class AudmodelSet(Featureset):
             self.util.debug(
                 "extracting audmodel embeddings, this might take a while..."
             )
+            # Load the model before the per-file loop, not lazily inside
+            # it (review on #468): the per-sample cache check in
+            # extract_sample_df() is unconditional (unlike the
+            # whole-dataset store, it isn't gated by FEATS.no_reuse), so a
+            # run where every file already has a cached segment would
+            # otherwise never call _load_model() at all, leaving
+            # self.embeddings_names/_head_label_counts unset -- which
+            # ap_audmodel.py's AudmodelPredictor relies on always being
+            # present. Loading eagerly also keeps a genuine config error
+            # from _load_model() (e.g. an unknown/duplicate head) from
+            # being swallowed by the per-file except clause below:
+            # NkululukoError subclasses RuntimeError, one of the
+            # EXTRACTION_ERRORS types tolerated there as a per-file miss.
+            if not self.model_loaded:
+                self._load_model()
             df = pd.DataFrame()
             total = len(self.data_df.index)
             failed = 0

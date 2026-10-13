@@ -22,6 +22,7 @@ from nkululeko.feat_extract.feats_audmodel import (
     embeddings_cache_key,
     parse_embeddings_names,
 )
+from nkululeko.utils.errors import NkululukoError
 
 
 def _make_instance(embeddings_names=("valence",), head_label_counts=(1,)):
@@ -810,3 +811,80 @@ class TestFailThresholdEnforcement:
 
         assert not instance.util.error.called
         assert instance.util.write_store.called
+
+
+class TestEagerModelLoad:
+    """Review on #468: the per-sample cache check in extract_sample_df()
+    is unconditional (unlike the whole-dataset store, it isn't gated by
+    FEATS.no_reuse), so a run where every file already has a cached
+    segment would never call _load_model() at all if it were only ever
+    triggered lazily from inside _extract_sample_with_labels(). That left
+    self.embeddings_names/_head_label_counts unset -- which
+    ap_audmodel.py's AudmodelPredictor relies on always being present --
+    and let a genuine _load_model() config error (NkululukoError
+    subclasses RuntimeError, one of the EXTRACTION_ERRORS types) be
+    swallowed by the per-file except clause as a tolerated miss."""
+
+    def test_model_loaded_eagerly_even_when_every_file_hits_per_sample_cache(self):
+        instance = _make_instance()
+        instance.model_loaded = False
+        instance.name = "mydb_feats"
+        instance.context = MagicMock()
+        instance.data_df = pd.DataFrame(
+            index=audformat.segmented_index(["a.wav"], [0], [1])
+        )
+        instance.util.get_path.return_value = "/store/"
+        instance.util.config_val.side_effect = lambda section, key, default: default
+        instance._needs_extraction = MagicMock(return_value=True)
+        instance.util.write_store = MagicMock()
+
+        def fake_load_model():
+            instance.model_loaded = True
+            instance.embeddings_names = ["valence"]
+            instance._head_label_counts = [1]
+
+        instance._load_model = MagicMock(side_effect=fake_load_model)
+        # Every file hits the per-sample cache: extract_sample_df() never
+        # calls _extract_sample_with_labels(), so it never lazily loads
+        # the model itself.
+        cached_df = pd.DataFrame(
+            [[0.5]],
+            columns=["valence"],
+            index=audformat.segmented_index(["a.wav"], [0], [1]),
+        )
+        instance.extract_sample_df = MagicMock(return_value=cached_df)
+
+        with patch(
+            "nkululeko.feat_extract.feats_audmodel.audiofile.read",
+            return_value=(np.array([0.0]), 16000),
+        ):
+            instance.extract()
+
+        instance._load_model.assert_called_once()
+        assert instance.embeddings_names == ["valence"]
+        assert instance._head_label_counts == [1]
+
+    def test_load_model_config_error_propagates_not_tolerated_as_a_per_file_failure(
+        self,
+    ):
+        instance = _make_instance()
+        instance.model_loaded = False
+        instance.name = "mydb_feats"
+        instance.context = MagicMock()
+        instance.data_df = pd.DataFrame(
+            index=audformat.segmented_index(["a.wav"], [0], [1])
+        )
+        instance.util.get_path.return_value = "/store/"
+        instance.util.config_val.side_effect = lambda section, key, default: default
+        instance._needs_extraction = MagicMock(return_value=True)
+        instance.util.write_store = MagicMock()
+        instance._load_model = MagicMock(
+            side_effect=NkululukoError("unknown output head")
+        )
+        instance.extract_sample_df = MagicMock()
+
+        with pytest.raises(NkululukoError):
+            instance.extract()
+
+        instance.extract_sample_df.assert_not_called()
+        assert not instance.util.warn.called
