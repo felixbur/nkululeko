@@ -16,6 +16,7 @@ import audmodel
 import audonnx
 
 from nkululeko.feat_extract.featureset import EXTRACTION_ERRORS, Featureset
+from nkululeko.utils.errors import NkululukoError
 
 
 def parse_embeddings_names(raw):
@@ -291,21 +292,17 @@ class AudmodelSet(Featureset):
             self.util.debug(
                 "extracting audmodel embeddings, this might take a while..."
             )
-            # Load the model before the per-file loop, not lazily inside
-            # it (review on #468): the per-sample cache check in
-            # extract_sample_df() is unconditional (unlike the
-            # whole-dataset store, it isn't gated by FEATS.no_reuse), so a
-            # run where every file already has a cached segment would
-            # otherwise never call _load_model() at all, leaving
-            # self.embeddings_names/_head_label_counts unset -- which
-            # ap_audmodel.py's AudmodelPredictor relies on always being
-            # present. Loading eagerly also keeps a genuine config error
-            # from _load_model() (e.g. an unknown/duplicate head) from
-            # being swallowed by the per-file except clause below:
-            # NkululukoError subclasses RuntimeError, one of the
-            # EXTRACTION_ERRORS types tolerated there as a per-file miss.
-            if not self.model_loaded:
-                self._load_model()
+            # Model loading stays lazy (inside extract_sample_df() /
+            # _extract_sample_with_labels(), triggered on the first file
+            # that isn't already in the per-sample cache) rather than
+            # eager here (review on #468): eagerly loading unconditionally
+            # would download/open the model and create an ONNX session
+            # even on a run where every segment is already per-sample
+            # cached, defeating cache-only rebuilds. The per-sample cache
+            # already honors FEATS.no_reuse, so a run that actually needs
+            # fresh extraction (including ap_audmodel.py's
+            # AudmodelPredictor, which always forces no_reuse) still loads
+            # the model lazily on its first real extraction attempt.
             df = pd.DataFrame()
             total = len(self.data_df.index)
             failed = 0
@@ -319,6 +316,16 @@ class AudmodelSet(Featureset):
                         )
                     f_df = self.extract_sample_df(signal, sr, (file, start, end))
                 except EXTRACTION_ERRORS as ror:
+                    # NkululukoError (raised by util.error(), e.g. an
+                    # unknown/duplicate head or an incompatible multi-head
+                    # shape combination from a lazily-triggered
+                    # _load_model()) subclasses RuntimeError, one of the
+                    # EXTRACTION_ERRORS types below -- but it signals a
+                    # fatal config problem, not a per-file data issue, so
+                    # it must propagate immediately instead of being
+                    # swallowed and retried on every subsequent file.
+                    if isinstance(ror, NkululukoError):
+                        raise
                     # Keep this row as missing (NaN once concatenated with
                     # the columns other rows have) instead of aborting the
                     # whole extraction (review on #468): a single bad file

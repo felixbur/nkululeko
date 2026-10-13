@@ -11,6 +11,7 @@ import ast
 
 import numpy as np
 
+from nkululeko.feat_extract.feats_audmodel import parse_embeddings_names
 from nkululeko.feature_extractor import FeatureExtractor
 from nkululeko.utils.util import Util
 
@@ -97,7 +98,22 @@ class AudmodelPredictor:
         # head's own column count, recorded at load time in the same
         # order as its own embeddings_names).
         audmodel_set = self.feature_extractor.feat_extractor
-        heads = audmodel_set.embeddings_names
+        heads = getattr(audmodel_set, "embeddings_names", None)
+        if heads is None:
+            # _load_model() is lazy (feats_audmodel.py, review on #468):
+            # it only runs on the first file that actually reaches
+            # extraction, so if literally every file failed before that
+            # point (e.g. every audio file was unreadable), it never ran
+            # at all and embeddings_names/_head_label_counts were never
+            # set. Parse the configured head names directly so this still
+            # reports "unknown" per head instead of crashing.
+            raw_embeddings_name = self.util.config_val(
+                "FEATS", "audmodel.embeddings_name", "hidden_states"
+            )
+            heads = parse_embeddings_names(raw_embeddings_name)
+            for head in heads:
+                return_df[f"{head}_pred"] = "unknown"
+            return return_df
         if len(heads) == 1:
             # Single head: every column belongs to it, whether ONNX or
             # torch-backed -- _head_label_counts is only ever set on the

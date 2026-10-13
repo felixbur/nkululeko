@@ -301,3 +301,31 @@ class TestAudmodelPredictor:
             AudmodelPredictor(df).predict("train")
 
         assert "features" not in context.config["FEATS"]
+
+    @patch("nkululeko.autopredict.ap_audmodel.FeatureExtractor")
+    def test_falls_back_to_configured_heads_when_model_never_loaded(
+        self, mock_feature_extractor
+    ):
+        """Review on #468 (round 2): model loading is lazy (feats_audmodel.py),
+        triggered only on the first file that actually reaches extraction --
+        if literally every file failed before that point (e.g. every audio
+        file was unreadable), _load_model() never ran at all, leaving
+        AudmodelSet.embeddings_names/_head_label_counts unset. Falls back to
+        parsing FEATS.audmodel.embeddings_name directly so every configured
+        head still gets an "unknown" column instead of crashing."""
+        pred_df = pd.DataFrame(index=[0, 1])
+        mock_extractor = Mock(spec=["extract", "feat_extractor"])
+        mock_extractor.extract.return_value = pred_df
+        mock_extractor.feat_extractor = Mock(spec=[])
+        mock_feature_extractor.return_value = mock_extractor
+
+        df = pd.DataFrame({"dummy": [1, 2]})
+        context = _context()
+        context.config["FEATS"] = {
+            "audmodel.embeddings_name": "['arousal', 'valence']"
+        }
+        with use_context(context):
+            result = AudmodelPredictor(df).predict("train")
+
+        assert list(result["arousal_pred"]) == ["unknown", "unknown"]
+        assert list(result["valence_pred"]) == ["unknown", "unknown"]

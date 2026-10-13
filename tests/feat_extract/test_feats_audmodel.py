@@ -926,19 +926,22 @@ class TestFailThresholdEnforcement:
         assert instance.util.write_store.called
 
 
-class TestEagerModelLoad:
-    """Review on #468: the per-sample cache check in extract_sample_df()
-    is unconditional (unlike the whole-dataset store, it isn't gated by
-    FEATS.no_reuse), so a run where every file already has a cached
-    segment would never call _load_model() at all if it were only ever
-    triggered lazily from inside _extract_sample_with_labels(). That left
-    self.embeddings_names/_head_label_counts unset -- which
-    ap_audmodel.py's AudmodelPredictor relies on always being present --
-    and let a genuine _load_model() config error (NkululukoError
-    subclasses RuntimeError, one of the EXTRACTION_ERRORS types) be
-    swallowed by the per-file except clause as a tolerated miss."""
+class TestLazyModelLoad:
+    """Review on #468 (round 2): loading the model eagerly before the
+    per-file loop -- added to fix the two problems documented below --
+    itself defeats cache-only rebuilds, since it downloads/opens the
+    model and creates an ONNX session even when every segment is already
+    in the per-sample cache. Model loading stays lazy; the two problems
+    it was meant to fix are handled differently instead:
+    self.embeddings_names/_head_label_counts being unset when every file
+    is cache-hit is handled on the ap_audmodel.py side (a fallback that
+    parses FEATS.audmodel.embeddings_name directly), and a genuine
+    _load_model() config error (NkululukoError subclasses RuntimeError,
+    one of the EXTRACTION_ERRORS types) being swallowed by the per-file
+    except clause is fixed by re-raising NkululukoError there explicitly,
+    regardless of whether the error surfaces eagerly or lazily."""
 
-    def test_model_loaded_eagerly_even_when_every_file_hits_per_sample_cache(self):
+    def test_model_not_loaded_when_every_file_hits_per_sample_cache(self):
         instance = _make_instance()
         instance.model_loaded = False
         instance.name = "mydb_feats"
@@ -950,13 +953,7 @@ class TestEagerModelLoad:
         instance.util.config_val.side_effect = lambda section, key, default: default
         instance._needs_extraction = MagicMock(return_value=True)
         instance.util.write_store = MagicMock()
-
-        def fake_load_model():
-            instance.model_loaded = True
-            instance.embeddings_names = ["valence"]
-            instance._head_label_counts = [1]
-
-        instance._load_model = MagicMock(side_effect=fake_load_model)
+        instance._load_model = MagicMock()
         # Every file hits the per-sample cache: extract_sample_df() never
         # calls _extract_sample_with_labels(), so it never lazily loads
         # the model itself.
@@ -973,9 +970,7 @@ class TestEagerModelLoad:
         ):
             instance.extract()
 
-        instance._load_model.assert_called_once()
-        assert instance.embeddings_names == ["valence"]
-        assert instance._head_label_counts == [1]
+        instance._load_model.assert_not_called()
 
     def test_load_model_config_error_propagates_not_tolerated_as_a_per_file_failure(
         self,
@@ -991,13 +986,18 @@ class TestEagerModelLoad:
         instance.util.config_val.side_effect = lambda section, key, default: default
         instance._needs_extraction = MagicMock(return_value=True)
         instance.util.write_store = MagicMock()
-        instance._load_model = MagicMock(
+        # The config error surfaces lazily, from inside
+        # extract_sample_df() (which internally calls _load_model() on
+        # the first real extraction attempt), not eagerly before the loop.
+        instance.extract_sample_df = MagicMock(
             side_effect=NkululukoError("unknown output head")
         )
-        instance.extract_sample_df = MagicMock()
 
-        with pytest.raises(NkululukoError):
-            instance.extract()
+        with patch(
+            "nkululeko.feat_extract.feats_audmodel.audiofile.read",
+            return_value=(np.array([0.0]), 16000),
+        ):
+            with pytest.raises(NkululukoError):
+                instance.extract()
 
-        instance.extract_sample_df.assert_not_called()
         assert not instance.util.warn.called
