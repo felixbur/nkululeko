@@ -12,7 +12,7 @@ from nkululeko.experiment_context import (
     use_context,
 )
 from nkululeko.reporting.reporter import Reporter
-from nkululeko.utils.naming import DANN_MODEL_TYPES
+from nkululeko.utils.naming import DANN_MODEL_TYPES, parse_dann_columns
 from nkululeko.utils.util import Util
 
 # Fallback type-based heuristics used when a model instance is not yet available
@@ -340,6 +340,15 @@ class Modelrunner(ContextAware):
             self.util.debug(f"new train size: {self.df_train.shape}")
             self.util.debug(f"new test size: {self.df_test.shape}")
 
+    def _dann_columns_set(self):
+        """True if MODEL.dann_columns is set to anything but an "off" value;
+        unlike Util.get_dann_columns() a malformed value does not raise."""
+        raw = self.util.config_val("MODEL", "dann_columns", False)
+        try:
+            return bool(parse_dann_columns(raw))
+        except ValueError:
+            return True
+
     def _select_model(self, model_type):
         if (
             model_type in DANN_MODEL_TYPES
@@ -360,11 +369,10 @@ class Modelrunner(ContextAware):
         # Validate model/experiment type compatibility before instantiation
         task = "classification" if self.util.exp_is_classification() else "regression"
         validate_model_task_support(model_type, task)
-        # Unsupported types ignore the key, so only check that it's set
-        # (a malformed value is not an error for them).
-        if model_type not in DANN_MODEL_TYPES and str(
-            self.util.config_val("MODEL", "dann_columns", "")
-        ).strip() not in ("", "[]"):
+        # Unsupported types ignore the key, so only check that it's set (same
+        # "off" spellings as everywhere else); a malformed value is not an
+        # error for them, just something to warn about.
+        if model_type not in DANN_MODEL_TYPES and self._dann_columns_set():
             self.util.warn(
                 f"MODEL.dann_columns is set, but model type '{model_type}' does "
                 f"not support domain-adversarial training; it is ignored "

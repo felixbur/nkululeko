@@ -145,6 +145,17 @@ class TestSelectModel:
             del glob_conf.config["MODEL"]["dann_columns"]
         assert any("dann_columns" in w and "'svm'" in w for w in warnings)
 
+    @pytest.mark.parametrize("off", ["False", "false", "none", "None", "[]", ""])
+    def test_no_dann_warning_for_off_spellings(self, dummy_dfs, monkeypatch, off):
+        glob_conf.config["MODEL"]["dann_columns"] = off
+        warnings = []
+        monkeypatch.setattr(Util, "warn", lambda self, msg: warnings.append(msg))
+        try:
+            self._make_mr("svm", dummy_dfs)
+        finally:
+            del glob_conf.config["MODEL"]["dann_columns"]
+        assert not any("dann_columns" in w for w in warnings)
+
     def test_no_dann_warning_when_unset(self, dummy_dfs, monkeypatch):
         warnings = []
         monkeypatch.setattr(Util, "warn", lambda self, msg: warnings.append(msg))
