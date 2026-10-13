@@ -544,7 +544,12 @@ class TestPlotFeatureSpeaker:
 
         args, _ = plots.plot_feature.call_args
         _, _, _, labels_speaker, _ = args
-        assert labels_speaker["class_label"].dtype == object
+        # Asserting the exact dtype (e.g. `object`) is pandas-version
+        # dependent: pandas 3.0's default string dtype for .astype(str)
+        # is neither `object` nor plain-numeric, but Util.is_categorical()
+        # (what plot_feature() actually checks) treats it as categorical
+        # either way -- what matters here is that it is no longer numeric.
+        assert not pd.api.types.is_numeric_dtype(labels_speaker["class_label"])
         assert sorted(labels_speaker["class_label"].unique()) == ["0", "1"]
 
     def test_regression_with_fewer_than_two_speakers_warns_and_skips(self):
