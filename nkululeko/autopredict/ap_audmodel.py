@@ -47,7 +47,7 @@ class AudmodelPredictor:
         # feats_type + model id/embeddings_name, never by the actual input
         # rows (review on #468): fine for a real experiment (the same
         # DATA.databases across runs means the same data), but the
-        # standalone `nkululeko.predict --model audmodel` CLI defaults
+        # standalone `nkululeko.predict --model audmodel_pred` CLI defaults
         # every --list input to the same database name ("adhoc"), so a
         # second invocation on a different file list would otherwise
         # silently reuse the first invocation's cached features. Force a

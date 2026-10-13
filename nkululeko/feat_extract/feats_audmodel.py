@@ -66,6 +66,40 @@ def embeddings_cache_key(raw):
     return f"multihead-{digest}"
 
 
+def _dynamic_axis(shape):
+    """Index of the first dynamic (-1) dimension in `shape`, or None."""
+    for idx, dim in enumerate(shape):
+        if dim == -1:
+            return idx
+    return None
+
+
+def _concat_axis(shapes):
+    """Return the axis `shapes` can be concatenated on, or None if they
+    can't be.
+
+    Faithfully mirrors audonnx's own (undocumented, private) compatibility
+    rule for `Model.__call__(..., concat=True)` -- audonnx.core.model's
+    `_concat_axis`, not part of its public API, so reimplemented here
+    rather than imported -- so an incompatible multi-head selection can be
+    rejected with a clear config error before extraction starts (review on
+    #468), instead of surfacing as a RuntimeError during the first file's
+    inference. That would otherwise be misreported by the per-file except
+    clause as an ordinary per-file extraction miss, repeated for every
+    file, ending in either a generic failure-rate error or (with a
+    permissive FEATS.fail_threshold) an empty store persisted silently.
+    """
+    if len({len(shape) for shape in shapes}) != 1:
+        return None
+    if len({_dynamic_axis(shape) for shape in shapes}) != 1:
+        return None
+    axis = len(shapes[0]) - (2 if shapes[0][-1] == -1 else 1)
+    shapes_without_axis = [shape[:axis] + shape[axis + 1 :] for shape in shapes]
+    if not all(shape == shapes_without_axis[0] for shape in shapes_without_axis):
+        return None
+    return axis
+
+
 class AudmodelSet(Featureset):
     """Generic audmodel import.
 
@@ -165,6 +199,15 @@ class AudmodelSet(Featureset):
             )
         process_func_args = {"outputs": heads if multi_head else heads[0]}
         if multi_head:
+            shapes = [self.model.outputs[h].shape for h in heads]
+            if _concat_axis(shapes) is None:
+                self.util.error(
+                    "FEATS.audmodel.embeddings_name: the selected heads' "
+                    "output shapes cannot be concatenated -- number of "
+                    "dimensions, position of the dynamic axis, and all "
+                    "dimensions except the last non-dynamic one must "
+                    f"match. Got: {dict(zip(heads, shapes))}"
+                )
             process_func_args["concat"] = True
         self.model_interface = audinterface.Feature(
             feature_names,

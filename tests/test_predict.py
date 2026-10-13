@@ -231,16 +231,28 @@ class TestAutopredictTargets:
             "text",
             "translation",
             "textclassification",
-            "audmodel",
+            "audmodel_pred",
         ):
             assert t in AUTOPREDICT_TARGETS
 
-    def test_audmodel_target_dispatches_to_audmodel_predictor(self):
-        """GH #459/#468: [PREDICT] targets=['audmodel'] (Experiment.autopredict())
+    def test_audmodel_target_name_does_not_collide_with_the_extractor_name(self):
+        """Review on #468: "audmodel" is already a recognized generic
+        feature-extractor name (predict.py's model_lower dispatch,
+        documented in predict.md), extracting raw features. Reusing it
+        for the autopredict target too would make AUTOPREDICT_TARGETS
+        (checked before the feature-extractor fallback) silently swallow
+        that pre-existing, documented `--model audmodel` usage."""
+        from nkululeko.predict import AUTOPREDICT_TARGETS
+
+        assert "audmodel" not in AUTOPREDICT_TARGETS
+
+    def test_audmodel_pred_target_dispatches_to_audmodel_predictor(self):
+        """GH #459/#468: [PREDICT] targets=['audmodel_pred'] (Experiment.autopredict())
         is unreachable from any entry point -- nkululeko.nkululeko never calls
-        it, and this standalone CLI has its own separate dispatch. "audmodel"
-        must be reachable here (python -m nkululeko.predict --model audmodel),
-        the only mechanism that actually runs for any autopredict target."""
+        it, and this standalone CLI has its own separate dispatch.
+        "audmodel_pred" must be reachable here (python -m nkululeko.predict
+        --model audmodel_pred), the only mechanism that actually runs for
+        any autopredict target."""
         from nkululeko.predict import _dispatch_autopredict
 
         df = pd.DataFrame({"dummy": [1, 2]})
@@ -248,7 +260,7 @@ class TestAutopredictTargets:
             mock_instance = mock_cls.return_value
             mock_instance.predict.return_value = "RESULT"
 
-            result = _dispatch_autopredict("audmodel", df)
+            result = _dispatch_autopredict("audmodel_pred", df)
 
         mock_cls.assert_called_once_with(df)
         mock_instance.predict.assert_called_once_with("all")

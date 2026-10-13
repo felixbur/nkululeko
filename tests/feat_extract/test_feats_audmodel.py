@@ -19,6 +19,7 @@ import pytest
 
 from nkululeko.feat_extract.feats_audmodel import (
     AudmodelSet,
+    _concat_axis,
     embeddings_cache_key,
     parse_embeddings_names,
 )
@@ -332,13 +333,38 @@ class TestParseEmbeddingsNames:
             parse_embeddings_names("['arousal', 'valence', 'arousal']")
 
 
+class _FakeOutputNode:
+    """Stand-in for audonnx's OutputNode: only .labels and .shape, the bits
+    _load_onnx_model() touches via self.model.outputs[head]."""
+
+    def __init__(self, labels, shape):
+        self.labels = labels
+        self.shape = shape
+
+
 class _FakeOnnxModel:
     """Stand-in for audonnx.Model: only the bits _load_onnx_model() touches
-    (.sess.get_providers(), .labels(), .outputs)."""
+    (.sess.get_providers(), .labels(), .outputs).
 
-    def __init__(self, head_labels, providers=("CPUExecutionProvider",)):
+    Each head's shape defaults to a dynamic batch axis followed by its own
+    label count (e.g. [-1, 3] for a 3-class head, [-1, 1] for a
+    one-dimension head) -- concatenation-compatible with any other
+    default-shaped head, matching a realistic devAIce-style model (shared
+    dynamic batch dimension, only the class-count dimension differs).
+    Pass head_shapes to simulate an incompatible selection instead.
+    """
+
+    def __init__(
+        self, head_labels, providers=("CPUExecutionProvider",), head_shapes=None
+    ):
         self._head_labels = head_labels
-        self.outputs = dict(head_labels)
+        head_shapes = head_shapes or {}
+        self.outputs = {
+            name: _FakeOutputNode(
+                labels, head_shapes.get(name, [-1, len(labels)])
+            )
+            for name, labels in head_labels.items()
+        }
         self.sess = MagicMock(get_providers=MagicMock(return_value=list(providers)))
 
     def labels(self, outputs):
@@ -429,6 +455,59 @@ class TestLoadOnnxModelMultiHead:
             "outputs": ["valence", "emotion.acoustic"],
             "concat": True,
         }
+
+    def test_incompatible_head_shapes_raise_a_clear_error_before_extraction(self):
+        """Review on #468: audonnx raises RuntimeError at inference time
+        (inside concat) when selected heads' shapes aren't concatenation-
+        compatible -- caught by the per-file except clause as an ordinary
+        miss, repeated for every file, ending in a generic failure-rate
+        error instead of a clear config error. Must be rejected here,
+        before extraction ever starts."""
+        fake_model = _FakeOnnxModel(
+            {"valence": ["valence"], "emotion.acoustic": ["anger", "sadness"]},
+            head_shapes={"valence": [-1], "emotion.acoustic": [-1, 2]},
+        )
+        instance = AudmodelSet.__new__(AudmodelSet)
+        instance.util = MagicMock()
+        instance.util.error.side_effect = RuntimeError("boom")
+        instance.embeddings_names = ["valence", "emotion.acoustic"]
+        instance.n_jobs = 1
+        instance.device = "cpu"
+
+        with (
+            patch(
+                "nkululeko.feat_extract.feats_audmodel.audonnx.load",
+                return_value=fake_model,
+            ),
+            patch("nkululeko.feat_extract.feats_audmodel.audinterface.Feature"),
+            pytest.raises(RuntimeError),
+        ):
+            instance._load_onnx_model("/fake/model/root")
+
+        assert instance.util.error.called
+
+
+class TestConcatAxis:
+    """Direct unit tests for _concat_axis, a faithful local replica of
+    audonnx's own (private, unimported) compatibility rule for
+    Model.__call__(..., concat=True)."""
+
+    def test_compatible_shapes_return_the_last_non_dynamic_axis(self):
+        assert _concat_axis([[-1, 1], [-1, 3]]) == 1
+
+    def test_mismatched_rank_is_incompatible(self):
+        assert _concat_axis([[-1], [-1, 2]]) is None
+
+    def test_dynamic_axis_in_different_positions_is_incompatible(self):
+        assert _concat_axis([[-1, 2], [2, -1]]) is None
+
+    def test_mismatched_non_concat_dimensions_are_incompatible(self):
+        assert _concat_axis([[2, -1, 3], [4, -1, 3]]) is None
+
+    def test_trailing_dynamic_axis_uses_the_second_to_last_as_concat_axis(self):
+        # shape[-1] == -1: the last axis is itself dynamic, so the
+        # concat axis is the one before it instead.
+        assert _concat_axis([[3, -1], [5, -1]]) == 0
 
 
 class TestCollidingGeneratedColumnNames:

@@ -76,7 +76,7 @@ AUTOPREDICT_TARGETS = {
     "valence",
     "dominance",
     "emotion",
-    "audmodel",
+    "audmodel_pred",
 }
 
 AUDIO_EXTS = ["aac", "au", "flac", "m4a", "mp3", "ogg", "wav"]
@@ -703,7 +703,14 @@ def _dispatch_autopredict(target, df):
         from nkululeko.autopredict.ap_dominance import DominancePredictor as P
     elif target == "emotion":
         from nkululeko.autopredict.ap_emotion import EmotionPredictor as P
-    elif target == "audmodel":
+    elif target == "audmodel_pred":
+        # Not "audmodel" (review on #468): that name is already a
+        # recognized generic feature-extractor name below (model_lower
+        # branch further down in this file, and documented in
+        # predict.md), extracting raw audmodel features (feat_0, feat_1,
+        # ...). AUTOPREDICT_TARGETS is checked before the feature-extractor
+        # fallback, so reusing "audmodel" here would have silently broken
+        # that pre-existing, documented `--model audmodel` usage.
         from nkululeko.autopredict.ap_audmodel import AudmodelPredictor as P
     else:
         raise ValueError(f"unknown autopredict target: {target}")

@@ -46,21 +46,25 @@ head.
 ```bash
 python -m nkululeko.predict \
     --list ./your_dataset.csv \
-    --model audmodel \
+    --model audmodel_pred \
     --config your_feats_config.ini \
     --outfile ./your_dataset_with_audmodel.csv
 ```
 
 `your_feats_config.ini` only needs the `[FEATS] audmodel.id`/
-`audmodel.embeddings_name` keys from step 1 -- the `audmodel` autopredict
-target reuses them, no separate config key needed. For each configured
-head it writes one `<head>_pred` column onto the CSV: the raw value for a
-one-dimensional head (`valence_pred`), or the argmax class label for a
-multi-dimension head (`emotion.acoustic_pred`). A row whose extraction
-failed is marked `unknown` for a categorical head, rather than silently
-picking an arbitrary class. (`[PREDICT] targets = [...]` in an experiment
-config, by contrast, is not wired into any runnable entry point yet --
-this standalone command is the one that actually produces the columns.)
+`audmodel.embeddings_name` keys from step 1 -- the `audmodel_pred`
+autopredict target reuses them, no separate config key needed. For each
+configured head it writes one `<head>_pred` column onto the CSV: the raw
+value for a one-dimensional head (`valence_pred`), or the argmax class
+label for a multi-dimension head (`emotion.acoustic_pred`). A row whose
+extraction failed is marked `unknown` for a categorical head, rather than
+silently picking an arbitrary class. (`[PREDICT] targets = [...]` in an
+experiment config, by contrast, is not wired into any runnable entry
+point yet -- this standalone command is the one that actually produces
+the columns. The target is named `audmodel_pred`, not `audmodel`, since
+the latter is already a recognized `--model` name for generic raw
+feature extraction, documented in `predict.md` -- reusing it here would
+have silently broken that pre-existing usage.)
 
 Every multi-dimension head is assumed categorical -- only pick heads
 whose columns are genuinely class scores (like `emotion.acoustic` above),
@@ -115,7 +119,7 @@ Step 2, add the predicted columns:
 ```bash
 python -m nkululeko.predict \
     --list ./your_dataset.csv \
-    --model audmodel \
+    --model audmodel_pred \
     --config your_feats_config.ini \
     --outfile ./your_dataset_with_audmodel.csv
 ```
@@ -182,11 +186,16 @@ python -m nkululeko.explore --config exp_audmodel_multihead.ini
 - A typo'd or unknown head name in `audmodel.embeddings_name` raises a clear
   config error listing the model's actual valid output names, instead of a
   bare lookup error.
-- The `audmodel` autopredict target temporarily disables `FEATS.features`
-  (a generic feature-subset/reorder filter) for the duration of its own
-  extraction, restoring it afterward: that filter would otherwise
-  reshuffle or drop audmodel's own output columns before the predictor
-  can turn them into `<head>_pred` columns.
+- Not every set of valid heads can be extracted together: audonnx
+  requires their output shapes to be concatenation-compatible (matching
+  rank, dynamic-axis position, and non-class dimensions). An incompatible
+  selection raises a clear config error up front, before extraction
+  starts.
+- The `audmodel_pred` autopredict target temporarily disables
+  `FEATS.features` (a generic feature-subset/reorder filter) for the
+  duration of its own extraction, restoring it afterward: that filter
+  would otherwise reshuffle or drop audmodel's own output columns before
+  the predictor can turn them into `<head>_pred` columns.
 
 ## Related
 
