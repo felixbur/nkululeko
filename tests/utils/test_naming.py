@@ -253,6 +253,13 @@ type = os
         split = self._dann_util(extra="dann_columns = ['a', 'b']")._get_dann_suffix()
         self.assertNotEqual(joined, split)
 
+    def test_dann_exp_name_distinguishes_double_underscore(self):
+        # get_exp_name() collapses "__" to "_" after the suffix is added
+        a = self._dann_util(extra="dann_columns = ['a__b']").get_exp_name()
+        b = self._dann_util(extra="dann_columns = ['a_b']").get_exp_name()
+        self.assertNotEqual(a, b)
+        self.assertNotIn("__", a)
+
     def test_dann_suffix_is_path_safe(self):
         u = self._dann_util(extra="dann_columns = ['../x y']")
         suffix = u._get_dann_suffix()

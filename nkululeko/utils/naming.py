@@ -229,10 +229,12 @@ class NamingMixin:
         if not columns:
             return ""
         # Path-safe, and unambiguous: ['a+b'] and ['a', 'b'] must not share
-        # a name, so if sanitizing changed any name, add a hash of the list.
+        # a name, and get_exp_name() later turns "__" into "_" (so 'a__b'
+        # and 'a_b' would), so if sanitizing changed any name or a name has
+        # "+" or "__", add a hash of the list.
         safe = [self.safe_filename_component(c) for c in columns]
         suffix = "_dann-" + "+".join(safe)
-        if safe != columns or any("+" in c for c in columns):
+        if safe != columns or any("+" in c or "__" in c for c in columns):
             digest = hashlib.sha1(repr(columns).encode()).hexdigest()[:6]
             suffix += f"-{digest}"
         lambda_ = self.get_dann_number("dann_lambda")

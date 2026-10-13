@@ -31,7 +31,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 * `'MODEL'.'loss'`: `'cross'` (nkululeko/models/model.py:127), `'cross'` (nkululeko/models/model_aasist.py:169), `'bce'` (nkululeko/models/model_adm.py:65), `'mse'` (nkululeko/models/model_mlp_regression.py:35)
 * `'MODEL'.'measure'`: `'mse'` (nkululeko/models/model_mlp_regression.py:269), `'uar'` (nkululeko/reporting/reporter.py:84), `'mse'` (nkululeko/reporting/reporter.py:95), `'mse'` (nkululeko/reporting/reporter.py:853), `'uar'` (nkululeko/reporting/run_plotter.py:79), `'uar'` (nkululeko/runmanager.py:204), `'uar'` (nkululeko/utils/util.py:649), `'mse'` (nkululeko/utils/util.py:656)
 * `'MODEL'.'scheduler.gamma'`: `'0.5'` (nkululeko/optimizers/scheduler_factory.py:46), `'0.95'` (nkululeko/optimizers/scheduler_factory.py:54)
-* `'MODEL'.'type'`: `'svm'` (nkululeko/bundle.py:224), `None` (nkululeko/predict.py:929), `''` (nkululeko/utils/naming.py:260)
+* `'MODEL'.'type'`: `'svm'` (nkululeko/bundle.py:224), `None` (nkululeko/predict.py:929), `''` (nkululeko/utils/naming.py:262)
 * `'REPORT'.'latex'`: `False` (nkululeko/experiment.py:91), `'nkululeko_latex'` (nkululeko/reporting/latex_writer.py:39)
 
 | Namespace | Key | Default | Source |
@@ -41,7 +41,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'AASIST' | 'max_len' | `'64600'` | nkululeko/models/aasist_config.py:61 |
 | 'AASIST' | 'ssl_layer_pooling' | `'last'` | nkululeko/models/aasist_config.py:68 |
 | 'AASIST' | 'ssl_model' | `'facebook/wav2vec2-xls-r-300m'` | nkululeko/models/aasist_config.py:54 |
-| 'AUGMENT' | 'augment' | `False` | nkululeko/aug_train.py:40, nkululeko/augment.py:57, nkululeko/utils/naming.py:250 |
+| 'AUGMENT' | 'augment' | `False` | nkululeko/aug_train.py:40, nkululeko/augment.py:57, nkululeko/utils/naming.py:252 |
 | 'AUGMENT' | 'augmentations' | `defaults` | nkululeko/augmenting/augmenter_audiomentations.py:33 |
 | 'AUGMENT' | 'bypass_prob' | `0.3` | nkululeko/augmenting/augmenter_auglib.py:39 |
 | 'AUGMENT' | 'crop_dur' | `1.0` | nkululeko/augmenting/augmenter_auglib.py:130 |
@@ -198,7 +198,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'MODEL' | 'batch_size' | `32` / `8` | nkululeko/models/model_adm.py:195, nkululeko/models/model_cnn.py:75, nkululeko/models/model_mlp.py:83, +1 more |
 | 'MODEL' | 'class_weight' | `'False'` / `'auto'` / `False` | nkululeko/models/model.py:173, nkululeko/models/model.py:232, nkululeko/models/model.py:326, +5 more |
 | 'MODEL' | 'dann_columns' | `False` | nkululeko/modelrunner.py:346, nkululeko/utils/naming.py:203 |
-| 'MODEL' | 'dann_reverse' | `True` | nkululeko/models/domain_adversarial.py:113, nkululeko/utils/naming.py:244 |
+| 'MODEL' | 'dann_reverse' | `True` | nkululeko/models/domain_adversarial.py:113, nkululeko/utils/naming.py:246 |
 | 'MODEL' | 'device' | `'cpu'` / `False` / `cuda` / `device` | nkululeko/augmenting/augmenter_silero.py:37, nkululeko/autopredict/ap_sid.py:31, nkululeko/autopredict/ap_text.py:28, +33 more |
 | 'MODEL' | 'drop' | `'False'` / `False` | nkululeko/models/model_cnn.py:57, nkululeko/models/model_cnn.py:271, nkululeko/models/model_cnn.py:288, +6 more |
 | 'MODEL' | 'early_stopping_rounds' | `False` | nkululeko/models/model_xgb.py:24 |
@@ -233,7 +233,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'MODEL' | 'subsample' | `1.0` | nkululeko/models/model_xgb.py:33 |
 | 'MODEL' | 'threshold' | `'0.5'` | nkululeko/models/model_adm.py:205 |
 | 'MODEL' | 'tuning_params' | `False` | nkululeko/models/model.py:331 |
-| 'MODEL' | 'type' | `''` / `'svm'` / `None` | nkululeko/bundle.py:224, nkululeko/predict.py:929, nkululeko/utils/naming.py:260 |
+| 'MODEL' | 'type' | `''` / `'svm'` / `None` | nkululeko/bundle.py:224, nkululeko/predict.py:929, nkululeko/utils/naming.py:262 |
 | 'MODEL' | 'validation_split' | `0.2` | nkululeko/models/model_xgb.py:99 |
 | 'MODEL' | 'warmup_epochs' | `'5'` | nkululeko/optimizers/scheduler_factory.py:86 |
 | 'MODEL' | 'weight_decay' | `'0.01'` | nkululeko/optimizers/optimizer_factory.py:36 |
