@@ -353,7 +353,16 @@ class AudmodelSet(Featureset):
         cache_path = self._sample_cache_path(
             segment_cache, index_tuple, suffix=layer_suffix
         )
-        if os.path.isfile(cache_path):
+        # The per-sample cache key is (file path, start, end) only -- it
+        # has no way to detect that the audio at that path changed, so it
+        # must still honor FEATS.no_reuse explicitly (review on #468):
+        # without this, forcing no_reuse at the whole-dataset level (e.g.
+        # ap_audmodel.py's AudmodelPredictor, for every ad-hoc standalone
+        # prediction) would still silently return a stale cached sample
+        # if a file at the same path/segment was predicted before.
+        if os.path.isfile(cache_path) and not self.util.config_val_bool(
+            "FEATS", "no_reuse", False
+        ):
             df_part = self._read_sample_cache(cache_path)
         else:
             features, labels = self._extract_sample_with_labels(signal, sr)

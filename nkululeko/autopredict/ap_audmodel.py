@@ -22,6 +22,18 @@ class AudmodelPredictor:
     the raw value for a one-dimensional head (e.g. "valence"), or the
     argmax class label for a multi-dimension (categorical) head, e.g.
     "emotion.acoustic".
+
+    Every multi-dimension head is assumed categorical (its columns are
+    class scores) -- there is no reliable way to tell a categorical head
+    apart from a continuous multi-dimensional one (e.g. a raw embedding)
+    from audonnx's own metadata alone (review on #468). This matches the
+    devAIce-style heads #459 was built around (arousal/valence/
+    emotion.acoustic/...), each a single dimension or a small finite set
+    of classes. Configuring FEATS.audmodel.embeddings_name to a
+    continuous, non-categorical head (notably the "hidden_states" default,
+    meant for plain feature extraction, not this predictor) produces a
+    meaningless argmax "prediction" -- pick real class/dimension heads
+    when using this PREDICT target.
     """
 
     def __init__(self, df):

@@ -239,6 +239,40 @@ class TestCacheKeyIncludesEmbeddingsName:
         assert cache_dir.is_dir()
         assert list(df_part.columns) == ["emotion.acoustic_a", "emotion.acoustic_b"]
 
+    def test_no_reuse_bypasses_a_stale_per_sample_cache(self, tmp_path):
+        """Review on #468: the per-sample cache key is (file, start, end)
+        only -- it has no way to detect that the audio at that path
+        changed. FEATS.no_reuse must still force a fresh read, or a
+        standalone prediction forcing no_reuse at the whole-dataset level
+        (ap_audmodel.py's AudmodelPredictor) could silently keep returning
+        a stale cached sample."""
+        instance = _make_instance(["valence"], [1])
+        old_result = pd.DataFrame([[0.1]], columns=["valence"])
+        instance.model_interface = MagicMock(
+            process_signal=MagicMock(return_value=old_result)
+        )
+        instance.util.get_path.return_value = str(tmp_path)
+        instance.util.config_val.side_effect = self._config_val(
+            {"audmodel.id": "modelid", "audmodel.embeddings_name": "valence"}
+        )
+        instance.util.config_val_bool.return_value = False
+        index_tuple = ("f1.wav", pd.Timedelta(0), pd.Timedelta(seconds=1))
+
+        first = instance.extract_sample_df(None, 16000, index_tuple)
+        assert first["valence"].iloc[0] == 0.1
+
+        # Simulate the audio at the same path/segment changing: a fresh
+        # extraction would now produce a different value.
+        new_result = pd.DataFrame([[0.9]], columns=["valence"])
+        instance.model_interface.process_signal.return_value = new_result
+
+        still_stale = instance.extract_sample_df(None, 16000, index_tuple)
+        assert still_stale["valence"].iloc[0] == 0.1
+
+        instance.util.config_val_bool.return_value = True
+        fresh = instance.extract_sample_df(None, 16000, index_tuple)
+        assert fresh["valence"].iloc[0] == 0.9
+
     def test_different_embeddings_name_gives_different_cache_dir(self, tmp_path):
         paths = {}
         for embeddings_name in ("valence", "arousal"):

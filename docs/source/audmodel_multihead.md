@@ -62,6 +62,13 @@ picking an arbitrary class. (`[PREDICT] targets = [...]` in an experiment
 config, by contrast, is not wired into any runnable entry point yet --
 this standalone command is the one that actually produces the columns.)
 
+Every multi-dimension head is assumed categorical -- only pick heads
+whose columns are genuinely class scores (like `emotion.acoustic` above),
+not a continuous multi-dimensional output such as the default
+`hidden_states` embedding. There's no way to tell the two apart from the
+model's own metadata, so argmax over a continuous head would produce a
+meaningless "prediction."
+
 ### 3. Analyze the new columns
 
 Point a normal explore experiment at the enriched CSV from step 2 and add:
