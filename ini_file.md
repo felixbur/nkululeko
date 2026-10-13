@@ -553,6 +553,8 @@ Available for `type = aasist`, `mlp`, `mlp_reg`, `cnn` and `adm` (other model ty
 * **dann_reverse**: if `False`, the gradient is not reversed, so the heads become ordinary auxiliary classifiers that encourage the features to carry the domain information (useful as an ablation)
   * dann_reverse = True
 
+The DANN settings are added to the auto-generated experiment name (e.g. `..._dann-source_db`), so DANN and plain runs keep separate results and checkpoints. If you set `[EXP] res_name`, that name is used as is: give DANN runs their own `res_name`.
+
 Examples: [exp_emodb_aasist_dann.ini](https://github.com/felixbur/nkululeko/blob/main/examples/exp_emodb_aasist_dann.ini) and [exp_emodb_mlp_dann.ini](https://github.com/felixbur/nkululeko/blob/main/examples/exp_emodb_mlp_dann.ini) (the same keys work for the other models).
 
 ### FINETUNE
