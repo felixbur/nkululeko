@@ -1,5 +1,7 @@
 """Unit tests for the SAM optimizer wrapper."""
 
+import io
+
 import pytest
 import torch
 import torch.nn as nn
@@ -176,17 +178,101 @@ class TestWithSchedulers:
         assert not [w for w in recwarn if "lr_scheduler.step()" in str(w.message)]
 
 
-class TestStateDict:
-    def test_load_state_dict_keeps_groups_shared(self):
+class TestPerturbedPass:
+    def test_non_finite_perturbed_loss_restores_the_weights(self):
         model, x, y = _problem()
-        opt = SAM(model.parameters(), torch.optim.Adam, rho=0.05, lr=0.01)
+        opt = SAM(model.parameters(), torch.optim.Adam, rho=0.05, lr=0.1)
+        start = [p.detach().clone() for p in model.parameters()]
+        calls = []
+
+        def closure():
+            calls.append(1)
+            opt.zero_grad()
+            loss = nn.functional.mse_loss(model(x), y)
+            if len(calls) == 2:
+                loss = loss * float("nan")  # overflow at the perturbed point
+            loss.backward()
+            return loss
+
+        loss = opt.step(closure)
+        assert torch.isfinite(loss)  # the loss at the real weights
+        for p, s in zip(model.parameters(), start):
+            assert torch.equal(p, s)  # moved back, and no update applied
+        assert all(len(opt.base_optimizer.state[p]) == 0 for p in model.parameters())
+        assert all(p.grad is None or torch.all(p.grad == 0) for p in model.parameters())
+
+    def test_non_finite_perturbed_gradient_restores_the_weights(self):
+        model, x, y = _problem()
+        opt = SAM(model.parameters(), torch.optim.SGD, rho=0.05, lr=0.1)
+        start = [p.detach().clone() for p in model.parameters()]
+        calls = []
+
+        def closure():
+            calls.append(1)
+            opt.zero_grad()
+            loss = nn.functional.mse_loss(model(x), y)
+            loss.backward()
+            if len(calls) == 2:
+                for p in model.parameters():
+                    p.grad.fill_(float("inf"))
+            return loss
+
+        opt.step(closure)
+        for p, s in zip(model.parameters(), start):
+            assert torch.equal(p, s)
+
+    def test_the_weight_copy_is_freed_after_a_step(self):
+        model, x, y = _problem()
+        opt = SAM(model.parameters(), torch.optim.SGD, rho=0.05, lr=0.1)
         opt.step(_closure(model, opt, x, y))
+        assert all("old_p" not in opt.state[p] for p in model.parameters())
+
+
+class TestStateDict:
+    def _trained(self, base_cls, **kw):
+        model, x, y = _problem()
+        opt = SAM(model.parameters(), base_cls, rho=0.05, lr=0.01, **kw)
+        for _ in range(3):
+            opt.step(_closure(model, opt, x, y))
+        return model, opt, x, y
+
+    def test_state_dict_holds_the_base_optimizer_state(self):
+        model, opt, _, _ = self._trained(torch.optim.Adam)
         state = opt.state_dict()
+        assert len(state["state"]) == len(list(model.parameters()))
+        assert all("exp_avg" in v for v in state["state"].values())
+        assert state["param_groups"][0]["rho"] == 0.05
+
+    @pytest.mark.parametrize(
+        "base_cls, kw",
+        [(torch.optim.Adam, {}), (torch.optim.SGD, {"momentum": 0.9})],
+    )
+    def test_resuming_continues_the_same_trajectory(self, base_cls, kw):
+        model, opt, x, y = self._trained(base_cls, **kw)
+        # a real checkpoint is serialized, so it does not alias the live state
+        buffer = io.BytesIO()
+        torch.save(opt.state_dict(), buffer)
+        buffer.seek(0)
+        state = torch.load(buffer)
+
+        resumed_model, _, _ = _problem()
+        resumed_model.load_state_dict(model.state_dict())
+        resumed = SAM(resumed_model.parameters(), base_cls, rho=0.05, lr=0.5, **kw)
+        resumed.load_state_dict(state)
+
+        opt.step(_closure(model, opt, x, y))
+        resumed.step(_closure(resumed_model, resumed, x, y))
+        for a, b in zip(model.parameters(), resumed_model.parameters()):
+            assert torch.allclose(a, b, atol=1e-7)
+
+    def test_load_state_dict_keeps_groups_shared_and_restores_settings(self):
+        _, opt, _, _ = self._trained(torch.optim.Adam)
         other_model, _, _ = _problem(1)
-        other = SAM(other_model.parameters(), torch.optim.Adam, rho=0.05, lr=0.5)
-        other.load_state_dict(state)
+        other = SAM(other_model.parameters(), torch.optim.Adam, rho=0.9, lr=0.5)
+        other.load_state_dict(opt.state_dict())
         assert other.base_optimizer.param_groups is other.param_groups
         assert other.param_groups[0]["lr"] == 0.01
+        assert other.param_groups[0]["rho"] == 0.05
 
 
 class TestFrozenBatchnormStats:
@@ -228,3 +314,26 @@ class TestFrozenBatchnormStats:
         with frozen_batchnorm_stats(()):
             pass
 
+    def test_batch_counter_is_restored(self):
+        net = self._net().train()
+        net(torch.randn(16, 4))
+        assert net[1].num_batches_tracked.item() == 1
+        with frozen_batchnorm_stats([net]):
+            net(torch.randn(16, 4))
+            net(torch.randn(16, 4))
+        assert net[1].num_batches_tracked.item() == 1
+
+    def test_cumulative_average_is_not_double_counted_after_a_sam_style_pass(self):
+        bn = nn.BatchNorm1d(4).train()
+        bn.momentum = None  # cumulative moving average
+        x = torch.randn(16, 4) + 1
+        bn(x)
+        first = bn.running_mean.clone()
+        with frozen_batchnorm_stats([bn]):
+            bn(x * 10)
+        assert bn.num_batches_tracked.item() == 1
+        assert torch.equal(bn.running_mean, first)
+        x2 = torch.randn(16, 4) - 1
+        bn(x2)
+        # the second real batch is averaged as batch 2 of 2, not 3 of 3
+        assert torch.allclose(bn.running_mean, (first + x2.mean(dim=0)) / 2, atol=1e-5)

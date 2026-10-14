@@ -67,15 +67,20 @@ class SAM(torch.optim.Optimizer):
             self.zero_grad()
 
     @torch.no_grad()
+    def restore(self):
+        """Put back the weights from before `first_step()` and free the
+        copy."""
+        for group in self.param_groups:
+            for p in group["params"]:
+                if "old_p" in self.state[p]:
+                    p.data = self.state[p].pop("old_p")
+
+    @torch.no_grad()
     def second_step(self, zero_grad: bool = False):
         """Restore the weights from before `first_step()`, then let the base
         optimizer update them with the gradient computed at the perturbed
         point (the backward pass must run between the two steps)."""
-        for group in self.param_groups:
-            for p in group["params"]:
-                if p.grad is None or "old_p" not in self.state[p]:
-                    continue
-                p.data = self.state[p]["old_p"]
+        self.restore()
         self.base_optimizer.step()
         if zero_grad:
             self.zero_grad()
@@ -83,9 +88,10 @@ class SAM(torch.optim.Optimizer):
     @torch.no_grad()
     def step(self, closure):
         """One SAM step. Returns the loss at the current weights (the first
-        closure call). If that loss or its gradient is not finite the step is
-        skipped: a NaN/inf gradient norm would otherwise turn every weight
-        into NaN."""
+        closure call). If the loss or gradient is not finite, at the current
+        weights or at the perturbed ones, the step is skipped and the weights
+        are left as they were: a NaN/inf gradient would otherwise turn every
+        weight into NaN."""
         if closure is None:
             raise ValueError(
                 "SAM.step() requires a closure (zero_grad, forward, "
@@ -97,7 +103,11 @@ class SAM(torch.optim.Optimizer):
             self.zero_grad()
             return loss
         self.first_step(zero_grad=True)
-        closure()
+        perturbed_loss = closure()
+        if not (torch.isfinite(perturbed_loss) and torch.isfinite(self._grad_norm())):
+            self.restore()
+            self.zero_grad()
+            return loss
         self.second_step()
         return loss
 
@@ -117,17 +127,23 @@ class SAM(torch.optim.Optimizer):
             p=2,
         )
 
+    def state_dict(self):
+        """The base optimizer's state (Adam moments, SGD momentum) and the
+        parameter groups, which also hold `rho` and `adaptive`. SAM itself
+        keeps nothing between steps."""
+        return self.base_optimizer.state_dict()
+
     def load_state_dict(self, state_dict):
-        super().load_state_dict(state_dict)
-        self.base_optimizer.param_groups = self.param_groups
+        self.base_optimizer.load_state_dict(state_dict)
+        self.param_groups = self.base_optimizer.param_groups
 
 
 @contextlib.contextmanager
 def frozen_batchnorm_stats(modules):
     """Stop the BatchNorm layers inside `modules` from updating their running
-    statistics (momentum 0) while the block runs. SAM computes the loss twice
-    per step; only the first pass, at the real weights, should feed the
-    statistics."""
+    statistics (momentum 0, batch counter restored) while the block runs. SAM
+    computes the loss twice per step; only the first pass, at the real
+    weights, should feed the statistics."""
     norms = [
         layer
         for module in modules
@@ -135,13 +151,19 @@ def frozen_batchnorm_stats(modules):
         if isinstance(layer, torch.nn.modules.batchnorm._BatchNorm)
     ]
     momenta = [layer.momentum for layer in norms]
+    counters = [
+        None if layer.num_batches_tracked is None else layer.num_batches_tracked.clone()
+        for layer in norms
+    ]
     for layer in norms:
         layer.momentum = 0.0
     try:
         yield
     finally:
-        for layer, momentum in zip(norms, momenta):
+        for layer, momentum, counter in zip(norms, momenta, counters):
             layer.momentum = momentum
+            if counter is not None:
+                layer.num_batches_tracked.copy_(counter)
 
 
 def is_sam_optimizer(optimizer) -> bool:
