@@ -14,6 +14,7 @@ descent step uses the base optimizer's own update rule.
 """
 
 import contextlib
+import math
 
 import torch
 
@@ -37,8 +38,8 @@ class SAM(torch.optim.Optimizer):
         adaptive: bool = False,
         **base_optimizer_kwargs,
     ):
-        if rho < 0:
-            raise ValueError(f"SAM rho must be non-negative, got {rho}")
+        if not (math.isfinite(rho) and rho >= 0):
+            raise ValueError(f"SAM rho must be a finite number >= 0, got {rho}")
         defaults = dict(rho=rho, adaptive=adaptive, **base_optimizer_kwargs)
         super().__init__(params, defaults)
         self.base_optimizer = base_optimizer_cls(

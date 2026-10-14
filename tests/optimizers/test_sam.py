@@ -48,6 +48,12 @@ class TestConstruction:
         with pytest.raises(ValueError, match="rho"):
             SAM(model.parameters(), torch.optim.SGD, rho=-0.1, lr=0.1)
 
+    @pytest.mark.parametrize("rho", [float("nan"), float("inf"), float("-inf")])
+    def test_non_finite_rho_rejected(self, rho):
+        model, _, _ = _problem()
+        with pytest.raises(ValueError, match="rho"):
+            SAM(model.parameters(), torch.optim.SGD, rho=rho, lr=0.1)
+
     def test_step_without_closure_rejected(self):
         model, _, _ = _problem()
         opt = SAM(model.parameters(), torch.optim.SGD, lr=0.1)
