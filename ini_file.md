@@ -571,8 +571,6 @@ Available for `type = aasist`, `mlp`, `mlp_reg`, `cnn` and `adm`, i.e. every mod
 
 SAM is added to the auto-generated experiment name (`..._sam`, or `..._sam-rho0-1` for a non-default `sam_rho`), so SAM and plain runs keep separate results and checkpoints. If you set `[EXP] res_name`, that name is used as is: give SAM runs their own `res_name`. It combines with DANN. A step with a NaN loss or gradient is skipped.
 
-Example: [exp_emodb_mlp_sam.ini](https://github.com/felixbur/nkululeko/blob/main/examples/exp_emodb_mlp_sam.ini)
-
 ### FINETUNE
 
 Settings specific to `[MODEL] type = finetune` - finetuning a pretrained transformer (wav2vec2, WavLM, HuBERT, emotion2vec) end-to-end instead of using it as a fixed feature extractor. Only read when `[MODEL] type = finetune`; every key below is optional and has a default. See [finetune.md](https://github.com/felixbur/nkululeko/blob/main/docs/source/finetune.md) for a full walkthrough and worked examples.
