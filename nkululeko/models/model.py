@@ -53,6 +53,50 @@ class Model(ContextAware):
         when DANN is off."""
         return self.dann_heads.encode(df) if self.dann_heads is not None else None
 
+    def _optimize(
+        self, optimizer, compute_loss, clip_params=None, max_grad_norm=0.0, skip_nan=False
+    ):
+        """One optimization step for a neural model's train loop.
+
+        `compute_loss` is a function without arguments that runs the forward
+        pass and returns the loss (task loss plus, if used, the DANN loss).
+        Returns that loss (a tensor), or None if `skip_nan` is set and the
+        loss is NaN (nothing is updated then).
+
+        With a plain optimizer this is zero_grad, backward, optional
+        gradient clipping (`clip_params` to `max_grad_norm`) and step. With
+        SAM (MODEL.sam) `compute_loss` is run twice, because SAM needs the
+        gradient at the current weights and at the perturbed ones; both
+        runs must therefore do the same computation on the same batch.
+        """
+        import torch
+
+        from nkululeko.optimizers.sam import is_sam_optimizer
+
+        def backward(loss):
+            loss.backward()
+            if max_grad_norm > 0:
+                torch.nn.utils.clip_grad_norm_(clip_params, max_norm=max_grad_norm)
+
+        def closure():
+            optimizer.zero_grad()
+            loss = compute_loss()
+            backward(loss)
+            return loss
+
+        if is_sam_optimizer(optimizer):
+            loss = optimizer.step(closure)  # skips the update if not finite
+        else:
+            loss = compute_loss()
+            if skip_nan and torch.isnan(loss):
+                return None
+            optimizer.zero_grad()
+            backward(loss)
+            optimizer.step()
+        if skip_nan and torch.isnan(loss):
+            return None
+        return loss
+
     def __init__(self, df_train, df_test, feats_train, feats_test, context=None):
         """Constructor taking the configuration and all dataframes."""
         self.name = "undefined"

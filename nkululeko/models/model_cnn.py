@@ -151,23 +151,27 @@ class CNNModel(Model):
         self.model.train()
         losses = []
         for batch in self.trainloader:
+            domain_labels = None
             if self.dann_heads is not None:
                 images, labels, domain_labels = batch
+            else:
+                images, labels = batch
+
+            def compute_loss():
+                if domain_labels is None:
+                    logits = self.model(images.to(self.device))
+                    return self.criterion(
+                        logits, labels.to(self.device, dtype=torch.int64)
+                    )
                 logits, hidden = self.model(
                     images.to(self.device), return_features=True
                 )
-            else:
-                images, labels = batch
-                logits = self.model(images.to(self.device))
-            loss = self.criterion(logits, labels.to(self.device, dtype=torch.int64))
-            if self.dann_heads is not None:
-                loss = loss + self.dann_heads.loss(
-                    hidden, domain_labels.to(self.device)
-                )
+                return self.criterion(
+                    logits, labels.to(self.device, dtype=torch.int64)
+                ) + self.dann_heads.loss(hidden, domain_labels.to(self.device))
+
+            loss = self._optimize(self.optimizer, compute_loss)
             losses.append(loss.item())
-            self.optimizer.zero_grad()
-            loss.backward()
-            self.optimizer.step()
         self.loss = (np.asarray(losses)).mean()
 
     def get_probas(self, logits):

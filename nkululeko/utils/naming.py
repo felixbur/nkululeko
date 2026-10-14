@@ -1,6 +1,7 @@
 # naming.py - mixin for experiment/model naming helpers
 import ast
 import hashlib
+import math
 import os
 import re
 
@@ -17,8 +18,9 @@ SVM_MODEL_TYPES = frozenset({"svm", "svr"})
 # MODEL.layers (adm, finetune and aasist have a fixed architecture instead).
 LAYERED_MODEL_TYPES = frozenset({"cnn", "mlp", "mlp_reg"})
 # ANN types that build their optimizer via optimizer_factory.get_optimizer()
-# and thus read MODEL.optimizer. TunedModel (finetune) configures its own
-# optimizer elsewhere and never reads it.
+# and thus read MODEL.optimizer (and MODEL.sam / MODEL.sam_rho: SAM wraps
+# that optimizer). TunedModel (finetune) configures its own optimizer
+# elsewhere and never reads them.
 OPTIMIZER_MODEL_TYPES = frozenset({"cnn", "mlp", "mlp_reg", "adm", "aasist"})
 # ANN types that read MODEL.drop for dropout. model_adm.py has no dropout
 # config of its own.
@@ -229,6 +231,31 @@ class NamingMixin:
             "dann_weight", self.config_val("MODEL", "dann_weight", "1.0")
         )
 
+    def get_sam_rho(self):
+        """MODEL.sam_rho: neighborhood size of SAM, a number >= 0."""
+        raw = self.config_val("MODEL", "sam_rho", "0.05")
+        try:
+            rho = float(raw)
+        except (TypeError, ValueError):
+            self.error(f"MODEL.sam_rho = {raw} is not a number")
+        if not (math.isfinite(rho) and rho >= 0):
+            self.error(f"MODEL.sam_rho = {raw} must be a number >= 0")
+        return rho
+
+    def _get_sam_suffix(self):
+        """Return a SAM suffix (e.g. '_sam' or '_sam-rho0-1') when the model
+        type trains with MODEL.sam, so SAM runs don't share result/checkpoint
+        paths with plain runs. A non-default rho is appended."""
+        if self.get_model_type() not in OPTIMIZER_MODEL_TYPES:
+            return ""
+        if not self.config_val_bool("MODEL", "sam", False):
+            return ""
+        suffix = "_sam"
+        rho = self.get_sam_rho()
+        if rho != 0.05:
+            suffix += f"-rho{rho:g}".replace(".", "-")
+        return suffix
+
     def _get_dann_suffix(self):
         """Return a DANN suffix (e.g. '_dann-source_db') when the model type
         uses MODEL.dann_columns, so DANN runs don't share result/checkpoint
@@ -302,6 +329,7 @@ class NamingMixin:
 
         return_string += self._get_adm_branch_suffix()
         return_string += self._get_dann_suffix()
+        return_string += self._get_sam_suffix()
         return_string += self._get_aug_suffix()
         return return_string
 

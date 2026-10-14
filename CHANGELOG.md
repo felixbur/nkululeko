@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.13.2 (26-10-14)
+-------------------------
+* add Sharpness-Aware Minimization (SAM, Foret et al. 2021) for every neural model that builds its optimizer from `[MODEL] optimizer` (`aasist`, `mlp`, `mlp_reg`, `cnn`, `adm`): `[MODEL] sam = True` wraps the optimizer (`adamw`, `adam` or `sgd`) so that each step takes the gradient at the worst nearby point (radius `sam_rho`, default 0.05) and applies it to the original weights, which favours flat minima that tend to transfer better to unseen domains. It costs two forward/backward passes per batch and combines with DANN and gradient clipping; a step with a NaN loss or gradient is skipped. The five models share one step helper, `Model._optimize()`. SAM is added to the auto-generated run name (`..._sam`, `..._sam-rho0-1`), and other model types ignore the keys with a warning (#TBD)
+
 Version 1.13.1 (26-10-13)
 -------------------------
 * add domain-adversarial training (DANN) for `[MODEL] type = aasist`, `mlp`, `mlp_reg`, `cnn` and `adm`: `[MODEL] dann_columns = ['source_db']` attaches one domain classifier per listed column to the model's last shared layer through a gradient-reversal layer, so the learned representation becomes invariant to e.g. the corpus or language of a sample -- useful for cross-corpus / cross-lingual generalization. Tuned with `dann_lambda`, `dann_weight` and `dann_reverse`; the heads are used for training only and are not saved with the model. Other model types ignore the keys (with a warning). DANN cannot be combined with `[FEATS] balancing`, and the auto-generated run/result names now carry the DANN settings (`..._dann-source_db`) so DANN runs don't share result or checkpoint paths with plain runs (with `[EXP] res_name` set the name is yours, so use a different `res_name` for each run). `finetune` is not supported yet (#465)

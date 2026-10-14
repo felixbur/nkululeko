@@ -261,23 +261,22 @@ class ADMModel(Model):
                 phase_feats.to(self.device),
                 {k: v.to(self.device) for k, v in extra_feats.items()},
             )
-            if domain_labels is None:
-                logits = self.model(*model_inputs)
-                loss = self.criterion(logits, labels_float)
-            else:
+            def compute_loss():
+                if domain_labels is None:
+                    logits = self.model(*model_inputs)
+                    return self.criterion(logits, labels_float)
                 logits, hidden = self.model(*model_inputs, return_features=True)
-                loss = self.criterion(logits, labels_float) + self.dann_heads.loss(
+                return self.criterion(logits, labels_float) + self.dann_heads.loss(
                     hidden, domain_labels.to(self.device)
                 )
-            losses.append(loss.item())
 
-            self.optimizer.zero_grad()
-            loss.backward()
-            if self.max_grad_norm > 0:
-                torch.nn.utils.clip_grad_norm_(
-                    self._dann_params(self.model), max_norm=self.max_grad_norm
-                )
-            self.optimizer.step()
+            loss = self._optimize(
+                self.optimizer,
+                compute_loss,
+                clip_params=self._dann_params(self.model),
+                max_grad_norm=self.max_grad_norm,
+            )
+            losses.append(loss.item())
 
             # Step scheduler per batch (for cosine)
             step_scheduler(self.scheduler, self.scheduler_type, step_per_batch=True)

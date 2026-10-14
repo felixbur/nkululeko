@@ -240,10 +240,10 @@ class AasistModel(Model):
             waveforms = waveforms.to(self.device)
             labels = labels.long().to(self.device)
 
-            loss = self._forward_loss(waveforms, labels, domain_labels)
-            self.optimizer.zero_grad()
-            loss.backward()
-            self.optimizer.step()
+            loss = self._optimize(
+                self.optimizer,
+                lambda: self._forward_loss(waveforms, labels, domain_labels),
+            )
 
             step_scheduler(self.scheduler, self.scheduler_type, step_per_batch=True)
             losses.append(loss.item())

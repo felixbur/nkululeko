@@ -221,24 +221,26 @@ class MLP_Reg_model(Model):
         self.model.train()
         losses = []
         for batch in loader:
+            domain_labels = None
             if self.dann_heads is not None:
                 features, labels, domain_labels = batch
-                logits, hidden = model(features.to(device), return_features=True)
-                logits = logits.reshape(-1)
             else:
                 features, labels = batch
-                logits = model(features.to(device)).reshape(-1)
-            loss = self.criterion(logits, labels.to(device))
-            # print(f'loss: {loss.item()}')
-            if torch.isnan(loss):
-                # possible that ccc returns NaN if batch contains only one value
+
+            def compute_loss():
+                if domain_labels is None:
+                    logits = model(features.to(device)).reshape(-1)
+                    return self.criterion(logits, labels.to(device))
+                logits, hidden = model(features.to(device), return_features=True)
+                return self.criterion(
+                    logits.reshape(-1), labels.to(device)
+                ) + self.dann_heads.loss(hidden, domain_labels.to(device))
+
+            # a NaN loss is possible (ccc on a batch with one value): skip it
+            loss = self._optimize(optimizer, compute_loss, skip_nan=True)
+            if loss is None:
                 continue
-            if self.dann_heads is not None:
-                loss = loss + self.dann_heads.loss(hidden, domain_labels.to(device))
             losses.append(loss.item())
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
         self.loss = (np.asarray(losses)).mean()
 
     def evaluate_model(self, model, loader, device):
