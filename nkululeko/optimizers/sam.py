@@ -48,6 +48,8 @@ class SAM(torch.optim.Optimizer):
         # `optimizer.param_groups` also change the base optimizer
         self.param_groups = self.base_optimizer.param_groups
         self.defaults.update(self.base_optimizer.defaults)
+        # set by step(): True if the last step did not update the weights
+        self.last_step_skipped = False
 
     @torch.no_grad()
     def first_step(self, zero_grad: bool = False):
@@ -91,24 +93,34 @@ class SAM(torch.optim.Optimizer):
         closure call). If the loss or gradient is not finite, at the current
         weights or at the perturbed ones, the step is skipped and the weights
         are left as they were: a NaN/inf gradient would otherwise turn every
-        weight into NaN."""
+        weight into NaN. `last_step_skipped` tells the caller whether that
+        happened (the returned loss is then the first pass's, which can
+        still be finite)."""
         if closure is None:
             raise ValueError(
                 "SAM.step() requires a closure (zero_grad, forward, "
                 "loss.backward(), return loss): it runs twice per step"
             )
         closure = torch.enable_grad()(closure)
+        self.last_step_skipped = True
         loss = closure()
         if not (torch.isfinite(loss) and torch.isfinite(self._grad_norm())):
             self.zero_grad()
             return loss
         self.first_step(zero_grad=True)
-        perturbed_loss = closure()
+        try:
+            perturbed_loss = closure()
+        except BaseException:
+            # never leave the model at the perturbed weights
+            self.restore()
+            self.zero_grad()
+            raise
         if not (torch.isfinite(perturbed_loss) and torch.isfinite(self._grad_norm())):
             self.restore()
             self.zero_grad()
             return loss
         self.second_step()
+        self.last_step_skipped = False
         return loss
 
     def _grad_norm(self):

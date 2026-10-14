@@ -221,6 +221,51 @@ class TestPerturbedPass:
         for p, s in zip(model.parameters(), start):
             assert torch.equal(p, s)
 
+    def test_last_step_skipped_reports_whether_the_weights_changed(self):
+        model, x, y = _problem()
+        opt = SAM(model.parameters(), torch.optim.SGD, rho=0.05, lr=0.1)
+        assert opt.last_step_skipped is False
+        opt.step(_closure(model, opt, x, y))
+        assert opt.last_step_skipped is False
+
+        for bad_pass in (1, 2):
+            calls = []
+
+            def closure():
+                calls.append(1)
+                opt.zero_grad()
+                loss = nn.functional.mse_loss(model(x), y)
+                if len(calls) == bad_pass:
+                    loss = loss * float("nan")
+                loss.backward()
+                return loss
+
+            opt.step(closure)
+            assert opt.last_step_skipped is True
+            opt.step(_closure(model, opt, x, y))  # reset by the next step
+            assert opt.last_step_skipped is False
+
+    def test_an_exception_in_the_perturbed_pass_restores_the_weights(self):
+        model, x, y = _problem()
+        opt = SAM(model.parameters(), torch.optim.SGD, rho=0.05, lr=0.1)
+        start = [p.detach().clone() for p in model.parameters()]
+        calls = []
+
+        def closure():
+            calls.append(1)
+            if len(calls) == 2:
+                raise RuntimeError("out of memory")
+            opt.zero_grad()
+            loss = nn.functional.mse_loss(model(x), y)
+            loss.backward()
+            return loss
+
+        with pytest.raises(RuntimeError, match="out of memory"):
+            opt.step(closure)
+        for p, s in zip(model.parameters(), start):
+            assert torch.equal(p, s)
+        assert all("old_p" not in opt.state[p] for p in model.parameters())
+
     def test_the_weight_copy_is_freed_after_a_step(self):
         model, x, y = _problem()
         opt = SAM(model.parameters(), torch.optim.SGD, rho=0.05, lr=0.1)

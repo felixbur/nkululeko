@@ -253,7 +253,9 @@ class NamingMixin:
         suffix = "_sam"
         rho = self.get_sam_rho()
         if rho != 0.05:
-            suffix += f"-rho{rho:g}".replace(".", "-")
+            # repr() keeps every digit (":g" would give 1.000001 and
+            # 1.000002 the same name); "." and "+" are not path-friendly
+            suffix += f"-rho{rho!r}".replace(".", "-").replace("+", "")
         return suffix
 
     def _get_dann_suffix(self):

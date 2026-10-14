@@ -7,7 +7,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 **⚠ 27 key(s) have inconsistent defaults across call sites:**
 
 * `'DATA'.'no_reuse'`: `'False'` (nkululeko/augment.py:43), `'False'` (nkululeko/experiment.py:162), `False` (nkululeko/explore.py:73), `False` (nkululeko/utils/dataframe.py:312)
-* `'DATA'.'target'`: `'emotion'` (nkululeko/augment.py:85), `'emotion'` (nkululeko/augmenting/resampler.py:76), `'emotion'` (nkululeko/bundle.py:56), `'emotion'` (nkululeko/bundle.py:218), `None` (nkululeko/data/dataset.py:35), `None` (nkululeko/data/dataset_csv.py:84), `None` (nkululeko/experiment.py:124), `'emotion'` (nkululeko/experiment.py:637), `'emotion'` (nkululeko/experiment.py:647), `'emotion'` (nkululeko/experiment.py:657), `'emotion'` (nkululeko/export.py:108), `'emotion'` (nkululeko/feat_extract/feats_analyser.py:26), `'emotion'` (nkululeko/models/model.py:143), `'emotion'` (nkululeko/plots.py:31), `'class_label'` (nkululeko/plots.py:993), `'emotion'` (nkululeko/testing_predictor.py:71), `None` (nkululeko/utils/util.py:640)
+* `'DATA'.'target'`: `'emotion'` (nkululeko/augment.py:85), `'emotion'` (nkululeko/augmenting/resampler.py:76), `'emotion'` (nkululeko/bundle.py:56), `'emotion'` (nkululeko/bundle.py:218), `None` (nkululeko/data/dataset.py:35), `None` (nkululeko/data/dataset_csv.py:84), `None` (nkululeko/experiment.py:124), `'emotion'` (nkululeko/experiment.py:637), `'emotion'` (nkululeko/experiment.py:647), `'emotion'` (nkululeko/experiment.py:657), `'emotion'` (nkululeko/export.py:108), `'emotion'` (nkululeko/feat_extract/feats_analyser.py:26), `'emotion'` (nkululeko/models/model.py:145), `'emotion'` (nkululeko/plots.py:31), `'class_label'` (nkululeko/plots.py:993), `'emotion'` (nkululeko/testing_predictor.py:71), `None` (nkululeko/utils/util.py:640)
 * `'DATA'.'tests'`: `'False'` (nkululeko/data/dataset.py:915), `False` (nkululeko/nkululeko.py:46), `False` (nkululeko/testing_predictor.py:59)
 * `'DATA'.'type'`: `False` (nkululeko/data/dataset.py:1015), `'dummy'` (nkululeko/data/datasplitter.py:243)
 * `'EXP'.'epochs'`: `1` (nkululeko/modelrunner.py:191), `1` (nkululeko/models/model_tuned.py:66), `'50'` (nkululeko/optimizers/scheduler_factory.py:84)
@@ -24,14 +24,14 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 * `'MODEL'.'C_val'`: `'1.0'` (nkululeko/feat_extract/feats_analyser.py:256), `'1.0'` (nkululeko/feat_extract/feats_analyser.py:327), `'1'` (nkululeko/models/model_svm.py:16), `'0.001'` (nkululeko/models/model_svr.py:16)
 * `'MODEL'.'adm.branches'`: `'time,spectral,phase,lfcc,cqcc'` (nkululeko/models/model_adm.py:140), `'time,spectral,phase,lfcc,cqcc'` (nkululeko/models/model_adm.py:576), `'time,spectral,phase'` (nkululeko/utils/naming.py:195)
 * `'MODEL'.'batch_size'`: `32` (nkululeko/models/model_adm.py:195), `8` (nkululeko/models/model_cnn.py:75), `8` (nkululeko/models/model_mlp.py:83), `8` (nkululeko/models/model_mlp_regression.py:83)
-* `'MODEL'.'class_weight'`: `False` (nkululeko/models/model.py:248), `False` (nkululeko/models/model.py:307), `False` (nkululeko/models/model.py:401), `'False'` (nkululeko/models/model.py:425), `False` (nkululeko/models/model.py:440), `False` (nkululeko/models/model_aasist.py:176), `'auto'` (nkululeko/models/model_adm.py:93), `False` (nkululeko/models/model_xgb.py:137)
+* `'MODEL'.'class_weight'`: `False` (nkululeko/models/model.py:250), `False` (nkululeko/models/model.py:309), `False` (nkululeko/models/model.py:403), `'False'` (nkululeko/models/model.py:427), `False` (nkululeko/models/model.py:442), `False` (nkululeko/models/model_aasist.py:176), `'auto'` (nkululeko/models/model_adm.py:93), `False` (nkululeko/models/model_xgb.py:137)
 * `'MODEL'.'device'`: `'cpu'` (nkululeko/augmenting/augmenter_silero.py:37), `'cpu'` (nkululeko/autopredict/ap_sid.py:31), `device` (nkululeko/autopredict/ap_text.py:28), `cuda` (nkululeko/feat_extract/feats_agender.py:38), `cuda` (nkululeko/feat_extract/feats_agender_agender.py:36), `cuda` (nkululeko/feat_extract/feats_ast.py:19), `cuda` (nkululeko/feat_extract/feats_auddim.py:34), `cuda` (nkululeko/feat_extract/feats_audmodel.py:136), `cuda` (nkululeko/feat_extract/feats_audwav2vec2.py:38), `cuda` (nkululeko/feat_extract/feats_bert.py:22), `'cpu'` (nkululeko/feat_extract/feats_clap.py:17), `cuda` (nkululeko/feat_extract/feats_emotion2vec.py:31), `cuda` (nkululeko/feat_extract/feats_emotion2vec_emotion.py:62), `cuda` (nkululeko/feat_extract/feats_hubert.py:29), `cuda` (nkululeko/feat_extract/feats_lfcc.py:95), `'cpu'` (nkululeko/feat_extract/feats_mos.py:40), `cuda` (nkululeko/feat_extract/feats_spkrec.py:29), `cuda` (nkululeko/feat_extract/feats_sptk.py:39), `cuda` (nkululeko/feat_extract/feats_squim.py:36), `cuda` (nkululeko/feat_extract/feats_textclassifier.py:23), `cuda` (nkululeko/feat_extract/feats_wav2vec2.py:32), `cuda` (nkululeko/feat_extract/feats_wavlm.py:29), `cuda` (nkululeko/feat_extract/feats_whisper.py:19), `False` (nkululeko/models/aasist_config.py:43), `cuda` (nkululeko/models/model_adm.py:62), `cuda` (nkululeko/models/model_adm.py:540), `'cpu'` (nkululeko/models/model_cnn.py:49), `cuda` (nkululeko/models/model_cnn.py:274), `cuda` (nkululeko/models/model_cnn.py:291), `cuda` (nkululeko/models/model_mlp.py:45), `cuda` (nkululeko/models/model_mlp.py:322), `cuda` (nkululeko/models/model_mlp.py:355), `cuda` (nkululeko/models/model_mlp_regression.py:56), `'cpu'` (nkululeko/models/model_mlp_regression.py:294), `'cpu'` (nkululeko/models/model_mlp_regression.py:312), `'cpu'` (nkululeko/segmenting/seg_pyannote.py:38)
 * `'MODEL'.'drop'`: `False` (nkululeko/models/model_cnn.py:57), `False` (nkululeko/models/model_cnn.py:277), `False` (nkululeko/models/model_cnn.py:294), `'False'` (nkululeko/models/model_mlp.py:53), `'False'` (nkululeko/models/model_mlp.py:325), `'False'` (nkululeko/models/model_mlp.py:358), `False` (nkululeko/models/model_mlp_regression.py:63), `False` (nkululeko/models/model_mlp_regression.py:296), `False` (nkululeko/models/model_mlp_regression.py:315)
 * `'MODEL'.'learning_rate'`: `0.3` (nkululeko/models/model_xgb.py:32), `str(default_lr)` (nkululeko/optimizers/optimizer_factory.py:39)
-* `'MODEL'.'loss'`: `'cross'` (nkululeko/models/model.py:202), `'cross'` (nkululeko/models/model_aasist.py:169), `'bce'` (nkululeko/models/model_adm.py:65), `'mse'` (nkululeko/models/model_mlp_regression.py:35)
+* `'MODEL'.'loss'`: `'cross'` (nkululeko/models/model.py:204), `'cross'` (nkululeko/models/model_aasist.py:169), `'bce'` (nkululeko/models/model_adm.py:65), `'mse'` (nkululeko/models/model_mlp_regression.py:35)
 * `'MODEL'.'measure'`: `'mse'` (nkululeko/models/model_mlp_regression.py:273), `'uar'` (nkululeko/reporting/reporter.py:84), `'mse'` (nkululeko/reporting/reporter.py:95), `'mse'` (nkululeko/reporting/reporter.py:853), `'uar'` (nkululeko/reporting/run_plotter.py:79), `'uar'` (nkululeko/runmanager.py:204), `'uar'` (nkululeko/utils/util.py:649), `'mse'` (nkululeko/utils/util.py:656)
 * `'MODEL'.'scheduler.gamma'`: `'0.5'` (nkululeko/optimizers/scheduler_factory.py:46), `'0.95'` (nkululeko/optimizers/scheduler_factory.py:54)
-* `'MODEL'.'type'`: `'svm'` (nkululeko/bundle.py:224), `None` (nkululeko/predict.py:929), `''` (nkululeko/utils/naming.py:300)
+* `'MODEL'.'type'`: `'svm'` (nkululeko/bundle.py:224), `None` (nkululeko/predict.py:929), `''` (nkululeko/utils/naming.py:302)
 * `'REPORT'.'latex'`: `False` (nkululeko/experiment.py:91), `'nkululeko_latex'` (nkululeko/reporting/latex_writer.py:39)
 
 | Namespace | Key | Default | Source |
@@ -41,7 +41,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'AASIST' | 'max_len' | `'64600'` | nkululeko/models/aasist_config.py:61 |
 | 'AASIST' | 'ssl_layer_pooling' | `'last'` | nkululeko/models/aasist_config.py:68 |
 | 'AASIST' | 'ssl_model' | `'facebook/wav2vec2-xls-r-300m'` | nkululeko/models/aasist_config.py:54 |
-| 'AUGMENT' | 'augment' | `False` | nkululeko/aug_train.py:40, nkululeko/augment.py:57, nkululeko/utils/naming.py:290 |
+| 'AUGMENT' | 'augment' | `False` | nkululeko/aug_train.py:40, nkululeko/augment.py:57, nkululeko/utils/naming.py:292 |
 | 'AUGMENT' | 'augmentations' | `defaults` | nkululeko/augmenting/augmenter_audiomentations.py:33 |
 | 'AUGMENT' | 'bypass_prob' | `0.3` | nkululeko/augmenting/augmenter_auglib.py:39 |
 | 'AUGMENT' | 'crop_dur' | `1.0` | nkululeko/augmenting/augmenter_auglib.py:130 |
@@ -196,10 +196,10 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'MODEL' | 'adm.fusion' | `'weighted'` | nkululeko/models/model_adm.py:134, nkululeko/models/model_adm.py:571 |
 | 'MODEL' | 'adm.hidden_dim' | `'256'` | nkululeko/models/model_adm.py:136, nkululeko/models/model_adm.py:573 |
 | 'MODEL' | 'batch_size' | `32` / `8` | nkululeko/models/model_adm.py:195, nkululeko/models/model_cnn.py:75, nkululeko/models/model_mlp.py:83, +1 more |
-| 'MODEL' | 'class_weight' | `'False'` / `'auto'` / `False` | nkululeko/models/model.py:248, nkululeko/models/model.py:307, nkululeko/models/model.py:401, +5 more |
+| 'MODEL' | 'class_weight' | `'False'` / `'auto'` / `False` | nkululeko/models/model.py:250, nkululeko/models/model.py:309, nkululeko/models/model.py:403, +5 more |
 | 'MODEL' | 'dann_columns' | `False` | nkululeko/modelrunner.py:350, nkululeko/utils/naming.py:205 |
 | 'MODEL' | 'dann_lambda' | `'1.0'` | nkululeko/utils/naming.py:225 |
-| 'MODEL' | 'dann_reverse' | `True` | nkululeko/models/domain_adversarial.py:113, nkululeko/utils/naming.py:284 |
+| 'MODEL' | 'dann_reverse' | `True` | nkululeko/models/domain_adversarial.py:113, nkululeko/utils/naming.py:286 |
 | 'MODEL' | 'dann_weight' | `'1.0'` | nkululeko/utils/naming.py:231 |
 | 'MODEL' | 'device' | `'cpu'` / `False` / `cuda` / `device` | nkululeko/augmenting/augmenter_silero.py:37, nkululeko/autopredict/ap_sid.py:31, nkululeko/autopredict/ap_text.py:28, +33 more |
 | 'MODEL' | 'drop' | `'False'` / `False` | nkululeko/models/model_cnn.py:57, nkululeko/models/model_cnn.py:277, nkululeko/models/model_cnn.py:294, +6 more |
@@ -209,21 +209,21 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'MODEL' | 'focal.alpha' | `0.25` | nkululeko/models/model_adm.py:78 |
 | 'MODEL' | 'focal.gamma' | `2.0` | nkululeko/models/model_adm.py:80 |
 | 'MODEL' | 'hf_token' | `None` | nkululeko/autopredict/ap_sid.py:22, nkululeko/segmenting/seg_pyannote.py:29 |
-| 'MODEL' | 'k_fold_cross' | `False` | nkululeko/experiment.py:72, nkululeko/models/model.py:147 |
+| 'MODEL' | 'k_fold_cross' | `False` | nkululeko/experiment.py:72, nkululeko/models/model.py:149 |
 | 'MODEL' | 'kernel' | `'rbf'` | nkululeko/models/model_svm.py:17, nkululeko/models/model_svr.py:18 |
-| 'MODEL' | 'label_smoothing' | `'False'` | nkululeko/models/model.py:157 |
+| 'MODEL' | 'label_smoothing' | `'False'` | nkululeko/models/model.py:159 |
 | 'MODEL' | 'layers' | `False` | nkululeko/utils/naming.py:182 |
 | 'MODEL' | 'learning_rate' | `0.3` / `str(default_lr)` | nkululeko/models/model_xgb.py:32, nkululeko/optimizers/optimizer_factory.py:39 |
-| 'MODEL' | 'logo' | `False` | nkululeko/experiment.py:71, nkululeko/models/model.py:146 |
+| 'MODEL' | 'logo' | `False` | nkululeko/experiment.py:71, nkululeko/models/model.py:148 |
 | 'MODEL' | 'loso' | `False` | nkululeko/experiment.py:70 |
-| 'MODEL' | 'loss' | `'bce'` / `'cross'` / `'mse'` | nkululeko/models/model.py:202, nkululeko/models/model_aasist.py:169, nkululeko/models/model_adm.py:65, +1 more |
+| 'MODEL' | 'loss' | `'bce'` / `'cross'` / `'mse'` | nkululeko/models/model.py:204, nkululeko/models/model_aasist.py:169, nkululeko/models/model_adm.py:65, +1 more |
 | 'MODEL' | 'max_depth' | `6` | nkululeko/models/model_xgb.py:31 |
 | 'MODEL' | 'max_grad_norm' | `'0.0'` | nkululeko/models/model_adm.py:200 |
 | 'MODEL' | 'measure' | `'mse'` / `'uar'` | nkululeko/models/model_mlp_regression.py:273, nkululeko/reporting/reporter.py:84, nkululeko/reporting/reporter.py:95, +5 more |
 | 'MODEL' | 'momentum' | `'0.9'` | nkululeko/optimizers/optimizer_factory.py:55 |
 | 'MODEL' | 'n_estimators' | `100` | nkululeko/models/model_xgb.py:30 |
-| 'MODEL' | 'n_jobs' | `'8'` | nkululeko/feat_extract/featureset.py:38, nkululeko/models/model.py:148 |
-| 'MODEL' | 'nan_strategy' | `'zero'` | nkululeko/models/model.py:512 |
+| 'MODEL' | 'n_jobs' | `'8'` | nkululeko/feat_extract/featureset.py:38, nkululeko/models/model.py:150 |
+| 'MODEL' | 'nan_strategy' | `'zero'` | nkululeko/models/model.py:514 |
 | 'MODEL' | 'only_test' | `False` | nkululeko/modelrunner.py:183 |
 | 'MODEL' | 'optimizer' | `default_optimizer` | nkululeko/optimizers/optimizer_factory.py:40 |
 | 'MODEL' | 'patience' | `False` | nkululeko/modelrunner.py:196, nkululeko/models/model_tuned.py:158 |
@@ -236,8 +236,8 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'MODEL' | 'scheduler.step_size' | `'10'` | nkululeko/optimizers/scheduler_factory.py:45 |
 | 'MODEL' | 'subsample' | `1.0` | nkululeko/models/model_xgb.py:33 |
 | 'MODEL' | 'threshold' | `'0.5'` | nkululeko/models/model_adm.py:205 |
-| 'MODEL' | 'tuning_params' | `False` | nkululeko/models/model.py:406 |
-| 'MODEL' | 'type' | `''` / `'svm'` / `None` | nkululeko/bundle.py:224, nkululeko/predict.py:929, nkululeko/utils/naming.py:300 |
+| 'MODEL' | 'tuning_params' | `False` | nkululeko/models/model.py:408 |
+| 'MODEL' | 'type' | `''` / `'svm'` / `None` | nkululeko/bundle.py:224, nkululeko/predict.py:929, nkululeko/utils/naming.py:302 |
 | 'MODEL' | 'validation_split' | `0.2` | nkululeko/models/model_xgb.py:99 |
 | 'MODEL' | 'warmup_epochs' | `'5'` | nkululeko/optimizers/scheduler_factory.py:86 |
 | 'MODEL' | 'weight_decay' | `'0.01'` | nkululeko/optimizers/optimizer_factory.py:44 |

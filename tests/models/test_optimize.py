@@ -186,6 +186,33 @@ class TestSam:
         assert loss is None
         assert torch.equal(net.weight, before)
 
+    def test_skip_non_finite_reports_a_skipped_perturbed_pass(self, model):
+        net, x, y = _setup()
+        before = net.weight.detach().clone()
+        calls = []
+
+        def compute_loss():
+            calls.append(1)
+            loss = nn.functional.mse_loss(net(x), y)
+            # finite at the current weights, overflows at the perturbed ones
+            return loss * float("nan") if len(calls) == 2 else loss
+
+        loss = model._optimize(self._sam(net), compute_loss, skip_non_finite=True)
+        assert loss is None
+        assert torch.equal(net.weight, before)
+
+    def test_a_skipped_perturbed_pass_still_returns_the_loss_by_default(self, model):
+        net, x, y = _setup()
+        calls = []
+
+        def compute_loss():
+            calls.append(1)
+            loss = nn.functional.mse_loss(net(x), y)
+            return loss * float("nan") if len(calls) == 2 else loss
+
+        loss = model._optimize(self._sam(net), compute_loss)
+        assert loss is not None and torch.isfinite(loss)
+
     def test_nan_never_reaches_the_weights(self, model):
         net, x, y = _setup()
         model._optimize(self._sam(net), lambda: net(x).sum() * float("nan"))

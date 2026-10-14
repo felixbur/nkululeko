@@ -306,6 +306,16 @@ type = os
         u = self._dann_util(extra="sam = True\nsam_rho = 0.1")
         self.assertEqual(u._get_sam_suffix(), "_sam-rho0-1")
 
+    def test_sam_suffix_keeps_every_digit_of_rho(self):
+        suffixes = set()
+        for rho in ("1.000001", "1.000002", "0.1", "0.10000001", "1e-7", "1e20", "0"):
+            u = self._dann_util(extra=f"sam = True\nsam_rho = {rho}")
+            suffix = u._get_sam_suffix()
+            self.assertNotIn(".", suffix)
+            self.assertNotIn("+", suffix)
+            suffixes.add(suffix)
+        self.assertEqual(len(suffixes), 7)
+
     def test_sam_suffix_ignored_for_unsupported_model(self):
         for model_type in ("svm", "finetune"):
             u = self._dann_util(model_type, "sam = True")

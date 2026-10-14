@@ -114,6 +114,8 @@ class Model(ContextAware):
 
         if is_sam_optimizer(optimizer):
             loss = optimizer.step(closure)  # skips the update if not finite
+            if skip_non_finite and optimizer.last_step_skipped:
+                return None
         else:
             loss = compute_loss()
             if skip_non_finite and not torch.isfinite(loss):
