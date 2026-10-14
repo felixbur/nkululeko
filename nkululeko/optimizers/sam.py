@@ -13,6 +13,8 @@ it: the ascent step does not depend on the base optimizer, only the final
 descent step uses the base optimizer's own update rule.
 """
 
+import contextlib
+
 import torch
 
 
@@ -118,6 +120,28 @@ class SAM(torch.optim.Optimizer):
     def load_state_dict(self, state_dict):
         super().load_state_dict(state_dict)
         self.base_optimizer.param_groups = self.param_groups
+
+
+@contextlib.contextmanager
+def frozen_batchnorm_stats(modules):
+    """Stop the BatchNorm layers inside `modules` from updating their running
+    statistics (momentum 0) while the block runs. SAM computes the loss twice
+    per step; only the first pass, at the real weights, should feed the
+    statistics."""
+    norms = [
+        layer
+        for module in modules
+        for layer in module.modules()
+        if isinstance(layer, torch.nn.modules.batchnorm._BatchNorm)
+    ]
+    momenta = [layer.momentum for layer in norms]
+    for layer in norms:
+        layer.momentum = 0.0
+    try:
+        yield
+    finally:
+        for layer, momentum in zip(norms, momenta):
+            layer.momentum = momentum
 
 
 def is_sam_optimizer(optimizer) -> bool:

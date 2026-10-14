@@ -275,6 +275,7 @@ class ADMModel(Model):
                 compute_loss,
                 clip_params=self._dann_params(self.model),
                 max_grad_norm=self.max_grad_norm,
+                modules=[self.model],
             )
             losses.append(loss.item())
 

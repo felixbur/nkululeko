@@ -54,7 +54,13 @@ class Model(ContextAware):
         return self.dann_heads.encode(df) if self.dann_heads is not None else None
 
     def _optimize(
-        self, optimizer, compute_loss, clip_params=None, max_grad_norm=0.0, skip_nan=False
+        self,
+        optimizer,
+        compute_loss,
+        clip_params=None,
+        max_grad_norm=0.0,
+        skip_nan=False,
+        modules=(),
     ):
         """One optimization step for a neural model's train loop.
 
@@ -67,21 +73,28 @@ class Model(ContextAware):
         gradient clipping (`clip_params` to `max_grad_norm`) and step. With
         SAM (MODEL.sam) `compute_loss` is run twice, because SAM needs the
         gradient at the current weights and at the perturbed ones; both
-        runs must therefore do the same computation on the same batch.
+        runs must therefore do the same computation on the same batch. Pass
+        the network(s) as `modules` so that their BatchNorm statistics are
+        only updated by the first run.
         """
         import torch
 
-        from nkululeko.optimizers.sam import is_sam_optimizer
+        from nkululeko.optimizers.sam import frozen_batchnorm_stats, is_sam_optimizer
 
         def backward(loss):
             loss.backward()
             if max_grad_norm > 0:
                 torch.nn.utils.clip_grad_norm_(clip_params, max_norm=max_grad_norm)
 
+        passes = []
+
         def closure():
+            passes.append(1)
             optimizer.zero_grad()
-            loss = compute_loss()
-            backward(loss)
+            # SAM's second pass runs at the perturbed weights
+            with frozen_batchnorm_stats(modules if len(passes) == 2 else ()):
+                loss = compute_loss()
+                backward(loss)
             return loss
 
         if is_sam_optimizer(optimizer):

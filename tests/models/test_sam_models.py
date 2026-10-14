@@ -237,6 +237,44 @@ class TestSamTraining:
 
 
 @pytest.mark.parametrize("name", sorted(BUILDERS))
+def test_every_model_hands_its_network_to_optimize(name, monkeypatch):
+    """So that SAM can keep the second pass out of BatchNorm statistics."""
+    from nkululeko.models.model import Model
+
+    seen = {}
+    original = Model._optimize
+
+    def spy(self, *args, **kwargs):
+        seen["modules"] = list(kwargs.get("modules", ()))
+        return original(self, *args, **kwargs)
+
+    monkeypatch.setattr(Model, "_optimize", spy)
+    model, net = BUILDERS[name](use_sam=True, with_dann=False)
+    model.train()
+    assert any(m is net for m in seen["modules"])
+
+
+def test_aasist_batchnorm_statistics_are_fed_by_the_first_pass_only():
+    model, net = _aasist(use_sam=True, with_dann=False)
+    net.bn = nn.BatchNorm1d(net.feat_dim)
+    net.forward = lambda x, return_features=False: net.out(
+        net.bn(net.enc(x.mean(dim=1, keepdim=True)))
+    )
+    model.optimizer = SAM(net.parameters(), torch.optim.SGD, rho=0.1, lr=0.1)
+    momenta = []
+    original = model.criterion.forward
+
+    def spy(*args):
+        momenta.append(net.bn.momentum)
+        return original(*args)
+
+    model.criterion.forward = spy
+    model.train()
+    assert momenta == [0.1, 0.0] * BATCHES
+    assert net.bn.momentum == 0.1
+
+
+@pytest.mark.parametrize("name", sorted(BUILDERS))
 def test_sam_also_trains_the_dann_heads(name):
     model, net = BUILDERS[name](use_sam=True, with_dann=True)
     head = model.dann_heads.head("domain").classifier[0]

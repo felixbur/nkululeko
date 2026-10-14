@@ -170,7 +170,9 @@ class CNNModel(Model):
                     logits, labels.to(self.device, dtype=torch.int64)
                 ) + self.dann_heads.loss(hidden, domain_labels.to(self.device))
 
-            loss = self._optimize(self.optimizer, compute_loss)
+            loss = self._optimize(
+                self.optimizer, compute_loss, modules=[self.model]
+            )
             losses.append(loss.item())
         self.loss = (np.asarray(losses)).mean()
 

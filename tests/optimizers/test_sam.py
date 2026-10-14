@@ -4,7 +4,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from nkululeko.optimizers.sam import SAM, is_sam_optimizer
+from nkululeko.optimizers.sam import SAM, frozen_batchnorm_stats, is_sam_optimizer
 
 
 def _problem(seed=0):
@@ -187,3 +187,44 @@ class TestStateDict:
         other.load_state_dict(state)
         assert other.base_optimizer.param_groups is other.param_groups
         assert other.param_groups[0]["lr"] == 0.01
+
+
+class TestFrozenBatchnormStats:
+    def _net(self):
+        torch.manual_seed(0)
+        return nn.Sequential(nn.Linear(4, 4), nn.BatchNorm1d(4), nn.Linear(4, 1))
+
+    def test_running_stats_do_not_change_inside_the_block(self):
+        net = self._net().train()
+        bn = net[1]
+        x = torch.randn(16, 4) + 3
+        with frozen_batchnorm_stats([net]):
+            net(x)
+        assert torch.equal(bn.running_mean, torch.zeros(4))
+        assert torch.equal(bn.running_var, torch.ones(4))
+
+    def test_running_stats_change_outside_the_block(self):
+        net = self._net().train()
+        net(torch.randn(16, 4) + 3)
+        assert not torch.equal(net[1].running_mean, torch.zeros(4))
+
+    def test_momentum_is_restored_even_after_an_error(self):
+        net = self._net().train()
+        net[1].momentum = 0.3
+        with pytest.raises(RuntimeError):
+            with frozen_batchnorm_stats([net]):
+                assert net[1].momentum == 0.0
+                raise RuntimeError("boom")
+        assert net[1].momentum == 0.3
+
+    def test_cumulative_average_momentum_is_restored(self):
+        net = self._net().train()
+        net[1].momentum = None
+        with frozen_batchnorm_stats([net]):
+            pass
+        assert net[1].momentum is None
+
+    def test_no_modules_is_a_no_op(self):
+        with frozen_batchnorm_stats(()):
+            pass
+

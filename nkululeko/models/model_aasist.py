@@ -243,6 +243,7 @@ class AasistModel(Model):
             loss = self._optimize(
                 self.optimizer,
                 lambda: self._forward_loss(waveforms, labels, domain_labels),
+                modules=[self.net],
             )
 
             step_scheduler(self.scheduler, self.scheduler_type, step_per_batch=True)

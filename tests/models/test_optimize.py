@@ -153,3 +153,60 @@ class TestSam:
             sched.step()
             last = model._optimize(opt, _loss_fn(net, x, y)).item()
         assert last < first
+
+
+class TestBatchNorm:
+    """SAM runs the forward pass twice; only the first run (at the real
+    weights) may update BatchNorm's running statistics."""
+
+    def _net(self):
+        torch.manual_seed(0)
+        return nn.Sequential(nn.Linear(3, 3), nn.BatchNorm1d(3), nn.Linear(3, 1))
+
+    def _stats_after_one_step(self, model, optimizer_factory, modules_for):
+        net = self._net().train()
+        x = torch.randn(8, 3) + 2
+        y = torch.zeros(8, 1)
+        model._optimize(
+            optimizer_factory(net),
+            lambda: nn.functional.mse_loss(net(x), y),
+            modules=modules_for(net),
+        )
+        return net[1].running_mean.clone(), net[1].running_var.clone()
+
+    def _sam(self, net):
+        return SAM(net.parameters(), torch.optim.SGD, rho=0.5, lr=0.1)
+
+    def _sgd(self, net):
+        return torch.optim.SGD(net.parameters(), lr=0.1)
+
+    def test_sam_updates_the_statistics_once_like_a_plain_step(self, model):
+        sam = self._stats_after_one_step(model, self._sam, lambda n: [n])
+        plain = self._stats_after_one_step(model, self._sgd, lambda n: [n])
+        assert torch.allclose(sam[0], plain[0])
+        assert torch.allclose(sam[1], plain[1])
+
+    def test_without_modules_sam_would_update_them_twice(self, model):
+        once = self._stats_after_one_step(model, self._sam, lambda n: [n])
+        twice = self._stats_after_one_step(model, self._sam, lambda n: ())
+        assert not torch.allclose(once[0], twice[0])
+
+    def test_momentum_is_restored_after_a_step(self, model):
+        net = self._net().train()
+        net[1].momentum = 0.25
+        x = torch.randn(8, 3)
+        model._optimize(
+            self._sam(net),
+            lambda: nn.functional.mse_loss(net(x), torch.zeros(8, 1)),
+            modules=[net],
+        )
+        assert net[1].momentum == 0.25
+
+    def test_skipped_non_finite_step_leaves_momentum_alone(self, model):
+        net = self._net().train()
+        x = torch.randn(8, 3)
+        model._optimize(
+            self._sam(net), lambda: net(x).sum() * float("nan"), modules=[net]
+        )
+        assert net[1].momentum == 0.1
+

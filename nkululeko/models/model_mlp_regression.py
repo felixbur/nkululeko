@@ -237,7 +237,9 @@ class MLP_Reg_model(Model):
                 ) + self.dann_heads.loss(hidden, domain_labels.to(device))
 
             # a NaN loss is possible (ccc on a batch with one value): skip it
-            loss = self._optimize(optimizer, compute_loss, skip_nan=True)
+            loss = self._optimize(
+                optimizer, compute_loss, skip_nan=True, modules=[model]
+            )
             if loss is None:
                 continue
             losses.append(loss.item())
