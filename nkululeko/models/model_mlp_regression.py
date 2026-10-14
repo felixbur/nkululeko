@@ -236,9 +236,9 @@ class MLP_Reg_model(Model):
                     logits.reshape(-1), labels.to(device)
                 ) + self.dann_heads.loss(hidden, domain_labels.to(device))
 
-            # a NaN loss is possible (ccc on a batch with one value): skip it
+            # a non-finite loss is possible (ccc on a batch with one value): skip it
             loss = self._optimize(
-                optimizer, compute_loss, skip_nan=True, modules=[model]
+                optimizer, compute_loss, skip_non_finite=True, modules=[model]
             )
             if loss is None:
                 continue

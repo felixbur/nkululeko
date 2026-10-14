@@ -73,15 +73,62 @@ class TestPlainOptimizer:
         )
         assert moved.item() > 5
 
-    def test_skip_nan_returns_none_and_leaves_weights(self, model):
+    def test_skip_non_finite_returns_none_and_leaves_weights(self, model):
         net, x, y = _setup()
         opt = torch.optim.SGD(net.parameters(), lr=0.1)
         before = net.weight.detach().clone()
         loss = model._optimize(
-            opt, lambda: net(x).sum() * float("nan"), skip_nan=True
+            opt, lambda: net(x).sum() * float("nan"), skip_non_finite=True
         )
         assert loss is None
         assert torch.equal(net.weight, before)
+
+    def test_skip_non_finite_skips_an_infinite_loss(self, model):
+        net, x, y = _setup()
+        opt = torch.optim.SGD(net.parameters(), lr=0.1)
+        before = net.weight.detach().clone()
+        loss = model._optimize(
+            opt, lambda: net(x).sum() * float("inf"), skip_non_finite=True
+        )
+        assert loss is None
+        assert torch.equal(net.weight, before)
+
+    def test_skip_non_finite_skips_a_finite_loss_with_a_non_finite_gradient(
+        self, model
+    ):
+        net, x, y = _setup()
+        opt = torch.optim.SGD(net.parameters(), lr=0.1)
+        before = net.weight.detach().clone()
+
+        def compute_loss():
+            # finite value, NaN derivative at 0: sqrt(0) has an infinite slope
+            return torch.sqrt((net(x) * 0).sum() ** 2 + 0.0 * net.weight.sum())
+
+        loss = model._optimize(opt, compute_loss, skip_non_finite=True)
+        assert loss is None
+        assert torch.equal(net.weight, before)
+        assert all(p.grad is None or torch.all(p.grad == 0) for p in net.parameters())
+
+    def test_a_non_finite_gradient_is_applied_unless_asked_otherwise(self, model):
+        net, x, y = _setup()
+        opt = torch.optim.SGD(net.parameters(), lr=0.1)
+        model._optimize(
+            opt, lambda: torch.sqrt((net(x) * 0).sum() ** 2 + 0.0 * net.weight.sum())
+        )
+        assert not torch.isfinite(net.weight).all()
+
+    def test_finite_steps_are_unaffected_by_skip_non_finite(self, model):
+        net_a, x, y = _setup()
+        net_b, _, _ = _setup()
+        model._optimize(
+            torch.optim.SGD(net_a.parameters(), lr=0.1),
+            _loss_fn(net_a, x, y),
+            skip_non_finite=True,
+        )
+        model._optimize(
+            torch.optim.SGD(net_b.parameters(), lr=0.1), _loss_fn(net_b, x, y)
+        )
+        assert torch.equal(net_a.weight, net_b.weight)
 
     def test_nan_is_not_skipped_unless_asked(self, model):
         net, x, y = _setup()
@@ -130,11 +177,11 @@ class TestSam:
         )
         assert moved.item() == pytest.approx(0.5, rel=1e-4)
 
-    def test_skip_nan_returns_none_and_leaves_weights(self, model):
+    def test_skip_non_finite_returns_none_and_leaves_weights(self, model):
         net, x, y = _setup()
         before = net.weight.detach().clone()
         loss = model._optimize(
-            self._sam(net), lambda: net(x).sum() * float("nan"), skip_nan=True
+            self._sam(net), lambda: net(x).sum() * float("nan"), skip_non_finite=True
         )
         assert loss is None
         assert torch.equal(net.weight, before)

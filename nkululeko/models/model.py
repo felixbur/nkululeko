@@ -21,6 +21,19 @@ from nkululeko.utils.pickle_integrity import (
 from nkululeko.utils.util import Util
 
 
+def _finite_gradients(optimizer):
+    """True if no gradient of the optimizer's parameters is NaN/inf."""
+    import torch
+
+    norms = [
+        p.grad.detach().norm()
+        for group in optimizer.param_groups
+        for p in group["params"]
+        if p.grad is not None
+    ]
+    return not norms or bool(torch.isfinite(torch.stack(norms)).all())
+
+
 class Model(ContextAware):
     """Generic model class for linear (non-neural) algorithms."""
 
@@ -59,15 +72,17 @@ class Model(ContextAware):
         compute_loss,
         clip_params=None,
         max_grad_norm=0.0,
-        skip_nan=False,
+        skip_non_finite=False,
         modules=(),
     ):
         """One optimization step for a neural model's train loop.
 
         `compute_loss` is a function without arguments that runs the forward
         pass and returns the loss (task loss plus, if used, the DANN loss).
-        Returns that loss (a tensor), or None if `skip_nan` is set and the
-        loss is NaN (nothing is updated then).
+        Returns that loss (a tensor), or None if `skip_non_finite` is set and
+        the loss, or a gradient, is NaN/inf (nothing is updated then). SAM
+        always skips such steps; for a plain optimizer it is opt-in, so the
+        other models keep their behavior.
 
         With a plain optimizer this is zero_grad, backward, optional
         gradient clipping (`clip_params` to `max_grad_norm`) and step. With
@@ -101,12 +116,15 @@ class Model(ContextAware):
             loss = optimizer.step(closure)  # skips the update if not finite
         else:
             loss = compute_loss()
-            if skip_nan and torch.isnan(loss):
+            if skip_non_finite and not torch.isfinite(loss):
                 return None
             optimizer.zero_grad()
             backward(loss)
+            if skip_non_finite and not _finite_gradients(optimizer):
+                optimizer.zero_grad()
+                return None
             optimizer.step()
-        if skip_nan and torch.isnan(loss):
+        if skip_non_finite and not torch.isfinite(loss):
             return None
         return loss
 
