@@ -205,17 +205,19 @@ class TestAugmenter:
         assert new_flac.endswith(".flac")
 
     def test_same_name_other_format_does_not_collide(self, tmp_path, setup_conf):
-        wav, aiff = tmp_path / "foo.wav", tmp_path / "foo.aiff"
+        if "MP3" not in sf.available_formats():
+            pytest.skip("this libsndfile cannot write mp3")
+        wav, mp3 = tmp_path / "foo.wav", tmp_path / "foo.mp3"
         _wav(wav)
-        sf.write(aiff, _signal(16000, seed=1), 16000)
-        out = AugmenterRawBoost(_df([str(wav), str(aiff)])).augment("all")
-        new_wav, new_aiff = out.index.get_level_values(0)
-        assert new_wav != new_aiff
-        assert new_aiff.endswith("foo.aiff.wav")
-        assert np.isfinite(audiofile.read(new_aiff)[0]).all()
+        sf.write(mp3, _signal(16000, seed=1), 16000)
+        out = AugmenterRawBoost(_df([str(wav), str(mp3)])).augment("all")
+        new_wav, new_mp3 = out.index.get_level_values(0)
+        assert new_wav != new_mp3
+        assert new_mp3.endswith("foo.mp3.wav")
+        assert np.isfinite(audiofile.read(new_mp3)[0]).all()
         # each copy is made from its own source
         assert not np.allclose(
-            audiofile.read(new_wav)[0][:100], audiofile.read(new_aiff)[0][:100]
+            audiofile.read(new_wav)[0][:100], audiofile.read(new_mp3)[0][:100]
         )
 
     def test_a_file_in_several_segments_is_written_once(self, tmp_path, setup_conf):
