@@ -5,6 +5,8 @@ import torch
 import torch.nn as nn
 
 from nkululeko.optimizers.optimizer_factory import get_optimizer
+from nkululeko.optimizers.sam import SAM
+from nkululeko.utils.naming import NamingMixin
 
 
 class MockUtil:
@@ -17,6 +19,14 @@ class MockUtil:
     def config_val(self, section, key, default):
         """Mock config_val method."""
         return self.config.get(f"{section}.{key}", default)
+
+    def config_val_bool(self, section, key, default=False):
+        """Mock config_val_bool method."""
+        val = self.config_val(section, key, str(default))
+        return str(val).strip().lower() in ("true", "1", "yes")
+
+    # the real parser, so its checks are covered here as well
+    get_sam_rho = NamingMixin.get_sam_rho
 
     def debug(self, message):
         """Mock debug method."""
@@ -163,3 +173,57 @@ class TestGetOptimizer:
         util_sgd = MockUtil({"MODEL.optimizer": "sgd"})
         get_optimizer(simple_model.parameters(), util_sgd)
         assert len(util_sgd.debug_messages) > 0
+
+
+class TestSamOption:
+    """MODEL.sam / MODEL.sam_rho."""
+
+    @pytest.mark.parametrize(
+        "name, base_cls",
+        [
+            ("adamw", torch.optim.AdamW),
+            ("adam", torch.optim.Adam),
+            ("sgd", torch.optim.SGD),
+        ],
+    )
+    def test_sam_wraps_each_optimizer(self, simple_model, name, base_cls):
+        util = MockUtil(
+            {"MODEL.sam": "True", "MODEL.optimizer": name, "MODEL.learning_rate": "0.01"}
+        )
+        optimizer, lr = get_optimizer(simple_model.parameters(), util)
+        assert isinstance(optimizer, SAM)
+        assert isinstance(optimizer.base_optimizer, base_cls)
+        assert optimizer.param_groups[0]["lr"] == pytest.approx(0.01)
+        assert lr == pytest.approx(0.01)
+        assert optimizer.param_groups[0]["rho"] == pytest.approx(0.05)
+        assert "SAM" in util.debug_messages[0]
+
+    def test_sam_keeps_optimizer_settings(self, simple_model):
+        util = MockUtil(
+            {
+                "MODEL.sam": "True",
+                "MODEL.optimizer": "adamw",
+                "MODEL.weight_decay": "0.3",
+                "MODEL.sam_rho": "0.2",
+            }
+        )
+        optimizer, _ = get_optimizer(simple_model.parameters(), util)
+        group = optimizer.param_groups[0]
+        assert group["weight_decay"] == pytest.approx(0.3)
+        assert group["rho"] == pytest.approx(0.2)
+
+    def test_sam_off_by_default(self, simple_model):
+        optimizer, _ = get_optimizer(simple_model.parameters(), MockUtil({}))
+        assert not isinstance(optimizer, SAM)
+
+    def test_sam_false_is_off(self, simple_model):
+        util = MockUtil({"MODEL.sam": "False", "MODEL.sam_rho": "garbage"})
+        optimizer, _ = get_optimizer(simple_model.parameters(), util)
+        assert not isinstance(optimizer, SAM)
+
+    @pytest.mark.parametrize("rho", ["wide", "-0.1", "nan", "inf"])
+    def test_bad_rho_is_a_config_error(self, simple_model, rho):
+        util = MockUtil({"MODEL.sam": "True", "MODEL.sam_rho": rho})
+        with pytest.raises(ValueError, match="sam_rho"):
+            get_optimizer(simple_model.parameters(), util)
+

@@ -557,6 +557,20 @@ The DANN settings are added to the auto-generated experiment name (e.g. `..._dan
 
 Examples: [exp_emodb_aasist_dann.ini](https://github.com/felixbur/nkululeko/blob/main/examples/exp_emodb_aasist_dann.ini) and [exp_emodb_mlp_dann.ini](https://github.com/felixbur/nkululeko/blob/main/examples/exp_emodb_mlp_dann.ini) (the same keys work for the other models).
 
+#### Sharpness-Aware Minimization (SAM)
+
+Available for `type = aasist`, `mlp`, `mlp_reg`, `cnn` and `adm`, i.e. every model that uses the `optimizer` above (other model types ignore it and log a warning; `finetune` has its own training loop). SAM (Foret et al., ICLR 2021) wraps the optimizer: each step first moves the weights to the worst nearby point (within radius `sam_rho`), takes the gradient there, and then updates the original weights with it. This favours flat minima, which tend to generalize better to unseen domains such as another corpus. It costs two forward/backward passes per batch, so training is about twice as slow. Dropout is drawn separately in the two passes.
+
+* **sam**: wrap the optimizer in SAM
+  * sam = True
+  * default: False
+  * works with `adamw`, `adam` and `sgd`; they keep their own settings (learning rate, weight decay, ...)
+* **sam_rho**: radius of the neighborhood SAM searches, in weight space
+  * sam_rho = 0.05
+  * default: 0.05 (the paper's value); must be a number >= 0 (0 takes the plain optimizer's update from a second pass, at twice the cost; with dropout the gradient comes from a different dropout mask, so it is not identical to a plain run)
+
+SAM is added to the auto-generated experiment name (`..._sam`, or `..._sam-rho0-1` for a non-default `sam_rho`), so SAM and plain runs keep separate results and checkpoints. If you set `[EXP] res_name`, that name is used as is: give SAM runs their own `res_name`. It combines with DANN. A step with a NaN or infinite loss or gradient is skipped: the weights stay as they were and that batch is left out of the epoch loss.
+
 ### FINETUNE
 
 Settings specific to `[MODEL] type = finetune` - finetuning a pretrained transformer (wav2vec2, WavLM, HuBERT, emotion2vec) end-to-end instead of using it as a fixed feature extractor. Only read when `[MODEL] type = finetune`; every key below is optional and has a default. See [finetune.md](https://github.com/felixbur/nkululeko/blob/main/docs/source/finetune.md) for a full walkthrough and worked examples.

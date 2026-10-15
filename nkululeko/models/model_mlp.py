@@ -122,24 +122,34 @@ class MLPModel(Model):
         self.model.train()
         losses = []
         for batch in self.trainloader:
+            domain_labels = None
             if self.dann_heads is not None:
                 features, labels, domain_labels = batch
-                logits, hidden = self.model(
-                    features.to(self.device), return_features=True
-                )
             else:
                 features, labels = batch
-                logits = self.model(features.to(self.device))
-            loss = self.criterion(logits, labels.to(self.device, dtype=torch.int64))
-            if self.dann_heads is not None:
-                loss = loss + self.dann_heads.loss(
-                    hidden, domain_labels.to(self.device)
+
+            # moved to the device once: SAM runs compute_loss twice per batch
+            features = features.to(self.device)
+            labels = labels.to(self.device, dtype=torch.int64)
+            if domain_labels is not None:
+                domain_labels = domain_labels.to(self.device)
+
+            def compute_loss():
+                if domain_labels is None:
+                    return self.criterion(self.model(features), labels)
+                logits, hidden = self.model(features, return_features=True)
+                return self.criterion(logits, labels) + self.dann_heads.loss(
+                    hidden, domain_labels
                 )
+
+            loss = self._optimize(
+                self.optimizer, compute_loss, modules=[self.model]
+            )
+            if loss is None:  # SAM skipped a non-finite step
+                continue
             losses.append(loss.item())
-            self.optimizer.zero_grad()
-            loss.backward()
-            self.optimizer.step()
-        self.loss = (np.asarray(losses)).mean()
+        # an epoch in which SAM skipped every step has no loss
+        self.loss = float(np.mean(losses)) if losses else 0.0
 
     def evaluate(self, model, loader, device):
         logits = torch.zeros(len(loader.dataset), self.class_num)

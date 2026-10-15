@@ -12,7 +12,11 @@ from nkululeko.experiment_context import (
     use_context,
 )
 from nkululeko.reporting.reporter import Reporter
-from nkululeko.utils.naming import DANN_MODEL_TYPES, parse_dann_columns
+from nkululeko.utils.naming import (
+    DANN_MODEL_TYPES,
+    OPTIMIZER_MODEL_TYPES,
+    parse_dann_columns,
+)
 from nkululeko.utils.util import Util
 
 # Fallback type-based heuristics used when a model instance is not yet available
@@ -377,6 +381,14 @@ class Modelrunner(ContextAware):
                 f"MODEL.dann_columns is set, but model type '{model_type}' does "
                 f"not support domain-adversarial training; it is ignored "
                 f"(supported: {', '.join(sorted(DANN_MODEL_TYPES))})"
+            )
+        if model_type not in OPTIMIZER_MODEL_TYPES and self.util.config_val_bool(
+            "MODEL", "sam", False
+        ):
+            self.util.warn(
+                f"MODEL.sam is set, but model type '{model_type}' does not "
+                f"use a gradient optimizer that SAM can wrap; it is ignored "
+                f"(supported: {', '.join(sorted(OPTIMIZER_MODEL_TYPES))})"
             )
 
         if model_type == "svm":

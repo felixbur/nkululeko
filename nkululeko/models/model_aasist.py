@@ -240,13 +240,19 @@ class AasistModel(Model):
             waveforms = waveforms.to(self.device)
             labels = labels.long().to(self.device)
 
-            loss = self._forward_loss(waveforms, labels, domain_labels)
-            self.optimizer.zero_grad()
-            loss.backward()
-            self.optimizer.step()
+            loss = self._optimize(
+                self.optimizer,
+                lambda: self._forward_loss(waveforms, labels, domain_labels),
+                modules=[self.net],
+            )
 
-            step_scheduler(self.scheduler, self.scheduler_type, step_per_batch=True)
-            losses.append(loss.item())
+            if loss is not None:  # None: SAM skipped a non-finite step
+                losses.append(loss.item())
+                # a skipped step is not counted, so that the learning-rate
+                # schedule follows the weight updates that were applied
+                step_scheduler(
+                    self.scheduler, self.scheduler_type, step_per_batch=True
+                )
 
         step_scheduler(self.scheduler, self.scheduler_type, step_per_batch=False)
         self.loss = float(np.mean(losses)) if losses else 0.0

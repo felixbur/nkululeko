@@ -21,6 +21,19 @@ from nkululeko.utils.pickle_integrity import (
 from nkululeko.utils.util import Util
 
 
+def _finite_gradients(optimizer):
+    """True if no gradient of the optimizer's parameters is NaN/inf."""
+    import torch
+
+    norms = [
+        p.grad.detach().norm()
+        for group in optimizer.param_groups
+        for p in group["params"]
+        if p.grad is not None
+    ]
+    return not norms or bool(torch.isfinite(torch.stack(norms)).all())
+
+
 class Model(ContextAware):
     """Generic model class for linear (non-neural) algorithms."""
 
@@ -52,6 +65,71 @@ class Model(ContextAware):
         """(len(df), n_columns) domain labels for a train loader, or None
         when DANN is off."""
         return self.dann_heads.encode(df) if self.dann_heads is not None else None
+
+    def _optimize(
+        self,
+        optimizer,
+        compute_loss,
+        clip_params=None,
+        max_grad_norm=0.0,
+        skip_non_finite=False,
+        modules=(),
+    ):
+        """One optimization step for a neural model's train loop.
+
+        `compute_loss` is a function without arguments that runs the forward
+        pass and returns the loss (task loss plus, if used, the DANN loss).
+        Returns that loss (a tensor), or None if the step was skipped because
+        the loss, or a gradient, is NaN/inf (nothing is updated then). SAM
+        always skips such steps, so callers must handle None (leave the batch
+        out of the epoch loss); for a plain optimizer skipping is opt-in with
+        `skip_non_finite`, so the other models keep their behavior.
+
+        With a plain optimizer this is zero_grad, backward, optional
+        gradient clipping (`clip_params` to `max_grad_norm`) and step. With
+        SAM (MODEL.sam) `compute_loss` is run twice, because SAM needs the
+        gradient at the current weights and at the perturbed ones; both
+        runs must therefore do the same computation on the same batch. Pass
+        the network(s) as `modules` so that their BatchNorm statistics are
+        only updated by the first run.
+        """
+        import torch
+
+        from nkululeko.optimizers.sam import frozen_batchnorm_stats, is_sam_optimizer
+
+        def backward(loss):
+            loss.backward()
+            if max_grad_norm > 0:
+                torch.nn.utils.clip_grad_norm_(clip_params, max_norm=max_grad_norm)
+
+        n_passes = 0
+
+        def closure():
+            nonlocal n_passes
+            n_passes += 1
+            optimizer.zero_grad()
+            # only the first pass runs at the real weights; any later one
+            # (SAM has exactly one more) runs at the perturbed weights
+            with frozen_batchnorm_stats(modules if n_passes > 1 else ()):
+                loss = compute_loss()
+                backward(loss)
+            return loss
+
+        if is_sam_optimizer(optimizer):
+            loss = optimizer.step(closure)
+            if optimizer.last_step_skipped:  # SAM skipped a non-finite step
+                return None
+        else:
+            loss = compute_loss()
+            if skip_non_finite and not torch.isfinite(loss):
+                return None
+            optimizer.zero_grad()
+            backward(loss)
+            if skip_non_finite and not _finite_gradients(optimizer):
+                optimizer.zero_grad()
+                return None
+            optimizer.step()
+        return loss
 
     def __init__(self, df_train, df_test, feats_train, feats_test, context=None):
         """Constructor taking the configuration and all dataframes."""

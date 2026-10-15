@@ -293,6 +293,58 @@ type = os
         self.assertNotEqual(plain, dann)
         self.assertIn("dann-source_db", dann)
 
+    def test_sam_suffix_empty_when_off(self):
+        self.assertEqual(self._dann_util()._get_sam_suffix(), "")
+        u = self._dann_util(extra="sam = False\nsam_rho = 0.5")
+        self.assertEqual(u._get_sam_suffix(), "")
+
+    def test_sam_suffix_default_rho(self):
+        u = self._dann_util(extra="sam = True")
+        self.assertEqual(u._get_sam_suffix(), "_sam")
+
+    def test_sam_suffix_non_default_rho(self):
+        u = self._dann_util(extra="sam = True\nsam_rho = 0.1")
+        self.assertEqual(u._get_sam_suffix(), "_sam-rho0-1")
+
+    def test_sam_suffix_keeps_every_digit_of_rho(self):
+        suffixes = set()
+        for rho in ("1.000001", "1.000002", "0.1", "0.10000001", "1e-7", "1e20", "0"):
+            u = self._dann_util(extra=f"sam = True\nsam_rho = {rho}")
+            suffix = u._get_sam_suffix()
+            self.assertNotIn(".", suffix)
+            self.assertNotIn("+", suffix)
+            suffixes.add(suffix)
+        self.assertEqual(len(suffixes), 7)
+
+    def test_sam_suffix_ignored_for_unsupported_model(self):
+        for model_type in ("svm", "finetune"):
+            u = self._dann_util(model_type, "sam = True")
+            self.assertEqual(u._get_sam_suffix(), "", model_type)
+
+    def test_sam_suffix_applies_to_every_optimizer_model(self):
+        for model_type in ("mlp", "mlp_reg", "cnn", "adm", "aasist"):
+            u = self._dann_util(model_type, "sam = True")
+            self.assertEqual(u._get_sam_suffix(), "_sam", model_type)
+
+    def test_sam_bad_rho_is_an_error(self):
+        from nkululeko.utils.errors import NkululukoError
+
+        for rho in ("wide", "-1", "nan"):
+            u = self._dann_util(extra=f"sam = True\nsam_rho = {rho}")
+            with self.assertRaisesRegex(NkululukoError, "sam_rho"):
+                u._get_sam_suffix()
+
+    def test_sam_changes_model_description_and_exp_name(self):
+        plain = self._dann_util()
+        sam = self._dann_util(extra="sam = True")
+        self.assertNotEqual(plain.get_model_description(), sam.get_model_description())
+        self.assertNotEqual(plain.get_exp_name(), sam.get_exp_name())
+        self.assertTrue(sam.get_model_description().endswith("_sam"))
+
+    def test_sam_and_dann_suffixes_combine(self):
+        u = self._dann_util(extra="sam = True\ndann_columns = ['source_db']")
+        self.assertTrue(u.get_model_description().endswith("_dann-source_db_sam"))
+
     def test_aug_suffix_present(self):
         c = configparser.ConfigParser()
         c.read_string("""

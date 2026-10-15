@@ -156,6 +156,42 @@ class TestSelectModel:
             del glob_conf.config["MODEL"]["dann_columns"]
         assert not any("dann_columns" in w for w in warnings)
 
+    @pytest.mark.parametrize("model_type", ["svm", "xgb"])
+    def test_sam_warns_for_unsupported_model(self, dummy_dfs, monkeypatch, model_type):
+        glob_conf.config["MODEL"]["sam"] = "True"
+        warnings = []
+        monkeypatch.setattr(Util, "warn", lambda self, msg: warnings.append(msg))
+        try:
+            self._make_mr(model_type, dummy_dfs)
+        finally:
+            del glob_conf.config["MODEL"]["sam"]
+        assert any("MODEL.sam" in w and f"'{model_type}'" in w for w in warnings)
+
+    @pytest.mark.parametrize("off", ["False", "false", "0", ""])
+    def test_no_sam_warning_when_off(self, dummy_dfs, monkeypatch, off):
+        glob_conf.config["MODEL"]["sam"] = off
+        warnings = []
+        monkeypatch.setattr(Util, "warn", lambda self, msg: warnings.append(msg))
+        try:
+            self._make_mr("svm", dummy_dfs)
+        finally:
+            del glob_conf.config["MODEL"]["sam"]
+        assert not any("MODEL.sam" in w for w in warnings)
+
+    def test_no_sam_warning_for_supported_model(self, dummy_dfs, monkeypatch):
+        glob_conf.config["MODEL"]["sam"] = "True"
+        warnings = []
+        monkeypatch.setattr(Util, "warn", lambda self, msg: warnings.append(msg))
+        monkeypatch.setattr(
+            "nkululeko.models.model_mlp.MLPModel",
+            type("FakeMlp", (), {"__init__": lambda self, *a, **k: None}),
+        )
+        try:
+            self._make_mr("mlp", dummy_dfs)
+        finally:
+            del glob_conf.config["MODEL"]["sam"]
+        assert not any("MODEL.sam" in w for w in warnings)
+
     def test_no_dann_warning_when_unset(self, dummy_dfs, monkeypatch):
         warnings = []
         monkeypatch.setattr(Util, "warn", lambda self, msg: warnings.append(msg))

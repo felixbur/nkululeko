@@ -261,31 +261,36 @@ class ADMModel(Model):
                 phase_feats.to(self.device),
                 {k: v.to(self.device) for k, v in extra_feats.items()},
             )
-            if domain_labels is None:
-                logits = self.model(*model_inputs)
-                loss = self.criterion(logits, labels_float)
-            else:
+            def compute_loss():
+                if domain_labels is None:
+                    logits = self.model(*model_inputs)
+                    return self.criterion(logits, labels_float)
                 logits, hidden = self.model(*model_inputs, return_features=True)
-                loss = self.criterion(logits, labels_float) + self.dann_heads.loss(
+                return self.criterion(logits, labels_float) + self.dann_heads.loss(
                     hidden, domain_labels.to(self.device)
                 )
-            losses.append(loss.item())
 
-            self.optimizer.zero_grad()
-            loss.backward()
-            if self.max_grad_norm > 0:
-                torch.nn.utils.clip_grad_norm_(
-                    self._dann_params(self.model), max_norm=self.max_grad_norm
+            loss = self._optimize(
+                self.optimizer,
+                compute_loss,
+                clip_params=self._dann_params(self.model),
+                max_grad_norm=self.max_grad_norm,
+                modules=[self.model],
+            )
+            if loss is not None:  # None: SAM skipped a non-finite step
+                losses.append(loss.item())
+                # a skipped step is not counted, so that the learning-rate
+                # schedule follows the weight updates that were applied
+                # Step scheduler per batch (for cosine)
+                step_scheduler(
+                    self.scheduler, self.scheduler_type, step_per_batch=True
                 )
-            self.optimizer.step()
-
-            # Step scheduler per batch (for cosine)
-            step_scheduler(self.scheduler, self.scheduler_type, step_per_batch=True)
 
         # Step scheduler per epoch (for step/exponential)
         step_scheduler(self.scheduler, self.scheduler_type, step_per_batch=False)
 
-        self.loss = (np.asarray(losses)).mean()
+        # an epoch in which SAM skipped every step has no loss
+        self.loss = float(np.mean(losses)) if losses else 0.0
 
     def _split_features(self, features):
         """Split concatenated features into SSL, spectral, and phase streams.
