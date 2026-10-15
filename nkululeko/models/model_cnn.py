@@ -94,11 +94,8 @@ class CNNModel(Model):
         )
         test_set = self.Dataset_image(feats_test, df_test, self.target, transformations)
         # Define data loaders
-        self.trainloader = torch.utils.data.DataLoader(
-            train_set,
-            batch_size=self.batch_size,
-            shuffle=True,
-            num_workers=self.n_jobs,
+        self.trainloader = self._make_train_loader(
+            train_set, df_train, self.batch_size, num_workers=self.n_jobs
         )
         self.testloader = torch.utils.data.DataLoader(
             test_set,
@@ -231,7 +228,7 @@ class CNNModel(Model):
         _, truths, predictions, logits = self.evaluate(
             self.model, self.testloader, self.device
         )
-        uar, _, _, _ = self.evaluate(self.model, self.trainloader, self.device)
+        uar, _, _, _ = self.evaluate(self.model, self._eval_trainloader(), self.device)
         probas = self.get_probas(logits)
         report = Reporter(
             truths,

@@ -24,6 +24,10 @@ class DummyUtil:
             return False
         return default
 
+    def config_val_bool(self, section, key, default=False):
+        val = self.config_val(section, key, str(default))
+        return str(val).strip().lower() in ("true", "1", "yes")
+
     def debug(self, msg):
         pass
 

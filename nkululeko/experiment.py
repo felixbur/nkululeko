@@ -374,6 +374,10 @@ class Experiment:
             from nkululeko.augmenting.augmenter_silero import AugmenterSilero
 
             augmenter = AugmenterSilero(df)
+        elif method == "rawboost":
+            from nkululeko.augmenting.augmenter_rawboost import AugmenterRawBoost
+
+            augmenter = AugmenterRawBoost(df)
         else:
             self.util.error(f"unknown augmentation method: {method}")
 

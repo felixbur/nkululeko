@@ -192,6 +192,49 @@ class TestSelectModel:
             del glob_conf.config["MODEL"]["sam"]
         assert not any("MODEL.sam" in w for w in warnings)
 
+    @pytest.mark.parametrize("model_type", ["svm", "xgb"])
+    def test_domain_balanced_sampling_warns_for_unsupported_model(
+        self, dummy_dfs, monkeypatch, model_type
+    ):
+        glob_conf.config["MODEL"]["domain_balanced_sampling"] = "True"
+        warnings = []
+        monkeypatch.setattr(Util, "warn", lambda self, msg: warnings.append(msg))
+        try:
+            self._make_mr(model_type, dummy_dfs)
+        finally:
+            del glob_conf.config["MODEL"]["domain_balanced_sampling"]
+        assert any(
+            "domain_balanced_sampling" in w and f"'{model_type}'" in w
+            for w in warnings
+        )
+
+    @pytest.mark.parametrize("off", ["False", "false", "0", ""])
+    def test_no_domain_balanced_warning_when_off(self, dummy_dfs, monkeypatch, off):
+        glob_conf.config["MODEL"]["domain_balanced_sampling"] = off
+        warnings = []
+        monkeypatch.setattr(Util, "warn", lambda self, msg: warnings.append(msg))
+        try:
+            self._make_mr("svm", dummy_dfs)
+        finally:
+            del glob_conf.config["MODEL"]["domain_balanced_sampling"]
+        assert not any("domain_balanced_sampling" in w for w in warnings)
+
+    def test_no_domain_balanced_warning_for_supported_model(
+        self, dummy_dfs, monkeypatch
+    ):
+        glob_conf.config["MODEL"]["domain_balanced_sampling"] = "True"
+        warnings = []
+        monkeypatch.setattr(Util, "warn", lambda self, msg: warnings.append(msg))
+        monkeypatch.setattr(
+            "nkululeko.models.model_mlp.MLPModel",
+            type("FakeMlp", (), {"__init__": lambda self, *a, **k: None}),
+        )
+        try:
+            self._make_mr("mlp", dummy_dfs)
+        finally:
+            del glob_conf.config["MODEL"]["domain_balanced_sampling"]
+        assert not any("domain_balanced_sampling" in w for w in warnings)
+
     def test_no_dann_warning_when_unset(self, dummy_dfs, monkeypatch):
         warnings = []
         monkeypatch.setattr(Util, "warn", lambda self, msg: warnings.append(msg))
@@ -343,6 +386,44 @@ class TestDannWithBalancing:
     @pytest.mark.parametrize("off", ["False", "false", "none", ""])
     def test_balancing_off_spellings_are_not_balancing(self, dummy_dfs, fake_mlp, off):
         """config_val returns raw strings: 'False' must not count as on."""
+        mr = self._run(dummy_dfs, "mlp", off)
+        assert mr.df_train.shape[0] == dummy_dfs[0].shape[0]
+
+    def test_unsupported_model_with_balancing_is_not_rejected(self, dummy_dfs):
+        mr = self._run(dummy_dfs, "svm", "ros")
+        assert mr.df_train.shape[0] == mr.feats_train.shape[0]
+
+
+class TestDomainBalancedWithBalancing:
+    @pytest.fixture
+    def fake_mlp(self, monkeypatch):
+        import nkululeko.models.model_mlp as model_mlp
+
+        class FakeMLP:
+            is_classifier = True
+            is_regressor = False
+
+            def __init__(self, *args, **kwargs):
+                pass
+
+        monkeypatch.setattr(model_mlp, "MLPModel", FakeMLP)
+
+    def _run(self, dummy_dfs, model_type, balancing):
+        glob_conf.config["MODEL"]["type"] = model_type
+        glob_conf.config["FEATS"]["balancing"] = balancing
+        glob_conf.config["MODEL"]["domain_balanced_sampling"] = "True"
+        df_train, df_test, feats_train, feats_test = dummy_dfs
+        try:
+            return Modelrunner(df_train, df_test, feats_train, feats_test, run=0)
+        finally:
+            del glob_conf.config["MODEL"]["domain_balanced_sampling"]
+
+    def test_is_rejected_with_feature_balancing(self, dummy_dfs, fake_mlp):
+        with pytest.raises(NkululukoError, match="FEATS.balancing"):
+            self._run(dummy_dfs, "mlp", "ros")
+
+    @pytest.mark.parametrize("off", ["False", "false", "none", ""])
+    def test_balancing_off_spellings_are_not_balancing(self, dummy_dfs, fake_mlp, off):
         mr = self._run(dummy_dfs, "mlp", off)
         assert mr.df_train.shape[0] == dummy_dfs[0].shape[0]
 

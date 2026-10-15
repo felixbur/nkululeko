@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 1.13.3 (26-10-15)
+-------------------------
+* add two generalization methods for cross-corpus / cross-lingual training:
+  * RawBoost waveform augmentation (Tak et al., ICASSP 2022): `[AUGMENT] augment = ['rawboost']` writes a noisy copy of each selected audio file (convolutive, impulsive and/or stationary noise, chosen with `rawboost_algo`, tuned with the `rawboost_*` keys), so the result can train any model; for `[MODEL] type = aasist`, `[AASIST] rawboost = True` instead adds new noise to every training waveform on the fly, every epoch. Off by default. The notch filters stay below the Nyquist frequency, so 8 kHz audio works too
+  * domain-balanced sampling: `[MODEL] domain_balanced_sampling = True` makes every training batch of `aasist`, `mlp`, `mlp_reg`, `cnn` and `adm` hold the same number of samples of each domain (`source_db` by default, or `domain_balanced_column`), instead of letting the biggest database dominate; an epoch keeps its usual size. Predictions on the train data use a plain loader, and the combination with `[FEATS] balancing` is rejected. It combines with DANN and SAM, and adds `_dombal` (and `_rawboost-algo<N>`) to the auto-generated run name (#473)
+* fix bug: `aug_train` augmented the test files too (it set `AUGMENT.sample_selection`, but augmentation reads `DATA.sample_selection`) and added those copies to the training data; it now augments the train data only (#473)
 Version 1.13.2 (26-10-14)
 -------------------------
 * add Sharpness-Aware Minimization (SAM, Foret et al. 2021) for every neural model that builds its optimizer from `[MODEL] optimizer` (`aasist`, `mlp`, `mlp_reg`, `cnn`, `adm`): `[MODEL] sam = True` wraps the optimizer (`adamw`, `adam` or `sgd`) so that each step takes the gradient at the worst nearby point (radius `sam_rho`, default 0.05) and applies it to the original weights, which favours flat minima that tend to transfer better to unseen domains. It costs two forward/backward passes per batch and combines with DANN and gradient clipping; a step with a NaN loss or gradient is skipped. The five models share one step helper, `Model._optimize()`. SAM is added to the auto-generated run name (`..._sam`, `..._sam-rho0-1`), and other model types ignore the keys with a warning (#470)

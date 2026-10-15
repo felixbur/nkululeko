@@ -214,7 +214,7 @@ type = os
         u = make_util()
         self.assertEqual(u._get_adm_branch_suffix(), "")
 
-    def _dann_util(self, model_type="mlp", extra=""):
+    def _dann_util(self, model_type="mlp", extra="", sections=""):
         c = configparser.ConfigParser()
         c.read_string(f"""
 [EXP]
@@ -228,6 +228,7 @@ type = {model_type}
 {extra}
 [FEATS]
 type = os
+{sections}
 """)
         glob_conf.config = c
         return Util("test")
@@ -333,6 +334,109 @@ type = os
             u = self._dann_util(extra=f"sam = True\nsam_rho = {rho}")
             with self.assertRaisesRegex(NkululukoError, "sam_rho"):
                 u._get_sam_suffix()
+
+    def test_domain_balanced_suffix(self):
+        off = self._dann_util()
+        self.assertEqual(off._get_domain_balanced_suffix(), "")
+        u = self._dann_util(extra="domain_balanced_sampling = False")
+        self.assertEqual(u._get_domain_balanced_suffix(), "")
+        u = self._dann_util(extra="domain_balanced_sampling = True")
+        self.assertEqual(u._get_domain_balanced_suffix(), "_dombal")
+        self.assertEqual(u.get_domain_balanced_column(), "source_db")
+
+    def test_domain_balanced_suffix_names_another_column(self):
+        u = self._dann_util(
+            extra="domain_balanced_sampling = True\ndomain_balanced_column = lang"
+        )
+        self.assertEqual(u._get_domain_balanced_suffix(), "_dombal-lang")
+
+    def test_domain_balanced_suffix_is_path_safe_and_distinct(self):
+        suffixes = {
+            self._dann_util(
+                extra=f"domain_balanced_sampling = True\ndomain_balanced_column = {c}"
+            )._get_domain_balanced_suffix()
+            for c in ("a b", "a_b", "../x")
+        }
+        self.assertEqual(len(suffixes), 3)
+        for suffix in suffixes:
+            self.assertNotIn("/", suffix)
+            self.assertNotIn(".", suffix)
+            self.assertNotIn(" ", suffix)
+
+    def test_domain_balanced_suffix_applies_to_every_supported_model(self):
+        for model_type in ("mlp", "mlp_reg", "cnn", "adm", "aasist"):
+            u = self._dann_util(model_type, "domain_balanced_sampling = True")
+            self.assertEqual(u._get_domain_balanced_suffix(), "_dombal", model_type)
+        for model_type in ("svm", "finetune"):
+            u = self._dann_util(model_type, "domain_balanced_sampling = True")
+            self.assertEqual(u._get_domain_balanced_suffix(), "", model_type)
+
+    def test_domain_balanced_changes_model_description(self):
+        plain = self._dann_util().get_model_description()
+        balanced = self._dann_util(
+            extra="domain_balanced_sampling = True"
+        ).get_model_description()
+        self.assertEqual(balanced, plain + "_dombal")
+
+    def test_rawboost_suffix(self):
+        rawboost = "[AASIST]\nrawboost = True"
+        self.assertEqual(self._dann_util("aasist")._get_rawboost_suffix(), "")
+        u = self._dann_util("aasist", sections=rawboost)
+        self.assertEqual(u._get_rawboost_suffix(), "_rawboost-algo5")
+        u = self._dann_util(
+            "aasist", sections=rawboost + "\n[AUGMENT]\nrawboost_algo = 3"
+        )
+        self.assertEqual(u._get_rawboost_suffix(), "_rawboost-algo3")
+
+    def test_rawboost_suffix_tells_other_settings_apart(self):
+        base = "[AASIST]\nrawboost = True\n[AUGMENT]\n"
+        a = self._dann_util("aasist", sections=base + "rawboost_snr_min = 5")
+        b = self._dann_util("aasist", sections=base + "rawboost_snr_min = 6")
+        self.assertNotEqual(a._get_rawboost_suffix(), b._get_rawboost_suffix())
+        self.assertTrue(a._get_rawboost_suffix().startswith("_rawboost-algo5-"))
+
+    def test_rawboost_suffix_only_for_the_waveform_model(self):
+        for model_type in ("mlp", "svm", "adm"):
+            u = self._dann_util(model_type, sections="[AASIST]\nrawboost = True")
+            self.assertEqual(u._get_rawboost_suffix(), "", model_type)
+
+    def test_rawboost_bad_algo_is_an_error(self):
+        from nkululeko.utils.errors import NkululukoError
+
+        u = self._dann_util(
+            "aasist", sections="[AASIST]\nrawboost = True\n[AUGMENT]\nrawboost_algo = 0"
+        )
+        with self.assertRaisesRegex(NkululukoError, "rawboost_algo"):
+            u._get_rawboost_suffix()
+
+    def test_augment_label_names_the_rawboost_settings(self):
+        u = self._dann_util("svm", sections="[AUGMENT]\nrawboost_algo = 3")
+        self.assertEqual(u.augment_label("rawboost"), "rawboost-algo3")
+        self.assertEqual(u.augment_label("traditional"), "traditional")
+        u = self._dann_util("svm", sections="[AUGMENT]\nrawboost_snr_min = 5")
+        self.assertRegex(u.augment_label("rawboost"), r"^rawboost-algo5-[0-9a-f]{6}$")
+
+    def test_aug_suffix_tells_rawboost_settings_apart(self):
+        suffixes = set()
+        for settings in ("rawboost_algo = 3", "rawboost_algo = 5", "rawboost_p = 20"):
+            u = self._dann_util(
+                "svm", sections=f"[AUGMENT]\naugment = ['rawboost']\n{settings}"
+            )
+            suffixes.add(u._get_aug_suffix())
+        self.assertEqual(len(suffixes), 3)
+        u = self._dann_util(
+            "svm", sections="[AUGMENT]\naugment = ['traditional', 'rawboost']"
+        )
+        self.assertTrue(u._get_aug_suffix().startswith("_aug_traditional_rawboost-algo5"))
+
+    def test_all_suffixes_combine_in_the_run_name(self):
+        u = self._dann_util(
+            "aasist",
+            "sam = True\ndomain_balanced_sampling = True",
+            "[AASIST]\nrawboost = True",
+        )
+        description = u.get_model_description()
+        self.assertTrue(description.endswith("_sam_dombal_rawboost-algo5"))
 
     def test_sam_changes_model_description_and_exp_name(self):
         plain = self._dann_util()

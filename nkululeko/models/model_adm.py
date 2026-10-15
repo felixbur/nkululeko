@@ -282,9 +282,7 @@ class ADMModel(Model):
                 # a skipped step is not counted, so that the learning-rate
                 # schedule follows the weight updates that were applied
                 # Step scheduler per batch (for cosine)
-                step_scheduler(
-                    self.scheduler, self.scheduler_type, step_per_batch=True
-                )
+                step_scheduler(self.scheduler, self.scheduler_type, step_per_batch=True)
 
         # Step scheduler per epoch (for step/exponential)
         step_scheduler(self.scheduler, self.scheduler_type, step_per_batch=False)
@@ -443,7 +441,7 @@ class ADMModel(Model):
         _, truths, predictions, logits = self.evaluate(
             self.model, self.testloader, self.device
         )
-        uar, _, _, _ = self.evaluate(self.model, self.trainloader, self.device)
+        uar, _, _, _ = self.evaluate(self.model, self._eval_trainloader(), self.device)
         probas = self.get_probas(logits)
         report = Reporter(
             truths,
@@ -482,8 +480,10 @@ class ADMModel(Model):
         if domain_labels is not None:
             tensors.append(torch.as_tensor(domain_labels, dtype=torch.long))
         dataset = torch.utils.data.TensorDataset(*tensors)
+        if shuffle:  # the train loader
+            return self._make_train_loader(dataset, df_y, self.batch_size)
         return torch.utils.data.DataLoader(
-            dataset, shuffle=shuffle, batch_size=self.batch_size
+            dataset, shuffle=False, batch_size=self.batch_size
         )
 
     def _encode_labels(self, labels):
