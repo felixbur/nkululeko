@@ -309,11 +309,67 @@ def test_a_batch_skipped_by_sam_is_left_out_of_the_epoch_loss(name):
     assert all(torch.isfinite(p).all() for p in net.parameters())
 
 
+@pytest.mark.parametrize("name", sorted(BUILDERS))
+def test_an_epoch_with_every_step_skipped_has_a_zero_loss(name):
+    model, net = BUILDERS[name](use_sam=True, with_dann=False)
+
+    class AlwaysNaN(nn.Module):
+        def __init__(self, criterion):
+            super().__init__()
+            self.criterion = criterion
+
+        def forward(self, *args):
+            return self.criterion(*args) * float("nan")
+
+    model.criterion.criterion = AlwaysNaN(model.criterion.criterion)
+    # (ADM has lazy layers that are not initialized before the first forward)
+    before = {
+        n: p.detach().clone()
+        for n, p in net.named_parameters()
+        if not isinstance(p, nn.parameter.UninitializedParameter)
+    }
+    model.loss = 1.0
+    model.train()
+    assert model.loss == 0.0
+    params = dict(net.named_parameters())
+    assert all(torch.equal(params[n], b) for n, b in before.items())
+
+
+@pytest.mark.parametrize("name", ["adm", "aasist"])
+def test_the_per_batch_scheduler_only_counts_applied_steps(name, monkeypatch):
+    """A step SAM skipped must not advance the learning-rate schedule."""
+    import importlib
+
+    module = importlib.import_module(f"nkululeko.models.model_{name}")
+    batch_steps = []
+    monkeypatch.setattr(
+        module,
+        "step_scheduler",
+        lambda sched, kind, step_per_batch: step_per_batch and batch_steps.append(1),
+    )
+    model, net = BUILDERS[name](use_sam=True, with_dann=False)
+    calls = []
+
+    class FirstNaN(nn.Module):
+        def __init__(self, criterion):
+            super().__init__()
+            self.criterion = criterion
+
+        def forward(self, *args):
+            calls.append(1)
+            loss = self.criterion(*args)
+            return loss * float("nan") if len(calls) == 1 else loss
+
+    model.criterion.criterion = FirstNaN(model.criterion.criterion)
+    model.train()
+    assert len(batch_steps) == BATCHES - 1  # the skipped batch did not count
+
+
 def test_mlp_reg_skips_nan_batches_with_sam():
     model, net = _mlp_reg(use_sam=True, with_dann=False)
     model.criterion = lambda logits, labels: logits.sum() * float("nan")
     before = [p.detach().clone() for p in net.parameters()]
-    model.loss = 0.0
-    with pytest.warns(RuntimeWarning):  # mean of an empty loss list
-        model.train()
+    model.loss = 1.0
+    model.train()
+    assert model.loss == 0.0  # every batch skipped: no loss to average
     assert all(torch.equal(p, b) for p, b in zip(net.parameters(), before))

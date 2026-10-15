@@ -102,13 +102,15 @@ class Model(ContextAware):
             if max_grad_norm > 0:
                 torch.nn.utils.clip_grad_norm_(clip_params, max_norm=max_grad_norm)
 
-        passes = []
+        n_passes = 0
 
         def closure():
-            passes.append(1)
+            nonlocal n_passes
+            n_passes += 1
             optimizer.zero_grad()
-            # SAM's second pass runs at the perturbed weights
-            with frozen_batchnorm_stats(modules if len(passes) == 2 else ()):
+            # only the first pass runs at the real weights; any later one
+            # (SAM has exactly one more) runs at the perturbed weights
+            with frozen_batchnorm_stats(modules if n_passes > 1 else ()):
                 loss = compute_loss()
                 backward(loss)
             return loss

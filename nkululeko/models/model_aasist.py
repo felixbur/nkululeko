@@ -246,9 +246,13 @@ class AasistModel(Model):
                 modules=[self.net],
             )
 
-            step_scheduler(self.scheduler, self.scheduler_type, step_per_batch=True)
             if loss is not None:  # None: SAM skipped a non-finite step
                 losses.append(loss.item())
+                # a skipped step is not counted, so that the learning-rate
+                # schedule follows the weight updates that were applied
+                step_scheduler(
+                    self.scheduler, self.scheduler_type, step_per_batch=True
+                )
 
         step_scheduler(self.scheduler, self.scheduler_type, step_per_batch=False)
         self.loss = float(np.mean(losses)) if losses else 0.0

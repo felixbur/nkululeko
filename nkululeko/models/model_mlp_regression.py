@@ -227,14 +227,19 @@ class MLP_Reg_model(Model):
             else:
                 features, labels = batch
 
+            # moved to the device once: SAM runs compute_loss twice per batch
+            features, labels = features.to(device), labels.to(device)
+            if domain_labels is not None:
+                domain_labels = domain_labels.to(device)
+
             def compute_loss():
                 if domain_labels is None:
-                    logits = model(features.to(device)).reshape(-1)
-                    return self.criterion(logits, labels.to(device))
-                logits, hidden = model(features.to(device), return_features=True)
+                    logits = model(features).reshape(-1)
+                    return self.criterion(logits, labels)
+                logits, hidden = model(features, return_features=True)
                 return self.criterion(
-                    logits.reshape(-1), labels.to(device)
-                ) + self.dann_heads.loss(hidden, domain_labels.to(device))
+                    logits.reshape(-1), labels
+                ) + self.dann_heads.loss(hidden, domain_labels)
 
             # a non-finite loss is possible (ccc on a batch with one value): skip it
             # (SAM skips such a step on its own)
@@ -244,7 +249,8 @@ class MLP_Reg_model(Model):
             if loss is None:
                 continue
             losses.append(loss.item())
-        self.loss = (np.asarray(losses)).mean()
+        # an epoch in which every step was skipped has no loss
+        self.loss = float(np.mean(losses)) if losses else 0.0
 
     def evaluate_model(self, model, loader, device):
         logits = torch.zeros(len(loader.dataset))

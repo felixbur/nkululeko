@@ -157,18 +157,19 @@ class CNNModel(Model):
             else:
                 images, labels = batch
 
+            # moved to the device once: SAM runs compute_loss twice per batch
+            images = images.to(self.device)
+            labels = labels.to(self.device, dtype=torch.int64)
+            if domain_labels is not None:
+                domain_labels = domain_labels.to(self.device)
+
             def compute_loss():
                 if domain_labels is None:
-                    logits = self.model(images.to(self.device))
-                    return self.criterion(
-                        logits, labels.to(self.device, dtype=torch.int64)
-                    )
-                logits, hidden = self.model(
-                    images.to(self.device), return_features=True
+                    return self.criterion(self.model(images), labels)
+                logits, hidden = self.model(images, return_features=True)
+                return self.criterion(logits, labels) + self.dann_heads.loss(
+                    hidden, domain_labels
                 )
-                return self.criterion(
-                    logits, labels.to(self.device, dtype=torch.int64)
-                ) + self.dann_heads.loss(hidden, domain_labels.to(self.device))
 
             loss = self._optimize(
                 self.optimizer, compute_loss, modules=[self.model]
@@ -176,7 +177,8 @@ class CNNModel(Model):
             if loss is None:  # SAM skipped a non-finite step
                 continue
             losses.append(loss.item())
-        self.loss = (np.asarray(losses)).mean()
+        # an epoch in which SAM skipped every step has no loss
+        self.loss = float(np.mean(losses)) if losses else 0.0
 
     def get_probas(self, logits):
         # make a dataframe for probabilities: softmax first, since logits

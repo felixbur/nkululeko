@@ -215,6 +215,28 @@ class TestSam:
             assert model._optimize(self._sam(net), compute_loss) is None
             assert torch.equal(net.weight, before)
 
+    def test_clipping_does_not_change_the_ascent_step(self, model):
+        """SAM's perturbation is the gradient divided by its norm, so the
+        uniform scaling of gradient clipping leaves it as it is."""
+
+        def perturbed_weights(max_grad_norm):
+            net, x, y = _setup()
+            seen = []
+
+            def compute_loss():
+                seen.append(net.weight.detach().clone())
+                return nn.functional.mse_loss(net(x), y * 100)
+
+            model._optimize(
+                self._sam(net),
+                compute_loss,
+                clip_params=list(net.parameters()),
+                max_grad_norm=max_grad_norm,
+            )
+            return seen[1]  # the weights of the second (perturbed) pass
+
+        assert torch.allclose(perturbed_weights(0.0), perturbed_weights(0.01))
+
     def test_nan_never_reaches_the_weights(self, model):
         net, x, y = _setup()
         model._optimize(self._sam(net), lambda: net(x).sum() * float("nan"))

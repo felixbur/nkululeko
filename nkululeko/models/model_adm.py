@@ -279,14 +279,18 @@ class ADMModel(Model):
             )
             if loss is not None:  # None: SAM skipped a non-finite step
                 losses.append(loss.item())
-
-            # Step scheduler per batch (for cosine)
-            step_scheduler(self.scheduler, self.scheduler_type, step_per_batch=True)
+                # a skipped step is not counted, so that the learning-rate
+                # schedule follows the weight updates that were applied
+                # Step scheduler per batch (for cosine)
+                step_scheduler(
+                    self.scheduler, self.scheduler_type, step_per_batch=True
+                )
 
         # Step scheduler per epoch (for step/exponential)
         step_scheduler(self.scheduler, self.scheduler_type, step_per_batch=False)
 
-        self.loss = (np.asarray(losses)).mean()
+        # an epoch in which SAM skipped every step has no loss
+        self.loss = float(np.mean(losses)) if losses else 0.0
 
     def _split_features(self, features):
         """Split concatenated features into SSL, spectral, and phase streams.
