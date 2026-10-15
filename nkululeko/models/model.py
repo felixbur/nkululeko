@@ -38,6 +38,10 @@ class Model(ContextAware):
     """Generic model class for linear (non-neural) algorithms."""
 
     dann_heads = None  # DannHeads when MODEL.dann_columns is set (see _init_dann)
+    # (dataset, batch_size, loader kwargs) of a train loader that draws
+    # domain-balanced batches (see _make_train_loader)
+    _balanced_train = None
+    _trainloader_eval = None
 
     def _init_dann(self, df_train, feat_dim, cfg=None):
         """Build the domain-adversarial heads (MODEL.dann_columns) on
@@ -65,6 +69,78 @@ class Model(ContextAware):
         """(len(df), n_columns) domain labels for a train loader, or None
         when DANN is off."""
         return self.dann_heads.encode(df) if self.dann_heads is not None else None
+
+    def _domain_sampler(self, df, batch_size):
+        """A DomainBalancedBatchSampler over the rows of `df` (the train
+        split, in the order of the train dataset) if MODEL.domain_balanced_sampling
+        is set, else None. Falls back to None (with a warning) if the
+        train split has a single domain."""
+        if not self.util.config_val_bool("MODEL", "domain_balanced_sampling", False):
+            return None
+        from nkululeko.data.domain_sampler import DomainBalancedBatchSampler
+
+        column = self.util.get_domain_balanced_column()
+        if column not in df.columns:
+            self.util.error(
+                f"MODEL.domain_balanced_sampling needs the column '{column}' "
+                f"in the train data, found: {list(df.columns)}. 'source_db' is "
+                "added when several databases are pooled; a split cached "
+                "before that needs [DATA] no_reuse = True once."
+            )
+        if df[column].nunique() < 2:
+            self.util.warn(
+                f"MODEL.domain_balanced_sampling: the train data has a single "
+                f"value of '{column}', there is nothing to balance; using "
+                "plain shuffling"
+            )
+            return None
+        try:
+            return DomainBalancedBatchSampler(df[column], batch_size)
+        except ValueError as e:
+            self.util.error(f"MODEL.domain_balanced_sampling: {e}")
+
+    def _make_train_loader(self, dataset, df, batch_size, **loader_kwargs):
+        """The DataLoader that trains the model: shuffled batches, or, with
+        MODEL.domain_balanced_sampling, batches with the same number of
+        samples of every domain. `df` has one row per item of `dataset`, in
+        the same order.
+
+        Such a loader yields repeated samples in random order, so it cannot
+        be used to predict the train data: use `_eval_trainloader()` for
+        that.
+        """
+        from torch.utils.data import DataLoader
+
+        self._balanced_train = None
+        self._trainloader_eval = None
+        sampler = self._domain_sampler(df, batch_size)
+        if sampler is None:
+            return DataLoader(
+                dataset, batch_size=batch_size, shuffle=True, **loader_kwargs
+            )
+        self.util.debug(
+            f"domain-balanced batches: {len(sampler.domains)} domains "
+            f"({', '.join(map(str, sampler.domains))}), {sampler.per_domain} "
+            f"samples each per batch of {sampler.batch_size}"
+        )
+        self._balanced_train = (dataset, batch_size, loader_kwargs)
+        return DataLoader(dataset, batch_sampler=sampler, **loader_kwargs)
+
+    def _eval_trainloader(self):
+        """A loader that goes over every train sample once (to predict the
+        train data): the train loader itself, unless that one is
+        domain-balanced."""
+        if self._balanced_train is None:
+            return self.trainloader
+        if self._trainloader_eval is None:
+            from torch.utils.data import DataLoader
+
+            dataset, batch_size, kwargs = self._balanced_train
+            kwargs = {k: v for k, v in kwargs.items() if k != "persistent_workers"}
+            self._trainloader_eval = DataLoader(
+                dataset, batch_size=batch_size, shuffle=False, **kwargs
+            )
+        return self._trainloader_eval
 
     def _optimize(
         self,

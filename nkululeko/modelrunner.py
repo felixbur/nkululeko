@@ -14,6 +14,7 @@ from nkululeko.experiment_context import (
 from nkululeko.reporting.reporter import Reporter
 from nkululeko.utils.naming import (
     DANN_MODEL_TYPES,
+    DOMAIN_BALANCED_MODEL_TYPES,
     OPTIMIZER_MODEL_TYPES,
     parse_dann_columns,
 )
@@ -367,6 +368,18 @@ class Modelrunner(ContextAware):
                 "balancing drops the domain columns (and oversampling methods "
                 "such as smote create rows without a domain). Disable one of them."
             )
+        if (
+            model_type in DOMAIN_BALANCED_MODEL_TYPES
+            and self.util.config_val_bool("MODEL", "domain_balanced_sampling", False)
+            and self._feature_balancing_method()
+        ):
+            # same reason as for DANN: no domain column is left to balance by
+            self.util.error(
+                "MODEL.domain_balanced_sampling cannot be combined with "
+                "FEATS.balancing: balancing drops the domain columns (and "
+                "oversampling methods such as smote create rows without a "
+                "domain). Disable one of them."
+            )
         self._check_balancing()
         self._check_feature_balancing()
 
@@ -381,6 +394,16 @@ class Modelrunner(ContextAware):
                 f"MODEL.dann_columns is set, but model type '{model_type}' does "
                 f"not support domain-adversarial training; it is ignored "
                 f"(supported: {', '.join(sorted(DANN_MODEL_TYPES))})"
+            )
+        if (
+            model_type not in DOMAIN_BALANCED_MODEL_TYPES
+            and self.util.config_val_bool("MODEL", "domain_balanced_sampling", False)
+        ):
+            self.util.warn(
+                f"MODEL.domain_balanced_sampling is set, but model type "
+                f"'{model_type}' does not train on batches from a data loader; "
+                f"it is ignored (supported: "
+                f"{', '.join(sorted(DOMAIN_BALANCED_MODEL_TYPES))})"
             )
         if model_type not in OPTIMIZER_MODEL_TYPES and self.util.config_val_bool(
             "MODEL", "sam", False

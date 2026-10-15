@@ -24,6 +24,7 @@ from sklearn.metrics import recall_score
 from sklearn.utils.class_weight import compute_class_weight
 from torch.utils.data import DataLoader, Dataset
 
+from nkululeko.augmenting.rawboost import apply_rawboost
 from nkululeko.models.aasist_config import AasistConfig
 from nkululeko.models.model import Model
 from nkululeko.models.model_aasist_core import AasistBackend
@@ -66,10 +67,13 @@ class _WaveformDataset(Dataset):
     since the SSL frontend only works on 16 kHz mono input.
     """
 
-    def __init__(self, df, target, cfg, domain_labels=None):
+    def __init__(self, df, target, cfg, domain_labels=None, rawboost=None):
         self.df = df
         self.target = target
         self.cfg = cfg
+        # RawBoostParams: add RawBoost noise to every item (the train
+        # loader of a run with [AASIST] rawboost only), else None
+        self.rawboost = rawboost
         # (len(df), n_dann_columns) int array -- when set, items are
         # (waveform, label, domain_labels) instead of (waveform, label).
         # Only the train loader sets it.
@@ -99,6 +103,8 @@ class _WaveformDataset(Dataset):
                 stacklevel=2,
             )
         signal = _pad_or_tile(signal, self.cfg.max_len)
+        if self.rawboost is not None:
+            signal = apply_rawboost(signal, _TARGET_SR, self.rawboost)
         row = self.df.iloc[idx]
         label = row[self.target]
         waveform = torch.tensor(signal, dtype=torch.float32)
@@ -196,6 +202,7 @@ class AasistModel(Model):
             self.target,
             self.cfg,
             domain_labels=self._domain_labels(df) if train else None,
+            rawboost=self.cfg.rawboost if train else None,
         )
         # Each __getitem__ does its own audiofile.read() -- CPU-bound work
         # that a single-process loader (num_workers=0) serializes with GPU
@@ -207,8 +214,12 @@ class AasistModel(Model):
         if self.n_jobs > 0:
             loader_kwargs["num_workers"] = self.n_jobs
             loader_kwargs["persistent_workers"] = True
+        if shuffle:  # the train loader
+            return self._make_train_loader(
+                dataset, df, self.cfg.batch_size, **loader_kwargs
+            )
         return DataLoader(
-            dataset, batch_size=self.cfg.batch_size, shuffle=shuffle, **loader_kwargs
+            dataset, batch_size=self.cfg.batch_size, shuffle=False, **loader_kwargs
         )
 
     def set_testdata(self, data_df, feats_df):
@@ -250,9 +261,7 @@ class AasistModel(Model):
                 losses.append(loss.item())
                 # a skipped step is not counted, so that the learning-rate
                 # schedule follows the weight updates that were applied
-                step_scheduler(
-                    self.scheduler, self.scheduler_type, step_per_batch=True
-                )
+                step_scheduler(self.scheduler, self.scheduler_type, step_per_batch=True)
 
         step_scheduler(self.scheduler, self.scheduler_type, step_per_batch=False)
         self.loss = float(np.mean(losses)) if losses else 0.0
