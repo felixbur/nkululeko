@@ -19,6 +19,7 @@
     - [MODEL](#model)
     - [FINETUNE](#finetune)
     - [AASIST](#aasist)
+    - [RNN](#rnn)
     - [EXPL](#expl)
     - [PREDICT](#predict)
     - [EXPORT](#export)
@@ -430,6 +431,8 @@ Model and training specifications. In general, default values should work for cl
     * **mlp**: [Multi-layer perceptron](http://blog.syntheticspeech.de/2021/08/30/nkululeko-multi-layer-perceptron/) (neural network)  
     * **cnn**: [Convolutional neural network](http://blog.syntheticspeech.de/2022/01/17/how-to-use-convolutional-neural-networks-with-nkululeko/)  
     * **aasist**: [AASIST](#aasist) anti-spoofing / audio deepfake detection: SSL (wav2vec2/XLS-R) frontend + spectro-temporal graph attention backend, trained end-to-end on raw audio (binary classification only; requires `[FEATS] type = []`). Settings go in a dedicated [`[AASIST]`](#aasist) section below.
+    * **lstm**: [LSTM](#rnn) recurrent network on a frame sequence (mel spectrogram or opensmile LLDs) that the model computes from the raw audio itself (requires `[FEATS] type = []`). Settings go in a dedicated [`[RNN]`](#rnn) section below; see the [RNN tutorial](rnn_classification.md).
+    * **lstm_reg**: LSTM for regression, same as `lstm` with a single output. Settings go in the [`[RNN]`](#rnn) section.
     * **finetune**: [Fine-tuning](http://blog.syntheticspeech.de/2022/10/07/nkululeko-how-to-fine-tune-a-wav2vec2-model/) for pre-trained models. Settings go in a dedicated [`[FINETUNE]`](#finetune) section below.
 * **class_weight**: add class_weight to the linear classifier (XGB, SVM) fit methods for imbalanced data (True or False)
   * class_weight = False
@@ -540,7 +543,7 @@ Model and training specifications. In general, default values should work for cl
 
 #### Domain-adversarial training (DANN)
 
-Available for `type = aasist`, `mlp`, `mlp_reg`, `cnn` and `adm` (other model types ignore it and log a warning; classic models such as svm or xgb have no gradients to reverse, and `finetune` is not supported yet). Meant for cross-corpus or cross-lingual setups where the model should not rely on which database or language a clip comes from (Ganin & Lempitsky 2015). One small classifier head is attached per listed column, reading the model's last hidden features (AASIST: its pooled readout; MLP, MLP regression and CNN: the last hidden layer; ADM: the concatenated penultimate activations of its branches). A gradient-reversal layer trains the shared features to make that head fail, while the main head trains as usual.
+Available for `type = aasist`, `mlp`, `mlp_reg`, `cnn`, `adm`, `lstm` and `lstm_reg` (other model types ignore it and log a warning; classic models such as svm or xgb have no gradients to reverse, and `finetune` is not supported yet). Meant for cross-corpus or cross-lingual setups where the model should not rely on which database or language a clip comes from (Ganin & Lempitsky 2015). One small classifier head is attached per listed column, reading the model's last hidden features (AASIST: its pooled readout; MLP, MLP regression and CNN: the last hidden layer; ADM: the concatenated penultimate activations of its branches; LSTM: the recurrent outputs mean-pooled over time). A gradient-reversal layer trains the shared features to make that head fail, while the main head trains as usual.
 
 * **dann_columns**: dataframe columns that hold the label to become invariant to
   * dann_columns = ['source_db']
@@ -559,7 +562,7 @@ Examples: [exp_emodb_aasist_dann.ini](https://github.com/felixbur/nkululeko/blob
 
 #### Sharpness-Aware Minimization (SAM)
 
-Available for `type = aasist`, `mlp`, `mlp_reg`, `cnn` and `adm`, i.e. every model that uses the `optimizer` above (other model types ignore it and log a warning; `finetune` has its own training loop). SAM (Foret et al., ICLR 2021) wraps the optimizer: each step first moves the weights to the worst nearby point (within radius `sam_rho`), takes the gradient there, and then updates the original weights with it. This favours flat minima, which tend to generalize better to unseen domains such as another corpus. It costs two forward/backward passes per batch, so training is about twice as slow. Dropout is drawn separately in the two passes.
+Available for `type = aasist`, `mlp`, `mlp_reg`, `cnn`, `adm`, `lstm` and `lstm_reg`, i.e. every model that uses the `optimizer` above (other model types ignore it and log a warning; `finetune` has its own training loop). SAM (Foret et al., ICLR 2021) wraps the optimizer: each step first moves the weights to the worst nearby point (within radius `sam_rho`), takes the gradient there, and then updates the original weights with it. This favours flat minima, which tend to generalize better to unseen domains such as another corpus. It costs two forward/backward passes per batch, so training is about twice as slow. Dropout is drawn separately in the two passes.
 
 * **sam**: wrap the optimizer in SAM
   * sam = True
@@ -660,6 +663,38 @@ Settings specific to `[MODEL] type = aasist` - AASIST (spectro-temporal graph at
   * freeze_ssl_frontend = True
   * default: False
   * PyTorch's autograd then builds no backward graph through the pretrained frontend at all (not just skipping its weight update), so training is considerably faster. With `ssl_layer_pooling = weighted` the learned layer weights are not frozen: they are new parameters of the pooling step, not pretrained weights. The frontend's forward pass is still computed for every batch in every epoch; its output is not cached
+
+### RNN
+
+Settings for the recurrent-network model types `[MODEL] type = lstm` (classification) and `lstm_reg` (regression). The section is named after the network family rather than the cell type, because none of its keys is specific to LSTM cells. Only read for these types; every key below is optional and has a default. Requires `[FEATS] type = []`: the model reads each clip's audio itself (mono, resampled to 16 kHz, padded by tiling or truncated to `max_len`), turns it into a frame sequence, runs it through the recurrent layers, mean-pools the outputs over time and classifies the result (or, for `lstm_reg`, predicts one value). `[MODEL] learning_rate` (default 0.001)/`optimizer`/`weight_decay`/`scheduler`/`loss`/`class_weight`/`measure`/`drop`/`patience`/`random_seed`/`device`/`n_jobs` are read from the shared `[MODEL]` section, not from `[RNN]`. `[MODEL] layers` and `activation` do not apply. `lstm` and `lstm_reg` support [DANN](#domain-adversarial-training-dann) and [SAM](#sharpness-aware-minimization-sam), but not `predict_sample`, SHAP explanations or ONNX export. Tutorial: [RNN classification](rnn_classification.md).
+
+* **feature_source**: what frame sequence the network sees
+  * feature_source = opensmile_lld
+  * default: melspec
+  * possible values:
+    * **melspec**: log mel spectrogram (dB), one frame every `hop_dur` ms with `n_mels` bands
+    * **opensmile_lld**: opensmile low-level descriptors of `opensmile_set` (frame rate and dimension are fixed by the feature set; eGeMAPSv02: 25 per frame)
+* **opensmile_set**: opensmile feature set, only for `feature_source = opensmile_lld`
+  * opensmile_set = ComParE_2016
+  * default: eGeMAPSv02
+* **n_mels**: number of mel bands, only for `feature_source = melspec`
+  * n_mels = 64
+* **win_dur**: analysis window length in ms, only for `feature_source = melspec`
+  * win_dur = 25
+* **hop_dur**: frame shift in ms, only for `feature_source = melspec`
+  * hop_dur = 10
+* **max_len**: fixed waveform length in samples every clip is padded (by tiling) or truncated to
+  * max_len = 64600
+  * default: 64600 (~4.04 s at 16 kHz), as for `[AASIST]`
+* **hidden_size**: number of units per recurrent layer (and direction)
+  * hidden_size = 64
+* **num_layers**: number of stacked recurrent layers (`[MODEL] drop` is applied between them)
+  * num_layers = 2
+* **bidirectional**: run each layer in both directions (BLSTM); doubles the size of the pooled features
+  * bidirectional = True
+  * default: False
+* **batch_size**: batch size
+  * batch_size = 32
 
 ### EXPL
 

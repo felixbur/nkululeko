@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.13.3 (26-10-15)
+-------------------------
+* add recurrent-network model types `[MODEL] type = lstm` (classification) and `lstm_reg` (regression): the model reads the audio itself (`[FEATS] type = []`), turns each clip into a frame sequence -- a log mel spectrogram (`[RNN] feature_source = melspec`, default) or opensmile low-level descriptors (`feature_source = opensmile_lld`, `opensmile_set`) -- and classifies it with a stacked LSTM whose outputs are mean-pooled over time; the label stays one value per utterance. Settings go in a new `[RNN]` section (`hidden_size`, `num_layers`, `bidirectional` for a BLSTM, `max_len`, `n_mels`, `win_dur`, `hop_dur`, `batch_size`), named for the network family so a later GRU type can reuse it. Both types support DANN and SAM; `predict_sample`, SHAP and ONNX export are not supported yet. Example: `examples/exp_emodb_lstm.ini`, tutorial: `docs/source/rnn_classification.md` (#256)
+
 Version 1.13.2 (26-10-14)
 -------------------------
 * add Sharpness-Aware Minimization (SAM, Foret et al. 2021) for every neural model that builds its optimizer from `[MODEL] optimizer` (`aasist`, `mlp`, `mlp_reg`, `cnn`, `adm`): `[MODEL] sam = True` wraps the optimizer (`adamw`, `adam` or `sgd`) so that each step takes the gradient at the worst nearby point (radius `sam_rho`, default 0.05) and applies it to the original weights, which favours flat minima that tend to transfer better to unseen domains. It costs two forward/backward passes per batch and combines with DANN and gradient clipping; a step with a NaN loss or gradient is skipped. The five models share one step helper, `Model._optimize()`. SAM is added to the auto-generated run name (`..._sam`, `..._sam-rho0-1`), and other model types ignore the keys with a warning (#470)

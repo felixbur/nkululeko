@@ -23,10 +23,12 @@ from nkululeko.utils.util import Util
 # or when the model does not declare explicit is_classifier / is_regressor flags.
 # Model types that only support classification
 CLASSIFIER_TYPES = frozenset(
-    {"svm", "xgb", "bayes", "gmm", "knn", "tree", "cnn", "mlp", "adm", "aasist"}
+    {"svm", "xgb", "bayes", "gmm", "knn", "tree", "cnn", "mlp", "adm", "aasist", "lstm"}
 )
 # Model types that only support regression
-REGRESSOR_TYPES = frozenset({"svr", "xgr", "knn_reg", "lin_reg", "tree_reg", "mlp_reg"})
+REGRESSOR_TYPES = frozenset(
+    {"svr", "xgr", "knn_reg", "lin_reg", "tree_reg", "mlp_reg", "lstm_reg"}
+)
 
 
 def validate_model_task_support(model_type: str, task: str, model=None) -> None:
@@ -491,6 +493,18 @@ class Modelrunner(ContextAware):
             from nkululeko.models.model_aasist import AasistModel
 
             self.model = AasistModel(
+                self.df_train, self.df_test, self.feats_train, self.feats_test
+            )
+        elif model_type == "lstm":
+            from nkululeko.models.model_lstm import LSTMModel
+
+            self.model = LSTMModel(
+                self.df_train, self.df_test, self.feats_train, self.feats_test
+            )
+        elif model_type == "lstm_reg":
+            from nkululeko.models.model_lstm_regression import LSTM_Reg_model
+
+            self.model = LSTM_Reg_model(
                 self.df_train, self.df_test, self.feats_train, self.feats_test
             )
         else:
