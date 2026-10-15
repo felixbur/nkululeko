@@ -7,6 +7,7 @@ import audiofile
 import numpy as np
 import pandas as pd
 import pytest
+import soundfile as sf
 
 import nkululeko.glob_conf as glob_conf
 from nkululeko.augmenting import rawboost as rb
@@ -202,6 +203,20 @@ class TestAugmenter:
         new_stereo, new_flac = out.index.get_level_values(0)
         assert audiofile.channels(new_stereo) == 2
         assert new_flac.endswith(".flac")
+
+    def test_same_name_other_format_does_not_collide(self, tmp_path, setup_conf):
+        wav, aiff = tmp_path / "foo.wav", tmp_path / "foo.aiff"
+        _wav(wav)
+        sf.write(aiff, _signal(16000, seed=1), 16000)
+        out = AugmenterRawBoost(_df([str(wav), str(aiff)])).augment("all")
+        new_wav, new_aiff = out.index.get_level_values(0)
+        assert new_wav != new_aiff
+        assert new_aiff.endswith("foo.aiff.wav")
+        assert np.isfinite(audiofile.read(new_aiff)[0]).all()
+        # each copy is made from its own source
+        assert not np.allclose(
+            audiofile.read(new_wav)[0][:100], audiofile.read(new_aiff)[0][:100]
+        )
 
     def test_a_file_in_several_segments_is_written_once(self, tmp_path, setup_conf):
         path = tmp_path / "f.wav"

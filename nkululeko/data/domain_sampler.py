@@ -21,11 +21,12 @@ class DomainBalancedBatchSampler(Sampler):
     """Yields batches (lists of positions in the dataset) that hold the same
     number of samples of each domain.
 
-    An epoch has as many samples as the dataset (rounded up to full
-    batches), so it costs what a plain epoch costs: the samples of a domain
-    that is bigger than its share are drawn without repetition and, as
-    every epoch draws anew, are all seen over the epochs; the samples of a
-    smaller domain are repeated (every one equally often, up to one).
+    An epoch has as many samples as the dataset, to within half a batch (it
+    is made of full batches, at least one), so it costs what a plain epoch
+    costs: the samples of a domain that is bigger than its share are drawn
+    without repetition and, as every epoch draws anew, are all seen over the
+    epochs; the samples of a smaller domain are repeated (every one equally
+    often, up to one).
 
     Use it as `DataLoader(dataset, batch_sampler=sampler)`; `batch_sampler`
     excludes the loader's own `batch_size`, `shuffle` and `sampler`.
@@ -60,7 +61,8 @@ class DomainBalancedBatchSampler(Sampler):
         ]
         self.per_domain = batch_size // len(names)
         self.batch_size = self.per_domain * len(names)
-        self.n_batches = -(-len(domains) // self.batch_size)  # ceil
+        # as many batches as come closest to the dataset size
+        self.n_batches = max(1, int(len(domains) / self.batch_size + 0.5))
         self._seed = seed
         self._epoch = 0
 

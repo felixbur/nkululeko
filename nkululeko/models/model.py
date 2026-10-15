@@ -87,6 +87,11 @@ class Model(ContextAware):
                 "added when several databases are pooled; a split cached "
                 "before that needs [DATA] no_reuse = True once."
             )
+        if df[column].isna().any():
+            self.util.error(
+                f"MODEL.domain_balanced_sampling: {int(df[column].isna().sum())} "
+                f"train rows have no value in '{column}'; every row needs a domain"
+            )
         if df[column].nunique() < 2:
             self.util.warn(
                 f"MODEL.domain_balanced_sampling: the train data has a single "

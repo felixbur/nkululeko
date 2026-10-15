@@ -581,7 +581,7 @@ SAM is added to the auto-generated experiment name (`..._sam`, or `..._sam-rho0-
 
 #### Domain-balanced sampling
 
-Available for `type = aasist`, `mlp`, `mlp_reg`, `cnn` and `adm` (other model types ignore it and log a warning). When databases (or languages) are pooled for training, the biggest one fills most batches and dominates the gradients. With domain-balanced sampling every training batch holds the same number of samples of each domain, which helps the model not to favour the biggest source and is a simple way to improve generalization to an unseen domain. An epoch has as many samples as without balancing: the samples of a domain that is bigger than its share are drawn without repetition (and all seen over the epochs), those of a smaller domain are repeated.
+Available for `type = aasist`, `mlp`, `mlp_reg`, `cnn` and `adm` (other model types ignore it and log a warning). When databases (or languages) are pooled for training, the biggest one fills most batches and dominates the gradients. With domain-balanced sampling every training batch holds the same number of samples of each domain, which helps the model not to favour the biggest source and is a simple way to improve generalization to an unseen domain. An epoch has as many samples as without balancing (to within half a batch): the samples of a domain that is bigger than its share are drawn without repetition (and all seen over the epochs), those of a smaller domain are repeated.
 
 * **domain_balanced_sampling**: draw batches with the same number of samples of every domain
   * domain_balanced_sampling = True

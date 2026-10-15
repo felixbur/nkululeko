@@ -298,16 +298,29 @@ class NamingMixin:
             return ""
         if not self.config_val_bool("AASIST", "rawboost", False):
             return ""
+        return "_" + self._rawboost_tag()
+
+    def _rawboost_tag(self):
+        """'rawboost-algo5', plus a hash of the `rawboost_*` settings if they
+        are not the defaults: names the RawBoost settings in file and run
+        names."""
         from dataclasses import asdict, replace
 
         from nkululeko.augmenting.rawboost import RawBoostParams
 
         params = RawBoostParams.from_util(self)
-        suffix = f"_rawboost-algo{params.algo}"
+        tag = f"rawboost-algo{params.algo}"
         if replace(params, algo=RawBoostParams.algo) != RawBoostParams():
             digest = hashlib.sha1(repr(sorted(asdict(params).items())).encode())
-            suffix += f"-{digest.hexdigest()[:6]}"
-        return suffix
+            tag += f"-{digest.hexdigest()[:6]}"
+        return tag
+
+    def augment_label(self, method):
+        """Name of an [AUGMENT] augment method in file, database and run
+        names: the method itself, except that the settings of RawBoost are
+        part of its name, so that other settings do not reuse or overwrite
+        the files and results of earlier ones."""
+        return self._rawboost_tag() if method == "rawboost" else method
 
     def _get_dann_suffix(self):
         """Return a DANN suffix (e.g. '_dann-source_db') when the model type
@@ -344,7 +357,7 @@ class NamingMixin:
         if not aug:
             return ""
         try:
-            augmentings = "_".join(ast.literal_eval(aug))
+            augmentings = "_".join(self.augment_label(a) for a in ast.literal_eval(aug))
         except (ValueError, SyntaxError):
             augmentings = aug
         return f"_aug_{augmentings}"

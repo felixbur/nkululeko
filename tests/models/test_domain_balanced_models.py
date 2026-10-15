@@ -288,11 +288,18 @@ class TestSharedHelper:
         assert not isinstance(loader.batch_sampler, DomainBalancedBatchSampler)
         assert "nothing to balance" in caplog.text
 
+    def test_missing_values_are_an_error_even_with_one_domain_left(self, tmp_path):
+        model = self._model(tmp_path)
+        df = _df().assign(source_db="a")
+        df.loc[0, "source_db"] = None  # one value and a gap: not "one domain"
+        with pytest.raises(NkululukoError, match="no value"):
+            model._make_train_loader(list(range(N)), df, BATCH)
+
     def test_rows_without_a_domain_are_an_error(self, tmp_path):
         model = self._model(tmp_path)
         df = _df()
         df.loc[0, "source_db"] = None
-        with pytest.raises(NkululukoError, match="no domain"):
+        with pytest.raises(NkululukoError, match="no value"):
             model._make_train_loader(list(range(N)), df, BATCH)
 
     def test_too_small_a_batch_is_an_error(self, tmp_path):

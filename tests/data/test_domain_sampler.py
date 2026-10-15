@@ -60,6 +60,26 @@ class TestBatches:
         assert len(sampler) == -(-1010 // 10)  # ceil: no more than a plain epoch
         assert n_samples == len(sampler) * 10 == 1010
 
+    @pytest.mark.parametrize("n_domains", [2, 3, 5])
+    @pytest.mark.parametrize("batch_size", [4, 6, 7, 32])
+    @pytest.mark.parametrize("n_rows", [8, 10, 25, 101])
+    def test_the_epoch_is_within_half_a_batch_of_the_dataset(
+        self, n_rows, batch_size, n_domains
+    ):
+        if batch_size < n_domains or n_rows < n_domains:
+            pytest.skip("a batch must hold every domain")
+        domains = [i % n_domains for i in range(n_rows)]
+        sampler = DomainBalancedBatchSampler(domains, batch_size)
+        drawn = sum(len(batch) for batch in sampler)
+        assert drawn == len(sampler) * sampler.batch_size
+        assert len(sampler) >= 1
+        assert abs(drawn - n_rows) <= sampler.batch_size / 2 or len(sampler) == 1
+
+    def test_eight_rows_with_batches_of_six_are_one_batch_not_two(self):
+        sampler = DomainBalancedBatchSampler(_domains({"a": 5, "b": 3}), batch_size=6)
+        assert len(sampler) == 1
+        assert [len(b) for b in sampler] == [6]
+
     def test_a_small_domain_is_repeated_evenly(self):
         domains = np.array(_domains({"a": 90, "b": 10}))
         sampler = DomainBalancedBatchSampler(domains, batch_size=10)

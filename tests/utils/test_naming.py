@@ -409,6 +409,26 @@ type = os
         with self.assertRaisesRegex(NkululukoError, "rawboost_algo"):
             u._get_rawboost_suffix()
 
+    def test_augment_label_names_the_rawboost_settings(self):
+        u = self._dann_util("svm", sections="[AUGMENT]\nrawboost_algo = 3")
+        self.assertEqual(u.augment_label("rawboost"), "rawboost-algo3")
+        self.assertEqual(u.augment_label("traditional"), "traditional")
+        u = self._dann_util("svm", sections="[AUGMENT]\nrawboost_snr_min = 5")
+        self.assertRegex(u.augment_label("rawboost"), r"^rawboost-algo5-[0-9a-f]{6}$")
+
+    def test_aug_suffix_tells_rawboost_settings_apart(self):
+        suffixes = set()
+        for settings in ("rawboost_algo = 3", "rawboost_algo = 5", "rawboost_p = 20"):
+            u = self._dann_util(
+                "svm", sections=f"[AUGMENT]\naugment = ['rawboost']\n{settings}"
+            )
+            suffixes.add(u._get_aug_suffix())
+        self.assertEqual(len(suffixes), 3)
+        u = self._dann_util(
+            "svm", sections="[AUGMENT]\naugment = ['traditional', 'rawboost']"
+        )
+        self.assertTrue(u._get_aug_suffix().startswith("_aug_traditional_rawboost-algo5"))
+
     def test_all_suffixes_combine_in_the_run_name(self):
         u = self._dann_util(
             "aasist",

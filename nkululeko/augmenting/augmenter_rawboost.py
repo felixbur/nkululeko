@@ -21,7 +21,7 @@ from nkululeko.utils.dataframe import remap_augmented_index, should_reuse_file
 from nkululeko.utils.files import mirror_relpath
 from nkululeko.utils.util import Util
 
-# audiofile can write these; anything else (e.g. mp3) is written as wav
+# audiofile can write these; any other format is written as wav (name.ext.wav)
 _WRITABLE = (".wav", ".flac", ".ogg")
 
 
@@ -73,9 +73,10 @@ class AugmenterRawBoost:
             # keyed by the full source path so that files of different
             # datasets with the same name do not collide
             new_full_name = os.path.join(filepath, mirror_relpath(f))
-            base, ext = os.path.splitext(new_full_name)
-            if ext.lower() not in _WRITABLE:
-                new_full_name = base + ".wav"
+            if os.path.splitext(new_full_name)[1].lower() not in _WRITABLE:
+                # keep the source extension in the name, so that foo.mp3 and
+                # foo.wav of one folder do not end up in the same file
+                new_full_name += ".wav"
             if should_reuse_file(self.util, "DATA", new_full_name):
                 reused += 1
                 index_map[f] = new_full_name
