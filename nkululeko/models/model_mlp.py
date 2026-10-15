@@ -144,6 +144,8 @@ class MLPModel(Model):
             loss = self._optimize(
                 self.optimizer, compute_loss, modules=[self.model]
             )
+            if loss is None:  # SAM skipped a non-finite step
+                continue
             losses.append(loss.item())
         self.loss = (np.asarray(losses)).mean()
 

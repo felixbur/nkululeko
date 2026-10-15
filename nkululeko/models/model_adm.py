@@ -277,7 +277,8 @@ class ADMModel(Model):
                 max_grad_norm=self.max_grad_norm,
                 modules=[self.model],
             )
-            losses.append(loss.item())
+            if loss is not None:  # None: SAM skipped a non-finite step
+                losses.append(loss.item())
 
             # Step scheduler per batch (for cosine)
             step_scheduler(self.scheduler, self.scheduler_type, step_per_batch=True)

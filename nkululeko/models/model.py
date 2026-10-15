@@ -79,10 +79,11 @@ class Model(ContextAware):
 
         `compute_loss` is a function without arguments that runs the forward
         pass and returns the loss (task loss plus, if used, the DANN loss).
-        Returns that loss (a tensor), or None if `skip_non_finite` is set and
+        Returns that loss (a tensor), or None if the step was skipped because
         the loss, or a gradient, is NaN/inf (nothing is updated then). SAM
-        always skips such steps; for a plain optimizer it is opt-in, so the
-        other models keep their behavior.
+        always skips such steps, so callers must handle None (leave the batch
+        out of the epoch loss); for a plain optimizer skipping is opt-in with
+        `skip_non_finite`, so the other models keep their behavior.
 
         With a plain optimizer this is zero_grad, backward, optional
         gradient clipping (`clip_params` to `max_grad_norm`) and step. With
@@ -113,8 +114,8 @@ class Model(ContextAware):
             return loss
 
         if is_sam_optimizer(optimizer):
-            loss = optimizer.step(closure)  # skips the update if not finite
-            if skip_non_finite and optimizer.last_step_skipped:
+            loss = optimizer.step(closure)
+            if optimizer.last_step_skipped:  # SAM skipped a non-finite step
                 return None
         else:
             loss = compute_loss()
@@ -126,8 +127,6 @@ class Model(ContextAware):
                 optimizer.zero_grad()
                 return None
             optimizer.step()
-        if skip_non_finite and not torch.isfinite(loss):
-            return None
         return loss
 
     def __init__(self, df_train, df_test, feats_train, feats_test, context=None):

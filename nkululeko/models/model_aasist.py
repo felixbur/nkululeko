@@ -247,7 +247,8 @@ class AasistModel(Model):
             )
 
             step_scheduler(self.scheduler, self.scheduler_type, step_per_batch=True)
-            losses.append(loss.item())
+            if loss is not None:  # None: SAM skipped a non-finite step
+                losses.append(loss.item())
 
         step_scheduler(self.scheduler, self.scheduler_type, step_per_batch=False)
         self.loss = float(np.mean(losses)) if losses else 0.0

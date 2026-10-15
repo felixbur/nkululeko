@@ -569,7 +569,7 @@ Available for `type = aasist`, `mlp`, `mlp_reg`, `cnn` and `adm`, i.e. every mod
   * sam_rho = 0.05
   * default: 0.05 (the paper's value); must be a number >= 0 (0 takes the plain optimizer's update from a second pass, at twice the cost; with dropout the gradient comes from a different dropout mask, so it is not identical to a plain run)
 
-SAM is added to the auto-generated experiment name (`..._sam`, or `..._sam-rho0-1` for a non-default `sam_rho`), so SAM and plain runs keep separate results and checkpoints. If you set `[EXP] res_name`, that name is used as is: give SAM runs their own `res_name`. It combines with DANN. A step with a NaN loss or gradient is skipped.
+SAM is added to the auto-generated experiment name (`..._sam`, or `..._sam-rho0-1` for a non-default `sam_rho`), so SAM and plain runs keep separate results and checkpoints. If you set `[EXP] res_name`, that name is used as is: give SAM runs their own `res_name`. It combines with DANN. A step with a NaN or infinite loss or gradient is skipped: the weights stay as they were and that batch is left out of the epoch loss.
 
 ### FINETUNE
 

@@ -237,6 +237,7 @@ class MLP_Reg_model(Model):
                 ) + self.dann_heads.loss(hidden, domain_labels.to(device))
 
             # a non-finite loss is possible (ccc on a batch with one value): skip it
+            # (SAM skips such a step on its own)
             loss = self._optimize(
                 optimizer, compute_loss, skip_non_finite=True, modules=[model]
             )

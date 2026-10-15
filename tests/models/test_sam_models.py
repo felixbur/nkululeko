@@ -283,6 +283,32 @@ def test_sam_also_trains_the_dann_heads(name):
     assert not torch.allclose(head.weight, before)
 
 
+@pytest.mark.parametrize("name", sorted(BUILDERS))
+def test_a_batch_skipped_by_sam_is_left_out_of_the_epoch_loss(name):
+    """The first batch has a NaN loss: its step is skipped (SAM never applies
+    it) and it must not turn the epoch loss into NaN."""
+    model, net = BUILDERS[name](use_sam=True, with_dann=False)
+    calls = []
+
+    class FirstNaN(nn.Module):
+        def __init__(self, criterion):
+            super().__init__()
+            self.criterion = criterion
+
+        def forward(self, *args):
+            calls.append(1)
+            loss = self.criterion(*args)
+            return loss * float("nan") if len(calls) == 1 else loss
+
+    model.criterion.criterion = FirstNaN(model.criterion.criterion)
+    before = next(net.parameters()).detach().clone()
+    model.train()
+    assert np.isfinite(model.loss)
+    assert len(calls) == 3  # one pass for the skipped batch, two for the other
+    assert not torch.allclose(next(net.parameters()), before)  # 2nd batch trained
+    assert all(torch.isfinite(p).all() for p in net.parameters())
+
+
 def test_mlp_reg_skips_nan_batches_with_sam():
     model, net = _mlp_reg(use_sam=True, with_dann=False)
     model.criterion = lambda logits, labels: logits.sum() * float("nan")
