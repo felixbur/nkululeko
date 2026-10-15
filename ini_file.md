@@ -400,7 +400,7 @@ Feature extraction settings. Multiple feature types can be combined by listing t
   * default: functionals
   * possible values:
     * **functionals**: one vector per sample (aggregated over the whole segment)
-    * **frame** (or **lld**): one row per frame, index `file`, `start`, `end`, `frame`, with `frame` the frame's start time relative to the segment start; see [Sequence data](sequence_data.md). Models that take sequences (`lstm`, `lstm_reg`) get the frames, every other model gets them pooled to one vector per sample (see *pooling*). Only `os` (opensmile low-level descriptors) has frame output so far; other feature types give one vector per sample and log a warning. Frame-level runs get `_level-frame` in the automatic run name
+    * **frame** (or **lld**): one row per frame, index `file`, `start`, `end`, `frame`, with `frame` the frame's start time relative to the segment start; see [Sequence data](sequence_data.md). Models that take sequences (`lstm`, `lstm_reg`) get the frames, every other model gets them pooled to one vector per sample (see *pooling*). Feature types with frame output: `os` (opensmile low-level descriptors, every 10 ms) and `wav2vec2`, `hubert`, `wavlm` (embeddings every 20 ms instead of their mean); other feature types give one vector per sample and log a warning. Frame-level runs get `_level-frame` in the automatic run name
 * **pooling**: statistics that turn a frame sequence into one vector per sample, for models that take vectors
   * pooling = ['mean', 'max']
   * default: ['mean', 'std']

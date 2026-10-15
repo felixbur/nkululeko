@@ -26,7 +26,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 * `'MODEL'.'adm.branches'`: `'time,spectral,phase,lfcc,cqcc'` (nkululeko/models/model_adm.py:140), `'time,spectral,phase,lfcc,cqcc'` (nkululeko/models/model_adm.py:581), `'time,spectral,phase'` (nkululeko/utils/naming.py:219)
 * `'MODEL'.'batch_size'`: `32` (nkululeko/models/model_adm.py:195), `8` (nkululeko/models/model_cnn.py:75), `8` (nkululeko/models/model_mlp.py:83), `8` (nkululeko/models/model_mlp_regression.py:83)
 * `'MODEL'.'class_weight'`: `False` (nkululeko/models/model.py:254), `False` (nkululeko/models/model.py:313), `False` (nkululeko/models/model.py:407), `'False'` (nkululeko/models/model.py:431), `False` (nkululeko/models/model.py:446), `False` (nkululeko/models/model_aasist.py:176), `'auto'` (nkululeko/models/model_adm.py:93), `False` (nkululeko/models/model_xgb.py:137)
-* `'MODEL'.'device'`: `'cpu'` (nkululeko/augmenting/augmenter_silero.py:37), `'cpu'` (nkululeko/autopredict/ap_sid.py:31), `device` (nkululeko/autopredict/ap_text.py:28), `cuda` (nkululeko/feat_extract/feats_agender.py:38), `cuda` (nkululeko/feat_extract/feats_agender_agender.py:36), `cuda` (nkululeko/feat_extract/feats_ast.py:19), `cuda` (nkululeko/feat_extract/feats_auddim.py:34), `cuda` (nkululeko/feat_extract/feats_audmodel.py:136), `cuda` (nkululeko/feat_extract/feats_audwav2vec2.py:38), `cuda` (nkululeko/feat_extract/feats_bert.py:22), `'cpu'` (nkululeko/feat_extract/feats_clap.py:17), `cuda` (nkululeko/feat_extract/feats_emotion2vec.py:31), `cuda` (nkululeko/feat_extract/feats_emotion2vec_emotion.py:62), `cuda` (nkululeko/feat_extract/feats_hubert.py:29), `cuda` (nkululeko/feat_extract/feats_lfcc.py:95), `'cpu'` (nkululeko/feat_extract/feats_mos.py:40), `cuda` (nkululeko/feat_extract/feats_spkrec.py:29), `cuda` (nkululeko/feat_extract/feats_sptk.py:39), `cuda` (nkululeko/feat_extract/feats_squim.py:36), `cuda` (nkululeko/feat_extract/feats_textclassifier.py:23), `cuda` (nkululeko/feat_extract/feats_wav2vec2.py:32), `cuda` (nkululeko/feat_extract/feats_wavlm.py:29), `cuda` (nkululeko/feat_extract/feats_whisper.py:19), `False` (nkululeko/models/aasist_config.py:43), `cuda` (nkululeko/models/model_adm.py:62), `cuda` (nkululeko/models/model_adm.py:545), `'cpu'` (nkululeko/models/model_cnn.py:49), `cuda` (nkululeko/models/model_cnn.py:274), `cuda` (nkululeko/models/model_cnn.py:291), `cuda` (nkululeko/models/model_mlp.py:45), `cuda` (nkululeko/models/model_mlp.py:322), `cuda` (nkululeko/models/model_mlp.py:355), `cuda` (nkululeko/models/model_mlp_regression.py:56), `'cpu'` (nkululeko/models/model_mlp_regression.py:301), `'cpu'` (nkululeko/models/model_mlp_regression.py:319), `False` (nkululeko/models/rnn_config.py:50), `'cpu'` (nkululeko/segmenting/seg_pyannote.py:38)
+* `'MODEL'.'device'`: `'cpu'` (nkululeko/augmenting/augmenter_silero.py:37), `'cpu'` (nkululeko/autopredict/ap_sid.py:31), `device` (nkululeko/autopredict/ap_text.py:28), `cuda` (nkululeko/feat_extract/feats_agender.py:38), `cuda` (nkululeko/feat_extract/feats_agender_agender.py:36), `cuda` (nkululeko/feat_extract/feats_ast.py:19), `cuda` (nkululeko/feat_extract/feats_auddim.py:34), `cuda` (nkululeko/feat_extract/feats_audmodel.py:136), `cuda` (nkululeko/feat_extract/feats_audwav2vec2.py:38), `cuda` (nkululeko/feat_extract/feats_bert.py:22), `'cpu'` (nkululeko/feat_extract/feats_clap.py:17), `cuda` (nkululeko/feat_extract/feats_emotion2vec.py:31), `cuda` (nkululeko/feat_extract/feats_emotion2vec_emotion.py:62), `cuda` (nkululeko/feat_extract/feats_hubert.py:31), `cuda` (nkululeko/feat_extract/feats_lfcc.py:95), `'cpu'` (nkululeko/feat_extract/feats_mos.py:40), `cuda` (nkululeko/feat_extract/feats_spkrec.py:29), `cuda` (nkululeko/feat_extract/feats_sptk.py:39), `cuda` (nkululeko/feat_extract/feats_squim.py:36), `cuda` (nkululeko/feat_extract/feats_textclassifier.py:23), `cuda` (nkululeko/feat_extract/feats_wav2vec2.py:34), `cuda` (nkululeko/feat_extract/feats_wavlm.py:31), `cuda` (nkululeko/feat_extract/feats_whisper.py:19), `False` (nkululeko/models/aasist_config.py:43), `cuda` (nkululeko/models/model_adm.py:62), `cuda` (nkululeko/models/model_adm.py:545), `'cpu'` (nkululeko/models/model_cnn.py:49), `cuda` (nkululeko/models/model_cnn.py:274), `cuda` (nkululeko/models/model_cnn.py:291), `cuda` (nkululeko/models/model_mlp.py:45), `cuda` (nkululeko/models/model_mlp.py:322), `cuda` (nkululeko/models/model_mlp.py:355), `cuda` (nkululeko/models/model_mlp_regression.py:56), `'cpu'` (nkululeko/models/model_mlp_regression.py:301), `'cpu'` (nkululeko/models/model_mlp_regression.py:319), `False` (nkululeko/models/rnn_config.py:50), `'cpu'` (nkululeko/segmenting/seg_pyannote.py:38)
 * `'MODEL'.'drop'`: `False` (nkululeko/models/model_cnn.py:57), `False` (nkululeko/models/model_cnn.py:277), `False` (nkululeko/models/model_cnn.py:294), `'False'` (nkululeko/models/model_mlp.py:53), `'False'` (nkululeko/models/model_mlp.py:325), `'False'` (nkululeko/models/model_mlp.py:358), `False` (nkululeko/models/model_mlp_regression.py:63), `False` (nkululeko/models/model_mlp_regression.py:303), `False` (nkululeko/models/model_mlp_regression.py:322), `'False'` (nkululeko/models/rnn_config.py:63)
 * `'MODEL'.'learning_rate'`: `0.3` (nkululeko/models/model_xgb.py:32), `str(default_lr)` (nkululeko/optimizers/optimizer_factory.py:39)
 * `'MODEL'.'loss'`: `'cross'` (nkululeko/models/model.py:208), `'cross'` (nkululeko/models/model_aasist.py:169), `'bce'` (nkululeko/models/model_adm.py:65), `'mse'` (nkululeko/models/model_lstm_regression.py:33), `'mse'` (nkululeko/models/model_mlp_regression.py:35)
@@ -114,7 +114,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'EXPORT' | 'root' | `'./exported_data/'` | nkululeko/export.py:97 |
 | 'EXPORT' | 'segments_as_files' | `'False'` | nkululeko/export.py:100 |
 | 'FEATS' | 'Spkrec.model' | `f'speechbrain/{self.feat_type}'` | nkululeko/feat_extract/feats_spkrec.py:39 |
-| 'FEATS' | 'WavLM.model' | `f'microsoft/{self.feat_type}'` | nkululeko/feat_extract/feats_wavlm.py:38 |
+| 'FEATS' | 'WavLM.model' | `f'microsoft/{self.feat_type}'` | nkululeko/feat_extract/feats_wavlm.py:40 |
 | 'FEATS' | 'agender.model' | `'./audmodel_agender/'` | nkululeko/feat_extract/feats_agender.py:29, nkululeko/feat_extract/feats_agender_agender.py:27 |
 | 'FEATS' | 'assignments' | `10` | nkululeko/feat_extract/feats_oxbow.py:62 |
 | 'FEATS' | 'ast.model' | `'MIT/ast-finetuned-audioset-10-10-0.4593'` | nkululeko/feat_extract/feats_ast.py:25 |
@@ -131,15 +131,15 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'FEATS' | 'cqcc.n_cqt_bins' | `N_CQT_BINS` | nkululeko/feat_extract/feats_cqcc.py:97 |
 | 'FEATS' | 'cqcc.sample_rate' | `SAMPLING_RATE` | nkululeko/feat_extract/feats_cqcc.py:93 |
 | 'FEATS' | 'emotion2vec.model' | `_MODEL_MAPPING.get(self.feats_type, 'emotion2vec/emotion2vec_plus_large')` / `model_mapping.get(self.feat_type, 'emotion2vec/emotion2vec_base')` | nkululeko/feat_extract/feats_emotion2vec.py:56, nkululeko/feat_extract/feats_emotion2vec_emotion.py:76 |
-| 'FEATS' | 'fail_threshold' | `str(default)` | nkululeko/feat_extract/featureset.py:84 |
+| 'FEATS' | 'fail_threshold' | `str(default)` | nkululeko/feat_extract/featureset.py:85 |
 | 'FEATS' | 'fft_hop_dur' | `'10'` | nkululeko/feat_extract/feats_spectra.py:31 |
 | 'FEATS' | 'fft_nbands' | `'64'` | nkululeko/feat_extract/feats_spectra.py:29 |
 | 'FEATS' | 'fft_win_dur' | `'25'` | nkululeko/feat_extract/feats_spectra.py:30 |
-| 'FEATS' | 'hubert.layer' | `'0'` | nkululeko/feat_extract/feats_hubert.py:32 |
-| 'FEATS' | 'hubert.model' | `f'facebook/{self.feat_type}'` | nkululeko/feat_extract/feats_hubert.py:39 |
+| 'FEATS' | 'hubert.layer' | `'0'` | nkululeko/feat_extract/feats_hubert.py:34 |
+| 'FEATS' | 'hubert.model' | `f'facebook/{self.feat_type}'` | nkululeko/feat_extract/feats_hubert.py:41 |
 | 'FEATS' | 'import_file' | `False` | nkululeko/feat_extract/feats_import.py:27 |
 | 'FEATS' | 'import_files_append' | `True` | nkululeko/feat_extract/feats_import.py:23 |
-| 'FEATS' | 'level' | `'functionals'` | nkululeko/feat_extract/feats_opensmile.py:72, nkululeko/feat_extract/featureset.py:47, nkululeko/utils/naming.py:319 |
+| 'FEATS' | 'level' | `'functionals'` | nkululeko/feat_extract/feats_opensmile.py:72, nkululeko/feat_extract/featureset.py:48, nkululeko/utils/naming.py:319 |
 | 'FEATS' | 'lfcc.fft_length' | `N_FFT` | nkululeko/feat_extract/feats_lfcc.py:102 |
 | 'FEATS' | 'lfcc.frame_length' | `FRAME_LENGTH` | nkululeko/feat_extract/feats_lfcc.py:97 |
 | 'FEATS' | 'lfcc.frame_period' | `FRAME_PERIOD` | nkululeko/feat_extract/feats_lfcc.py:100 |
@@ -164,9 +164,9 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'FEATS' | 'store_format' | `'pkl'` | nkululeko/feat_extract/feats_agender.py:46, nkululeko/feat_extract/feats_agender_agender.py:57, nkululeko/feat_extract/feats_auddim.py:50, +16 more |
 | 'FEATS' | 'trill.model' | `'https://tfhub.dev/google/nonsemantic-speech-benchmark/trill/3'` | nkululeko/feat_extract/feats_trill.py:37 |
 | 'FEATS' | 'type' | `'os'` / `None` / `['os']` | nkululeko/bundle.py:220, nkululeko/data/datasplitter.py:418, nkululeko/experiment.py:235, +3 more |
-| 'FEATS' | 'wav2vec2.layer' | `'0'` | nkululeko/feat_extract/feats_audmodel.py:114, nkululeko/feat_extract/feats_wav2vec2.py:38 |
-| 'FEATS' | 'wav2vec2.model' | `f'facebook/{self.feat_type}'` | nkululeko/feat_extract/feats_wav2vec2.py:43 |
-| 'FEATS' | 'wavlm.layer' | `'0'` | nkululeko/feat_extract/feats_wavlm.py:32 |
+| 'FEATS' | 'wav2vec2.layer' | `'0'` | nkululeko/feat_extract/feats_audmodel.py:114, nkululeko/feat_extract/feats_wav2vec2.py:40 |
+| 'FEATS' | 'wav2vec2.model' | `f'facebook/{self.feat_type}'` | nkululeko/feat_extract/feats_wav2vec2.py:45 |
+| 'FEATS' | 'wavlm.layer' | `'0'` | nkululeko/feat_extract/feats_wavlm.py:34 |
 | 'FEATS' | 'with_os' | `False` | nkululeko/feat_extract/feats_oxbow.py:79 |
 | 'FEATS' | 'xbow.model' | `'openXBOW'` | nkululeko/feat_extract/feats_oxbow.py:54 |
 | 'FEATS' | <f'{ft}.model'> | `''` | nkululeko/bundle.py:66, nkululeko/bundle.py:117 |
@@ -224,7 +224,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'MODEL' | 'measure' | `'mse'` / `'uar'` | nkululeko/models/model_lstm_regression.py:53, nkululeko/models/model_mlp_regression.py:280, nkululeko/reporting/reporter.py:84, +6 more |
 | 'MODEL' | 'momentum' | `'0.9'` | nkululeko/optimizers/optimizer_factory.py:55 |
 | 'MODEL' | 'n_estimators' | `100` | nkululeko/models/model_xgb.py:30 |
-| 'MODEL' | 'n_jobs' | `'8'` | nkululeko/feat_extract/featureset.py:41, nkululeko/models/model.py:154 |
+| 'MODEL' | 'n_jobs' | `'8'` | nkululeko/feat_extract/featureset.py:42, nkululeko/models/model.py:154 |
 | 'MODEL' | 'nan_strategy' | `'zero'` | nkululeko/models/model.py:518 |
 | 'MODEL' | 'only_test' | `False` | nkululeko/modelrunner.py:185 |
 | 'MODEL' | 'optimizer' | `default_optimizer` | nkululeko/optimizers/optimizer_factory.py:40 |

@@ -44,15 +44,31 @@ wav/03a01Nc.wav,0.0,2.3,0.00,28.9,0.12
 
 ### Extracting them
 
-Set `[FEATS] level = frame` (`lld` also works). Currently opensmile
-supports it, giving its low-level descriptors (25 per frame for
-eGeMAPSv02, one frame every 10 ms):
+Set `[FEATS] level = frame` (`lld` also works). These feature types
+support it:
+
+| type | frames |
+|---|---|
+| `os` | opensmile low-level descriptors, every 10 ms (25 per frame for eGeMAPSv02) |
+| `wav2vec2`, `hubert`, `wavlm` | the model's embeddings, every 20 ms, instead of their mean |
 
 ```ini
 [FEATS]
 type = ['os']
 level = frame
 ```
+
+or
+
+```ini
+[FEATS]
+type = ['wav2vec2']
+level = frame
+```
+
+Frame embeddings of the SSL models are large: with 1024 values every
+20 ms (the large models), about 740 MB per hour of audio, kept in memory
+during training (768 values for the base models: about 550 MB).
 
 Other feature types ignore the setting (with a warning) and give one
 vector per sample.

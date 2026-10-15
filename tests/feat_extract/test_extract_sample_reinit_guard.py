@@ -83,6 +83,8 @@ def test_extract_sample_only_initializes_model_once(
 ):
     instance = cls.__new__(cls)
     setattr(instance, flag_attr, False)
+    # no config on a bare instance: one vector per sample (FEATS.level)
+    instance._wants_frames = False
     instance.init_model = MagicMock(
         side_effect=lambda: setattr(instance, flag_attr, True)
     )

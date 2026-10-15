@@ -246,3 +246,63 @@ class TestScaling:
             rows = scaled.index.droplevel("frame").isin([segment])
             assert scaled.loc[rows, "f"].mean() == pytest.approx(0.0)
             assert scaled.loc[rows, "f"].std(ddof=0) == pytest.approx(1.0)
+
+
+class TestSSLFrames:
+    """wav2vec2/HuBERT/WavLM frame output, with a stand-in model."""
+
+    class _Model:
+        class config:
+            conv_stride = [5, 2, 2, 2, 2, 2, 2]
+
+        def __call__(self, y):
+            # (batch, frames, dims): one frame per 320 samples, dims 4
+            import torch
+
+            n = y.shape[1] // 320
+            return (torch.arange(n * 4, dtype=torch.float32).reshape(1, n, 4),)
+
+    def _extractor(self, tmp_path, level):
+        from nkululeko.experiment_context import use_context
+        from nkululeko.feat_extract.feats_wav2vec2 import Wav2vec2
+
+        util = make_util(tmp_path, {"type": "['wav2vec2']", "level": level})
+        with use_context(util.context):
+            extractor = Wav2vec2("w2v", _data_df(tmp_path), "wav2vec2")
+        extractor.model = self._Model()
+        extractor.processor = lambda signal, sampling_rate: {
+            "input_values": np.asarray(signal)
+        }
+        extractor.model_initialized = True
+        return extractor
+
+    def test_frame_step_from_conv_strides(self, tmp_path):
+        assert self._extractor(tmp_path, "frame")._ssl_frame_step() == 0.02
+
+    def test_embeddings_per_frame_or_pooled(self, tmp_path):
+        extractor = self._extractor(tmp_path, "frame")
+        signal = np.zeros((1, 3200), dtype=np.float32)
+        frames = extractor.get_embeddings(signal, 16000, "f", pooled=False)
+        pooled = extractor.get_embeddings(signal, 16000, "f")
+        assert frames.shape == (10, 4)
+        np.testing.assert_allclose(pooled, frames.mean(axis=0))
+
+    def test_extract_gives_frames_relative_to_segment(self, tmp_path):
+        extractor = self._extractor(tmp_path, "frame")
+        extractor.extract()
+        df = extractor.df
+        assert seq.is_sequence(df)
+        assert seq.n_segments(df) == 2
+        # segments of 0.5 s and 0.7 s at 20 ms per frame
+        sizes = [len(a) for a in seq.to_arrays(df)[1]]
+        assert sizes == [25, 35]
+        assert df.index.get_level_values("frame")[1] == td(0.02)
+        assert df.dtypes.iloc[0] == np.float32
+
+    def test_supports_frames(self):
+        from nkululeko.feat_extract.feats_hubert import Hubert
+        from nkululeko.feat_extract.feats_wav2vec2 import Wav2vec2
+        from nkululeko.feat_extract.feats_wavlm import Wavlm
+
+        assert Wav2vec2.supports_frames and Hubert.supports_frames
+        assert Wavlm.supports_frames

@@ -15,8 +15,9 @@ unchanged: still one value per utterance.
 The frames come from the normal feature extraction with
 `[FEATS] level = frame` (see [Sequence data](sequence_data.md)), so they
 are cached, can be scaled, and can just as well be imported from a CSV
-file. Currently opensmile gives frame output: its low-level descriptors,
-e.g. 25 values per 10 ms frame for eGeMAPSv02.
+file. Frame output comes from opensmile (low-level descriptors, e.g. 25
+values per 10 ms for eGeMAPSv02) and from wav2vec2, HuBERT and WavLM
+(their embeddings every 20 ms, instead of their mean).
 
 ## Quick Start
 
@@ -56,7 +57,20 @@ python -m nkululeko.nkululeko --config examples/exp_emodb_lstm.ini
 Scaling the features (`scale = standard`) matters here: the low-level
 descriptors have very different ranges.
 
-### 2. Your own frame features
+### 2. wav2vec2 frames
+
+An LSTM on top of a pretrained model's frame embeddings:
+
+```ini
+[FEATS]
+type = ['wav2vec2']
+level = frame
+scale = standard
+[MODEL]
+type = lstm
+```
+
+### 3. Your own frame features
 
 Frame features computed elsewhere can be imported from a CSV with the
 columns `file`, `start`, `end`, `frame` (all in seconds, `frame` relative
@@ -71,7 +85,7 @@ scale = standard
 type = lstm
 ```
 
-### 3. A bidirectional LSTM
+### 4. A bidirectional LSTM
 
 There is no separate model type for a BLSTM; switch it on in `[RNN]`:
 
@@ -84,7 +98,7 @@ hidden_size = 64
 num_layers = 2
 ```
 
-### 4. Regression
+### 5. Regression
 
 For a continuous target (e.g. age), use `lstm_reg` and set
 `[EXP] type = regression`. Loss and evaluation measure work as for
@@ -105,7 +119,7 @@ loss = mse
 measure = ccc
 ```
 
-### 5. The same frames for other models
+### 6. The same frames for other models
 
 With the same `[FEATS]` settings, any other model gets the frames pooled
 to one vector per utterance (`[FEATS] pooling`, default mean and
