@@ -436,3 +436,71 @@ class TestEvaluateAndProbas:
         assert list(probas.index) == list(lstm_model.df_test.index)
         row_sums = probas.sum(axis=1).to_numpy()
         np.testing.assert_allclose(row_sums, [1.0, 1.0, 1.0], rtol=1e-5)
+
+
+def _experiment_context(tmp_path, model_type, target, dann_columns, labels=None):
+    import configparser
+
+    from nkululeko.experiment_context import ExperimentContext
+
+    config = configparser.ConfigParser()
+    config.read_dict(
+        {
+            "EXP": {"root": str(tmp_path), "name": "t"},
+            "DATA": {"target": target},
+            "MODEL": {
+                "type": model_type,
+                "device": "cpu",
+                "n_jobs": "0",
+                "dann_columns": dann_columns,
+            },
+            "RNN": {
+                "n_mels": "8",
+                "hidden_size": "4",
+                "num_layers": "1",
+                "max_len": "3200",
+                "batch_size": "2",
+            },
+        }
+    )
+    return ExperimentContext(config=config, labels=labels)
+
+
+def _wav_df(tmp_path, target, values):
+    paths = []
+    for i in range(len(values)):
+        path = tmp_path / f"c{i}.wav"
+        _write_wav(path, seconds=0.2)
+        paths.append((str(path), pd.Timedelta(0), pd.NaT))
+    index = pd.MultiIndex.from_tuples(paths, names=["file", "start", "end"])
+    return pd.DataFrame(
+        {target: values, "source_db": ["a", "b"] * (len(values) // 2)}, index=index
+    )
+
+
+class TestConstructor:
+    """Runs the real __init__, which the other tests patch out."""
+
+    @pytest.mark.parametrize("dann_columns", ["[]", "['source_db']"])
+    def test_constructed_model_trains(self, tmp_path, dann_columns):
+        df = _wav_df(tmp_path, "emotion", [0, 1, 2, 0])
+        context = _experiment_context(
+            tmp_path, "lstm", "emotion", dann_columns, labels=["a", "b", "c"]
+        )
+
+        model = LSTMModel(df, df, None, None, context=context)
+        model.train()
+
+        assert (model.dann_heads is not None) == (dann_columns != "[]")
+        assert np.isfinite(model.loss)
+
+    def test_get_probas_keeps_classes_missing_from_test(self, lstm_model):
+        lstm_model.df_test = pd.DataFrame({"label": [1, 2]})
+        logits = torch.tensor([[0.1, 0.8, 0.1], [0.2, 0.2, 0.6]])
+
+        probas = lstm_model.get_probas(logits)
+
+        assert list(probas.columns) == [0, 1, 2]
+        np.testing.assert_allclose(
+            probas[2].to_numpy(), torch.softmax(logits, dim=1)[:, 2].numpy()
+        )

@@ -26,6 +26,7 @@ from nkululeko.models.model_lstm_regression import (
     _RNNNet,
 )
 from nkululeko.models.rnn_config import RNNConfig
+from tests.models.test_model_lstm import _experiment_context, _wav_df
 
 FEATURE_SOURCES = ["melspec", "opensmile_lld"]
 
@@ -208,6 +209,18 @@ class TestEvaluate:
         assert np.isfinite(result)
         assert loss_eval >= 0.0
 
+    def test_one_value_last_batch_keeps_eval_loss_finite(self):
+        """With 1-ccc the last batch of 5 rows at batch_size 2 holds one
+        value, for which CCC is undefined; it must not turn the evaluation
+        loss into NaN."""
+        torch.manual_seed(0)
+        model = _model(criterion=ConcordanceCorCoeff(), util=_Util(measure="ccc"))
+
+        _, _, predictions, loss_eval = model.evaluate(self._loader())
+
+        assert np.isfinite(loss_eval)
+        assert torch.isfinite(predictions).all()
+
     def test_unknown_measure_reports_error(self):
         model = _model(util=_Util(measure="nonsense"))
         with pytest.raises(RuntimeError, match="unknown measure"):
@@ -267,3 +280,18 @@ class TestStoreLoad:
         model.set_id = lambda run, epoch: None
         with pytest.raises(RuntimeError, match="model file not found"):
             model.load(run=0, epoch=0)
+
+
+class TestConstructor:
+    """Runs the real __init__, which the other tests patch out."""
+
+    @pytest.mark.parametrize("dann_columns", ["[]", "['source_db']"])
+    def test_constructed_model_trains(self, tmp_path, dann_columns):
+        df = _wav_df(tmp_path, "age", [20.0, 30.0, 40.0, 50.0])
+        context = _experiment_context(tmp_path, "lstm_reg", "age", dann_columns)
+
+        model = LSTM_Reg_model(df, df, None, None, context=context)
+        model.train()
+
+        assert (model.dann_heads is not None) == (dann_columns != "[]")
+        assert np.isfinite(model.loss)

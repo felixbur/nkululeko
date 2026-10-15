@@ -249,6 +249,11 @@ class LSTMModel(Model):
         ).to(self.device)
 
         self._init_dann(df_train, self.net.feat_dim, self.cfg.dann)
+        if self.dann_heads is not None:
+            # The train loader above was built before the heads existed
+            # (it was needed to read input_size), so rebuild it to yield
+            # the domain labels.
+            self.trainloader = self.get_loader(df_train, shuffle=True, train=True)
         params = self._dann_params(self.net)
         # Higher default LR than AASIST's SSL-fine-tuning 1e-5: this net
         # trains from scratch, closer to ADM's/MLP's training story.
@@ -364,9 +369,9 @@ class LSTMModel(Model):
     def get_probas(self, logits):
         # softmax first, since logits aren't themselves probabilities.
         probs = torch.softmax(logits, dim=1).numpy()
-        classes = self.df_test[self.target].unique()
-        classes.sort()
-        proba_d = {c: list(probs.T[i]) for i, c in enumerate(classes)}
+        # Columns follow the network's outputs, i.e. every encoded class
+        # 0..class_num-1, even if the test split lacks some of them.
+        proba_d = {c: list(probs.T[c]) for c in range(self.class_num)}
         probas = pd.DataFrame(proba_d)
         return probas.set_index(self.df_test.index)
 

@@ -29,7 +29,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 * `'MODEL'.'drop'`: `False` (nkululeko/models/model_cnn.py:57), `False` (nkululeko/models/model_cnn.py:281), `False` (nkululeko/models/model_cnn.py:298), `'False'` (nkululeko/models/model_mlp.py:53), `'False'` (nkululeko/models/model_mlp.py:329), `'False'` (nkululeko/models/model_mlp.py:362), `False` (nkululeko/models/model_mlp_regression.py:63), `False` (nkululeko/models/model_mlp_regression.py:303), `False` (nkululeko/models/model_mlp_regression.py:322), `'False'` (nkululeko/models/rnn_config.py:108)
 * `'MODEL'.'learning_rate'`: `0.3` (nkululeko/models/model_xgb.py:32), `str(default_lr)` (nkululeko/optimizers/optimizer_factory.py:39)
 * `'MODEL'.'loss'`: `'cross'` (nkululeko/models/model.py:205), `'cross'` (nkululeko/models/model_aasist.py:169), `'bce'` (nkululeko/models/model_adm.py:65), `'mse'` (nkululeko/models/model_lstm_regression.py:171), `'mse'` (nkululeko/models/model_mlp_regression.py:35)
-* `'MODEL'.'measure'`: `'mse'` (nkululeko/models/model_lstm_regression.py:298), `'mse'` (nkululeko/models/model_mlp_regression.py:280), `'uar'` (nkululeko/reporting/reporter.py:84), `'mse'` (nkululeko/reporting/reporter.py:95), `'mse'` (nkululeko/reporting/reporter.py:853), `'uar'` (nkululeko/reporting/run_plotter.py:79), `'uar'` (nkululeko/runmanager.py:204), `'uar'` (nkululeko/utils/util.py:649), `'mse'` (nkululeko/utils/util.py:656)
+* `'MODEL'.'measure'`: `'mse'` (nkululeko/models/model_lstm_regression.py:306), `'mse'` (nkululeko/models/model_mlp_regression.py:280), `'uar'` (nkululeko/reporting/reporter.py:84), `'mse'` (nkululeko/reporting/reporter.py:95), `'mse'` (nkululeko/reporting/reporter.py:853), `'uar'` (nkululeko/reporting/run_plotter.py:79), `'uar'` (nkululeko/runmanager.py:204), `'uar'` (nkululeko/utils/util.py:649), `'mse'` (nkululeko/utils/util.py:656)
 * `'MODEL'.'scheduler.gamma'`: `'0.5'` (nkululeko/optimizers/scheduler_factory.py:46), `'0.95'` (nkululeko/optimizers/scheduler_factory.py:54)
 * `'MODEL'.'type'`: `'svm'` (nkululeko/bundle.py:224), `None` (nkululeko/predict.py:929), `''` (nkululeko/utils/naming.py:312)
 * `'REPORT'.'latex'`: `False` (nkululeko/experiment.py:91), `'nkululeko_latex'` (nkululeko/reporting/latex_writer.py:39)
@@ -219,7 +219,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'MODEL' | 'loss' | `'bce'` / `'cross'` / `'mse'` | nkululeko/models/model.py:205, nkululeko/models/model_aasist.py:169, nkululeko/models/model_adm.py:65, +2 more |
 | 'MODEL' | 'max_depth' | `6` | nkululeko/models/model_xgb.py:31 |
 | 'MODEL' | 'max_grad_norm' | `'0.0'` | nkululeko/models/model_adm.py:200 |
-| 'MODEL' | 'measure' | `'mse'` / `'uar'` | nkululeko/models/model_lstm_regression.py:298, nkululeko/models/model_mlp_regression.py:280, nkululeko/reporting/reporter.py:84, +6 more |
+| 'MODEL' | 'measure' | `'mse'` / `'uar'` | nkululeko/models/model_lstm_regression.py:306, nkululeko/models/model_mlp_regression.py:280, nkululeko/reporting/reporter.py:84, +6 more |
 | 'MODEL' | 'momentum' | `'0.9'` | nkululeko/optimizers/optimizer_factory.py:55 |
 | 'MODEL' | 'n_estimators' | `100` | nkululeko/models/model_xgb.py:30 |
 | 'MODEL' | 'n_jobs' | `'8'` | nkululeko/feat_extract/featureset.py:38, nkululeko/models/model.py:151 |

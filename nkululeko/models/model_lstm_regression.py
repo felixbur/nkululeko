@@ -201,6 +201,11 @@ class LSTM_Reg_model(Model):
         ).to(self.device)
 
         self._init_dann(df_train, self.net.feat_dim, self.cfg.dann)
+        if self.dann_heads is not None:
+            # The train loader above was built before the heads existed
+            # (it was needed to read input_size), so rebuild it to yield
+            # the domain labels.
+            self.trainloader = self.get_loader(df_train, shuffle=True, train=True)
         params = self._dann_params(self.net)
         self.optimizer, self.learning_rate = get_optimizer(
             params, self.util, default_lr=1e-3, default_optimizer="adamw"
@@ -291,7 +296,10 @@ class LSTM_Reg_model(Model):
                     logits[start_index:end_index].to(self.device),
                     labels.to(self.device),
                 )
-                losses.append(loss.item())
+                # ccc/pcc are non-finite on a one-value batch (e.g. the last
+                # one); leave it out of the loss, keep its predictions.
+                if torch.isfinite(loss):
+                    losses.append(loss.item())
 
         loss_eval = float(np.mean(losses)) if losses else 0.0
         predictions = logits
