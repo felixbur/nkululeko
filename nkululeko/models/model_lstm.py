@@ -342,7 +342,7 @@ class LSTMModel(Model):
         logits = torch.zeros(len(loader.dataset), self.class_num)
         targets = torch.zeros(len(loader.dataset))
         self.net.eval()
-        losses = []
+        losses, counts = [], []
         with torch.no_grad():
             for index, batch in enumerate(loader):
                 # the DANN train loader has a third item (domain labels)
@@ -356,8 +356,11 @@ class LSTMModel(Model):
                     labels.to(self.device, dtype=torch.int64),
                 )
                 losses.append(loss.item())
+                counts.append(len(labels))
 
-        loss_eval = float(np.mean(losses)) if losses else 0.0
+        # Weight each batch's mean loss by its size, so a short last batch
+        # doesn't count as much as a full one.
+        loss_eval = float(np.average(losses, weights=counts)) if losses else 0.0
         predictions = logits.argmax(dim=1)
         uar = (
             recall_score(targets.numpy(), predictions.numpy(), average="macro")

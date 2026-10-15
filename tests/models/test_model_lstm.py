@@ -504,3 +504,32 @@ class TestConstructor:
         np.testing.assert_allclose(
             probas[2].to_numpy(), torch.softmax(logits, dim=1)[:, 2].numpy()
         )
+
+
+class _ConstNet(nn.Module):
+    """Returns fixed logits per row, set by the test."""
+
+    def __init__(self, logits):
+        super().__init__()
+        self.logits = logits
+        self.pos = 0
+
+    def forward(self, x):
+        out = self.logits[self.pos : self.pos + len(x)]
+        self.pos += len(x)
+        return out
+
+
+def test_eval_loss_weights_batches_by_size(lstm_model):
+    """3 rows at batch_size 2: per-row losses are a, a, b, so the loss
+    must be (2a + b) / 3, not the batch mean (a + b) / 2."""
+    logits = torch.tensor([[5.0, 0.0, 0.0], [5.0, 0.0, 0.0], [0.0, 0.0, 5.0]])
+    labels = torch.tensor([0, 0, 0])
+    lstm_model.net = _ConstNet(logits)
+    dataset = torch.utils.data.TensorDataset(torch.zeros(3, 1, 1), labels)
+    loader = torch.utils.data.DataLoader(dataset, batch_size=2, shuffle=False)
+
+    _, _, _, _, loss_eval = lstm_model.evaluate(loader)
+
+    per_row = nn.functional.cross_entropy(logits, labels, reduction="none")
+    assert loss_eval == pytest.approx(per_row.mean().item(), rel=1e-5)

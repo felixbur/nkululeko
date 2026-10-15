@@ -282,7 +282,7 @@ class LSTM_Reg_model(Model):
         logits = torch.zeros(len(loader.dataset))
         targets = torch.zeros(len(loader.dataset))
         self.net.eval()
-        losses = []
+        losses, counts = [], []
         with torch.no_grad():
             for index, batch in enumerate(loader):
                 frames, labels = batch[0], batch[1]
@@ -300,8 +300,11 @@ class LSTM_Reg_model(Model):
                 # one); leave it out of the loss, keep its predictions.
                 if torch.isfinite(loss):
                     losses.append(loss.item())
+                    counts.append(len(labels))
 
-        loss_eval = float(np.mean(losses)) if losses else 0.0
+        # Weight each batch's mean loss by its size, so a short last batch
+        # doesn't count as much as a full one.
+        loss_eval = float(np.average(losses, weights=counts)) if losses else 0.0
         predictions = logits
         measure = self.util.config_val("MODEL", "measure", "mse")
         if measure == "mse":

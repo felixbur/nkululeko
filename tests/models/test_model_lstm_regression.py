@@ -295,3 +295,31 @@ class TestConstructor:
 
         assert (model.dann_heads is not None) == (dann_columns != "[]")
         assert np.isfinite(model.loss)
+
+
+class _ConstNet(nn.Module):
+    """Returns fixed predictions per row, set by the test."""
+
+    def __init__(self, values):
+        super().__init__()
+        self.values = values
+        self.pos = 0
+
+    def forward(self, x):
+        out = self.values[self.pos : self.pos + len(x)].reshape(-1, 1)
+        self.pos += len(x)
+        return out
+
+
+def test_eval_loss_weights_batches_by_size():
+    """MSE over 3 rows at batch_size 2 must equal the per-row mean, not
+    the mean of the two batch means."""
+    predictions = torch.tensor([1.0, 1.0, 10.0])
+    targets = torch.tensor([0.0, 0.0, 0.0])
+    model = _model(net=_ConstNet(predictions))
+    dataset = torch.utils.data.TensorDataset(torch.zeros(3, 1, 1), targets)
+    loader = torch.utils.data.DataLoader(dataset, batch_size=2, shuffle=False)
+
+    _, _, _, loss_eval = model.evaluate(loader)
+
+    assert loss_eval == pytest.approx(((predictions - targets) ** 2).mean().item())
