@@ -23,6 +23,7 @@ def cnn_model():
     model = CNNModel.__new__(CNNModel)
     model.df_test = pd.DataFrame({"label": [1, 0]})
     model.target = "label"
+    model.class_num = 2
     return model
 
 
@@ -54,3 +55,16 @@ class TestGetProbasAppliesSoftmax:
         expected_argmax = logits.argmax(dim=1).numpy()
         actual_argmax = probas.to_numpy().argmax(axis=1)
         np.testing.assert_array_equal(actual_argmax, expected_argmax)
+
+
+def test_columns_cover_classes_missing_from_test(cnn_model):
+    cnn_model.class_num = 3
+    cnn_model.df_test = pd.DataFrame({"label": [1, 2]})
+    logits = torch.tensor([[0.1, 0.8, 0.1], [0.2, 0.2, 0.6]])
+
+    probas = cnn_model.get_probas(logits)
+
+    assert list(probas.columns) == [0, 1, 2]
+    np.testing.assert_allclose(
+        probas[2].to_numpy(), torch.softmax(logits, dim=1)[:, 2].numpy(), rtol=1e-5
+    )
