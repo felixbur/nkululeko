@@ -7,10 +7,21 @@ import pytest
 
 import nkululeko.aug_train as aug_train
 import nkululeko.glob_conf as glob_conf
+from nkululeko.experiment_context import get_context, set_context
 
 
 class _Stop(Exception):
     pass
+
+
+@pytest.fixture(autouse=True)
+def _restore_context():
+    """Creating an Experiment makes its context the current one; later tests
+    (and the threads of some of them) expect the default one."""
+    context = get_context()
+    yield
+    set_context(context)
+    glob_conf.config = None
 
 
 def _write_config(tmp_path, augment):

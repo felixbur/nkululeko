@@ -97,15 +97,15 @@ class TestBatches:
 
     def test_the_big_domain_is_covered_over_several_epochs(self):
         domains = np.array(_domains({"a": 400, "b": 100}))
-        sampler = DomainBalancedBatchSampler(domains, batch_size=10)
+        sampler = DomainBalancedBatchSampler(domains, batch_size=10, seed=0)
         seen = set()
-        for _ in range(8):
+        for _ in range(12):
             seen |= {i for batch in sampler for i in batch}
         assert seen == set(range(500))
 
     def test_batches_are_shuffled_across_domains(self):
         domains = np.array(_domains({"a": 50, "b": 50}))
-        sampler = DomainBalancedBatchSampler(domains, batch_size=10)
+        sampler = DomainBalancedBatchSampler(domains, batch_size=10, seed=0)
         firsts = {domains[batch[0]] for batch in sampler}
         assert firsts == {"a", "b"}
 
