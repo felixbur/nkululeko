@@ -16,6 +16,7 @@ from nkululeko.utils.dataframe import (
     should_reuse_split,
     split_cache_paths,
 )
+from nkululeko.utils.sequences import n_segments
 from nkululeko.utils.util import Util
 
 
@@ -463,24 +464,24 @@ class Datasplitter(ContextAware):
                 f"All features: train shape : {self.feats_train.shape}, test"
                 f" shape:{self.feats_test.shape}"
             )
-        if self.feats_train.shape[0] < self.df_train.shape[0]:
+        if n_segments(self.feats_train) < self.df_train.shape[0]:
             self.util.warn(
-                f"train feats ({self.feats_train.shape[0]}) != train labels"
+                f"train feats ({n_segments(self.feats_train)}) != train labels"
                 f" ({self.df_train.shape[0]})"
             )
             self.df_train = self.util.filter_filepath(self.feats_train, self.df_train)
             self.util.warn(f"new train labels shape: {self.df_train.shape[0]}")
-        if self.feats_test.shape[0] < self.df_test.shape[0]:
+        if n_segments(self.feats_test) < self.df_test.shape[0]:
             self.util.warn(
-                f"test feats ({self.feats_test.shape[0]}) != test labels"
+                f"test feats ({n_segments(self.feats_test)}) != test labels"
                 f" ({self.df_test.shape[0]})"
             )
             self.df_test = self.util.filter_filepath(self.feats_test, self.df_test)
             self.util.warn(f"new test labels shape: {self.df_test.shape[0]}")
         if self.split3:
-            if self.feats_dev.shape[0] < self.df_dev.shape[0]:
+            if n_segments(self.feats_dev) < self.df_dev.shape[0]:
                 self.util.warn(
-                    f"dev feats ({self.feats_dev.shape[0]}) != dev labels"
+                    f"dev feats ({n_segments(self.feats_dev)}) != dev labels"
                     f" ({self.df_dev.shape[0]})"
                 )
                 self.df_dev = self.util.filter_filepath(self.feats_dev, self.df_dev)

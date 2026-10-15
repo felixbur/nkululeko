@@ -17,6 +17,9 @@ EXTRACTION_ERRORS = (IOError, OSError, RuntimeError, ValueError, AssertionError)
 
 
 class Featureset(ContextAware):
+    # True for feature sets that can output frame sequences
+    # (FEATS.level = frame, see nkululeko.utils.sequences)
+    supports_frames = False
     name = ""  # designation
     df = None  # pandas dataframe to store the features
     # (and indexed with the data from the sets)
@@ -36,6 +39,24 @@ class Featureset(ContextAware):
         self.context = self.util.context
         self.feats_type = feats_type
         self.n_jobs = int(self.util.config_val("MODEL", "n_jobs", "8"))
+
+    def wants_frames(self):
+        """True if FEATS.level asks for frame sequences and this feature
+        set can produce them; otherwise one vector per sample."""
+        if getattr(self, "_wants_frames", None) is None:
+            level = str(self.util.config_val("FEATS", "level", "functionals"))
+            self._wants_frames = level.lower() in (
+                "frame",
+                "lld",
+                "lowleveldescriptors",
+            )
+            if self._wants_frames and not self.supports_frames:
+                self.util.warn(
+                    f"FEATS.level = {level}: {self.feats_type} has no "
+                    "frame-level output, using one vector per sample"
+                )
+                self._wants_frames = False
+        return self._wants_frames
 
     def _needs_extraction(self, storage):
         """Check whether features need to be (re-)extracted.

@@ -4,9 +4,11 @@ Extract acoustic features using several feature extractors
 (appends the features column-wise)
 """
 
+import numpy as np
 import pandas as pd
 
 from nkululeko.experiment_context import ContextAware, use_context
+from nkululeko.utils.sequences import is_sequence, pool, pooling_stats
 from nkululeko.utils.util import Util
 
 
@@ -22,7 +24,9 @@ class FeatureExtractor(ContextAware):
         feats_designation (str): the type of split (train/test), also is used for the cache name.
 
     Returns:
-        df (pandas.DataFrame): dataframe with same index as data_df and acoustic features in columns
+        df (pandas.DataFrame): dataframe with same index as data_df and acoustic features in columns;
+        with FEATS.level = frame and a sequence model (see takes_sequences()), one row per frame,
+        index (file, start, end, frame), otherwise frame sequences are pooled per sample
     """
 
     # pandas dataframe to store the features (and indexed with the data from the sets)
@@ -46,14 +50,49 @@ class FeatureExtractor(ContextAware):
             pandas.DataFrame: features for all samples in ``data_df``, indexed the
             same way, with one block of columns per feats_type in ``feats_types``.
         """
-        self.feats = pd.DataFrame()
+        parts = []
         for feats_type in self.feats_types:
             store_name = f"{self.data_name}_{feats_type}"
             self.feat_extractor = self._get_feat_extractor(store_name, feats_type)
             self.feat_extractor.extract()
             self.feat_extractor.filter()
-            self.feats = pd.concat([self.feats, self.feat_extractor.df], axis=1)
+            df = self.feat_extractor.df
+            if is_sequence(df) and not self.takes_sequences():
+                df = pool(df, self.pooling_stats())
+            parts.append(df)
+        self.feats = self._join(parts)
         return self.feats
+
+    def takes_sequences(self):
+        """True if the configured model takes frame sequences; for every
+        other model, frame sequences are pooled to one vector per sample."""
+        from nkululeko.utils.naming import SEQUENCE_MODEL_TYPES
+
+        return self.util.config_val("MODEL", "type", "") in SEQUENCE_MODEL_TYPES
+
+    def pooling_stats(self):
+        return pooling_stats(self.util)
+
+    def _join(self, parts):
+        """Join the feature types column-wise. Frame sequences can only be
+        joined with frame sequences on the same frames."""
+        if not parts:
+            return pd.DataFrame()
+        sequences = [is_sequence(df) for df in parts]
+        if any(sequences) and not all(sequences):
+            self.util.error(
+                "FEATS.type mixes frame sequences with one-vector-per-sample "
+                "features, which a sequence model can't take; use feature "
+                "types with frame output only (FEATS.level = frame)"
+            )
+        if any(sequences) and len(parts) > 1:
+            first = parts[0].index
+            if not all(df.index.equals(first) for df in parts[1:]):
+                self.util.error(
+                    "FEATS.type: the frame sequences of the feature types "
+                    "have different frames and can't be joined"
+                )
+        return pd.concat(parts, axis=1)
 
     def extract_sample(self, signal, sr):
         """Extract features for a single in-memory audio sample.
@@ -74,7 +113,21 @@ class FeatureExtractor(ContextAware):
             numpy.ndarray: Extracted features for the sample, from the last
             feats_type processed by ``extract()``.
         """
-        return self.feat_extractor.extract_sample(signal, sr)
+        feats = self.feat_extractor.extract_sample(signal, sr)
+        if self.feat_extractor.wants_frames() and not self.takes_sequences():
+            # the same pooling as in extract(): one block per statistic
+            frames = np.atleast_2d(np.asarray(feats, dtype=float))
+            stat_funcs = {
+                "mean": np.mean,
+                "std": np.std,  # population std, as in pool()
+                "min": np.min,
+                "max": np.max,
+                "median": np.median,
+            }
+            feats = np.concatenate(
+                [stat_funcs[s](frames, axis=0) for s in self.pooling_stats()]
+            )[np.newaxis, :]
+        return feats
 
     def _get_feat_extractor(self, store_name, feats_type):
         if isinstance(feats_type, list) and len(feats_type) == 1:

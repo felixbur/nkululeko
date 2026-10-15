@@ -12,14 +12,11 @@ gets them. A recurrent network instead reads the utterance as a sequence
 of frames and can model how the signal develops over time. The label is
 unchanged: still one value per utterance.
 
-The LSTM models compute the frame sequence themselves from the audio,
-the same way `aasist` and `finetune` read the audio directly. You
-therefore set `[FEATS] type = []`, and choose the frames in the `[RNN]`
-section instead:
-
-- **melspec** (default): a log mel spectrogram
-- **opensmile_lld**: opensmile low-level descriptors (e.g. eGeMAPS: 25
-  values per 10 ms frame)
+The frames come from the normal feature extraction with
+`[FEATS] level = frame` (see [Sequence data](sequence_data.md)), so they
+are cached, can be scaled, and can just as well be imported from a CSV
+file. Currently opensmile gives frame output: its low-level descriptors,
+e.g. 25 values per 10 ms frame for eGeMAPSv02.
 
 ## Quick Start
 
@@ -45,23 +42,33 @@ emodb.train_tables = ['emotion.categories.train.gold_standard']
 labels = ['anger', 'happiness', 'sadness', 'neutral']
 target = emotion
 [FEATS]
-type = []
+type = ['os']
+level = frame
+scale = standard
 [MODEL]
 type = lstm
-[RNN]
-feature_source = melspec
 ```
 
 ```bash
 python -m nkululeko.nkululeko --config examples/exp_emodb_lstm.ini
 ```
 
-### 2. Use opensmile low-level descriptors instead
+Scaling the features (`scale = standard`) matters here: the low-level
+descriptors have very different ranges.
+
+### 2. Your own frame features
+
+Frame features computed elsewhere can be imported from a CSV with the
+columns `file`, `start`, `end`, `frame` (all in seconds, `frame` relative
+to the segment start) plus one column per feature:
 
 ```ini
-[RNN]
-feature_source = opensmile_lld
-opensmile_set = eGeMAPSv02
+[FEATS]
+type = ['import']
+import_file = ['my_frames.csv']
+scale = standard
+[MODEL]
+type = lstm
 ```
 
 ### 3. A bidirectional LSTM
@@ -89,13 +96,25 @@ type = regression
 [DATA]
 target = age
 [FEATS]
-type = []
+type = ['os']
+level = frame
+scale = standard
 [MODEL]
 type = lstm_reg
 loss = mse
 measure = ccc
-[RNN]
-feature_source = melspec
+```
+
+### 5. The same frames for other models
+
+With the same `[FEATS]` settings, any other model gets the frames pooled
+to one vector per utterance (`[FEATS] pooling`, default mean and
+standard deviation), which makes it easy to compare the LSTM with e.g.
+an SVM on the same frame features:
+
+```ini
+[MODEL]
+type = svm
 ```
 
 ## Output
@@ -108,19 +127,13 @@ other neural models.
 
 ## Technical details
 
-- **Fixed length.** Each clip is converted to mono, resampled to 16 kHz
-  and brought to `max_len` samples (default 64600, about 4 s): shorter
-  clips are repeated (tiled), longer ones are cut. Every clip therefore
-  gets the same number of frames, so batches need no padding or masking.
-  Increase `max_len` if your utterances are long and the end matters.
-- **Pooling.** The network averages the recurrent outputs over all frames
-  and feeds the average to the output layer. Unlike using only the last
-  hidden state, this works the same for one- and two-directional LSTMs
-  and does not depend on where a tiled clip happens to end.
-- **Features on the fly.** Frames are computed per clip during training
-  and evaluation and are not cached. With `feature_source = opensmile_lld`
-  this is slower than with `melspec`; `[MODEL] n_jobs` sets the number of
-  DataLoader workers that compute them in parallel.
+- **Variable length.** Each utterance keeps its own number of frames. A
+  batch is padded to its longest sequence; the padding is skipped by the
+  LSTM (packed sequences) and left out of the average below.
+- **Pooling inside the network.** The network averages the recurrent
+  outputs over the utterance's frames and feeds the average to the
+  output layer. Unlike using only the last hidden state, this works the
+  same for one- and two-directional LSTMs.
 - **Shared settings.** Learning rate (default 0.001), optimizer,
   scheduler, loss, dropout (`drop`, applied between stacked layers) and
   device come from `[MODEL]`, as for the other neural models.
@@ -131,13 +144,11 @@ other neural models.
 - **DANN and SAM.** Domain-adversarial training (`[MODEL] dann_columns`)
   and SAM (`[MODEL] sam`) work as for the other neural models; the DANN
   heads read the time-pooled recurrent outputs.
-- **Limitations.** `predict_sample`, SHAP explanations and ONNX export are
-  not supported, as for the other models that read raw audio (`adm`,
-  `aasist`).
+- **Limitations.** `[FEATS] balancing`, `predict_sample`, SHAP
+  explanations and ONNX export are not supported for the LSTM models.
 
 ## Related
 
+[Sequence data](sequence_data.md) (the frame format),
 [`ini_file.md`](ini_file.md#rnn) (`[RNN]` key reference),
-[`emotion_prediction.md`](emotion_prediction.md),
-[`finetune.md`](finetune.md) (another model type that reads the audio
-directly).
+[`emotion_prediction.md`](emotion_prediction.md).

@@ -513,6 +513,14 @@ class Modelrunner(ContextAware):
         # that models declaring is_classifier/is_regressor are honored even
         # when their model_type is absent from the legacy type allow-lists.
         validate_model_task_support(model_type, task, model=self.model)
+        from nkululeko.utils.sequences import is_sequence
+
+        input_kind = getattr(self.model, "input_kind", "vector")
+        if input_kind == "vector" and is_sequence(self.feats_train):
+            self.util.error(
+                f"MODEL.type = {model_type} takes one feature vector per "
+                "sample, but got frame sequences"
+            )
         return self.model
 
     def _feature_balancing_method(self):
@@ -530,6 +538,14 @@ class Modelrunner(ContextAware):
         """Check and apply feature balancing using the dedicated DataBalancer class."""
         balancing = self._feature_balancing_method()
         if balancing:
+            from nkululeko.utils.sequences import is_sequence
+
+            if is_sequence(self.feats_train):
+                self.util.error(
+                    "FEATS.balancing can't be used with frame sequences "
+                    "(FEATS.level = frame and a sequence model): it would "
+                    "create single frames, not whole sequences"
+                )
             self.util.debug("Applying feature balancing using DataBalancer")
 
             # Get random state from config, fallback to 42 for backward compatibility

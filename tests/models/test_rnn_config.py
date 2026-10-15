@@ -15,7 +15,7 @@ def make_util(tmp_path, rnn_section=None, model_section=None):
     config["DATA"] = {"target": "label", "databases": "['itw']"}
     config["MODEL"] = {"type": "lstm", **(model_section or {})}
     config["RNN"] = rnn_section or {}
-    config["FEATS"] = {"type": "[]"}
+    config["FEATS"] = {"type": "['os']", "level": "frame"}
     glob_conf.config = config
     return Util("test")
 
@@ -27,23 +27,9 @@ def cleanup_glob_conf():
 
 
 class TestDefaults:
-    def test_feature_source_and_mel_defaults(self, tmp_path):
-        util = make_util(tmp_path)
-        cfg = RNNConfig.from_util(util)
-        assert cfg.feature_source == "melspec"
-        assert cfg.n_mels == 64
-        assert cfg.win_samples == 400  # 25ms @ 16kHz
-        assert cfg.hop_samples == 160  # 10ms @ 16kHz
-
-    def test_opensmile_set_default(self, tmp_path):
-        util = make_util(tmp_path)
-        cfg = RNNConfig.from_util(util)
-        assert cfg.opensmile_set == "eGeMAPSv02"
-
     def test_architecture_defaults(self, tmp_path):
         util = make_util(tmp_path)
         cfg = RNNConfig.from_util(util)
-        assert cfg.max_len == 64600
         assert cfg.hidden_size == 64
         assert cfg.num_layers == 2
         assert cfg.bidirectional is False
@@ -52,35 +38,10 @@ class TestDefaults:
 
 
 class TestOverrides:
-    def test_feature_source_overridable(self, tmp_path):
-        util = make_util(tmp_path, {"feature_source": "opensmile_lld"})
-        cfg = RNNConfig.from_util(util)
-        assert cfg.feature_source == "opensmile_lld"
-
-    def test_unknown_feature_source_raises(self, tmp_path):
-        from nkululeko.utils.errors import NkululukoError
-
-        util = make_util(tmp_path, {"feature_source": "bogus"})
-        with pytest.raises(NkululukoError, match="feature_source"):
-            RNNConfig.from_util(util)
-
-    def test_mel_params_overridable(self, tmp_path):
-        util = make_util(tmp_path, {"n_mels": "80", "win_dur": "50", "hop_dur": "20"})
-        cfg = RNNConfig.from_util(util)
-        assert cfg.n_mels == 80
-        assert cfg.win_samples == 800
-        assert cfg.hop_samples == 320
-
-    def test_unknown_opensmile_set_warns_not_raises(self, tmp_path):
-        util = make_util(tmp_path, {"opensmile_set": "bogus"})
-        cfg = RNNConfig.from_util(util)  # should not raise
-        assert cfg.opensmile_set == "bogus"
-
     def test_architecture_overridable(self, tmp_path):
         util = make_util(
             tmp_path,
             {
-                "max_len": "32000",
                 "hidden_size": "128",
                 "num_layers": "3",
                 "bidirectional": "True",
@@ -88,7 +49,6 @@ class TestOverrides:
             },
         )
         cfg = RNNConfig.from_util(util)
-        assert cfg.max_len == 32000
         assert cfg.hidden_size == 128
         assert cfg.num_layers == 3
         assert cfg.bidirectional is True

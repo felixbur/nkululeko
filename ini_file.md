@@ -297,6 +297,7 @@ Feature extraction settings. Multiple feature types can be combined by listing t
     * **import**: [already computed features](http://blog.syntheticspeech.de/2022/10/18/how-to-import-features-from-outside-the-nkululeko-software/)
       * **import_file** = pathes to files with features in CSV format
         * import_file = ['path1/file1.csv', 'path2/file1.csv2']  
+        * a file with a `frame` column holds frame sequences (columns `file`, `start`, `end`, `frame`, all times in seconds, `frame` relative to the segment start), see [Sequence data](sequence_data.md)
       * **import_files_append** = set this to False if you want the files to be concatenated column-wise, else it's done row-wise
         * import_files_append = True  
     * **mld**: [mid-level-descriptors](http://www.essv.de/paper.php?id=447)
@@ -307,7 +308,7 @@ Feature extraction settings. Multiple feature types can be combined by listing t
       * **min_syls** = *minimum number of syllables*
     * **os**: [open smile features](https://audeering.github.io/opensmile-python/)
       * **set** = eGeMAPSv02 *(features set)*
-      * **level** = functionals *(or lld: feature level)*
+      * **level** = functionals *(or frame: low-level descriptors per frame, see* [level](#feats)*)*
       * **os.features**: list of selected features (disregard others)
     * **praat**: Praat selected features thanks to [David R. Feinberg scripts](https://github.com/drfeinberg/PraatScripts)
       * **praat.features**: list of selected features (disregard others)
@@ -394,11 +395,17 @@ Feature extraction settings. Multiple feature types can be combined by listing t
     * **quantiletransformer**: applies a non-linear transformation such that the probability density function of each feature will be mapped to a uniform or Gaussian distribution (range [0, 1])  
 * **set**: name of opensmile feature set, e.g. eGeMAPSv02, ComParE_2016, GeMAPSv01a, eGeMAPSv01a
   * set = eGeMAPSv02
-* **level**: level of opensmile features
-  * level = functional
+* **level**: one feature vector per sample, or frame sequences
+  * level = frame
+  * default: functionals
   * possible values:
-    * **functional**: aggregated over the whole utterance
-    * **lld**: low-level descriptor: framewise
+    * **functionals**: one vector per sample (aggregated over the whole segment)
+    * **frame** (or **lld**): one row per frame, index `file`, `start`, `end`, `frame`, with `frame` the frame's start time relative to the segment start; see [Sequence data](sequence_data.md). Models that take sequences (`lstm`, `lstm_reg`) get the frames, every other model gets them pooled to one vector per sample (see *pooling*). Only `os` (opensmile low-level descriptors) has frame output so far; other feature types give one vector per sample and log a warning. Frame-level runs get `_level-frame` in the automatic run name
+* **pooling**: statistics that turn a frame sequence into one vector per sample, for models that take vectors
+  * pooling = ['mean', 'max']
+  * default: ['mean', 'std']
+  * possible values: mean, std (population standard deviation), min, max, median
+  * each feature gets one column per statistic, named `<feature>_<statistic>`; the statistics go into the automatic run name
 * **no_reuse**: don't re-use any feature files, but start fresh
   * no_reuse = False
 * **fail_threshold**: abort feature extraction if the failure rate exceeds this ratio (0.0–1.0)
@@ -431,7 +438,7 @@ Model and training specifications. In general, default values should work for cl
     * **mlp**: [Multi-layer perceptron](http://blog.syntheticspeech.de/2021/08/30/nkululeko-multi-layer-perceptron/) (neural network)  
     * **cnn**: [Convolutional neural network](http://blog.syntheticspeech.de/2022/01/17/how-to-use-convolutional-neural-networks-with-nkululeko/)  
     * **aasist**: [AASIST](#aasist) anti-spoofing / audio deepfake detection: SSL (wav2vec2/XLS-R) frontend + spectro-temporal graph attention backend, trained end-to-end on raw audio (binary classification only; requires `[FEATS] type = []`). Settings go in a dedicated [`[AASIST]`](#aasist) section below.
-    * **lstm**: [LSTM](#rnn) recurrent network on a frame sequence (mel spectrogram or opensmile LLDs) that the model computes from the raw audio itself (requires `[FEATS] type = []`). Settings go in a dedicated [`[RNN]`](#rnn) section below; see the [RNN tutorial](rnn_classification.md).
+    * **lstm**: [LSTM](#rnn) recurrent network over frame sequences (requires `[FEATS] level = frame`). Settings go in a dedicated [`[RNN]`](#rnn) section below; see the [RNN tutorial](rnn_classification.md).
     * **lstm_reg**: LSTM for regression, same as `lstm` with a single output. Settings go in the [`[RNN]`](#rnn) section.
     * **finetune**: [Fine-tuning](http://blog.syntheticspeech.de/2022/10/07/nkululeko-how-to-fine-tune-a-wav2vec2-model/) for pre-trained models. Settings go in a dedicated [`[FINETUNE]`](#finetune) section below.
 * **class_weight**: add class_weight to the linear classifier (XGB, SVM) fit methods for imbalanced data (True or False)
@@ -666,26 +673,8 @@ Settings specific to `[MODEL] type = aasist` - AASIST (spectro-temporal graph at
 
 ### RNN
 
-Settings for the recurrent-network model types `[MODEL] type = lstm` (classification) and `lstm_reg` (regression). The section is named after the network family rather than the cell type, because none of its keys is specific to LSTM cells. Only read for these types; every key below is optional and has a default. Requires `[FEATS] type = []`: the model reads each clip's audio itself (mono, resampled to 16 kHz, padded by tiling or truncated to `max_len`), turns it into a frame sequence, runs it through the recurrent layers, mean-pools the outputs over time and classifies the result (or, for `lstm_reg`, predicts one value). `[MODEL] learning_rate` (default 0.001)/`optimizer`/`weight_decay`/`scheduler`/`loss`/`class_weight`/`measure`/`drop`/`patience`/`random_seed`/`device`/`n_jobs` are read from the shared `[MODEL]` section, not from `[RNN]`. `[MODEL] layers` and `activation` do not apply. Every `[RNN]` key you set goes into the automatic run name, so runs with different settings don't overwrite each other. `lstm` and `lstm_reg` support [DANN](#domain-adversarial-training-dann) and [SAM](#sharpness-aware-minimization-sam), but not `predict_sample`, SHAP explanations or ONNX export. Tutorial: [RNN classification](rnn_classification.md).
+Settings for the recurrent-network model types `[MODEL] type = lstm` (classification) and `lstm_reg` (regression). The section is named after the network family rather than the cell type, because none of its keys is specific to LSTM cells. Only read for these types; every key below is optional and has a default. The models take frame sequences from the feature extraction, so they need `[FEATS] level = frame` and a feature type with frame output (e.g. `type = ['os']`), or frame sequences imported from CSV. Each sequence keeps its own length; the recurrent outputs are averaged over its frames and then classified (or, for `lstm_reg`, mapped to one value). `[MODEL] learning_rate` (default 0.001)/`optimizer`/`weight_decay`/`scheduler`/`loss`/`class_weight`/`measure`/`drop`/`patience`/`random_seed`/`device` are read from the shared `[MODEL]` section, not from `[RNN]`. `[MODEL] layers` and `activation` do not apply. Every `[RNN]` key you set goes into the automatic run name, so runs with different settings don't overwrite each other. `lstm` and `lstm_reg` support [DANN](#domain-adversarial-training-dann) and [SAM](#sharpness-aware-minimization-sam), but not `[FEATS] balancing`, `predict_sample`, SHAP explanations or ONNX export. Tutorial: [RNN classification](rnn_classification.md).
 
-* **feature_source**: what frame sequence the network sees
-  * feature_source = opensmile_lld
-  * default: melspec
-  * possible values:
-    * **melspec**: log mel spectrogram (dB), one frame every `hop_dur` ms with `n_mels` bands
-    * **opensmile_lld**: opensmile low-level descriptors of `opensmile_set` (frame rate and dimension are fixed by the feature set; eGeMAPSv02: 25 per frame)
-* **opensmile_set**: opensmile feature set, only for `feature_source = opensmile_lld`
-  * opensmile_set = ComParE_2016
-  * default: eGeMAPSv02
-* **n_mels**: number of mel bands, only for `feature_source = melspec`
-  * n_mels = 64
-* **win_dur**: analysis window length in ms, only for `feature_source = melspec`
-  * win_dur = 25
-* **hop_dur**: frame shift in ms, only for `feature_source = melspec`
-  * hop_dur = 10
-* **max_len**: fixed waveform length in samples every clip is padded (by tiling) or truncated to
-  * max_len = 64600
-  * default: 64600 (~4.04 s at 16 kHz), as for `[AASIST]`
 * **hidden_size**: number of units per recurrent layer (and direction)
   * hidden_size = 64
 * **num_layers**: number of stacked recurrent layers (`[MODEL] drop` is applied between them)

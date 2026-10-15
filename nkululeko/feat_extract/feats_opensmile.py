@@ -26,6 +26,8 @@ class Opensmileset(Featureset):
         feature_level: The OpenSMILE feature level object
     """
 
+    supports_frames = True
+
     # Available feature sets for validation
     AVAILABLE_FEATURE_SETS = ["eGeMAPSv02", "ComParE_2016", "GeMAPSv01a", "eGeMAPSv01a"]
 
@@ -65,11 +67,10 @@ class Opensmileset(Featureset):
             self.util.error(f"Invalid feature set: {self.featset}. Error: {str(e)}")
             raise ValueError(f"Invalid feature set: {self.featset}")
 
-        # Get feature level configuration
+        # Feature level: FEATS.level = frame (or lld) gives the
+        # low-level descriptors as frame sequences, see wants_frames()
         self.featlevel = self.util.config_val("FEATS", "level", "functionals")
-
-        # Convert shorthand names to full OpenSMILE names
-        if self.featlevel == "lld":
+        if self.wants_frames():
             self.featlevel = "LowLevelDescriptors"
         elif self.featlevel == "functionals":
             self.featlevel = "Functionals"
@@ -104,7 +105,11 @@ class Opensmileset(Featureset):
         """
         store = self.util.get_path("store")
         store_format = self.util.config_val("FEATS", "store_format", "pkl")
-        storage = f"{store}{self.name}.{store_format}"
+        frames = self.featlevel == "LowLevelDescriptors"
+        # frame sequences get their own store, so switching FEATS.level
+        # doesn't reuse the functionals
+        suffix = "_lld" if frames else ""
+        storage = f"{store}{self.name}{suffix}.{store_format}"
 
         if self._needs_extraction(storage):
             self.util.debug(
@@ -120,7 +125,9 @@ class Opensmileset(Featureset):
                 )
 
                 # Extract features based on index type
-                if isinstance(self.data_df.index, pd.MultiIndex):
+                if frames:
+                    self.df = self._extract_frames(smile)
+                elif isinstance(self.data_df.index, pd.MultiIndex):
                     self.df = smile.process_index(self.data_df.index)
                     self.df = self.df.set_index(self.data_df.index)
                 else:
@@ -155,6 +162,26 @@ class Opensmileset(Featureset):
             self.util.debug(f"opensmile feature names: {self.df.columns}")
         return self.df
 
+    def _extract_frames(self, smile) -> pd.DataFrame:
+        """Low-level descriptors as frame sequences, index (file, start,
+        end, frame) with frame = start time relative to the segment start.
+
+        Each segment is processed on its own, so frames stay with their
+        segment even if segments overlap.
+        """
+        from nkululeko.utils.sequences import sequence_index
+
+        index = self.util.make_segmented_index(self.data_df.copy()).index
+        parts = []
+        for file, start, end in index:
+            frames = smile.process_file(
+                file, start=start, end=None if pd.isna(end) else end
+            )
+            offsets = frames.index.get_level_values("start") - start
+            frames.index = sequence_index((file, start, end), offsets)
+            parts.append(frames)
+        return pd.concat(parts)
+
     def extract_sample(self, signal: np.ndarray, sr: int) -> np.ndarray:
         """Extract features from a single audio sample.
 
@@ -163,7 +190,8 @@ class Opensmileset(Featureset):
             sr (int): Sample rate of the audio signal
 
         Returns:
-            np.ndarray: Extracted features as numpy array
+            np.ndarray: Extracted features, one row for functionals, one
+            row per frame for low-level descriptors (FEATS.level = frame)
 
         Raises:
             ValueError: If signal or sample rate is invalid
@@ -175,9 +203,10 @@ class Opensmileset(Featureset):
             raise ValueError(f"Invalid sample rate: {sr}")
 
         try:
+            # one row for functionals, one row per frame for LLDs
             smile = opensmile.Smile(
                 feature_set=self.feature_set,
-                feature_level=opensmile.FeatureLevel.Functionals,
+                feature_level=self.feature_level,
             )
             feats = smile.process_signal(signal, sr)
             return feats.to_numpy()

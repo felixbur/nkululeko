@@ -43,15 +43,13 @@ DANN_MODEL_TYPES = frozenset(
 )
 # Types that read the [RNN] section.
 RNN_MODEL_TYPES = frozenset({"lstm", "lstm_reg"})
+# Types whose models take frame sequences (Model.input_kind = "sequence",
+# FEATS.level = frame); every other type gets one vector per sample, and
+# frame sequences are pooled for it (FEATS.pooling).
+SEQUENCE_MODEL_TYPES = frozenset({"lstm", "lstm_reg"})
 # [RNN] keys that change the features or the network, and therefore go into
 # the run name (see _get_rnn_suffix()).
 RNN_NAME_KEYS = (
-    "feature_source",
-    "opensmile_set",
-    "n_mels",
-    "win_dur",
-    "hop_dur",
-    "max_len",
     "hidden_size",
     "num_layers",
     "bidirectional",
@@ -313,11 +311,27 @@ class NamingMixin:
             suffix += "-noreverse"
         return suffix
 
+    def _get_pooling_suffix(self):
+        """Return '_level-frame' for frame-level features (FEATS.level =
+        frame or lld), plus '_pooling-mean-max' when FEATS.pooling is set,
+        so these runs don't share result paths with others. The default
+        level (functionals) adds nothing, so existing run names stay."""
+        level = str(self.config_val("FEATS", "level", "functionals")).lower()
+        suffix = "_level-frame" if level in ("frame", "lld") else ""
+        pooling = self.config_val("FEATS", "pooling", False)
+        if not pooling:
+            return suffix
+        if isinstance(pooling, str) and pooling.startswith("["):
+            pooling = ast.literal_eval(pooling)
+        if isinstance(pooling, str):
+            pooling = [pooling]
+        return suffix + "_pooling-" + "-".join(pooling)
+
     def _get_rnn_suffix(self):
         """Return the [RNN] settings that are set in the config (e.g.
-        '_feature_source-opensmile_lld_hidden_size-128') for lstm/lstm_reg,
-        so runs with different frame features or network sizes don't share
-        result/checkpoint paths."""
+        '_hidden_size-128_bidirectional-True') for lstm/lstm_reg, so runs
+        with different network sizes don't share result/checkpoint
+        paths."""
         if self.get_model_type() not in RNN_MODEL_TYPES:
             return ""
         return "".join(
@@ -368,6 +382,7 @@ class NamingMixin:
             return_string = return_string.replace("__", "_").strip("_")
 
         return_string += self._get_adm_branch_suffix()
+        return_string += self._get_pooling_suffix()
         return_string += self._get_rnn_suffix()
         return_string += self._get_dann_suffix()
         return_string += self._get_sam_suffix()

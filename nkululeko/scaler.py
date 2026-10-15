@@ -117,11 +117,18 @@ class Scaler:
             return [self.feats_train, self.feats_test]
 
     def speaker_scale_df(self, df, feats_df):
+        from nkululeko.utils.sequences import FRAME_LEVEL, is_sequence
+
+        segments = (
+            feats_df.index.droplevel(FRAME_LEVEL)
+            if is_sequence(feats_df)
+            else feats_df.index
+        )
         for speaker in df["speaker"].unique():
             indices = df.loc[df["speaker"] == speaker].index
-            feats_df.loc[indices, :] = self.scaler.fit_transform(
-                feats_df.loc[indices, :]
-            )
+            # all rows (for frame sequences: all frames) of the speaker
+            rows = segments.isin(indices)
+            feats_df.loc[rows, :] = self.scaler.fit_transform(feats_df.loc[rows, :])
         return feats_df
 
     def bin_to_three(self):
