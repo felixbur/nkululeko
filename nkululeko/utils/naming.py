@@ -41,6 +41,22 @@ ACTIVATION_MODEL_TYPES = frozenset({"mlp", "mlp_reg"})
 DANN_MODEL_TYPES = frozenset(
     {"aasist", "mlp", "mlp_reg", "cnn", "adm", "lstm", "lstm_reg"}
 )
+# Types that read the [RNN] section.
+RNN_MODEL_TYPES = frozenset({"lstm", "lstm_reg"})
+# [RNN] keys that change the features or the network, and therefore go into
+# the run name (see _get_rnn_suffix()).
+RNN_NAME_KEYS = (
+    "feature_source",
+    "opensmile_set",
+    "n_mels",
+    "win_dur",
+    "hop_dur",
+    "max_len",
+    "hidden_size",
+    "num_layers",
+    "bidirectional",
+    "batch_size",
+)
 
 
 
@@ -297,6 +313,18 @@ class NamingMixin:
             suffix += "-noreverse"
         return suffix
 
+    def _get_rnn_suffix(self):
+        """Return the [RNN] settings that are set in the config (e.g.
+        '_feature_source-opensmile_lld_hidden_size-128') for lstm/lstm_reg,
+        so runs with different frame features or network sizes don't share
+        result/checkpoint paths."""
+        if self.get_model_type() not in RNN_MODEL_TYPES:
+            return ""
+        return "".join(
+            self._get_value_descript("RNN", key).replace(".", "-")
+            for key in RNN_NAME_KEYS
+        )
+
     def _get_aug_suffix(self):
         """Return augmentation suffix if [AUGMENT] augment is configured."""
         aug = self.config_val("AUGMENT", "augment", False)
@@ -340,6 +368,7 @@ class NamingMixin:
             return_string = return_string.replace("__", "_").strip("_")
 
         return_string += self._get_adm_branch_suffix()
+        return_string += self._get_rnn_suffix()
         return_string += self._get_dann_suffix()
         return_string += self._get_sam_suffix()
         return_string += self._get_aug_suffix()

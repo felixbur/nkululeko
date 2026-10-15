@@ -326,6 +326,34 @@ type = os
             u = self._dann_util(model_type, "sam = True")
             self.assertEqual(u._get_sam_suffix(), "_sam", model_type)
 
+    def test_rnn_suffix_empty_without_rnn_settings(self):
+        self.assertEqual(self._dann_util("lstm")._get_rnn_suffix(), "")
+
+    def test_rnn_suffix_lists_set_keys(self):
+        for model_type in ("lstm", "lstm_reg"):
+            u = self._dann_util(
+                model_type,
+                "[RNN]\nfeature_source = opensmile_lld\nhidden_size = 128\n"
+                "bidirectional = True\nhop_dur = 12.5",
+            )
+            self.assertEqual(
+                u._get_rnn_suffix(),
+                "_feature_source-opensmile_lld_hop_dur-12-5_hidden_size-128"
+                "_bidirectional-True",
+                model_type,
+            )
+
+    def test_rnn_suffix_ignored_for_other_models(self):
+        u = self._dann_util("mlp", "[RNN]\nhidden_size = 128")
+        self.assertEqual(u._get_rnn_suffix(), "")
+
+    def test_rnn_settings_change_the_model_description(self):
+        plain = self._dann_util("lstm").get_model_description()
+        bigger = self._dann_util(
+            "lstm", "[RNN]\nhidden_size = 128"
+        ).get_model_description()
+        self.assertNotEqual(plain, bigger)
+
     def test_sam_bad_rho_is_an_error(self):
         from nkululeko.utils.errors import NkululukoError
 

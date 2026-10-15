@@ -79,10 +79,13 @@ num_layers = 2
 
 ### 4. Regression
 
-For a continuous target (e.g. age), use `lstm_reg`. Loss and evaluation
-measure work as for `mlp_reg`:
+For a continuous target (e.g. age), use `lstm_reg` and set
+`[EXP] type = regression`. Loss and evaluation measure work as for
+`mlp_reg`:
 
 ```ini
+[EXP]
+type = regression
 [DATA]
 target = age
 [FEATS]
