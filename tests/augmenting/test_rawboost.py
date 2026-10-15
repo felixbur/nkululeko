@@ -80,7 +80,7 @@ class TestApplyRawboost:
 
 class TestParams:
     def test_defaults_are_valid(self):
-        assert rb.RawBoostParams().validate().algo == 4
+        assert rb.RawBoostParams().validate().algo == 5
 
     @pytest.mark.parametrize(
         "change",
@@ -110,7 +110,15 @@ class TestParams:
         assert (params.algo, params.snr_max, params.snr_min) == (3, 30, 10)
 
     @pytest.mark.parametrize(
-        "key, value", [("rawboost_algo", "0"), ("rawboost_p", "many")]
+        "key, value",
+        [
+            ("rawboost_algo", "0"),
+            ("rawboost_p", "many"),
+            ("rawboost_algo", "4.9"),  # not silently cut to 4
+            ("rawboost_g_sd", "2.5"),
+            ("rawboost_p", "inf"),
+            ("rawboost_snr_min", "nan"),
+        ],
     )
     def test_bad_config_is_an_error(self, tmp_path, key, value):
         config = configparser.ConfigParser()

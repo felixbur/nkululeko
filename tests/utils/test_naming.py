@@ -382,7 +382,7 @@ type = os
         rawboost = "[AASIST]\nrawboost = True"
         self.assertEqual(self._dann_util("aasist")._get_rawboost_suffix(), "")
         u = self._dann_util("aasist", sections=rawboost)
-        self.assertEqual(u._get_rawboost_suffix(), "_rawboost-algo4")
+        self.assertEqual(u._get_rawboost_suffix(), "_rawboost-algo5")
         u = self._dann_util(
             "aasist", sections=rawboost + "\n[AUGMENT]\nrawboost_algo = 3"
         )
@@ -393,7 +393,7 @@ type = os
         a = self._dann_util("aasist", sections=base + "rawboost_snr_min = 5")
         b = self._dann_util("aasist", sections=base + "rawboost_snr_min = 6")
         self.assertNotEqual(a._get_rawboost_suffix(), b._get_rawboost_suffix())
-        self.assertTrue(a._get_rawboost_suffix().startswith("_rawboost-algo4-"))
+        self.assertTrue(a._get_rawboost_suffix().startswith("_rawboost-algo5-"))
 
     def test_rawboost_suffix_only_for_the_waveform_model(self):
         for model_type in ("mlp", "svm", "adm"):
@@ -416,7 +416,7 @@ type = os
             "[AASIST]\nrawboost = True",
         )
         description = u.get_model_description()
-        self.assertTrue(description.endswith("_sam_dombal_rawboost-algo4"))
+        self.assertTrue(description.endswith("_sam_dombal_rawboost-algo5"))
 
     def test_sam_changes_model_description_and_exp_name(self):
         plain = self._dann_util()

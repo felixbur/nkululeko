@@ -51,7 +51,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'AUGMENT' | 'silero_model' | `'small_slow'` | nkululeko/augmenting/augmenter_silero.py:36 |
 | 'AUGMENT' | 'top_db' | `'12'` | nkululeko/augmenting/randomsplicer.py:45 |
 | 'AUGMENT' | 'transformations' | `'["room", "music", "noise", "babble", "crop", "cough"]'` | nkululeko/augmenting/augmenter_auglib.py:31 |
-| 'AUGMENT' | <key> | `str(field.default)` | nkululeko/augmenting/rawboost.py:107 |
+| 'AUGMENT' | <key> | `str(field.default)` | nkululeko/augmenting/rawboost.py:111 |
 | 'DATA' | 'balance' | `False` | nkululeko/data/dataset.py:615 |
 | 'DATA' | 'bins' | `False` | nkululeko/data/dataset.py:605 |
 | 'DATA' | 'check_size' | `False` | nkululeko/file_checker.py:37 |

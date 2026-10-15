@@ -6,10 +6,12 @@ Anti-Spoofing", ICASSP 2022, pp. 6382-6386.
 
 The noise generation follows the authors' reference implementation
 (RawBoost.py in https://github.com/TakHemlata/SSL_Anti-spoofing, MIT
-license), because the published results depend on its exact behavior. The
-differences are robustness fixes: silence is not divided by its (zero)
-peak, and the filter band edges are kept inside (0, sampling rate / 2), so
-that the default settings also work for audio that is not sampled at 16 kHz.
+license), because the published results depend on its exact behavior, and
+the defaults are those of the arguments of its training script
+(main_SSL_LA.py), including `algo = 5`. The differences are robustness
+fixes: silence is not divided by its (zero) peak, and the filter band edges
+are kept inside (0, sampling rate / 2), so that the default settings also
+work for audio that is not sampled at 16 kHz.
 
 Three kinds of noise are available, alone or combined (`algo`):
 
@@ -21,7 +23,9 @@ Three kinds of noise are available, alone or combined (`algo`):
 
 Pure numpy/scipy, no extra dependency. Used by the `rawboost` augmentation
 method of `[AUGMENT]` (offline, for any model) and, optionally, on the fly
-by the AASIST model.
+by the AASIST model. (The reference applies it to the clip it has loaded and
+then pads or truncates it; the AASIST model pads or truncates first, so that
+the noise is generated for exactly the samples the network sees.)
 """
 
 import copy
@@ -52,7 +56,7 @@ class RawBoostParams:
     implementation; `algo` selects the combination of noises (see
     `ALGORITHMS`)."""
 
-    algo: int = 4
+    algo: int = 5
     n_f: int = 5  # number of harmonics of algorithm 1
     n_bands: int = 5  # number of notch filters per filter bank
     min_f: int = 20  # centre frequency range of the notches (Hz)
@@ -106,9 +110,9 @@ class RawBoostParams:
             key = f"rawboost_{field.name}"
             raw = util.config_val("AUGMENT", key, str(field.default))
             try:
-                values[field.name] = int(float(raw))
-            except (TypeError, ValueError):
-                util.error(f"AUGMENT.{key} = {raw} is not a number")
+                values[field.name] = int(str(raw).strip())
+            except ValueError:
+                util.error(f"AUGMENT.{key} = {raw} is not a whole number")
         try:
             return cls(**values).validate()
         except ValueError as e:

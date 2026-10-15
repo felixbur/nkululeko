@@ -291,7 +291,7 @@ class NamingMixin:
         return suffix
 
     def _get_rawboost_suffix(self):
-        """Return a suffix ('_rawboost-algo4', plus a hash of the settings if
+        """Return a suffix ('_rawboost-algo5', plus a hash of the settings if
         they are not the defaults) when the model type adds RawBoost to its
         training waveforms on the fly ([AASIST] rawboost)."""
         if self.get_model_type() not in ONLINE_RAWBOOST_MODEL_TYPES:
