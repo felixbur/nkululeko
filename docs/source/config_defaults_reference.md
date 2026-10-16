@@ -19,7 +19,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 * `'EXPL'.'plot_tree'`: `'False'` (nkululeko/explore.py:159), `False` (nkululeko/feat_extract/feats_analyser.py:96)
 * `'FEATS'.'audmodel.id'`: `False` (nkululeko/feat_extract/feats_audmodel.py:118), `'audmodel'` (nkululeko/feat_extract/feats_audmodel.py:276), `'audmodel'` (nkululeko/feat_extract/feats_audmodel.py:389)
 * `'FEATS'.'emotion2vec.model'`: `model_mapping.get(self.feat_type, 'emotion2vec/emotion2vec_base')` (nkululeko/feat_extract/feats_emotion2vec.py:56), `_MODEL_MAPPING.get(self.feats_type, 'emotion2vec/emotion2vec_plus_large')` (nkululeko/feat_extract/feats_emotion2vec_emotion.py:76)
-* `'FEATS'.'pooling'`: `False` (nkululeko/utils/naming.py:321), `"['mean', 'std']"` (nkululeko/utils/sequences.py:130)
+* `'FEATS'.'pooling'`: `False` (nkululeko/utils/naming.py:323), `"['mean', 'std']"` (nkululeko/utils/sequences.py:137)
 * `'FEATS'.'type'`: `['os']` (nkululeko/bundle.py:220), `'os'` (nkululeko/data/datasplitter.py:418), `['os']` (nkululeko/experiment.py:235), `['os']` (nkululeko/infer.py:208), `None` (nkululeko/predict.py:224), `None` (nkululeko/predict.py:939)
 * `'FINETUNE'.'loss'`: `'cross'` (nkululeko/models/finetune_config.py:158), `'1-ccc'` (nkululeko/models/finetune_config.py:161)
 * `'MODEL'.'C_val'`: `'1.0'` (nkululeko/feat_extract/feats_analyser.py:256), `'1.0'` (nkululeko/feat_extract/feats_analyser.py:327), `'1'` (nkululeko/models/model_svm.py:16), `'0.001'` (nkululeko/models/model_svr.py:16)
@@ -32,7 +32,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 * `'MODEL'.'loss'`: `'cross'` (nkululeko/models/model.py:208), `'cross'` (nkululeko/models/model_aasist.py:169), `'bce'` (nkululeko/models/model_adm.py:65), `'mse'` (nkululeko/models/model_lstm_regression.py:33), `'mse'` (nkululeko/models/model_mlp_regression.py:35)
 * `'MODEL'.'measure'`: `'mse'` (nkululeko/models/model_lstm_regression.py:53), `'mse'` (nkululeko/models/model_mlp_regression.py:280), `'uar'` (nkululeko/reporting/reporter.py:84), `'mse'` (nkululeko/reporting/reporter.py:95), `'mse'` (nkululeko/reporting/reporter.py:853), `'uar'` (nkululeko/reporting/run_plotter.py:79), `'uar'` (nkululeko/runmanager.py:204), `'uar'` (nkululeko/utils/util.py:678), `'mse'` (nkululeko/utils/util.py:685)
 * `'MODEL'.'scheduler.gamma'`: `'0.5'` (nkululeko/optimizers/scheduler_factory.py:46), `'0.95'` (nkululeko/optimizers/scheduler_factory.py:54)
-* `'MODEL'.'type'`: `'svm'` (nkululeko/bundle.py:224), `''` (nkululeko/feature_extractor.py:71), `None` (nkululeko/predict.py:929), `''` (nkululeko/utils/naming.py:354)
+* `'MODEL'.'type'`: `'svm'` (nkululeko/bundle.py:224), `''` (nkululeko/feature_extractor.py:71), `None` (nkululeko/predict.py:929), `''` (nkululeko/utils/naming.py:356)
 * `'REPORT'.'latex'`: `False` (nkululeko/experiment.py:91), `'nkululeko_latex'` (nkululeko/reporting/latex_writer.py:39)
 
 | Namespace | Key | Default | Source |
@@ -42,7 +42,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'AASIST' | 'max_len' | `'64600'` | nkululeko/models/aasist_config.py:61 |
 | 'AASIST' | 'ssl_layer_pooling' | `'last'` | nkululeko/models/aasist_config.py:68 |
 | 'AASIST' | 'ssl_model' | `'facebook/wav2vec2-xls-r-300m'` | nkululeko/models/aasist_config.py:54 |
-| 'AUGMENT' | 'augment' | `False` | nkululeko/aug_train.py:40, nkululeko/augment.py:57, nkululeko/utils/naming.py:344 |
+| 'AUGMENT' | 'augment' | `False` | nkululeko/aug_train.py:40, nkululeko/augment.py:57, nkululeko/utils/naming.py:346 |
 | 'AUGMENT' | 'augmentations' | `defaults` | nkululeko/augmenting/augmenter_audiomentations.py:33 |
 | 'AUGMENT' | 'bypass_prob' | `0.3` | nkululeko/augmenting/augmenter_auglib.py:39 |
 | 'AUGMENT' | 'crop_dur' | `1.0` | nkululeko/augmenting/augmenter_auglib.py:130 |
@@ -131,7 +131,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'FEATS' | 'cqcc.n_cqt_bins' | `N_CQT_BINS` | nkululeko/feat_extract/feats_cqcc.py:97 |
 | 'FEATS' | 'cqcc.sample_rate' | `SAMPLING_RATE` | nkululeko/feat_extract/feats_cqcc.py:93 |
 | 'FEATS' | 'emotion2vec.model' | `_MODEL_MAPPING.get(self.feats_type, 'emotion2vec/emotion2vec_plus_large')` / `model_mapping.get(self.feat_type, 'emotion2vec/emotion2vec_base')` | nkululeko/feat_extract/feats_emotion2vec.py:56, nkululeko/feat_extract/feats_emotion2vec_emotion.py:76 |
-| 'FEATS' | 'fail_threshold' | `str(default)` | nkululeko/feat_extract/featureset.py:85 |
+| 'FEATS' | 'fail_threshold' | `str(default)` | nkululeko/feat_extract/featureset.py:83 |
 | 'FEATS' | 'fft_hop_dur' | `'10'` | nkululeko/feat_extract/feats_spectra.py:31 |
 | 'FEATS' | 'fft_nbands' | `'64'` | nkululeko/feat_extract/feats_spectra.py:29 |
 | 'FEATS' | 'fft_win_dur' | `'25'` | nkululeko/feat_extract/feats_spectra.py:30 |
@@ -139,7 +139,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'FEATS' | 'hubert.model' | `f'facebook/{self.feat_type}'` | nkululeko/feat_extract/feats_hubert.py:41 |
 | 'FEATS' | 'import_file' | `False` | nkululeko/feat_extract/feats_import.py:27 |
 | 'FEATS' | 'import_files_append' | `True` | nkululeko/feat_extract/feats_import.py:23 |
-| 'FEATS' | 'level' | `'functionals'` | nkululeko/feat_extract/feats_opensmile.py:72, nkululeko/feat_extract/featureset.py:48, nkululeko/utils/naming.py:319 |
+| 'FEATS' | 'level' | `'functionals'` | nkululeko/feat_extract/feats_opensmile.py:72, nkululeko/feat_extract/featureset.py:50, nkululeko/utils/naming.py:321 |
 | 'FEATS' | 'lfcc.fft_length' | `N_FFT` | nkululeko/feat_extract/feats_lfcc.py:102 |
 | 'FEATS' | 'lfcc.frame_length' | `FRAME_LENGTH` | nkululeko/feat_extract/feats_lfcc.py:97 |
 | 'FEATS' | 'lfcc.frame_period' | `FRAME_PERIOD` | nkululeko/feat_extract/feats_lfcc.py:100 |
@@ -150,7 +150,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'FEATS' | 'nan_strategy' | `'zero'` | nkululeko/utils/util.py:364 |
 | 'FEATS' | 'no_reuse' | `False` | nkululeko/feat_extract/feats_audmodel.py:413, nkululeko/feat_extract/feats_mld.py:45 |
 | 'FEATS' | 'os.set' | `'eGeMAPSv02'` | nkululeko/bundle.py:63, nkululeko/bundle.py:114 |
-| 'FEATS' | 'pooling' | `"['mean', 'std']"` / `False` | nkululeko/utils/naming.py:321, nkululeko/utils/sequences.py:130 |
+| 'FEATS' | 'pooling' | `"['mean', 'std']"` / `False` | nkululeko/utils/naming.py:323, nkululeko/utils/sequences.py:137 |
 | 'FEATS' | 'print_feats' | `'False'` | nkululeko/feat_extract/feats_opensmile.py:91, nkululeko/feat_extract/feats_praat.py:22, nkululeko/feat_extract/feats_sptk.py:81, +1 more |
 | 'FEATS' | 'scale' | `False` | nkululeko/bundle.py:221, nkululeko/experiment.py:673, nkululeko/predict.py:946, +1 more |
 | 'FEATS' | 'set' | `'eGeMAPSv02'` | nkululeko/feat_extract/feats_opensmile.py:55, nkululeko/feat_extract/feats_oxbow.py:22 |

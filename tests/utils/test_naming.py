@@ -359,6 +359,14 @@ type = os
         self.assertNotEqual(plain, u.get_model_description())
         self.assertIn("_level-frame", u.get_model_description())
 
+    def test_every_frame_level_spelling_names_the_run(self):
+        for level in ("frame", "lld", "LowLevelDescriptors", "FRAME"):
+            u = self._dann_util("svm")
+            u.config["FEATS"]["level"] = level
+            self.assertIn("_level-frame", u.get_model_description(), level)
+        u.config["FEATS"]["level"] = "functionals"
+        self.assertNotIn("_level-frame", u.get_model_description())
+
     def test_pooling_suffix(self):
         u = self._dann_util("svm")
         self.assertEqual(u._get_pooling_suffix(), "")

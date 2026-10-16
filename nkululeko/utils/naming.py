@@ -313,11 +313,13 @@ class NamingMixin:
 
     def _get_pooling_suffix(self):
         """Return '_level-frame' for frame-level features (FEATS.level =
-        frame or lld), plus '_pooling-mean-max' when FEATS.pooling is set,
+        frame, lld or LowLevelDescriptors), plus '_pooling-mean-max' when FEATS.pooling is set,
         so these runs don't share result paths with others. The default
         level (functionals) adds nothing, so existing run names stay."""
-        level = str(self.config_val("FEATS", "level", "functionals")).lower()
-        suffix = "_level-frame" if level in ("frame", "lld") else ""
+        from nkululeko.utils.sequences import is_frame_level
+
+        level = self.config_val("FEATS", "level", "functionals")
+        suffix = "_level-frame" if is_frame_level(level) else ""
         pooling = self.config_val("FEATS", "pooling", False)
         if not pooling:
             return suffix

@@ -45,12 +45,10 @@ class Featureset(ContextAware):
         """True if FEATS.level asks for frame sequences and this feature
         set can produce them; otherwise one vector per sample."""
         if getattr(self, "_wants_frames", None) is None:
-            level = str(self.util.config_val("FEATS", "level", "functionals"))
-            self._wants_frames = level.lower() in (
-                "frame",
-                "lld",
-                "lowleveldescriptors",
-            )
+            from nkululeko.utils.sequences import is_frame_level
+
+            level = self.util.config_val("FEATS", "level", "functionals")
+            self._wants_frames = is_frame_level(level)
             if self._wants_frames and not self.supports_frames:
                 self.util.warn(
                     f"FEATS.level = {level}: {self.feats_type} has no "

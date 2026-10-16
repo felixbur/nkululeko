@@ -21,6 +21,13 @@ FRAME_LEVEL = "frame"
 SEGMENT_LEVELS = ["file", "start", "end"]
 SEQUENCE_LEVELS = SEGMENT_LEVELS + [FRAME_LEVEL]
 POOLING_STATS = ("mean", "std", "min", "max", "median")
+# FEATS.level spellings that ask for frame sequences (case-insensitive)
+FRAME_LEVEL_NAMES = ("frame", "lld", "lowleveldescriptors")
+
+
+def is_frame_level(level):
+    """True if a FEATS.level value asks for frame sequences."""
+    return str(level).strip().lower() in FRAME_LEVEL_NAMES
 
 
 def is_sequence(df):
