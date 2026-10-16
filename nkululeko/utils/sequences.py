@@ -41,17 +41,23 @@ def sequence_index(segment, frames):
             Timedeltas or seconds.
     """
     file, start, end = segment
-    frames = pd.to_timedelta(frames, unit="s")
+    frames = _ns(pd.to_timedelta(frames, unit="s"))
     n = len(frames)
     return pd.MultiIndex.from_arrays(
         [
             [file] * n,
-            pd.to_timedelta([start] * n),
-            pd.to_timedelta([end] * n),
+            _ns(pd.to_timedelta([start] * n)),
+            _ns(pd.to_timedelta([end] * n)),
             frames,
         ],
         names=SEQUENCE_LEVELS,
     )
+
+
+def _ns(times):
+    """Times in nanoseconds, as audformat indexes have them (pandas 3
+    otherwise picks the unit from the input, e.g. microseconds)."""
+    return times.astype("timedelta64[ns]")
 
 
 def _group(df):
@@ -207,9 +213,9 @@ def read_sequence_csv(path):
         raise ValueError(f"{path}: missing column(s) {missing}")
     for col in ("start", "end", "frame"):
         if pd.api.types.is_numeric_dtype(df[col]):
-            df[col] = pd.to_timedelta(df[col], unit="s")
+            df[col] = _ns(pd.to_timedelta(df[col], unit="s"))
         else:
-            df[col] = pd.to_timedelta(df[col])
+            df[col] = _ns(pd.to_timedelta(df[col]))
     return df.set_index(SEQUENCE_LEVELS)
 
 

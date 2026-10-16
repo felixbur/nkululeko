@@ -43,6 +43,11 @@ def make_util(tmp_path, feats=None, model_type="svm"):
 
 
 class TestHelpers:
+    def test_times_are_in_nanoseconds(self):
+        index = seq.sequence_index(SEG_A, [0, 0.01])
+        for level in ("start", "end", "frame"):
+            assert index.get_level_values(level).dtype == "timedelta64[ns]"
+
     def test_sequence_index_is_relative_to_the_segment(self):
         index = seq.sequence_index(SEG_B, [0, 0.01])
         assert list(index.names) == ["file", "start", "end", "frame"]
@@ -287,7 +292,20 @@ class TestSSLFrames:
         assert frames.shape == (10, 4)
         np.testing.assert_allclose(pooled, frames.mean(axis=0))
 
-    def test_extract_gives_frames_relative_to_segment(self, tmp_path):
+    def test_extract_gives_frames_relative_to_segment(self, tmp_path, monkeypatch):
+        import torch
+
+        import nkululeko.feat_extract.feats_wav2vec2 as module
+
+        def load(file, frame_offset, num_frames, normalize=True):
+            # torchaudio.load needs the torchcodec backend in newer
+            # versions; the audio backend is not what this test is about
+            data, sr = sf.read(
+                file, start=frame_offset, frames=num_frames, dtype="float32"
+            )
+            return torch.from_numpy(data).reshape(1, -1), sr
+
+        monkeypatch.setattr(module.torchaudio, "load", load)
         extractor = self._extractor(tmp_path, "frame")
         extractor.extract()
         df = extractor.df
