@@ -150,6 +150,24 @@ class TestConstructor:
         assert targets.tolist() == [0, 1, 2, 0]
         assert np.isfinite(loss_eval)
 
+    def test_nan_frames_are_filled_not_dropped(self, tmp_path):
+        feats = frames_df([3, 5, 2, 4])
+        feats.iloc[[0, 4], 1] = np.nan
+        df = labels_df([0, 1, 2, 0])
+        context = experiment_context(
+            tmp_path, "lstm", "emotion", labels=["a", "b", "c"]
+        )
+
+        model = LSTMModel(df, df, feats, feats, context=context)
+        model.train()
+        _, _, _, logits, loss_eval = model.evaluate(model.testloader)
+
+        frames = [model.trainloader.dataset[i][0] for i in range(4)]
+        assert [len(f) for f in frames] == [3, 5, 2, 4]
+        assert all(torch.isfinite(f).all() for f in frames)
+        assert np.isfinite(model.loss) and model.loss > 0
+        assert torch.isfinite(logits).all() and np.isfinite(loss_eval)
+
     def test_one_vector_per_sample_is_an_error(self, tmp_path):
         df = labels_df([0, 1])
         feats = pd.DataFrame({"f0": [0.1, 0.2]}, index=df.index)

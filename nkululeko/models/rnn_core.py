@@ -195,6 +195,9 @@ class RNNModel(Model):
         raise NotImplementedError
 
     def get_loader(self, df, feats, shuffle, train=False):
+        # MODEL.nan_strategy, as for the other models; fills frames, never
+        # drops them
+        feats = self._handle_model_nan(feats, f"{self.name}, frames")
         dataset = SequenceDataset(
             df,
             feats,
