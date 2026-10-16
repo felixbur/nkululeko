@@ -326,6 +326,53 @@ type = os
             u = self._dann_util(model_type, "sam = True")
             self.assertEqual(u._get_sam_suffix(), "_sam", model_type)
 
+    def test_rnn_suffix_empty_without_rnn_settings(self):
+        self.assertEqual(self._dann_util("lstm")._get_rnn_suffix(), "")
+
+    def test_rnn_suffix_lists_set_keys(self):
+        for model_type in ("lstm", "lstm_reg"):
+            u = self._dann_util(
+                model_type,
+                "[RNN]\nhidden_size = 128\nbidirectional = True\nbatch_size = 8",
+            )
+            self.assertEqual(
+                u._get_rnn_suffix(),
+                "_hidden_size-128_bidirectional-True_batch_size-8",
+                model_type,
+            )
+
+    def test_rnn_suffix_ignored_for_other_models(self):
+        u = self._dann_util("mlp", "[RNN]\nhidden_size = 128")
+        self.assertEqual(u._get_rnn_suffix(), "")
+
+    def test_rnn_settings_change_the_model_description(self):
+        plain = self._dann_util("lstm").get_model_description()
+        bigger = self._dann_util(
+            "lstm", "[RNN]\nhidden_size = 128"
+        ).get_model_description()
+        self.assertNotEqual(plain, bigger)
+
+    def test_frame_level_and_pooling_change_the_model_description(self):
+        u = self._dann_util("svm")
+        plain = u.get_model_description()
+        u.config["FEATS"]["level"] = "frame"
+        self.assertNotEqual(plain, u.get_model_description())
+        self.assertIn("_level-frame", u.get_model_description())
+
+    def test_every_frame_level_spelling_names_the_run(self):
+        for level in ("frame", "lld", "LowLevelDescriptors", "FRAME"):
+            u = self._dann_util("svm")
+            u.config["FEATS"]["level"] = level
+            self.assertIn("_level-frame", u.get_model_description(), level)
+        u.config["FEATS"]["level"] = "functionals"
+        self.assertNotIn("_level-frame", u.get_model_description())
+
+    def test_pooling_suffix(self):
+        u = self._dann_util("svm")
+        self.assertEqual(u._get_pooling_suffix(), "")
+        u.config["FEATS"]["pooling"] = "['mean', 'max']"
+        self.assertEqual(u._get_pooling_suffix(), "_pooling-mean-max")
+
     def test_sam_bad_rho_is_an_error(self):
         from nkululeko.utils.errors import NkululukoError
 

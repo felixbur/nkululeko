@@ -38,6 +38,9 @@ class Model(ContextAware):
     """Generic model class for linear (non-neural) algorithms."""
 
     dann_heads = None  # DannHeads when MODEL.dann_columns is set (see _init_dann)
+    # "vector": one feature vector per sample; "sequence": frame sequences
+    # (FEATS.level = frame, see nkululeko.utils.sequences)
+    input_kind = "vector"
 
     def _init_dann(self, df_train, feat_dim, cfg=None):
         """Build the domain-adversarial heads (MODEL.dann_columns) on

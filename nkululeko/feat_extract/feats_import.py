@@ -7,6 +7,7 @@ import audformat
 import pandas as pd
 
 from nkululeko.feat_extract.featureset import Featureset
+from nkululeko.utils.sequences import FRAME_LEVEL, read_sequence_csv
 
 
 class ImportSet(Featureset):
@@ -39,10 +40,18 @@ class ImportSet(Featureset):
         for feat_import_file in feat_import_files:
             if not os.path.isfile(feat_import_file):
                 self.util.error(f"no import file: {feat_import_file}")
-            df = audformat.utils.read_csv(feat_import_file)
-            df = self.util.handle_nan(df, context="imported features")
-            df = self.util.make_segmented_index(df)
-            df = df[df.index.isin(self.data_df.index)]
+            if "frame" in pd.read_csv(feat_import_file, nrows=0).columns:
+                # frame sequences: columns file, start, end, frame (in
+                # seconds, frame relative to the segment start)
+                df = read_sequence_csv(feat_import_file)
+                df = self.util.handle_nan(df, context="imported features")
+                segments = df.index.droplevel(FRAME_LEVEL)
+                df = df[segments.isin(self.data_df.index)]
+            else:
+                df = audformat.utils.read_csv(feat_import_file)
+                df = self.util.handle_nan(df, context="imported features")
+                df = self.util.make_segmented_index(df)
+                df = df[df.index.isin(self.data_df.index)]
             if import_files_append:
                 feat_df = pd.concat([feat_df, df], axis=0)
             else:

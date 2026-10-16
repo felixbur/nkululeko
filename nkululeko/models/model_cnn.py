@@ -190,13 +190,9 @@ class CNNModel(Model):
         # argmax (the predicted label) is unaffected either way, since
         # softmax is monotonic.
         probs = torch.softmax(logits, dim=1).numpy()
-        proba_d = {}
-        classes = self.df_test[self.target].unique()
-        classes.sort()
-        for c in classes:
-            proba_d[c] = []
-        for i, c in enumerate(classes):
-            proba_d[c] = list(probs.T[i])
+        # Columns follow the network's outputs, i.e. every encoded class
+        # 0..class_num-1, even if the test split lacks some of them.
+        proba_d = {c: list(probs.T[c]) for c in range(self.class_num)}
         probas = pd.DataFrame(proba_d)
         probas = probas.set_index(self.df_test.index)
         return probas

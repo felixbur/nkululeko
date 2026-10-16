@@ -17,6 +17,8 @@ from nkululeko.feat_extract.featureset import Featureset
 class Wavlm(Featureset):
     """Class to extract WavLM embedding)."""
 
+    supports_frames = True
+
     def __init__(self, name, data_df, feats_type):
         """Constructor.
 
@@ -65,6 +67,10 @@ class Wavlm(Featureset):
             storage = f"{store}{self.name}.pkl"
         else:
             storage = f"{store}{self.name}_l{str(self.hidden_layer)}.pkl"
+        frames = self.wants_frames()
+        if frames:
+            # frame sequences get their own store
+            storage = storage.replace(".pkl", "_frames.pkl")
 
         if self._needs_extraction(storage):
             if not self.model_initialized:
@@ -80,9 +86,13 @@ class Wavlm(Featureset):
                 assert sampling_rate == 16000, (
                     f"sampling rate should be 16000 but is {sampling_rate}"
                 )
-                return self.get_embeddings(signal, sampling_rate, file)
+                return self.get_embeddings(
+                    signal, sampling_rate, file, pooled=not frames
+                )
 
-            self.df = self._extract_embeddings_with_error_handling(_load_file)
+            self.df = self._extract_embeddings_with_error_handling(
+                _load_file, frame_step=self._ssl_frame_step() if frames else None
+            )
             self.df.to_pickle(storage)
             try:
                 self.context.config["DATA"]["needs_feature_extraction"] = "false"
@@ -98,8 +108,9 @@ class Wavlm(Featureset):
                     f"got nan: {self.df.shape} {self.df.isnull().sum().sum()}"
                 )
 
-    def get_embeddings(self, signal, sampling_rate, file):
-        r"""Extract embeddings from raw audio signal."""
+    def get_embeddings(self, signal, sampling_rate, file, pooled=True):
+        r"""Extract embeddings from raw audio signal: their mean over
+        time, or with pooled=False one row per frame."""
         if sampling_rate != 16000:
             self.util.error(f"sampling rate should be 16000 but is {sampling_rate}")
         try:
@@ -114,6 +125,9 @@ class Wavlm(Featureset):
                 # first entry contains hidden state
                 y = self.model(y)[0]
 
+                if not pooled:
+                    # one row per frame
+                    return y[0].detach().cpu().numpy()
                 # pool result and convert to numpy
                 y = torch.mean(y, dim=1)
                 y = y.detach().cpu().numpy()
@@ -129,5 +143,7 @@ class Wavlm(Featureset):
     def extract_sample(self, signal, sr):
         if not self.model_initialized:
             self.init_model()
-        feats = self.get_embeddings(signal, sr, "no file")
+        feats = self.get_embeddings(
+            signal, sr, "no file", pooled=not self.wants_frames()
+        )
         return feats

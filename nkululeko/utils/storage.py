@@ -37,7 +37,12 @@ class StorageMixin:
         if format == "pkl":
             df.to_pickle(storage)
         elif format == "csv":
-            df.to_csv(storage)
+            from nkululeko.utils.sequences import is_sequence, write_sequence_csv
+
+            if is_sequence(df):
+                write_sequence_csv(df, storage)
+            else:
+                df.to_csv(storage)
         else:
             self.error(f"unknown store format: {format}")
 
@@ -45,6 +50,12 @@ class StorageMixin:
         if format == "pkl":
             return pd.read_pickle(name)
         elif format == "csv":
+            df = pd.read_csv(name, nrows=0)
+            if "frame" in df.columns:
+                # frame sequences: audformat only rebuilds file/start/end
+                from nkululeko.utils.sequences import read_sequence_csv
+
+                return read_sequence_csv(name)
             return audformat.utils.read_csv(name)
         else:
             self.error(f"unknown store format: {format}")

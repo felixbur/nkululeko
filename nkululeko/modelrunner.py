@@ -23,10 +23,12 @@ from nkululeko.utils.util import Util
 # or when the model does not declare explicit is_classifier / is_regressor flags.
 # Model types that only support classification
 CLASSIFIER_TYPES = frozenset(
-    {"svm", "xgb", "bayes", "gmm", "knn", "tree", "cnn", "mlp", "adm", "aasist"}
+    {"svm", "xgb", "bayes", "gmm", "knn", "tree", "cnn", "mlp", "adm", "aasist", "lstm"}
 )
 # Model types that only support regression
-REGRESSOR_TYPES = frozenset({"svr", "xgr", "knn_reg", "lin_reg", "tree_reg", "mlp_reg"})
+REGRESSOR_TYPES = frozenset(
+    {"svr", "xgr", "knn_reg", "lin_reg", "tree_reg", "mlp_reg", "lstm_reg"}
+)
 
 
 def validate_model_task_support(model_type: str, task: str, model=None) -> None:
@@ -493,12 +495,32 @@ class Modelrunner(ContextAware):
             self.model = AasistModel(
                 self.df_train, self.df_test, self.feats_train, self.feats_test
             )
+        elif model_type == "lstm":
+            from nkululeko.models.model_lstm import LSTMModel
+
+            self.model = LSTMModel(
+                self.df_train, self.df_test, self.feats_train, self.feats_test
+            )
+        elif model_type == "lstm_reg":
+            from nkululeko.models.model_lstm_regression import LSTM_Reg_model
+
+            self.model = LSTM_Reg_model(
+                self.df_train, self.df_test, self.feats_train, self.feats_test
+            )
         else:
             self.util.error(f"unknown model type: '{model_type}'")
         # Re-validate using the instantiated model's own capability flags so
         # that models declaring is_classifier/is_regressor are honored even
         # when their model_type is absent from the legacy type allow-lists.
         validate_model_task_support(model_type, task, model=self.model)
+        from nkululeko.utils.sequences import is_sequence
+
+        input_kind = getattr(self.model, "input_kind", "vector")
+        if input_kind == "vector" and is_sequence(self.feats_train):
+            self.util.error(
+                f"MODEL.type = {model_type} takes one feature vector per "
+                "sample, but got frame sequences"
+            )
         return self.model
 
     def _feature_balancing_method(self):
@@ -516,6 +538,14 @@ class Modelrunner(ContextAware):
         """Check and apply feature balancing using the dedicated DataBalancer class."""
         balancing = self._feature_balancing_method()
         if balancing:
+            from nkululeko.utils.sequences import is_sequence
+
+            if is_sequence(self.feats_train):
+                self.util.error(
+                    "FEATS.balancing can't be used with frame sequences "
+                    "(FEATS.level = frame and a sequence model): it would "
+                    "create single frames, not whole sequences"
+                )
             self.util.debug("Applying feature balancing using DataBalancer")
 
             # Get random state from config, fallback to 42 for backward compatibility
