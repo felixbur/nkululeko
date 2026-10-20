@@ -7,38 +7,63 @@ import re
 
 # MODEL.type values backed by an artificial neural network (see
 # Model.is_ann() and the model_type "ann"/"finetuned" tags set by these
-# models' __init__). All six read MODEL.loss (mlp/cnn via the shared
-# Model._setup_criterion(), mlp_reg/adm/finetune/aasist each directly); the
+# models' __init__). All of them read MODEL.loss (mlp/cnn/lstm via the shared
+# Model._setup_criterion(), mlp_reg/adm/finetune/aasist/lstm_reg each
+# directly); the
 # other ANN-only options below are read by narrower subsets of this group.
-ANN_MODEL_TYPES = frozenset({"cnn", "mlp", "mlp_reg", "adm", "finetune", "aasist"})
+ANN_MODEL_TYPES = frozenset(
+    {"cnn", "mlp", "mlp_reg", "adm", "finetune", "aasist", "lstm", "lstm_reg"}
+)
 # MODEL.type values backed by a kernel SVM — only these read
 # MODEL.C_val / MODEL.kernel.
 SVM_MODEL_TYPES = frozenset({"svm", "svr"})
 # MODEL.type values with a configurable layer stack — only these read
-# MODEL.layers (adm, finetune and aasist have a fixed architecture instead).
+# MODEL.layers (adm, finetune and aasist have a fixed architecture instead;
+# lstm/lstm_reg take theirs from the [RNN] section).
 LAYERED_MODEL_TYPES = frozenset({"cnn", "mlp", "mlp_reg"})
 # ANN types that build their optimizer via optimizer_factory.get_optimizer()
 # and thus read MODEL.optimizer (and MODEL.sam / MODEL.sam_rho: SAM wraps
 # that optimizer). TunedModel (finetune) configures its own optimizer
 # elsewhere and never reads them.
-OPTIMIZER_MODEL_TYPES = frozenset({"cnn", "mlp", "mlp_reg", "adm", "aasist"})
+OPTIMIZER_MODEL_TYPES = frozenset(
+    {"cnn", "mlp", "mlp_reg", "adm", "aasist", "lstm", "lstm_reg"}
+)
 # ANN types that read MODEL.drop for dropout. model_adm.py has no dropout
 # config of its own.
-DROPOUT_MODEL_TYPES = frozenset({"cnn", "mlp", "mlp_reg", "finetune"})
-# ANN types with a configurable hidden-layer activation function. cnn, adm
-# and finetune don't expose MODEL.activation.
+DROPOUT_MODEL_TYPES = frozenset(
+    {"cnn", "mlp", "mlp_reg", "finetune", "lstm", "lstm_reg"}
+)
+# ANN types with a configurable hidden-layer activation function. cnn, adm,
+# finetune, aasist and lstm/lstm_reg don't expose MODEL.activation.
 ACTIVATION_MODEL_TYPES = frozenset({"mlp", "mlp_reg"})
 # Types that implement domain-adversarial training (MODEL.dann_columns);
 # every other type ignores the dann_* keys.
-DANN_MODEL_TYPES = frozenset({"aasist", "mlp", "mlp_reg", "cnn", "adm"})
+DANN_MODEL_TYPES = frozenset(
+    {"aasist", "mlp", "mlp_reg", "cnn", "adm", "lstm", "lstm_reg"}
+)
+# Types that read the [RNN] section.
+RNN_MODEL_TYPES = frozenset({"lstm", "lstm_reg"})
+# Types whose models take frame sequences (Model.input_kind = "sequence",
+# FEATS.level = frame); every other type gets one vector per sample, and
+# frame sequences are pooled for it (FEATS.pooling).
+SEQUENCE_MODEL_TYPES = frozenset({"lstm", "lstm_reg"})
+# [RNN] keys that change the features or the network, and therefore go into
+# the run name (see _get_rnn_suffix()).
+RNN_NAME_KEYS = (
+    "hidden_size",
+    "num_layers",
+    "bidirectional",
+    "batch_size",
+)
 # Types whose training loader can draw domain-balanced batches
 # (MODEL.domain_balanced_sampling).
-DOMAIN_BALANCED_MODEL_TYPES = frozenset({"aasist", "mlp", "mlp_reg", "cnn", "adm"})
+DOMAIN_BALANCED_MODEL_TYPES = frozenset(
+    {"aasist", "mlp", "mlp_reg", "cnn", "adm", "lstm", "lstm_reg"}
+)
 # Types that can add RawBoost noise to the training waveforms on the fly
 # ([AASIST] rawboost); the others work on features, so for them RawBoost is
 # an offline augmentation ([AUGMENT] augment = ['rawboost']).
 ONLINE_RAWBOOST_MODEL_TYPES = frozenset({"aasist"})
-
 
 
 def parse_dann_columns(raw):
@@ -351,6 +376,36 @@ class NamingMixin:
             suffix += "-noreverse"
         return suffix
 
+    def _get_pooling_suffix(self):
+        """Return '_level-frame' for frame-level features (FEATS.level =
+        frame, lld or LowLevelDescriptors), plus '_pooling-mean-max' when FEATS.pooling is set,
+        so these runs don't share result paths with others. The default
+        level (functionals) adds nothing, so existing run names stay."""
+        from nkululeko.utils.sequences import is_frame_level
+
+        level = self.config_val("FEATS", "level", "functionals")
+        suffix = "_level-frame" if is_frame_level(level) else ""
+        pooling = self.config_val("FEATS", "pooling", False)
+        if not pooling:
+            return suffix
+        if isinstance(pooling, str) and pooling.startswith("["):
+            pooling = ast.literal_eval(pooling)
+        if isinstance(pooling, str):
+            pooling = [pooling]
+        return suffix + "_pooling-" + "-".join(pooling)
+
+    def _get_rnn_suffix(self):
+        """Return the [RNN] settings that are set in the config (e.g.
+        '_hidden_size-128_bidirectional-True') for lstm/lstm_reg, so runs
+        with different network sizes don't share result/checkpoint
+        paths."""
+        if self.get_model_type() not in RNN_MODEL_TYPES:
+            return ""
+        return "".join(
+            self._get_value_descript("RNN", key).replace(".", "-")
+            for key in RNN_NAME_KEYS
+        )
+
     def _get_aug_suffix(self):
         """Return augmentation suffix if [AUGMENT] augment is configured."""
         aug = self.config_val("AUGMENT", "augment", False)
@@ -394,6 +449,8 @@ class NamingMixin:
             return_string = return_string.replace("__", "_").strip("_")
 
         return_string += self._get_adm_branch_suffix()
+        return_string += self._get_pooling_suffix()
+        return_string += self._get_rnn_suffix()
         return_string += self._get_dann_suffix()
         return_string += self._get_sam_suffix()
         return_string += self._get_domain_balanced_suffix()

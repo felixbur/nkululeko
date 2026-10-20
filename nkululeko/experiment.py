@@ -565,6 +565,10 @@ class Experiment:
                 f"unknown sample selection specifier {sample_selection}, should"
                 " be [all | train | test]"
             )
+        from nkululeko.utils.sequences import pool, pooling_stats
+
+        # the analysis needs one row per sample
+        df_feats = pool(df_feats, pooling_stats(self.util))
         feat_analyser = FeatureAnalyser(
             sample_selection, df_labels, df_feats, context=self.context
         )

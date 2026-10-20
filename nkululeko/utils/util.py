@@ -13,6 +13,7 @@ from pathlib import Path
 
 import audeer
 import numpy as np
+import pandas as pd
 
 from nkululeko.utils.dataframe import DataFrameMixin
 from nkululeko.utils.errors import NkululukoError
@@ -465,25 +466,53 @@ class Util(NamingMixin, StorageMixin, DataFrameMixin):
                 the result.
             df_target: DataFrame to filter and reorder.
 
+        Frame sequences (an extra ``frame`` index level, see
+        nkululeko.utils.sequences) are matched on their segment: if
+        df_target has frames and df_source not, every frame of a matched
+        segment is kept (in df_target's frame order); if df_source has
+        frames and df_target not, each segment counts once.
+
         Returns:
             DataFrame: the subset of df_target matching df_source, one row
-            per matched df_source row, in df_source's row order. A
-            df_source row with no match in df_target is skipped.
+            (or one segment's frames) per matched df_source row, in
+            df_source's row order. A df_source row with no match in
+            df_target is skipped.
         """
+        from nkululeko.utils.sequences import FRAME_LEVEL
 
-        def _key(index_entry):
+        source_frames = FRAME_LEVEL in df_source.index.names
+        target_frames = FRAME_LEVEL in df_target.index.names
+
+        def _key(index_entry, has_frames):
             if isinstance(index_entry, tuple):
                 path, *rest = index_entry
+                if has_frames and not (source_frames and target_frames):
+                    rest = rest[:-1]  # match on the segment only
+                rest = [None if pd.isna(x) else x for x in rest]
                 return (self.extract_parent_and_name(path), *rest)
             return (self.extract_parent_and_name(index_entry),)
 
         target_positions_by_key = {}
         for pos, idx in enumerate(df_target.index):
-            target_positions_by_key.setdefault(_key(idx), deque()).append(pos)
+            target_positions_by_key.setdefault(
+                _key(idx, target_frames), deque()
+            ).append(pos)
 
+        take_all = target_frames and not source_frames
         positions = []
+        seen = set()
         for idx in df_source.index:
-            matches = target_positions_by_key.get(_key(idx))
+            key = _key(idx, source_frames)
+            if source_frames and not target_frames:
+                if key in seen:
+                    continue
+                seen.add(key)
+            if take_all:
+                matches = target_positions_by_key.pop(key, None)
+                if matches:
+                    positions.extend(matches)
+                continue
+            matches = target_positions_by_key.get(key)
             if matches:
                 positions.append(matches.popleft())
 

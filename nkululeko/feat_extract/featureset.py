@@ -4,6 +4,7 @@ import hashlib
 
 import audeer
 import audformat
+import numpy as np
 import pandas as pd
 
 from nkululeko.experiment_context import ContextAware
@@ -17,6 +18,9 @@ EXTRACTION_ERRORS = (IOError, OSError, RuntimeError, ValueError, AssertionError)
 
 
 class Featureset(ContextAware):
+    # True for feature sets that can output frame sequences
+    # (FEATS.level = frame, see nkululeko.utils.sequences)
+    supports_frames = False
     name = ""  # designation
     df = None  # pandas dataframe to store the features
     # (and indexed with the data from the sets)
@@ -36,6 +40,22 @@ class Featureset(ContextAware):
         self.context = self.util.context
         self.feats_type = feats_type
         self.n_jobs = int(self.util.config_val("MODEL", "n_jobs", "8"))
+
+    def wants_frames(self):
+        """True if FEATS.level asks for frame sequences and this feature
+        set can produce them; otherwise one vector per sample."""
+        if getattr(self, "_wants_frames", None) is None:
+            from nkululeko.utils.sequences import is_frame_level
+
+            level = self.util.config_val("FEATS", "level", "functionals")
+            self._wants_frames = is_frame_level(level)
+            if self._wants_frames and not self.supports_frames:
+                self.util.warn(
+                    f"FEATS.level = {level}: {self.feats_type} has no "
+                    "frame-level output, using one vector per sample"
+                )
+                self._wants_frames = False
+        return self._wants_frames
 
     def _needs_extraction(self, storage):
         """Check whether features need to be (re-)extracted.
@@ -76,11 +96,15 @@ class Featureset(ContextAware):
             threshold = min(max(threshold, 0.0), 1.0)
         return threshold
 
-    def _extract_embeddings_with_error_handling(self, extract_fn):
+    def _extract_embeddings_with_error_handling(self, extract_fn, frame_step=None):
         """Process each file with extract_fn, skip failures, return filtered DataFrame.
 
         Args:
             extract_fn: callable(file, start, end) -> embedding array
+            frame_step: None if extract_fn returns one vector per sample;
+                otherwise it returns a (frames, dims) array and this is the
+                time between frames in seconds, and the result has one row
+                per frame (see nkululeko.utils.sequences)
 
         Returns:
             pd.DataFrame of embeddings with filtered index.
@@ -121,7 +145,29 @@ class Featureset(ContextAware):
         valid = emb_series.notna()
         if not valid.all():
             emb_series = emb_series[valid]
+        if frame_step is not None:
+            return self._frames_df(emb_series, frame_step)
         return pd.DataFrame(emb_series.values.tolist(), index=emb_series.index)
+
+    @staticmethod
+    def _frames_df(emb_series, frame_step):
+        """One row per frame from a series of (frames, dims) arrays, index
+        (file, start, end, frame), float32 to save memory."""
+        from nkululeko.utils.sequences import sequence_index
+
+        arrays = [np.asarray(emb, dtype=np.float32) for emb in emb_series.values]
+        indexes = [
+            sequence_index(segment, np.arange(len(arr)) * frame_step)
+            for segment, arr in zip(emb_series.index, arrays)
+        ]
+        index = indexes[0].append(indexes[1:]) if indexes else None
+        values = np.concatenate(arrays) if arrays else np.zeros((0, 0))
+        return pd.DataFrame(values, index=index)
+
+    def _ssl_frame_step(self):
+        """Time between the frames of a wav2vec2-style model in seconds:
+        the product of its convolution strides at 16 kHz (20 ms)."""
+        return float(np.prod(self.model.config.conv_stride)) / 16000
 
     def _sample_cache_path(self, cache_dir, index_tuple, suffix=""):
         """Build a collision-safe per-sample feature cache path (issue #429).

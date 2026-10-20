@@ -1,8 +1,8 @@
-"""Domain-balanced sampling (MODEL.domain_balanced_sampling) in the five
-neural models, through the shared Model._make_train_loader().
+"""Domain-balanced sampling (MODEL.domain_balanced_sampling) in the neural
+models, through the shared Model._make_train_loader().
 
-mlp, mlp_reg and cnn are built with their real constructors; adm and aasist
-(whose constructors need an SSL checkpoint / a full experiment) through their
+mlp, mlp_reg, cnn, lstm and lstm_reg are built with their real constructors;
+adm and aasist (whose constructors need an SSL checkpoint / a full experiment) through their
 get_loader(). Domains are "a" (6 rows) and "b" (2 rows); every batch of 4 must
 hold two of each.
 """
@@ -25,10 +25,13 @@ from nkululeko.models.domain_adversarial import DannConfig
 from nkululeko.models.model_aasist import AasistModel
 from nkululeko.models.model_adm import ADMModel
 from nkululeko.models.model_cnn import CNNModel
+from nkululeko.models.model_lstm import LSTMModel
+from nkululeko.models.model_lstm_regression import LSTM_Reg_model
 from nkululeko.models.model_mlp import MLPModel
 from nkululeko.models.model_mlp_regression import MLP_Reg_model
 from nkululeko.utils.errors import NkululukoError
 from nkululeko.utils.util import Util
+from tests.models.test_model_lstm import experiment_context, frames_df, labels_df
 
 N = 8
 DOMAINS = ["a"] * 6 + ["b"] * 2
@@ -180,6 +183,56 @@ class TestRealConstructors:
         )
         assert len(targets) == len(predictions) == N
         assert np.array_equal(targets.numpy(), df["label"].to_numpy())
+
+
+class TestLstm:
+    """The recurrent models, whose loader pads variable-length sequences."""
+
+    def _model(self, tmp_path, model_type="lstm", **model):
+        regression = model_type == "lstm_reg"
+        feats = frames_df([3, 5, 2, 4, 3, 2, 5, 4])
+        df = labels_df(
+            list(np.linspace(0, 1, N)) if regression else [0, 1] * (N // 2),
+            target="label",
+            source_db=DOMAINS,
+        )
+        context = experiment_context(
+            tmp_path, model_type, "label", labels=None if regression else [0, 1]
+        )
+        context.config["MODEL"]["domain_balanced_sampling"] = "True"
+        context.config["MODEL"].update(model)
+        context.config["RNN"]["batch_size"] = str(BATCH)
+        cls = LSTM_Reg_model if regression else LSTMModel
+        return cls(df, df, feats, feats, context=context), df
+
+    @pytest.mark.parametrize("model_type", ["lstm", "lstm_reg"])
+    def test_trains_on_balanced_batches_with_dann_and_sam(self, tmp_path, model_type):
+        model, df = self._model(
+            tmp_path, model_type, dann_columns="['source_db']", sam="True"
+        )
+        _assert_balanced(model.trainloader, df)
+        # padded batches carry the domain labels of their own rows
+        for frames, lengths, labels, domains in model.trainloader:
+            assert frames.shape[0] == len(lengths) == len(labels) == BATCH
+            assert domains.shape == (BATCH, 1)
+        model.train()
+        assert np.isfinite(model.loss) and model.loss > 0
+
+    @pytest.mark.parametrize("model_type", ["lstm", "lstm_reg"])
+    def test_the_test_loader_and_the_train_evaluation_are_plain(
+        self, tmp_path, model_type
+    ):
+        model, df = self._model(tmp_path, model_type)
+        assert not hasattr(model.testloader.batch_sampler, "per_domain")
+        loader = model._eval_trainloader()
+        assert loader is not model.trainloader
+        labels = torch.cat([batch[2] for batch in loader]).numpy()
+        assert np.allclose(labels, df["label"].to_numpy())
+        model.predict()  # predicts the train data with the plain loader
+
+    def test_off_by_default(self, tmp_path):
+        model, _ = self._model(tmp_path, domain_balanced_sampling="False")
+        assert model._eval_trainloader() is model.trainloader
 
 
 class TestAdm:

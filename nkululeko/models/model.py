@@ -38,6 +38,9 @@ class Model(ContextAware):
     """Generic model class for linear (non-neural) algorithms."""
 
     dann_heads = None  # DannHeads when MODEL.dann_columns is set (see _init_dann)
+    # "vector": one feature vector per sample; "sequence": frame sequences
+    # (FEATS.level = frame, see nkululeko.utils.sequences)
+    input_kind = "vector"
     # (dataset, batch_size, loader kwargs) of a train loader that draws
     # domain-balanced batches (see _make_train_loader)
     _balanced_train = None

@@ -131,6 +131,20 @@ def test_get_probas(mlp_model):
     assert set(probas.columns) == set([0, 1])
 
 
+def test_get_probas_covers_classes_missing_from_test(mlp_model):
+    """Columns follow the network's outputs, not the classes that happen
+    to be in the test split."""
+    mlp_model.df_test = pd.DataFrame({"label": [1, 1]})
+    logits = torch.tensor([[-2.0, 3.0], [1.5, -0.5]])
+
+    probas = mlp_model.get_probas(logits)
+
+    assert list(probas.columns) == [0, 1]
+    np.testing.assert_allclose(
+        probas[1].to_numpy(), torch.softmax(logits, dim=1)[:, 1].numpy(), rtol=1e-5
+    )
+
+
 class TestGetProbasAppliesSoftmax:
     """Regression (GH #446): get_probas() wrote raw logits into the
     per-class "probability" columns with no softmax. Logits aren't

@@ -19,6 +19,7 @@
     - [MODEL](#model)
     - [FINETUNE](#finetune)
     - [AASIST](#aasist)
+    - [RNN](#rnn)
     - [EXPL](#expl)
     - [PREDICT](#predict)
     - [EXPORT](#export)
@@ -304,6 +305,7 @@ Feature extraction settings. Multiple feature types can be combined by listing t
     * **import**: [already computed features](http://blog.syntheticspeech.de/2022/10/18/how-to-import-features-from-outside-the-nkululeko-software/)
       * **import_file** = pathes to files with features in CSV format
         * import_file = ['path1/file1.csv', 'path2/file1.csv2']  
+        * a file with a `frame` column holds frame sequences (columns `file`, `start`, `end`, `frame`, all times in seconds, `frame` relative to the segment start), see [Sequence data](sequence_data.md)
       * **import_files_append** = set this to False if you want the files to be concatenated column-wise, else it's done row-wise
         * import_files_append = True  
     * **mld**: [mid-level-descriptors](http://www.essv.de/paper.php?id=447)
@@ -314,7 +316,7 @@ Feature extraction settings. Multiple feature types can be combined by listing t
       * **min_syls** = *minimum number of syllables*
     * **os**: [open smile features](https://audeering.github.io/opensmile-python/)
       * **set** = eGeMAPSv02 *(features set)*
-      * **level** = functionals *(or lld: feature level)*
+      * **level** = functionals *(or frame: low-level descriptors per frame, see* [level](#feats)*)*
       * **os.features**: list of selected features (disregard others)
     * **praat**: Praat selected features thanks to [David R. Feinberg scripts](https://github.com/drfeinberg/PraatScripts)
       * **praat.features**: list of selected features (disregard others)
@@ -401,11 +403,17 @@ Feature extraction settings. Multiple feature types can be combined by listing t
     * **quantiletransformer**: applies a non-linear transformation such that the probability density function of each feature will be mapped to a uniform or Gaussian distribution (range [0, 1])  
 * **set**: name of opensmile feature set, e.g. eGeMAPSv02, ComParE_2016, GeMAPSv01a, eGeMAPSv01a
   * set = eGeMAPSv02
-* **level**: level of opensmile features
-  * level = functional
+* **level**: one feature vector per sample, or frame sequences
+  * level = frame
+  * default: functionals
   * possible values:
-    * **functional**: aggregated over the whole utterance
-    * **lld**: low-level descriptor: framewise
+    * **functionals**: one vector per sample (aggregated over the whole segment)
+    * **frame** (or **lld**): one row per frame, index `file`, `start`, `end`, `frame`, with `frame` the frame's start time relative to the segment start; see [Sequence data](sequence_data.md). Models that take sequences (`lstm`, `lstm_reg`) get the frames, every other model gets them pooled to one vector per sample (see *pooling*). Feature types with frame output: `os` (opensmile low-level descriptors, every 10 ms) and `wav2vec2`, `hubert`, `wavlm` (embeddings every 20 ms instead of their mean); other feature types give one vector per sample and log a warning. Frame-level runs get `_level-frame` in the automatic run name
+* **pooling**: statistics that turn a frame sequence into one vector per sample, for models that take vectors
+  * pooling = ['mean', 'max']
+  * default: ['mean', 'std']
+  * possible values: mean, std (population standard deviation), min, max, median
+  * each feature gets one column per statistic, named `<feature>_<statistic>`; the statistics go into the automatic run name
 * **no_reuse**: don't re-use any feature files, but start fresh
   * no_reuse = False
 * **fail_threshold**: abort feature extraction if the failure rate exceeds this ratio (0.0–1.0)
@@ -438,6 +446,8 @@ Model and training specifications. In general, default values should work for cl
     * **mlp**: [Multi-layer perceptron](http://blog.syntheticspeech.de/2021/08/30/nkululeko-multi-layer-perceptron/) (neural network)  
     * **cnn**: [Convolutional neural network](http://blog.syntheticspeech.de/2022/01/17/how-to-use-convolutional-neural-networks-with-nkululeko/)  
     * **aasist**: [AASIST](#aasist) anti-spoofing / audio deepfake detection: SSL (wav2vec2/XLS-R) frontend + spectro-temporal graph attention backend, trained end-to-end on raw audio (binary classification only; requires `[FEATS] type = []`). Settings go in a dedicated [`[AASIST]`](#aasist) section below.
+    * **lstm**: [LSTM](#rnn) recurrent network over frame sequences (requires `[FEATS] level = frame`). Settings go in a dedicated [`[RNN]`](#rnn) section below; see the [RNN tutorial](rnn_classification.md).
+    * **lstm_reg**: LSTM for regression, same as `lstm` with a single output. Settings go in the [`[RNN]`](#rnn) section.
     * **finetune**: [Fine-tuning](http://blog.syntheticspeech.de/2022/10/07/nkululeko-how-to-fine-tune-a-wav2vec2-model/) for pre-trained models. Settings go in a dedicated [`[FINETUNE]`](#finetune) section below.
 * **class_weight**: add class_weight to the linear classifier (XGB, SVM) fit methods for imbalanced data (True or False)
   * class_weight = False
@@ -548,7 +558,7 @@ Model and training specifications. In general, default values should work for cl
 
 #### Domain-adversarial training (DANN)
 
-Available for `type = aasist`, `mlp`, `mlp_reg`, `cnn` and `adm` (other model types ignore it and log a warning; classic models such as svm or xgb have no gradients to reverse, and `finetune` is not supported yet). Meant for cross-corpus or cross-lingual setups where the model should not rely on which database or language a clip comes from (Ganin & Lempitsky 2015). One small classifier head is attached per listed column, reading the model's last hidden features (AASIST: its pooled readout; MLP, MLP regression and CNN: the last hidden layer; ADM: the concatenated penultimate activations of its branches). A gradient-reversal layer trains the shared features to make that head fail, while the main head trains as usual.
+Available for `type = aasist`, `mlp`, `mlp_reg`, `cnn`, `adm`, `lstm` and `lstm_reg` (other model types ignore it and log a warning; classic models such as svm or xgb have no gradients to reverse, and `finetune` is not supported yet). Meant for cross-corpus or cross-lingual setups where the model should not rely on which database or language a clip comes from (Ganin & Lempitsky 2015). One small classifier head is attached per listed column, reading the model's last hidden features (AASIST: its pooled readout; MLP, MLP regression and CNN: the last hidden layer; ADM: the concatenated penultimate activations of its branches; LSTM: the recurrent outputs mean-pooled over time). A gradient-reversal layer trains the shared features to make that head fail, while the main head trains as usual.
 
 * **dann_columns**: dataframe columns that hold the label to become invariant to
   * dann_columns = ['source_db']
@@ -567,7 +577,7 @@ Examples: [exp_emodb_aasist_dann.ini](https://github.com/felixbur/nkululeko/blob
 
 #### Sharpness-Aware Minimization (SAM)
 
-Available for `type = aasist`, `mlp`, `mlp_reg`, `cnn` and `adm`, i.e. every model that uses the `optimizer` above (other model types ignore it and log a warning; `finetune` has its own training loop). SAM (Foret et al., ICLR 2021) wraps the optimizer: each step first moves the weights to the worst nearby point (within radius `sam_rho`), takes the gradient there, and then updates the original weights with it. This favours flat minima, which tend to generalize better to unseen domains such as another corpus. It costs two forward/backward passes per batch, so training is about twice as slow. Dropout is drawn separately in the two passes.
+Available for `type = aasist`, `mlp`, `mlp_reg`, `cnn`, `adm`, `lstm` and `lstm_reg`, i.e. every model that uses the `optimizer` above (other model types ignore it and log a warning; `finetune` has its own training loop). SAM (Foret et al., ICLR 2021) wraps the optimizer: each step first moves the weights to the worst nearby point (within radius `sam_rho`), takes the gradient there, and then updates the original weights with it. This favours flat minima, which tend to generalize better to unseen domains such as another corpus. It costs two forward/backward passes per batch, so training is about twice as slow. Dropout is drawn separately in the two passes.
 
 * **sam**: wrap the optimizer in SAM
   * sam = True
@@ -581,7 +591,7 @@ SAM is added to the auto-generated experiment name (`..._sam`, or `..._sam-rho0-
 
 #### Domain-balanced sampling
 
-Available for `type = aasist`, `mlp`, `mlp_reg`, `cnn` and `adm` (other model types ignore it and log a warning). When databases (or languages) are pooled for training, the biggest one fills most batches and dominates the gradients. With domain-balanced sampling every training batch holds the same number of samples of each domain, which helps the model not to favour the biggest source and is a simple way to improve generalization to an unseen domain. An epoch has as many samples as without balancing (to within half a batch): the samples of a domain that is bigger than its share are drawn without repetition (and all seen over the epochs), those of a smaller domain are repeated.
+Available for `type = aasist`, `mlp`, `mlp_reg`, `cnn`, `adm`, `lstm` and `lstm_reg` (other model types ignore it and log a warning). When databases (or languages) are pooled for training, the biggest one fills most batches and dominates the gradients. With domain-balanced sampling every training batch holds the same number of samples of each domain, which helps the model not to favour the biggest source and is a simple way to improve generalization to an unseen domain. An epoch has as many samples as without balancing (to within half a batch): the samples of a domain that is bigger than its share are drawn without repetition (and all seen over the epochs), those of a smaller domain are repeated.
 
 * **domain_balanced_sampling**: draw batches with the same number of samples of every domain
   * domain_balanced_sampling = True
@@ -686,6 +696,20 @@ Settings specific to `[MODEL] type = aasist` - AASIST (spectro-temporal graph at
   * rawboost = True
   * default: False
   * the noise settings are the `rawboost_*` keys of the [AUGMENT](#augment) section, e.g. `rawboost_algo`, which are shared with the offline *rawboost* augmentation (that one works for every model, this one only for waveform models). Reading the audio and generating the noise happens in the data loader workers (`[MODEL] n_jobs`); expect a slower epoch on few workers. It is added to the auto-generated experiment name (`..._rawboost-algo5`, plus a short hash if other `rawboost_*` settings were changed); with `[EXP] res_name` set, give such runs their own
+
+### RNN
+
+Settings for the recurrent-network model types `[MODEL] type = lstm` (classification) and `lstm_reg` (regression). The section is named after the network family rather than the cell type, because none of its keys is specific to LSTM cells. Only read for these types; every key below is optional and has a default. The models take frame sequences from the feature extraction, so they need `[FEATS] level = frame` and a feature type with frame output (e.g. `type = ['os']`), or frame sequences imported from CSV. Each sequence keeps its own length; the recurrent outputs are averaged over its frames and then classified (or, for `lstm_reg`, mapped to one value). `[MODEL] learning_rate` (default 0.001)/`optimizer`/`weight_decay`/`scheduler`/`loss`/`class_weight`/`measure`/`drop`/`patience`/`random_seed`/`device` are read from the shared `[MODEL]` section, not from `[RNN]`. `[MODEL] layers` and `activation` do not apply. Every `[RNN]` key you set goes into the automatic run name, so runs with different settings don't overwrite each other. `lstm` and `lstm_reg` support [DANN](#domain-adversarial-training-dann) and [SAM](#sharpness-aware-minimization-sam), but not `[FEATS] balancing`, `predict_sample`, SHAP explanations or ONNX export. Tutorial: [RNN classification](rnn_classification.md).
+
+* **hidden_size**: number of units per recurrent layer (and direction)
+  * hidden_size = 64
+* **num_layers**: number of stacked recurrent layers (`[MODEL] drop` is applied between them)
+  * num_layers = 2
+* **bidirectional**: run each layer in both directions (BLSTM); doubles the size of the pooled features
+  * bidirectional = True
+  * default: False
+* **batch_size**: batch size
+  * batch_size = 32
 
 ### EXPL
 
