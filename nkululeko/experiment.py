@@ -259,11 +259,19 @@ class Experiment:
         best_model = self.runmgr.get_best_model()
         plot_name_suggest = self.util.get_exp_name()
         for ds_name, df_test_ds in self.test_ds_df.items():
-            feats_test_ds = self.util.filter_filepath(df_test_ds, self.feats_test)
-            if feats_test_ds.shape[0] == 0:
-                self.util.warn(f"{ds_name}: no features found for test set, skipping")
-                continue
-            df_test_aligned = self.util.filter_filepath(feats_test_ds, df_test_ds)
+            if self.feats_test is None:
+                # models without a feature matrix (FEATS.type = [], e.g.
+                # aasist or finetune) read the audio of df_test themselves
+                feats_test_ds = None
+                df_test_aligned = df_test_ds
+            else:
+                feats_test_ds = self.util.filter_filepath(df_test_ds, self.feats_test)
+                if feats_test_ds.shape[0] == 0:
+                    self.util.warn(
+                        f"{ds_name}: no features found for test set, skipping"
+                    )
+                    continue
+                df_test_aligned = self.util.filter_filepath(feats_test_ds, df_test_ds)
             if df_test_aligned.shape[0] == 0:
                 self.util.warn(
                     f"{ds_name}: no samples after alignment with features, skipping"

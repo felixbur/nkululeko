@@ -7,12 +7,12 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 **⚠ 28 key(s) have inconsistent defaults across call sites:**
 
 * `'DATA'.'no_reuse'`: `'False'` (nkululeko/augment.py:43), `'False'` (nkululeko/experiment.py:162), `False` (nkululeko/explore.py:73), `False` (nkululeko/utils/dataframe.py:312)
-* `'DATA'.'target'`: `'emotion'` (nkululeko/augment.py:89), `'emotion'` (nkululeko/augmenting/resampler.py:76), `'emotion'` (nkululeko/bundle.py:56), `'emotion'` (nkululeko/bundle.py:218), `None` (nkululeko/data/dataset.py:35), `None` (nkululeko/data/dataset_csv.py:84), `None` (nkululeko/experiment.py:124), `'emotion'` (nkululeko/experiment.py:645), `'emotion'` (nkululeko/experiment.py:655), `'emotion'` (nkululeko/experiment.py:665), `'emotion'` (nkululeko/export.py:108), `'emotion'` (nkululeko/feat_extract/feats_analyser.py:26), `'emotion'` (nkululeko/models/model.py:230), `'emotion'` (nkululeko/plots.py:31), `'class_label'` (nkululeko/plots.py:993), `'emotion'` (nkululeko/testing_predictor.py:71), `None` (nkululeko/utils/util.py:669)
+* `'DATA'.'target'`: `'emotion'` (nkululeko/augment.py:89), `'emotion'` (nkululeko/augmenting/resampler.py:76), `'emotion'` (nkululeko/bundle.py:56), `'emotion'` (nkululeko/bundle.py:218), `None` (nkululeko/data/dataset.py:35), `None` (nkululeko/data/dataset_csv.py:84), `None` (nkululeko/experiment.py:124), `'emotion'` (nkululeko/experiment.py:653), `'emotion'` (nkululeko/experiment.py:663), `'emotion'` (nkululeko/experiment.py:673), `'emotion'` (nkululeko/export.py:108), `'emotion'` (nkululeko/feat_extract/feats_analyser.py:26), `'emotion'` (nkululeko/models/model.py:230), `'emotion'` (nkululeko/plots.py:31), `'class_label'` (nkululeko/plots.py:993), `'emotion'` (nkululeko/testing_predictor.py:71), `None` (nkululeko/utils/util.py:669)
 * `'DATA'.'tests'`: `'False'` (nkululeko/data/dataset.py:915), `False` (nkululeko/nkululeko.py:46), `False` (nkululeko/testing_predictor.py:59)
 * `'DATA'.'type'`: `False` (nkululeko/data/dataset.py:1015), `'dummy'` (nkululeko/data/datasplitter.py:244)
 * `'EXP'.'epochs'`: `1` (nkululeko/modelrunner.py:194), `1` (nkululeko/models/model_tuned.py:66), `'50'` (nkululeko/optimizers/scheduler_factory.py:84)
 * `'EXP'.'language'`: `'en'` (nkululeko/autopredict/ap_text.py:31), `False` (nkululeko/bundle.py:101)
-* `'EXP'.'sample_selection'`: `'all'` (nkululeko/data/datasplitter.py:38), `'train'` (nkululeko/experiment.py:500), `'all'` (nkululeko/experiment.py:521), `'all'` (nkululeko/feat_extract/feats_analyser.py:419), `'all'` (nkululeko/plots.py:732), `'all'` (nkululeko/predict.py:586), `'all'` (nkululeko/resample.py:123), `'all'` (nkululeko/segment.py:242)
+* `'EXP'.'sample_selection'`: `'all'` (nkululeko/data/datasplitter.py:38), `'train'` (nkululeko/experiment.py:508), `'all'` (nkululeko/experiment.py:529), `'all'` (nkululeko/feat_extract/feats_analyser.py:419), `'all'` (nkululeko/plots.py:732), `'all'` (nkululeko/predict.py:586), `'all'` (nkululeko/resample.py:123), `'all'` (nkululeko/segment.py:242)
 * `'EXP'.'type'`: `None` (nkululeko/data/dataset.py:188), `'classification'` (nkululeko/utils/util.py:300)
 * `'EXPL'.'dist_type'`: `'hist'` (nkululeko/plots.py:201), `'kde'` (nkululeko/plots.py:521)
 * `'EXPL'.'model'`: `False` (nkululeko/explore.py:158), `"['log_reg']"` (nkululeko/feat_extract/feats_analyser.py:195)
@@ -58,8 +58,8 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'DATA' | 'check_size' | `False` | nkululeko/file_checker.py:37 |
 | 'DATA' | 'check_vad' | `False` | nkululeko/file_checker.py:11, nkululeko/file_checker.py:67 |
 | 'DATA' | 'filter' | `False` | nkululeko/filter_data.py:148 |
-| 'DATA' | 'label_data' | `False` | nkululeko/experiment.py:768, nkululeko/testing_predictor.py:31 |
-| 'DATA' | 'label_result' | `False` | nkululeko/experiment.py:769 |
+| 'DATA' | 'label_data' | `False` | nkululeko/experiment.py:776, nkululeko/testing_predictor.py:31 |
+| 'DATA' | 'label_result' | `False` | nkululeko/experiment.py:777 |
 | 'DATA' | 'labels' | `False` | nkululeko/data/dataset.py:995, nkululeko/experiment.py:135 |
 | 'DATA' | 'limit_samples' | `False` | nkululeko/filter_data.py:26 |
 | 'DATA' | 'limit_samples_per_speaker' | `False` | nkululeko/filter_data.py:49 |
@@ -67,7 +67,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'DATA' | 'min_duration_of_sample' | `False` | nkululeko/filter_data.py:88 |
 | 'DATA' | 'no_reuse' | `'False'` / `False` | nkululeko/augment.py:43, nkululeko/experiment.py:162, nkululeko/explore.py:73, +1 more |
 | 'DATA' | 'root_folders' | `False` | nkululeko/utils/util.py:73 |
-| 'DATA' | 'sample_selection' | `'all'` | nkululeko/experiment.py:351 |
+| 'DATA' | 'sample_selection' | `'all'` | nkululeko/experiment.py:359 |
 | 'DATA' | 'size_diff_weight' | `'1'` | nkululeko/data/dataset.py:634 |
 | 'DATA' | 'target' | `'class_label'` / `'emotion'` / `None` | nkululeko/augment.py:89, nkululeko/augmenting/resampler.py:76, nkululeko/bundle.py:56, +14 more |
 | 'DATA' | 'target_divide_by' | `False` | nkululeko/data/datasplitter.py:319 |
@@ -83,32 +83,32 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'EXP' | 'no_warnings' | `False` | nkululeko/aug_train.py:35, nkululeko/augment.py:36, nkululeko/explore.py:108, +5 more |
 | 'EXP' | 'res_name' | `False` | nkululeko/utils/naming.py:173 |
 | 'EXP' | 'run' | `0` | nkululeko/utils/util.py:220 |
-| 'EXP' | 'runs' | `1` | nkululeko/experiment.py:757, nkululeko/reporting/run_plotter.py:43, nkululeko/runmanager.py:82 |
-| 'EXP' | 'sample_selection' | `'all'` / `'train'` | nkululeko/data/datasplitter.py:38, nkululeko/experiment.py:500, nkululeko/experiment.py:521, +5 more |
-| 'EXP' | 'save' | `True` | nkululeko/experiment.py:734, nkululeko/modelrunner.py:190 |
-| 'EXP' | 'save_test' | `False` | nkululeko/experiment.py:744 |
+| 'EXP' | 'runs' | `1` | nkululeko/experiment.py:765, nkululeko/reporting/run_plotter.py:43, nkululeko/runmanager.py:82 |
+| 'EXP' | 'sample_selection' | `'all'` / `'train'` | nkululeko/data/datasplitter.py:38, nkululeko/experiment.py:508, nkululeko/experiment.py:529, +5 more |
+| 'EXP' | 'save' | `True` | nkululeko/experiment.py:742, nkululeko/modelrunner.py:190 |
+| 'EXP' | 'save_test' | `False` | nkululeko/experiment.py:752 |
 | 'EXP' | 'traindevtest' | `'False'` | nkululeko/experiment.py:55, nkululeko/models/model_xgb.py:74, nkululeko/runmanager.py:61 |
 | 'EXP' | 'type' | `'classification'` / `None` | nkululeko/data/dataset.py:188, nkululeko/utils/util.py:300 |
 | 'EXPL' | 'dist_type' | `'hist'` / `'kde'` | nkululeko/plots.py:201, nkululeko/plots.py:521 |
-| 'EXPL' | 'feature_distributions' | `'False'` | nkululeko/experiment.py:519, nkululeko/explore.py:152 |
+| 'EXPL' | 'feature_distributions' | `'False'` | nkululeko/experiment.py:527, nkululeko/explore.py:152 |
 | 'EXPL' | 'ignore_gender' | `'False'` | nkululeko/plots.py:898 |
 | 'EXPL' | 'max_feats' | `'10'` | nkululeko/feat_extract/feats_analyser.py:197 |
 | 'EXPL' | 'model' | `"['log_reg']"` / `False` | nkululeko/explore.py:158, nkululeko/feat_extract/feats_analyser.py:195 |
-| 'EXPL' | 'pca' | `'False'` | nkululeko/experiment.py:663, nkululeko/explore.py:155 |
+| 'EXPL' | 'pca' | `'False'` | nkululeko/experiment.py:671, nkululeko/explore.py:155 |
 | 'EXPL' | 'permutation' | `False` | nkululeko/feat_extract/feats_analyser.py:199 |
 | 'EXPL' | 'plot_features' | `None` | nkululeko/feat_extract/feats_analyser.py:414 |
 | 'EXPL' | 'plot_tree' | `'False'` / `False` | nkululeko/explore.py:159, nkululeko/feat_extract/feats_analyser.py:96 |
-| 'EXPL' | 'print_colvals' | `'False'` | nkululeko/experiment.py:540 |
+| 'EXPL' | 'print_colvals' | `'False'` | nkululeko/experiment.py:548 |
 | 'EXPL' | 'print_stats' | `'False'` | nkululeko/plots.py:35, nkululeko/reporting/run_plotter.py:44 |
 | 'EXPL' | 'regplot' | `None` | nkululeko/feat_extract/feats_analyser.py:422 |
-| 'EXPL' | 'scatter' | `'False'` | nkululeko/experiment.py:584, nkululeko/explore.py:156 |
+| 'EXPL' | 'scatter' | `'False'` | nkululeko/experiment.py:592, nkululeko/explore.py:156 |
 | 'EXPL' | 'scatter.dim' | `2` | nkululeko/plots.py:729 |
-| 'EXPL' | 'scatter.target' | `default_scatter_target` | nkululeko/experiment.py:596 |
-| 'EXPL' | 'shap' | `'False'` | nkululeko/experiment.py:576, nkululeko/explore.py:157, nkululeko/flags.py:297 |
-| 'EXPL' | 'spotlight' | `'False'` | nkululeko/experiment.py:547 |
-| 'EXPL' | 'tsne' | `'False'` | nkululeko/experiment.py:643, nkululeko/explore.py:153 |
-| 'EXPL' | 'umap' | `'False'` | nkululeko/experiment.py:653, nkululeko/explore.py:154 |
-| 'EXPL' | 'value_counts' | `False` | nkululeko/experiment.py:538, nkululeko/plots.py:181 |
+| 'EXPL' | 'scatter.target' | `default_scatter_target` | nkululeko/experiment.py:604 |
+| 'EXPL' | 'shap' | `'False'` | nkululeko/experiment.py:584, nkululeko/explore.py:157, nkululeko/flags.py:297 |
+| 'EXPL' | 'spotlight' | `'False'` | nkululeko/experiment.py:555 |
+| 'EXPL' | 'tsne' | `'False'` | nkululeko/experiment.py:651, nkululeko/explore.py:153 |
+| 'EXPL' | 'umap' | `'False'` | nkululeko/experiment.py:661, nkululeko/explore.py:154 |
+| 'EXPL' | 'value_counts' | `False` | nkululeko/experiment.py:546, nkululeko/plots.py:181 |
 | 'EXPL' | <f'{att}.bin_reals'> | `'False'` | nkululeko/plots.py:418 |
 | 'EXPORT' | 'bundle_path' | `os.path.join(expr.root, expr.name, 'export')` | nkululeko/bundle.py:233 |
 | 'EXPORT' | 'data_name' | `'export'` | nkululeko/export.py:99 |
@@ -154,7 +154,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'FEATS' | 'os.set' | `'eGeMAPSv02'` | nkululeko/bundle.py:63, nkululeko/bundle.py:114 |
 | 'FEATS' | 'pooling' | `"['mean', 'std']"` / `False` | nkululeko/utils/naming.py:388, nkululeko/utils/sequences.py:137 |
 | 'FEATS' | 'print_feats' | `'False'` | nkululeko/feat_extract/feats_opensmile.py:91, nkululeko/feat_extract/feats_praat.py:22, nkululeko/feat_extract/feats_sptk.py:81, +1 more |
-| 'FEATS' | 'scale' | `False` | nkululeko/bundle.py:221, nkululeko/experiment.py:677, nkululeko/predict.py:946, +1 more |
+| 'FEATS' | 'scale' | `False` | nkululeko/bundle.py:221, nkululeko/experiment.py:685, nkululeko/predict.py:946, +1 more |
 | 'FEATS' | 'set' | `'eGeMAPSv02'` | nkululeko/feat_extract/feats_opensmile.py:55, nkululeko/feat_extract/feats_oxbow.py:22 |
 | 'FEATS' | 'size' | `500` | nkululeko/feat_extract/feats_oxbow.py:60 |
 | 'FEATS' | 'sptk.features' | `"['stft', 'fbank']"` | nkululeko/feat_extract/feats_sptk.py:53 |
@@ -249,21 +249,21 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'MODEL' | 'weight_decay' | `'0.01'` | nkululeko/optimizers/optimizer_factory.py:44 |
 | 'PLOT' | 'anim_progression' | `0` | nkululeko/runmanager.py:132 |
 | 'PLOT' | 'ccc' | `'False'` | nkululeko/plots.py:32 |
-| 'PLOT' | 'combine_per_speaker' | `False` | nkululeko/experiment.py:749 |
-| 'PLOT' | 'combine_per_speaker.col' | `COL_SPEAKER` | nkululeko/experiment.py:792 |
+| 'PLOT' | 'combine_per_speaker' | `False` | nkululeko/experiment.py:757 |
+| 'PLOT' | 'combine_per_speaker.col' | `COL_SPEAKER` | nkululeko/experiment.py:800 |
 | 'PLOT' | 'epoch_progression' | `0` | nkululeko/runmanager.py:141 |
 | 'PLOT' | 'epochs' | `False` | nkululeko/modelrunner.py:184 |
 | 'PLOT' | 'fill_areas' | `'False'` | nkululeko/plots.py:522 |
 | 'PLOT' | 'format' | `'png'` | nkululeko/feat_extract/feats_analyser.py:141, nkululeko/feat_extract/feats_analyser.py:370, nkululeko/plots.py:30, +2 more |
 | 'PLOT' | 'fps' | `'1'` | nkululeko/reporting/reporter.py:885 |
 | 'PLOT' | 'kind' | `'violin'` | nkululeko/plots.py:884 |
-| 'PLOT' | 'name' | `plot_name_suggest` | nkululeko/experiment.py:281, nkululeko/reporting/reporter.py:898, nkululeko/runmanager.py:125, +7 more |
-| 'PLOT' | 'runs_compare' | `False` | nkululeko/experiment.py:756 |
+| 'PLOT' | 'name' | `plot_name_suggest` | nkululeko/experiment.py:289, nkululeko/reporting/reporter.py:898, nkululeko/runmanager.py:125, +7 more |
+| 'PLOT' | 'runs_compare' | `False` | nkululeko/experiment.py:764 |
 | 'PLOT' | 'titles' | `'True'` | nkululeko/plots.py:34, nkululeko/reporting/run_plotter.py:21 |
 | 'PLOT' | 'uncertainty_threshold' | `False` | nkululeko/reporting/reporter.py:329 |
-| 'PREDICT' | 'sample_selection' | `'all'` | nkululeko/experiment.py:389 |
+| 'PREDICT' | 'sample_selection' | `'all'` | nkululeko/experiment.py:397 |
 | 'PREDICT' | 'target_language' | `'en'` | nkululeko/autopredict/ap_translate.py:25 |
-| 'PREDICT' | 'targets' | `None` | nkululeko/experiment.py:401 |
+| 'PREDICT' | 'targets' | `None` | nkululeko/experiment.py:409 |
 | 'PREDICT' | 'textclassifier.candidates' | `False` | nkululeko/feat_extract/feats_textclassifier.py:38 |
 | 'REPORT' | 'author' | `'anon'` | nkululeko/reporting/latex_writer.py:16 |
 | 'REPORT' | 'fresh' | `'False'` | nkululeko/experiment.py:57 |

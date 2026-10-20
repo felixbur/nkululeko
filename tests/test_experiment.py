@@ -281,6 +281,80 @@ class TestBuildTestDsDf:
         exp.evaluate_per_test_set()
 
 
+class TestEvaluatePerTestSetFeatures:
+    """evaluate_per_test_set with and without a feature matrix."""
+
+    def _experiment(self, feats_test, tmp_path):
+        from nkululeko.experiment import Experiment
+        from nkululeko.utils.util import Util
+
+        files = ["/data/a/1.wav", "/data/a/2.wav", "/data/b/3.wav", "/data/b/4.wav"]
+        index = pd.MultiIndex.from_arrays(
+            [
+                files,
+                pd.to_timedelta([0] * 4, unit="s"),
+                pd.to_timedelta([1] * 4, unit="s"),
+            ],
+            names=["file", "start", "end"],
+        )
+        df_test = pd.DataFrame({"emotion": [0, 1, 1, 0]}, index=index)
+
+        calls = []
+
+        class Modelrunner:
+            def eval_specific_model(self, model, df, feats):
+                calls.append((df, feats))
+                return "report"
+
+        class Runmgr:
+            modelrunner = Modelrunner()
+            printed = []
+
+            def get_best_model(self):
+                return "best"
+
+            def print_report(self, report, name):
+                self.printed.append(name)
+
+        exp = Experiment.__new__(Experiment)
+        exp.util = Util("test")
+        exp.test_ds_df = {"ds_a": df_test.iloc[:2], "ds_b": df_test.iloc[2:]}
+        exp.datasplitter = type("DS", (), {"df_test": df_test})()
+        exp.feats_test = feats_test
+        exp.runmgr = Runmgr()
+        return exp, df_test, calls
+
+    def test_models_without_features_are_evaluated_per_test_set(
+        self, mock_config, tmp_path
+    ):
+        """AASIST and finetune have FEATS.type = [], so feats_test is None;
+        evaluation used to crash on it after training."""
+        glob_conf.init_config(mock_config)
+        exp, df_test, calls = self._experiment(None, tmp_path)
+
+        exp.evaluate_per_test_set()
+
+        assert [len(df) for df, _ in calls] == [2, 2]
+        assert all(feats is None for _, feats in calls)
+        assert calls[0][0].index.equals(df_test.index[:2])
+        assert calls[1][0].index.equals(df_test.index[2:])
+        assert len(exp.runmgr.printed) == 2
+
+    def test_models_with_features_get_the_features_of_each_test_set(
+        self, mock_config, tmp_path
+    ):
+        glob_conf.init_config(mock_config)
+        exp, df_test, calls = self._experiment(None, tmp_path)
+        feats = pd.DataFrame({"f": [1.0, 2.0, 3.0, 4.0]}, index=df_test.index)
+        exp.feats_test = feats
+
+        exp.evaluate_per_test_set()
+
+        assert [len(f) for _, f in calls] == [2, 2]
+        assert calls[1][1].index.equals(df_test.index[2:])
+        assert calls[1][0].index.equals(calls[1][1].index)
+
+
 # --- Module-level helpers for the save() regression tests below ----------
 # pickle requires classes to be defined at module level (or otherwise
 # importable) — closures in tests can't be pickled.
