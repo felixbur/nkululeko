@@ -205,8 +205,12 @@ class RNNModel(Model):
             self.label_dtype,
             domain_labels=self._domain_labels(df) if train else None,
         )
+        if shuffle:  # the train loader
+            return self._make_train_loader(
+                dataset, df, self.cfg.batch_size, collate_fn=collate
+            )
         return DataLoader(
-            dataset, batch_size=self.cfg.batch_size, shuffle=shuffle, collate_fn=collate
+            dataset, batch_size=self.cfg.batch_size, shuffle=False, collate_fn=collate
         )
 
     def set_testdata(self, data_df, feats_df):

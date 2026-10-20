@@ -55,7 +55,15 @@ RNN_NAME_KEYS = (
     "bidirectional",
     "batch_size",
 )
-
+# Types whose training loader can draw domain-balanced batches
+# (MODEL.domain_balanced_sampling).
+DOMAIN_BALANCED_MODEL_TYPES = frozenset(
+    {"aasist", "mlp", "mlp_reg", "cnn", "adm", "lstm", "lstm_reg"}
+)
+# Types that can add RawBoost noise to the training waveforms on the fly
+# ([AASIST] rawboost); the others work on features, so for them RawBoost is
+# an offline augmentation ([AUGMENT] augment = ['rawboost']).
+ONLINE_RAWBOOST_MODEL_TYPES = frozenset({"aasist"})
 
 
 def parse_dann_columns(raw):
@@ -282,6 +290,63 @@ class NamingMixin:
             suffix += f"-rho{rho!r}".replace(".", "-").replace("+", "")
         return suffix
 
+    def get_domain_balanced_column(self):
+        """MODEL.domain_balanced_column: the column whose values are the
+        domains (default: source_db, the database of a sample)."""
+        column = str(self.config_val("MODEL", "domain_balanced_column", "source_db"))
+        return column.strip() or "source_db"
+
+    def _get_domain_balanced_suffix(self):
+        """Return a suffix ('_dombal', or '_dombal-<column>' for another
+        column) when the model type trains with
+        MODEL.domain_balanced_sampling, so those runs don't share
+        result/checkpoint paths with plain runs."""
+        if self.get_model_type() not in DOMAIN_BALANCED_MODEL_TYPES:
+            return ""
+        if not self.config_val_bool("MODEL", "domain_balanced_sampling", False):
+            return ""
+        suffix = "_dombal"
+        column = self.get_domain_balanced_column()
+        if column != "source_db":
+            safe = self.safe_filename_component(column)
+            suffix += f"-{safe}"
+            if safe != column:
+                # sanitizing is not injective ('a b' and 'a_b')
+                suffix += "-" + hashlib.sha1(column.encode()).hexdigest()[:6]
+        return suffix
+
+    def _get_rawboost_suffix(self):
+        """Return a suffix ('_rawboost-algo5', plus a hash of the settings if
+        they are not the defaults) when the model type adds RawBoost to its
+        training waveforms on the fly ([AASIST] rawboost)."""
+        if self.get_model_type() not in ONLINE_RAWBOOST_MODEL_TYPES:
+            return ""
+        if not self.config_val_bool("AASIST", "rawboost", False):
+            return ""
+        return "_" + self._rawboost_tag()
+
+    def _rawboost_tag(self):
+        """'rawboost-algo5', plus a hash of the `rawboost_*` settings if they
+        are not the defaults: names the RawBoost settings in file and run
+        names."""
+        from dataclasses import asdict, replace
+
+        from nkululeko.augmenting.rawboost import RawBoostParams
+
+        params = RawBoostParams.from_util(self)
+        tag = f"rawboost-algo{params.algo}"
+        if replace(params, algo=RawBoostParams.algo) != RawBoostParams():
+            digest = hashlib.sha1(repr(sorted(asdict(params).items())).encode())
+            tag += f"-{digest.hexdigest()[:6]}"
+        return tag
+
+    def augment_label(self, method):
+        """Name of an [AUGMENT] augment method in file, database and run
+        names: the method itself, except that the settings of RawBoost are
+        part of its name, so that other settings do not reuse or overwrite
+        the files and results of earlier ones."""
+        return self._rawboost_tag() if method == "rawboost" else method
+
     def _get_dann_suffix(self):
         """Return a DANN suffix (e.g. '_dann-source_db') when the model type
         uses MODEL.dann_columns, so DANN runs don't share result/checkpoint
@@ -347,7 +412,7 @@ class NamingMixin:
         if not aug:
             return ""
         try:
-            augmentings = "_".join(ast.literal_eval(aug))
+            augmentings = "_".join(self.augment_label(a) for a in ast.literal_eval(aug))
         except (ValueError, SyntaxError):
             augmentings = aug
         return f"_aug_{augmentings}"
@@ -388,6 +453,8 @@ class NamingMixin:
         return_string += self._get_rnn_suffix()
         return_string += self._get_dann_suffix()
         return_string += self._get_sam_suffix()
+        return_string += self._get_domain_balanced_suffix()
+        return_string += self._get_rawboost_suffix()
         return_string += self._get_aug_suffix()
         return return_string
 

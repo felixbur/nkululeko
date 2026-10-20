@@ -66,7 +66,7 @@ class LSTM_Reg_model(RNNModel):
     def predict(self):
         _, truths, predictions, loss_eval = self.evaluate(self.testloader)
         self.loss_eval = loss_eval
-        result, _, _, _ = self.evaluate(self.trainloader)
+        result, _, _, _ = self.evaluate(self._eval_trainloader())
         report = Reporter(
             truths.numpy(),
             predictions.numpy(),

@@ -9,7 +9,9 @@ reads them, for direct comparability between the two model types.
 """
 
 import dataclasses
+from typing import Optional
 
+from nkululeko.augmenting.rawboost import RawBoostParams
 from nkululeko.models.domain_adversarial import DannConfig
 
 
@@ -24,6 +26,9 @@ class AasistConfig:
     ssl_layer_pooling: str
     freeze_ssl_frontend: bool
     dann: DannConfig
+    # RawBoost settings if the training waveforms get RawBoost noise on the
+    # fly (None: off)
+    rawboost: Optional[RawBoostParams] = None
 
     @classmethod
     def from_util(cls, util) -> "AasistConfig":
@@ -82,6 +87,16 @@ class AasistConfig:
         # Domain-adversarial training keys, shared with other models.
         dann = DannConfig.from_util(util)
 
+        # rawboost: add RawBoost noise to every training waveform, afresh
+        # every epoch (off by default). The noise settings are the
+        # rawboost_* keys of [AUGMENT], the same ones the offline `rawboost`
+        # augmentation reads.
+        rawboost = (
+            RawBoostParams.from_util(util)
+            if util.config_val_bool("AASIST", "rawboost", False)
+            else None
+        )
+
         return cls(
             device=device,
             ssl_model=ssl_model,
@@ -90,4 +105,5 @@ class AasistConfig:
             ssl_layer_pooling=ssl_layer_pooling,
             freeze_ssl_frontend=freeze_ssl_frontend,
             dann=dann,
+            rawboost=rawboost,
         )

@@ -45,7 +45,7 @@ class LSTMModel(RNNModel):
     def predict(self):
         _, truths, predictions, logits, loss_eval = self.evaluate(self.testloader)
         self.loss_eval = loss_eval
-        uar, _, _, _, _ = self.evaluate(self.trainloader)
+        uar, _, _, _, _ = self.evaluate(self._eval_trainloader())
         report = Reporter(
             truths.numpy().astype(float),
             predictions.numpy(),
