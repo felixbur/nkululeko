@@ -41,13 +41,16 @@ def doit(config_file):
     if not augmentings:
         util.error("no augmentation method specified")
     augmentings = ast.literal_eval(augmentings)
-    augmentings = "_".join(augmentings)
+    augmentings = "_".join(util.augment_label(a) for a in augmentings)
     result_file = f"augmented_{augmentings}.csv"
 
     config = expr.context.config
     config["DATA"]["no_reuse"] = "True"
     config["FEATS"]["no_reuse"] = "True"
     config["AUGMENT"]["sample_selection"] = "train"
+    # Experiment.augment() reads the selection from [DATA]: without this the
+    # test files would be augmented too, and added to the training data
+    config["DATA"]["sample_selection"] = "train"
     config["AUGMENT"]["result"] = f"./{result_file}"
     tmp_config = "tmp.ini"
     with open(tmp_config, "w") as config_file:

@@ -71,6 +71,10 @@ def doit(config_file):
                 df3 = expr.augment(method="silero-denoise")
                 results.append(df3)
                 got_one = True
+            if "rawboost" in augmentings:
+                df4 = expr.augment(method="rawboost")
+                results.append(df4)
+                got_one = True
             if "random_splice" in augmentings:
                 df2 = expr.random_splice()
                 results.append(df2)

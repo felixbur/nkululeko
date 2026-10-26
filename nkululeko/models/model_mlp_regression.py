@@ -126,7 +126,9 @@ class MLP_Reg_model(Model):
         _, truths, predictions = self.evaluate_model(
             self.model, self.testloader, self.device
         )
-        result, _, _ = self.evaluate_model(self.model, self.trainloader, self.device)
+        result, _, _ = self.evaluate_model(
+            self.model, self._eval_trainloader(), self.device
+        )
         report = Reporter(
             truths.numpy(),
             predictions.numpy(),
@@ -147,13 +149,16 @@ class MLP_Reg_model(Model):
 
     def get_loader(self, df_x, df_y, shuffle, domain_labels=None):
         data_set = self.Dataset(df_y, df_x, self.target, domain_labels)
-        loader = torch.utils.data.DataLoader(
+        if shuffle:  # the train loader
+            return self._make_train_loader(
+                data_set, df_y, self.batch_size, num_workers=self.n_jobs
+            )
+        return torch.utils.data.DataLoader(
             dataset=data_set,
             batch_size=self.batch_size,
-            shuffle=shuffle,
+            shuffle=False,
             num_workers=self.n_jobs,
         )
-        return loader
 
     class Dataset(torch.utils.data.Dataset):
         def __init__(self, df, features, label: str, domain_labels=None):
