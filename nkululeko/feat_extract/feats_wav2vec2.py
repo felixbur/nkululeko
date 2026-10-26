@@ -10,12 +10,12 @@ import os
 
 import pandas as pd
 import torch
-import torchaudio
 import transformers
 from transformers import Wav2Vec2FeatureExtractor
 from transformers import Wav2Vec2Model
 
 from nkululeko.feat_extract.featureset import Featureset
+from nkululeko.utils.audio_io import load_audio
 
 
 class Wav2vec2(Featureset):
@@ -78,12 +78,7 @@ class Wav2vec2(Featureset):
             )
 
             def _load_file(file, start, end):
-                signal, sampling_rate = torchaudio.load(
-                    file,
-                    frame_offset=int(start.total_seconds() * 16000),
-                    num_frames=int((end - start).total_seconds() * 16000),
-                    normalize=True,
-                )
+                signal, sampling_rate = load_audio(file, start, end)
                 assert sampling_rate == 16000, f"got {sampling_rate} instead of 16000"
                 return self.get_embeddings(
                     signal, sampling_rate, file, pooled=not frames

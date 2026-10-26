@@ -8,10 +8,10 @@ import os
 
 import pandas as pd
 import torch
-import torchaudio
 from transformers import HubertModel, Wav2Vec2FeatureExtractor
 
 from nkululeko.feat_extract.featureset import Featureset
+from nkululeko.utils.audio_io import load_audio
 
 
 class Hubert(Featureset):
@@ -72,11 +72,7 @@ class Hubert(Featureset):
             self.util.debug("extracting Hubert embeddings, this might take a while...")
 
             def _load_file(file, start, end):
-                signal, sampling_rate = torchaudio.load(
-                    file,
-                    frame_offset=int(start.total_seconds() * 16000),
-                    num_frames=int((end - start).total_seconds() * 16000),
-                )
+                signal, sampling_rate = load_audio(file, start, end)
                 assert sampling_rate == 16000, f"expected 16000 Hz, got {sampling_rate}"
                 return self.get_embeddings(
                     signal, sampling_rate, file, pooled=not frames

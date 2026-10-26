@@ -47,31 +47,27 @@ class TestScoresFromResult:
 
 
 class TestSegmentToWav:
-    """Reviewer follow-up: _segment_to_wav() previously called
-    torchaudio.load() on the whole file just to read its sample rate, then
-    loaded it again for the actual segment -- doubling I/O/memory per file
-    on a path autopredict commonly runs over full files. Must read the
-    sample rate from file metadata (soundfile.info()) instead."""
+    """Reviewer follow-up: _segment_to_wav() previously decoded the whole
+    file just to read its sample rate, then loaded it again for the actual
+    segment -- doubling I/O/memory per file on a path autopredict commonly
+    runs over full files. The segment must be read once, with its rate."""
 
     def test_does_not_fully_decode_file_for_sample_rate(self, monkeypatch):
         import torch
-        import torchaudio
+
+        import nkululeko.feat_extract.feats_emotion2vec_emotion as module
 
         ext = Emotion2vec_emotion.__new__(Emotion2vec_emotion)
         ext.util = MagicMock()
 
-        # Mocked outright (not a spy-and-passthrough to the real decoder):
-        # this must hold regardless of whichever torchaudio I/O backend
-        # happens to be installed (e.g. CI resolving a torchaudio version
-        # that routes torchaudio.load() through the optional torchcodec
-        # backend, which isn't installed there).
+        # Mocked outright (not a spy-and-passthrough to the real decoder)
         load_calls = []
 
         def fake_load(*args, **kwargs):
             load_calls.append((args, kwargs))
             return torch.zeros((1, 16000)), 16000
 
-        monkeypatch.setattr(torchaudio, "load", fake_load)
+        monkeypatch.setattr(module, "load_audio", fake_load)
 
         path, is_temp = ext._segment_to_wav(
             "./data/test/audio/debate_sample.wav",
@@ -79,12 +75,11 @@ class TestSegmentToWav:
             pd.Timedelta(seconds=2),
         )
         try:
-            # Exactly one torchaudio.load() call (the actual segment),
-            # never a full-file, unbounded-frames decode just for the
-            # sample rate.
+            # Exactly one load (the actual segment, from 1 s to 2 s), never
+            # a full-file decode just for the sample rate.
             assert len(load_calls) == 1
-            _, kwargs = load_calls[0]
-            assert kwargs.get("num_frames") != -1
+            args, _ = load_calls[0]
+            assert args[1:] == (pd.Timedelta(seconds=1), pd.Timedelta(seconds=2))
         finally:
             if is_temp:
                 os.remove(path)

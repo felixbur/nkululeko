@@ -16,7 +16,6 @@ import os
 import audiofile
 import pandas as pd
 import torch
-import torchaudio
 from torchaudio.pipelines import SQUIM_SUBJECTIVE
 from tqdm import tqdm
 
@@ -29,6 +28,7 @@ except ImportError:
     from torchaudio.utils import _download_asset as download_asset
 
 from nkululeko.feat_extract.featureset import Featureset
+from nkululeko.utils.audio_io import load_audio
 
 
 class MosSet(Featureset):
@@ -47,7 +47,7 @@ class MosSet(Featureset):
         NMR_SPEECH = download_asset(
             "tutorial-assets/ctc-decoding/1688-142285-0007.wav"
         )
-        self.WAVEFORM_NMR, SAMPLE_RATE_NMR = torchaudio.load(NMR_SPEECH)
+        self.WAVEFORM_NMR, SAMPLE_RATE_NMR = load_audio(NMR_SPEECH)
         self.model_initialized = True
 
     def extract(self):
@@ -93,7 +93,7 @@ class MosSet(Featureset):
         tmp_audio_name = "mos_audio_tmp.wav"
         try:
             audiofile.write(tmp_audio_name, signal, sampling_rate)
-            WAVEFORM_SPEECH, SAMPLE_RATE_SPEECH = torchaudio.load(tmp_audio_name)
+            WAVEFORM_SPEECH, SAMPLE_RATE_SPEECH = load_audio(tmp_audio_name)
             with torch.no_grad():
                 mos = self.subjective_model(WAVEFORM_SPEECH, self.WAVEFORM_NMR)
         except RuntimeError as re:

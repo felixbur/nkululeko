@@ -16,10 +16,10 @@ import os
 
 import audiofile
 import torch
-import torchaudio
 from torchaudio.pipelines import SQUIM_OBJECTIVE
 
 from nkululeko.feat_extract.featureset import Featureset
+from nkululeko.utils.audio_io import load_audio
 
 
 class SquimSet(Featureset):
@@ -88,7 +88,7 @@ class SquimSet(Featureset):
         tmp_audio_name = "squim_audio_tmp.wav"
         try:
             audiofile.write(tmp_audio_name, signal, sampling_rate)
-            WAVEFORM_SPEECH, SAMPLE_RATE_SPEECH = torchaudio.load(tmp_audio_name)
+            WAVEFORM_SPEECH, SAMPLE_RATE_SPEECH = load_audio(tmp_audio_name)
             with torch.no_grad():
                 stoi_hyp, pesq_hyp, si_sdr_hyp = self.objective_model(WAVEFORM_SPEECH)
             pesq = float(pesq_hyp[0].numpy())

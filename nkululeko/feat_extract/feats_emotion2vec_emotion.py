@@ -29,6 +29,7 @@ import torchaudio
 from tqdm import tqdm
 
 from nkululeko.feat_extract.featureset import Featureset
+from nkululeko.utils.audio_io import load_audio
 
 _MODEL_MAPPING = {
     "emotion2vec_emotion": "emotion2vec/emotion2vec_plus_large",
@@ -143,16 +144,10 @@ class Emotion2vec_emotion(Featureset):
 
         import soundfile as sf
 
-        # Read only the header for the sample rate -- torchaudio.load()
-        # would decode the whole file just to discover this, doubling
-        # I/O and memory per file (autopredict commonly processes full
+        # Only the segment is decoded (the sample rate comes with it, so
+        # the file is not read twice: autopredict commonly processes full
         # files through this path).
-        sampling_rate = sf.info(file).samplerate
-        start_sample = int(start.total_seconds() * sampling_rate)
-        num_samples = int((end - start).total_seconds() * sampling_rate)
-        signal, sampling_rate = torchaudio.load(
-            file, frame_offset=start_sample, num_frames=num_samples
-        )
+        signal, sampling_rate = load_audio(file, start, end)
         if sampling_rate != 16000:
             signal = torchaudio.transforms.Resample(sampling_rate, 16000)(signal)
             sampling_rate = 16000
