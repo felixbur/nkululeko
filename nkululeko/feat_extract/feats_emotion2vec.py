@@ -14,6 +14,7 @@ import torchaudio
 from tqdm import tqdm
 
 from nkululeko.feat_extract.featureset import Featureset
+from nkululeko.utils.audio_io import load_audio
 
 
 class Emotion2vec(Featureset):
@@ -108,12 +109,7 @@ class Emotion2vec(Featureset):
             # Handle segment extraction if needed
             if hasattr(start, "total_seconds") and hasattr(end, "total_seconds"):
                 # Load audio segment
-                _, sampling_rate = torchaudio.load(file, frame_offset=0, num_frames=-1)
-                start_sample = int(start.total_seconds() * sampling_rate)
-                num_samples = int((end - start).total_seconds() * sampling_rate)
-                signal, sampling_rate = torchaudio.load(
-                    file, frame_offset=start_sample, num_frames=num_samples
-                )
+                signal, sampling_rate = load_audio(file, start, end)
 
                 # Resample to 16kHz if needed
                 if sampling_rate != 16000:

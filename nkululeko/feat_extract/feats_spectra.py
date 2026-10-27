@@ -12,13 +12,13 @@ import audeer
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import torchaudio
 import torchaudio.transforms as T
 from PIL import Image, ImageOps
 from tqdm import tqdm
 
 from nkululeko.constants import SAMPLING_RATE
 from nkululeko.feat_extract.featureset import Featureset
+from nkululeko.utils.audio_io import load_audio
 
 
 class Spectraloader(Featureset):
@@ -43,11 +43,7 @@ class Spectraloader(Featureset):
             for idx, (file, start, end) in enumerate(
                 tqdm(self.data_df.index.to_list())
             ):
-                signal, sampling_rate = torchaudio.load(
-                    file,
-                    frame_offset=int(start.total_seconds() * 16000),
-                    num_frames=int((end - start).total_seconds() * 16000),
-                )
+                signal, sampling_rate = load_audio(file, start, end)
                 assert sampling_rate == 16000, f"got {sampling_rate} instead of 16000"
                 image = self._waveform2rgb(signal)
                 outfile = f"{image_store}/{pathlib.Path(file).stem}_{idx}.jpg"

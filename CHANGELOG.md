@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.14.2 (26-10-26)
+-------------------------
+* fix bug: with torchaudio >= 2.9, whose `load()`/`save()` need the optional `torchcodec` package (and a system FFmpeg), the feature extractors that read audio through `torchaudio.load()` (`wav2vec2`, `wavlm`, `hubert`, `ast`, `spectra`, `spkrec`, `emotion2vec`, `emotion2vec_emotion`, `squim`, `mos`) and the resampler stopped with "TorchCodec is required for load_with_torchcodec". They now read (and the resampler writes) the audio with `audiofile`, which is already a dependency, through `nkululeko.utils.audio_io.load_audio()`, which returns the same (channels, samples) float32 tensor (#474)
+
 Version 1.14.1 (26-10-20)
 -------------------------
 * add two generalization methods for cross-corpus / cross-lingual training:

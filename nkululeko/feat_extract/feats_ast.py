@@ -4,10 +4,10 @@ import os
 import numpy as np
 import pandas as pd
 import torch
-import torchaudio
 from transformers import ASTModel, AutoProcessor
 
 from nkululeko.feat_extract.featureset import Featureset
+from nkululeko.utils.audio_io import load_audio
 
 
 class Ast(Featureset):
@@ -42,11 +42,7 @@ class Ast(Featureset):
             self.util.debug("extracting wavlm embeddings, this might take a while...")
 
             def _load_file(file, start, end):
-                signal, sampling_rate = torchaudio.load(
-                    file,
-                    frame_offset=int(start.total_seconds() * 16000),
-                    num_frames=int((end - start).total_seconds() * 16000),
-                )
+                signal, sampling_rate = load_audio(file, start, end)
                 # make mono if stereo
                 if signal.shape[0] == 2:
                     signal = torch.mean(signal, dim=0, keepdim=True)

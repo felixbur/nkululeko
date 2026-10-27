@@ -6,10 +6,12 @@ resample a data frame
 import os
 import shutil
 
+import audiofile
 import audformat
 import pandas as pd
 import torchaudio
 
+from nkululeko.utils.audio_io import load_audio
 from nkululeko.utils.util import Util
 
 
@@ -37,7 +39,7 @@ class Resampler:
             new_files = []
         for i, f in enumerate(files):
             try:
-                signal, org_sr = torchaudio.load(f"{f}")  # handle spaces
+                signal, org_sr = load_audio(f)
             except RuntimeError as re:
                 self.util.warn(f"error {re} while trying {f}")
 
@@ -54,14 +56,10 @@ class Resampler:
                 resampler = torchaudio.transforms.Resample(org_sr, self.SAMPLING_RATE)
                 signal = resampler(signal)
                 if replace:
-                    torchaudio.save(
-                        f,
-                        signal,
-                        self.SAMPLING_RATE,
-                    )
+                    audiofile.write(f, signal.numpy(), self.SAMPLING_RATE)
                 else:
                     new_file_name = os.path.splitext(f)[0] + "_16kHz.wav"
-                    torchaudio.save(new_file_name, signal, self.SAMPLING_RATE)
+                    audiofile.write(new_file_name, signal.numpy(), self.SAMPLING_RATE)
                     new_files.append(new_file_name)
                 succes += 1
         if not replace:
