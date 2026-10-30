@@ -268,7 +268,12 @@ class MLPModel(Model):
                             layers[str(i) + "_d"] = torch.nn.Dropout(float(drop[i]))
                     else:
                         layers[str(i) + "_d"] = torch.nn.Dropout(float(drop))
-                layers[str(i) + "_r"] = activation
+                # GH #467: str(i)+"_r" overwrote the "0_r" entry set before
+                # this loop (both start at "0"), so the first later
+                # activation was silently dropped instead of added -- a
+                # linear layer landed directly on another one, and the
+                # last hidden layer (2+ layers) had no activation at all.
+                layers[str(i + 1) + "_r"] = activation
             layers[str(len(sorted_layers) + 1)] = torch.nn.Linear(
                 sorted_layers[-1][1], o
             )

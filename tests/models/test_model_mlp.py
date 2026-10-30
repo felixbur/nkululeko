@@ -255,6 +255,40 @@ def test_mlp_model_init_with_dropout_float():
     assert dropout_layers[0].p == pytest.approx(0.5)
 
 
+class TestEveryHiddenLayerGetsAnActivation:
+    """GH #467: with 2+ hidden layers, the activation key after the first
+    later Linear layer ("0_r") collided with the one set before the loop,
+    silently overwriting it -- one fewer activation than Linear layers,
+    and the last hidden layer had none at all."""
+
+    def _activation_count(self, mlp_inner):
+        return sum(
+            1 for layer in mlp_inner.linear if isinstance(layer, torch.nn.ReLU)
+        )
+
+    def _linear_count(self, mlp_inner):
+        return sum(
+            1 for layer in mlp_inner.linear if isinstance(layer, torch.nn.Linear)
+        )
+
+    def test_two_hidden_layers_get_two_activations(self):
+        mlp_inner = MLPModel.MLP(10, [16, 8], 3, False, torch.nn.ReLU())
+        # one activation per hidden Linear layer, none after the output layer
+        assert self._activation_count(mlp_inner) == self._linear_count(mlp_inner) - 1
+
+    def test_three_hidden_layers_get_three_activations(self):
+        mlp_inner = MLPModel.MLP(10, [32, 16, 8], 3, False, torch.nn.ReLU())
+        assert self._activation_count(mlp_inner) == self._linear_count(mlp_inner) - 1
+
+    def test_no_two_linear_layers_are_adjacent(self):
+        mlp_inner = MLPModel.MLP(10, [32, 16, 8], 3, False, torch.nn.ReLU())
+        modules = list(mlp_inner.linear)
+        for prev, nxt in zip(modules, modules[1:]):
+            assert not (
+                isinstance(prev, torch.nn.Linear) and isinstance(nxt, torch.nn.Linear)
+            )
+
+
 class TestGetLoaderIsLinearNotQuadratic:
     """Regression (GH #444): get_loader() called df_x.values once *per
     row* inside its Python loop. df_x.values re-materializes the whole
