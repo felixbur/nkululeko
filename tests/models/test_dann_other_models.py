@@ -12,6 +12,7 @@ import pytest
 import torch
 
 from nkululeko.models.domain_adversarial import DannConfig, DannHeads
+from nkululeko.models.mlp_layers import MLPBlock
 from nkululeko.models.model_adm import ADMModel
 from nkululeko.models.model_adm_core import DeepfakeADMModel
 from nkululeko.models.model_cnn import CNNModel, myCNN
@@ -50,7 +51,7 @@ class TestMlpReg:
         model.batch_size = 2
         model.device = "cpu"
         model.criterion = torch.nn.MSELoss()
-        model.model = MLP_Reg_model.MLP(
+        model.model = MLPBlock(
             3, {"a": 8, "b": 4}, 1, False, torch.nn.ReLU()
         )
         params = list(model.model.parameters())
@@ -65,10 +66,11 @@ class TestMlpReg:
         return model
 
     def test_returns_hidden_features(self):
-        mlp = MLP_Reg_model.MLP(3, {"a": 8, "b": 4}, 1, False, torch.nn.ReLU())
+        mlp = MLPBlock(3, {"a": 8, "b": 4}, 1, False, torch.nn.ReLU())
         x = torch.rand(5, 3)
         out, hidden = mlp(x, return_features=True)
-        assert hidden.shape == (5, mlp.feat_dim) == (5, 8)
+        # insertion order, not width-sorted: 3 -> 8 -> 4 -> 1
+        assert hidden.shape == (5, mlp.feat_dim) == (5, 4)
         assert torch.equal(out, mlp(x))
 
     def test_dann_off_loader_yields_pairs(self):

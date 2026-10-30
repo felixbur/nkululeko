@@ -1,12 +1,12 @@
 # model_mlp.py
 import ast
-from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
 import torch
 from sklearn.metrics import recall_score
 
+from nkululeko.models.mlp_layers import MLPBlock, parse_drop_config
 from nkululeko.models.model import Model
 from nkululeko.optimizers import get_optimizer
 from nkululeko.reporting.reporter import Reporter
@@ -50,20 +50,10 @@ class MLPModel(Model):
         self.util.debug(f"using layers {layers_string}")
         layers = ast.literal_eval(layers_string)
         # with dropout?
-        drop = self.util.config_val("MODEL", "drop", "False")
-        if drop != "False":
-            try:
-                drop = ast.literal_eval(drop)
-            except (ValueError, SyntaxError):
-                # if it's not a list, it should be a float
-                try:
-                    drop = float(drop)
-                except ValueError:
-                    self.util.error(f"invalid value for dropout: {drop}")
+        drop = parse_drop_config(self.util)
+        if drop:
             self.util.debug(f"init: training with dropout: {drop}")
-        else:
-            drop = False
-        self.model = self.MLP(
+        self.model = MLPBlock(
             feats_train.shape[1], layers, self.class_num, drop, activation
         ).to(self.device)
 
@@ -245,44 +235,6 @@ class MLPModel(Model):
             data, shuffle=False, batch_size=self.batch_size
         )
 
-    class MLP(torch.nn.Module):
-        def __init__(self, i, layers, o, drop, activation):
-            super().__init__()
-            if type(layers) is list:
-                layers_list = layers.copy()
-                # construct a dict with layer names
-                keys = [str(i) for i in range(len(layers_list))]
-                layers = dict(zip(keys, layers_list))
-            sorted_layers = sorted(layers.items(), key=lambda x: x[1])
-            self.feat_dim = sorted_layers[-1][1]  # width of the last hidden layer
-            layers = OrderedDict()
-            layers["0"] = torch.nn.Linear(i, sorted_layers[0][1])
-            layers["0_r"] = activation
-            for i in range(0, len(sorted_layers) - 1):
-                layers[str(i + 1)] = torch.nn.Linear(
-                    sorted_layers[i][1], sorted_layers[i + 1][1]
-                )
-                if drop:
-                    if isinstance(drop, list):
-                        if i < len(drop):
-                            layers[str(i) + "_d"] = torch.nn.Dropout(float(drop[i]))
-                    else:
-                        layers[str(i) + "_d"] = torch.nn.Dropout(float(drop))
-                layers[str(i) + "_r"] = activation
-            layers[str(len(sorted_layers) + 1)] = torch.nn.Linear(
-                sorted_layers[-1][1], o
-            )
-            self.linear = torch.nn.Sequential(layers)
-
-        def forward(self, x, return_features=False):
-            # x: (batch_size, channels, samples)
-            x = x.squeeze(dim=1).float()
-            if not return_features:
-                return self.linear(x)
-            # input to the output layer: where DANN heads attach
-            hidden = self.linear[:-1](x)
-            return self.linear[-1](hidden), hidden
-
     def predict_shap(self, features):
         # predict outputs for all samples in SHAP format (pd. dataframe)
         results = []
@@ -324,21 +276,11 @@ class MLPModel(Model):
         self.device = self.util.config_val("MODEL", "device", cuda)
         layers = ast.literal_eval(self.context.config["MODEL"]["layers"])
         self.store_path = dir + name
-        drop = self.util.config_val("MODEL", "drop", "False")
-        if drop != "False":
-            try:
-                drop = ast.literal_eval(drop)
-            except (ValueError, SyntaxError):
-                # if it's not a list, it should be a float
-                try:
-                    drop = float(drop)
-                except ValueError:
-                    self.util.error(f"invalid value for dropout: {drop}")
+        drop = parse_drop_config(self.util)
+        if drop:
             self.util.debug(f"loading: dropout set to: {drop}")
-        else:
-            drop = False
         activation, _ = self._get_activation()
-        self.model = self.MLP(
+        self.model = MLPBlock(
             self.feats_train.shape[1], layers, self.class_num, drop, activation
         ).to(self.device)
         try:
@@ -357,21 +299,11 @@ class MLPModel(Model):
         self.device = self.util.config_val("MODEL", "device", cuda)
         layers = ast.literal_eval(self.context.config["MODEL"]["layers"])
         self.store_path = path
-        drop = self.util.config_val("MODEL", "drop", "False")
-        if drop != "False":
-            try:
-                drop = ast.literal_eval(drop)
-            except (ValueError, SyntaxError):
-                # if it's not a list, it should be a float
-                try:
-                    drop = float(drop)
-                except ValueError:
-                    self.util.error(f"invalid value for dropout: {drop}")
+        drop = parse_drop_config(self.util)
+        if drop:
             self.util.debug(f"dropout set to: {drop}")
-        else:
-            drop = False
         activation, _ = self._get_activation()
-        self.model = self.MLP(
+        self.model = MLPBlock(
             self.feats_train.shape[1], layers, self.class_num, drop, activation
         ).to(self.device)
         self.model.load_state_dict(torch.load(self.store_path))

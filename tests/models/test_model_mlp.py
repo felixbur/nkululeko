@@ -4,6 +4,7 @@ import pytest
 import torch
 from unittest.mock import patch
 
+from nkululeko.models.mlp_layers import MLPBlock
 from nkululeko.models.model_mlp import MLPModel
 
 
@@ -87,7 +88,7 @@ def mlp_model(dummy_data, monkeypatch):
         model.feats_train = feats_train
 
         # Create a simple MLP model for testing
-        model.model = MLPModel.MLP(3, {"a": 8, "b": 4}, 2, False, torch.nn.ReLU()).to(
+        model.model = MLPBlock(3, {"a": 8, "b": 4}, 2, False, torch.nn.ReLU()).to(
             "cpu"
         )
         model.optimizer = torch.optim.Adam(model.model.parameters(), lr=0.001)
@@ -240,19 +241,106 @@ def test_reset_test(mlp_model, dummy_data):
 
 
 def test_mlp_model_init_with_dropout_list():
-    # Test with a list of dropout values
-    mlp_inner = MLPModel.MLP(3, {"a": 8, "b": 4}, 2, [0.1, 0.2], torch.nn.ReLU())
+    # One dropout value per hidden layer: both get one.
+    mlp_inner = MLPBlock(3, {"a": 8, "b": 4}, 2, [0.1, 0.2], torch.nn.ReLU())
     dropout_layers = [l for l in mlp_inner.linear if isinstance(l, torch.nn.Dropout)]
-    assert len(dropout_layers) == 1
+    assert len(dropout_layers) == 2
     assert dropout_layers[0].p == pytest.approx(0.1)
+    assert dropout_layers[1].p == pytest.approx(0.2)
+
+
+def test_mlp_model_init_with_dropout_list_shorter_than_layers():
+    # A dropout list shorter than the number of hidden layers only covers
+    # the layers it has an entry for.
+    mlp_inner = MLPBlock(3, {"a": 8, "b": 4, "c": 2}, 2, [0.1, 0.2], torch.nn.ReLU())
+    dropout_layers = [l for l in mlp_inner.linear if isinstance(l, torch.nn.Dropout)]
+    assert len(dropout_layers) == 2
+    assert dropout_layers[0].p == pytest.approx(0.1)
+    assert dropout_layers[1].p == pytest.approx(0.2)
 
 
 def test_mlp_model_init_with_dropout_float():
-    # Test with a single float value for dropout
-    mlp_inner = MLPModel.MLP(3, {"a": 8, "b": 4}, 2, 0.5, torch.nn.ReLU())
+    # A scalar dropout value applies to every hidden layer, not just some.
+    mlp_inner = MLPBlock(3, {"a": 8, "b": 4}, 2, 0.5, torch.nn.ReLU())
     dropout_layers = [l for l in mlp_inner.linear if isinstance(l, torch.nn.Dropout)]
-    assert len(dropout_layers) == 1
-    assert dropout_layers[0].p == pytest.approx(0.5)
+    assert len(dropout_layers) == 2
+    assert all(l.p == pytest.approx(0.5) for l in dropout_layers)
+
+
+class TestEveryHiddenLayerGetsAnActivation:
+    """GH #467: with 2+ hidden layers, the activation key after the first
+    later Linear layer ("0_r") collided with the one set before the loop,
+    silently overwriting it -- one fewer activation than Linear layers,
+    and the last hidden layer had none at all."""
+
+    def _activation_count(self, mlp_inner):
+        return sum(
+            1 for layer in mlp_inner.linear if isinstance(layer, torch.nn.ReLU)
+        )
+
+    def _linear_count(self, mlp_inner):
+        return sum(
+            1 for layer in mlp_inner.linear if isinstance(layer, torch.nn.Linear)
+        )
+
+    def test_two_hidden_layers_get_two_activations(self):
+        mlp_inner = MLPBlock(10, [16, 8], 3, False, torch.nn.ReLU())
+        # one activation per hidden Linear layer, none after the output layer
+        assert self._activation_count(mlp_inner) == self._linear_count(mlp_inner) - 1
+
+    def test_three_hidden_layers_get_three_activations(self):
+        mlp_inner = MLPBlock(10, [32, 16, 8], 3, False, torch.nn.ReLU())
+        assert self._activation_count(mlp_inner) == self._linear_count(mlp_inner) - 1
+
+    def test_no_two_linear_layers_are_adjacent(self):
+        mlp_inner = MLPBlock(10, [32, 16, 8], 3, False, torch.nn.ReLU())
+        modules = list(mlp_inner.linear)
+        for prev, nxt in zip(modules, modules[1:]):
+            assert not (
+                isinstance(prev, torch.nn.Linear) and isinstance(nxt, torch.nn.Linear)
+            )
+
+    def test_every_hidden_layer_gets_an_activation_with_dropout_enabled(self):
+        """Same invariant, but with dropout also enabled (PR #476 review)."""
+        mlp_inner = MLPBlock(10, [32, 16, 8], 3, 0.3, torch.nn.ReLU())
+        assert self._activation_count(mlp_inner) == self._linear_count(mlp_inner) - 1
+        dropout_count = sum(
+            1 for layer in mlp_inner.linear if isinstance(layer, torch.nn.Dropout)
+        )
+        assert dropout_count == 3  # one per hidden layer, including the first
+        modules = list(mlp_inner.linear)
+        for prev, nxt in zip(modules, modules[1:]):
+            assert not (
+                isinstance(prev, torch.nn.Linear) and isinstance(nxt, torch.nn.Linear)
+            )
+
+
+class TestLayerOrderMatchesConfig:
+    """Regression (PR #476 review): widths used to be re-sorted ascending
+    by value, so a narrowing config (e.g. {'l1': 1024, 'l2': 64}, the
+    convention every example .ini uses) was silently built widening."""
+
+    def _hidden_linear_widths(self, mlp_inner):
+        return [
+            layer.out_features
+            for layer in mlp_inner.linear
+            if isinstance(layer, torch.nn.Linear)
+        ][:-1]
+
+    def test_list_order_is_preserved_not_sorted_by_width(self):
+        mlp_inner = MLPBlock(10, [1024, 64], 3, False, torch.nn.ReLU())
+        assert self._hidden_linear_widths(mlp_inner) == [1024, 64]
+        assert mlp_inner.feat_dim == 64
+
+    def test_dict_insertion_order_is_preserved_not_sorted_by_width(self):
+        mlp_inner = MLPBlock(10, {"l1": 1024, "l2": 64}, 3, False, torch.nn.ReLU())
+        assert self._hidden_linear_widths(mlp_inner) == [1024, 64]
+        assert mlp_inner.feat_dim == 64
+
+    def test_ascending_config_is_also_preserved(self):
+        mlp_inner = MLPBlock(10, [16, 64], 3, False, torch.nn.ReLU())
+        assert self._hidden_linear_widths(mlp_inner) == [16, 64]
+        assert mlp_inner.feat_dim == 64
 
 
 class TestGetLoaderIsLinearNotQuadratic:
@@ -315,10 +403,11 @@ class _DannUtil(DummyUtil):
 
 
 def test_mlp_returns_hidden_features():
-    mlp = MLPModel.MLP(3, {"a": 8, "b": 4}, 2, False, torch.nn.ReLU())
+    mlp = MLPBlock(3, {"a": 8, "b": 4}, 2, False, torch.nn.ReLU())
     x = torch.rand(5, 3)
     logits, hidden = mlp(x, return_features=True)
-    assert hidden.shape == (5, mlp.feat_dim) == (5, 8)
+    # insertion order, not width-sorted: 3 -> 8 -> 4 -> 2
+    assert hidden.shape == (5, mlp.feat_dim) == (5, 4)
     assert torch.equal(logits, mlp(x))
 
 

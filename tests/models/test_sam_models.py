@@ -13,6 +13,7 @@ import torch.nn as nn
 
 from nkululeko.models.domain_adversarial import DannConfig, DannHeads
 from nkululeko.models.model_adm import ADMModel
+from nkululeko.models.mlp_layers import MLPBlock
 from nkululeko.models.model_adm_core import DeepfakeADMModel
 from nkululeko.models.model_aasist import AasistModel
 from nkululeko.models.model_cnn import CNNModel, myCNN
@@ -73,7 +74,7 @@ def _mlp(use_sam, with_dann):
     model.util, model.n_jobs, model.target = _Util(), 0, "label"
     model.batch_size, model.device = 2, "cpu"
     model.criterion = _Counting(nn.CrossEntropyLoss())
-    model.model = MLPModel.MLP(3, {"a": 8, "b": 4}, 2, False, nn.ReLU())
+    model.model = MLPBlock(3, {"a": 8, "b": 4}, 2, False, nn.ReLU())
     df = _df("label", [0, 1, 0, 1])
     domains = _dann(model, model.model.feat_dim, df) if with_dann else None
     params = list(model.model.parameters())
@@ -91,7 +92,7 @@ def _mlp_reg(use_sam, with_dann):
     model.util, model.n_jobs, model.target = _Util(), 0, "age"
     model.batch_size, model.device = 2, "cpu"
     model.criterion = _Counting(nn.MSELoss())
-    model.model = MLP_Reg_model.MLP(3, {"a": 8, "b": 4}, 1, False, nn.ReLU())
+    model.model = MLPBlock(3, {"a": 8, "b": 4}, 1, False, nn.ReLU())
     df = _df("age", [0.1, 0.5, 0.3, 0.9])
     domains = _dann(model, model.model.feat_dim, df) if with_dann else None
     params = list(model.model.parameters())

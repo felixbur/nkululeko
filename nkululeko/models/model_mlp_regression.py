@@ -1,6 +1,5 @@
 # model_mlp.py
 import ast
-from collections import OrderedDict
 
 import numpy as np
 import torch
@@ -13,6 +12,7 @@ from audmetric import (
 
 from nkululeko.losses.loss_ccc import ConcordanceCorCoeff
 from nkululeko.losses.loss_pcc import PearsonCorCoeff
+from nkululeko.models.mlp_layers import MLPBlock, parse_drop_config
 from nkululeko.models.model import Model
 from nkululeko.optimizers import get_optimizer
 from nkululeko.reporting.reporter import Reporter
@@ -60,10 +60,10 @@ class MLP_Reg_model(Model):
             layers = ast.literal_eval(layers_string)
         except KeyError as ke:
             self.util.error(f"Please provide MODEL layers: {ke}")
-        drop = self.util.config_val("MODEL", "drop", False)
+        drop = parse_drop_config(self.util)
         if drop:
             self.util.debug(f"training with dropout: {drop}")
-        self.model = self.MLP(feats_train.shape[1], layers, 1, drop, activation).to(
+        self.model = MLPBlock(feats_train.shape[1], layers, 1, drop, activation).to(
             self.device
         )
 
@@ -183,40 +183,6 @@ class MLP_Reg_model(Model):
                 return features, labels
             return features, labels, self.domain_labels[item]
 
-    class MLP(torch.nn.Module):
-        def __init__(self, i, layers, o, drop, activation):
-            super().__init__()
-            if type(layers) is list:
-                layers_list = layers.copy()
-                # construct a dict with layer names
-                keys = [str(i) for i in range(len(layers_list))]
-                layers = dict(zip(keys, layers_list))
-            sorted_layers = sorted(layers.items(), key=lambda x: x[1])
-            self.feat_dim = sorted_layers[-1][1]  # width of the last hidden layer
-            layers = OrderedDict()
-            layers["0"] = torch.nn.Linear(i, sorted_layers[0][1])
-            layers["0_r"] = activation
-            for i in range(0, len(sorted_layers) - 1):
-                layers[str(i + 1)] = torch.nn.Linear(
-                    sorted_layers[i][1], sorted_layers[i + 1][1]
-                )
-                if drop:
-                    layers[str(i) + "_d"] = torch.nn.Dropout(float(drop))
-                layers[str(i) + "_r"] = activation
-            layers[str(len(sorted_layers) + 1)] = torch.nn.Linear(
-                sorted_layers[-1][1], o
-            )
-            self.linear = torch.nn.Sequential(layers)
-
-        def forward(self, x, return_features=False):
-            # x: (batch_size, channels, samples)
-            x = x.squeeze(dim=1).float()
-            if not return_features:
-                return self.linear(x)
-            # input to the output layer: where DANN heads attach
-            hidden = self.linear[:-1](x)
-            return self.linear[-1](hidden), hidden
-
     def train_epoch(self, model, loader, device, optimizer):
         # first check if the model already has been trained
         # if os.path.isfile(self.store_path):
@@ -305,11 +271,11 @@ class MLP_Reg_model(Model):
         self.store_path = dir + name
         self.device = self.util.config_val("MODEL", "device", "cpu")
         layers = ast.literal_eval(self.context.config["MODEL"]["layers"])
-        drop = self.util.config_val("MODEL", "drop", False)
+        drop = parse_drop_config(self.util)
         if drop:
             self.util.debug(f"training with dropout: {drop}")
         activation, act_func = self._get_activation()
-        self.model = self.MLP(
+        self.model = MLPBlock(
             self.feats_train.shape[1], layers, 1, drop, activation
         ).to(self.device)
         self.model.load_state_dict(torch.load(dir + name))
@@ -324,11 +290,11 @@ class MLP_Reg_model(Model):
         self.device = self.util.config_val("MODEL", "device", "cpu")
         layers = ast.literal_eval(self.context.config["MODEL"]["layers"])
         self.store_path = path
-        drop = self.util.config_val("MODEL", "drop", False)
+        drop = parse_drop_config(self.util)
         if drop:
             self.util.debug(f"training with dropout: {drop}")
         activation, act_func = self._get_activation()
-        self.model = self.MLP(
+        self.model = MLPBlock(
             self.feats_train.shape[1], layers, 1, drop, activation
         ).to(self.device)
         self.model.load_state_dict(torch.load(self.store_path))
