@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.14.4 (26-10-30)
+-------------------------
+* fix bug: `CNNModel.load_path()` (`[MODEL] type = cnn`) called `self.MLP(...)`, which doesn't exist on that class, raising `AttributeError` before the saved model was even loaded. Its sibling `load()` already builds the model correctly (`myCNN(layers, self.class_num)`); `load_path()` now does the same (#477)
+
 Version 1.14.3 (26-10-30)
 -------------------------
 * fix bug: `mlp`/`mlp_reg`'s hidden-layer stack (`[MODEL] layers`) had three bugs in how it was built from the configured widths:
