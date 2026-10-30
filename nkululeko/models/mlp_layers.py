@@ -1,14 +1,6 @@
 # mlp_layers.py
-"""Shared hidden-layer stack for `mlp`/`mlp_reg` (model_mlp.py /
-model_mlp_regression.py): a sequence of Linear/activation/dropout blocks
-followed by one output Linear, built from `[MODEL] layers`.
-
-Historically each model file had its own copy of this class, and the two
-copies had already drifted (GH #467: a key collision silently dropped one
-activation per 2+ hidden layer config in both copies; per-layer dropout
-lists only worked in one of them). Sharing one implementation means a fix
-here applies to both model types at once.
-"""
+"""Hidden-layer stack shared by `mlp`/`mlp_reg` (model_mlp.py /
+model_mlp_regression.py), which used to each carry their own copy."""
 
 import ast
 from collections import OrderedDict
@@ -17,9 +9,10 @@ import torch
 
 
 def parse_drop_config(util):
-    """Parse `[MODEL] drop` into `False`, a float, or a list of floats (one
-    per hidden layer). `util.config_val` returns the raw ini string, so a
-    plain `float(drop)` crashes on `"False"` or `"[0.3, 0.2]"`.
+    """Parse `[MODEL] drop` into `False`, a float, or a list of floats.
+
+    `config_val` returns the raw ini string, so a plain `float(drop)`
+    crashes on `"False"` or `"[0.3, 0.2]"`.
     """
     drop = util.config_val("MODEL", "drop", "False")
     if drop == "False":
@@ -39,15 +32,9 @@ class MLPBlock(torch.nn.Module):
     """i -> layers[0] -> ... -> layers[-1] -> o, with `activation` after
     each hidden Linear and, if `drop`, a Dropout after that.
 
-    `layers` is the parsed `[MODEL] layers` value: a list of hidden widths
-    (`[64, 16]`) or a dict of them (`{'l1': 64, 'l2': 16}`). Either way the
-    widths are used in the order given -- not resorted by width -- so
-    `[64, 16]` builds a 64-wide hidden layer then a 16-wide one, same as
-    the ini file reads.
-
-    `drop` is `False` (no dropout), a single number (applied after every
-    hidden layer), or a list of numbers (applied positionally, one per
-    hidden layer; a hidden layer past the end of the list gets none).
+    `layers` (a list or a dict, from `[MODEL] layers`) is used in the
+    order given, not resorted by width. `drop` is `False`, a single
+    number (every hidden layer), or a list (positional, one per layer).
     """
 
     def __init__(self, i, layers, o, drop, activation):

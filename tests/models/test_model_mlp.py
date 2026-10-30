@@ -301,11 +301,7 @@ class TestEveryHiddenLayerGetsAnActivation:
             )
 
     def test_every_hidden_layer_gets_an_activation_with_dropout_enabled(self):
-        """The dropout-placement regression (GH #476 review): with drop
-        set, every hidden Linear must still be followed by exactly one
-        activation (and, since drop is on, a dropout too) -- never two
-        Linear layers back to back, and never a dangling activation-less
-        hidden layer."""
+        """Same invariant, but with dropout also enabled (PR #476 review)."""
         mlp_inner = MLPBlock(10, [32, 16, 8], 3, 0.3, torch.nn.ReLU())
         assert self._activation_count(mlp_inner) == self._linear_count(mlp_inner) - 1
         dropout_count = sum(
@@ -320,12 +316,9 @@ class TestEveryHiddenLayerGetsAnActivation:
 
 
 class TestLayerOrderMatchesConfig:
-    """Regression (PR #476 review): the widths used to be re-sorted
-    ascending by value before building the network, so a config that
-    narrows (as every example .ini in the repo does, e.g. {'l1': 1024,
-    'l2': 64}) was silently built widening instead (in -> 64 -> 1024 ->
-    out), and `feat_dim` (what DANN/the output layer attach to) ended up
-    as the widest layer rather than the last configured one."""
+    """Regression (PR #476 review): widths used to be re-sorted ascending
+    by value, so a narrowing config (e.g. {'l1': 1024, 'l2': 64}, the
+    convention every example .ini uses) was silently built widening."""
 
     def _hidden_linear_widths(self, mlp_inner):
         return [
@@ -413,8 +406,7 @@ def test_mlp_returns_hidden_features():
     mlp = MLPBlock(3, {"a": 8, "b": 4}, 2, False, torch.nn.ReLU())
     x = torch.rand(5, 3)
     logits, hidden = mlp(x, return_features=True)
-    # {"a": 8, "b": 4} builds in insertion order (3 -> 8 -> 4 -> 2), so the
-    # last hidden layer - and feat_dim - is 4, not the widest layer.
+    # insertion order, not width-sorted: 3 -> 8 -> 4 -> 2
     assert hidden.shape == (5, mlp.feat_dim) == (5, 4)
     assert torch.equal(logits, mlp(x))
 

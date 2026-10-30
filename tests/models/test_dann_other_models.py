@@ -69,8 +69,7 @@ class TestMlpReg:
         mlp = MLPBlock(3, {"a": 8, "b": 4}, 1, False, torch.nn.ReLU())
         x = torch.rand(5, 3)
         out, hidden = mlp(x, return_features=True)
-        # {"a": 8, "b": 4} builds in insertion order (3 -> 8 -> 4 -> 1), so
-        # the last hidden layer - and feat_dim - is 4, not the widest layer.
+        # insertion order, not width-sorted: 3 -> 8 -> 4 -> 1
         assert hidden.shape == (5, mlp.feat_dim) == (5, 4)
         assert torch.equal(out, mlp(x))
 
