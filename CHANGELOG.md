@@ -3,7 +3,14 @@ Changelog
 
 Version 1.14.3 (26-10-30)
 -------------------------
-* fix bug: `mlp`/`mlp_reg` with 2+ hidden layers (`[MODEL] layers`) dropped one activation function: the key used for the activation after the first later `Linear` layer collided with the one set before the loop, silently overwriting it instead of adding a new entry, so two `Linear` layers ended up stacked directly and the last hidden layer had no activation at all. The network was less expressive than `layers` said. **This changes the architecture for every existing 2+ layer `mlp`/`mlp_reg` config**: a saved `.model` checkpoint from before this fix will not load into the now-fixed network, and retraining will give different results (#467)
+* fix bug: `mlp`/`mlp_reg`'s hidden-layer stack (`[MODEL] layers`) had three bugs in how it was built from the configured widths:
+  * one activation function was dropped whenever there were 2+ hidden layers: the key used for the activation after the first later `Linear` layer collided with the one set before the loop, silently overwriting it instead of adding a new entry, so two `Linear` layers ended up stacked directly and the last hidden layer had no activation at all;
+  * the configured widths were re-sorted ascending by value before building the network, instead of being used in the order given. Every example `.ini` in the repo configures `layers` narrowing (e.g. `{'l1': 1024, 'l2': 64}`), so this silently built the network widening instead (`in -> 64 -> 1024 -> out`), and `feat_dim` (what DANN's adversarial head and the output layer attach to) ended up as the widest hidden layer rather than the last configured one, not just for 2+ layer configs but for any non-ascending one;
+  * dropout (`[MODEL] drop`) was placed one hidden layer later than intended: the first hidden layer never got it, a single hidden layer got none at all regardless of `drop`, and a per-layer dropout list's last entry was never used.
+
+  All three are fixed together by building each hidden layer's Linear, activation and (if set) dropout in one loop, keyed by position, using the widths in the order configured. `mlp` and `mlp_reg` previously each carried their own copy of this code (already drifted: only `mlp`'s copy parsed `[MODEL] drop` correctly -- `mlp_reg`'s crashed with `ValueError` on `drop = False` or a per-layer list, since it passed the raw, unparsed ini string straight to `float()`); both now share one implementation (`nkululeko.models.mlp_layers.MLPBlock`), so a fix here only needs to happen once.
+
+  **This changes the architecture of every `mlp`/`mlp_reg` config, including 1-hidden-layer ones** (the Linear layers are renumbered either way): a saved `.model` checkpoint from before this fix will fail to load (a `load_state_dict` key-mismatch error), not silently load with the old, wrong weights -- retrain to get a checkpoint that loads again (#467)
 
 Version 1.14.2 (26-10-26)
 -------------------------
