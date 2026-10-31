@@ -40,8 +40,15 @@ class Resampler:
         for i, f in enumerate(files):
             try:
                 signal, org_sr = load_audio(f)
-            except RuntimeError as re:
-                self.util.warn(f"error {re} while trying {f}")
+            except Exception as e:
+                # load_audio (audiofile) can raise more than RuntimeError
+                # (e.g. FileNotFoundError, ValueError); without a continue,
+                # signal would be undefined on the first file or stale from
+                # the previous one, and get silently resampled/written under
+                # this file's name.
+                self.util.warn(f"error {e} while trying {f}")
+                error += 1
+                continue
 
             # convert to mono if stereo
             if signal.shape[0] > 1:

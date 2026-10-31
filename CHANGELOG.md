@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version 1.14.5 (26-10-31)
+-------------------------
+* fix bug: `nkululeko.augmenting.resampler.Resampler.resample()` only caught `RuntimeError` from `load_audio()`, so a missing or corrupt file (`audiofile` raises e.g. `FileNotFoundError`/`ValueError`) aborted the whole run; a caught error also left `signal` undefined (first file) or stale from the previous file (later files), so the next file would be silently resampled/written under the failing file's name. Now any exception is caught, counted and skipped (#479)
+* fix bug: `nkululeko.utils.audio_io.load_audio()` treated a segmented index's whole-file rows (`end = pd.NaT`) as a real end time (`pd.NaT is not None`), producing `duration=NaN` for every feature extractor that reads `(file, start, end)` directly (wav2vec2, wavlm, hubert, ast, emotion2vec*, spectra, spkrec). `pd.isna(start)`/`pd.isna(end)` are now treated as `None` (#481)
+* harden `mlp`/`mlp_reg`'s `[MODEL] drop` handling (`nkululeko.models.mlp_layers`):
+  * `parse_drop_config` now rejects a bare `True`/`False` literal, a value outside `[0, 1)`, and warns when a per-layer list's length doesn't match the number of hidden layers; a tuple is now accepted like a list
+  * loading a checkpoint saved before 1.14.3 (different hidden-layer key layout) raised a raw `RuntimeError`/`FileNotFoundError` from `load_state_dict`; `load`/`load_path` (`model_mlp.py`, `model_mlp_regression.py`) now share `load_mlp_state_dict()`, which turns both into a clear `util.error()` hinting that the checkpoint needs retraining (#480)
+
 Version 1.14.4 (26-10-30)
 -------------------------
 * fix bug: `CNNModel.load_path()` (`[MODEL] type = cnn`) called `self.MLP(...)`, which doesn't exist on that class, raising `AttributeError` before the saved model was even loaded. Its sibling `load()` already builds the model correctly (`myCNN(layers, self.class_num)`); `load_path()` now does the same (#477)
