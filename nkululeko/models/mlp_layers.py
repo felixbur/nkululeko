@@ -8,11 +8,18 @@ from collections import OrderedDict
 import torch
 
 
-def parse_drop_config(util):
-    """Parse `[MODEL] drop` into `False`, a float, or a list of floats.
+def _check_drop_value(value, util):
+    if not (0 <= value < 1):
+        util.error(f"invalid value for dropout: {value} (must be in [0, 1))")
+
+
+def parse_drop_config(util, num_layers=None):
+    """Parse `[MODEL] drop` into `False`, a float in [0, 1), or a list of
+    per-layer floats in [0, 1).
 
     `config_val` returns the raw ini string, so a plain `float(drop)`
-    crashes on `"False"` or `"[0.3, 0.2]"`.
+    crashes on `"False"` or `"[0.3, 0.2]"`. `num_layers`, if given, warns
+    when a per-layer list doesn't match the actual hidden-layer count.
     """
     drop = util.config_val("MODEL", "drop", "False")
     if drop == "False":
@@ -25,7 +32,47 @@ def parse_drop_config(util):
             drop = float(drop)
         except ValueError:
             util.error(f"invalid value for dropout: {drop}")
+
+    if isinstance(drop, bool):
+        # True/False as a literal (not the "False" string above, already
+        # handled) is ambiguous: reject rather than silently becoming 1.0
+        util.error(f"invalid value for dropout: {drop} (use a number, not True/False)")
+    if isinstance(drop, tuple):
+        drop = list(drop)
+    if isinstance(drop, list):
+        for value in drop:
+            _check_drop_value(value, util)
+        if num_layers is not None and len(drop) != num_layers:
+            util.warn(
+                f"[MODEL] drop has {len(drop)} value(s) for {num_layers} "
+                "hidden layer(s): extra values are ignored, layers beyond "
+                "the list get no dropout"
+            )
+    else:
+        drop = float(drop)
+        _check_drop_value(drop, util)
     return drop
+
+
+def load_mlp_state_dict(model, path, util):
+    """load_state_dict(), turning a missing file or a key mismatch into a
+    clear util.error() instead of a raw traceback.
+
+    A key mismatch most likely means `path` was saved before nkululeko
+    1.14.3, whose mlp/mlp_reg hidden-layer layout changed (see CHANGELOG).
+    """
+    try:
+        state_dict = torch.load(path)
+    except FileNotFoundError:
+        util.error(f"model file not found: {path}")
+    try:
+        model.load_state_dict(state_dict)
+    except RuntimeError as re:
+        util.error(
+            f"could not load model weights from {path}: {re}\n"
+            "This may be a checkpoint saved before nkululeko 1.14.3, whose "
+            "mlp/mlp_reg layer layout changed; retrain the model to fix this."
+        )
 
 
 class MLPBlock(torch.nn.Module):

@@ -12,7 +12,7 @@ from audmetric import (
 
 from nkululeko.losses.loss_ccc import ConcordanceCorCoeff
 from nkululeko.losses.loss_pcc import PearsonCorCoeff
-from nkululeko.models.mlp_layers import MLPBlock, parse_drop_config
+from nkululeko.models.mlp_layers import MLPBlock, load_mlp_state_dict, parse_drop_config
 from nkululeko.models.model import Model
 from nkululeko.optimizers import get_optimizer
 from nkululeko.reporting.reporter import Reporter
@@ -60,7 +60,7 @@ class MLP_Reg_model(Model):
             layers = ast.literal_eval(layers_string)
         except KeyError as ke:
             self.util.error(f"Please provide MODEL layers: {ke}")
-        drop = parse_drop_config(self.util)
+        drop = parse_drop_config(self.util, num_layers=len(layers))
         if drop:
             self.util.debug(f"training with dropout: {drop}")
         self.model = MLPBlock(feats_train.shape[1], layers, 1, drop, activation).to(
@@ -271,14 +271,14 @@ class MLP_Reg_model(Model):
         self.store_path = dir + name
         self.device = self.util.config_val("MODEL", "device", "cpu")
         layers = ast.literal_eval(self.context.config["MODEL"]["layers"])
-        drop = parse_drop_config(self.util)
+        drop = parse_drop_config(self.util, num_layers=len(layers))
         if drop:
             self.util.debug(f"training with dropout: {drop}")
         activation, act_func = self._get_activation()
         self.model = MLPBlock(
             self.feats_train.shape[1], layers, 1, drop, activation
         ).to(self.device)
-        self.model.load_state_dict(torch.load(dir + name))
+        load_mlp_state_dict(self.model, self.store_path, self.util)
         self.model.eval()
 
     def load_path(self, path, run, epoch):
@@ -290,14 +290,14 @@ class MLP_Reg_model(Model):
         self.device = self.util.config_val("MODEL", "device", "cpu")
         layers = ast.literal_eval(self.context.config["MODEL"]["layers"])
         self.store_path = path
-        drop = parse_drop_config(self.util)
+        drop = parse_drop_config(self.util, num_layers=len(layers))
         if drop:
             self.util.debug(f"training with dropout: {drop}")
         activation, act_func = self._get_activation()
         self.model = MLPBlock(
             self.feats_train.shape[1], layers, 1, drop, activation
         ).to(self.device)
-        self.model.load_state_dict(torch.load(self.store_path))
+        load_mlp_state_dict(self.model, self.store_path, self.util)
         self.model.eval()
 
     def get_predictions(self):

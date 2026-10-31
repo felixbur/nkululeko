@@ -6,7 +6,7 @@ import pandas as pd
 import torch
 from sklearn.metrics import recall_score
 
-from nkululeko.models.mlp_layers import MLPBlock, parse_drop_config
+from nkululeko.models.mlp_layers import MLPBlock, load_mlp_state_dict, parse_drop_config
 from nkululeko.models.model import Model
 from nkululeko.optimizers import get_optimizer
 from nkululeko.reporting.reporter import Reporter
@@ -50,7 +50,7 @@ class MLPModel(Model):
         self.util.debug(f"using layers {layers_string}")
         layers = ast.literal_eval(layers_string)
         # with dropout?
-        drop = parse_drop_config(self.util)
+        drop = parse_drop_config(self.util, num_layers=len(layers))
         if drop:
             self.util.debug(f"init: training with dropout: {drop}")
         self.model = MLPBlock(
@@ -276,17 +276,14 @@ class MLPModel(Model):
         self.device = self.util.config_val("MODEL", "device", cuda)
         layers = ast.literal_eval(self.context.config["MODEL"]["layers"])
         self.store_path = dir + name
-        drop = parse_drop_config(self.util)
+        drop = parse_drop_config(self.util, num_layers=len(layers))
         if drop:
             self.util.debug(f"loading: dropout set to: {drop}")
         activation, _ = self._get_activation()
         self.model = MLPBlock(
             self.feats_train.shape[1], layers, self.class_num, drop, activation
         ).to(self.device)
-        try:
-            self.model.load_state_dict(torch.load(self.store_path))
-        except FileNotFoundError:
-            self.util.error(f"model file not found: {self.store_path}")
+        load_mlp_state_dict(self.model, self.store_path, self.util)
         self.model.eval()
 
     def load_path(self, path, run, epoch):
@@ -299,12 +296,12 @@ class MLPModel(Model):
         self.device = self.util.config_val("MODEL", "device", cuda)
         layers = ast.literal_eval(self.context.config["MODEL"]["layers"])
         self.store_path = path
-        drop = parse_drop_config(self.util)
+        drop = parse_drop_config(self.util, num_layers=len(layers))
         if drop:
             self.util.debug(f"dropout set to: {drop}")
         activation, _ = self._get_activation()
         self.model = MLPBlock(
             self.feats_train.shape[1], layers, self.class_num, drop, activation
         ).to(self.device)
-        self.model.load_state_dict(torch.load(self.store_path))
+        load_mlp_state_dict(self.model, self.store_path, self.util)
         self.model.eval()
