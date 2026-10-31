@@ -7,7 +7,6 @@ model correctly (myCNN(layers, self.class_num)); load_path() now does
 the same.
 """
 
-import pandas as pd
 import pytest
 import torch
 
