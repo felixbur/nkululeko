@@ -278,7 +278,9 @@ class MLP_Reg_model(Model):
         self.model = MLPBlock(
             self.feats_train.shape[1], layers, 1, drop, activation
         ).to(self.device)
-        load_mlp_state_dict(self.model, self.store_path, self.util)
+        load_mlp_state_dict(
+            self.model, self.store_path, self.util, map_location=self.device
+        )
         self.model.eval()
 
     def load_path(self, path, run, epoch):
@@ -297,7 +299,9 @@ class MLP_Reg_model(Model):
         self.model = MLPBlock(
             self.feats_train.shape[1], layers, 1, drop, activation
         ).to(self.device)
-        load_mlp_state_dict(self.model, self.store_path, self.util)
+        load_mlp_state_dict(
+            self.model, self.store_path, self.util, map_location=self.device
+        )
         self.model.eval()
 
     def get_predictions(self):

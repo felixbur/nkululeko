@@ -35,12 +35,14 @@ class Resampler:
         if not self.not_testing:
             self.util.get_path("store")
         succes, error = 0, 0
-        if not replace:
-            new_files = []
+        # one entry per row, in row order, for every outcome (error,
+        # already at target rate, or resampled); only needed to rebuild
+        # the index when not replacing in place (replace keeps every name)
+        new_files = [] if not replace else None
         for i, f in enumerate(files):
             try:
                 signal, org_sr = load_audio(f)
-            except Exception as e:
+            except (RuntimeError, OSError, ValueError) as e:
                 # load_audio (audiofile) can raise more than RuntimeError
                 # (e.g. FileNotFoundError, ValueError); without a continue,
                 # signal would be undefined on the first file or stale from
@@ -48,6 +50,8 @@ class Resampler:
                 # this file's name.
                 self.util.warn(f"error {e} while trying {f}")
                 error += 1
+                if new_files is not None:
+                    new_files.append(f)
                 continue
 
             # convert to mono if stereo
@@ -57,6 +61,8 @@ class Resampler:
             if signal.shape[0] == 0:
                 self.util.warn(f"cannot load {f}")
                 error += 1
+                if new_files is not None:
+                    new_files.append(f)
                 continue
             if org_sr != self.SAMPLING_RATE:
                 self.util.debug(f"resampling {f} (sr = {org_sr})")
@@ -69,9 +75,15 @@ class Resampler:
                     audiofile.write(new_file_name, signal.numpy(), self.SAMPLING_RATE)
                     new_files.append(new_file_name)
                 succes += 1
+            elif new_files is not None:
+                new_files.append(f)  # already at the target rate, unchanged
         if not replace:
             self.df = self.df.set_index(
-                self.df.index.set_levels(new_files, level="file")
+                audformat.segmented_index(
+                    new_files,
+                    self.df.index.get_level_values("start"),
+                    self.df.index.get_level_values("end"),
+                )
             )
             if not self.not_testing:
                 target_file = self.util.config_val(

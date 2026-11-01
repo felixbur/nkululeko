@@ -67,6 +67,14 @@ class TestParseDropConfigValidation:
         with pytest.raises(ValueError):
             parse_drop_config(_Util("[0.3, 1.5]"))
 
+    def test_non_numeric_list_value_is_rejected(self):
+        with pytest.raises(ValueError):
+            parse_drop_config(_Util('[0.3, "a"]'))
+
+    def test_bool_in_list_is_rejected(self):
+        with pytest.raises(ValueError):
+            parse_drop_config(_Util("[0.3, True]"))
+
     def test_list_length_mismatch_warns(self):
         util = _Util("[0.3, 0.2, 0.1]")
         parse_drop_config(util, num_layers=2)
@@ -107,3 +115,45 @@ class TestLoadMlpStateDict:
         other = MLPBlock(3, [4], 2, False, torch.nn.ReLU())
 
         load_mlp_state_dict(other, str(path), _Util(None))
+
+    def test_key_mismatch_message_includes_1_14_3_hint(self, tmp_path):
+        path = tmp_path / "model.pt"
+        old_model = MLPBlock(3, [4, 2], 2, False, torch.nn.ReLU())
+        torch.save(old_model.state_dict(), str(path))
+        new_model = MLPBlock(3, [5], 2, False, torch.nn.ReLU())
+
+        with pytest.raises(ValueError, match="1.14.3"):
+            load_mlp_state_dict(new_model, str(path), _Util(None))
+
+    def test_other_runtime_error_has_no_1_14_3_hint(self, tmp_path):
+        """PR #485 review: a RuntimeError unrelated to a key mismatch (e.g.
+        no CUDA device) shouldn't carry a misleading retrain hint."""
+        path = tmp_path / "model.pt"
+        torch.save({}, str(path))
+
+        class _FakeModel:
+            def load_state_dict(self, state_dict):
+                raise RuntimeError("CUDA error: no kernel image is available")
+
+        with pytest.raises(ValueError) as exc_info:
+            load_mlp_state_dict(_FakeModel(), str(path), _Util(None))
+        assert "1.14.3" not in str(exc_info.value)
+
+    def test_map_location_is_forwarded_to_torch_load(self, tmp_path, monkeypatch):
+        path = tmp_path / "model.pt"
+        model = MLPBlock(3, [4], 2, False, torch.nn.ReLU())
+        torch.save(model.state_dict(), str(path))
+
+        seen = {}
+        real_load = torch.load
+
+        def spy_load(p, map_location=None):
+            seen["map_location"] = map_location
+            return real_load(p, map_location=map_location)
+
+        monkeypatch.setattr(torch, "load", spy_load)
+        other = MLPBlock(3, [4], 2, False, torch.nn.ReLU())
+
+        load_mlp_state_dict(other, str(path), _Util(None), map_location="cpu")
+
+        assert seen["map_location"] == "cpu"

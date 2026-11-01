@@ -9,6 +9,8 @@ import torch
 
 
 def _check_drop_value(value, util):
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        util.error(f"invalid value for dropout: {value!r} (must be a number)")
     if not (0 <= value < 1):
         util.error(f"invalid value for dropout: {value} (must be in [0, 1))")
 
@@ -54,25 +56,32 @@ def parse_drop_config(util, num_layers=None):
     return drop
 
 
-def load_mlp_state_dict(model, path, util):
-    """load_state_dict(), turning a missing file or a key mismatch into a
-    clear util.error() instead of a raw traceback.
+def load_mlp_state_dict(model, path, util, map_location=None):
+    """load_state_dict(), turning a missing file or a hidden-layer key
+    mismatch into a clear util.error() instead of a raw traceback.
 
-    A key mismatch most likely means `path` was saved before nkululeko
-    1.14.3, whose mlp/mlp_reg hidden-layer layout changed (see CHANGELOG).
+    `map_location` should be the model's own device, so loading a
+    CUDA-trained checkpoint on a CPU-only machine doesn't itself raise
+    (that RuntimeError isn't a key mismatch, so it gets no 1.14.3 hint). A
+    "Missing key(s)"/"Unexpected key(s)" RuntimeError most likely means
+    `path` was saved before nkululeko 1.14.3, whose mlp/mlp_reg
+    hidden-layer layout changed (see CHANGELOG).
     """
     try:
-        state_dict = torch.load(path)
+        state_dict = torch.load(path, map_location=map_location)
     except FileNotFoundError:
         util.error(f"model file not found: {path}")
     try:
         model.load_state_dict(state_dict)
     except RuntimeError as re:
-        util.error(
-            f"could not load model weights from {path}: {re}\n"
-            "This may be a checkpoint saved before nkululeko 1.14.3, whose "
-            "mlp/mlp_reg layer layout changed; retrain the model to fix this."
-        )
+        hint = ""
+        if "Missing key(s)" in str(re) or "Unexpected key(s)" in str(re):
+            hint = (
+                "\nThis may be a checkpoint saved before nkululeko 1.14.3, "
+                "whose mlp/mlp_reg layer layout changed; retrain the model "
+                "to fix this."
+            )
+        util.error(f"could not load model weights from {path}: {re}{hint}")
 
 
 class MLPBlock(torch.nn.Module):
