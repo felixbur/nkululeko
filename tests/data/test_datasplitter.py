@@ -534,6 +534,66 @@ class TestFillTrainAndTestsConcatenation:
         assert "source_db" not in ds_a.df.columns
         assert "source_db" not in ds_b.df.columns
 
+    def test_preexisting_source_db_is_not_overwritten(self, tmp_path, monkeypatch):
+        """GH #482: aug_train.py's augmented-data CSV copies the original
+        pooled source_db through (see Experiment.augment() /
+        remap_augmented_index()), so its rows already carry the real
+        originating database, not the aug_<methods> DATA section name.
+        Overwriting it with d.name made every augmented row count as its
+        own domain for MODEL.domain_balanced_sampling/DANN instead."""
+
+        class FakeAugDataset:
+            def __init__(self, name, files, source_dbs):
+                self.name = name
+                df = pd.DataFrame(index=_make_segmented_index(files))
+                df["source_db"] = source_dbs
+                self.df_train = _tag_df(df)
+                self.df_test = pd.DataFrame()
+
+            def split(self):
+                pass
+
+            def prepare_labels(self):
+                pass
+
+        class FakeDataset:
+            def __init__(self, name, train_files, test_files):
+                self.name = name
+                self.df_train = _tag_df(
+                    pd.DataFrame(index=_make_segmented_index(train_files))
+                )
+                self.df_test = _tag_df(
+                    pd.DataFrame(index=_make_segmented_index(test_files))
+                )
+
+            def split(self):
+                pass
+
+            def prepare_labels(self):
+                pass
+
+        monkeypatch.setitem(glob_conf.config["DATA"], "target", "none")
+        monkeypatch.setattr(glob_conf, "target", None)
+
+        ds_a = FakeDataset("a", ["/a/tr_1.wav"], ["/a/te_1.wav"])
+        ds_b = FakeDataset("b", ["/b/tr_1.wav"], ["/b/te_1.wav"])
+        ds_aug = FakeAugDataset(
+            "aug_traditional",
+            ["/a/tr_1_aug.wav", "/b/tr_1_aug.wav"],
+            ["a", "b"],  # the real originating databases, not "aug_traditional"
+        )
+
+        ds = Datasplitter.__new__(Datasplitter)
+        ds.util = _make_fake_util(tmp_path)
+        ds.target = None
+        ds.split3 = False
+        ds.got_speaker = False
+        ds.datasets = {"a": ds_a, "b": ds_b, "aug_traditional": ds_aug}
+
+        df_train, df_test = ds.fill_train_and_tests()
+
+        assert list(df_train["source_db"]) == ["a", "b", "a", "b"]
+
     def test_flag_aggregation_any_wins_on_self_and_splits(self, tmp_path, monkeypatch):
         """Flags should be any-wins aggregated onto self and every split DataFrame."""
 

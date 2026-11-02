@@ -20,6 +20,15 @@ from nkululeko.utils.sequences import n_segments
 from nkululeko.utils.util import Util
 
 
+def _tag_source_db(df, name):
+    """Tag every row of `df` with its originating DATA section `name`,
+    unless it already has a source_db column of its own (see the
+    fill_train_and_tests() comment above its call sites)."""
+    if "source_db" in df.columns:
+        return df
+    return df.assign(source_db=name)
+
+
 class Datasplitter(ContextAware):
     def __init__(self, datasets, context=None):
         self.util = Util("datasplitter", context=context)
@@ -128,6 +137,15 @@ class Datasplitter(ContextAware):
             # row came from. Tag a copy (assign): depending on split_strategy,
             # d.df_train/d.df_test can be the very same object as d.df, which
             # must not gain the column.
+            #
+            # A dataset that already has a source_db column (aug_train.py's
+            # augmented-data CSV: its rows are copies of already-pooled train
+            # rows, source_db included, see Experiment.augment() /
+            # remap_augmented_index()) keeps it as is instead of being
+            # overwritten with d.name -- else every augmented row would count
+            # as its own domain ("aug_<methods>") for
+            # MODEL.domain_balanced_sampling/DANN instead of the real source
+            # database it was augmented from (GH #482).
             train_dfs, test_dfs, dev_dfs = [], [], []
             for d in all_datasets:
                 if self.split3:
@@ -140,16 +158,16 @@ class Datasplitter(ContextAware):
                 if d.df_train.shape[0] == 0:
                     self.util.debug(f"warn: {d.name} train empty")
                 else:
-                    train_dfs.append(d.df_train.assign(source_db=d.name))
+                    train_dfs.append(_tag_source_db(d.df_train, d.name))
                 if d.df_test.shape[0] == 0:
                     self.util.debug(f"warn: {d.name} test empty")
                 else:
-                    test_dfs.append(d.df_test.assign(source_db=d.name))
+                    test_dfs.append(_tag_source_db(d.df_test, d.name))
                 if self.split3:
                     if d.df_dev.shape[0] == 0:
                         self.util.debug(f"warn: {d.name} dev empty")
                     else:
-                        dev_dfs.append(d.df_dev.assign(source_db=d.name))
+                        dev_dfs.append(_tag_source_db(d.df_dev, d.name))
 
             self.df_train = pd.concat(train_dfs) if train_dfs else pd.DataFrame()
             self.df_test = pd.concat(test_dfs) if test_dfs else pd.DataFrame()
