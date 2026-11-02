@@ -75,6 +75,24 @@ class TestParseDropConfigValidation:
         with pytest.raises(ValueError):
             parse_drop_config(_Util("[0.3, True]"))
 
+    def test_none_scalar_is_rejected(self):
+        with pytest.raises(ValueError):
+            parse_drop_config(_Util("None"))
+
+    def test_dict_scalar_is_rejected(self):
+        with pytest.raises(ValueError):
+            parse_drop_config(_Util("{0.3: 1}"))
+
+    def test_set_scalar_is_rejected(self):
+        with pytest.raises(ValueError):
+            parse_drop_config(_Util("{0.3}"))
+
+    def test_quoted_string_scalar_is_rejected(self):
+        # ast.literal_eval("'0.3'") -> the Python str "0.3", which float()
+        # would otherwise silently accept
+        with pytest.raises(ValueError):
+            parse_drop_config(_Util("'0.3'"))
+
     def test_list_length_mismatch_warns(self):
         util = _Util("[0.3, 0.2, 0.1]")
         parse_drop_config(util, num_layers=2)
@@ -138,6 +156,18 @@ class TestLoadMlpStateDict:
         with pytest.raises(ValueError) as exc_info:
             load_mlp_state_dict(_FakeModel(), str(path), _Util(None))
         assert "1.14.3" not in str(exc_info.value)
+
+    def test_truncated_file_calls_util_error(self, tmp_path):
+        """A truncated/empty checkpoint (interrupted training, disk full)
+        makes torch.load raise EOFError/UnpicklingError, not
+        FileNotFoundError; both must still become a util.error()."""
+        path = tmp_path / "model.pt"
+        path.write_bytes(b"")
+
+        with pytest.raises(ValueError):
+            load_mlp_state_dict(
+                MLPBlock(3, [4], 2, False, torch.nn.ReLU()), str(path), _Util(None)
+            )
 
     def test_map_location_is_forwarded_to_torch_load(self, tmp_path, monkeypatch):
         path = tmp_path / "model.pt"

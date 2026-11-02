@@ -20,9 +20,40 @@ import pytest
 import soundfile as sf
 import torch
 
-from nkululeko.augmenting.resampler import Resampler
+from nkululeko.augmenting.resampler import Resampler, _parse_bool
 
 SR = 16000
+
+
+class TestParseBool:
+    """GH review on #485: resample.py's ini-driven path passes the raw
+    `[RESAMPLE] replace` ini string straight through (`not_testing=True`
+    skips the eval() branch), so the non-empty string "False" was truthy,
+    silently overwriting original audio files in place."""
+
+    def test_bool_true_passes_through(self):
+        assert _parse_bool(True) is True
+
+    def test_bool_false_passes_through(self):
+        assert _parse_bool(False) is False
+
+    def test_string_false_is_false(self):
+        assert _parse_bool("False") is False
+
+    def test_string_true_is_true(self):
+        assert _parse_bool("True") is True
+
+    def test_is_case_insensitive(self):
+        assert _parse_bool("true") is True
+        assert _parse_bool("FALSE") is False
+
+
+def test_replace_string_false_from_ini_is_not_truthy(tmp_path):
+    """Resampler(df, replace="False") (the ini/ not_testing=True path) must
+    not silently replace files in place."""
+    df = pd.DataFrame(index=[str(tmp_path / "a.wav")])
+    resampler = Resampler(df, replace="False", not_testing=True)
+    assert resampler.replace is False
 
 
 def _fake_load_audio_factory(bad_file):

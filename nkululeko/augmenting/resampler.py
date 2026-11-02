@@ -15,6 +15,16 @@ from nkululeko.utils.audio_io import load_audio
 from nkululeko.utils.util import Util
 
 
+def _parse_bool(value):
+    """`replace` can arrive as an actual bool (argparse --replace) or as a
+    raw ini string (`util.config_val("RESAMPLE", "replace", "False")`);
+    a non-empty string is truthy in Python, so `"False"` would otherwise
+    silently mean "replace in place"."""
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().lower() == "true"
+
+
 class Resampler:
     def __init__(self, df, replace, not_testing=True):
         self.SAMPLING_RATE = 16000
@@ -22,15 +32,12 @@ class Resampler:
         self.util = Util("resampler", has_config=not not_testing)
         self.util.warn(f"all files might be resampled to {self.SAMPLING_RATE}")
         self.not_testing = not_testing
-        self.replace = (
-            eval(self.util.config_val("RESAMPLE", "replace", "False"))
-            if not not_testing
-            else replace
-        )
+        if not not_testing:
+            replace = self.util.config_val("RESAMPLE", "replace", "False")
+        self.replace = _parse_bool(replace)
 
     def resample(self):
         files = self.df.index.get_level_values(0).values
-        # replace = eval(self.util.config_val("RESAMPLE", "replace", "False"))
         replace = self.replace
         if not self.not_testing:
             self.util.get_path("store")

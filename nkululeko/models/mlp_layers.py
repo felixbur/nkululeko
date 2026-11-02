@@ -51,26 +51,35 @@ def parse_drop_config(util, num_layers=None):
                 "the list get no dropout"
             )
     else:
-        drop = float(drop)
+        # reject before float(): a quoted string ("'0.3'") would otherwise
+        # be silently accepted, and None/a dict/a set would raise a raw
+        # TypeError/ValueError instead of util.error()
         _check_drop_value(drop, util)
+        drop = float(drop)
     return drop
 
 
 def load_mlp_state_dict(model, path, util, map_location=None):
-    """load_state_dict(), turning a missing file or a hidden-layer key
-    mismatch into a clear util.error() instead of a raw traceback.
+    """load_state_dict(), turning a missing/unreadable file or a
+    hidden-layer key mismatch into a clear util.error() instead of a raw
+    traceback.
 
     `map_location` should be the model's own device, so loading a
     CUDA-trained checkpoint on a CPU-only machine doesn't itself raise
     (that RuntimeError isn't a key mismatch, so it gets no 1.14.3 hint). A
     "Missing key(s)"/"Unexpected key(s)" RuntimeError most likely means
-    `path` was saved before nkululeko 1.14.3, whose mlp/mlp_reg
-    hidden-layer layout changed (see CHANGELOG).
+    either `path` was saved before nkululeko 1.14.3, whose mlp/mlp_reg
+    hidden-layer layout changed (see CHANGELOG), or `[MODEL] layers` no
+    longer matches what the checkpoint was trained with.
     """
     try:
         state_dict = torch.load(path, map_location=map_location)
     except FileNotFoundError:
         util.error(f"model file not found: {path}")
+    except Exception as e:
+        # e.g. a truncated/empty file (interrupted training, disk full)
+        # raises EOFError or pickle.UnpicklingError, not FileNotFoundError
+        util.error(f"could not read model file {path}: {e}")
     try:
         model.load_state_dict(state_dict)
     except RuntimeError as re:
@@ -78,8 +87,9 @@ def load_mlp_state_dict(model, path, util, map_location=None):
         if "Missing key(s)" in str(re) or "Unexpected key(s)" in str(re):
             hint = (
                 "\nThis may be a checkpoint saved before nkululeko 1.14.3, "
-                "whose mlp/mlp_reg layer layout changed; retrain the model "
-                "to fix this."
+                "whose mlp/mlp_reg layer layout changed, or [MODEL] layers "
+                "may differ from the one it was trained with; retrain the "
+                "model or fix the config to match."
             )
         util.error(f"could not load model weights from {path}: {re}{hint}")
 

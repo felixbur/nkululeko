@@ -7,7 +7,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 **⚠ 28 key(s) have inconsistent defaults across call sites:**
 
 * `'DATA'.'no_reuse'`: `'False'` (nkululeko/augment.py:43), `'False'` (nkululeko/experiment.py:162), `False` (nkululeko/explore.py:73), `False` (nkululeko/utils/dataframe.py:312)
-* `'DATA'.'target'`: `'emotion'` (nkululeko/augment.py:89), `'emotion'` (nkululeko/augmenting/resampler.py:93), `'emotion'` (nkululeko/bundle.py:56), `'emotion'` (nkululeko/bundle.py:218), `None` (nkululeko/data/dataset.py:35), `None` (nkululeko/data/dataset_csv.py:84), `None` (nkululeko/experiment.py:124), `'emotion'` (nkululeko/experiment.py:653), `'emotion'` (nkululeko/experiment.py:663), `'emotion'` (nkululeko/experiment.py:673), `'emotion'` (nkululeko/export.py:108), `'emotion'` (nkululeko/feat_extract/feats_analyser.py:26), `'emotion'` (nkululeko/models/model.py:230), `'emotion'` (nkululeko/plots.py:31), `'class_label'` (nkululeko/plots.py:993), `'emotion'` (nkululeko/testing_predictor.py:71), `None` (nkululeko/utils/util.py:669)
+* `'DATA'.'target'`: `'emotion'` (nkululeko/augment.py:89), `'emotion'` (nkululeko/augmenting/resampler.py:100), `'emotion'` (nkululeko/bundle.py:56), `'emotion'` (nkululeko/bundle.py:218), `None` (nkululeko/data/dataset.py:35), `None` (nkululeko/data/dataset_csv.py:84), `None` (nkululeko/experiment.py:124), `'emotion'` (nkululeko/experiment.py:653), `'emotion'` (nkululeko/experiment.py:663), `'emotion'` (nkululeko/experiment.py:673), `'emotion'` (nkululeko/export.py:108), `'emotion'` (nkululeko/feat_extract/feats_analyser.py:26), `'emotion'` (nkululeko/models/model.py:230), `'emotion'` (nkululeko/plots.py:31), `'class_label'` (nkululeko/plots.py:993), `'emotion'` (nkululeko/testing_predictor.py:71), `None` (nkululeko/utils/util.py:669)
 * `'DATA'.'tests'`: `'False'` (nkululeko/data/dataset.py:915), `False` (nkululeko/nkululeko.py:46), `False` (nkululeko/testing_predictor.py:59)
 * `'DATA'.'type'`: `False` (nkululeko/data/dataset.py:1015), `'dummy'` (nkululeko/data/datasplitter.py:244)
 * `'EXP'.'epochs'`: `1` (nkululeko/modelrunner.py:194), `1` (nkululeko/models/model_tuned.py:66), `'50'` (nkululeko/optimizers/scheduler_factory.py:84)
@@ -69,7 +69,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'DATA' | 'root_folders' | `False` | nkululeko/utils/util.py:73 |
 | 'DATA' | 'sample_selection' | `'all'` | nkululeko/experiment.py:359 |
 | 'DATA' | 'size_diff_weight' | `'1'` | nkululeko/data/dataset.py:634 |
-| 'DATA' | 'target' | `'class_label'` / `'emotion'` / `None` | nkululeko/augment.py:89, nkululeko/augmenting/resampler.py:93, nkululeko/bundle.py:56, +14 more |
+| 'DATA' | 'target' | `'class_label'` / `'emotion'` / `None` | nkululeko/augment.py:89, nkululeko/augmenting/resampler.py:100, nkululeko/bundle.py:56, +14 more |
 | 'DATA' | 'target_divide_by' | `False` | nkululeko/data/datasplitter.py:319 |
 | 'DATA' | 'tests' | `'False'` / `False` | nkululeko/data/dataset.py:915, nkululeko/nkululeko.py:46, nkululeko/testing_predictor.py:59 |
 | 'DATA' | 'trains' | `False` | nkululeko/utils/naming.py:179 |
@@ -270,8 +270,8 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | 'REPORT' | 'latex' | `'nkululeko_latex'` / `False` | nkululeko/experiment.py:91, nkululeko/reporting/latex_writer.py:39 |
 | 'REPORT' | 'show' | `'False'` | nkululeko/experiment.py:89, nkululeko/reporting/report.py:33 |
 | 'REPORT' | 'title' | `'Nkululeko report'` | nkululeko/reporting/latex_writer.py:15 |
-| 'RESAMPLE' | 'replace' | `'False'` | nkululeko/augmenting/resampler.py:26, nkululeko/resample.py:136 |
-| 'RESAMPLE' | 'target' | `'resampled.csv'` | nkululeko/augmenting/resampler.py:89 |
+| 'RESAMPLE' | 'replace' | `'False'` | nkululeko/augmenting/resampler.py:36, nkululeko/resample.py:136 |
+| 'RESAMPLE' | 'target' | `'resampled.csv'` | nkululeko/augmenting/resampler.py:96 |
 | 'RNN' | 'batch_size' | `'32'` | nkululeko/models/rnn_config.py:66 |
 | 'RNN' | 'bidirectional' | `False` | nkululeko/models/rnn_config.py:59 |
 | 'RNN' | 'hidden_size' | `'64'` | nkululeko/models/rnn_config.py:57 |
