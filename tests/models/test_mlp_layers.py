@@ -2,13 +2,15 @@
 MLPBlock's own tests live in test_model_mlp.py."""
 
 import pytest
+import torch
 
-from nkululeko.models.mlp_layers import parse_drop_config
+from nkululeko.models.mlp_layers import MLPBlock, load_mlp_state_dict, parse_drop_config
 
 
 class _Util:
     def __init__(self, drop):
         self._drop = drop
+        self.warnings = []
 
     def config_val(self, section, key, default=None):
         assert (section, key) == ("MODEL", "drop")
@@ -16,6 +18,9 @@ class _Util:
 
     def error(self, msg):
         raise ValueError(msg)
+
+    def warn(self, msg):
+        self.warnings.append(msg)
 
 
 class TestParseDropConfig:
@@ -37,3 +42,148 @@ class TestParseDropConfig:
     def test_invalid_value_calls_util_error(self):
         with pytest.raises(ValueError):
             parse_drop_config(_Util("not-a-number"))
+
+
+class TestParseDropConfigValidation:
+    """GH #480: drop as a tuple, a bare bool, or an out-of-range/mismatched
+    value either crashed uncontrolled or was silently accepted."""
+
+    def test_parses_tuple_string_as_list(self):
+        assert parse_drop_config(_Util("(0.3, 0.2)")) == [0.3, 0.2]
+
+    def test_bool_true_is_rejected(self):
+        with pytest.raises(ValueError):
+            parse_drop_config(_Util("True"))
+
+    def test_float_out_of_range_is_rejected(self):
+        with pytest.raises(ValueError):
+            parse_drop_config(_Util("1.5"))
+
+    def test_negative_float_is_rejected(self):
+        with pytest.raises(ValueError):
+            parse_drop_config(_Util("-0.1"))
+
+    def test_list_value_out_of_range_is_rejected(self):
+        with pytest.raises(ValueError):
+            parse_drop_config(_Util("[0.3, 1.5]"))
+
+    def test_non_numeric_list_value_is_rejected(self):
+        with pytest.raises(ValueError):
+            parse_drop_config(_Util('[0.3, "a"]'))
+
+    def test_bool_in_list_is_rejected(self):
+        with pytest.raises(ValueError):
+            parse_drop_config(_Util("[0.3, True]"))
+
+    def test_none_scalar_is_rejected(self):
+        with pytest.raises(ValueError):
+            parse_drop_config(_Util("None"))
+
+    def test_dict_scalar_is_rejected(self):
+        with pytest.raises(ValueError):
+            parse_drop_config(_Util("{0.3: 1}"))
+
+    def test_set_scalar_is_rejected(self):
+        with pytest.raises(ValueError):
+            parse_drop_config(_Util("{0.3}"))
+
+    def test_quoted_string_scalar_is_rejected(self):
+        # ast.literal_eval("'0.3'") -> the Python str "0.3", which float()
+        # would otherwise silently accept
+        with pytest.raises(ValueError):
+            parse_drop_config(_Util("'0.3'"))
+
+    def test_list_length_mismatch_warns(self):
+        util = _Util("[0.3, 0.2, 0.1]")
+        parse_drop_config(util, num_layers=2)
+        assert len(util.warnings) == 1
+
+    def test_list_length_match_does_not_warn(self):
+        util = _Util("[0.3, 0.2]")
+        parse_drop_config(util, num_layers=2)
+        assert util.warnings == []
+
+
+class TestLoadMlpStateDict:
+    """GH #480: load_state_dict() on a pre-1.14.3 checkpoint (different key
+    layout) raised a raw RuntimeError; a missing file a raw FileNotFoundError."""
+
+    def test_missing_file_calls_util_error(self):
+        with pytest.raises(ValueError):
+            load_mlp_state_dict(
+                MLPBlock(3, [4], 2, False, torch.nn.ReLU()),
+                "/nonexistent/path/model.pt",
+                _Util(None),
+            )
+
+    def test_key_mismatch_calls_util_error(self, tmp_path):
+        path = tmp_path / "model.pt"
+        old_model = MLPBlock(3, [4, 2], 2, False, torch.nn.ReLU())
+        torch.save(old_model.state_dict(), str(path))
+        # a differently-shaped net -> different state_dict keys
+        new_model = MLPBlock(3, [5], 2, False, torch.nn.ReLU())
+
+        with pytest.raises(ValueError):
+            load_mlp_state_dict(new_model, str(path), _Util(None))
+
+    def test_successful_load(self, tmp_path):
+        path = tmp_path / "model.pt"
+        model = MLPBlock(3, [4], 2, False, torch.nn.ReLU())
+        torch.save(model.state_dict(), str(path))
+        other = MLPBlock(3, [4], 2, False, torch.nn.ReLU())
+
+        load_mlp_state_dict(other, str(path), _Util(None))
+
+    def test_key_mismatch_message_includes_1_14_3_hint(self, tmp_path):
+        path = tmp_path / "model.pt"
+        old_model = MLPBlock(3, [4, 2], 2, False, torch.nn.ReLU())
+        torch.save(old_model.state_dict(), str(path))
+        new_model = MLPBlock(3, [5], 2, False, torch.nn.ReLU())
+
+        with pytest.raises(ValueError, match="1.14.3"):
+            load_mlp_state_dict(new_model, str(path), _Util(None))
+
+    def test_other_runtime_error_has_no_1_14_3_hint(self, tmp_path):
+        """PR #485 review: a RuntimeError unrelated to a key mismatch (e.g.
+        no CUDA device) shouldn't carry a misleading retrain hint."""
+        path = tmp_path / "model.pt"
+        torch.save({}, str(path))
+
+        class _FakeModel:
+            def load_state_dict(self, state_dict):
+                raise RuntimeError("CUDA error: no kernel image is available")
+
+        with pytest.raises(ValueError) as exc_info:
+            load_mlp_state_dict(_FakeModel(), str(path), _Util(None))
+        assert "1.14.3" not in str(exc_info.value)
+
+    def test_truncated_file_calls_util_error(self, tmp_path):
+        """A truncated/empty checkpoint (interrupted training, disk full)
+        makes torch.load raise EOFError/UnpicklingError, not
+        FileNotFoundError; both must still become a util.error()."""
+        path = tmp_path / "model.pt"
+        path.write_bytes(b"")
+
+        with pytest.raises(ValueError):
+            load_mlp_state_dict(
+                MLPBlock(3, [4], 2, False, torch.nn.ReLU()), str(path), _Util(None)
+            )
+
+    def test_map_location_is_forwarded_to_torch_load(self, tmp_path, monkeypatch):
+        path = tmp_path / "model.pt"
+        model = MLPBlock(3, [4], 2, False, torch.nn.ReLU())
+        torch.save(model.state_dict(), str(path))
+
+        seen = {}
+        real_load = torch.load
+
+        def spy_load(p, map_location=None):
+            seen["map_location"] = map_location
+            return real_load(p, map_location=map_location)
+
+        monkeypatch.setattr(torch, "load", spy_load)
+        other = MLPBlock(3, [4], 2, False, torch.nn.ReLU())
+
+        load_mlp_state_dict(other, str(path), _Util(None), map_location="cpu")
+
+        assert seen["map_location"] == "cpu"

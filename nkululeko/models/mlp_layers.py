@@ -8,11 +8,20 @@ from collections import OrderedDict
 import torch
 
 
-def parse_drop_config(util):
-    """Parse `[MODEL] drop` into `False`, a float, or a list of floats.
+def _check_drop_value(value, util):
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        util.error(f"invalid value for dropout: {value!r} (must be a number)")
+    if not (0 <= value < 1):
+        util.error(f"invalid value for dropout: {value} (must be in [0, 1))")
+
+
+def parse_drop_config(util, num_layers=None):
+    """Parse `[MODEL] drop` into `False`, a float in [0, 1), or a list of
+    per-layer floats in [0, 1).
 
     `config_val` returns the raw ini string, so a plain `float(drop)`
-    crashes on `"False"` or `"[0.3, 0.2]"`.
+    crashes on `"False"` or `"[0.3, 0.2]"`. `num_layers`, if given, warns
+    when a per-layer list doesn't match the actual hidden-layer count.
     """
     drop = util.config_val("MODEL", "drop", "False")
     if drop == "False":
@@ -25,7 +34,64 @@ def parse_drop_config(util):
             drop = float(drop)
         except ValueError:
             util.error(f"invalid value for dropout: {drop}")
+
+    if isinstance(drop, bool):
+        # True/False as a literal (not the "False" string above, already
+        # handled) is ambiguous: reject rather than silently becoming 1.0
+        util.error(f"invalid value for dropout: {drop} (use a number, not True/False)")
+    if isinstance(drop, tuple):
+        drop = list(drop)
+    if isinstance(drop, list):
+        for value in drop:
+            _check_drop_value(value, util)
+        if num_layers is not None and len(drop) != num_layers:
+            util.warn(
+                f"[MODEL] drop has {len(drop)} value(s) for {num_layers} "
+                "hidden layer(s): extra values are ignored, layers beyond "
+                "the list get no dropout"
+            )
+    else:
+        # reject before float(): a quoted string ("'0.3'") would otherwise
+        # be silently accepted, and None/a dict/a set would raise a raw
+        # TypeError/ValueError instead of util.error()
+        _check_drop_value(drop, util)
+        drop = float(drop)
     return drop
+
+
+def load_mlp_state_dict(model, path, util, map_location=None):
+    """load_state_dict(), turning a missing/unreadable file or a
+    hidden-layer key mismatch into a clear util.error() instead of a raw
+    traceback.
+
+    `map_location` should be the model's own device, so loading a
+    CUDA-trained checkpoint on a CPU-only machine doesn't itself raise
+    (that RuntimeError isn't a key mismatch, so it gets no 1.14.3 hint). A
+    "Missing key(s)"/"Unexpected key(s)" RuntimeError most likely means
+    either `path` was saved before nkululeko 1.14.3, whose mlp/mlp_reg
+    hidden-layer layout changed (see CHANGELOG), or `[MODEL] layers` no
+    longer matches what the checkpoint was trained with.
+    """
+    try:
+        state_dict = torch.load(path, map_location=map_location)
+    except FileNotFoundError:
+        util.error(f"model file not found: {path}")
+    except Exception as e:
+        # e.g. a truncated/empty file (interrupted training, disk full)
+        # raises EOFError or pickle.UnpicklingError, not FileNotFoundError
+        util.error(f"could not read model file {path}: {e}")
+    try:
+        model.load_state_dict(state_dict)
+    except RuntimeError as re:
+        hint = ""
+        if "Missing key(s)" in str(re) or "Unexpected key(s)" in str(re):
+            hint = (
+                "\nThis may be a checkpoint saved before nkululeko 1.14.3, "
+                "whose mlp/mlp_reg layer layout changed, or [MODEL] layers "
+                "may differ from the one it was trained with; retrain the "
+                "model or fix the config to match."
+            )
+        util.error(f"could not load model weights from {path}: {re}{hint}")
 
 
 class MLPBlock(torch.nn.Module):

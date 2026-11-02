@@ -68,3 +68,19 @@ def test_16_bit_files_are_normalised_to_one(tmp_path):
 def test_the_result_can_be_changed_in_place(wav):
     out, _ = load_audio(wav[0])
     out *= 2  # no read-only numpy buffer behind it
+
+
+def test_nat_end_reads_the_whole_file(wav):
+    """GH #481: a segmented index's whole-file rows carry end=pd.NaT, not
+    None; `pd.NaT is not None`, so it used to reach
+    (end - start).total_seconds() and read with duration=nan."""
+    path, signal = wav
+    out, sr = load_audio(path, pd.NaT, pd.NaT)
+    assert sr == SR
+    np.testing.assert_allclose(out[0].numpy(), signal)
+
+
+def test_nat_start_with_real_end(wav):
+    path, signal = wav
+    out, _ = load_audio(path, pd.NaT, pd.Timedelta(seconds=0.5))
+    np.testing.assert_allclose(out[0].numpy(), signal[: SR // 2])
