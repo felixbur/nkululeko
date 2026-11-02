@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.14.6 (26-11-02)
+-------------------------
+* fix bug: `[AASIST] rawboost` (online RawBoost noise added to every training waveform) drew from numpy's global RNG (`nkululeko.augmenting.rawboost.apply_rawboost`), which `MODEL.random_seed` only seeded via `torch.manual_seed()`, not `np.random.seed()` -- so the noise differed between two runs with the same seed, even though the (torch-based) domain-balanced sampler was already reproducible. `AasistModel` now also seeds numpy's global RNG for the single-process case, and sets a `worker_init_fn` deriving each DataLoader worker's own seed from the same base when `MODEL.n_jobs > 0`, so two runs with the same seed and the same `n_jobs` apply identical noise (#483)
+
 Version 1.14.5 (26-10-31)
 -------------------------
 * fix bug: `nkululeko.augmenting.resampler.Resampler.resample()` only caught `RuntimeError` from `load_audio()`, so a missing or corrupt file (`audiofile` raises e.g. `FileNotFoundError`/`ValueError`) aborted the whole run; a caught error also left `signal` undefined (first file) or stale from the previous file (later files), so the next file would be silently resampled/written under the failing file's name. Now `(RuntimeError, OSError, ValueError)` is caught, counted and skipped. With `[RESAMPLE] replace = False`, a skipped row previously got no entry in the rebuilt file index (crashing at the end of the run) and the index rebuild itself (`set_levels`) mismatched row order against the file-level's sorted order whenever a file had multiple segments; both are fixed by tracking one result per row and rebuilding via `audformat.segmented_index()`. Also fixed: `[RESAMPLE] replace` read from an ini file is the raw string `"False"`, which is truthy in Python, so the ini-driven path (`resample.py`'s "all/train/test" mode) always replaced files in place regardless of the setting; `Resampler.__init__` now parses it properly (#479)

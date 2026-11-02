@@ -15,6 +15,7 @@ to be directly comparable against.
 """
 
 import warnings
+from functools import partial
 
 import audresample
 import numpy as np
@@ -39,6 +40,15 @@ from nkululeko.utils.random_seed import parse_seed
 
 # The SSL frontends (wav2vec2/XLS-R) expect 16 kHz mono input.
 _TARGET_SR = 16000
+
+
+def _seed_rawboost_worker(worker_id, base_seed):
+    """DataLoader worker_init_fn: seeds each persistent worker process's own
+    numpy global RNG deterministically from MODEL.random_seed, so that two
+    runs with the same seed and the same MODEL.n_jobs apply the same
+    RawBoost noise, instead of each worker drawing from whatever numpy
+    state it happened to inherit (#483)."""
+    np.random.seed(base_seed + worker_id)
 
 
 def _pad_or_tile(signal, max_len):
@@ -117,6 +127,7 @@ class AasistModel(Model):
     """AASIST = spectro-temporal graph attention network for deepfake detection."""
 
     is_classifier = True
+    _manual_seed = None  # MODEL.random_seed, set in __init__ (see get_loader)
 
     def __init__(self, df_train, df_test, feats_train, feats_test, context=None):
         super().__init__(df_train, df_test, feats_train, feats_test, context=context)
@@ -134,6 +145,11 @@ class AasistModel(Model):
         if manual_seed is not None:
             self.util.debug(f"seeding random to {manual_seed}")
             torch.manual_seed(manual_seed)
+            # online RawBoost (apply_rawboost, below) draws from numpy's
+            # global RNG, not torch's -- seed it too, else the noise still
+            # differs between runs under the same MODEL.random_seed (#483)
+            np.random.seed(manual_seed)
+        self._manual_seed = manual_seed
 
         labels = self.context.labels
         self.class_num = len(labels)
@@ -214,6 +230,14 @@ class AasistModel(Model):
         if self.n_jobs > 0:
             loader_kwargs["num_workers"] = self.n_jobs
             loader_kwargs["persistent_workers"] = True
+            if (
+                train
+                and self.cfg.rawboost is not None
+                and self._manual_seed is not None
+            ):
+                loader_kwargs["worker_init_fn"] = partial(
+                    _seed_rawboost_worker, base_seed=self._manual_seed
+                )
         if shuffle:  # the train loader
             return self._make_train_loader(
                 dataset, df, self.cfg.batch_size, **loader_kwargs
