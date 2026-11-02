@@ -33,6 +33,7 @@ def _make_fake_util(tmp_path):
     util = MagicMock()
     util.get_path.return_value = str(tmp_path) + "/"
     util.config_val.side_effect = lambda sec, key, default: default
+    util.config_val_data.side_effect = lambda name, key, default: default
     util.exp_is_classification.return_value = False
     return util
 
@@ -534,13 +535,151 @@ class TestFillTrainAndTestsConcatenation:
         assert "source_db" not in ds_a.df.columns
         assert "source_db" not in ds_b.df.columns
 
-    def test_preexisting_source_db_is_not_overwritten(self, tmp_path, monkeypatch):
+    def _augmented_util(self, tmp_path, augmented_name="aug_traditional"):
+        """A fake util whose config_val_data reports is_augmented=True only
+        for `augmented_name`, matching aug_train.py's own marker -- so the
+        tests below actually exercise the explicit-marker check (GH #482/
+        #486 review) rather than merely "any truthy mock"."""
+        util = _make_fake_util(tmp_path)
+
+        def config_val_data(name, key, default):
+            if name == augmented_name and key == "is_augmented":
+                return True
+            return default
+
+        util.config_val_data.side_effect = config_val_data
+        return util
+
+    @pytest.mark.parametrize("split3", [False, True])
+    def test_preexisting_source_db_is_not_overwritten(
+        self, tmp_path, monkeypatch, split3
+    ):
         """GH #482: aug_train.py's augmented-data CSV copies the original
         pooled source_db through (see Experiment.augment() /
         remap_augmented_index()), so its rows already carry the real
         originating database, not the aug_<methods> DATA section name.
         Overwriting it with d.name made every augmented row count as its
-        own domain for MODEL.domain_balanced_sampling/DANN instead."""
+        own domain for MODEL.domain_balanced_sampling/DANN instead. Covers
+        all three split call sites (train/test/dev), not just train."""
+
+        class FakeAugDataset:
+            def __init__(self, name, train_dbs, test_dbs, dev_dbs):
+                self.name = name
+                self.df_train = self._tagged(train_dbs)
+                self.df_test = self._tagged(test_dbs)
+                self.df_dev = self._tagged(dev_dbs)
+
+            def _tagged(self, source_dbs):
+                files = [f"/{db}/{i}_aug.wav" for i, db in enumerate(source_dbs)]
+                df = pd.DataFrame(index=_make_segmented_index(files))
+                df["source_db"] = source_dbs
+                return _tag_df(df)
+
+            def split(self):
+                pass
+
+            def split_3(self):
+                pass
+
+            def prepare_labels(self):
+                pass
+
+        class FakeDataset:
+            def __init__(self, name, train_files, test_files, dev_files):
+                self.name = name
+                self.df_train = _tag_df(
+                    pd.DataFrame(index=_make_segmented_index(train_files))
+                )
+                self.df_test = _tag_df(
+                    pd.DataFrame(index=_make_segmented_index(test_files))
+                )
+                self.df_dev = _tag_df(
+                    pd.DataFrame(index=_make_segmented_index(dev_files))
+                )
+
+            def split(self):
+                pass
+
+            def split_3(self):
+                pass
+
+            def prepare_labels(self):
+                pass
+
+        monkeypatch.setitem(glob_conf.config["DATA"], "target", "none")
+        monkeypatch.setattr(glob_conf, "target", None)
+
+        ds_a = FakeDataset("a", ["/a/tr_1.wav"], ["/a/te_1.wav"], ["/a/dv_1.wav"])
+        ds_b = FakeDataset("b", ["/b/tr_1.wav"], ["/b/te_1.wav"], ["/b/dv_1.wav"])
+        ds_aug = FakeAugDataset(
+            "aug_traditional",
+            train_dbs=["a", "b"],
+            test_dbs=["a"],
+            dev_dbs=["b"],
+        )
+
+        ds = Datasplitter.__new__(Datasplitter)
+        ds.util = self._augmented_util(tmp_path)
+        ds.target = None
+        ds.split3 = split3
+        ds.got_speaker = False
+        ds.datasets = {"a": ds_a, "b": ds_b, "aug_traditional": ds_aug}
+
+        result = ds.fill_train_and_tests()
+        df_train, df_test = result[0], result[1]
+
+        assert list(df_train["source_db"]) == ["a", "b", "a", "b"]
+        assert list(df_test["source_db"]) == ["a", "b", "a"]
+        if split3:
+            assert list(ds.df_dev["source_db"]) == ["a", "b", "b"]
+
+    def test_non_augmented_preexisting_source_db_is_still_overwritten(
+        self, tmp_path, monkeypatch
+    ):
+        """Only a dataset explicitly marked is_augmented keeps its own
+        source_db. A dataset that merely happens to carry an unrelated
+        source_db column of its own (e.g. a train.csv exported from an
+        earlier nkululeko run, reused as fresh DATA input) must still be
+        overwritten with its DATA section name, or domain-balanced
+        sampling/DANN would silently group by stale, unrelated values."""
+
+        class FakeDataset:
+            def __init__(self, name, files, stale_values):
+                self.name = name
+                df = pd.DataFrame(index=_make_segmented_index(files))
+                df["source_db"] = stale_values
+                self.df_train = _tag_df(df)
+                self.df_test = pd.DataFrame()
+
+            def split(self):
+                pass
+
+            def prepare_labels(self):
+                pass
+
+        monkeypatch.setitem(glob_conf.config["DATA"], "target", "none")
+        monkeypatch.setattr(glob_conf, "target", None)
+
+        ds_a = FakeDataset("a", ["/a/tr_1.wav", "/a/tr_2.wav"], ["stale_x", "stale_y"])
+
+        ds = Datasplitter.__new__(Datasplitter)
+        ds.util = self._augmented_util(tmp_path, augmented_name="aug_traditional")
+        ds.target = None
+        ds.split3 = False
+        ds.got_speaker = False
+        ds.datasets = {"a": ds_a}
+
+        df_train, df_test = ds.fill_train_and_tests()
+
+        assert list(df_train["source_db"]) == ["a", "a"]
+
+    def test_augmented_dataset_missing_source_db_values_are_backfilled(
+        self, tmp_path, monkeypatch
+    ):
+        """A partially tagged aug_train.py CSV (e.g. a row whose source_db
+        came back NaN from read_csv) must not be left without a domain --
+        the old code always gave every row a valid one. Missing entries are
+        backfilled with the DATA section name rather than kept as NaN."""
 
         class FakeAugDataset:
             def __init__(self, name, files, source_dbs):
@@ -556,15 +695,56 @@ class TestFillTrainAndTestsConcatenation:
             def prepare_labels(self):
                 pass
 
-        class FakeDataset:
-            def __init__(self, name, train_files, test_files):
+        monkeypatch.setitem(glob_conf.config["DATA"], "target", "none")
+        monkeypatch.setattr(glob_conf, "target", None)
+
+        ds_aug = FakeAugDataset(
+            "aug_traditional",
+            ["/a/tr_1_aug.wav", "/b/tr_1_aug.wav", "/a/tr_2_aug.wav"],
+            ["a", None, float("nan")],
+        )
+
+        ds = Datasplitter.__new__(Datasplitter)
+        ds.util = self._augmented_util(tmp_path)
+        ds.target = None
+        ds.split3 = False
+        ds.got_speaker = False
+        ds.datasets = {"aug_traditional": ds_aug}
+
+        df_train, df_test = ds.fill_train_and_tests()
+
+        assert list(df_train["source_db"]) == [
+            "a",
+            "aug_traditional",
+            "aug_traditional",
+        ]
+
+    def test_augmented_csv_round_trip_keeps_source_db(self, tmp_path, monkeypatch):
+        """A real aug_train.py-style CSV (file/start/end index + per-row
+        source_db, written and re-read through audformat.utils.read_csv,
+        the same helper Dataset_CSV.load() falls back to) must still have
+        its source_db preserved by fill_train_and_tests() after a genuine
+        on-disk round trip, not just for an in-memory DataFrame."""
+        import audformat
+
+        csv_path = tmp_path / "augmented_traditional.csv"
+        index = _make_segmented_index(
+            ["/a/tr_1_aug.wav", "/b/tr_1_aug.wav", "/a/tr_2_aug.wav"]
+        )
+        df = pd.DataFrame(
+            {"source_db": ["a", "b", "a"], "emotion": ["happy", "sad", "happy"]},
+            index=index,
+        )
+        df.to_csv(csv_path)
+        df_roundtripped = audformat.utils.read_csv(str(csv_path))
+        if isinstance(df_roundtripped, pd.Series):
+            df_roundtripped = df_roundtripped.to_frame()
+
+        class FakeAugDataset:
+            def __init__(self, name, df):
                 self.name = name
-                self.df_train = _tag_df(
-                    pd.DataFrame(index=_make_segmented_index(train_files))
-                )
-                self.df_test = _tag_df(
-                    pd.DataFrame(index=_make_segmented_index(test_files))
-                )
+                self.df_train = _tag_df(df)
+                self.df_test = pd.DataFrame()
 
             def split(self):
                 pass
@@ -575,24 +755,18 @@ class TestFillTrainAndTestsConcatenation:
         monkeypatch.setitem(glob_conf.config["DATA"], "target", "none")
         monkeypatch.setattr(glob_conf, "target", None)
 
-        ds_a = FakeDataset("a", ["/a/tr_1.wav"], ["/a/te_1.wav"])
-        ds_b = FakeDataset("b", ["/b/tr_1.wav"], ["/b/te_1.wav"])
-        ds_aug = FakeAugDataset(
-            "aug_traditional",
-            ["/a/tr_1_aug.wav", "/b/tr_1_aug.wav"],
-            ["a", "b"],  # the real originating databases, not "aug_traditional"
-        )
+        ds_aug = FakeAugDataset("aug_traditional", df_roundtripped)
 
         ds = Datasplitter.__new__(Datasplitter)
-        ds.util = _make_fake_util(tmp_path)
+        ds.util = self._augmented_util(tmp_path)
         ds.target = None
         ds.split3 = False
         ds.got_speaker = False
-        ds.datasets = {"a": ds_a, "b": ds_b, "aug_traditional": ds_aug}
+        ds.datasets = {"aug_traditional": ds_aug}
 
         df_train, df_test = ds.fill_train_and_tests()
 
-        assert list(df_train["source_db"]) == ["a", "b", "a", "b"]
+        assert list(df_train["source_db"]) == ["a", "b", "a"]
 
     def test_flag_aggregation_any_wins_on_self_and_splits(self, tmp_path, monkeypatch):
         """Flags should be any-wins aggregated onto self and every split DataFrame."""

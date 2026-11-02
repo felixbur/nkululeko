@@ -15,18 +15,10 @@ from nkululeko.utils.dataframe import (
     read_cached_df,
     should_reuse_split,
     split_cache_paths,
+    tag_source_db,
 )
 from nkululeko.utils.sequences import n_segments
 from nkululeko.utils.util import Util
-
-
-def _tag_source_db(df, name):
-    """Tag every row of `df` with its originating DATA section `name`,
-    unless it already has a source_db column of its own (see the
-    fill_train_and_tests() comment above its call sites)."""
-    if "source_db" in df.columns:
-        return df
-    return df.assign(source_db=name)
 
 
 class Datasplitter(ContextAware):
@@ -118,7 +110,9 @@ class Datasplitter(ContextAware):
         all_datasets = list(self.datasets.values())
         store = self.util.get_path("store")
         source_mtime = latest_source_csv_mtime(self.datasets.keys(), self.util)
-        used_cache = should_reuse_split(self.util, self.split3, source_mtime=source_mtime)
+        used_cache = should_reuse_split(
+            self.util, self.split3, source_mtime=source_mtime
+        )
         cache_paths = split_cache_paths(store, self.split3)
 
         if used_cache:
@@ -134,18 +128,9 @@ class Datasplitter(ContextAware):
         else:
             # source_db tags each row with its originating DATA section name
             # before pooling, so the pooled frames still say which database a
-            # row came from. Tag a copy (assign): depending on split_strategy,
-            # d.df_train/d.df_test can be the very same object as d.df, which
-            # must not gain the column.
-            #
-            # A dataset that already has a source_db column (aug_train.py's
-            # augmented-data CSV: its rows are copies of already-pooled train
-            # rows, source_db included, see Experiment.augment() /
-            # remap_augmented_index()) keeps it as is instead of being
-            # overwritten with d.name -- else every augmented row would count
-            # as its own domain ("aug_<methods>") for
-            # MODEL.domain_balanced_sampling/DANN instead of the real source
-            # database it was augmented from (GH #482).
+            # row came from, for MODEL.domain_balanced_sampling/DANN (GH #482).
+            # See tag_source_db()'s docstring for why aug_train.py's dataset
+            # is the one exception that keeps its own per-row values.
             train_dfs, test_dfs, dev_dfs = [], [], []
             for d in all_datasets:
                 if self.split3:
@@ -155,19 +140,26 @@ class Datasplitter(ContextAware):
                 # Prepare labels only for supervised experiments
                 if self.target is not None and self.target != "none":
                     d.prepare_labels()
+                is_augmented = self.util.config_val_data(d.name, "is_augmented", False)
                 if d.df_train.shape[0] == 0:
                     self.util.debug(f"warn: {d.name} train empty")
                 else:
-                    train_dfs.append(_tag_source_db(d.df_train, d.name))
+                    train_dfs.append(
+                        tag_source_db(d.df_train, d.name, is_augmented, self.util)
+                    )
                 if d.df_test.shape[0] == 0:
                     self.util.debug(f"warn: {d.name} test empty")
                 else:
-                    test_dfs.append(_tag_source_db(d.df_test, d.name))
+                    test_dfs.append(
+                        tag_source_db(d.df_test, d.name, is_augmented, self.util)
+                    )
                 if self.split3:
                     if d.df_dev.shape[0] == 0:
                         self.util.debug(f"warn: {d.name} dev empty")
                     else:
-                        dev_dfs.append(_tag_source_db(d.df_dev, d.name))
+                        dev_dfs.append(
+                            tag_source_db(d.df_dev, d.name, is_augmented, self.util)
+                        )
 
             self.df_train = pd.concat(train_dfs) if train_dfs else pd.DataFrame()
             self.df_test = pd.concat(test_dfs) if test_dfs else pd.DataFrame()

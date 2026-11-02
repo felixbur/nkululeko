@@ -25,7 +25,7 @@ from nkululeko.reporting.report import Report
 from nkululeko.runmanager import Runmanager
 from nkululeko.scaler import Scaler
 from nkululeko.testing_predictor import TestPredictor
-from nkululeko.utils.dataframe import cache_has_source_db, read_cached_df
+from nkululeko.utils.dataframe import cache_has_source_db, read_cached_df, tag_source_db
 from nkululeko.utils.pickle_integrity import save_checksum, verify_checksum
 from nkululeko.utils.util import Util
 
@@ -189,8 +189,8 @@ class Experiment:
                     self.got_speaker = True
                 data.split()
                 data.prepare_labels()
-                # Tag a copy: data.df_test may be the same object as data.df.
-                tagged = data.df_test.assign(source_db=d)
+                is_augmented = self.util.config_val_data(d, "is_augmented", False)
+                tagged = tag_source_db(data.df_test, d, is_augmented, self.util)
                 self.df_test = pd.concat(
                     [self.df_test, self.util.make_segmented_index(tagged)]
                 )
@@ -797,9 +797,7 @@ class Experiment:
         # column; PLOT.combine_per_speaker.col lets it group by any other
         # column instead (e.g. "session"), defaulting to "speaker" so
         # existing configs keep working unchanged.
-        group_col = self.util.config_val(
-            "PLOT", "combine_per_speaker.col", COL_SPEAKER
-        )
+        group_col = self.util.config_val("PLOT", "combine_per_speaker.col", COL_SPEAKER)
         if group_col not in self.df_test.columns:
             self.util.warn(
                 f"combine_per_speaker: no '{group_col}' column in df_test, skipping"

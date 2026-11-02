@@ -879,3 +879,65 @@ class TestFillTestsSourceDb:
         assert exp.created
         for data in exp.created:
             assert "source_db" not in data.df.columns
+
+    def test_is_augmented_marker_keeps_preexisting_source_db(
+        self, tmp_path, monkeypatch
+    ):
+        """A DATA.tests entry explicitly marked `.is_augmented = True` keeps
+        its own per-row source_db (see utils.dataframe.tag_source_db()),
+        the same shared helper Datasplitter.fill_train_and_tests() uses for
+        DATA.databases entries -- fill_tests() must honor the marker too,
+        not just overwrite unconditionally."""
+        from unittest.mock import MagicMock
+
+        from sklearn.preprocessing import LabelEncoder
+
+        import nkululeko.experiment as experiment_mod
+        from nkululeko.experiment import Experiment
+
+        class FakeAugDataset:
+            got_gender = got_age = got_speaker = False
+            is_labeled = True
+
+            def __init__(self, name, context=None):
+                idx = pd.MultiIndex.from_arrays(
+                    [["/a/a.wav", "/b/b.wav"], [pd.Timedelta(0)] * 2, [pd.NaT] * 2],
+                    names=["file", "start", "end"],
+                )
+                self.df = pd.DataFrame(
+                    {"emotion": ["happy", "sad"], "source_db": ["a", "b"]}, index=idx
+                )
+                self.df_test = self.df
+
+            def load(self):
+                pass
+
+            def split(self):
+                pass
+
+            def prepare_labels(self):
+                pass
+
+        monkeypatch.setattr(experiment_mod, "Dataset", FakeAugDataset)
+
+        exp = Experiment.__new__(Experiment)
+        exp.context = MagicMock()
+        exp.context.config = {"DATA": {"tests": "['aug_traditional']"}}
+        exp.util = MagicMock()
+        exp.util.config_val.return_value = "False"
+        exp.util.get_path.return_value = str(tmp_path) + "/"
+
+        def config_val_data(name, key, default):
+            if (name, key) == ("aug_traditional", "is_augmented"):
+                return True
+            return "audformat" if key == "type" else default
+
+        exp.util.config_val_data.side_effect = config_val_data
+        exp.util.make_segmented_index.side_effect = lambda df: df
+        exp.target = "emotion"
+        exp.label_encoder = LabelEncoder().fit(["happy", "sad"])
+        exp.got_gender = exp.got_age = exp.got_speaker = False
+
+        exp.fill_tests()
+
+        assert list(exp.df_test["source_db"]) == ["a", "b"]
