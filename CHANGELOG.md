@@ -3,7 +3,7 @@ Changelog
 
 Version 1.14.6 (26-11-02)
 -------------------------
-* fix bug: `[AASIST] rawboost` (online RawBoost noise added to every training waveform) drew from numpy's global RNG (`nkululeko.augmenting.rawboost.apply_rawboost`), which `MODEL.random_seed` only seeded via `torch.manual_seed()`, not `np.random.seed()` -- so the noise differed between two runs with the same seed, even though the (torch-based) domain-balanced sampler was already reproducible. `AasistModel` now also seeds numpy's global RNG for the single-process case, and sets a `worker_init_fn` deriving each DataLoader worker's own seed from the same base when `MODEL.n_jobs > 0`, so two runs with the same seed and the same `n_jobs` apply identical noise (#483)
+* fix bug: `[AASIST] rawboost` (online RawBoost noise added to every training waveform) drew from numpy's global RNG (`nkululeko.augmenting.rawboost.apply_rawboost`), which `MODEL.random_seed` only seeded via `torch.manual_seed()`, not `np.random.seed()` -- so the noise differed between two runs with the same seed, even though the (torch-based) domain-balanced sampler was already reproducible. `apply_rawboost()` now takes an optional `rng` (default: numpy's global state, unchanged for every other caller); `AasistModel`'s training dataset derives a dedicated `RandomState` per sample from `(MODEL.random_seed, sample index)` instead of seeding the global RNG once, so the noise for a given row is identical across runs regardless of `MODEL.n_jobs`/worker-process layout or anything else that draws from numpy in the same process in between (#483)
 
 Version 1.14.5 (26-10-31)
 -------------------------

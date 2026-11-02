@@ -15,7 +15,6 @@ to be directly comparable against.
 """
 
 import warnings
-from functools import partial
 
 import audresample
 import numpy as np
@@ -42,13 +41,14 @@ from nkululeko.utils.random_seed import parse_seed
 _TARGET_SR = 16000
 
 
-def _seed_rawboost_worker(worker_id, base_seed):
-    """DataLoader worker_init_fn: seeds each persistent worker process's own
-    numpy global RNG deterministically from MODEL.random_seed, so that two
-    runs with the same seed and the same MODEL.n_jobs apply the same
-    RawBoost noise, instead of each worker drawing from whatever numpy
-    state it happened to inherit (#483)."""
-    np.random.seed(base_seed + worker_id)
+def _rawboost_rng(base_seed, idx):
+    """A `RandomState` for RawBoost's noise on sample `idx`, deterministic
+    from `MODEL.random_seed` alone -- independent of `MODEL.n_jobs`/worker
+    layout, call order, and any other numpy consumer in the same process,
+    unlike seeding numpy's global RNG once up front (#483). `% 2**32`
+    because `np.random.RandomState` only accepts a seed in [0, 2**32-1],
+    while `MODEL.random_seed` (`parse_seed()`) accepts any int."""
+    return np.random.RandomState((base_seed + idx) % 2**32)
 
 
 def _pad_or_tile(signal, max_len):
@@ -77,13 +77,19 @@ class _WaveformDataset(Dataset):
     since the SSL frontend only works on 16 kHz mono input.
     """
 
-    def __init__(self, df, target, cfg, domain_labels=None, rawboost=None):
+    def __init__(
+        self, df, target, cfg, domain_labels=None, rawboost=None, rawboost_seed=None
+    ):
         self.df = df
         self.target = target
         self.cfg = cfg
         # RawBoostParams: add RawBoost noise to every item (the train
         # loader of a run with [AASIST] rawboost only), else None
         self.rawboost = rawboost
+        # MODEL.random_seed, or None if unset -- the base seed _rawboost_rng
+        # derives each sample's own noise RNG from. None means unseeded
+        # (draws from numpy's global random state, as before #483).
+        self.rawboost_seed = rawboost_seed
         # (len(df), n_dann_columns) int array -- when set, items are
         # (waveform, label, domain_labels) instead of (waveform, label).
         # Only the train loader sets it.
@@ -114,7 +120,10 @@ class _WaveformDataset(Dataset):
             )
         signal = _pad_or_tile(signal, self.cfg.max_len)
         if self.rawboost is not None:
-            signal = apply_rawboost(signal, _TARGET_SR, self.rawboost)
+            rng = None
+            if self.rawboost_seed is not None:
+                rng = _rawboost_rng(self.rawboost_seed, idx)
+            signal = apply_rawboost(signal, _TARGET_SR, self.rawboost, rng=rng)
         row = self.df.iloc[idx]
         label = row[self.target]
         waveform = torch.tensor(signal, dtype=torch.float32)
@@ -127,7 +136,7 @@ class AasistModel(Model):
     """AASIST = spectro-temporal graph attention network for deepfake detection."""
 
     is_classifier = True
-    _manual_seed = None  # MODEL.random_seed, set in __init__ (see get_loader)
+    _manual_seed = None  # MODEL.random_seed; set in __init__, read by get_loader
 
     def __init__(self, df_train, df_test, feats_train, feats_test, context=None):
         super().__init__(df_train, df_test, feats_train, feats_test, context=context)
@@ -145,10 +154,10 @@ class AasistModel(Model):
         if manual_seed is not None:
             self.util.debug(f"seeding random to {manual_seed}")
             torch.manual_seed(manual_seed)
-            # online RawBoost (apply_rawboost, below) draws from numpy's
-            # global RNG, not torch's -- seed it too, else the noise still
-            # differs between runs under the same MODEL.random_seed (#483)
-            np.random.seed(manual_seed)
+        # Online RawBoost (_WaveformDataset, below) derives each sample's own
+        # noise RNG from this seed directly (_rawboost_rng), rather than
+        # seeding numpy's global RNG here -- deterministic regardless of
+        # MODEL.n_jobs/worker layout or any other numpy use in between (#483)
         self._manual_seed = manual_seed
 
         labels = self.context.labels
@@ -219,25 +228,20 @@ class AasistModel(Model):
             self.cfg,
             domain_labels=self._domain_labels(df) if train else None,
             rawboost=self.cfg.rawboost if train else None,
+            rawboost_seed=self._manual_seed if train else None,
         )
         # Each __getitem__ does its own audiofile.read() -- CPU-bound work
         # that a single-process loader (num_workers=0) serializes with GPU
         # compute. MODEL.n_jobs (already read by the base Model class into
         # self.n_jobs) parallelizes it; n_jobs=0 keeps the single-process
         # behavior. persistent_workers avoids respawning the worker pool
-        # every epoch when num_workers > 0.
+        # every epoch when num_workers > 0. RawBoost's own reproducibility
+        # doesn't depend on worker layout (_rawboost_rng is keyed by sample
+        # index, not worker id), so there's nothing to seed here.
         loader_kwargs = {}
         if self.n_jobs > 0:
             loader_kwargs["num_workers"] = self.n_jobs
             loader_kwargs["persistent_workers"] = True
-            if (
-                train
-                and self.cfg.rawboost is not None
-                and self._manual_seed is not None
-            ):
-                loader_kwargs["worker_init_fn"] = partial(
-                    _seed_rawboost_worker, base_seed=self._manual_seed
-                )
         if shuffle:  # the train loader
             return self._make_train_loader(
                 dataset, df, self.cfg.batch_size, **loader_kwargs

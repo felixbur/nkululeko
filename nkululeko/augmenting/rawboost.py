@@ -119,8 +119,9 @@ class RawBoostParams:
             util.error(f"AUGMENT: {e}")
 
 
-def _rand_range(x1, x2, integer):
-    y = np.random.uniform(low=x1, high=x2, size=(1,))
+def _rand_range(x1, x2, integer, rng=None):
+    rng = np.random if rng is None else rng
+    y = rng.uniform(low=x1, high=x2, size=(1,))
     return int(y[0]) if integer else float(y[0])
 
 
@@ -134,14 +135,24 @@ def _norm_wav(x, always):
 
 
 def _gen_notch_coeffs(
-    n_bands, min_f, max_f, min_bw, max_bw, min_coeff, max_coeff, min_g, max_g, fs
+    n_bands,
+    min_f,
+    max_f,
+    min_bw,
+    max_bw,
+    min_coeff,
+    max_coeff,
+    min_g,
+    max_g,
+    fs,
+    rng=None,
 ):
     nyquist = fs / 2
     b = 1
     for _ in range(n_bands):
-        fc = _rand_range(min_f, max_f, 0)
-        bw = _rand_range(min_bw, max_bw, 0)
-        c = _rand_range(min_coeff, max_coeff, 1)
+        fc = _rand_range(min_f, max_f, 0, rng)
+        bw = _rand_range(min_bw, max_bw, 0, rng)
+        c = _rand_range(min_coeff, max_coeff, 1, rng)
         if c % 2 == 0:
             c += 1
         f1 = max(fc - bw / 2, _EDGE_HZ)
@@ -153,7 +164,7 @@ def _gen_notch_coeffs(
         b = np.convolve(
             signal.firwin(c, [float(f1), float(f2)], window="hamming", fs=fs), b
         )
-    g = _rand_range(min_g, max_g, 0)
+    g = _rand_range(min_g, max_g, 0, rng)
     _, h = signal.freqz(b, 1, fs=fs)
     b = pow(10, g / 20) * b / np.amax(abs(h))
     return b
@@ -167,7 +178,7 @@ def _filter_fir(x, b):
     return y
 
 
-def lnl_convolutive_noise(x, params, fs):
+def lnl_convolutive_noise(x, params, fs, rng=None):
     """Linear and non-linear convolutive noise (RawBoost algorithm 1).
 
     From the second harmonic on the gain range is lowered by the bias (and
@@ -190,30 +201,33 @@ def lnl_convolutive_noise(x, params, fs):
             g_lo,
             g_hi,
             fs,
+            rng,
         )
         y = y + _filter_fir(np.power(x, i + 1), b)
     y = y - np.mean(y)
     return _norm_wav(y, 0)
 
 
-def isd_additive_noise(x, params):
+def isd_additive_noise(x, params, rng=None):
     """Impulsive signal-dependent noise (RawBoost algorithm 2)."""
-    beta = _rand_range(0, params.p, 0)
+    rng = np.random if rng is None else rng
+    beta = _rand_range(0, params.p, 0, rng)
     y = copy.deepcopy(x)
     x_len = x.shape[0]
     n = int(x_len * (beta / 100))
-    idx = np.random.permutation(x_len)[:n]
+    idx = rng.permutation(x_len)[:n]
     f_r = np.multiply(
-        (2 * np.random.rand(idx.shape[0])) - 1, (2 * np.random.rand(idx.shape[0])) - 1
+        (2 * rng.rand(idx.shape[0])) - 1, (2 * rng.rand(idx.shape[0])) - 1
     )
     r = params.g_sd * x[idx] * f_r
     y[idx] = x[idx] + r
     return _norm_wav(y, 0)
 
 
-def ssi_additive_noise(x, params, fs):
+def ssi_additive_noise(x, params, fs, rng=None):
     """Stationary signal-independent noise (RawBoost algorithm 3)."""
-    noise = np.random.normal(0, 1, x.shape[0])
+    rng = np.random if rng is None else rng
+    noise = rng.normal(0, 1, x.shape[0])
     b = _gen_notch_coeffs(
         params.n_bands,
         params.min_f,
@@ -225,43 +239,56 @@ def ssi_additive_noise(x, params, fs):
         params.min_g,
         params.max_g,
         fs,
+        rng,
     )
     noise = _filter_fir(noise, b)
     noise = _norm_wav(noise, 1)
-    snr = _rand_range(params.snr_min, params.snr_max, 0)
+    snr = _rand_range(params.snr_min, params.snr_max, 0, rng)
     norm = np.linalg.norm(noise, 2)
     if norm == 0:
         return x
     return x + noise / norm * np.linalg.norm(x, 2) / 10.0 ** (0.05 * snr)
 
 
-def apply_rawboost(x, sr, params):
+def apply_rawboost(x, sr, params, rng=None):
     """Apply RawBoost to a mono waveform `x` (1-D float array) sampled at
     `sr` Hz. Returns an array of the same length; the result of the additive
-    noise (algorithm 3) is not limited to [-1, 1]. The randomness comes from
-    numpy's global random state."""
+    noise (algorithm 3) is not limited to [-1, 1].
+
+    `rng` draws the randomness: an object with `.uniform`/`.permutation`/
+    `.rand`/`.normal`, the same methods `numpy.random.RandomState` and the
+    `numpy.random` module itself both expose, so either works. Defaults to
+    numpy's global random state -- which is what every caller except
+    model_aasist.py's online augmentation wants, since it doesn't need
+    reproducibility independent of call order/process layout. Pass a
+    `numpy.random.RandomState` seeded per sample for that (#483).
+    """
     x = np.asarray(x, dtype=np.float64)
     if x.ndim != 1:
         raise ValueError(f"RawBoost needs a mono waveform, got shape {x.shape}")
     algo = params.algo
     if algo == 1:
-        return lnl_convolutive_noise(x, params, sr)
+        return lnl_convolutive_noise(x, params, sr, rng)
     if algo == 2:
-        return isd_additive_noise(x, params)
+        return isd_additive_noise(x, params, rng)
     if algo == 3:
-        return ssi_additive_noise(x, params, sr)
+        return ssi_additive_noise(x, params, sr, rng)
     if algo == 4:
-        x = lnl_convolutive_noise(x, params, sr)
-        x = isd_additive_noise(x, params)
-        return ssi_additive_noise(x, params, sr)
+        x = lnl_convolutive_noise(x, params, sr, rng)
+        x = isd_additive_noise(x, params, rng)
+        return ssi_additive_noise(x, params, sr, rng)
     if algo == 5:
-        return isd_additive_noise(lnl_convolutive_noise(x, params, sr), params)
+        return isd_additive_noise(
+            lnl_convolutive_noise(x, params, sr, rng), params, rng
+        )
     if algo == 6:
-        return ssi_additive_noise(lnl_convolutive_noise(x, params, sr), params, sr)
+        return ssi_additive_noise(
+            lnl_convolutive_noise(x, params, sr, rng), params, sr, rng
+        )
     if algo == 7:
-        return ssi_additive_noise(isd_additive_noise(x, params), params, sr)
+        return ssi_additive_noise(isd_additive_noise(x, params, rng), params, sr, rng)
     if algo == 8:
-        x1 = lnl_convolutive_noise(x, params, sr)
-        x2 = isd_additive_noise(x, params)
+        x1 = lnl_convolutive_noise(x, params, sr, rng)
+        x2 = isd_additive_noise(x, params, rng)
         return _norm_wav(x1 + x2, 0)
     raise ValueError(f"unknown RawBoost algorithm {algo}")

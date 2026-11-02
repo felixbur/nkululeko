@@ -79,6 +79,47 @@ class TestApplyRawboost:
         assert snr == pytest.approx(20, abs=0.01)
 
 
+class TestApplyRawboostExplicitRng:
+    """apply_rawboost(..., rng=...) lets a caller (model_aasist.py, #483)
+    draw from its own RandomState instead of numpy's global random state,
+    for reproducibility independent of call order/process layout."""
+
+    @pytest.mark.parametrize("algo", ALGOS)
+    def test_same_rng_state_reproduces_the_same_output(self, algo):
+        x = _signal(16000)
+        params = rb.RawBoostParams(algo=algo)
+        first = rb.apply_rawboost(x, 16000, params, rng=np.random.RandomState(7))
+        second = rb.apply_rawboost(x, 16000, params, rng=np.random.RandomState(7))
+        assert np.array_equal(first, second)
+
+    def test_different_rng_state_gives_different_output(self):
+        x = _signal(16000)
+        params = rb.RawBoostParams(algo=4)
+        a = rb.apply_rawboost(x, 16000, params, rng=np.random.RandomState(7))
+        b = rb.apply_rawboost(x, 16000, params, rng=np.random.RandomState(8))
+        assert not np.allclose(a, b)
+
+    def test_does_not_touch_numpys_global_random_state(self):
+        x = _signal(16000)
+        params = rb.RawBoostParams(algo=4)
+        np.random.seed(1)
+        before = np.random.get_state()[1].copy()
+        rb.apply_rawboost(x, 16000, params, rng=np.random.RandomState(7))
+        np.testing.assert_array_equal(before, np.random.get_state()[1])
+
+    def test_explicit_rng_is_independent_of_global_state(self):
+        """Unlike the default (rng=None, numpy's global state), passing an
+        explicit RandomState must not be affected by what the global state
+        happens to be at call time."""
+        x = _signal(16000)
+        params = rb.RawBoostParams(algo=4)
+        np.random.seed(1)
+        first = rb.apply_rawboost(x, 16000, params, rng=np.random.RandomState(7))
+        np.random.seed(2)
+        second = rb.apply_rawboost(x, 16000, params, rng=np.random.RandomState(7))
+        assert np.array_equal(first, second)
+
+
 class TestParams:
     def test_defaults_are_valid(self):
         assert rb.RawBoostParams().validate().algo == 5
