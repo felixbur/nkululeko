@@ -356,65 +356,85 @@ class Modelrunner(ContextAware):
         except ValueError:
             return True
 
+    def _reject_with_feature_balancing(self, key, model_type, model_types, is_enabled):
+        """Raise a clear error if `key` is enabled for a `model_type` in
+        `model_types` together with FEATS.balancing: balancing rebuilds
+        df_train with only the target column (and synthetic rows have no
+        domain), so there is nothing left for `key` to use.
+
+        `is_enabled` is called only once `model_type` is confirmed to be one
+        that uses `key`: some of these checks raise on a malformed value,
+        which should not happen for a model type that would ignore it anyway.
+        """
+        if (
+            model_type in model_types
+            and is_enabled()
+            and self._feature_balancing_method()
+        ):
+            self.util.error(
+                f"{key} cannot be combined with FEATS.balancing: balancing "
+                "drops the domain columns (and oversampling methods such as "
+                "smote create rows without a domain). Disable one of them."
+            )
+
+    def _warn_unsupported_model_type(
+        self, key, model_type, model_types, is_enabled, reason
+    ):
+        """Warn and ignore `key` when it is set but `model_type` (not in
+        `model_types`) does not support it. `is_enabled` is called only for
+        an unsupported `model_type`, same reasoning as
+        `_reject_with_feature_balancing`: a malformed value is not an error
+        for them, just something to warn about."""
+        if model_type not in model_types and is_enabled():
+            self.util.warn(
+                f"{key} is set, but model type '{model_type}' {reason}; it "
+                f"is ignored (supported: {', '.join(sorted(model_types))})"
+            )
+
     def _select_model(self, model_type):
-        if (
-            model_type in DANN_MODEL_TYPES
-            and self.util.get_dann_columns()
-            and self._feature_balancing_method()
-        ):
-            # Feature balancing rebuilds df_train with only the target column
-            # (and synthetic rows have no domain), so there is nothing for
-            # the DANN heads to learn from.
-            self.util.error(
-                "MODEL.dann_columns cannot be combined with FEATS.balancing: "
-                "balancing drops the domain columns (and oversampling methods "
-                "such as smote create rows without a domain). Disable one of them."
-            )
-        if (
-            model_type in DOMAIN_BALANCED_MODEL_TYPES
-            and self.util.config_val_bool("MODEL", "domain_balanced_sampling", False)
-            and self._feature_balancing_method()
-        ):
-            # same reason as for DANN: no domain column is left to balance by
-            self.util.error(
-                "MODEL.domain_balanced_sampling cannot be combined with "
-                "FEATS.balancing: balancing drops the domain columns (and "
-                "oversampling methods such as smote create rows without a "
-                "domain). Disable one of them."
-            )
+        self._reject_with_feature_balancing(
+            "MODEL.dann_columns",
+            model_type,
+            DANN_MODEL_TYPES,
+            self.util.get_dann_columns,
+        )
+        self._reject_with_feature_balancing(
+            "MODEL.domain_balanced_sampling",
+            model_type,
+            DOMAIN_BALANCED_MODEL_TYPES,
+            lambda: self.util.config_val_bool(
+                "MODEL", "domain_balanced_sampling", False
+            ),
+        )
         self._check_balancing()
         self._check_feature_balancing()
 
         # Validate model/experiment type compatibility before instantiation
         task = "classification" if self.util.exp_is_classification() else "regression"
         validate_model_task_support(model_type, task)
-        # Unsupported types ignore the key, so only check that it's set (same
-        # "off" spellings as everywhere else); a malformed value is not an
-        # error for them, just something to warn about.
-        if model_type not in DANN_MODEL_TYPES and self._dann_columns_set():
-            self.util.warn(
-                f"MODEL.dann_columns is set, but model type '{model_type}' does "
-                f"not support domain-adversarial training; it is ignored "
-                f"(supported: {', '.join(sorted(DANN_MODEL_TYPES))})"
-            )
-        if (
-            model_type not in DOMAIN_BALANCED_MODEL_TYPES
-            and self.util.config_val_bool("MODEL", "domain_balanced_sampling", False)
-        ):
-            self.util.warn(
-                f"MODEL.domain_balanced_sampling is set, but model type "
-                f"'{model_type}' does not train on batches from a data loader; "
-                f"it is ignored (supported: "
-                f"{', '.join(sorted(DOMAIN_BALANCED_MODEL_TYPES))})"
-            )
-        if model_type not in OPTIMIZER_MODEL_TYPES and self.util.config_val_bool(
-            "MODEL", "sam", False
-        ):
-            self.util.warn(
-                f"MODEL.sam is set, but model type '{model_type}' does not "
-                f"use a gradient optimizer that SAM can wrap; it is ignored "
-                f"(supported: {', '.join(sorted(OPTIMIZER_MODEL_TYPES))})"
-            )
+        self._warn_unsupported_model_type(
+            "MODEL.dann_columns",
+            model_type,
+            DANN_MODEL_TYPES,
+            self._dann_columns_set,
+            "does not support domain-adversarial training",
+        )
+        self._warn_unsupported_model_type(
+            "MODEL.domain_balanced_sampling",
+            model_type,
+            DOMAIN_BALANCED_MODEL_TYPES,
+            lambda: self.util.config_val_bool(
+                "MODEL", "domain_balanced_sampling", False
+            ),
+            "does not train on batches from a data loader",
+        )
+        self._warn_unsupported_model_type(
+            "MODEL.sam",
+            model_type,
+            OPTIMIZER_MODEL_TYPES,
+            lambda: self.util.config_val_bool("MODEL", "sam", False),
+            "does not use a gradient optimizer that SAM can wrap",
+        )
 
         if model_type == "svm":
             from nkululeko.models.model_svm import SVM_model

@@ -53,10 +53,6 @@ class CNNModel(Model):
             self.util.error(f"Please provide MODEL layers: {ke}")
         self.util.debug(f"using layers {layers_string}")
         layers = ast.literal_eval(layers_string)
-        # with dropout?
-        drop = self.util.config_val("MODEL", "drop", False)
-        if drop:
-            self.util.debug(f"init: training with dropout: {drop}")
         self.model = myCNN(layers, self.class_num).to(self.device)
 
         # domain-adversarial heads on the last hidden layer (MODEL.dann_columns)
@@ -168,9 +164,7 @@ class CNNModel(Model):
                     hidden, domain_labels
                 )
 
-            loss = self._optimize(
-                self.optimizer, compute_loss, modules=[self.model]
-            )
+            loss = self._optimize(self.optimizer, compute_loss, modules=[self.model])
             if loss is None:  # SAM skipped a non-finite step
                 continue
             losses.append(loss.item())
@@ -271,9 +265,6 @@ class CNNModel(Model):
         self.device = self.util.config_val("MODEL", "device", cuda)
         layers = ast.literal_eval(self.context.config["MODEL"]["layers"])
         self.store_path = dir + name
-        drop = self.util.config_val("MODEL", "drop", False)
-        if drop:
-            self.util.debug(f"loading: dropout set to: {drop}")
         self.model = myCNN(layers, self.class_num).to(self.device)
         self.model.load_state_dict(torch.load(self.store_path))
         self.model.eval()
@@ -288,9 +279,6 @@ class CNNModel(Model):
         self.device = self.util.config_val("MODEL", "device", cuda)
         layers = ast.literal_eval(self.context.config["MODEL"]["layers"])
         self.store_path = path
-        drop = self.util.config_val("MODEL", "drop", False)
-        if drop:
-            self.util.debug(f"dropout set to: {drop}")
         self.model = myCNN(layers, self.class_num).to(self.device)
         self.model.load_state_dict(torch.load(self.store_path))
         self.model.eval()

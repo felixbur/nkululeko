@@ -90,6 +90,7 @@ class MLP_Reg_model(Model):
             feats_train,
             df_train,
             True,
+            train=True,
             domain_labels=self._domain_labels(df_train),
         )
         self.testloader = self.get_loader(feats_test, df_test, False)
@@ -147,9 +148,9 @@ class MLP_Reg_model(Model):
         report.result.train = result
         return report
 
-    def get_loader(self, df_x, df_y, shuffle, domain_labels=None):
+    def get_loader(self, df_x, df_y, shuffle, train=False, domain_labels=None):
         data_set = self.Dataset(df_y, df_x, self.target, domain_labels)
-        if shuffle:  # the train loader
+        if train:
             return self._make_train_loader(
                 data_set, df_y, self.batch_size, num_workers=self.n_jobs
             )

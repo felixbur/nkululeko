@@ -245,7 +245,7 @@ class TestAdm:
     def test_get_loader_balances_only_the_train_loader(self, tmp_path):
         model, df = self._model(tmp_path), _df()
         feats = pd.DataFrame(np.random.rand(N, 5))
-        train = model.get_loader(feats, df, True)
+        train = model.get_loader(feats, df, True, train=True)
         _assert_balanced(train, df)
         plain = model.get_loader(feats, df, False)
         assert plain.batch_size == BATCH
@@ -255,7 +255,7 @@ class TestAdm:
         model, df = self._model(tmp_path), _df()
         feats = pd.DataFrame(np.arange(N * 3, dtype=float).reshape(N, 3))
         domains = (df["source_db"] == "b").astype(int).to_numpy().reshape(-1, 1)
-        loader = model.get_loader(feats, df, True, domain_labels=domains)
+        loader = model.get_loader(feats, df, True, train=True, domain_labels=domains)
         for features, labels, domain in loader:
             assert domain.reshape(-1).tolist() == [
                 int(DOMAINS[int(f[0]) // 3] == "b") for f in features
@@ -264,7 +264,7 @@ class TestAdm:
     def test_predicting_uses_a_plain_loader(self, tmp_path):
         model, df = self._model(tmp_path), _df()
         feats = pd.DataFrame(np.random.rand(N, 5))
-        model.trainloader = model.get_loader(feats, df, True)
+        model.trainloader = model.get_loader(feats, df, True, train=True)
         eval_loader = model._eval_trainloader()
         assert eval_loader.batch_size == BATCH and len(eval_loader.dataset) == N
         assert sum(len(b[1]) for b in eval_loader) == N

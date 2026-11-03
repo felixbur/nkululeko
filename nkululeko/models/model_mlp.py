@@ -80,6 +80,7 @@ class MLPModel(Model):
             feats_train,
             df_train,
             True,
+            train=True,
             domain_labels=self._domain_labels(df_train),
         )
         self.testloader = self.get_loader(feats_test, df_test, False)
@@ -132,9 +133,7 @@ class MLPModel(Model):
                     hidden, domain_labels
                 )
 
-            loss = self._optimize(
-                self.optimizer, compute_loss, modules=[self.model]
-            )
+            loss = self._optimize(self.optimizer, compute_loss, modules=[self.model])
             if loss is None:  # SAM skipped a non-finite step
                 continue
             losses.append(loss.item())
@@ -214,7 +213,7 @@ class MLPModel(Model):
         )
         return (predictions.numpy(), self.get_probas(logits))
 
-    def get_loader(self, df_x, df_y, shuffle, domain_labels=None):
+    def get_loader(self, df_x, df_y, shuffle, train=False, domain_labels=None):
         # df_x.values re-materializes the whole (n_samples, n_features)
         # array on every access; when df_x isn't a single consolidated
         # block (e.g. after feature balancing concatenates several), that
@@ -229,7 +228,7 @@ class MLPModel(Model):
             if domain_labels is not None:
                 item.append(domain_labels[i])
             data.append(item)
-        if shuffle:  # the train loader
+        if train:
             return self._make_train_loader(data, df_y, self.batch_size)
         return torch.utils.data.DataLoader(
             data, shuffle=False, batch_size=self.batch_size

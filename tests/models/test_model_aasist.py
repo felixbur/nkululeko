@@ -294,15 +294,16 @@ class _Util:
     def error(self, message):
         raise RuntimeError(message)
 
+    def config_val_bool(self, section, key, default=False):
+        return default
+
 
 def _dann_model(columns=("source_db",), reverse=True):
     """AasistModel with __init__ patched out and DANN built for real."""
     df = _dann_df()
     with patch.object(AasistModel, "__init__", return_value=None):
         model = AasistModel(df, df, None, None)
-    dann = DannConfig(
-        columns=list(columns), lambda_=1.0, weight=1.0, reverse=reverse
-    )
+    dann = DannConfig(columns=list(columns), lambda_=1.0, weight=1.0, reverse=reverse)
     model.cfg = _default_cfg(dann=dann)
     model.device = "cpu"
     model.net = _FeatNet()

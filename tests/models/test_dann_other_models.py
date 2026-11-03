@@ -51,18 +51,20 @@ class TestMlpReg:
         model.batch_size = 2
         model.device = "cpu"
         model.criterion = torch.nn.MSELoss()
-        model.model = MLPBlock(
-            3, {"a": 8, "b": 4}, 1, False, torch.nn.ReLU()
-        )
+        model.model = MLPBlock(3, {"a": 8, "b": 4}, 1, False, torch.nn.ReLU())
         params = list(model.model.parameters())
         domain_labels = None
         if with_dann:
             cfg = DannConfig(["domain"], 1.0, 1.0, True)
-            model.dann_heads = DannHeads.build(df, model.model.feat_dim, cfg, model.util)
+            model.dann_heads = DannHeads.build(
+                df, model.model.feat_dim, cfg, model.util
+            )
             params += list(model.dann_heads.parameters())
             domain_labels = model.dann_heads.encode(df)
         model.optimizer = torch.optim.SGD(params, lr=0.1)
-        model.trainloader = model.get_loader(feats, df, False, domain_labels)
+        model.trainloader = model.get_loader(
+            feats, df, False, domain_labels=domain_labels
+        )
         return model
 
     def test_returns_hidden_features(self):
@@ -219,7 +221,7 @@ class TestAdm:
         )
         feats = pd.DataFrame(np.random.rand(4, 8 + 6))
         model.trainloader = model.get_loader(
-            feats, df, False, model.dann_heads.encode(df)
+            feats, df, False, domain_labels=model.dann_heads.encode(df)
         )
         return model
 

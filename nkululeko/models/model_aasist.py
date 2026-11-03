@@ -242,7 +242,7 @@ class AasistModel(Model):
         if self.n_jobs > 0:
             loader_kwargs["num_workers"] = self.n_jobs
             loader_kwargs["persistent_workers"] = True
-        if shuffle:  # the train loader
+        if train:
             return self._make_train_loader(
                 dataset, df, self.cfg.batch_size, **loader_kwargs
             )

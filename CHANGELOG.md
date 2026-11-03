@@ -1,6 +1,15 @@
 Changelog
 =========
 
+Version 1.14.8 (26-11-03)
+-------------------------
+* small cleanups, no behavior change intended:
+  * `modelrunner.py`'s `MODEL.dann_columns`/`MODEL.domain_balanced_sampling` "cannot be combined with FEATS.balancing" error and "model type does not support this" warning were each a near-verbatim copy for DANN and for domain-balanced sampling (and, for the warning, a third copy for `MODEL.sam`). Now shared via `_reject_with_feature_balancing()`/`_warn_unsupported_model_type()`
+  * `mlp`/`mlp_reg`/`adm`/`aasist`/the `[RNN]`-based models' `get_loader()` used `shuffle` (meant for the `DataLoader`) as a stand-in for "this is the train loader" to decide whether to call `Model._make_train_loader()` (which resets the domain-balanced-sampling state `_eval_trainloader()` reads). A later call with `shuffle=True` on non-train data would have replaced the stored train dataset and made `_eval_trainloader()` evaluate the wrong data. `get_loader()` now takes an explicit `train` argument for this instead
+  * the RawBoost settings hash was computed separately in `augmenting/augmenter_rawboost.py` (naming the on-disk folder) and `utils/naming.py` (naming runs/files); both now call one `RawBoostParams.digest()`
+  * `model_cnn.py`'s `__init__()`/`load()`/`load_path()` read `[MODEL] drop` and logged a "dropout set to" debug message, but `myCNN` takes no dropout argument -- the dead read and misleading message are removed
+  (#484)
+
 Version 1.14.7 (26-11-03)
 -------------------------
 * fix bug: `[AASIST] rawboost` (online RawBoost noise added to every training waveform) drew from numpy's global RNG (`nkululeko.augmenting.rawboost.apply_rawboost`), which `MODEL.random_seed` only seeded via `torch.manual_seed()`, not `np.random.seed()` -- so the noise differed between two runs with the same seed, even though the (torch-based) domain-balanced sampler was already reproducible. `apply_rawboost()` now takes an optional `rng` (default: numpy's global state, unchanged for every other caller); `AasistModel`'s training dataset derives a dedicated `RandomState` per sample from `(MODEL.random_seed, sample index)` instead of seeding the global RNG once, so the noise for a given row is identical across runs regardless of `MODEL.n_jobs`/worker-process layout or anything else that draws from numpy in the same process in between (#483)
