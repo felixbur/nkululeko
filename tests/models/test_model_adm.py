@@ -401,8 +401,8 @@ def adm_model(dummy_data, monkeypatch):
         model.threshold = 0.5
 
         # Create data loaders
-        model.trainloader = model.get_loader(feats_train, df_train, True)
-        model.testloader = model.get_loader(feats_test, df_test, False)
+        model.trainloader = model.get_loader(feats_train, df_train, train=True)
+        model.testloader = model.get_loader(feats_test, df_test)
 
         return model
 
@@ -521,7 +521,7 @@ class TestADMModel:
     def test_get_loader(self, adm_model, dummy_data):
         """Test data loader creation."""
         df_train, df_test, feats_train, feats_test = dummy_data
-        loader = adm_model.get_loader(feats_train, df_train, shuffle=True)
+        loader = adm_model.get_loader(feats_train, df_train, train=True)
 
         assert loader is not None
         assert len(loader.dataset) == 4

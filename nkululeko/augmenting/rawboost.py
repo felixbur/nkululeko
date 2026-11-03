@@ -29,7 +29,8 @@ the noise is generated for exactly the samples the network sees.)
 """
 
 import copy
-from dataclasses import dataclass, fields
+import hashlib
+from dataclasses import asdict, dataclass, fields
 
 import numpy as np
 from scipy import signal
@@ -101,6 +102,13 @@ class RawBoostParams:
         if not 0 <= self.p <= 100:
             raise ValueError("rawboost_p is a percentage, 0 to 100")
         return self
+
+    def digest(self):
+        """6 hex chars identifying these settings, for file/run names (used
+        by both `augmenting/augmenter_rawboost.py` and
+        `utils/naming.py::_rawboost_tag` to agree on a name for the same
+        settings without duplicating the hashing)."""
+        return hashlib.sha1(repr(sorted(asdict(self).items())).encode()).hexdigest()[:6]
 
     @classmethod
     def from_util(cls, util):

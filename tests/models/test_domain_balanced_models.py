@@ -245,9 +245,9 @@ class TestAdm:
     def test_get_loader_balances_only_the_train_loader(self, tmp_path):
         model, df = self._model(tmp_path), _df()
         feats = pd.DataFrame(np.random.rand(N, 5))
-        train = model.get_loader(feats, df, True)
+        train = model.get_loader(feats, df, train=True)
         _assert_balanced(train, df)
-        plain = model.get_loader(feats, df, False)
+        plain = model.get_loader(feats, df)
         assert plain.batch_size == BATCH
         assert not isinstance(plain.batch_sampler, DomainBalancedBatchSampler)
 
@@ -255,7 +255,7 @@ class TestAdm:
         model, df = self._model(tmp_path), _df()
         feats = pd.DataFrame(np.arange(N * 3, dtype=float).reshape(N, 3))
         domains = (df["source_db"] == "b").astype(int).to_numpy().reshape(-1, 1)
-        loader = model.get_loader(feats, df, True, domain_labels=domains)
+        loader = model.get_loader(feats, df, train=True, domain_labels=domains)
         for features, labels, domain in loader:
             assert domain.reshape(-1).tolist() == [
                 int(DOMAINS[int(f[0]) // 3] == "b") for f in features
@@ -264,7 +264,7 @@ class TestAdm:
     def test_predicting_uses_a_plain_loader(self, tmp_path):
         model, df = self._model(tmp_path), _df()
         feats = pd.DataFrame(np.random.rand(N, 5))
-        model.trainloader = model.get_loader(feats, df, True)
+        model.trainloader = model.get_loader(feats, df, train=True)
         eval_loader = model._eval_trainloader()
         assert eval_loader.batch_size == BATCH and len(eval_loader.dataset) == N
         assert sum(len(b[1]) for b in eval_loader) == N
@@ -299,7 +299,7 @@ class TestAasist:
     @pytest.mark.parametrize("n_jobs", [0, 2])
     def test_train_loader_yields_balanced_batches_of_real_audio(self, tmp_path, n_jobs):
         model, df = self._model(tmp_path, n_jobs), _write_wavs(tmp_path)
-        loader = model.get_loader(df, shuffle=True, train=True)
+        loader = model.get_loader(df, train=True)
         _assert_balanced(loader, df)
         for waveforms, labels in loader:
             assert waveforms.shape == (BATCH, 1600)
@@ -309,7 +309,7 @@ class TestAasist:
 
     def test_the_test_loader_is_plain(self, tmp_path):
         model, df = self._model(tmp_path), _write_wavs(tmp_path)
-        loader = model.get_loader(df, shuffle=False)
+        loader = model.get_loader(df)
         assert loader.batch_size == BATCH
         assert not isinstance(loader.batch_sampler, DomainBalancedBatchSampler)
 

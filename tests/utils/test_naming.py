@@ -9,8 +9,7 @@ from nkululeko.utils.util import Util
 def make_util(extra_sections="", exp_extra=""):
     """Helper: create a Util with a minimal config."""
     c = configparser.ConfigParser()
-    c.read_string(
-        f"""
+    c.read_string(f"""
 [EXP]
 name = test
 root = /tmp
@@ -24,8 +23,7 @@ type = svm
 type = os
 [PLOT]
 {extra_sections}
-"""
-    )
+""")
     glob_conf.config = c
     return Util("test")
 
@@ -245,9 +243,7 @@ type = os
             extra="dann_columns = ['source_db']\ndann_lambda = 0.5\n"
             "dann_weight = 2.0\ndann_reverse = False"
         )
-        self.assertEqual(
-            u._get_dann_suffix(), "_dann-source_db-l0-5-w2-noreverse"
-        )
+        self.assertEqual(u._get_dann_suffix(), "_dann-source_db-l0-5-w2-noreverse")
 
     def test_dann_suffix_distinguishes_plus_in_column_names(self):
         joined = self._dann_util(extra="dann_columns = ['a+b']")._get_dann_suffix()
@@ -290,7 +286,9 @@ type = os
 
     def test_dann_changes_model_description(self):
         plain = self._dann_util().get_model_description()
-        dann = self._dann_util(extra="dann_columns = ['source_db']").get_model_description()
+        dann = self._dann_util(
+            extra="dann_columns = ['source_db']"
+        ).get_model_description()
         self.assertNotEqual(plain, dann)
         self.assertIn("dann-source_db", dann)
 
@@ -474,7 +472,9 @@ type = os
         u = self._dann_util(
             "svm", sections="[AUGMENT]\naugment = ['traditional', 'rawboost']"
         )
-        self.assertTrue(u._get_aug_suffix().startswith("_aug_traditional_rawboost-algo5"))
+        self.assertTrue(
+            u._get_aug_suffix().startswith("_aug_traditional_rawboost-algo5")
+        )
 
     def test_all_suffixes_combine_in_the_run_name(self):
         u = self._dann_util(
@@ -890,9 +890,7 @@ type = os
 """)
             glob_conf.config = c
             u = Util("test")
-            self.assertIn(
-                "activation-tanh", u.get_model_description(), msg=model_type
-            )
+            self.assertIn("activation-tanh", u.get_model_description(), msg=model_type)
 
     def test_model_description_excludes_activation_for_cnn_adm_finetune(self):
         for model_type in ("cnn", "adm", "finetune", "aasist"):
@@ -912,9 +910,7 @@ type = os
 """)
             glob_conf.config = c
             u = Util("test")
-            self.assertNotIn(
-                "activation", u.get_model_description(), msg=model_type
-            )
+            self.assertNotIn("activation", u.get_model_description(), msg=model_type)
 
     def test_model_description_includes_optimizer_for_cnn_mlp_mlp_reg_adm(self):
         for model_type in ("cnn", "mlp", "mlp_reg", "adm", "aasist"):
@@ -934,9 +930,7 @@ type = os
 """)
             glob_conf.config = c
             u = Util("test")
-            self.assertIn(
-                "optimizer-adamw", u.get_model_description(), msg=model_type
-            )
+            self.assertIn("optimizer-adamw", u.get_model_description(), msg=model_type)
 
     def test_model_description_excludes_optimizer_for_finetune(self):
         c = configparser.ConfigParser()
@@ -957,8 +951,8 @@ type = os
         u = Util("test")
         self.assertNotIn("optimizer", u.get_model_description())
 
-    def test_model_description_includes_drop_for_cnn_mlp_mlp_reg_finetune(self):
-        for model_type in ("cnn", "mlp", "mlp_reg", "finetune"):
+    def test_model_description_includes_drop_for_mlp_mlp_reg_finetune(self):
+        for model_type in ("mlp", "mlp_reg", "finetune"):
             c = configparser.ConfigParser()
             c.read_string(f"""
 [EXP]
@@ -977,9 +971,12 @@ type = os
             u = Util("test")
             self.assertIn("drop-0", u.get_model_description(), msg=model_type)
 
-    def test_model_description_excludes_drop_for_adm(self):
-        c = configparser.ConfigParser()
-        c.read_string("""
+    def test_model_description_excludes_drop_for_adm_and_cnn(self):
+        """adm has no dropout config of its own; cnn's myCNN takes no
+        dropout argument at all, so MODEL.drop has no effect for either."""
+        for model_type in ("adm", "cnn"):
+            c = configparser.ConfigParser()
+            c.read_string(f"""
 [EXP]
 name = test
 root = /tmp
@@ -987,14 +984,14 @@ root = /tmp
 databases = ["emodb"]
 target = emotion
 [MODEL]
-type = adm
+type = {model_type}
 drop = 0.3
 [FEATS]
 type = os
 """)
-        glob_conf.config = c
-        u = Util("test")
-        self.assertNotIn("drop", u.get_model_description())
+            glob_conf.config = c
+            u = Util("test")
+            self.assertNotIn("drop", u.get_model_description(), msg=model_type)
 
     def test_model_description_includes_loss_for_all_ann_types(self):
         for model_type in ("cnn", "mlp", "mlp_reg", "adm", "finetune", "aasist"):

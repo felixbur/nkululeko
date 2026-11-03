@@ -189,8 +189,8 @@ class AasistModel(Model):
             self.optimizer, self.util, default_scheduler="none"
         )
 
-        self.trainloader = self.get_loader(df_train, shuffle=True, train=True)
-        self.testloader = self.get_loader(df_test, shuffle=False)
+        self.trainloader = self.get_loader(df_train, train=True)
+        self.testloader = self.get_loader(df_test)
 
     def _build_criterion(self, df_train):
         """CrossEntropyLoss over the fixed 2-way output, with optional
@@ -221,7 +221,7 @@ class AasistModel(Model):
             weight=weight, label_smoothing=label_smoothing
         )
 
-    def get_loader(self, df, shuffle, train=False):
+    def get_loader(self, df, *, train=False):
         dataset = _WaveformDataset(
             df,
             self.target,
@@ -242,7 +242,7 @@ class AasistModel(Model):
         if self.n_jobs > 0:
             loader_kwargs["num_workers"] = self.n_jobs
             loader_kwargs["persistent_workers"] = True
-        if shuffle:  # the train loader
+        if train:
             return self._make_train_loader(
                 dataset, df, self.cfg.batch_size, **loader_kwargs
             )
@@ -252,11 +252,11 @@ class AasistModel(Model):
 
     def set_testdata(self, data_df, feats_df):
         self.df_test, self.feats_test = data_df, feats_df
-        self.testloader = self.get_loader(data_df, shuffle=False)
+        self.testloader = self.get_loader(data_df)
 
     def reset_test(self, df_test, feats_test):
         self.df_test, self.feats_test = df_test, feats_test
-        self.testloader = self.get_loader(df_test, shuffle=False)
+        self.testloader = self.get_loader(df_test)
 
     def train(self):
         """Train for exactly one epoch (do_epochs() calls this once per

@@ -29,10 +29,8 @@ OPTIMIZER_MODEL_TYPES = frozenset(
     {"cnn", "mlp", "mlp_reg", "adm", "aasist", "lstm", "lstm_reg"}
 )
 # ANN types that read MODEL.drop for dropout. model_adm.py has no dropout
-# config of its own.
-DROPOUT_MODEL_TYPES = frozenset(
-    {"cnn", "mlp", "mlp_reg", "finetune", "lstm", "lstm_reg"}
-)
+# config of its own, and model_cnn.py's myCNN takes no dropout argument.
+DROPOUT_MODEL_TYPES = frozenset({"mlp", "mlp_reg", "finetune", "lstm", "lstm_reg"})
 # ANN types with a configurable hidden-layer activation function. cnn, adm,
 # finetune, aasist and lstm/lstm_reg don't expose MODEL.activation.
 ACTIVATION_MODEL_TYPES = frozenset({"mlp", "mlp_reg"})
@@ -83,9 +81,7 @@ def parse_dann_columns(raw):
             raise ValueError(f"cannot parse dann_columns {raw!r}") from e
     if isinstance(raw, str):
         raw = [raw]
-    if not isinstance(raw, (list, tuple)) or not all(
-        isinstance(c, str) for c in raw
-    ):
+    if not isinstance(raw, (list, tuple)) or not all(isinstance(c, str) for c in raw):
         raise ValueError(f"dann_columns must be a list of column names: {raw!r}")
     return list(raw)
 
@@ -329,15 +325,14 @@ class NamingMixin:
         """'rawboost-algo5', plus a hash of the `rawboost_*` settings if they
         are not the defaults: names the RawBoost settings in file and run
         names."""
-        from dataclasses import asdict, replace
+        from dataclasses import replace
 
         from nkululeko.augmenting.rawboost import RawBoostParams
 
         params = RawBoostParams.from_util(self)
         tag = f"rawboost-algo{params.algo}"
         if replace(params, algo=RawBoostParams.algo) != RawBoostParams():
-            digest = hashlib.sha1(repr(sorted(asdict(params).items())).encode())
-            tag += f"-{digest.hexdigest()[:6]}"
+            tag += f"-{params.digest()}"
         return tag
 
     def augment_label(self, method):
@@ -443,9 +438,7 @@ class NamingMixin:
             applicable_types = MODEL_OPTION_TYPES.get(name)
             if applicable_types is not None and mt not in applicable_types:
                 continue
-            return_string += self._get_value_descript(section, name).replace(
-                ".", "-"
-            )
+            return_string += self._get_value_descript(section, name).replace(".", "-")
             return_string = return_string.replace("__", "_").strip("_")
 
         return_string += self._get_adm_branch_suffix()

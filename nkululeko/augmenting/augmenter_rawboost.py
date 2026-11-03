@@ -6,9 +6,7 @@ files, the result can be used for training any model (see
 `nkululeko/augmenting/rawboost.py` for the algorithm and its settings).
 """
 
-import hashlib
 import os
-from dataclasses import asdict
 
 import audeer
 import audiofile
@@ -51,8 +49,7 @@ class AugmenterRawBoost:
     def _out_dir(self):
         """Store folder named after the settings, so that files made with
         other settings are not reused (`DATA.no_reuse` is not needed)."""
-        digest = hashlib.sha1(repr(sorted(asdict(self.params).items())).encode())
-        name = f"algo{self.params.algo}-{digest.hexdigest()[:6]}"
+        name = f"algo{self.params.algo}-{self.params.digest()}"
         return os.path.join(self.util.get_path("store"), "rawboost", name)
 
     def augment(self, sample_selection):
