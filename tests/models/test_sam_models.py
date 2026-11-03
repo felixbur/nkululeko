@@ -82,7 +82,7 @@ def _mlp(use_sam, with_dann):
         params += list(model.dann_heads.parameters())
     model.optimizer = _optimizer(params, use_sam)
     feats = pd.DataFrame(np.random.rand(4, 3), columns=["f1", "f2", "f3"])
-    model.trainloader = model.get_loader(feats, df, False, domain_labels=domains)
+    model.trainloader = model.get_loader(feats, df, domain_labels=domains)
     return model, model.model
 
 
@@ -100,7 +100,7 @@ def _mlp_reg(use_sam, with_dann):
         params += list(model.dann_heads.parameters())
     model.optimizer = _optimizer(params, use_sam)
     feats = pd.DataFrame(np.random.rand(4, 3), columns=["f1", "f2", "f3"])
-    model.trainloader = model.get_loader(feats, df, False, domain_labels=domains)
+    model.trainloader = model.get_loader(feats, df, domain_labels=domains)
     return model, model.model
 
 

@@ -8,6 +8,9 @@ Version 1.14.8 (26-11-03)
   * `mlp`/`mlp_reg`/`adm`/`aasist`/the `[RNN]`-based models' `get_loader()` used `shuffle` (meant for the `DataLoader`) as a stand-in for "this is the train loader" to decide whether to call `Model._make_train_loader()` (which resets the domain-balanced-sampling state `_eval_trainloader()` reads). A later call with `shuffle=True` on non-train data would have replaced the stored train dataset and made `_eval_trainloader()` evaluate the wrong data. `get_loader()` now takes an explicit `train` argument for this instead
   * the RawBoost settings hash was computed separately in `augmenting/augmenter_rawboost.py` (naming the on-disk folder) and `utils/naming.py` (naming runs/files); both now call one `RawBoostParams.digest()`
   * `model_cnn.py`'s `__init__()`/`load()`/`load_path()` read `[MODEL] drop` and logged a "dropout set to" debug message, but `myCNN` takes no dropout argument -- the dead read and misleading message are removed
+  * `get_loader()`'s now-unused `shuffle` parameter (see above) is removed outright, rather than left in place silently ignored, from `mlp`/`mlp_reg`/`adm`/`aasist`/the `[RNN]`-based models; its replacement, `train`, is keyword-only to rule out a positional-argument mixup with `domain_labels`
+
+  **One naming change**: `cnn` is removed from the model types `naming.py` considers to read `MODEL.drop` (it never did -- `myCNN` takes no dropout argument). A `[MODEL] type = cnn` config that sets `drop` now gets the same run/result folder name as one that doesn't, instead of a name that implied a dropout setting with no effect
   (#484)
 
 Version 1.14.7 (26-11-03)

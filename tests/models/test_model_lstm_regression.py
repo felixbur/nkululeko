@@ -90,7 +90,7 @@ class TestTrain:
         update the weights nor enter the epoch loss."""
         model = _model(tmp_path, loss="1-ccc")
         model.trainloader = model.get_loader(
-            labels_df([3.0], target="age"), frames_df([4]), False
+            labels_df([3.0], target="age"), frames_df([4])
         )
         before = model.net.out.weight.clone()
 

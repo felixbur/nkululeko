@@ -29,10 +29,8 @@ OPTIMIZER_MODEL_TYPES = frozenset(
     {"cnn", "mlp", "mlp_reg", "adm", "aasist", "lstm", "lstm_reg"}
 )
 # ANN types that read MODEL.drop for dropout. model_adm.py has no dropout
-# config of its own.
-DROPOUT_MODEL_TYPES = frozenset(
-    {"cnn", "mlp", "mlp_reg", "finetune", "lstm", "lstm_reg"}
-)
+# config of its own, and model_cnn.py's myCNN takes no dropout argument.
+DROPOUT_MODEL_TYPES = frozenset({"mlp", "mlp_reg", "finetune", "lstm", "lstm_reg"})
 # ANN types with a configurable hidden-layer activation function. cnn, adm,
 # finetune, aasist and lstm/lstm_reg don't expose MODEL.activation.
 ACTIVATION_MODEL_TYPES = frozenset({"mlp", "mlp_reg"})

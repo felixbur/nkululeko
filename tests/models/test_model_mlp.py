@@ -88,14 +88,12 @@ def mlp_model(dummy_data, monkeypatch):
         model.feats_train = feats_train
 
         # Create a simple MLP model for testing
-        model.model = MLPBlock(3, {"a": 8, "b": 4}, 2, False, torch.nn.ReLU()).to(
-            "cpu"
-        )
+        model.model = MLPBlock(3, {"a": 8, "b": 4}, 2, False, torch.nn.ReLU()).to("cpu")
         model.optimizer = torch.optim.Adam(model.model.parameters(), lr=0.001)
 
         # Create data loaders
-        model.trainloader = model.get_loader(feats_train, df_train, True)
-        model.testloader = model.get_loader(feats_test, df_test, False)
+        model.trainloader = model.get_loader(feats_train, df_train, train=True)
+        model.testloader = model.get_loader(feats_test, df_test)
         model.store_path = "/tmp/test_model.pt"
 
         return model
@@ -274,9 +272,7 @@ class TestEveryHiddenLayerGetsAnActivation:
     and the last hidden layer had none at all."""
 
     def _activation_count(self, mlp_inner):
-        return sum(
-            1 for layer in mlp_inner.linear if isinstance(layer, torch.nn.ReLU)
-        )
+        return sum(1 for layer in mlp_inner.linear if isinstance(layer, torch.nn.ReLU))
 
     def _linear_count(self, mlp_inner):
         return sum(
@@ -370,7 +366,7 @@ class TestGetLoaderIsLinearNotQuadratic:
             return real_values.fget(self)
 
         with patch.object(pd.DataFrame, "values", property(counting_values)):
-            mlp_model.get_loader(feats_train, df_train, shuffle=False)
+            mlp_model.get_loader(feats_train, df_train)
 
         # Exactly one access for df_x.values; a couple more (not N) are
         # fine for df_y[self.target] internals - the point is this must
@@ -380,7 +376,7 @@ class TestGetLoaderIsLinearNotQuadratic:
 
     def test_loader_still_yields_correct_rows_in_order(self, mlp_model, dummy_data):
         df_train, _df_test, feats_train, _feats_test = dummy_data
-        loader = mlp_model.get_loader(feats_train, df_train, shuffle=False)
+        loader = mlp_model.get_loader(feats_train, df_train)
 
         seen_features = []
         seen_labels = []
@@ -426,7 +422,6 @@ def test_train_with_dann_updates_heads_and_features_net(mlp_model):
     mlp_model.trainloader = mlp_model.get_loader(
         mlp_model.feats_train,
         df_train,
-        False,
         domain_labels=mlp_model.dann_heads.encode(df_train),
     )
     head = mlp_model.dann_heads.head("domain").classifier[0]
@@ -452,7 +447,6 @@ def test_predict_works_when_train_loader_has_domain_labels(mlp_model):
     mlp_model.trainloader = mlp_model.get_loader(
         mlp_model.feats_train,
         df_train,
-        False,
         domain_labels=np.array([[0], [0], [1], [1]]),
     )
     report = mlp_model.predict()

@@ -62,9 +62,7 @@ class TestMlpReg:
             params += list(model.dann_heads.parameters())
             domain_labels = model.dann_heads.encode(df)
         model.optimizer = torch.optim.SGD(params, lr=0.1)
-        model.trainloader = model.get_loader(
-            feats, df, False, domain_labels=domain_labels
-        )
+        model.trainloader = model.get_loader(feats, df, domain_labels=domain_labels)
         return model
 
     def test_returns_hidden_features(self):
@@ -221,7 +219,7 @@ class TestAdm:
         )
         feats = pd.DataFrame(np.random.rand(4, 8 + 6))
         model.trainloader = model.get_loader(
-            feats, df, False, domain_labels=model.dann_heads.encode(df)
+            feats, df, domain_labels=model.dann_heads.encode(df)
         )
         return model
 
@@ -258,5 +256,5 @@ class TestAdm:
     def test_loader_without_domain_labels_yields_pairs(self):
         model = self._model()
         df = pd.DataFrame({"label": [0, 1]})
-        loader = model.get_loader(pd.DataFrame(np.random.rand(2, 14)), df, False)
+        loader = model.get_loader(pd.DataFrame(np.random.rand(2, 14)), df)
         assert len(next(iter(loader))) == 2

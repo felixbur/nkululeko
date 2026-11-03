@@ -89,11 +89,10 @@ class MLP_Reg_model(Model):
         self.trainloader = self.get_loader(
             feats_train,
             df_train,
-            True,
             train=True,
             domain_labels=self._domain_labels(df_train),
         )
-        self.testloader = self.get_loader(feats_test, df_test, False)
+        self.testloader = self.get_loader(feats_test, df_test)
 
     def _get_activation(self):
         act_func = self.util.config_val("MODEL", "activation", "relu")
@@ -112,7 +111,7 @@ class MLP_Reg_model(Model):
     def set_testdata(self, data_df, feats_df):
         self.df_test = data_df
         self.feats_test = feats_df
-        self.testloader = self.get_loader(feats_df, data_df, False)
+        self.testloader = self.get_loader(feats_df, data_df)
 
     def train(self):
         loss = self.train_epoch(
@@ -148,7 +147,7 @@ class MLP_Reg_model(Model):
         report.result.train = result
         return report
 
-    def get_loader(self, df_x, df_y, shuffle, train=False, domain_labels=None):
+    def get_loader(self, df_x, df_y, *, train=False, domain_labels=None):
         data_set = self.Dataset(df_y, df_x, self.target, domain_labels)
         if train:
             return self._make_train_loader(

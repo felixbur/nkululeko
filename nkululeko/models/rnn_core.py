@@ -179,8 +179,8 @@ class RNNModel(Model):
             cell_cls=self.cell_cls,
         ).to(self.device)
         self._init_dann(df_train, self.net.feat_dim, self.cfg.dann)
-        self.trainloader = self.get_loader(df_train, feats_train, True, train=True)
-        self.testloader = self.get_loader(df_test, feats_test, False)
+        self.trainloader = self.get_loader(df_train, feats_train, train=True)
+        self.testloader = self.get_loader(df_test, feats_test)
 
         params = self._dann_params(self.net)
         self.optimizer, self.learning_rate = get_optimizer(
@@ -194,7 +194,7 @@ class RNNModel(Model):
         """Set self.criterion and self.out_dim."""
         raise NotImplementedError
 
-    def get_loader(self, df, feats, shuffle, train=False):
+    def get_loader(self, df, feats, *, train=False):
         # MODEL.nan_strategy, as for the other models; fills frames, never
         # drops them
         feats = self._handle_model_nan(feats, f"{self.name}, frames")
@@ -215,7 +215,7 @@ class RNNModel(Model):
 
     def set_testdata(self, data_df, feats_df):
         self.df_test, self.feats_test = data_df, feats_df
-        self.testloader = self.get_loader(data_df, feats_df, False)
+        self.testloader = self.get_loader(data_df, feats_df)
 
     def reset_test(self, df_test, feats_test):
         self.set_testdata(df_test, feats_test)

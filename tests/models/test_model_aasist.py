@@ -217,13 +217,13 @@ class TestGetLoaderNumWorkers:
 
     def test_positive_n_jobs_sets_num_workers(self):
         model = self._model_with_cfg(n_jobs=4)
-        loader = model.get_loader(self._df(), shuffle=False)
+        loader = model.get_loader(self._df())
         assert loader.num_workers == 4
         assert loader.persistent_workers is True
 
     def test_zero_n_jobs_keeps_single_process_loader(self):
         model = self._model_with_cfg(n_jobs=0)
-        loader = model.get_loader(self._df(), shuffle=False)
+        loader = model.get_loader(self._df())
         assert loader.num_workers == 0
 
 
@@ -327,7 +327,7 @@ class TestDann:
             names=["file", "start", "end"],
         )
         assert model.dann_heads is None
-        loader = model.get_loader(df, shuffle=False, train=True)
+        loader = model.get_loader(df, train=True)
         assert loader.dataset.domain_labels is None
         assert len(loader.dataset[0]) == 2
 
@@ -352,8 +352,8 @@ class TestDann:
 
     def test_train_loader_yields_domain_labels_test_loader_does_not(self):
         model, df = _dann_model(columns=("source_db", "language"))
-        train_ds = model.get_loader(df, shuffle=False, train=True).dataset
-        test_ds = model.get_loader(df, shuffle=False).dataset
+        train_ds = model.get_loader(df, train=True).dataset
+        test_ds = model.get_loader(df).dataset
         assert train_ds.domain_labels.shape == (4, 2)
         assert test_ds.domain_labels is None
 

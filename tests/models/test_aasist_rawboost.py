@@ -215,8 +215,8 @@ class TestLoaders:
     def test_only_the_train_loader_adds_noise(self, tmp_path):
         model = self._model(tmp_path, RawBoostParams(algo=3))
         df = _df(tmp_path)
-        train = model.get_loader(df, shuffle=True, train=True)
-        test = model.get_loader(df, shuffle=False)
+        train = model.get_loader(df, train=True)
+        test = model.get_loader(df)
         assert train.dataset.rawboost is not None
         assert test.dataset.rawboost is None
         assert torch.equal(test.dataset[0][0], test.dataset[0][0])
@@ -224,24 +224,24 @@ class TestLoaders:
     def test_off_means_no_noise_in_either_loader(self, tmp_path):
         model = self._model(tmp_path, None)
         df = _df(tmp_path)
-        assert model.get_loader(df, shuffle=True, train=True).dataset.rawboost is None
+        assert model.get_loader(df, train=True).dataset.rawboost is None
 
     def test_rawboost_seed_set_for_seeded_train_loader(self, tmp_path):
         model = self._model(tmp_path, RawBoostParams(algo=3), manual_seed=123)
         df = _df(tmp_path)
-        train = model.get_loader(df, shuffle=True, train=True)
+        train = model.get_loader(df, train=True)
         assert train.dataset.rawboost_seed == 123
 
     def test_no_rawboost_seed_without_a_seed(self, tmp_path):
         model = self._model(tmp_path, RawBoostParams(algo=3))
         df = _df(tmp_path)
-        train = model.get_loader(df, shuffle=True, train=True)
+        train = model.get_loader(df, train=True)
         assert train.dataset.rawboost_seed is None
 
     def test_no_rawboost_seed_on_the_test_loader(self, tmp_path):
         model = self._model(tmp_path, RawBoostParams(algo=3), manual_seed=123)
         df = _df(tmp_path)
-        test = model.get_loader(df, shuffle=False)
+        test = model.get_loader(df)
         assert test.dataset.rawboost_seed is None
 
     def test_rawboost_seed_set_regardless_of_n_jobs(self, tmp_path):
@@ -250,5 +250,5 @@ class TestLoaders:
         the loader's process layout."""
         model = self._model(tmp_path, RawBoostParams(algo=3), n_jobs=0, manual_seed=123)
         df = _df(tmp_path)
-        train = model.get_loader(df, shuffle=True, train=True)
+        train = model.get_loader(df, train=True)
         assert train.dataset.rawboost_seed == 123

@@ -79,11 +79,10 @@ class MLPModel(Model):
         self.trainloader = self.get_loader(
             feats_train,
             df_train,
-            True,
             train=True,
             domain_labels=self._domain_labels(df_train),
         )
-        self.testloader = self.get_loader(feats_test, df_test, False)
+        self.testloader = self.get_loader(feats_test, df_test)
 
     def _get_activation(self):
         act_func = self.util.config_val("MODEL", "activation", "relu")
@@ -102,10 +101,10 @@ class MLPModel(Model):
     def set_testdata(self, data_df, feats_df):
         self.df_test = data_df
         self.feats_test = feats_df
-        self.testloader = self.get_loader(feats_df, data_df, False)
+        self.testloader = self.get_loader(feats_df, data_df)
 
     def reset_test(self, df_test, feats_test):
-        self.testloader = self.get_loader(feats_test, df_test, False)
+        self.testloader = self.get_loader(feats_test, df_test)
         self.df_test = df_test
         self.feats_test = feats_test
 
@@ -213,7 +212,7 @@ class MLPModel(Model):
         )
         return (predictions.numpy(), self.get_probas(logits))
 
-    def get_loader(self, df_x, df_y, shuffle, train=False, domain_labels=None):
+    def get_loader(self, df_x, df_y, *, train=False, domain_labels=None):
         # df_x.values re-materializes the whole (n_samples, n_features)
         # array on every access; when df_x isn't a single consolidated
         # block (e.g. after feature balancing concatenates several), that

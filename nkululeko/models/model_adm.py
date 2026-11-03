@@ -211,19 +211,18 @@ class ADMModel(Model):
         self.trainloader = self.get_loader(
             feats_train,
             df_train,
-            True,
             train=True,
             domain_labels=self._domain_labels(df_train),
         )
-        self.testloader = self.get_loader(feats_test, df_test, False)
+        self.testloader = self.get_loader(feats_test, df_test)
 
     def set_testdata(self, data_df, feats_df):
         self.df_test = data_df
         self.feats_test = feats_df
-        self.testloader = self.get_loader(feats_df, data_df, False)
+        self.testloader = self.get_loader(feats_df, data_df)
 
     def reset_test(self, df_test, feats_test):
-        self.testloader = self.get_loader(feats_test, df_test, False)
+        self.testloader = self.get_loader(feats_test, df_test)
         self.df_test = df_test
         self.feats_test = feats_test
 
@@ -469,7 +468,7 @@ class ADMModel(Model):
         )
         return (predictions.numpy(), self.get_probas(logits))
 
-    def get_loader(self, df_x, df_y, shuffle, train=False, domain_labels=None):
+    def get_loader(self, df_x, df_y, *, train=False, domain_labels=None):
         """Create a data loader using TensorDataset for efficient batch loading.
 
         domain_labels: optional (n, n_dann_columns) int array, added as a
