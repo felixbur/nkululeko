@@ -80,7 +80,9 @@ class DataFrameMixin:
             labels = ["0_low", "1_middle", "2_high"]
         is_missing = pd.isna(series)
         result = np.digitize(series, bins) - 1
-        result = pd.Series(result, index=getattr(series, "index", None)).astype("object")
+        result = pd.Series(result, index=getattr(series, "index", None)).astype(
+            "object"
+        )
         for i, lab in enumerate(labels):
             result = result.replace(i, str(lab))
         result[is_missing] = np.nan
@@ -372,6 +374,33 @@ def remap_augmented_index(df, index_map):
     ]
     new_index = pd.MultiIndex.from_arrays(arrays, names=("file", "start", "end"))
     return df_ret.set_index(new_index)
+
+
+def tag_source_db(df, name, keep_existing, util=None):
+    """Tag every row of `df` with its originating DATA section `name`, for
+    MODEL.domain_balanced_sampling/DANN's per-domain grouping.
+
+    `keep_existing` must be True only for a dataset the caller knows already
+    carries its own correct per-row `source_db` (currently: an aug_train.py
+    CSV, marked via `DATA.<name>.is_augmented = True` -- its rows are copies
+    of already-pooled train rows and already say which real database each
+    one came from; see Experiment.augment()/remap_augmented_index() and
+    GH #482). Any row still missing a value (e.g. a partially tagged CSV) is
+    backfilled with `name` so every row ends up in a real domain. For every
+    other dataset this overwrites source_db with `name` unconditionally, as
+    before #482/#486 -- a dataset's own unrelated `source_db` column (e.g.
+    a CSV exported from an earlier nkululeko run and reused as fresh input)
+    is not a signal to keep, only the explicit marker is.
+
+    Tags a copy (assign): depending on split_strategy, `df` can be the same
+    object the caller holds elsewhere, which must not gain the column as a
+    side effect.
+    """
+    if keep_existing and "source_db" in df.columns:
+        if util is not None and df["source_db"].isna().any():
+            util.debug(f"{name}: filling rows with missing source_db")
+        return df.assign(source_db=df["source_db"].fillna(name))
+    return df.assign(source_db=name)
 
 
 def segment_silence(
