@@ -18,6 +18,7 @@ from nkululeko.utils.dataframe import (
     should_reuse_file,
     should_reuse_split,
     split_cache_paths,
+    tag_source_db,
 )
 from nkululeko.utils.errors import NkululukoError
 from nkululeko.utils.util import Util
@@ -25,8 +26,7 @@ from nkululeko.utils.util import Util
 
 def make_util(bins_labels=""):
     c = configparser.ConfigParser()
-    c.read_string(
-        f"""
+    c.read_string(f"""
 [EXP]
 name = test
 root = /tmp
@@ -38,8 +38,7 @@ target = emotion
 type = svm
 [FEATS]
 type = os
-"""
-    )
+""")
     glob_conf.config = c
     return Util("test")
 
@@ -525,9 +524,7 @@ class TestShouldReuseSplit(unittest.TestCase):
             )
 
             self.assertTrue(
-                should_reuse_split(
-                    util, split3=False, source_mtime=cache_mtime - 10
-                )
+                should_reuse_split(util, split3=False, source_mtime=cache_mtime - 10)
             )
 
     def test_false_and_warns_when_source_is_newer_than_cache(self):
@@ -544,9 +541,7 @@ class TestShouldReuseSplit(unittest.TestCase):
             )
 
             self.assertFalse(
-                should_reuse_split(
-                    util, split3=False, source_mtime=cache_mtime + 10
-                )
+                should_reuse_split(util, split3=False, source_mtime=cache_mtime + 10)
             )
             self.assertTrue(util.warn.called)
 
@@ -556,8 +551,8 @@ class TestLatestSourceCsvMtime(unittest.TestCase):
 
     def _util(self, data_files):
         util = MagicMock()
-        util.config_val_data.side_effect = (
-            lambda name, key, default: data_files.get(name, default)
+        util.config_val_data.side_effect = lambda name, key, default: data_files.get(
+            name, default
         )
         return util
 
@@ -607,17 +602,13 @@ class TestShouldReuseFile(unittest.TestCase):
         """bool_values: {(section, key): return_value} for config_val_bool."""
         util = MagicMock()
         util.config_val_bool.side_effect = (
-            lambda section, key, default=False: bool_values.get(
-                (section, key), default
-            )
+            lambda section, key, default=False: bool_values.get((section, key), default)
         )
         return util
 
     def test_false_when_storage_missing(self):
         util = self._make_util({})
-        self.assertFalse(
-            should_reuse_file(util, "FEATS", "/no/such/file.pkl")
-        )
+        self.assertFalse(should_reuse_file(util, "FEATS", "/no/such/file.pkl"))
 
     def test_true_when_storage_exists_and_no_reuse_false(self):
         with tempfile.NamedTemporaryFile() as f:
@@ -738,8 +729,6 @@ class TestRemapAugmentedIndex(unittest.TestCase):
         self.assertEqual(df.index.get_level_values(0)[0], "a.wav")
 
 
-
-
 class TestCacheHasSourceDb(unittest.TestCase):
     """Caches written before pooled rows were tagged with source_db must be
     treated as stale, because the origin cannot be recovered after pooling."""
@@ -784,6 +773,55 @@ class TestCacheHasSourceDb(unittest.TestCase):
                     pd.DataFrame({"file": ["x"], "source_db": ["db"]}),
                 )
             self.assertTrue(should_reuse_split(util, split3=False))
+
+
+class TestTagSourceDb(unittest.TestCase):
+    """GH #482/#486: pooled rows must end up tagged with the real database
+    they came from, whether that's the DATA section name (the normal case)
+    or an already-correct per-row value an aug_train.py CSV carries in."""
+
+    def test_overwrites_when_not_marked_augmented(self):
+        df = pd.DataFrame({"x": [1, 2]})
+        out = tag_source_db(df, "a", keep_existing=False)
+        self.assertEqual(list(out["source_db"]), ["a", "a"])
+
+    def test_overwrites_preexisting_column_when_not_marked_augmented(self):
+        """A dataset's own unrelated source_db column (e.g. a train.csv
+        exported from an earlier nkululeko run) is not, by itself, a signal
+        to keep -- only the explicit is_augmented marker is (see
+        Datasplitter.fill_train_and_tests())."""
+        df = pd.DataFrame({"source_db": ["stale_x", "stale_y"]})
+        out = tag_source_db(df, "a", keep_existing=False)
+        self.assertEqual(list(out["source_db"]), ["a", "a"])
+
+    def test_keeps_preexisting_column_when_marked_augmented(self):
+        df = pd.DataFrame({"source_db": ["a", "b"]})
+        out = tag_source_db(df, "aug_traditional", keep_existing=True)
+        self.assertEqual(list(out["source_db"]), ["a", "b"])
+
+    def test_assigns_when_marked_augmented_but_column_absent(self):
+        """keep_existing only applies when there is something to keep."""
+        df = pd.DataFrame({"x": [1]})
+        out = tag_source_db(df, "aug_traditional", keep_existing=True)
+        self.assertEqual(list(out["source_db"]), ["aug_traditional"])
+
+    def test_backfills_missing_values_when_marked_augmented(self):
+        df = pd.DataFrame({"source_db": ["a", None, float("nan")]})
+        out = tag_source_db(df, "aug_traditional", keep_existing=True)
+        self.assertEqual(
+            list(out["source_db"]), ["a", "aug_traditional", "aug_traditional"]
+        )
+
+    def test_does_not_mutate_the_input_dataframe(self):
+        df = pd.DataFrame({"x": [1, 2]})
+        tag_source_db(df, "a", keep_existing=False)
+        self.assertNotIn("source_db", df.columns)
+
+    def test_logs_a_debug_message_when_backfilling(self):
+        df = pd.DataFrame({"source_db": ["a", None]})
+        util = MagicMock()
+        tag_source_db(df, "aug_traditional", keep_existing=True, util=util)
+        util.debug.assert_called_once()
 
 
 if __name__ == "__main__":

@@ -64,6 +64,11 @@ def doit(config_file):
     config["DATA"][f"{aug_name}.type"] = "csv"
     config["DATA"][f"{aug_name}.rename_speakers"] = "True"
     config["DATA"][f"{aug_name}.split_strategy"] = "train"
+    # Tells Datasplitter/Experiment.fill_tests() to keep this dataset's own
+    # per-row source_db (already the real originating database, copied over
+    # from the pooled train rows it was augmented from) instead of tagging
+    # every row with "aug_<methods>" (see GH #482).
+    config["DATA"][f"{aug_name}.is_augmented"] = "True"
     util.set_config(config)
     # load the data
     expr.load_datasets()
