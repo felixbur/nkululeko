@@ -1,5 +1,7 @@
 """Unit tests for stats utilities (nkululeko/utils/stats.py)."""
 
+import math
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -43,6 +45,27 @@ class TestCheckNa:
         assert result[0] == pytest.approx(0.0)
         assert result[1] == pytest.approx(0.0)
 
+    def test_list_input_without_nan(self):
+        """GH #490: a plain list (not a numpy array) must work too --
+        df_to_categorical_dict() hands check_na() lists, not arrays."""
+        result = check_na([1.0, 2.0, 3.0])
+        np.testing.assert_array_equal(result, [1.0, 2.0, 3.0])
+
+    def test_list_input_with_nan_replaced_with_zero(self):
+        """GH #490: a list with a NaN crashed with
+        AttributeError: 'list' object has no attribute 'size'."""
+        with pytest.warns(UserWarning, match="NaN"):
+            result = check_na([1.0, float("nan"), 3.0])
+        assert isinstance(result, np.ndarray)
+        np.testing.assert_array_equal(result, [1.0, 0.0, 3.0])
+
+    def test_list_input_not_mutated_in_place(self):
+        """check_na() must return a copy, not mutate the caller's list."""
+        original = [1.0, float("nan"), 3.0]
+        with pytest.warns(UserWarning, match="NaN"):
+            check_na(original)
+        assert math.isnan(original[1])
+
 
 class TestCohenD:
     def test_identical_distributions_zero(self):
@@ -77,6 +100,15 @@ class TestCohenD:
         d1 = np.array([float("nan"), 1.0, 2.0])
         d2 = np.array([3.0, 4.0, 5.0])
         # Should not raise; nan values are replaced with 0
+        with pytest.warns(UserWarning, match="NaN"):
+            result = cohen_d(d1, d2)
+        assert isinstance(result, float)
+
+    def test_list_inputs_with_nan_handled(self):
+        """GH #490: cohen_d() must accept plain lists (not just numpy
+        arrays), including ones with a NaN."""
+        d1 = [float("nan"), 1.0, 2.0]
+        d2 = [3.0, 4.0, 5.0]
         with pytest.warns(UserWarning, match="NaN"):
             result = cohen_d(d1, d2)
         assert isinstance(result, float)
@@ -235,6 +267,15 @@ class TestGetTTestEffect:
     def test_nan_values_handled(self):
         v1 = np.array([float("nan"), 1.0, 2.0, 3.0, 4.0])
         v2 = np.array([5.0, 6.0, 7.0, 8.0, 9.0])
+        with pytest.warns(UserWarning, match="NaN"):
+            t, _, _ = get_t_test_effect(v1, v2)
+        assert not np.isnan(t)
+
+    def test_list_inputs_with_nan_handled(self):
+        """GH #490: get_t_test_effect() must accept plain lists (not just
+        numpy arrays), including ones with a NaN."""
+        v1 = [float("nan"), 1.0, 2.0, 3.0, 4.0]
+        v2 = [5.0, 6.0, 7.0, 8.0, 9.0]
         with pytest.warns(UserWarning, match="NaN"):
             t, _, _ = get_t_test_effect(v1, v2)
         assert not np.isnan(t)

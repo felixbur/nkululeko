@@ -12,11 +12,13 @@ def check_na(a):
     """Replace NaN values in array with 0, printing a warning if any are found.
 
     Args:
-        a: numpy array to check.
+        a: array-like (numpy array or plain list) of numeric values.
 
     Returns:
-        The input array with NaNs replaced by 0.
+        A float numpy array (a copy; `a` itself is left unchanged) with
+        NaNs replaced by 0.
     """
+    a = np.array(a, dtype=float)
     if np.isnan(a).any():
         count = np.count_nonzero(np.isnan(a))
         pct = 100 * count / a.size
