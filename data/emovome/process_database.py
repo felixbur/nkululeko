@@ -1,50 +1,40 @@
 #!/usr/bin/env python3
-"""process_database.py -- EMOVOME
+"""process_database.py -- EMOVOME (text)
 
 Converts the EMOVOME (Emotional Voice Messages) database [1] into
-nkululeko CSV file lists: emovome_train.csv, emovome_dev.csv,
-emovome_test.csv (the official, speaker-independent partitions), plus
-emovome_all.csv with all three combined (a "split" column tells them
-apart).
+nkululeko CSV file lists for a **text-only** experiment: emovome_train.csv,
+emovome_dev.csv, emovome_test.csv (the official, speaker-independent
+partitions), plus emovome_all.csv with all three combined (a "split"
+column tells them apart).
+
+This needs only the openly downloadable metadata -- no request to the
+corresponding author, no restricted-access audio. The actual signal
+used for prediction is the manually corrected transcript of each voice
+message (see exp.ini: FEATS.type = ['bert']), not audio content at
+all. nkululeko still expects a readable audio file per row (to work
+out each row's duration), so this script also writes a tiny placeholder
+silent .wav per row -- its content is never read by the text feature
+extractor, it exists purely so nkululeko's bookkeeping has a file to
+point at.
 
 Setup
 -----
-1. Download and unzip "emovome.zip" from the EMOVOME Zenodo record [2]
-   (1.3 GB, open access -- no agreement needed for anything in it). It
-   contains the metadata this script reads:
-       labels.csv
-       participants_ids.csv
-       transcriptions.csv
-       Baseline_emotion_recognition/partitions.csv
-       Questionnaires/sociodemographic_english.csv
-   --zenodo_dir below points at this unzipped folder.
-2. The actual voice-message audio ("Emotions/<file_id>.ogg", one file
-   per row of labels.csv) is NOT in that zip. Request it separately:
-   sign "EMOVOME_agreement.pdf" (also in the zip) and send it to the
-   corresponding author (jamarmo@htech.upv.es); they deliver the
-   "Audios" folder directly. --audio_dir below points at its "Emotions"
-   subfolder.
+Download and unzip "emovome.zip" from the EMOVOME Zenodo record [2]
+(1.3 GB, open access) into this directory -- see README.md for the
+exact commands. It contains the metadata this script reads:
+    labels.csv
+    participants_ids.csv
+    transcriptions.csv
+    Baseline_emotion_recognition/partitions.csv
+    Questionnaires/sociodemographic_english.csv
 
 Usage
 -----
-Run with no options at all from inside the unzipped emovome folder
-(see README.md for how to get there):
+Run with no options at all from inside the unzipped emovome folder:
 
     python process_database.py
 
-This reads the metadata from the current directory and, if
-Audios/Emotions/ exists there and has files in it, the audio from
-there too. Override either with --zenodo_dir/--audio_dir if your
-layout differs, e.g.:
-
-    python process_database.py \
-        --zenodo_dir /path/to/unzipped/emovome \
-        --audio_dir /path/to/Audios/Emotions
-
-Without audio (i.e. before Audios/Emotions/ has real files in it) you
-still get the CSVs -- useful to inspect the label distribution -- but
-every "file" entry is empty, and the result is not runnable with
-nkululeko.
+Override --zenodo_dir/--out_dir if your layout differs.
 
 References
 ----------
@@ -55,23 +45,32 @@ References
 """
 
 import argparse
-import glob
 import os
 import sys
 
+import numpy as np
 import pandas as pd
+import soundfile as sf
 
 # partitions.csv calls the dev set "val"; nkululeko's split_strategy
 # values are train/dev/test (see docs/source/ini_file.md)
 SPLIT_MAP = {"train": "train", "val": "dev", "test": "test"}
 
+# Silent placeholder audio: just long/loud enough that nothing downstream
+# (e.g. a sanity VAD/duration check) mistakes it for a corrupt file.
+_PLACEHOLDER_SR = 16000
+_PLACEHOLDER_SECONDS = 0.5
 
-def _find_audio(audio_dir, file_id):
-    """Path to file_id's voice message, whatever its extension (the
-    database ships Ogg Vorbis, but this also picks up a user's own
-    converted copy, e.g. to .wav)."""
-    matches = sorted(glob.glob(os.path.join(audio_dir, f"{file_id}.*")))
-    return matches[0] if matches else None
+
+def _write_placeholder_audio(out_dir, file_id):
+    """A short silent .wav for file_id, so nkululeko has something to read
+    a duration from. Its content carries no signal -- see module
+    docstring -- so it is written once and reused across runs."""
+    path = os.path.join(out_dir, f"{file_id}.wav")
+    if not os.path.isfile(path):
+        silence = np.zeros(int(_PLACEHOLDER_SR * _PLACEHOLDER_SECONDS), dtype="float32")
+        sf.write(path, silence, _PLACEHOLDER_SR)
+    return os.path.abspath(path)
 
 
 def main():
@@ -85,18 +84,10 @@ def main():
         "(default: current directory)",
     )
     parser.add_argument(
-        "--audio_dir",
-        default=None,
-        help="Directory with the voice-message audio, named "
-        "<file_id>.<ext> (the restricted-access 'Emotions' folder; see "
-        "module docstring). Default: <zenodo_dir>/Audios/Emotions; "
-        "metadata-only CSVs are produced if that doesn't exist or is "
-        "empty.",
-    )
-    parser.add_argument(
         "--out_dir",
         default=".",
-        help="Where to write the output CSVs (default: current directory)",
+        help="Where to write the output CSVs and the placeholder_audio/ "
+        "folder (default: current directory)",
     )
     args = parser.parse_args()
 
@@ -145,27 +136,11 @@ def main():
     socio["gender"] = socio["gender"].str.lower()
     df = df.merge(socio, on="speaker", how="left")
 
-    audio_dir = args.audio_dir or os.path.join(args.zenodo_dir, "Audios", "Emotions")
-    has_audio = os.path.isdir(audio_dir) and any(os.scandir(audio_dir))
-    if has_audio:
-        df["file"] = df["file_id"].apply(lambda fid: _find_audio(audio_dir, fid))
-        missing = df["file"].isna().sum()
-        if missing:
-            print(
-                f"WARNING: {missing}/{len(df)} rows have no audio file under "
-                f"{audio_dir} (expected <file_id>.<ext>) and are dropped.",
-                file=sys.stderr,
-            )
-            df = df[df["file"].notna()].copy()
-        df["file"] = df["file"].apply(os.path.abspath)
-    else:
-        print(
-            f"WARNING: no audio found under {audio_dir}, 'file' column left "
-            "empty -- the CSVs below are metadata-only, not runnable with "
-            "nkululeko.",
-            file=sys.stderr,
-        )
-        df["file"] = pd.NA
+    placeholder_dir = os.path.join(args.out_dir, "placeholder_audio")
+    os.makedirs(placeholder_dir, exist_ok=True)
+    df["file"] = df["file_id"].apply(
+        lambda fid: _write_placeholder_audio(placeholder_dir, fid)
+    )
 
     df = df.drop(columns=["file_id"])
     column_order = [

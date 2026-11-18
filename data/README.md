@@ -47,7 +47,7 @@ To support open science and reproducible research, we encourage you to submit PR
 |[emorynlp](emorynlp/)|emotion|English Emotion Dataset from Friends TV Show|public|unknown|
 |[emov-db](emov-db/)|emotion|English|public|CC BY 4.0|
 |[emovo](emovo/)|emotion|Italian|restricted|CC BY-NC-SA 4.0|
-|[emovome](emovome/)|valence|Spanish spontaneous voice messages|restricted|CC BY 4.0 (metadata); signed agreement required for the raw audio|
+|[emovome](emovome/)|valence|Spanish spontaneous voice message transcripts (text)|public|CC BY 4.0|
 |[emozionalmente](emozionalmente/)|emotion|Italian|public|unknown|
 |[en-dialect](en-dialect/)|dialect|English dialect classification dataset|public|unknown|
 |[enterface](enterface/)|emotion|Multilingual|public|unknown|

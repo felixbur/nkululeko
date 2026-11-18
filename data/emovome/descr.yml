@@ -1,5 +1,5 @@
 name: emovome
 target: valence
-description: Spanish spontaneous voice messages
-access: restricted
-license: CC BY 4.0 (metadata); signed agreement required for the raw audio
+description: Spanish spontaneous voice message transcripts (text)
+access: public
+license: CC BY 4.0
