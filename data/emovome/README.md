@@ -38,20 +38,30 @@ The dataset is split into two parts:
    the `Audios` folder, whose `Emotions/` subfolder has one file per
    message, named `<file_id>.ogg` (Ogg Vorbis, 16-bit, 44.1 or 48 kHz).
 
+Run everything from this directory (`data/emovome/`):
+
 ```bash
+cd data/emovome
 python process_database.py \
     --zenodo_dir /path/to/unzipped/emovome \
-    --audio_dir /path/to/Audios/Emotions \
-    --out_dir data/emovome
-cd ../..
-python -m nkululeko.resample --config data/emovome/exp.ini
-python -m nkululeko.nkululeko --config data/emovome/exp.ini
+    --audio_dir /path/to/Audios/Emotions
+python -m nkululeko.nkululeko exp.ini
 ```
 
 Run `process_database.py` without `--audio_dir` to get the CSVs with the
 label/metadata columns filled in but an empty `file` column -- useful to
 inspect the data (e.g. with `nkululeko.explore`) before the audio
 arrives, but not runnable for training or feature extraction.
+
+`exp.ini`'s `os` (openSMILE eGeMAPS) features read the audio at its
+native 44.1/48 kHz directly -- no separate resampling step needed. If
+you switch `FEATS.type` to a torch-based extractor (e.g. `wav2vec2`),
+resample to 16 kHz first: `python -m nkululeko.resample --config exp.ini`.
+Note that resampling only covers the `train`/`test` splits, not a
+separate `dev` one (a current limitation of `nkululeko.resample`), so
+resample `emovome_dev.csv`'s audio yourself if you need it (e.g. by
+swapping `databases` down to `['emovome_dev']` and `split_strategy =
+train` for one resample run).
 
 ## Output columns
 
