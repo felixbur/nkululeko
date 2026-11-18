@@ -7,7 +7,7 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 **⚠ 27 key(s) have inconsistent defaults across call sites:**
 
 * `'DATA'.'no_reuse'`: `'False'` (nkululeko/augment.py:43), `'False'` (nkululeko/experiment.py:162), `False` (nkululeko/explore.py:73), `False` (nkululeko/utils/dataframe.py:314)
-* `'DATA'.'target'`: `'emotion'` (nkululeko/augment.py:89), `'emotion'` (nkululeko/augmenting/resampler.py:100), `'emotion'` (nkululeko/bundle.py:56), `'emotion'` (nkululeko/bundle.py:218), `None` (nkululeko/data/dataset.py:35), `None` (nkululeko/data/dataset_csv.py:84), `None` (nkululeko/experiment.py:124), `'emotion'` (nkululeko/experiment.py:653), `'emotion'` (nkululeko/experiment.py:663), `'emotion'` (nkululeko/experiment.py:673), `'emotion'` (nkululeko/export.py:108), `'emotion'` (nkululeko/feat_extract/feats_analyser.py:26), `'emotion'` (nkululeko/models/model.py:230), `'emotion'` (nkululeko/plots.py:31), `'class_label'` (nkululeko/plots.py:993), `'emotion'` (nkululeko/testing_predictor.py:71), `None` (nkululeko/utils/util.py:669)
+* `'DATA'.'target'`: `'emotion'` (nkululeko/augment.py:89), `'emotion'` (nkululeko/augmenting/resampler.py:100), `'emotion'` (nkululeko/bundle.py:56), `'emotion'` (nkululeko/bundle.py:218), `None` (nkululeko/data/dataset.py:35), `None` (nkululeko/data/dataset_csv.py:103), `None` (nkululeko/experiment.py:124), `'emotion'` (nkululeko/experiment.py:653), `'emotion'` (nkululeko/experiment.py:663), `'emotion'` (nkululeko/experiment.py:673), `'emotion'` (nkululeko/export.py:108), `'emotion'` (nkululeko/feat_extract/feats_analyser.py:26), `'emotion'` (nkululeko/models/model.py:230), `'emotion'` (nkululeko/plots.py:31), `'class_label'` (nkululeko/plots.py:993), `'emotion'` (nkululeko/testing_predictor.py:71), `None` (nkululeko/utils/util.py:669)
 * `'DATA'.'tests'`: `'False'` (nkululeko/data/dataset.py:915), `False` (nkululeko/nkululeko.py:46), `False` (nkululeko/testing_predictor.py:59)
 * `'DATA'.'type'`: `False` (nkululeko/data/dataset.py:1015), `'dummy'` (nkululeko/data/datasplitter.py:254)
 * `'EXP'.'epochs'`: `1` (nkululeko/modelrunner.py:194), `1` (nkululeko/models/model_tuned.py:66), `'50'` (nkululeko/optimizers/scheduler_factory.py:84)
@@ -299,12 +299,12 @@ This is a contributor-facing cross-check, not user documentation - see [ini_file
 | DATA.<data_name> | 'max_duration_of_sample' | `False` | nkululeko/filter_data.py:94 |
 | DATA.<data_name> | 'min_duration_of_sample' | `False` | nkululeko/filter_data.py:91 |
 | DATA.<name> | '' | `''` | nkululeko/utils/dataframe.py:284 |
-| DATA.<self.name> | '' | `''` | nkululeko/data/dataset.py:72, nkululeko/data/dataset_csv.py:21 |
-| DATA.<self.name> | 'absolute_path' | `'True'` | nkululeko/data/dataset_csv.py:49 |
+| DATA.<self.name> | '' | `''` | nkululeko/data/dataset.py:72, nkululeko/data/dataset_csv.py:39 |
+| DATA.<self.name> | 'absolute_path' | `'True'` | nkululeko/data/dataset_csv.py:68 |
 | DATA.<self.name> | 'as_test' | `'False'` | nkululeko/data/dataset.py:441, nkululeko/data/dataset.py:578 |
 | DATA.<self.name> | 'as_train' | `'False'` | nkululeko/data/dataset.py:444, nkululeko/data/dataset.py:582 |
-| DATA.<self.name> | 'audio_path' | `'./'` | nkululeko/data/dataset_csv.py:26 |
-| DATA.<self.name> | 'colnames' | `False` | nkululeko/data/dataset.py:81, nkululeko/data/dataset.py:91, nkululeko/data/dataset_csv.py:44 |
+| DATA.<self.name> | 'audio_path' | `'./'` | nkululeko/data/dataset_csv.py:44 |
+| DATA.<self.name> | 'colnames' | `False` | nkululeko/data/dataset.py:81, nkululeko/data/dataset.py:91, nkululeko/data/dataset_csv.py:63 |
 | DATA.<self.name> | 'columns' | `False` | nkululeko/data/dataset.py:145 |
 | DATA.<self.name> | 'dev' | `False` | nkululeko/data/dataset.py:718 |
 | DATA.<self.name> | 'dev_size' | `20` | nkululeko/data/dataset.py:769, nkululeko/data/dataset.py:807 |
