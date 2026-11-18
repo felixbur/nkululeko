@@ -14,6 +14,24 @@ from nkululeko.reporting.report_item import ReportItem
 class Dataset_CSV(Dataset):
     """Class to represent datasets stored as a csv file."""
 
+    def _check_file_index(self, df):
+        """Raise a clear error if the 'file' column/index level has a
+        missing value, instead of crashing deep inside os.path.join()
+        with a cryptic `TypeError: ... not 'NAType'` once the audio_path
+        is joined onto it further down."""
+        files = (
+            df.index.get_level_values("file")
+            if audformat.index_type(df.index) == "segmented"
+            else df.index
+        )
+        missing = pd.isna(files).sum()
+        if missing:
+            self.util.error(
+                f"{self.name}: {missing} row(s) have no value in the "
+                "'file' column -- every row needs a path to its audio "
+                "file"
+            )
+
     def load(self):
         """Load the dataframe with files, speakers and task labels."""
         self.util.debug(f"loading {self.name}")
@@ -41,6 +59,7 @@ class Dataset_CSV(Dataset):
             df = df.to_frame()
         elif isinstance(df, pd.Index):
             df = pd.DataFrame(index=df)
+        self._check_file_index(df)
         rename_cols = self.util.config_val_data(self.name, "colnames", False)
         if rename_cols:
             col_dict = ast.literal_eval(rename_cols)
