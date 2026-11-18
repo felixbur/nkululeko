@@ -25,9 +25,9 @@ Dataset homepage (Zenodo): https://doi.org/10.5281/zenodo.10694370
 
 The dataset is split into two parts:
 
-1. **Metadata (open access, no agreement needed)**: download and unzip
-   `emovome.zip` from the [Zenodo record](https://doi.org/10.5281/zenodo.10694370)
-   (1.3 GB). It contains `labels.csv`, `participants_ids.csv`,
+1. **Metadata (open access, no agreement needed)**: `emovome.zip` from
+   the [Zenodo record](https://doi.org/10.5281/zenodo.10694370) (1.3 GB).
+   It contains `labels.csv`, `participants_ids.csv`,
    `transcriptions.csv`, `Baseline_emotion_recognition/partitions.csv`,
    `Questionnaires/sociodemographic_english.csv` -- everything
    `process_database.py` reads -- plus the eGeMAPS features, baseline
@@ -38,20 +38,37 @@ The dataset is split into two parts:
    the `Audios` folder, whose `Emotions/` subfolder has one file per
    message, named `<file_id>.ogg` (Ogg Vorbis, 16-bit, 44.1 or 48 kHz).
 
-Run everything from this directory (`data/emovome/`):
+Download and unzip it into this directory (`data/emovome/`), so that
+`labels.csv`, `Audios/`, `Baseline_emotion_recognition/` etc. end up
+sitting right here, next to `process_database.py`:
 
 ```bash
 cd data/emovome
-python process_database.py \
-    --zenodo_dir /path/to/unzipped/emovome \
-    --audio_dir /path/to/Audios/Emotions
+wget "https://zenodo.org/records/10694370/files/emovome.zip?download=1" -O emovome.zip
+unzip emovome.zip
+rm emovome.zip
+```
+
+Once you have the audio too (step 2 above), drop its `Emotions/`
+subfolder into `Audios/` here, so you end up with `Audios/Emotions/`
+containing the 999 `<file_id>.ogg` files, next to the already-present
+(empty) `Audios/Lecture/`.
+
+Then, still from this directory:
+
+```bash
+python process_database.py
 python -m nkululeko.nkululeko exp.ini
 ```
 
-Run `process_database.py` without `--audio_dir` to get the CSVs with the
-label/metadata columns filled in but an empty `file` column -- useful to
-inspect the data (e.g. with `nkululeko.explore`) before the audio
-arrives, but not runnable for training or feature extraction.
+`process_database.py` takes no required options: it reads the metadata
+from the current directory and, if `Audios/Emotions/` has files in it,
+the audio from there too. Run it before the audio arrives to still get
+the CSVs with every label/metadata column filled in but an empty `file`
+column -- useful to inspect the data (e.g. with `nkululeko.explore`),
+but not runnable for training or feature extraction until the audio is
+in place. Pass `--zenodo_dir`/`--audio_dir`/`--out_dir` to override any
+of this if your own layout differs.
 
 `exp.ini`'s `os` (openSMILE eGeMAPS) features read the audio at its
 native 44.1/48 kHz directly -- no separate resampling step needed. If

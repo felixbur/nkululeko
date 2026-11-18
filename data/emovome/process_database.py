@@ -27,13 +27,24 @@ Setup
 
 Usage
 -----
+Run with no options at all from inside the unzipped emovome folder
+(see README.md for how to get there):
+
+    python process_database.py
+
+This reads the metadata from the current directory and, if
+Audios/Emotions/ exists there and has files in it, the audio from
+there too. Override either with --zenodo_dir/--audio_dir if your
+layout differs, e.g.:
+
     python process_database.py \
         --zenodo_dir /path/to/unzipped/emovome \
         --audio_dir /path/to/Audios/Emotions
 
-Run without --audio_dir to still get the CSVs (useful to inspect the
-label distribution before the audio arrives), but every "file" entry
-will then be empty, and the result is not runnable with nkululeko.
+Without audio (i.e. before Audios/Emotions/ has real files in it) you
+still get the CSVs -- useful to inspect the label distribution -- but
+every "file" entry is empty, and the result is not runnable with
+nkululeko.
 
 References
 ----------
@@ -78,7 +89,9 @@ def main():
         default=None,
         help="Directory with the voice-message audio, named "
         "<file_id>.<ext> (the restricted-access 'Emotions' folder; see "
-        "module docstring). Omit to produce metadata-only CSVs.",
+        "module docstring). Default: <zenodo_dir>/Audios/Emotions; "
+        "metadata-only CSVs are produced if that doesn't exist or is "
+        "empty.",
     )
     parser.add_argument(
         "--out_dir",
@@ -132,21 +145,24 @@ def main():
     socio["gender"] = socio["gender"].str.lower()
     df = df.merge(socio, on="speaker", how="left")
 
-    if args.audio_dir:
-        df["file"] = df["file_id"].apply(lambda fid: _find_audio(args.audio_dir, fid))
+    audio_dir = args.audio_dir or os.path.join(args.zenodo_dir, "Audios", "Emotions")
+    has_audio = os.path.isdir(audio_dir) and any(os.scandir(audio_dir))
+    if has_audio:
+        df["file"] = df["file_id"].apply(lambda fid: _find_audio(audio_dir, fid))
         missing = df["file"].isna().sum()
         if missing:
             print(
                 f"WARNING: {missing}/{len(df)} rows have no audio file under "
-                f"{args.audio_dir} (expected <file_id>.<ext>) and are dropped.",
+                f"{audio_dir} (expected <file_id>.<ext>) and are dropped.",
                 file=sys.stderr,
             )
             df = df[df["file"].notna()].copy()
         df["file"] = df["file"].apply(os.path.abspath)
     else:
         print(
-            "WARNING: --audio_dir not given, 'file' column left empty -- "
-            "the CSVs below are metadata-only, not runnable with nkululeko.",
+            f"WARNING: no audio found under {audio_dir}, 'file' column left "
+            "empty -- the CSVs below are metadata-only, not runnable with "
+            "nkululeko.",
             file=sys.stderr,
         )
         df["file"] = pd.NA
