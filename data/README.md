@@ -47,6 +47,7 @@ To support open science and reproducible research, we encourage you to submit PR
 |[emorynlp](emorynlp/)|emotion|English Emotion Dataset from Friends TV Show|public|unknown|
 |[emov-db](emov-db/)|emotion|English|public|CC BY 4.0|
 |[emovo](emovo/)|emotion|Italian|restricted|CC BY-NC-SA 4.0|
+|[emovome](emovome/)|valence|Spanish spontaneous voice messages|restricted|CC BY 4.0 (metadata); signed agreement required for the raw audio|
 |[emozionalmente](emozionalmente/)|emotion|Italian|public|unknown|
 |[en-dialect](en-dialect/)|dialect|English dialect classification dataset|public|unknown|
 |[enterface](enterface/)|emotion|Multilingual|public|unknown|
@@ -103,7 +104,7 @@ To support open science and reproducible research, we encourage you to submit PR
 |[vivae](vivae/)|emotion|Variably Intense Vocalizations of Affect and Emotion Corpus (VIVAE). English vocal bursts|public|unknown|
 
 
-This recipe contains information about 83 datasets.
+This recipe contains information about 84 datasets.
 ## Performance
 
 ![Nkululeko performance](../meta/images/nkululeko_ser_20240719.png)
