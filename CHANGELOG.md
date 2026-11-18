@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.14.10 (26-11-18)
+-------------------------
+* fix bug: a CSV-backed database (`DATA.<name>.type = csv`) with a missing value in its `file` column (e.g. a `process_database.py`-style script run before the real audio is available) crashed deep inside `os.path.join()` with `TypeError: join() argument must be str, bytes, or os.PathLike object, not 'NAType'`, once `DATA.<name>.audio_path` was joined onto the index in `Dataset_CSV.load()`. It now raises a clear error naming the database and the number of affected rows right after the index is built, before that join
+
 Version 1.14.9 (26-11-10)
 -------------------------
 * fix bug: `nkululeko.utils.stats.check_na()` assumed a numpy array (`a.size`, `a[np.isnan(a)] = 0`), but its callers -- `df_to_categorical_dict()` among them -- can hand it a plain list, which raised `AttributeError: 'list' object has no attribute 'size'` as soon as it contained a NaN. This could abort an `explore` run (e.g. `value_counts` on a column with a missing value) before the other distributions/stats were written. `check_na()` now converts its input to a float numpy array (a copy, so the caller's own list/array is never mutated) before checking for NaNs; `cohen_d()`/`get_t_test_effect()`/etc., which already call `check_na()` first, now accept list input too (#490)
